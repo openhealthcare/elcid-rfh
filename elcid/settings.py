@@ -189,27 +189,16 @@ if 'test' in sys.argv:
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
     'handlers': {
         'console': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'logging.StreamHandler'
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
         },
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'ERROR',
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': True,
         },
     }
