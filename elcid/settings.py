@@ -276,6 +276,11 @@ INTEGRATING = False
 GLOSSOLALIA_URL = 'http://localhost:5000/'
 GLOSSOLALIA_NAME = 'elcid'
 
+DATE_FORMAT = 'd/m/Y'
+DATE_INPUT_FORMATS = ['%d/%m/%Y']
+DATETIME_FORMAT = 'd/m/Y H:i:s'
+DATETIME_INPUT_FORMATS = ['%d/%m/%Y %H:%M:%S']
+
 try:
     from local_settings import *
 except:
