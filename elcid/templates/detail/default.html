@@ -5,10 +5,12 @@
 {% include 'detail/_demographics_location_panels.html' %}
 {% teams_panel %}
 
-{% record_panel models.Procedure %}
 {% record_panel models.PrimaryDiagnosis %}
+
 {% record_panel models.Diagnosis %}
 {% record_panel models.Infection %}
+{% record_panel models.Procedure %}
+
 {% record_panel models.Line %}
 {% record_panel models.Antimicrobial %}
 

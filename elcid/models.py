@@ -115,6 +115,7 @@ class InfectionSource(lookuplists.LookupList):
 
 
 class Infection(EpisodeSubrecord):
+    _title = 'Infection related issues'
     _icon = 'fa fa-eyedropper'
     # this needs to be fixed
     source = ForeignKeyOrFreeText(InfectionSource)
@@ -130,6 +131,7 @@ class SurgicalProcedure(lookuplists.LookupList):
 
 
 class Procedure(EpisodeSubrecord):
+    _title = 'Operation / Procedures'
     _icon = 'fa fa-sitemap'
     date = models.DateField(blank=True, null=True)
     medical_procedure = ForeignKeyOrFreeText(MedicalProcedure)
