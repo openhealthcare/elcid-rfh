@@ -1,0 +1,5 @@
+{% load forms %}
+{% input "autofocus" label="Hospital" model="editing.location.hospital" lookuplist="hospital_list" %}
+{% input label="Ward" model="editing.location.ward" lookuplist="ward_list" %}
+{% input name="bed" label="Bed" model="editing.location.bed" %}
+{% select label="Provenance" model="editing.location.provenance" lookuplist="provenance_list" %}
