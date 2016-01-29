@@ -4,13 +4,13 @@ from elcid.models import (
     Infection, Procedure
 )
 from opal.models import Patient
-from pathway.pathways import Pathway, Step
+from pathway.pathways import Pathway, UnrolledPathway, Step
 
 
 class AddPatientPathway(Pathway):
     title = "Add Patient"
     slug = 'add_patient'
-    
+
     steps = (
         Step(
             template_url="/pathway/templates/find_patient_form.html",
@@ -53,14 +53,16 @@ class AddPatientPathway(Pathway):
         return episode
 
 
-class CernerDemoPathway(Pathway):
+class CernerDemoPathway(UnrolledPathway):
+    title = 'Cerner Demo'
+    slug = 'cernerdemo'
     steps = (
-        Step(
-            template_url="/pathway/templates/find_patient_form.html",
-            controller_class="FindPatientCtrl",
-            title="Find Patient",
-            icon="fa fa-user"
-        ),
+        # Step(
+        #     template_url="/templates/pathway/find_patient_form.html",
+        #     controller_class="FindPatientCtrl",
+        #     title="Find Patient",
+        #     icon="fa fa-user"
+        # ),
         Step(
             model=Location,
             controller_class="BloodCultureLocationCtrl",
@@ -72,7 +74,7 @@ class CernerDemoPathway(Pathway):
         Infection,
         Step(
             model=Line,
-            template_url="/pathway/templates/optional_line.html",
+            template_url="/templates/pathway/optional_line.html",
             controller_class="LineController"
         ),
         Antimicrobial,
