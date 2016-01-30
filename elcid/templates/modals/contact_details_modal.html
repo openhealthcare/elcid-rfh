@@ -3,12 +3,12 @@
 {% block icon %}<i class="fa fa-phone"></i>{% endblock %}
 {% block modal_body %}
   <form class="form-horizontal">
-    {% input label="Address line 1" model="editing.address_line1" %}
-    {% input label="Address line 2" model="editing.address_line2" %}
-    {% input label="City" model="editing.city" %}
-    {% input label="County" model="editing.county" %}
-    {% input label="Post Code" model="editing.post_code" %}
-    {% input label="Telephone 1" model="editing.telephone1" %}
-    {% input label="Telephone 2" model="editing.telephone2" %}
+    {% input label="Address line 1" model="editing.contact_details.address_line1" %}
+    {% input label="Address line 2" model="editing.contact_details.address_line2" %}
+    {% input label="City" model="editing.contact_details.city" %}
+    {% input label="County" model="editing.contact_details.county" %}
+    {% input label="Post Code" model="editing.contact_details.post_code" %}
+    {% input label="Telephone 1" model="editing.contact_details.tel1" %}
+    {% input label="Telephone 2" model="editing.contact_details.tel2" %}
   </form>
 {% endblock %}

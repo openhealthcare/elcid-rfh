@@ -9,90 +9,93 @@
     </div>
 
     <div class="panel-body">
-      
+
       <div class="row screen-only">
         <div class="col-md-12">
           <h1 >
-            <div class="btn-group pull-left" dropdown is-open="status.isopen">
-              <button type="button" class="btn btn-secondary dropdown-toggle" ng-disabled="disabled">
-                <i class="fa fa-user-md"></i>
-                [[ tag_display[currentTag] ]]
-                <i class="fa fa-angle-down"></i>
+            <div class="btn-group pull-left">
+              <button class="btn btn-primary"
+                      ng-click="open_modal('SMSCtrl', '/templates/modals/sms.html', 'lg', {episode: null})">
+                {% icon "fa-mobile" %} Send Bloods reminder to all patients
               </button>
-              <ul class="dropdown-menu slides" role="menu">
-                {% for team in teams %}
-                  {% if team.visible_in_list %}
-                    {% if not team.has_subteams or team.parent %}
-                      <li ng-hide="currentTag == '{{ team.name }}' || currentSubTag == '{{ team.name }}'">
-                        <a href="#/list/{% if team.parent %}{{ team.parent.name }}/{{ team.name }}{% else %}{{ team.name }}{% endif %}">
-                          {% if team.parent %}
-                            {{ team.parent.title }} /
-                          {% endif %}
-                          {{ team.title }}
-                        </a>
-                      </li>
-                    {% endif %}
-                  {% endif %}
-                {% endfor %}
-              </ul>
+
             </div>
+          </h1>
+          <h2>
+          </h2>
         </div>
       </div>
 
       <div class="row">
         <div class="col-md-8 col-md-push-2">
-          <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id]]" ng-repeat="row in rows">
-            <div class="panel panel-default content-offset">
-              <div class="panel-heading">
-                <h3><i class="fa fa-user"></i>
+          <div class="panel panel-default content-offset" ng-repeat="row in rows">
+            <div class="panel-heading">
+              <h3>
+                <a class="panel-links" href="[[ '/#/patient/' + row.demographics[0].patient_id]]" >
+                  <i class="fa fa-user"></i>
                   [[ row.demographics[0].name ]] [[ row.demographics[0].hospital_number ]]
                   <small>
-                    [[ row.demographics[0].date_of_birth|shortDate ]]
-                    ([[ row.demographics[0].date_of_birth | age ]])
+                    <span ng-show="row.demographics[0].weight">[[ row.demographics[0].weight ]] kg</span>
                   </small>
-                </h3>
-              </div>
-              <div class="panel-body">
-                
-                <div class="row">
-                  <div class="col-md-6">
-                    <h4><strong>
-                        {% icon models.PrimaryDiagnosis.get_icon %} Primary Diagnosis
-                    </strong></h4>
-                    <p ng-repeat="item in row.primary_diagnosis">
-                      {% include models.PrimaryDiagnosis.get_display_template %}
-                    </p>
-                  </div>
-                  
-                  <div class="col-md-6">
-                    <h4><strong>
-                        {% icon models.Antimicrobial.get_icon %} Antimicrobials
-                    </strong></h4>
-                    <p ng-repeat="item in row.antimicrobial">
-                      {% include models.Antimicrobial.get_display_template %}
-                    </p>
-
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div class="col-md-6">
-                    <h4><strong>
-                        {% icon models.Diagnosis.get_icon %} Diagnosis
-                    </strong></h4>
-                    <p ng-repeat="item in row.diagnosis">
-                      {% include models.Diagnosis.get_display_template %}
-                    </p>
-
-                  </div>
-                  <div class="col-md-6">
-                    <h4><strong>{% icon 'fa fa-crosshairs' %}Investigations</strong></h4>
-                  </div>
-                </div>
-
-              </div>
+                </a>
+                <span class="pull-right">
+                  <btn class="btn btn-primary"
+                       ng-click="open_modal('SMSCtrl', '/templates/modals/sms.html', 'lg', {episode: row})">
+                    {% icon "fa-mobile" %}
+                    Message
+                  </btn>
+                </span>
+              </h3>
             </div>
-          </a>
+            <div class="panel-body">
+
+              <div class="row">
+
+                <div class="col-md-6">
+                  <h4><strong>
+                      {% icon "fa-user-md" %} Consultant: [[ row.ibd_info[0].consultant ]]
+                  </strong></h4>
+                  <h4><strong>
+                      {% icon "fa-phone" %} Phone: [[ row.contact_details[0].tel1 ]]
+                  </strong></h4>
+                </div>
+
+
+                <div class="col-md-6">
+                  <h4><strong>
+                      {% icon models.Diagnosis.get_icon %} Diagnosis
+                  </strong></h4>
+                  <p ng-repeat="item in row.diagnosis">
+                    {% include models.Diagnosis.get_display_template %}
+                  </p>
+
+                </div>
+
+              </div>
+
+              <!-- <div class="row"> -->
+              <!--   <div class="col-md-6"> -->
+              <!--     <h4><strong>{% icon 'fa fa-crosshairs' %}Investigations</strong></h4> -->
+              <!--   </div> -->
+              <!-- </div> -->
+              <table class="table content-offset-10">
+                <tr>
+                  <th>Date</th>
+                  <th>PHS</th>
+                  <th>Range</th>
+                  <th>WBC</th>
+                </tr>
+                <tr ng-repeat="blood in row.bloods">
+                  <td>[[ blood.date | shortDate ]]</td>
+                  <td ng-class="{'bg-danger': blood.platelets > 400 || blood.platelets < 150 , 'bg-success': blood.platelets < 400 && blood.platelets > 150 }">
+                    [[ blood.platelets ]]
+                  </td>
+                  <td> (150-400)</td>
+                  <td>[[ blood.white_blood_count ]]</td>
+                </tr>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 

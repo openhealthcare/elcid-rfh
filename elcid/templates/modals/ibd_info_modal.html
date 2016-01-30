@@ -1,0 +1,11 @@
+{% extends 'modal_base.html' %}
+{% load forms %}
+{% block icon %}<i class="fa fa-info"></i>{% endblock %}
+{% block modal_body %}
+  <form class="form-horizontal">
+    {% input label="Consultant" model="editing.ibd_info.consultant" lookuplist="consultant_list" %}
+    {% select label="Schedule" model="editing.ibd_info.schedule" lookuplist="schedules_list" %}
+    {% datepicker label="Last Blood" model="editing.ibd_info.last_blood" %}
+    {% datepicker label="Next Blood" model="editing.ibd_info.next_blood" %}
+  </form>
+{% endblock %}

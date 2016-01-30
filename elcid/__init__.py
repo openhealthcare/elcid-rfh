@@ -18,6 +18,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/micro_haem_discussion_form.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/welcome.js',
+        'js/elcid/controllers/sms.js',
         'js/elcid/controllers/procedure_form.js',
         'js/elcid/controllers/blood_culture_location.js',
         'js/elcid/services/dicharge_patient.js',
@@ -32,7 +33,7 @@ class Application(application.OpalApplication):
     }
 
     menuitems = [
-        dict(
-            href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
-            activepattern='/pathway/#/add_patient')
+        # dict(
+        #     href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
+        #     activepattern='/pathway/#/add_patient')
     ]

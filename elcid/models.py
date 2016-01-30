@@ -26,6 +26,7 @@ class Demographics(PatientSubrecord):
     country_of_birth = ForeignKeyOrFreeText(omodels.Destination)
     ethnicity        = models.CharField(max_length=255, blank=True, null=True)
     gender           = models.CharField(max_length=255, blank=True, null=True)
+    weight           = models.CharField(max_length=255, blank=True, null=True)
 
     pid_fields       = 'name', 'hospital_number', 'nhs_number'
 
@@ -207,7 +208,7 @@ class Diagnosis(EpisodeSubrecord):
     This is a working-diagnosis list, will often contain things that are
     not technically diagnoses, but is for historical reasons, called diagnosis.
     """
-    _title = 'Diagnosis / Issues'
+    _title = 'Diagnosis'
     _sort = 'date_of_diagnosis'
     _icon = 'fa fa-stethoscope'
 
@@ -272,7 +273,7 @@ class Drug_delivered(lookuplists.LookupList):
 
 
 class Antimicrobial(EpisodeSubrecord):
-    _title = 'Antimicrobials'
+    _title = 'Treatment'
     _sort = 'start_date'
     _icon = 'fa fa-flask'
     _modal = 'lg'
@@ -854,3 +855,29 @@ class BloodCulture(EpisodeSubrecord):
     resistant_antibiotics = models.ManyToManyField(
         omodels.Antimicrobial, related_name="blood_culture_resistant"
     )
+
+
+class Bloods(EpisodeSubrecord):
+    _icon = 'fa fa-eyedropper'
+
+    platelets = models.CharField(max_length=200)
+    white_blood_count = models.CharField(max_length=200)
+    date = models.CharField(max_length=200)
+    reviewed = models.BooleanField(default=False)
+
+
+class Schedules(lookuplists.LookupList):
+    pass
+
+
+class IBDInfo(EpisodeSubrecord):
+    _is_singleton = True
+    _title = 'IBD Info'
+    _icon = 'fa fa-info'
+
+    consultant = ForeignKeyOrFreeText(Consultant)
+    schedule   = ForeignKeyOrFreeText(Schedules)
+    next_blood = models.DateField(blank=True, null=True)
+    last_blood = models.DateField(blank=True, null=True)
+    reminded   = models.BooleanField(default=False)
+    striked    = models.IntegerField(blank=True, null=True)
