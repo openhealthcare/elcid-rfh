@@ -2,7 +2,7 @@ from fabric.api import env, task, run, local, prefix
 from fabric.operations import prompt
 
 
-env.hosts = ["ec2-52-16-175-249.eu-west-1.compute.amazonaws.com"]
+env.hosts = ["elcid-rfh-test.openhealthcare.org.uk"]
 env.user = "ubuntu"
 virtual_env_name = "elcid-rfh"
 
@@ -25,6 +25,8 @@ def deploy(key_file_name="../ec2.pem"):
     git_branch_name = local('git rev-parse --abbrev-ref HEAD', capture=True)
     with prefix(". /usr/share/virtualenvwrapper/virtualenvwrapper.sh"):
         with prefix("workon {}".format(virtual_env_name)):
+            run("git fetch")
+            run("git checkout {}".format(git_branch_name))
             run("git pull origin {}".format(git_branch_name))
             run("pip install -r requirements.txt")
             run("python manage.py migrate")

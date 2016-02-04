@@ -6652,7 +6652,7 @@
       "synonyms": []
     }
   ],
-  "opatdressingtype": [
+  /*"opatdressingtype": [
     {
       "name": "Biopatch",
       "synonyms": []
@@ -6947,7 +6947,7 @@
       "name": "Wound Infection - post surgical",
       "synonyms": []
     }
-  ],
+  ],*/
   "organism_details": [],
   "speciality": [
     {
