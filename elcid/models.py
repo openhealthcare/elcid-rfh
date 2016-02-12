@@ -597,3 +597,12 @@ class BloodCulture(EpisodeSubrecord):
     resistant_antibiotics = models.ManyToManyField(
         omodels.Antimicrobial, related_name="blood_culture_resistant"
     )
+
+
+class FinalDiagnosis(EpisodeSubrecord):
+    _icon = 'fa fa-eye'
+
+    source = models.CharField(max_length=255, blank=True)
+    contaminant = models.BooleanField(default=False)
+    community_related = models.BooleanField(default=False)
+    hcai_related = models.BooleanField(default=False)
