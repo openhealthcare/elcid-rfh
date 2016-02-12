@@ -1,19 +1,21 @@
+from copy import copy
+
 from django.db import transaction
 from elcid.models import (
     Diagnosis, Line, Antimicrobial, Location, PrimaryDiagnosis,
-    Infection, Procedure
+    Infection, Procedure, Demographics, MicrobiologyInput
 )
 from opal.models import Patient
-from pathway.pathways import Pathway, Step
+from pathway.pathways import Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin
 
 
-class AddPatientPathway(Pathway):
+class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
     title = "Add Patient"
     slug = 'add_patient'
-    
+
     steps = (
         Step(
-            template_url="/pathway/templates/find_patient_form.html",
+            template_url="/templates/pathway/find_patient_form.html",
             controller_class="FindPatientCtrl",
             title="Find Patient",
             icon="fa fa-user"
@@ -26,41 +28,30 @@ class AddPatientPathway(Pathway):
     )
 
     def save(self, data, user):
-        with transaction.atomic():
-            update_demographics = data["demographics"]
-            hospital_number = update_demographics["hospital_number"]
-            patient, created = Patient.objects.get_or_create(
-                demographics__hospital_number=hospital_number
-            )
+        episode = super(AddPatientPathway, self).save(data, user)
 
-            if created:
-                demographics_model = patient.demographics_set.first()
-                for k, v in update_demographics.iteritems():
-                    setattr(demographics_model, k, v)
-                    demographics_model.save()
-
-            if not patient.episode_set.exists():
-                episode = patient.create_episode()
-            else:
-                episode = patient.episode_set.last()
-
-            tagging = data["tagging"]
-            episode.set_tag_names(tagging, user)
-
-            for step in self.get_steps():
-                step.save(episode.id, data, user)
-
+        # TODO: This should be refactored into the relevant step
+        tagging = data["tagging"]
+        episode.set_tag_names(tagging, user)
         return episode
 
 
-class CernerDemoPathway(Pathway):
+class DemographicsStep(Step):
+    def save(self, data, user, **kw):
+        update_info = copy(data.get(self.model.get_api_name(), None))
+        if 'consistency_token' not in update_info:
+            return
+        return super(DemographicsStep, self).save(data, user, **kw)
+
+
+class CernerDemoPathway(UnrolledPathway):
+    title = 'Cerner Powerchart Template'
+    slug = 'cernerdemo'
+
     steps = (
-        Step(
-            template_url="/pathway/templates/find_patient_form.html",
-            controller_class="FindPatientCtrl",
-            title="Find Patient",
-            icon="fa fa-user"
-        ),
+        # TODO: Do we want to pass this like this ?
+        # Wouldn't it be nicer if I could set it on the class?
+        DemographicsStep(model=Demographics),
         Step(
             model=Location,
             controller_class="BloodCultureLocationCtrl",
@@ -70,10 +61,7 @@ class CernerDemoPathway(Pathway):
         PrimaryDiagnosis,
         Diagnosis,
         Infection,
-        Step(
-            model=Line,
-            template_url="/pathway/templates/optional_line.html",
-            controller_class="LineController"
-        ),
+        Line,
         Antimicrobial,
+        MicrobiologyInput
     )
