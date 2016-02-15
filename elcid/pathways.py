@@ -3,7 +3,8 @@ from copy import copy
 from django.db import transaction
 from elcid.models import (
     Diagnosis, Line, Antimicrobial, Location, PrimaryDiagnosis,
-    Infection, Procedure, Demographics, MicrobiologyInput
+    Infection, Procedure, Demographics, MicrobiologyInput, FinalDiagnosis,
+    BloodCulture
 )
 from opal.models import Patient
 from pathway.pathways import Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin
@@ -63,5 +64,7 @@ class CernerDemoPathway(UnrolledPathway):
         Infection,
         Line,
         Antimicrobial,
+        FinalDiagnosis,
+        BloodCulture,
         MicrobiologyInput
     )
