@@ -61,7 +61,7 @@ class CernerDemoPathway(UnrolledPathway):
         Procedure,
         PrimaryDiagnosis,
         Diagnosis,
-        Infection,
+        # Infection,
         Line,
         Antimicrobial,
         FinalDiagnosis,
