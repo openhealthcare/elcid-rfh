@@ -66,5 +66,6 @@ class CernerDemoPathway(UnrolledPathway):
         Antimicrobial,
         FinalDiagnosis,
         BloodCulture,
-        MicrobiologyInput
+        MicrobiologyInput,
+        Step(model=Location, template_url='/templates/pathway/cernerletter.html')
     )
