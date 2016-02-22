@@ -4,7 +4,7 @@ from django.db import transaction
 from elcid.models import (
     Diagnosis, Line, Antimicrobial, Location, PrimaryDiagnosis,
     Infection, Procedure, Demographics, MicrobiologyInput, FinalDiagnosis,
-    BloodCulture
+    BloodCulture, Imaging
 )
 from opal.models import Patient
 from pathway.pathways import Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin
@@ -65,6 +65,7 @@ class CernerDemoPathway(UnrolledPathway):
         Line,
         Antimicrobial,
         BloodCulture,
+        Imaging,
         FinalDiagnosis,
         MicrobiologyInput,
         Step(model=Location, template_url='/templates/pathway/cernerletter.html')

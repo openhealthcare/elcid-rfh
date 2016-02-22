@@ -606,3 +606,15 @@ class FinalDiagnosis(EpisodeSubrecord):
     contaminant = models.BooleanField(default=False)
     community_related = models.BooleanField(default=False)
     hcai_related = models.BooleanField(default=False)
+
+
+class ImagingTypes(lookuplists.LookupList): pass
+
+
+class Imaging(EpisodeSubrecord):
+    _icon = 'fa fa-eye'
+
+    date = models.DateField(blank=True, null=True)
+    imaging_type = ForeignKeyOrFreeText(ImagingTypes)
+    site = models.CharField(max_length=200, blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
