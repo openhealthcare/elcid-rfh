@@ -67,7 +67,7 @@
             "location": [
                 {
                     "bed": "13",
-                    "category": "Inpatient",
+                    "category_ft": "Inpatient",
                     "consistency_token": "12345678",
                     "date_of_admission": "2013-07-25",
                     "discharge_date": null,

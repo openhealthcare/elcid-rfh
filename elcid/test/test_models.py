@@ -102,6 +102,8 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'episode_id': self.episode.id,
             'id': self.location.id,
             'category': 'Inpatient',
+            'category_fk_id': None,
+            'category_ft': 'Inpatient',
             'hospital': 'UCH',
             'ward': 'T10',
             'bed': '13',
@@ -109,13 +111,9 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'updated': None,
             'updated_by_id': None,
             'created_by_id': None,
-            'opat_acceptance': None,
-            'opat_discharge': None,
-            'opat_referral': None,
-            'opat_referral_route': None,
-            'opat_referral_team': None,
-            'opat_referral_consultant': None,
-            'opat_referral_team_address': None,
+            'provenance': '',
+            'provenance_fk_id': None,
+            'provenance_ft': '',
             }
         result = {str(k): v for k, v in self.location.to_dict(self.user).iteritems()}
         self.assertEqual(expected_data, result)

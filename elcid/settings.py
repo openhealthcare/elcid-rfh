@@ -188,6 +188,21 @@ INSTALLED_APPS = (
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
+    PASSWORD_HASHERS = (
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    )
+    MIGRATION_MODULES = {
+        'opal': 'opal.nomigrations',
+        'elcid': 'elcid.nomigrations',
+        'guidelines': 'guidelines.nomigrations',
+        'walkin': 'walkin.nomigrations',
+        'research': 'research.nomigrations',
+        'opat': 'opat.nomigrations',
+        'microhaem': 'microhaem.nomigrations',
+        'iframeapi': 'iframeapi.nomigrations',
+        'obs': 'obs.nomigrations'
+    }
+
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
