@@ -1,0 +1,12 @@
+[run]
+source =
+       elcid
+
+omit =
+    */migrations/*
+    elcid/test/*
+
+[report]
+
+exclude_lines =
+    def __unicode__
