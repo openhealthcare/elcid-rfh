@@ -166,6 +166,8 @@ class PresentingComplaint(EpisodeSubrecord):
         return field_names
 
 
+class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
+
 class PrimaryDiagnosis(EpisodeSubrecord):
     """
     This is the confirmed primary diagnosisa
@@ -174,15 +176,15 @@ class PrimaryDiagnosis(EpisodeSubrecord):
     _title = 'Primary Diagnosis'
     _icon = 'fa fa-eye'
 
-    condition = ForeignKeyOrFreeText(omodels.Condition)
+    condition = ForeignKeyOrFreeText(PrimaryDiagnosisCondition)
     confirmed = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Primary diagnoses"
 
 
-class Consultant(lookuplists.LookupList):
-    pass
+class Consultant(lookuplists.LookupList): pass
+
 
 class ConsultantAtDischarge(EpisodeSubrecord):
     _title = 'Consultant At Discharge'
