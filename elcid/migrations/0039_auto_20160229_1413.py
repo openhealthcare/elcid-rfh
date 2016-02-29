@@ -22,9 +22,4 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
-        migrations.AlterField(
-            model_name='primarydiagnosis',
-            name='condition_fk',
-            field=models.ForeignKey(blank=True, to='elcid.PrimaryDiagnosisCondition', null=True),
-        ),
     ]
