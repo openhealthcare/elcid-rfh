@@ -1,5 +1,12 @@
 {% load forms %}
 {% select "autofocus" label="Line Type" model="editing.line.line_type" lookuplist="line_type_list" %}
+
+{% checkbox label="Button Hole" model="editing.line.button_hole" %}
+{% checkbox label="Fistula" model="editing.line.fistula" %}
+{% checkbox label="Graft" model="editing.line.graft" %}
+
+{% radio label="" model="editing.line.tunnelled_or_temp" lookuplist="['Tunnelled', 'Temporary']" %}
+
 {% input label="Site" model="editing.line.site" lookuplist="line_site_list" %}
 {% datepicker "data-date-type=\"date\"" label="Insertion Date" model="editing.line.insertion_datetime" %}
 <div class="form-group" ng-show="editing.line.line_type == 'Peripheral cannula'">
@@ -20,7 +27,6 @@
            />
   </div>
 </div>
-{% checkbox label="Button Hole" model="editing.line.button_hole" %}
 {% select label="Complications" model="editing.line.complications" lookuplist="line_complication_list" other=True %}
 {% select label="Removal Reason" model="editing.line.removal_reason" lookuplist="line_removal_reason_list" %}
-{% textarea label="Special Instructions" model="editing.line.special_instructions" %}
+{% textarea label="Further Information" model="editing.line.special_instructions" %}

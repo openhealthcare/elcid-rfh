@@ -509,12 +509,16 @@ class Line(EpisodeSubrecord):
     removal_reason = ForeignKeyOrFreeText(omodels.Line_removal_reason)
     special_instructions = models.TextField()
     button_hole = models.NullBooleanField()
+    tunnelled_or_temp       = models.CharField(max_length=200, blank=True, null=True)
+    fistula                 = models.NullBooleanField(blank=True, null=True)
+    graft                   = models.NullBooleanField(blank=True, null=True)
 
 
 class OPATReview(EpisodeSubrecord):
     _sort = 'datetime'
     _title = 'OPAT Review'
     _icon = 'fa fa-comments'
+
     _list_limit = 1
     _modal = 'lg'
 
