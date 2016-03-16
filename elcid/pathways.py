@@ -45,6 +45,8 @@ class DemographicsStep(Step):
         return super(DemographicsStep, self).save(data, user, **kw)
 
 
+from django.core.urlresolvers import reverse
+
 class CernerDemoPathway(UnrolledPathway):
     title = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
@@ -56,9 +58,14 @@ class CernerDemoPathway(UnrolledPathway):
         Step(
             model=Location,
             controller_class="BloodCultureLocationCtrl",
-            template_url="/templates/pathway/blood_culture_location.html"
+            template_url="/templates/pathway/blood_culture_location.html",
         ),
-        Procedure,
+        Step(
+            model=Procedure,
+            controller_class="MultiSaveCtrl",
+            template_url="/templates/pathway/multi_save.html",
+            model_form_url=reverse("form_template_view", kwargs=dict(model=Procedure)),
+        ),
         PrimaryDiagnosis,
         Diagnosis,
         # Infection,
