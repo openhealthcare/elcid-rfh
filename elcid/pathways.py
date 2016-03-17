@@ -1,13 +1,13 @@
-from copy import copy
-
-from django.db import transaction
 from elcid.models import (
     Diagnosis, Line, Antimicrobial, Location, PrimaryDiagnosis,
-    Infection, Procedure, Demographics, MicrobiologyInput, FinalDiagnosis,
+    Procedure, Demographics, MicrobiologyInput, FinalDiagnosis,
     BloodCulture, Imaging
 )
-from opal.models import Patient
-from pathway.pathways import Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin
+
+from pathway.pathways import (
+    Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin, DemographicsStep,
+    MultSaveStep
+)
 
 
 class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
@@ -37,15 +37,7 @@ class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
         return episode
 
 
-class DemographicsStep(Step):
-    def save(self, data, user, **kw):
-        update_info = copy(data.get(self.model.get_api_name(), None))
-        if 'consistency_token' not in update_info:
-            return
-        return super(DemographicsStep, self).save(data, user, **kw)
 
-
-from django.core.urlresolvers import reverse
 
 class CernerDemoPathway(UnrolledPathway):
     title = 'Cerner Powerchart Template'
@@ -60,20 +52,15 @@ class CernerDemoPathway(UnrolledPathway):
             controller_class="BloodCultureLocationCtrl",
             template_url="/templates/pathway/blood_culture_location.html",
         ),
-        Step(
-            model=Procedure,
-            controller_class="MultiSaveCtrl",
-            template_url="/templates/pathway/multi_save.html",
-            model_form_url=reverse("form_template_view", kwargs=dict(model=Procedure)),
-        ),
+        MultSaveStep(model=Procedure),
         PrimaryDiagnosis,
-        Diagnosis,
+        MultSaveStep(model=Diagnosis),
         # Infection,
-        Line,
-        Antimicrobial,
-        BloodCulture,
-        Imaging,
+        MultSaveStep(model=Line),
+        MultSaveStep(model=Antimicrobial),
+        MultSaveStep(model=BloodCulture),
+        MultSaveStep(model=Imaging),
         FinalDiagnosis,
-        MicrobiologyInput,
+        MultSaveStep(model=MicrobiologyInput),
         Step(model=Location, template_url='/templates/pathway/cernerletter.html')
     )
