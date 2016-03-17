@@ -17,8 +17,8 @@ controllers.controller('BloodCultureLocationCtrl',
         vm.display_tag_to_name = _.invert(options.tag_display);
       });
 
-      vm.toSave = function(currentScope){
-        currentScope.editing.tagging = _.map(vm.selectedTags, function(t){
+      vm.toSave = function(editing){
+        editing.tagging = _.map(vm.selectedTags, function(t){
             return vm.display_tag_to_name[t];
         });
       };
