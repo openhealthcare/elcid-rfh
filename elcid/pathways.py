@@ -11,7 +11,7 @@ from pathway.pathways import (
 
 
 class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
-    title = "Add Patient"
+    display_name = "Add Patient"
     slug = 'add_patient'
 
     steps = (
@@ -37,10 +37,8 @@ class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
         return episode
 
 
-
-
 class CernerDemoPathway(UnrolledPathway):
-    title = 'Cerner Powerchart Template'
+    display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 
     steps = (
