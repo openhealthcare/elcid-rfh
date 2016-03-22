@@ -95,7 +95,7 @@ class MalboroughClinic(TaggedPatientList):
 class Renal(TaggedPatientList):
     display_name = 'Renal'
     direct_add = True
-    tag = "rnoh_wardround"
+    tag = "renal"
     template_name = 'episode_list.html'
     schema = []
 
