@@ -9,33 +9,29 @@
     </div>
 
     <div class="panel-body">
-      
+
       <div class="row screen-only">
         <div class="col-md-12">
           <h1 >
             <div class="btn-group pull-left" dropdown is-open="status.isopen">
               <button type="button" class="btn btn-secondary dropdown-toggle" ng-disabled="disabled">
                 <i class="fa fa-user-md"></i>
-                [[ tag_display[currentTag] ]]
+                [[ tag_display[currentTag] ]] / [[ tag_display[currentSubTag] ]]
                 <i class="fa fa-angle-down"></i>
               </button>
               <ul class="dropdown-menu slides" role="menu">
-                {% for team in teams %}
-                  {% if team.visible_in_list %}
-                    {% if not team.has_subteams or team.parent %}
-                      <li ng-hide="currentTag == '{{ team.name }}' || currentSubTag == '{{ team.name }}'">
-                        <a href="#/list/{% if team.parent %}{{ team.parent.name }}/{{ team.name }}{% else %}{{ team.name }}{% endif %}">
-                          {% if team.parent %}
-                            {{ team.parent.title }} /
-                          {% endif %}
-                          {{ team.title }}
-                        </a>
-                      </li>
-                    {% endif %}
+                {% for list in lists %}
+                  {% if list.get_slug != list_slug %}
+                    <li>
+                      <a href="#/list/{{ list.get_slug }}">
+                        {{ list.display_name }}
+                      </a>
+                    </li>
                   {% endif %}
                 {% endfor %}
               </ul>
             </div>
+          </h1>
         </div>
       </div>
 
@@ -53,7 +49,7 @@
                 </h3>
               </div>
               <div class="panel-body">
-                
+
                 <div class="row">
                   <div class="col-md-6">
                     <h4><strong>
@@ -63,7 +59,7 @@
                       {% include models.PrimaryDiagnosis.get_display_template %}
                     </p>
                   </div>
-                  
+
                   <div class="col-md-6">
                     <h4><strong>
                         {% icon models.Antimicrobial.get_icon %} Antimicrobials
