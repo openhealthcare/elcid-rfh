@@ -23,11 +23,23 @@ class Demographics(PatientSubrecord):
     hospital_number  = models.CharField(max_length=255, blank=True)
     nhs_number       = models.CharField(max_length=255, blank=True, null=True)
     date_of_birth    = models.DateField(null=True, blank=True)
-    country_of_birth = ForeignKeyOrFreeText(omodels.Destination)
-    ethnicity        = models.CharField(max_length=255, blank=True, null=True)
-    gender           = models.CharField(max_length=255, blank=True, null=True)
+    birth_place = ForeignKeyOrFreeText(omodels.Destination)
 
-    pid_fields       = 'name', 'hospital_number', 'nhs_number'
+    title = ForeignKeyOrFreeText(omodels.Title)
+    surname = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(max_length=255, blank=True)
+    middle_name = models.CharField(max_length=255, blank=True)
+    date_of_death = models.DateField(null=True, blank=True)
+    post_code = models.CharField(max_length=20, blank=True)
+    gp_practice_code = models.CharField(max_length=20, blank=True)
+    sourced_from_upstream = models.BooleanField(default=False)
+    sex = ForeignKeyOrFreeText(omodels.Gender)
+
+    pid_fields = (
+        'hospital_number', 'nhs_number', 'surname', 'first_name',
+        'middle_name', 'post_code',
+    )
+
 
     class Meta:
         verbose_name_plural = "Demographics"
