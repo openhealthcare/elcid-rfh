@@ -20,6 +20,7 @@ django-celery==3.1.17
 
 django-compressor==1.5
 Fabric==1.10.2
+jsonfield==1.0.3
 
 -e git+https://github.com/openhealthcare/opal.git@v0.6.0#egg=opal
 -e git+https://github.com/openhealthcare/opal-pathway.git@master#egg=opal_pathway

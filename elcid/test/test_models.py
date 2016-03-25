@@ -1,11 +1,13 @@
 import datetime
 import ffs
+import pytz
+from django.conf import settings
+from django.test import TestCase
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
-from django.test import TestCase
 from opal.models import Patient, Episode, Condition, Synonym
-from elcid.models import Location
+from elcid.models import Location, Result
 
 HERE = ffs.Path.here()
 TEST_DATA = HERE/'test_data'
@@ -18,7 +20,8 @@ class AbstractPatientTestCase(TestCase):
         self.patient.save()
         self.patient.demographics_set.update(
             consistency_token="12345678",
-            name="John Smith",
+            first_name="John",
+            surname="Smith",
             hospital_number="AA1111",
             date_of_birth="1972-06-20",
         )
@@ -41,7 +44,16 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'consistency_token': '12345678',
             'patient_id': self.patient.id,
             'id': self.demographics.id,
-            'name': 'John Smith',
+            'first_name': 'John',
+            'surname': 'Smith',
+            'middle_name': '',
+            'title_fk_id': None,
+            'title_ft': u'',
+            'title': '',
+            'marital_status_fk_id': None,
+            'marital_status_ft': u'',
+            'marital_status': u'',
+            'religion': '',
             'created': None,
             'updated': None,
             'created_by_id': None,
@@ -50,10 +62,18 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'birth_place': '',
             'birth_place_fk_id': None,
             'birth_place_ft': '',
-            'ethnicity': None,
-            'gender': None,
+            'ethnicity_fk_id': None,
+            'ethnicity_ft': u'',
+            'ethnicity': u'',
+            'sex_fk_id': None,
+            'sex_ft': '',
+            'sex': '',
             'hospital_number': 'AA1111',
-            'nhs_number': None
+            'nhs_number': None,
+            'date_of_death': None,
+            'post_code': '',
+            'gp_practice_code': '',
+            'sourced_from_upstream': False,
             }
 
         self.assertEqual(expected_data, self.demographics.to_dict(self.user))
@@ -62,14 +82,16 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
         data = {
             'consistency_token': '12345678',
             'id': self.demographics.id,
-            'name': 'Johann Schmidt',
+            'first_name': 'Johann',
+            'surname': 'Schmidt',
             'date_of_birth': '21/6/1972',
             'hospital_number': 'AA1112',
             }
         self.demographics.update_from_dict(data, self.user)
         demographics = self.patient.demographics_set.get()
 
-        self.assertEqual('Johann Schmidt', demographics.name)
+        self.assertEqual('Johann', demographics.first_name)
+        self.assertEqual('Schmidt', demographics.surname)
         self.assertEqual(datetime.date(1972, 6, 21), demographics.date_of_birth)
         self.assertEqual('AA1112', demographics.hospital_number)
 
@@ -130,6 +152,76 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
         self.location.update_from_dict(data, self.user)
         self.assertEqual('HH', self.location.hospital)
 
+
+class ResultTest(OpalTestCase, AbstractEpisodeTestCase):
+    def test_to_dict_and_from_dict(self):
+        datetime_format = settings.DATETIME_INPUT_FORMATS[0]
+
+        request_datetime = datetime.datetime(2016, 1, 2).strftime(
+            datetime_format
+        )
+        observation_datetime = datetime.datetime(2016, 1, 6).strftime(
+            datetime_format
+        )
+        last_edited = datetime.datetime(2016, 1, 7).strftime(
+            datetime_format
+        )
+
+        result_args = dict(
+            episode_id=self.episode.id,
+            lab_number="234324",
+            profile_code="2343344",
+            profile_description="RENAL PROFILE",
+            request_datetime=request_datetime,
+            observation_datetime=observation_datetime,
+            last_edited=last_edited,
+            result_status="FINAL",
+            observations=[{
+                u'comments': None,
+                u'observation_value': u'250',
+                u'reference_range': u'150-400',
+                u'result_status': None,
+                u'test_code': u'PLT',
+                u'test_name': u'Platelet count',
+                u'units': u'x10^9/L',
+                u'value_type': u'NM'
+            }, {
+                u'comments': None,
+                u'observation_value': u'10.0',
+                u'reference_range': u'7-13',
+                u'result_status': None,
+                u'test_code': u'MPVU',
+                u'test_name': u'MPV',
+                u'units': u'fL',
+                u'value_type': u'NM'
+            }]
+        )
+
+        result = Result()
+        result.update_from_dict(result_args, self.user)
+
+        found_result = Result.objects.get()
+        self.assertEqual(found_result.lab_number, "234324")
+        self.assertEqual(found_result.profile_code, "2343344")
+
+        back_to_dict = found_result.to_dict(self.user)
+        del back_to_dict["updated"]
+        del back_to_dict["updated_by_id"]
+        del back_to_dict["created"]
+        del back_to_dict["created_by_id"]
+        del back_to_dict["consistency_token"]
+        del back_to_dict["id"]
+        result_args["request_datetime"] = datetime.datetime(
+            2016, 1, 2, tzinfo=pytz.UTC
+        )
+        result_args["observation_datetime"] = datetime.datetime(
+            2016, 1, 6, tzinfo=pytz.UTC
+        )
+        result_args["last_edited"] = datetime.datetime(
+            2016, 1, 7, tzinfo=pytz.UTC
+        )
+
+        self.assertEqual(result_args, back_to_dict)
 
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):

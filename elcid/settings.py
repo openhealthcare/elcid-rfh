@@ -303,8 +303,8 @@ GLOSSOLALIA_NAME = 'elcid'
 
 try:
     from local_settings import *
-except:
-    pass
+except ImportError:
+    passs
 
 # #DEBUG_TOOLBAR_PATCH_SETTINGS = False
 # MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('debug_toolbar.middleware.DebugToolbarMiddleware',)
