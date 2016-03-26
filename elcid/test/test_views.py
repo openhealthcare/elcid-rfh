@@ -43,7 +43,8 @@ class ViewsTest(OpalTestCase):
                 "date_of_birth": "20/06/1972",
                 "hospital_number": "AA1111",
                 "id": 1,
-                "name": "John Smith",
+                "first_name": "John",
+                "surname": "Smith",
                 "patient_id": 1
             },
             'location': {
@@ -60,7 +61,8 @@ class ViewsTest(OpalTestCase):
         data = {
             'demographics': {
                 'hospital_number': 'BB2222',
-                'name': 'Johann Schmidt',
+                'first_name': 'Johann',
+                'surname': 'Schmidt',
                 'date_of_birth': '01/06/1970'
                 },
             'location': {
@@ -78,7 +80,8 @@ class ViewsTest(OpalTestCase):
         data = {
             'demographics': {
                 'hospital_number': '',
-                'name': 'Johann Schmidt',
+                'first_name': 'Johann',
+                'surname': 'Schmidt',
                 'date_of_birth': '01/06/1970'
                 },
             'location': {

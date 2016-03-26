@@ -303,7 +303,7 @@ GLOSSOLALIA_NAME = 'elcid'
 
 try:
     from local_settings import *
-except:
+except ImportError:
     pass
 
 # #DEBUG_TOOLBAR_PATCH_SETTINGS = False

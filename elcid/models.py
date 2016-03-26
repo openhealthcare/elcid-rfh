@@ -2,11 +2,12 @@
 elCID implementation specific models!
 """
 from django.db import models
+from jsonfield import JSONField
 
 import opal.models as omodels
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, GP, CommunityNurse, Episode, Team,
+    EpisodeSubrecord, PatientSubrecord, Episode, Team,
     Tagging
 )
 from opal.core.fields import ForeignKeyOrFreeText
@@ -19,15 +20,34 @@ class Demographics(PatientSubrecord):
     _is_singleton = True
     _icon = 'fa fa-user'
 
-    name             = models.CharField(max_length=255, blank=True)
     hospital_number  = models.CharField(max_length=255, blank=True)
     nhs_number       = models.CharField(max_length=255, blank=True, null=True)
     date_of_birth    = models.DateField(null=True, blank=True)
-    country_of_birth = ForeignKeyOrFreeText(omodels.Destination)
-    ethnicity        = models.CharField(max_length=255, blank=True, null=True)
-    gender           = models.CharField(max_length=255, blank=True, null=True)
+    birth_place = ForeignKeyOrFreeText(omodels.Destination)
 
-    pid_fields       = 'name', 'hospital_number', 'nhs_number'
+    surname = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(max_length=255, blank=True)
+    middle_name = models.CharField(max_length=255, blank=True)
+    title = ForeignKeyOrFreeText(omodels.Title)
+    date_of_birth = models.DateField(null=True, blank=True)
+    marital_status = ForeignKeyOrFreeText(omodels.MaritalStatus)
+    religion = models.CharField(max_length=255, blank=True)
+    date_of_death = models.DateField(null=True, blank=True)
+    post_code = models.CharField(max_length=20, blank=True)
+    gp_practice_code = models.CharField(max_length=20, blank=True)
+    birth_place = ForeignKeyOrFreeText(omodels.Destination)
+    ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
+    sourced_from_upstream = models.BooleanField(default=False)
+
+    # not strictly correct, but it will be updated when opal core models
+    # are updated
+    sex = ForeignKeyOrFreeText(omodels.Gender)
+
+    pid_fields       = (
+        'hospital_number', 'nhs_number', 'surname', 'first_name',
+        'middle_name', 'post_code',
+    )
+
 
     class Meta:
         verbose_name_plural = "Demographics"
@@ -108,6 +128,17 @@ class Location(EpisodeSubrecord):
             )
         except:
             return 'demographics'
+
+
+class Result(EpisodeSubrecord):
+    lab_number = models.CharField(max_length=255, blank=True, null=True)
+    profile_code = models.CharField(max_length=255, blank=True, null=True)
+    profile_description = models.CharField(max_length=255, blank=True, null=True)
+    request_datetime = models.DateTimeField(blank=True, null=True)
+    observation_datetime = models.DateTimeField(blank=True, null=True)
+    last_edited = models.DateTimeField(blank=True, null=True)
+    result_status = models.CharField(max_length=255, blank=True, null=True)
+    observations = JSONField(blank=True, null=True)
 
 
 class InfectionSource(lookuplists.LookupList):

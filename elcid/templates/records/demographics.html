@@ -7,7 +7,7 @@
     </span>
   </div>
   <div class="col-md-6">
-    [[ item.country_of_birth ]] [[ item.ethnicity ]]
+    [[ item.birth_place ]] [[ item.ethnicity ]]
   </div>
 </div>
 
@@ -20,12 +20,12 @@
     </div>
     <span ng-hide="profile.has_role('researcher')">
       <div class="col-md-6">
-        [[item.name]]
+        [[item.first_name]] [[item.surname]]
       </div>
       <span ng-show="item.date_of_birth">
         <div class="col-md-6">[[item.date_of_birth | shortDate]] ([[ item.date_of_birth | age ]])</div>
       </span>
-      <div class="col-md-6">[[ item.country_of_birth ]] [[ item.ethnicity ]]</div>
+      <div class="col-md-6">[[ item.birth_place ]] [[ item.ethnicity ]]</div>
     </span>
     <div class="col-md-6">
       <span ng-show="profile.has_role('researcher')">
