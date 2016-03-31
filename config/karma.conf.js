@@ -1,13 +1,21 @@
 module.exports =  function(config){
-    var browsers, basePath;
+    var browsers, basePath, coverageReporter;
 
     if(process.env.TRAVIS){
        browsers = ["Firefox"];
        basePath = '/home/travis/virtualenv/python2.7/src/opal/opal/static/js';
+       coverageReporter = {
+           type: 'lcovonly', // lcov or lcovonly are required for generating lcov.info files
+           dir: '../../../coverage/',
+       };
     }
     else{
        browsers = ['PhantomJS'];
        basePath = '../../opal/opal/static/js';
+       coverageReporter = {
+           type : 'html',
+           dir : '../../../htmlcov/js/'
+       };
     }
 
     config.set({
@@ -68,10 +76,7 @@ module.exports =  function(config){
 
         autoWatch: true,
 
-        coverageReporter: {
-            type : 'html',
-            dir : '../../../coverage-js/',
-        },
+        coverageReporter: coverageReporter,
 
         // Stolen from http://oligofren.wordpress.com/2014/05/27/running-karma-tests-on-browserstack/
         browserDisconnectTimeout : 10000, // default 2000
