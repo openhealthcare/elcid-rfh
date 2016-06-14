@@ -1,26 +1,12 @@
 [run]
 source =
        elcid
-<<<<<<< HEAD
-=======
-       microhaem
-       infectiousdiseases
-       opat
-       research
-       walkin
->>>>>>> v0.6.0
 
 omit =
     */migrations/*
     elcid/test/*
-<<<<<<< HEAD
-=======
     elcid/wsgi*
-    microhaem/tests/*
-    opat/tests/*
-    research/tests/*
-    walkin/tests/*
->>>>>>> v0.6.0
+
 
 [report]
 
