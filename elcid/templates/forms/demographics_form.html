@@ -1,4 +1,5 @@
 {% load forms %}
+<<<<<<< HEAD
 <div class="form-group">
   <label class="control-label col-sm-3">Hospital number</label>
   <div class="col-sm-8">
@@ -44,3 +45,35 @@
 {% input label="Ethnicity" model="editing.demographics.ethnicity" lookuplist="ethnicity_list" %}
 {% input label="GP Practice Code" model="editing.demographics.gp_practice_code" %}
 {% input label="Birth Place" model="editing.demographics.birth_place" lookuplist="destination_list" %}
+=======
+{% input "autofocus" field="Demographics.hospital_number" static="editing.demographics.external_system" %}
+{% input field="Demographics.nhs_number" label="NHS Number" static="editing.demographics.external_system" %}
+<div class="form-group">
+  <span ng-show="editing.demographics.external_system">
+    <label class="control-label col-sm-3">
+      Name
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ editing.demographics.title ]]
+      [[ editing.demographics.first_name ]]
+      [[ editing.demographics.surname ]]
+    </p>
+  </span>
+</div>
+<span ng-hide="editing.demographics.external_system">
+  {% select field="Demographics.title" static="editing.demographics.external_system" %}
+  {% input field="Demographics.first_name" static="editing.demographics.external_system" %}
+  {% input field="Demographics.surname" static="editing.demographics.external_system" %}
+</span>
+{% include 'partials/_date_of_birth_field.html' %}
+<span ng-hide="editing.demographics.external_system">
+  {% input field="Demographics.post_code" static="editing.demographics.external_system" %}
+</span>
+{% select field="Demographics.sex" static="editing.demographics.external_system" %}
+{% select field="Demographics.marital_status" static="editing.demographics.external_system" %}
+{% select field="Demographics.ethnicity" static="editing.demographics.external_system" %}
+<span ng-hide="editing.demographics.external_system">
+  {% input label="GP Practice Code" field="Demographics.gp_practice_code" static="editing.demographics.external_system" %}
+</span>
+{% input field="Demographics.birth_place" static="editing.demographics.external_system" %}
+>>>>>>> v0.6.0

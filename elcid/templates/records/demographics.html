@@ -1,4 +1,5 @@
 <div ng-hide="row.category=='Research'">
+<<<<<<< HEAD
   <div class="col-md-6">[[item.hospital_number]]</div>
   <div class="col-md-6">[[item.name]]</div>
   <div class="col-md-6">
@@ -9,15 +10,30 @@
   <div class="col-md-6">
     [[ item.birth_place ]] [[ item.ethnicity ]]
   </div>
+=======
+  [[item.hospital_number]]<br />
+  [[item.first_name]] [[item.surname]]<br />
+  <span ng-show="item.date_of_birth">
+    [[item.date_of_birth | shortDate]] ([[ item.date_of_birth | age ]])<br />
+  </span>
+  [[ item.birth_place ]] [[ item.ethnicity ]]<br />
+>>>>>>> v0.6.0
 </div>
 
 <!-- Research study overrides. -->
 <div ng-show="row.category=='Research'">
+<<<<<<< HEAD
   <div class="col-md-6">
     <b>Study ID:</b>
     [[ row.study_participation[0].study_id ]]
     <span ng-hide="currentSubTag.indexOf('scientist') != -1">
     </div>
+=======
+  <b>Study ID:</b>
+  [[ row.study_participation[0].study_id ]]
+  <span ng-hide="currentSubTag.indexOf('scientist') != -1">
+    <br />
+>>>>>>> v0.6.0
     <span ng-hide="profile.has_role('researcher')">
       <div class="col-md-6">
         [[item.first_name]] [[item.surname]]
@@ -25,7 +41,14 @@
       <span ng-show="item.date_of_birth">
         <div class="col-md-6">[[item.date_of_birth | shortDate]] ([[ item.date_of_birth | age ]])</div>
       </span>
+<<<<<<< HEAD
       <div class="col-md-6">[[ item.birth_place ]] [[ item.ethnicity ]]</div>
+=======
+      [[ item.birth_place ]], [[ item.ethnicity ]]<br />
+    </span>
+    <span ng-show="profile.has_role('researcher')">
+      Age: [[item.date_of_birth | age]]<br />
+>>>>>>> v0.6.0
     </span>
     <div class="col-md-6">
       <span ng-show="profile.has_role('researcher')">

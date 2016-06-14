@@ -7,7 +7,6 @@ from opal.core import application
 
 class Application(application.OpalApplication):
     schema_module = 'elcid.schema'
-    flow_module = 'elcid.flow'
     javascripts = [
         'js/elcid/routes.js',
         'js/elcid/controllers/discharge.js',
@@ -15,12 +14,14 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/diagnosis_add_episode.js',
         'js/elcid/controllers/diagnosis_discharge.js',
         # 'js/elcid/controllers/patient_notes.js',
-        'js/elcid/controllers/micro_haem_discussion_form.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/welcome.js',
         'js/elcid/controllers/procedure_form.js',
         'js/elcid/controllers/blood_culture_location.js',
+        'js/elcid/controllers/clinical_advice_form.js',
+        'js/elcid/controllers/result_view.js',
         'js/elcid/services/dicharge_patient.js',
+        'js/elcid/services/flow.js',
     ]
 
     actions = [

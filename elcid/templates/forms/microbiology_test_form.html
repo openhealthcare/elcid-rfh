@@ -15,6 +15,26 @@
 {% radio label="IgG" model="editing.microbiology_test.vca_igg" show="testType == 'micro_test_ebv_serology'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
 {% radio label="EBNA IgG" model="editing.microbiology_test.ebna_igg" show="testType == 'micro_test_ebv_serology'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
 
+<<<<<<< HEAD
+=======
+{% radio label="Result" model="editing.microbiology_test.result" show="testType == 'micro_test_hiv'" lookuplist="['pending', 'antibody positive', 'p24 antigen only', 'negative']" %}
+
+{% radio label="HBsAg" model="editing.microbiology_test.hbsag" show="testType == 'micro_test_hepititis_b_serology'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
+{% radio label="anti-HbS" model="editing.microbiology_test.anti_hbs" show="testType == 'micro_test_hepititis_b_serology'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
+{% radio label="anti-HbCore IgM" model="editing.microbiology_test.anti_hbcore_igm" show="testType == 'micro_test_hepititis_b_serology'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
+{% radio label="anti-HbCore IgG" model="editing.microbiology_test.anti_hbcore_igg" show="testType == 'micro_test_hepititis_b_serology'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
+
+{% input label="RPR" model="editing.microbiology_test.rpr" show="testType == 'micro_test_syphilis_serology'" %}
+{% radio label="TPPA" model="editing.microbiology_test.tppa" show="testType == 'micro_test_syphilis_serology'" lookuplist="['pending', 'positive', 'negative']" %}
+
+{% radio label="Result" model="editing.microbiology_test.result" show="testType == 'micro_test_single_test_pos_neg'" lookuplist="['pending', 'positive', 'negative']" %}
+
+{% radio label="Result" model="editing.microbiology_test.result" show="testType == 'micro_test_single_test_pos_neg_equiv'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
+
+{% radio label="IgG" model="editing.microbiology_test.igg" show="testType == 'micro_test_single_igg_test'" lookuplist="['pending', 'positive', 'negative', 'equivocal', 'not done']" %}
+
+{% input label="Viral load" model="editing.microbiology_test.viral_load" show="testType == 'micro_test_viral_load'" %}
+>>>>>>> v0.6.0
 
 {% input label="Parasitaemia" model="editing.microbiology_test.parasitaemia" show="testType == 'micro_test_parasitaemia'" %}
 
@@ -512,15 +532,27 @@
 
     </div>
   </div>
+<<<<<<< HEAD
 </span>
 
 <span ng-show="testType == 'micro_test_other'">
+=======
+
+</span>
+
+<span ng-show="testType == 'micro_test_other'">
+
+>>>>>>> v0.6.0
   <div class="form-group">
     <label class="control-label col-sm-3">Result</label>
     <div class="col-sm-8">
       <input class="form-control" type="text" ng-model="editing.microbiology_test.result">
     </div>
   </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> v0.6.0
 </span>
 
 {% select label="Reason not done" model="editing.microbiology_test.hiv_declined" show="editing.microbiology_test.test == 'HIV Point of Care' && editing.microbiology_test.result == 'not done'" lookuplist="hiv_no_list" %}

@@ -6,8 +6,16 @@ This is the implementation of the [OPAL](https://github.com/openhealthcare/opal)
 
 It is highly customisable open source software for managing research data
 
+<<<<<<< HEAD
 [![Build
 Status](https://travis-ci.org/openhealthcare/elcid-rfh.png)](https://travis-ci.org/openhealthcare/elcid-rfh)
+=======
+It is highly customisable open source software for managing inpatients & outpatients with infections.
+
+[![Build
+Status](https://travis-ci.org/openhealthcare/elcid.png)](https://travis-ci.org/openhealthcare/elcid)
+[![Coverage Status](https://coveralls.io/repos/github/openhealthcare/elcid/badge.svg?branch=master)](https://coveralls.io/github/openhealthcare/elcid?branch=master)
+>>>>>>> v0.6.0
 
 http://elcid.openhealthcare.org.uk
 

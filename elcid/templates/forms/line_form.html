@@ -1,5 +1,6 @@
 {% load forms %}
 {% select "autofocus" label="Line Type" model="editing.line.line_type" lookuplist="line_type_list" %}
+<<<<<<< HEAD
 
 {% checkbox label="Button Hole" model="editing.line.button_hole" %}
 {% checkbox label="Fistula" model="editing.line.fistula" %}
@@ -7,21 +8,38 @@
 
 {% radio label="" model="editing.line.tunnelled_or_temp" lookuplist="['Tunnelled', 'Temporary']" %}
 
+=======
+>>>>>>> v0.6.0
 {% input label="Site" model="editing.line.site" lookuplist="line_site_list" %}
 {% datepicker "data-date-type=\"date\"" label="Insertion Date" model="editing.line.insertion_datetime" %}
 <div class="form-group" ng-show="editing.line.line_type == 'Peripheral cannula'">
   <label class="control-label col-sm-3">Insertion Time</label>
   <div class="col-sm-3">
+<<<<<<< HEAD
     <input class="form-control" type="text" ng-model="editing.line.insertion_datetime" bs-timepicker />
+=======
+    <input class="form-control" type="text"
+           ng-model="editing.line.insertion_datetime"
+           bs-timepicker
+           />
+>>>>>>> v0.6.0
   </div>
 </div>
 {% input label="Inserted By" model="editing.line.inserted_by" %}
 {% input label="External Length When Inserted" model="editing.line.external_length" show="editing.line.line_type != 'Peripheral cannula'" unit="cm" %}
 {% datepicker "data-date-type=\"date\"" label="Removal Date" model="editing.line.removal_datetime" %}
+<<<<<<< HEAD
 <div class="form-group" ng-show="editing.line.line_type == 'Peripheral cannula'">
   <label class="control-label col-sm-3">Removal Time</label>
   <div class="col-sm-3">
 <input class="form-control" type="text"
+=======
+
+<div class="form-group" ng-show="editing.line.line_type == 'Peripheral cannula'">
+  <label class="control-label col-sm-3">Removal Time</label>
+  <div class="col-sm-3">
+    <input class="form-control" type="text"
+>>>>>>> v0.6.0
            ng-model="editing.line.removal_datetime"
            bs-timepicker
            />
@@ -29,4 +47,8 @@
 </div>
 {% select label="Complications" model="editing.line.complications" lookuplist="line_complication_list" other=True %}
 {% select label="Removal Reason" model="editing.line.removal_reason" lookuplist="line_removal_reason_list" %}
+<<<<<<< HEAD
 {% textarea label="Further Information" model="editing.line.special_instructions" %}
+=======
+{% textarea label="Special Instructions" model="editing.line.special_instructions" %}
+>>>>>>> v0.6.0

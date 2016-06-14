@@ -1,7 +1,12 @@
 {% extends 'layouts/two_column.html' %}
 {% load panels %}
 {% block heading %}
+<<<<<<< HEAD
   [[ episode.demographics[0].first_name ]] [[ episode.demographics[0].surname ]]
+=======
+  [[episode.demographics[0].first_name]]
+  [[episode.demographics[0].surname]]
+>>>>>>> v0.6.0
 {% endblock %}
 {% block subheading %}
   ([[ ward_round.name]])
@@ -18,6 +23,7 @@
   {% record_panel models.PresentingComplaint %}
   {% record_panel models.PrimaryDiagnosis %}
   {% record_panel models.SecondaryDiagnosis %}
+  {% record_panel models.ConsultantAtDischarge %}
   {% record_panel models.Diagnosis %}
   {% record_panel models.Antimicrobial %}
   {% record_panel models.MicrobiologyTest %}

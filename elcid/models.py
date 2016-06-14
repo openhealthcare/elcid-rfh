@@ -1,43 +1,41 @@
 """
 elCID implementation specific models!
 """
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.db import models
+from django.conf import settings
 from jsonfield import JSONField
 
 import opal.models as omodels
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, Episode, Team,
-    Tagging
+    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel
 )
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
-from constants import MICROHAEM_CONSULTATIONS, MICROHAEM_TEAM_NAME
-from opat import models as opatmodels
 
 
-class Demographics(PatientSubrecord):
+class Demographics(PatientSubrecord, ExternallySourcedModel):
     _is_singleton = True
     _icon = 'fa fa-user'
 
-    hospital_number  = models.CharField(max_length=255, blank=True)
-    nhs_number       = models.CharField(max_length=255, blank=True, null=True)
-    date_of_birth    = models.DateField(null=True, blank=True)
-    birth_place = ForeignKeyOrFreeText(omodels.Destination)
+    hospital_number = models.CharField(max_length=255, blank=True)
+    nhs_number = models.CharField(max_length=255, blank=True, null=True)
 
     surname = models.CharField(max_length=255, blank=True)
     first_name = models.CharField(max_length=255, blank=True)
-    middle_name = models.CharField(max_length=255, blank=True)
+    middle_name = models.CharField(max_length=255, blank=True, null=True)
     title = ForeignKeyOrFreeText(omodels.Title)
     date_of_birth = models.DateField(null=True, blank=True)
     marital_status = ForeignKeyOrFreeText(omodels.MaritalStatus)
-    religion = models.CharField(max_length=255, blank=True)
+    religion = models.CharField(max_length=255, blank=True, null=True)
     date_of_death = models.DateField(null=True, blank=True)
-    post_code = models.CharField(max_length=20, blank=True)
-    gp_practice_code = models.CharField(max_length=20, blank=True)
+    post_code = models.CharField(max_length=20, blank=True, null=True)
+    gp_practice_code = models.CharField(max_length=20, blank=True, null=True)
     birth_place = ForeignKeyOrFreeText(omodels.Destination)
     ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
-    sourced_from_upstream = models.BooleanField(default=False)
+    death_indicator = models.BooleanField(default=False)
 
     # not strictly correct, but it will be updated when opal core models
     # are updated
@@ -48,9 +46,15 @@ class Demographics(PatientSubrecord):
         'middle_name', 'post_code',
     )
 
-
     class Meta:
         verbose_name_plural = "Demographics"
+
+    @classmethod
+    def get_form_template(cls, patient_list=None, episode_type=None):
+        if settings.GLOSS_ENABLED:
+            return super(Demographics, cls).get_form_template(patient_list=None, episode_type=None)
+        else:
+            return "forms/demographics_form_pre_gloss.html"
 
 
 class ContactDetails(PatientSubrecord):
@@ -130,15 +134,33 @@ class Location(EpisodeSubrecord):
             return 'demographics'
 
 
-class Result(EpisodeSubrecord):
+class Result(PatientSubrecord):
+    _icon = 'fa fa-crosshairs'
+
     lab_number = models.CharField(max_length=255, blank=True, null=True)
     profile_code = models.CharField(max_length=255, blank=True, null=True)
+    external_identifier = models.CharField(max_length=255, blank=True, null=True)
     profile_description = models.CharField(max_length=255, blank=True, null=True)
     request_datetime = models.DateTimeField(blank=True, null=True)
     observation_datetime = models.DateTimeField(blank=True, null=True)
     last_edited = models.DateTimeField(blank=True, null=True)
     result_status = models.CharField(max_length=255, blank=True, null=True)
     observations = JSONField(blank=True, null=True)
+
+    def update_from_dict(self, data, *args, **kwargs):
+        if "id" not in data:
+            if "patient_id" not in data:
+                raise ValueError("no patient id found for result in %s" % data)
+            if "external_identifier" in data and data["external_identifier"]:
+                existing = Result.objects.filter(
+                    external_identifier=data["external_identifier"],
+                    patient=data["patient_id"]
+                ).first()
+
+                if existing:
+                    data["id"] = existing.id
+
+        super(Result, self).update_from_dict(data, *args, **kwargs)
 
 
 class InfectionSource(lookuplists.LookupList):
@@ -183,11 +205,12 @@ class PresentingComplaint(EpisodeSubrecord):
         pass
 
     def to_dict(self, user):
-        return dict(
-            symptoms=[i.name for i in self.symptoms.all()],
-            duration=self.duration,
-            details=self.details
-        )
+        field_names = self.__class__._get_fieldnames_to_serialize()
+        result = {
+            i: getattr(self, i) for i in field_names if not i == "symptoms"
+        }
+        result["symptoms"] = list(self.symptoms.values_list("name", flat=True))
+        return result
 
     @classmethod
     def _get_fieldnames_to_serialize(cls):
@@ -322,12 +345,26 @@ class Antimicrobial(EpisodeSubrecord):
     no_antimicrobials = models.NullBooleanField(default=False)
 
 
-class Allergies(PatientSubrecord):
+class Allergies(PatientSubrecord, ExternallySourcedModel):
     _icon = 'fa fa-warning'
 
     drug        = ForeignKeyOrFreeText(omodels.Antimicrobial)
     provisional = models.NullBooleanField()
     details     = models.CharField(max_length=255, blank=True)
+
+    # previously called drug this is the name of the problematic substance
+    allergy_description = models.CharField(max_length=255, blank=True)
+    allergy_type_description = models.CharField(max_length=255, blank=True)
+    certainty_id = models.CharField(max_length=255, blank=True)
+    certainty_description = models.CharField(max_length=255, blank=True)
+    allergy_reference_name = models.CharField(max_length=255, blank=True)
+    allergen_reference_system = models.CharField(max_length=255, blank=True)
+    allergen_reference = models.CharField(max_length=255, blank=True)
+    status_id = models.CharField(max_length=255, blank=True)
+    status_description = models.CharField(max_length=255, blank=True)
+    diagnosis_datetime = models.DateTimeField(null=True, blank=True)
+    allergy_start_datetime = models.DateTimeField(null=True, blank=True)
+    no_allergies = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Allergies"
@@ -365,24 +402,6 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
-
-    def set_reason_for_interaction(self, incoming_value, user, data):
-        if(incoming_value in MICROHAEM_CONSULTATIONS):
-            if self.id:
-                episode = self.episode
-            else:
-                episode = Episode.objects.get(pk=data["episode_id"])
-
-            exists = Tagging.objects.filter(
-                episode=episode, team__name=MICROHAEM_TEAM_NAME
-            )
-            exists = exists.exists()
-            if not exists:
-                Tagging.objects.create(
-                    episode=episode,
-                    team=Team.objects.get(name=MICROHAEM_TEAM_NAME)
-                )
-        self.reason_for_interaction = incoming_value
 
 
 class Todo(EpisodeSubrecord):
@@ -454,78 +473,6 @@ class MicrobiologyTest(EpisodeSubrecord):
     scrub_typhus_igm      = models.CharField(max_length=20, blank=True)
     scrub_typhus_igg      = models.CharField(max_length=20, blank=True)
 
-"""
-Begin OPAT specific fields.
-"""
-class Unplanned_stop(lookuplists.LookupList):
-    class Meta:
-        verbose_name = "Unplanned stop"
-
-
-class Opat_rvt(lookuplists.LookupList):
-    class Meta:
-        verbose_name = "OPAT RVT"
-
-
-class OPATMeta(EpisodeSubrecord):
-    review_date           = models.DateField(blank=True, null=True)
-    reason_for_stopping   = models.CharField(max_length=200, blank=True, null=True)
-    unplanned_stop_reason = ForeignKeyOrFreeText(Unplanned_stop)
-    stopping_iv_details   = models.CharField(max_length=200, blank=True, null=True)
-    treatment_outcome     = models.CharField(max_length=200, blank=True, null=True)
-    deceased              = models.NullBooleanField(default=False)
-    death_category        = models.CharField(max_length=200, blank=True, null=True)
-    cause_of_death        = models.CharField(max_length=200, blank=True, null=True)
-    readmitted            = models.NullBooleanField(default=False)
-    readmission_cause     = models.CharField(max_length=200, blank=True, null=True)
-    notes                 = models.TextField(blank=True, null=True)
-
-
-    class Meta:
-        verbose_name = "OPAT meta"
-
-
-class OPATOutcome(EpisodeSubrecord):
-    """
-    This captures the final data for an OAPT episode - it is much the
-    same as OPAT meta data, but captured on the ward round and interrogated
-    differently.
-    """
-    _title            = "OPAT Outcome"
-
-    outcome_stage         = models.CharField(max_length=200, blank=True, null=True)
-    treatment_outcome     = models.CharField(max_length=200, blank=True, null=True)
-    patient_outcome       = models.CharField(max_length=200, blank=True, null=True)
-    opat_outcome          = models.CharField(max_length=200, blank=True, null=True)
-    deceased              = models.NullBooleanField(default=False)
-    death_category        = models.CharField(max_length=200, blank=True, null=True)
-    cause_of_death        = models.CharField(max_length=200, blank=True, null=True)
-    readmitted            = models.NullBooleanField(default=False)
-    readmission_cause     = models.CharField(max_length=200, blank=True, null=True)
-    notes                 = models.TextField(blank=True, null=True)
-    patient_feedback      = models.NullBooleanField(default=False)
-    infective_diagnosis   = ForeignKeyOrFreeText(opatmodels.OPATInfectiveDiagnosis)
-
-    class Meta:
-        verbose_name = "OPAT outcome"
-
-
-class OPATRejection(EpisodeSubrecord):
-
-    decided_by            = models.CharField(max_length=255, blank=True, null=True)
-    patient_choice        = models.NullBooleanField(default=False)
-    oral_available        = models.NullBooleanField(default=False)
-    not_needed            = models.NullBooleanField(default=False)
-    patient_suitability   = models.NullBooleanField(default=False)
-    not_fit_for_discharge = models.NullBooleanField(default=False)
-    non_complex_infection = models.NullBooleanField(default=False)
-    no_social_support     = models.NullBooleanField(default=False)
-    reason                = models.CharField(max_length=255, blank=True, null=True)
-    date                  = models.DateField(blank=True, null=True)
-
-    class Meta:
-        verbose_name = "OPAT rejection"
-
 
 class Line(EpisodeSubrecord):
     _sort = 'insertion_datetime'
@@ -546,40 +493,6 @@ class Line(EpisodeSubrecord):
     graft                   = models.NullBooleanField(blank=True, null=True)
 
 
-class OPATReview(EpisodeSubrecord):
-    _sort = 'datetime'
-    _title = 'OPAT Review'
-    _icon = 'fa fa-comments'
-
-    _list_limit = 1
-    _modal = 'lg'
-
-    datetime                = models.DateTimeField(null=True, blank=True)
-    initials                = models.CharField(max_length=255, blank=True)
-    rv_type                 = ForeignKeyOrFreeText(Opat_rvt)
-    discussion              = models.TextField(blank=True, null=True)
-    opat_plan               = models.TextField(blank=True)
-    next_review             = models.DateField(blank=True, null=True)
-    dressing_changed        = models.NullBooleanField(default=False)
-    bung_changed            = models.NullBooleanField(default=False)
-    medication_administered = models.TextField(blank=True, null=True)
-    adverse_events          = ForeignKeyOrFreeText(omodels.Antimicrobial_adverse_event)
-
-    class Meta:
-        verbose_name = "OPAT review"
-
-
-class OPATOutstandingIssues(EpisodeSubrecord):
-    _title = 'Outstanding Issues'
-    _icon = 'fa fa-th-list'
-    _advanced_searchable = False
-
-    details = models.TextField(blank=True)
-
-    class Meta:
-        verbose_name = "OPAT outstanding issue"
-
-
 class Appointment(EpisodeSubrecord):
     _title = 'Upcoming Appointments'
     _sort = 'date'
@@ -589,28 +502,6 @@ class Appointment(EpisodeSubrecord):
     appointment_type = models.CharField(max_length=200, blank=True, null=True)
     appointment_with = models.CharField(max_length=200, blank=True, null=True)
     date             = models.DateField(blank=True, null=True)
-
-
-class OPATLineAssessment(EpisodeSubrecord):
-    _title = 'OPAT Line Assessment'
-    _icon = 'fa fa-check-square-o'
-
-    line                   = models.CharField(max_length=200, blank=True, null=True)
-    assessment_date        = models.DateField(blank=True, null=True)
-    vip_score              = models.IntegerField(blank=True, null=True)
-    dressing_type          = models.CharField(max_length=200, blank=True, null=True)
-    dressing_change_date   = models.DateField(blank=True, null=True)
-    dressing_change_reason = models.CharField(max_length=200, blank=True, null=True)
-    next_bionector_date    = models.DateField(blank=True, null=True)
-    bionector_change_date  = models.DateField(blank=True, null=True)
-    comments               = models.TextField(blank=True, null=True)
-    dressing_intact        = models.NullBooleanField(default=False)
-    lumen_flush_ok         = models.NullBooleanField(default=False)
-    blood_drawback_seen    = models.NullBooleanField(default=False)
-    cm_from_exit_site      = models.FloatField(default=False)
-
-    class Meta:
-        verbose_name = "OPAT line assessment"
 
 
 class BloodCultureSource(lookuplists.LookupList):
@@ -654,3 +545,15 @@ class Imaging(EpisodeSubrecord):
     imaging_type = ForeignKeyOrFreeText(ImagingTypes)
     site = models.CharField(max_length=200, blank=True, null=True)
     details = models.TextField(blank=True, null=True)
+
+
+@receiver(post_save, sender=Episode)
+def get_information_from_gloss(sender, **kwargs):
+    from elcid import gloss_api
+
+    episode = kwargs.pop("instance")
+    created = kwargs.pop("created")
+    if created and settings.GLOSS_ENABLED:
+        hospital_number = episode.patient.demographics_set.first().hospital_number
+        gloss_api.subscribe(hospital_number)
+        gloss_api.patient_query(hospital_number, episode=episode)

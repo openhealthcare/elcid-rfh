@@ -6,10 +6,9 @@ from django.core.urlresolvers import reverse
 import ffs
 
 from opal.core.test import OpalTestCase
-from opal.models import Patient, Team
+from opal.models import Patient
+from opal.core.subrecords import subrecords
 
-from elcid.test.test_models import AbstractEpisodeTestCase
-from elcid import constants
 
 HERE = ffs.Path.here()
 TEST_DATA = HERE/'test_data'
@@ -22,19 +21,6 @@ class ViewsTest(OpalTestCase):
         self.assertTrue(self.client.login(username=self.user.username,
                                           password=self.PASSWORD))
         self.patient = Patient.objects.get(pk=1)
-
-    def test_try_to_get_patient_detail_for_nonexistent_patient(self):
-        last_patient = Patient.objects.order_by("-id").first()
-
-        if last_patient:
-            nonexistent_id = last_patient.id + 1
-        else:
-            nonexistent_id = 1
-
-        url = reverse("patient_detail_data_view", kwargs={
-            "patient_id": nonexistent_id
-        })
-        self.assertStatusCode(url, 404)
 
     def test_try_to_create_episode_for_existing_patient_with_active_episode(self):
         data = {
@@ -100,7 +86,7 @@ class ViewsTest(OpalTestCase):
         self.assertEqual(404, response.status_code)
 
     def test_episode_list_template_view(self):
-        self.assertStatusCode('/templates/episode_list.html/', 200)
+        self.assertStatusCode('/templates/patient_list.html/team_1', 200)
 
     def test_episode_detail_template_view(self):
         self.assertStatusCode('/templates/episode_detail.html/1', 200)
@@ -114,23 +100,14 @@ class ViewsTest(OpalTestCase):
     def test_delete_item_confirmation_template_view(self):
         self.assertStatusCode('/templates/modals/delete_item_confirmation.html/', 200)
 
-    def test_location_modal_template_view(self):
-        self.assertStatusCode('/templates/modals/location.html/', 200)
-
-
-class ListSchemaViewTest(OpalTestCase):
-    fixtures = ['patients_users', 'patients_options', 'patients_records']
-
-    def setUp(self):
-        self.assertTrue(self.client.login(username=self.user.username,
-                                          password=self.PASSWORD))
-        self.patient = Patient.objects.get(pk=1)
-        schema_file = TEST_DATA/'list.schema.json'
-        self.schema = schema_file.json_load()
-
-    def assertStatusCode(self, path, expected_status_code):
-        response = self.client.get(path)
-        self.assertEqual(expected_status_code, response.status_code)
+    def test_all_modal_templates(self):
+        """ This renders all of our modal templates and blows up
+            if they fail to render
+        """
+        for i in subrecords():
+            if i.get_form_template():
+                url = reverse("{}_modal".format(i.get_api_name()))
+                self.assertStatusCode(url, 200)
 
 
 class DetailSchemaViewTest(OpalTestCase):
