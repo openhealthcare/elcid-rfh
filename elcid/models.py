@@ -115,8 +115,8 @@ class Location(EpisodeSubrecord):
 
     category = ForeignKeyOrFreeText(LocationCategory)
     provenance = ForeignKeyOrFreeText(Provenance)
-    hospital = models.CharField(max_length=255, blank=True)
-    ward = models.CharField(max_length=255, blank=True)
+    hospital = ForeignKeyOrFreeText(omodels.Hospital)
+    ward = ForeignKeyOrFreeText(omodels.Ward)
     bed = models.CharField(max_length=255, blank=True)
 
     def __unicode__(self):
