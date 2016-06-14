@@ -22,65 +22,6 @@ class ViewsTest(OpalTestCase):
                                           password=self.PASSWORD))
         self.patient = Patient.objects.get(pk=1)
 
-    def test_try_to_create_episode_for_existing_patient_with_active_episode(self):
-        data = {
-            'demographics': {
-                "consistency_token": "12345678",
-                "date_of_birth": "20/06/1972",
-                "hospital_number": "AA1111",
-                "id": 1,
-                "first_name": "John",
-                "surname": "Smith",
-                "patient_id": 1
-            },
-            'location': {
-                'category': 'Inpatient',
-                'hospital': 'UCH',
-                'ward': 'T13',
-                'bed': 10
-                }
-            }
-        response = self.post_json('/episode/', data)
-        self.assertEqual(201, response.status_code)
-
-    def test_create_episode_for_new_patient(self):
-        data = {
-            'demographics': {
-                'hospital_number': 'BB2222',
-                'first_name': 'Johann',
-                'surname': 'Schmidt',
-                'date_of_birth': '01/06/1970'
-                },
-            'location': {
-                'category': 'Inpatient',
-                'hospital': 'UCH',
-                'ward': 'T13',
-                'bed': 10
-                },
-            'tagging': [{}]
-            }
-        response = self.post_json('/episode/', data)
-        self.assertEqual(201, response.status_code)
-
-    def test_create_episode_for_patient_without_hospital_number(self):
-        data = {
-            'demographics': {
-                'hospital_number': '',
-                'first_name': 'Johann',
-                'surname': 'Schmidt',
-                'date_of_birth': '01/06/1970'
-                },
-            'location': {
-                'category': 'Inpatient',
-                'hospital': 'UCH',
-                'ward': 'T13',
-                'bed': 10
-                },
-            'tagging': [{}]
-            }
-        response = self.post_json('/episode/', data)
-        self.assertEqual(201, response.status_code)
-
     def test_try_to_update_nonexistent_demographics_subrecord(self):
         response = self.put_json('/api/v0.1/demographics/1234/', {})
         self.assertEqual(404, response.status_code)
