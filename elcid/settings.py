@@ -23,7 +23,7 @@ except ImportError:
         }
     }
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -119,6 +119,7 @@ else:
             )),
     )
 
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -172,19 +173,11 @@ INSTALLED_APPS = (
     'elcid',
     'obs',
     'django.contrib.admin',
-    'opat',
-#    'walkin',
-#    'research',
-#    'wardround',
-#    'referral',
-#    'dashboard',
-#    'iframeapi',
-#    'opal.core.collaborative',
     'pathway',
-    'guidelines',
+    # 'guidelines',
     'dischargesummary',
     'djcelery',
-    'taskrunner'
+    'taskrunner',
 )
 
 if 'test' in sys.argv:
@@ -205,11 +198,6 @@ if 'test' in sys.argv:
     }
 
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -225,15 +213,20 @@ LOGGING = {
             'class': 'logging.StreamHandler'
         },
         'mail_admins': {
-            'level': 'ERROR',
+            'level': 'CRITICAL',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         }
     },
     'loggers': {
         'django.request': {
-            'handlers': ['console', 'mail_admins'],
+            'handlers': ['console'],
             'level': 'ERROR',
+            'propagate': True,
+        },
+        'elcid.requestLogger': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': True,
         },
     }
@@ -260,6 +253,7 @@ OPAL_OPTIONS_MODULE = 'elcid.options'
 OPAL_BRAND_NAME = 'elCID Royal Free Hospital'
 OPAL_LOG_OUT_MINUTES = 15
 OPAL_LOG_OUT_DURATION = OPAL_LOG_OUT_MINUTES*60*1000
+OPAL_FLOW_SERVICE = 'elCIDFlow'
 
 # Do we need this at all ?
 OPAL_EXTRA_HEADER = 'elcid/print_header.html'
@@ -284,7 +278,8 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.1'
+VERSION_NUMBER = '0.2'
+
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
 
@@ -294,21 +289,20 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.migrations', 'opal.tests',
                             'opal.wsgi')
 
-# Research settings
-LIST_SCHEMA_RESEARCH_PRACTITIONER = "elcid.schema.list_columns_research_practitioner"
-LIST_SCHEMA_SCIENTIST = "elcid.schema.list_columns_scientist"
 
-INTEGRATING = False
-GLOSSOLALIA_URL = 'http://localhost:5000/'
-GLOSSOLALIA_NAME = 'elcid'
 
-try:
-    from local_settings import *
-except ImportError:
-    pass
+GLOSS_ENABLED = False
 
-# #DEBUG_TOOLBAR_PATCH_SETTINGS = False
-# MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-# INSTALLED_APPS = INSTALLED_APPS + ('debug_toolbar',)
-# #INTERNAL_IPS = ('127.0.0.1',)
+if GLOSS_ENABLED:
+    GLOSS_URL_BASE = "http://0.0.0.0:6767"
+    GLOSS_USERNAME = "override_this"
+    GLOSS_PASSWORD = "and_override_this"
+
 EXTRACT_ASYNC = True
+
+
+if 'test' not in sys.argv:
+    try:
+        from local_settings import *
+    except ImportError:
+        pass

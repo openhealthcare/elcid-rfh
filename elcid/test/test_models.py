@@ -1,13 +1,18 @@
 import datetime
 import ffs
 import pytz
+
+from mock import patch
+
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
-from opal.models import Patient, Episode, Condition, Synonym
-from elcid.models import Location, Result
+from opal.models import Patient, Episode, Condition, Synonym, Symptom
+from elcid.models import (
+    Location, PresentingComplaint, Result, Allergies, Demographics
+)
 
 HERE = ffs.Path.here()
 TEST_DATA = HERE/'test_data'
@@ -46,14 +51,14 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'id': self.demographics.id,
             'first_name': 'John',
             'surname': 'Smith',
-            'middle_name': '',
+            'middle_name': None,
             'title_fk_id': None,
             'title_ft': u'',
             'title': '',
             'marital_status_fk_id': None,
             'marital_status_ft': u'',
             'marital_status': u'',
-            'religion': '',
+            'religion': None,
             'created': None,
             'updated': None,
             'created_by_id': None,
@@ -71,10 +76,12 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'hospital_number': 'AA1111',
             'nhs_number': None,
             'date_of_death': None,
-            'post_code': '',
-            'gp_practice_code': '',
-            'sourced_from_upstream': False,
-            }
+            'death_indicator': False,
+            'post_code': None,
+            'gp_practice_code': None,
+            'external_system': None,
+            'external_identifier': None
+        }
 
         self.assertEqual(expected_data, self.demographics.to_dict(self.user))
 
@@ -103,6 +110,20 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
         with self.assertRaises(exceptions.ConsistencyError):
             self.demographics.update_from_dict({'consistency_token': '87654321'}, self.user)
 
+    @override_settings(GLOSS_ENABLED=True)
+    @patch("opal.models.Subrecord.get_form_template")
+    def test_get_demographics_form_with_gloss(self, form_template_mock):
+        form_template_mock.return_value = "some_template.html"
+        form_template = Demographics.get_form_template()
+        self.assertEqual(form_template, "some_template.html")
+
+    @override_settings(GLOSS_ENABLED=False)
+    def test_get_demographics_form_without_gloss(self):
+        form_template = Demographics.get_form_template()
+        self.assertEqual(
+            form_template, "forms/demographics_form_pre_gloss.html"
+        )
+
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 
@@ -127,7 +148,11 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'category_fk_id': None,
             'category_ft': 'Inpatient',
             'hospital': 'UCH',
+            'hospital_fk_id': None,
+            'hospital_ft': 'UCH',
             'ward': 'T10',
+            'ward_fk_id': None,
+            'ward_ft': 'T10',
             'bed': '13',
             'created': None,
             'updated': None,
@@ -153,7 +178,58 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
         self.assertEqual('HH', self.location.hospital)
 
 
-class ResultTest(OpalTestCase, AbstractEpisodeTestCase):
+class PresentingComplaintTest(OpalTestCase, AbstractEpisodeTestCase):
+    def setUp(self):
+        super(PresentingComplaintTest, self).setUp()
+        self.symptom_1 = Symptom.objects.create(name="tiredness")
+        self.symptom_2 = Symptom.objects.create(name="alertness")
+        self.symptom_3 = Symptom.objects.create(name="apathy")
+        self.presenting_complaint = PresentingComplaint.objects.create(
+            symptom=self.symptom_1,
+            duration="a week",
+            details="information",
+            consistency_token=1111,
+            episode=self.episode
+        )
+        self.presenting_complaint.symptoms.add(self.symptom_2, self.symptom_3)
+
+    def test_to_dict(self):
+        expected_data = dict(
+            id=self.presenting_complaint.id,
+            consistency_token=self.presenting_complaint.consistency_token,
+            symptoms=["alertness", "apathy"],
+            duration="a week",
+            details="information",
+            episode_id=1,
+            updated=None,
+            updated_by_id=None,
+            created=None,
+            created_by_id=None
+        )
+        self.assertEqual(
+            expected_data, self.presenting_complaint.to_dict(self.user)
+        )
+
+    def test_update_from_dict(self):
+        data = {
+            u'consistency_token': self.presenting_complaint.consistency_token,
+            u'id': self.presenting_complaint.id,
+            u'symptoms': [u'alertness', u'tiredness'],
+            u'duration': 'a month',
+            u'details': 'other information'
+        }
+        self.presenting_complaint.update_from_dict(data, self.user)
+        new_symptoms = self.presenting_complaint.symptoms.values_list(
+            "name", flat=True
+        )
+        self.assertEqual(set(new_symptoms), set([u'alertness', u'tiredness']))
+        self.assertEqual(self.presenting_complaint.duration, 'a month')
+        self.assertEqual(
+            self.presenting_complaint.details, 'other information'
+        )
+
+
+class ResultTest(OpalTestCase, AbstractPatientTestCase):
     def test_to_dict_and_from_dict(self):
         datetime_format = settings.DATETIME_INPUT_FORMATS[0]
 
@@ -168,9 +244,11 @@ class ResultTest(OpalTestCase, AbstractEpisodeTestCase):
         )
 
         result_args = dict(
-            episode_id=self.episode.id,
+
+            patient_id=self.patient.id,
             lab_number="234324",
             profile_code="2343344",
+            external_identifier="234324.2343344",
             profile_description="RENAL PROFILE",
             request_datetime=request_datetime,
             observation_datetime=observation_datetime,
@@ -222,6 +300,110 @@ class ResultTest(OpalTestCase, AbstractEpisodeTestCase):
         )
 
         self.assertEqual(result_args, back_to_dict)
+
+    def test_updates_with_external_identifer(self):
+        Result.objects.create(
+            result_status="Incomplete",
+            external_identifier="1",
+            patient=self.patient
+        )
+
+        update_dict = dict(
+            result_status="Complete",
+            external_identifier="1",
+            patient_id=self.patient.id
+        )
+
+        a = Result()
+        a.update_from_dict(update_dict, self.user)
+
+        result = Result.objects.get()
+        self.assertEqual(
+            result.result_status, "Complete"
+        )
+
+    def test_no_external_identifier(self):
+        Result.objects.create(
+            result_status="Incomplete",
+            external_identifier="1",
+            patient=self.patient
+        )
+
+        update_dict = dict(
+            result_status="Complete",
+            patient_id=self.patient.id
+        )
+
+        a = Result()
+        a.update_from_dict(update_dict, self.user)
+        results = Result.objects.all()
+        self.assertEqual(2, len(results))
+        self.assertEqual(
+            results[0].result_status, "Incomplete"
+        )
+        self.assertEqual(
+            results[1].result_status, "Complete"
+        )
+        self.assertEqual(
+            results[1].external_identifier, None
+        )
+
+    def test_doesnt_update_empty_external_identifier(self):
+        Result.objects.create(
+            result_status="Incomplete",
+            external_identifier="",
+            patient=self.patient
+        )
+
+        update_dict = dict(
+            result_status="Complete",
+            external_identifier="",
+            patient_id=self.patient.id
+        )
+
+        a = Result()
+        a.update_from_dict(update_dict, self.user)
+        results = Result.objects.all()
+        self.assertEqual(2, len(results))
+        self.assertEqual(
+            results[0].result_status, "Incomplete"
+        )
+        self.assertEqual(
+            results[1].result_status, "Complete"
+        )
+
+    def test_next_updates_a_different_patient(self):
+        other_patient = Patient.objects.create()
+        Result.objects.create(
+            result_status="Incomplete",
+            external_identifier="1",
+            patient=self.patient
+        )
+
+        update_dict = dict(
+            result_status="Complete",
+            external_identifier="1",
+            patient_id=other_patient.id
+        )
+
+        a = Result()
+        a.update_from_dict(update_dict, self.user)
+        results = Result.objects.all()
+        self.assertEqual(2, len(results))
+        self.assertEqual(
+            results[0].patient, self.patient
+        )
+        self.assertEqual(
+            results[1].patient, other_patient
+        )
+
+
+class AllergyTest(OpalTestCase):
+    def test_get_modal_footer_template(self):
+        self.assertEqual(
+            Allergies.get_modal_footer_template(),
+            "partials/_sourced_modal_footer.html"
+        )
 
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
@@ -301,3 +483,29 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
         self.diagnosis.update_from_dict(data, self.user)
         diagnosis = self.episode.diagnosis_set.first()
         self.assertEqual('New condition', diagnosis.condition)
+
+
+@patch("elcid.gloss_api.subscribe")
+@patch("elcid.gloss_api.patient_query")
+class TestGlossUpdate(AbstractPatientTestCase):
+    @override_settings(GLOSS_ENABLED=True)
+    def test_with_settings_on_create(self, patient_query, subscribe):
+        episode = self.patient.create_episode()
+        subscribe.assert_called_once_with("AA1111")
+        patient_query.assert_called_once_with("AA1111", episode=episode)
+
+    def test_not_called_on_update(self, patient_query, subscribe):
+        with override_settings(GLOSS_ENABLED=False):
+            episode = self.patient.create_episode()
+
+        with override_settings(GLOSS_ENABLED=True):
+            episode.save()
+
+        self.assertFalse(patient_query.called)
+        self.assertFalse(subscribe.called)
+
+    @override_settings(GLOSS_ENABLED=False)
+    def test_without_settings_enabled(self, patient_query, subscribe):
+        self.patient.create_episode()
+        self.assertFalse(patient_query.called)
+        self.assertFalse(subscribe.called)

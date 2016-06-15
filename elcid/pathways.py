@@ -5,7 +5,7 @@ from elcid.models import (
 )
 
 from pathway.pathways import (
-    Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin, DemographicsStep,
+    Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin,
     MultSaveStep
 )
 
@@ -28,14 +28,6 @@ class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
         ),
     )
 
-    def save(self, data, user):
-        episode = super(AddPatientPathway, self).save(data, user)
-
-        # TODO: This should be refactored into the relevant step
-        tagging = data["tagging"]
-        episode.set_tag_names(tagging, user)
-        return episode
-
 
 class CernerDemoPathway(UnrolledPathway):
     display_name = 'Cerner Powerchart Template'
@@ -44,7 +36,7 @@ class CernerDemoPathway(UnrolledPathway):
     steps = (
         # TODO: Do we want to pass this like this ?
         # Wouldn't it be nicer if I could set it on the class?
-        DemographicsStep(model=Demographics),
+        Demographics,
         Step(
             model=Location,
             controller_class="BloodCultureLocationCtrl",
@@ -60,5 +52,5 @@ class CernerDemoPathway(UnrolledPathway):
         MultSaveStep(model=Imaging),
         FinalDiagnosis,
         MultSaveStep(model=MicrobiologyInput),
-        Step(model=Location, template_url='/templates/pathway/cernerletter.html')
+        Step(api_name="cerner_note", title="Clinical Note", icon="fa fa-envelope", template_url='/templates/pathway/cernerletter.html')
     )

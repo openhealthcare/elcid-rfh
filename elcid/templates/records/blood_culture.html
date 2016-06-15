@@ -1,9 +1,18 @@
- <span ng-show="item.date_ordered">[[ item.date_ordered  | shortDate ]] <br /></span>
- <span ng-show="item.date_positive">[[ item.date_positive  | shortDate ]] <br /></span>
+ <span ng-show="item.date_ordered"><b>Date Ordered</b> [[ item.date_ordered  | shortDate ]] <br /></span>
+ <span ng-show="item.date_positive"><b>Date Positive</b> [[ item.date_positive  | shortDate ]] <br /></span>
  <span ng-show="item.anaerobic">[[ item.anaerobic ]] <br /></span>
  <span ng-show="item.details">[[ item.details ]] <br /></span>
  <span ng-show="item.microscopy">[[ item.microscopy ]] <br /></span>
  <span ng-show="item.source">[[ item.source ]] <br /></span>
- <span ng-show="item.organisms">[[ item.organisms ]] <br /></span>
- <span ng-show="item.sensitive_antibiotics">[[ item.sensitive_antibiotics ]] <br /></span>
- <span ng-show="item.resistant_antibiotics">[[ item.resistant_antibiotics ]] <br /></span>
+
+ <span ng-show="item.organisms">
+   <b>Organisms</b> [[ item.organisms.join(", ") ]] <br />
+ </span>
+
+ <span ng-show="item.sensitive_antibiotics">
+   <b>Sensitive Antibiotics</b> [[ item.sensitive_antibiotics.join(", ") ]] <br />
+ </span>
+
+ <span ng-show="item.resistant_antibiotics">
+   <b>Resistant Antibiotics</b> [[ item.resistant_antibiotics.join(", ") ]] <br />
+ </span>

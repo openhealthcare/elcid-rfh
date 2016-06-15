@@ -5,6 +5,8 @@ source =
 omit =
     */migrations/*
     elcid/test/*
+    elcid/wsgi*
+
 
 [report]
 

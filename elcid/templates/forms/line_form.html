@@ -1,6 +1,5 @@
 {% load forms %}
-{% select "autofocus" label="Line Type" model="editing.line.line_type" lookuplist="line_type_list" %}
-
+{% select label="Line Type" model="editing.line.line_type" lookuplist="line_type_list" %}
 {% checkbox label="Button Hole" model="editing.line.button_hole" %}
 {% checkbox label="Fistula" model="editing.line.fistula" %}
 {% checkbox label="Graft" model="editing.line.graft" %}
@@ -12,16 +11,22 @@
 <div class="form-group" ng-show="editing.line.line_type == 'Peripheral cannula'">
   <label class="control-label col-sm-3">Insertion Time</label>
   <div class="col-sm-3">
-    <input class="form-control" type="text" ng-model="editing.line.insertion_datetime" bs-timepicker />
+
+    <input class="form-control" type="text"
+           ng-model="editing.line.insertion_datetime"
+           bs-timepicker
+           />
   </div>
 </div>
 {% input label="Inserted By" model="editing.line.inserted_by" %}
 {% input label="External Length When Inserted" model="editing.line.external_length" show="editing.line.line_type != 'Peripheral cannula'" unit="cm" %}
 {% datepicker "data-date-type=\"date\"" label="Removal Date" model="editing.line.removal_datetime" %}
+
+
 <div class="form-group" ng-show="editing.line.line_type == 'Peripheral cannula'">
   <label class="control-label col-sm-3">Removal Time</label>
   <div class="col-sm-3">
-<input class="form-control" type="text"
+    <input class="form-control" type="text"
            ng-model="editing.line.removal_datetime"
            bs-timepicker
            />
@@ -29,4 +34,4 @@
 </div>
 {% select label="Complications" model="editing.line.complications" lookuplist="line_complication_list" other=True %}
 {% select label="Removal Reason" model="editing.line.removal_reason" lookuplist="line_removal_reason_list" %}
-{% textarea label="Further Information" model="editing.line.special_instructions" %}
+{% textarea label="Further Information" field="Line.special_instructions" %}
