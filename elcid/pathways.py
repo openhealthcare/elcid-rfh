@@ -6,7 +6,7 @@ from elcid.models import (
 
 from pathway.pathways import (
     Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin,
-    MultSaveStep
+    MultSaveStep, ModalPathway
 )
 
 
@@ -48,9 +48,23 @@ class CernerDemoPathway(UnrolledPathway):
         # Infection,
         MultSaveStep(model=Line),
         MultSaveStep(model=Antimicrobial),
-        MultSaveStep(model=BloodCulture),
+        # MultSaveStep(model=BloodCulture),
         MultSaveStep(model=Imaging),
         FinalDiagnosis,
         MultSaveStep(model=MicrobiologyInput),
         Step(api_name="cerner_note", title="Clinical Note", icon="fa fa-envelope", template_url='/templates/pathway/cernerletter.html')
+    )
+
+
+class BloodCulturePathway(ModalPathway):
+    display_name = 'Blood Culture'
+    slug = 'blood_culture'
+    template_url = "/templates/pathway/blood_culture_form_base.html"
+
+    steps = (
+        Step(
+            model=BloodCulture,
+            template_url="/templates/pathway/blood_culture_form.html",
+            controller_class="BloodCultureLocationCtrl"
+        ),
     )

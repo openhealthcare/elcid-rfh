@@ -508,22 +508,30 @@ class BloodCultureSource(lookuplists.LookupList):
     pass
 
 
-class BloodCulture(EpisodeSubrecord):
-    _icon = 'fa fa-crosshairs'
-    _title = 'Blood Culture'
-    source = ForeignKeyOrFreeText(BloodCultureSource)
-    date_ordered = models.DateField(null=True, blank=True)
-    date_positive = models.DateField(null=True, blank=True)
-    anaerobic = models.CharField(max_length=255, blank=True)
-    details = models.CharField(max_length=255, blank=True)
+class BloodCultureIsolate(models.Model):
+    aerobic = models.BooleanField()
+    organism = ForeignKeyOrFreeText(omodels.Microbiology_organism)
+    FISH = models.CharField(max_length=255, blank=True)
     microscopy = models.CharField(max_length=255, blank=True)
-    organisms = models.ManyToManyField(omodels.Microbiology_organism)
     sensitive_antibiotics = models.ManyToManyField(
         omodels.Antimicrobial, related_name="blood_culture_sensitive"
     )
     resistant_antibiotics = models.ManyToManyField(
         omodels.Antimicrobial, related_name="blood_culture_resistant"
     )
+
+
+class BloodCulture(EpisodeSubrecord):
+    _icon = 'fa fa-crosshairs'
+    _title = 'Blood Culture'
+
+    lab_number = models.CharField(max_length=255, blank=True)
+    date_ordered = models.DateField(null=True, blank=True)
+    date_positive = models.DateField(null=True, blank=True)
+    source = ForeignKeyOrFreeText(BloodCultureSource)
+    isolate = models.ForeignKey(BloodCultureIsolate)
+
+
 
 
 class FinalDiagnosis(EpisodeSubrecord):
