@@ -18,40 +18,45 @@ function($scope, $cookieStore, $timeout,
       _.extend(vm, parentCtrl);
 
       $scope.addAerobic = function(){
-        $scope.aerobic_models.push({
+        $scope.aerobicModels.push({
           aerobic: true
         });
       };
 
       $scope.addAnaerobic = function(){
-        $scope.anaerobic_models.push({
+        $scope.anaerobicModels.push({
           aerobic: false
         });
       };
 
       $scope.deleteAnaerobic = function(index){
-        $scope.anaerobic_models.splice(index, 1);
+        $scope.anaerobicModels.splice(index, 1);
       }
 
       $scope.deleteAerobic = function(index){
-        $scope.aerobic_models.splice(index, 1);
+        $scope.aerobicModels.splice(index, 1);
       }
-
-      $scope.aerobic_models = angular.copy(_.filter(item.isolates, function(x){
-        return x.aerobic
-      }));
-      $scope.anaerobic_models = angular.copy(_.filter(item.isolates, function(x){
-        return !x.aerobic
-      }));
 
       $scope.preSave = function(editing){
         // filter out completely empty fields
-        var toUpdate = $scope.aerobic_models.concat($scope.anaerobic_models);
+        var toUpdate = $scope.aerobicModels.concat($scope.anaerobicModels);
 
         var nonEmpties = _.reject(toUpdate, function(x){
             return _.isEmpty(_.omit(x, "aerobic"));
         });
 
         editing.blood_culture.isolates = nonEmpties;
-    };
+      };
+
+      $scope.initialise = function(item){
+          var isolates = item.isolates || [];
+          $scope.aerobicModels = angular.copy(_.filter(isolates, function(x){
+            return x.aerobic
+          }));
+          $scope.anaerobicModels = angular.copy(_.filter(isolates, function(x){
+            return !x.aerobic
+          }));
+      }
+
+      $scope.initialise(item);
 });
