@@ -1,0 +1,112 @@
+$primary: #0091C9;
+$primary-background: #006c96;
+
+$secondary: #D36C08;
+$secondary-background: #864200;
+$white: #FFF;
+$events: #111;
+$bg: #EEE;
+
+$red  : #f76c51;
+$blue : #5fa2dd;
+$bluelight: #a0c7ea;
+$green: #9cc96b;
+$obsidian: #343637;
+$obsidianlight: #cbc9c8;
+$navbar-height: 77px;
+$small-text-color: $secondary-background;
+
+body{
+    background-color: $bg;
+}
+
+h1, h2, h3, h4, h5{
+    .small, small{
+        color: $white;
+    }
+}
+
+
+.bg-primary { background-color: $primary;}
+.bg-secondary{ background-color: $secondary; }
+
+.panel-primary .panel-default .panel-heading.bg-active,
+.bg-active{ background-color: $primary; }
+
+.panel.panel-primary { border-color: $primary; }
+.panel.panel-primary .panel-heading {
+    background-color: $primary;
+    color: white;
+}
+
+h5{
+  font-weight: 600;
+  text-transform: capitalize;
+  font-size: 14px;
+}
+
+.btn-primary {
+    background-color: $primary;
+    border-color: $primary;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: $primary-background;
+    border-color: $primary-background;
+}
+
+.btn-secondary{
+    background-color: $secondary;
+    border-color: $secondary;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background-color: $secondary-background;
+    border-color: $secondary-background;
+}
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:focus,
+.navbar-default .navbar-nav > li > a:hover{
+    background-color: $obsidian;
+}
+
+.navbar-nav li:hover,
+.navbar-nav li:hover a,
+.navbar-nav li.active a,
+.navbar-nav li.active{
+	background: $obsidianlight;
+}
+
+.panel-primary .panel-default .panel-heading,
+.panel-default .panel-heading {
+    border-bottom: 3px solid $secondary;
+}
+
+
+.panel-primary .panel-active .panel-heading,
+.panel-active .panel-heading,
+.panel.panel-primary .panel-heading {
+    border: 3px solid $primary;
+}
+
+.modal-header{
+    background: $primary;
+}
+
+.loading {
+    background-color: $bg;
+    color: white;
+}
+
+/* ngProgress overrides */
+.ngProgressLiteBar {
+  background-color: $secondary;
+  box-shadow: 0 0 10px 0; /* Inherits the font color */
+  // top: $navbar-height;
+}
+
+.smpl-step > .smpl-step-step > .progress > .progress-bar{
+  background-color: $secondary;
+}
