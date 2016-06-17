@@ -10,16 +10,11 @@ h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 sma
 .bg-secondary {
   background-color: #D36C08; }
 
-.panel-primary .panel-default .panel-heading.bg-active,
-.bg-active {
-  background-color: #0091C9; }
-
 .panel.panel-primary {
   border-color: #0091C9; }
 
-.panel.panel-primary .panel-heading {
-  background-color: #0091C9;
-  color: white; }
+.panel.panel-primary > .panel-heading {
+  background-color: #0091C9; }
 
 h5 {
   font-weight: 600;
@@ -58,11 +53,6 @@ h5 {
 .panel-primary .panel-default .panel-heading,
 .panel-default .panel-heading {
   border-bottom: 3px solid #D36C08; }
-
-.panel-primary .panel-active .panel-heading,
-.panel-active .panel-heading,
-.panel.panel-primary .panel-heading {
-  border: 3px solid #0091C9; }
 
 .modal-header {
   background: #0091C9; }
