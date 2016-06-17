@@ -1,0 +1,73 @@
+body {
+  background-color: #EEE; }
+
+h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 small, h5 .small, h5 small {
+  color: #FFF; }
+
+.bg-primary {
+  background-color: #0091C9; }
+
+.bg-secondary {
+  background-color: #D36C08; }
+
+.panel.panel-primary {
+  border-color: #0091C9; }
+
+.panel.panel-primary > .panel-heading {
+  background-color: #0091C9; }
+
+h5 {
+  font-weight: 600;
+  text-transform: capitalize;
+  font-size: 14px; }
+
+.btn-primary {
+  background-color: #0091C9;
+  border-color: #0091C9; }
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #006c96;
+  border-color: #006c96; }
+
+.btn-secondary {
+  background-color: #D36C08;
+  border-color: #D36C08; }
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: #864200;
+  border-color: #864200; }
+
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:focus,
+.navbar-default .navbar-nav > li > a:hover {
+  background-color: #343637; }
+
+.navbar-nav li:hover,
+.navbar-nav li:hover a,
+.navbar-nav li.active a,
+.navbar-nav li.active {
+  background: #cbc9c8; }
+
+.panel-primary .panel-default .panel-heading,
+.panel-default .panel-heading {
+  border-bottom: 3px solid #D36C08; }
+
+.modal-header {
+  background: #0091C9; }
+
+.loading {
+  background-color: #EEE;
+  color: white; }
+
+/* ngProgress overrides */
+.ngProgressLiteBar {
+  background-color: #D36C08;
+  box-shadow: 0 0 10px 0;
+  /* Inherits the font color */ }
+
+.smpl-step > .smpl-step-step > .progress > .progress-bar {
+  background-color: #D36C08; }
+
+/*# sourceMappingURL=elcid.css.map */
