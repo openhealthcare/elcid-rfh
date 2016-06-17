@@ -62,6 +62,9 @@ describe('BloodCultureFormCtrlTest', function() {
 
     describe('it should inherit from EditItem', function(){
         it('should have a save method that saves', function(){
+          $scope.editing.blood_culture = [{
+            lab_number: "1"
+          }];
           $scope.$digest();
           var callArgs;
           var deferred = $q.defer();
