@@ -14,7 +14,12 @@ h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 sma
   border-color: #0091C9; }
 
 .panel.panel-primary > .panel-heading {
+<<<<<<< Updated upstream
   background-color: #0091C9; }
+=======
+  background-color: #0091C9;
+  color: white; }
+>>>>>>> Stashed changes
 
 h5 {
   font-weight: 600;
@@ -58,7 +63,7 @@ h5 {
   background: #0091C9; }
 
 .loading {
-  background-color: #EEE;
+  background-color: #343637;
   color: white; }
 
 /* ngProgress overrides */
@@ -69,5 +74,12 @@ h5 {
 
 .smpl-step > .smpl-step-step > .progress > .progress-bar {
   background-color: #D36C08; }
+
+a.list-group-item:hover, a.list-group-item:focus {
+  text-decoration: none;
+  background-color: #4d5051;
+  color: #FFF; }
+a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
+  background-color: #343637; }
 
 /*# sourceMappingURL=elcid.css.map */

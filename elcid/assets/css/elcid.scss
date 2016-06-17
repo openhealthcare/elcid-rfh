@@ -37,7 +37,8 @@ h1, h2, h3, h4, h5{
 
 .panel.panel-primary { border-color: $primary; }
 .panel.panel-primary > .panel-heading {
-  background-color: $primary;
+    background-color: $primary;
+    color: white;
 }
 
 h5{
@@ -85,19 +86,12 @@ h5{
     border-bottom: 3px solid $secondary;
 }
 
-
-.panel-primary .panel-active .panel-heading,
-.panel-active .panel-heading,
-.panel.panel-primary .panel-heading {
-    // border: 3px solid $primary;
-}
-
 .modal-header{
     background: $primary;
 }
 
 .loading {
-    background-color: $bg;
+    background-color: $obsidian;
     color: white;
 }
 
@@ -110,4 +104,21 @@ h5{
 
 .smpl-step > .smpl-step-step > .progress > .progress-bar{
   background-color: $secondary;
+}
+
+a.list-group-item {
+  // Hover state
+  &:hover,
+  &:focus {
+    text-decoration: none;
+    background-color: lighten($obsidian, 10%);
+    color: $white;
+  }
+
+  // Active class on item itself, not parent
+  &.active,
+  &.active:hover,
+  &.active:focus{
+    background-color: $obsidian;
+  }
 }
