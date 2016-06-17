@@ -11,5 +11,7 @@ elcid/static
 opal.sqlite.*
 *.DS_Store
 .coveragerc
+**/.sass-cache
+**/.sass-cache/*
 *#
 .project
