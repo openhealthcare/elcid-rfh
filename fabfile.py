@@ -6,8 +6,7 @@ import os
 
 env.hosts = ["elcid-rfh-test.openhealthcare.org.uk"]
 env.user = "ubuntu"
-project_name = "elcid"
-virtual_env_name = "elcid"
+virtual_env_name = "elcid-rfh"
 fabfile_dir = os.path.realpath(os.path.dirname(__file__))
 
 
@@ -90,7 +89,6 @@ def db_commands(username):
         "python manage.py migrate",
         "python manage.py loaddata data/elcid.teams.json",
         "python manage.py load_lookup_lists -f data/lookuplists/lookuplists.json",
-        'echo "from opal.models import Role; Role.objects.create(name=\'micro_haem\')" | python ./manage.py shell',
         "python manage.py create_random_data"
     ]
     python_cmd = "echo '"
