@@ -14,12 +14,8 @@ h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 sma
   border-color: #0091C9; }
 
 .panel.panel-primary > .panel-heading {
-<<<<<<< Updated upstream
-  background-color: #0091C9; }
-=======
   background-color: #0091C9;
   color: white; }
->>>>>>> Stashed changes
 
 h5 {
   font-weight: 600;
