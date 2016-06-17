@@ -1,12 +1,54 @@
 {% load forms %}
-<div class="form-group form-horizontal">
+<div name="form" class="form-horizontal" novalidate>
+  {% input field="BloodCulture.lab_number" %}
   {% datepicker field="BloodCulture.date_ordered" %}
   {% datepicker field="BloodCulture.date_positive" %}
-  {% select label="Type" model="editing.blood_culture.anaerobic" lookuplist="['Aerobic', 'Anaerobic']" %}
-  {% input field="BloodCulture.source" %}
-  {% input field="BloodCulture.details" %}
-  {% input field="BloodCulture.microscopy" %}
-  {% select field="BloodCulture.organisms" multiple=True tagging=False %}
-  {% select field="BloodCulture.sensitive_antibiotics" multiple=True tagging=False %}
-  {% select field="BloodCulture.resistant_antibiotics" multiple=True tagging=False %}
+  {% select field="BloodCulture.source" %}
+
+    <div class="row text-center content-offset-25">
+      <h3>Aerobic</h3>
+    </div>
+    <hr />
+
+    <div class="row content-offset-25" ng-repeat="aerobicModel in aerobic_models">
+        <div class="row">
+          <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
+            <h4>Isolate [[ $index + 1 ]]</h4>
+          </div>
+        </div>
+        {% select label="Organism" model="aerobicModel.organism" lookuplist="microbiology_organism_list" %}
+        {% select label="FISH" model="aerobicModel.fish" lookuplist="microbiology_organism_list" %}
+        {% select label="Microscopy" model="aerobicModel.microscopy" lookuplist="microbiology_organism_list" %}
+        {% select label="Sensitive" model="aerobicModel.sensitive" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+        {% select label="Resistant" model="aerobicModel.resistant" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+    </div>
+    <div class="row text-center">
+      <button ng-click="addAerobic()" class="btn btn-primary">
+        <i class="fa fa-plus-circle"></i> New Isolate
+      </button>
+    </div>
+
+    <div class="row text-center content-offset-25">
+      <h3>Anaerobic</h3>
+    </div>
+    <hr />
+
+    <div class="row content-offset-25" ng-repeat="anaerobicModel in anaerobic_models">
+        <div class="row">
+          <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
+            <h4>Isolate [[ $index + 1 ]]</h4>
+          </div>
+        </div>
+        {% select label="Organism" model="anaerobicModel.organism" lookuplist="microbiology_organism_list" %}
+        {% select label="FISH" model="anaerobicModel.fish" lookuplist="microbiology_organism_list" %}
+        {% select label="Microscopy" model="anaerobicModel.microscopy" lookuplist="microbiology_organism_list" %}
+        {% select label="Sensitive" model="anaerobicModel.sensitive" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+        {% select label="Resistant" model="anaerobicModel.resistant" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+    </div>
+    <div class="row text-center content-offset-below-25">
+      <button  ng-click="addAnaerobic()" class="btn btn-primary">
+        <i class="fa fa-plus-circle"></i> New Isolate
+      </button>
+    </div>
+  </div>
 </div>

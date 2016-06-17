@@ -6,12 +6,17 @@ from mock import patch
 
 from django.conf import settings
 from django.test import TestCase, override_settings
+from django.contrib.contenttypes.models import ContentType
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
-from opal.models import Patient, Episode, Condition, Synonym, Symptom
+from opal.models import (
+    Patient, Episode, Condition, Synonym, Symptom, Antimicrobial,
+    Microbiology_organism
+)
 from elcid.models import (
-    Location, PresentingComplaint, Result, Allergies, Demographics
+    Location, PresentingComplaint, Result, Allergies, Demographics,
+    BloodCulture, BloodCultureIsolate, get_for_lookup_list
 )
 
 HERE = ffs.Path.here()
@@ -403,6 +408,275 @@ class AllergyTest(OpalTestCase):
         self.assertEqual(
             Allergies.get_modal_footer_template(),
             "partials/_sourced_modal_footer.html"
+        )
+
+class GetForLookupListTestCase(OpalTestCase):
+    def setUp(self):
+        self.antimicrobial_1 = Antimicrobial.objects.create(
+            name="antimicrobial_1",
+        )
+
+        self.antimicrobial_2 = Antimicrobial.objects.create(
+            name="antimicrobial_2",
+        )
+
+        self.antimicrobial_3 = Antimicrobial.objects.create(
+            name="antimicrobial_3",
+        )
+
+        antimicrobial_content_type = ContentType.objects.get_for_model(
+            Antimicrobial
+        )
+
+        self.synonym_1 = Synonym.objects.get_or_create(
+            content_type=antimicrobial_content_type,
+            object_id=self.antimicrobial_2.id,
+            name="synonym_1"
+        )
+
+        self.synonym_2 = Synonym.objects.get_or_create(
+            content_type=antimicrobial_content_type,
+            object_id=self.antimicrobial_3.id,
+            name="synonym_2"
+        )
+
+        # make sure content type querying works
+        # lets add in an item with a different content type but the same name
+        self.synonym_3 = Synonym.objects.get_or_create(
+            content_type=ContentType.objects.get_for_model(Condition),
+            object_id=self.antimicrobial_3.id,
+            name="synonym_2"
+        )
+
+    def test_translate_to_models(self):
+        models = get_for_lookup_list(
+            Antimicrobial,
+            [
+                "antimicrobial_1", "antimicrobial_2", "antimicrobial_3",
+                "synonym_1", "synonym_2"
+            ]
+        )
+        self.assertEqual(
+            set(models),
+            set([
+                self.antimicrobial_1,
+                self.antimicrobial_2,
+                self.antimicrobial_3
+            ])
+        )
+
+    def test_does_synonym_lookups(self):
+        models = get_for_lookup_list(
+            Antimicrobial,
+            [
+                "synonym_1", "synonym_2"
+            ]
+        )
+        self.assertEqual(
+            set(models),
+            set([
+                self.antimicrobial_2,
+                self.antimicrobial_3
+            ])
+        )
+
+
+class BloodCultureTestCase(OpalTestCase):
+
+    def setUp(self):
+        self.antimicrobial_1 = Antimicrobial.objects.create(
+            name="antimicrobial_1",
+        )
+
+        self.antimicrobial_2 = Antimicrobial.objects.create(
+            name="antimicrobial_2",
+        )
+
+        self.antimicrobial_3 = antimicrobial_3 = Antimicrobial.objects.create(
+            name="antimicrobial_3",
+        )
+
+        self.antimicrobial_4 = antimicrobial_4 = Antimicrobial.objects.create(
+            name="antimicrobial_4",
+        )
+
+        antimicrobial_content_type = ContentType.objects.get_for_model(
+            Antimicrobial
+        )
+
+        self.synonym_1 = Synonym.objects.get_or_create(
+            content_type=antimicrobial_content_type,
+            object_id=antimicrobial_3.id,
+            name="synonym_1"
+        )
+
+        self.synonym_2 = Synonym.objects.get_or_create(
+            content_type=antimicrobial_content_type,
+            object_id=antimicrobial_4.id,
+            name="synonym_2"
+        )
+
+        # make sure content type querying works
+        # lets add in an item with a different content type but the same name
+        self.synonym_3 = Synonym.objects.get_or_create(
+            content_type=ContentType.objects.get_for_model(Condition),
+            object_id=antimicrobial_4.id,
+            name="synonym_2"
+        )
+
+        _, self.episode = self.new_patient_and_episode_please()
+
+        self.some_organism = Microbiology_organism.objects.create(
+            name="some_organism"
+        )
+
+        self.fish_organism = Microbiology_organism.objects.create(
+            name="fish_organism"
+        )
+
+        self.microscopy_organism = Microbiology_organism.objects.create(
+            name="microscopy_organism"
+        )
+
+        self.date_ordered = datetime.date(2012, 1, 1)
+        self.date_ordered_formated = "01/01/2012"
+        self.date_positive = datetime.date(2012, 1, 2)
+        self.date_positive_formated = "02/01/2012"
+        super(BloodCultureTestCase, self).setUp()
+
+    def get_isolate_update_dict(self, **kwargs):
+        example_dict = dict(
+            lab_number="1231231212",
+            episode_id=self.episode.id,
+            date_ordered=self.date_ordered_formated,
+            date_positive=self.date_positive_formated,
+            source="Left Arm",
+        )
+        example_dict.update(kwargs)
+        return example_dict
+
+    def test_creation_of_isolate(self):
+        test_data = self.get_isolate_update_dict()
+        bc = BloodCulture()
+        bc.update_from_dict(test_data, self.user)
+
+        self.assertEqual(BloodCulture.objects.count(), 1)
+        blood_culture = self.episode.bloodculture_set.get()
+        self.assertEqual(blood_culture.lab_number, "1231231212")
+        self.assertEqual(blood_culture.date_ordered, self.date_ordered)
+        self.assertEqual(blood_culture.date_positive, self.date_positive)
+        self.assertEqual(blood_culture.source, "Left Arm")
+        self.assertEqual(list(blood_culture.isolates.all()), [])
+
+    def test_creation_of_isolates(self):
+        test_data = self.get_isolate_update_dict()
+        test_data["isolates"] = [dict(
+            aerobic=False,
+            organism="some_organism",
+            FISH="fish_organism",
+            microscopy="microscopy_organism",
+            sensitive_antibiotics=[
+                "antimicrobial_1",
+                "synonym_1"
+            ],
+            resistant_antibiotics=[
+                "antimicrobial_2",
+                "synonym_2"
+            ]
+        )]
+
+        bc = BloodCulture()
+        bc.update_from_dict(test_data, self.user)
+
+        blood_culture = self.episode.bloodculture_set.first()
+        aerobic = blood_culture.isolates.get(aerobic=False)
+        self.assertEqual(aerobic.organism, self.some_organism)
+        self.assertEqual(aerobic.FISH, self.fish_organism)
+        self.assertEqual(aerobic.microscopy, self.microscopy_organism)
+
+        sensitive_antibiotics = aerobic.sensitive_antibiotics.all()
+
+        self.assertEqual(len(sensitive_antibiotics), 2)
+        self.assertEqual(
+            set(sensitive_antibiotics.values_list('name', flat=True)),
+            set(["antimicrobial_1", "antimicrobial_3"])
+        )
+
+        resistant_antibiotics = aerobic.resistant_antibiotics.all()
+
+        self.assertEqual(len(resistant_antibiotics), 2)
+        self.assertEqual(
+            set(resistant_antibiotics.values_list('name', flat=True)),
+            set(["antimicrobial_2", "antimicrobial_4"])
+        )
+
+    def test_updates(self):
+        """ we have a blood culture that has a single isolate attached to it
+        the isolate is updated and a new isolate is created
+        """
+        blood_culture = BloodCulture.objects.create(
+            lab_number="1231212121",
+            episode=self.episode
+        )
+
+        isolate = BloodCultureIsolate.objects.create(
+            blood_culture=blood_culture,
+            aerobic=True,
+            organism=self.some_organism
+        )
+
+        isolate.sensitive_antibiotics.add(
+            self.antimicrobial_1, self.antimicrobial_3
+        )
+
+        test_data = dict(
+            lab_number="1231231212",
+            episode_id=self.episode.id,
+            isolates=[
+                dict(
+                    id=isolate.id,
+                    blood_culture_id=blood_culture.id,
+                    aerobic=False,
+                    organism="fish_organism",
+                    FISH=None,
+                    microscopy=None,
+                    sensitive_antibiotics=[
+                        "antimicrobial_1",
+                    ],
+                ),
+                dict(
+                    aerobic=True,
+                    organism="some_organism",
+                    FISH="fish_organism",
+                    microscopy="microscopy_organism",
+                    sensitive_antibiotics=[
+                        "antimicrobial_1",
+                        "synonym_1"
+                    ],
+                )
+            ]
+        )
+
+        blood_culture.update_from_dict(test_data, self.user)
+        self.assertEqual(BloodCulture.objects.count(), 1)
+        self.assertEqual(BloodCultureIsolate.objects.count(), 2)
+
+        isolate = blood_culture.isolates.get(aerobic=False)
+
+        self.assertEqual(isolate.organism, self.fish_organism)
+        self.assertEqual(isolate.FISH, None)
+        self.assertEqual(isolate.microscopy, None)
+
+        self.assertEqual(
+            set(isolate.sensitive_antibiotics.values_list("name", flat=True)),
+            set(["antimicrobial_1"])
+        )
+
+        isolate = blood_culture.isolates.get(aerobic=True)
+
+        self.assertEqual(
+            set(isolate.sensitive_antibiotics.values_list("name", flat=True)),
+            set(["antimicrobial_1", "antimicrobial_3"])
         )
 
 

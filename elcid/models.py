@@ -5,15 +5,26 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+
 from jsonfield import JSONField
 
 import opal.models as omodels
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel
+    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel,
+    TrackedModel
 )
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
+
+
+def get_for_lookup_list(model, values):
+    ct = ContentType.objects.get_for_model(model)
+    return model.objects.filter(
+        models.Q(name__in=values) |
+        models.Q(synonyms__name__in=values, synonyms__content_type=ct)
+    )
 
 
 class Demographics(PatientSubrecord, ExternallySourcedModel):
@@ -507,31 +518,92 @@ class Appointment(EpisodeSubrecord):
 class BloodCultureSource(lookuplists.LookupList):
     pass
 
+class BloodCulture(EpisodeSubrecord):
+    _icon = 'fa fa-crosshairs'
+    _title = 'Blood Culture'
+    _angular_service = 'BloodCultureRecord'
 
-class BloodCultureIsolate(models.Model):
+    lab_number = models.CharField(max_length=255, blank=True)
+    date_ordered = models.DateField(null=True, blank=True)
+    date_positive = models.DateField(null=True, blank=True)
+    source = ForeignKeyOrFreeText(BloodCultureSource)
+
+    def update_from_dict(self, data, *args, **kwargs):
+        isolates = data.get("isolates", [])
+        new_data = {k: v for k, v in data.iteritems() if k != "isolates"}
+
+        super(BloodCulture, self).update_from_dict(new_data, *args, **kwargs)
+
+        for isolate in isolates:
+            isolate_id = isolate.get("id")
+
+            if isolate_id:
+                blood_culture_isolate = self.isolates.get(
+                    id=isolate_id
+                )
+            else:
+                blood_culture_isolate = BloodCultureIsolate(
+                    blood_culture_id=self.id
+                )
+            blood_culture_isolate.update_from_dict(isolate, *args, **kwargs)
+
+
+class BloodCultureIsolate(TrackedModel):
     aerobic = models.BooleanField()
-    organism = ForeignKeyOrFreeText(omodels.Microbiology_organism)
-    FISH = models.CharField(max_length=255, blank=True)
-    microscopy = models.CharField(max_length=255, blank=True)
+    organism = models.ForeignKey(
+        omodels.Microbiology_organism,
+        related_name="blood_culture_isolate_organisms"
+    )
+    FISH = models.ForeignKey(
+        omodels.Microbiology_organism,
+        related_name="blood_culture_fish_organisms",
+        null=True,
+        blank=True
+    )
+    microscopy = models.ForeignKey(
+        omodels.Microbiology_organism,
+        related_name="blood_culture_microscopy_organisms",
+        null=True,
+        blank=True
+    )
     sensitive_antibiotics = models.ManyToManyField(
         omodels.Antimicrobial, related_name="blood_culture_sensitive"
     )
     resistant_antibiotics = models.ManyToManyField(
         omodels.Antimicrobial, related_name="blood_culture_resistant"
     )
+    blood_culture = models.ForeignKey(BloodCulture, related_name="isolates")
 
+    def update_from_dict(self, data, user, *args, **kwargs):
+        self.aerobic = data["aerobic"]
+        organisms = ["FISH", "microscopy", "organism"]
 
-class BloodCulture(EpisodeSubrecord):
-    _icon = 'fa fa-crosshairs'
-    _title = 'Blood Culture'
+        for k in organisms:
+            v = data.get(k)
+            organism_models = get_for_lookup_list(omodels.Microbiology_organism, [v])
+            organism = None
 
-    lab_number = models.CharField(max_length=255, blank=True)
-    date_ordered = models.DateField(null=True, blank=True)
-    date_positive = models.DateField(null=True, blank=True)
-    source = ForeignKeyOrFreeText(BloodCultureSource)
-    isolate = models.ForeignKey(BloodCultureIsolate)
+            if organism_models:
+                organism = organism_models[0]
+            setattr(self, k, organism)
 
+        self.save()
 
+        antibiotics = ["sensitive_antibiotics", "resistant_antibiotics"]
+
+        for k in antibiotics:
+            v = data.get(k)
+
+            if v:
+                antimicrobials = get_for_lookup_list(omodels.Antimicrobial, v)
+                field = getattr(self, k)
+                field.clear()
+                field.add(*antimicrobials)
+
+        self.set_created_by_id(None, user)
+        self.set_updated_by_id(None, user)
+        self.set_updated(None, user)
+        self.set_created(None, user)
 
 
 class FinalDiagnosis(EpisodeSubrecord):

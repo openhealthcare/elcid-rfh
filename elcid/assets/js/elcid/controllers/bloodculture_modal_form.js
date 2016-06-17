@@ -1,30 +1,45 @@
-controllers.controller('BloodCultureLocationCtrl',
-function(Options, $controller) {
+angular.module('opal.controllers').controller('BloodCultureFormCtrl',
+function($scope, $cookieStore, $timeout,
+                         $modalInstance, $modal, $q,
+                         ngProgressLite, $controller,
+                         profile, item, options, episode) {
       "use strict";
-      var parentCtrl = $controller("MultistageDefault");
-      var vm = this;
-      _.extend(vm, parentCtrl);
-      vm.addAerobic = function(){
-          vm.aerobic_models.push({});
-      };
 
-      vm.addAnaerobic = function(){
-          vm.anaerobic_models.push({});
-      };
-
-      vm.aerobic_models = [];
-      vm.anaerobic_models = [];
-
-
-      Options.then(function(options){
-        // var direct_add = _.filter(options.tag_display, function(v, k){
-        //     return _.contains(options.tag_direct_add, k);
-        // });
-        // vm.tagging_display_list = _.values(direct_add);
-        // vm.display_tag_to_name = _.invert(options.tag_display);
+      var parentCtrl = $controller("EditItemCtrl", {
+          $scope: $scope,
+          $modalInstance: $modalInstance,
+          episode: episode,
+          options: options,
+          item: item,
+          profile: profile
       });
+      var vm = this;
 
-      vm.toSave = function(editing){
+      _.extend(vm, parentCtrl);
 
+      $scope.addAerobic = function(){
+        $scope.aerobic_models.push({
+          aerobic: true
+        });
       };
+
+      $scope.addAnaerobic = function(){
+        $scope.anaerobic_models.push({
+          aerobic: false
+        });
+      };
+
+      $scope.aerobic_models = [];
+      $scope.anaerobic_models = [];
+
+      $scope.preSave = function(editing){
+        // filter out completely empty fields
+        var toUpdate = vm.aerobic_models.concat(vm.anaerobic_models);
+
+        var nonEmpties = _.reject(toUpdate, function(x){
+            return _.isEmpty(_.omit(x, "aerobic"));
+        });
+
+        editing.blood_culture.isolates = nonEmpties;
+    };
 });
