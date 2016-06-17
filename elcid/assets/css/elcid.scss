@@ -30,11 +30,6 @@ h1, h2, h3, h4, h5{
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
 
-.panel-primary .panel-default .panel-heading.bg-active,
-.bg-active{
-
-}
-
 .panel.panel-primary { border-color: $primary; }
 .panel.panel-primary > .panel-heading {
     background-color: $primary;
