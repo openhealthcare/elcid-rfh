@@ -1,0 +1,20 @@
+{% extends "modal_base.html" %}
+{% block icon_name %}
+  {{ models.BloodCulture.get_icon }}
+{% endblock %}
+{% block title %}
+  {{ models.BloodCulture.get_display_name }}
+{% endblock %}
+{% block modal_body %}
+  <div class="to_append"></div>
+{% endblock %}
+{% block modal_save %}
+<button
+  ng-disabled="!currentStep.controller.valid(editing)"
+  class="btn btn-primary"
+  ng-show="currentStep.controller.showNext(editing)"
+  ng-click="goNext()">
+    Save <i class="fa fa-save"></i>
+  </span>
+</button>
+{% endblock %}

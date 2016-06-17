@@ -10,10 +10,10 @@
     </div>
     <hr />
 
-    <div class="row content-offset-25" ng-repeat="aerobicModel in aerobicModels">
+    <div class="row content-offset-25" ng-repeat="aerobicModel in currentStep.controller.aerobic_models">
         <div class="row">
           <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
-            <h4>Isolate [[ $index + 1 ]] <a ng-click="deleteAerobic($index)"><small>remove</small></a></h4>
+            <h4>Isolate [[ $index + 1 ]]</h4>
           </div>
         </div>
         {% select label="Organism" model="aerobicModel.organism" lookuplist="microbiology_organism_list" %}
@@ -23,7 +23,7 @@
         {% select label="Resistant" model="aerobicModel.resistant" lookuplist="antimicrobial_list" multiple=True tagging=False %}
     </div>
     <div class="row text-center">
-      <button ng-click="addAerobic()" class="btn btn-primary">
+      <button ng-click="currentStep.controller.addAerobic()" class="btn btn-primary">
         <i class="fa fa-plus-circle"></i> New Isolate
       </button>
     </div>
@@ -33,10 +33,10 @@
     </div>
     <hr />
 
-    <div class="row content-offset-25" ng-repeat="anaerobicModel in anaerobicModels">
+    <div class="row content-offset-25" ng-repeat="anaerobicModel in currentStep.controller.anaerobic_models">
         <div class="row">
           <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
-            <h4>Isolate [[ $index + 1 ]] <a ng-click="deleteAnaerobic($index)"><small>remove</small></a></h4>
+            <h4>Isolate [[ $index + 1 ]]</h4>
           </div>
         </div>
         {% select label="Organism" model="anaerobicModel.organism" lookuplist="microbiology_organism_list" %}
@@ -46,7 +46,7 @@
         {% select label="Resistant" model="anaerobicModel.resistant" lookuplist="antimicrobial_list" multiple=True tagging=False %}
     </div>
     <div class="row text-center content-offset-below-25">
-      <button  ng-click="addAnaerobic()" class="btn btn-primary">
+      <button  ng-click="currentStep.controller.addAnaerobic()" class="btn btn-primary">
         <i class="fa fa-plus-circle"></i> New Isolate
       </button>
     </div>

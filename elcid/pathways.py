@@ -6,7 +6,7 @@ from elcid.models import (
 
 from pathway.pathways import (
     Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin,
-    MultSaveStep
+    MultSaveStep, ModalPathway
 )
 
 
@@ -48,7 +48,7 @@ class CernerDemoPathway(UnrolledPathway):
         # Infection,
         MultSaveStep(model=Line),
         MultSaveStep(model=Antimicrobial),
-        MultSaveStep(model=BloodCulture),
+        # MultSaveStep(model=BloodCulture),
         MultSaveStep(model=Imaging),
         FinalDiagnosis,
         MultSaveStep(model=MicrobiologyInput),
