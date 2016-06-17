@@ -26,6 +26,10 @@ class Application(application.OpalApplication):
         'js/elcid/services/flow.js',
     ]
 
+    styles = [
+        "css/elcid.css"
+    ]
+
     actions = [
         'actions/presenting_complaint.html'
     ]
