@@ -29,12 +29,24 @@ function($scope, $cookieStore, $timeout,
         });
       };
 
-      $scope.aerobic_models = [];
-      $scope.anaerobic_models = [];
+      $scope.deleteAnaerobic = function(index){
+        $scope.anaerobic_models.splice(index, 1);
+      }
+
+      $scope.deleteAerobic = function(index){
+        $scope.aerobic_models.splice(index, 1);
+      }
+
+      $scope.aerobic_models = angular.copy(_.filter(item.isolates, function(x){
+        return x.aerobic
+      }));
+      $scope.anaerobic_models = angular.copy(_.filter(item.isolates, function(x){
+        return !x.aerobic
+      }));
 
       $scope.preSave = function(editing){
         // filter out completely empty fields
-        var toUpdate = vm.aerobic_models.concat(vm.anaerobic_models);
+        var toUpdate = $scope.aerobic_models.concat($scope.anaerobic_models);
 
         var nonEmpties = _.reject(toUpdate, function(x){
             return _.isEmpty(_.omit(x, "aerobic"));

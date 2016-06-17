@@ -528,11 +528,22 @@ class BloodCulture(EpisodeSubrecord):
     date_positive = models.DateField(null=True, blank=True)
     source = ForeignKeyOrFreeText(BloodCultureSource)
 
+    @classmethod
+    def _get_fieldnames_to_serialize(cls):
+        field_names = super(BloodCulture, cls)._get_fieldnames_to_serialize()
+        field_names.append("isolates")
+        return field_names
+
+
     def update_from_dict(self, data, *args, **kwargs):
         isolates = data.get("isolates", [])
         new_data = {k: v for k, v in data.iteritems() if k != "isolates"}
 
         super(BloodCulture, self).update_from_dict(new_data, *args, **kwargs)
+
+        existing = [i["id"] for i in isolates if "id" in i]
+
+        self.isolates.exclude(id__in=existing).delete()
 
         for isolate in isolates:
             isolate_id = isolate.get("id")
@@ -546,6 +557,9 @@ class BloodCulture(EpisodeSubrecord):
                     blood_culture_id=self.id
                 )
             blood_culture_isolate.update_from_dict(isolate, *args, **kwargs)
+
+    def get_isolates(self, user):
+        return [i.to_dict(user) for i in self.isolates.all()]
 
 
 class BloodCultureIsolate(TrackedModel):
@@ -573,6 +587,22 @@ class BloodCultureIsolate(TrackedModel):
         omodels.Antimicrobial, related_name="blood_culture_resistant"
     )
     blood_culture = models.ForeignKey(BloodCulture, related_name="isolates")
+
+    def to_dict(self, user):
+        return dict(
+            aerobic=self.aerobic,
+            organism= self.organism.name if self.organism else None,
+            FISH=self.FISH.name if self.FISH else None,
+            microscopy=self.microscopy.name if self.microscopy else None,
+            sensitive_antibiotics=[
+                i.name for i in self.sensitive_antibiotics.all()
+            ],
+            resistant_antibiotics=[
+                i.name for i in self.resistant_antibiotics.all()
+            ],
+            blood_culture_id=self.blood_culture_id,
+            id=self.id
+        )
 
     def update_from_dict(self, data, user, *args, **kwargs):
         self.aerobic = data["aerobic"]

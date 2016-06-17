@@ -13,7 +13,7 @@
     <div class="row content-offset-25" ng-repeat="aerobicModel in aerobic_models">
         <div class="row">
           <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
-            <h4>Isolate [[ $index + 1 ]]</h4>
+            <h4>Isolate [[ $index + 1 ]] <a ng-click="deleteAerobic($index)"><small>remove</small></a></h4>
           </div>
         </div>
         {% select label="Organism" model="aerobicModel.organism" lookuplist="microbiology_organism_list" %}
@@ -36,7 +36,7 @@
     <div class="row content-offset-25" ng-repeat="anaerobicModel in anaerobic_models">
         <div class="row">
           <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
-            <h4>Isolate [[ $index + 1 ]]</h4>
+            <h4>Isolate [[ $index + 1 ]] <a ng-click="deleteAnaerobic($index)"><small>remove</small></a></h4>
           </div>
         </div>
         {% select label="Organism" model="anaerobicModel.organism" lookuplist="microbiology_organism_list" %}
