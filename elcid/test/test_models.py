@@ -610,6 +610,30 @@ class BloodCultureTestCase(OpalTestCase):
             set(["antimicrobial_2", "antimicrobial_4"])
         )
 
+    def test_removal(self):
+        """ we remove an isolate
+        """
+        blood_culture = BloodCulture.objects.create(
+            lab_number="1231212121",
+            episode=self.episode
+        )
+
+        BloodCultureIsolate.objects.create(
+            blood_culture=blood_culture,
+            aerobic=True,
+            organism=self.some_organism
+        )
+
+        test_data = dict(
+            lab_number="1231231212",
+            episode_id=self.episode.id,
+            isolates=[],
+        )
+
+        blood_culture.update_from_dict(test_data, self.user)
+
+        self.assertEqual(BloodCultureIsolate.objects.count(), 0)
+
     def test_updates(self):
         """ we have a blood culture that has a single isolate attached to it
         the isolate is updated and a new isolate is created
