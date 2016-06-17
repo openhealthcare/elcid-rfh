@@ -10,14 +10,10 @@ h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 sma
 .bg-secondary {
   background-color: #D36C08; }
 
-.panel-primary .panel-default .panel-heading.bg-active,
-.bg-active {
-  background-color: #0091C9; }
-
 .panel.panel-primary {
   border-color: #0091C9; }
 
-.panel.panel-primary .panel-heading {
+.panel.panel-primary > .panel-heading {
   background-color: #0091C9;
   color: white; }
 
@@ -59,16 +55,11 @@ h5 {
 .panel-default .panel-heading {
   border-bottom: 3px solid #D36C08; }
 
-.panel-primary .panel-active .panel-heading,
-.panel-active .panel-heading,
-.panel.panel-primary .panel-heading {
-  border: 3px solid #0091C9; }
-
 .modal-header {
   background: #0091C9; }
 
 .loading {
-  background-color: #EEE;
+  background-color: #343637;
   color: white; }
 
 /* ngProgress overrides */
@@ -79,5 +70,12 @@ h5 {
 
 .smpl-step > .smpl-step-step > .progress > .progress-bar {
   background-color: #D36C08; }
+
+a.list-group-item:hover, a.list-group-item:focus {
+  text-decoration: none;
+  background-color: #4d5051;
+  color: #FFF; }
+a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
+  background-color: #343637; }
 
 /*# sourceMappingURL=elcid.css.map */
