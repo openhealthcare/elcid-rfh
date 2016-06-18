@@ -18,8 +18,8 @@
         {% select label="Organism" model="aerobicModel.organism" lookuplist="microbiology_organism_list" %}
         {% select label="FISH" model="aerobicModel.fish" lookuplist="microbiology_organism_list" %}
         {% select label="Microscopy" model="aerobicModel.microscopy" lookuplist="microbiology_organism_list" %}
-        {% select label="Sensitive" model="aerobicModel.sensitive" lookuplist="antimicrobial_list" multiple=True tagging=False %}
-        {% select label="Resistant" model="aerobicModel.resistant" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+        {% select label="Sensitive" model="aerobicModel.sensitive_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+        {% select label="Resistant" model="aerobicModel.resistant_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
     </div>
     <div class="row text-center">
       <button ng-click="addAerobic()" class="btn btn-primary">
@@ -41,8 +41,8 @@
         {% select label="Organism" model="anaerobicModel.organism" lookuplist="microbiology_organism_list" %}
         {% select label="FISH" model="anaerobicModel.fish" lookuplist="microbiology_organism_list" %}
         {% select label="Microscopy" model="anaerobicModel.microscopy" lookuplist="microbiology_organism_list" %}
-        {% select label="Sensitive" model="anaerobicModel.sensitive" lookuplist="antimicrobial_list" multiple=True tagging=False %}
-        {% select label="Resistant" model="anaerobicModel.resistant" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+        {% select label="Sensitive" model="anaerobicModel.sensitive_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+        {% select label="Resistant" model="anaerobicModel.resistant_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
     </div>
     <div class="row text-center content-offset-below-25">
       <button  ng-click="addAnaerobic()" class="btn btn-primary">
