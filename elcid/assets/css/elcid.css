@@ -15,7 +15,8 @@ h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 sma
 
 .panel.panel-primary > .panel-heading {
   background-color: #0091C9;
-  color: white; }
+  color: white;
+  border-color: #0091C9; }
 
 h5 {
   font-weight: 600;
