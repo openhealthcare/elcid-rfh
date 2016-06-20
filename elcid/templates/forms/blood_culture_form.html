@@ -16,7 +16,7 @@
           </div>
         </div>
         {% select label="Organism" model="aerobicModel.organism" lookuplist="microbiology_organism_list" %}
-        {% select label="FISH" model="aerobicModel.fish" lookuplist="microbiology_organism_list" %}
+        {% select label="FISH" model="aerobicModel.FISH" lookuplist="microbiology_organism_list" %}
         {% select label="Microscopy" model="aerobicModel.microscopy" lookuplist="microbiology_organism_list" %}
         {% select label="Sensitive" model="aerobicModel.sensitive_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
         {% select label="Resistant" model="aerobicModel.resistant_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}

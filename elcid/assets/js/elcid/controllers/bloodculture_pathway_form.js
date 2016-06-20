@@ -60,4 +60,7 @@ function( $modal, $q, ngProgressLite, $controller, scope, step, Options, episode
       if(scope.editing.blood_culture){
           scope.initialise(scope.editing.blood_culture);
       }
+      else{
+          scope.initialise({});
+      }
 });
