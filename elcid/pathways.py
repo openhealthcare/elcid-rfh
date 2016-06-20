@@ -48,7 +48,10 @@ class CernerDemoPathway(UnrolledPathway):
         # Infection,
         MultSaveStep(model=Line),
         MultSaveStep(model=Antimicrobial),
-        # MultSaveStep(model=BloodCulture),
+        MultSaveStep(
+            model=BloodCulture,
+            controller_class="BloodCulturePathwayFormCtrl"
+        ),
         MultSaveStep(model=Imaging),
         FinalDiagnosis,
         MultSaveStep(model=MicrobiologyInput),

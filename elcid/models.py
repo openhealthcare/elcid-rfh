@@ -638,6 +638,7 @@ class BloodCultureIsolate(TrackedModel):
 
 class FinalDiagnosis(EpisodeSubrecord):
     _icon = 'fa fa-eye'
+    _title = "Final Diagnosis"
 
     source = models.CharField(max_length=255, blank=True)
     contaminant = models.BooleanField(default=False)
