@@ -566,7 +566,9 @@ class BloodCultureIsolate(TrackedModel):
     aerobic = models.BooleanField()
     organism = models.ForeignKey(
         omodels.Microbiology_organism,
-        related_name="blood_culture_isolate_organisms"
+        related_name="blood_culture_isolate_organisms",
+        null=True,
+        blank=True
     )
     FISH = models.ForeignKey(
         omodels.Microbiology_organism,
@@ -638,6 +640,7 @@ class BloodCultureIsolate(TrackedModel):
 
 class FinalDiagnosis(EpisodeSubrecord):
     _icon = 'fa fa-eye'
+    _title = "Final Diagnosis"
 
     source = models.CharField(max_length=255, blank=True)
     contaminant = models.BooleanField(default=False)

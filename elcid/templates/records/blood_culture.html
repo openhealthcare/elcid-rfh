@@ -1,6 +1,7 @@
 
- <span ng-show="item.date_ordered">Date Ordered[[ item.date_ordered  | shortDate ]] <br /></span>
- <span ng-show="item.lab_number">Lab Number [[ item.lab_number ]] <br /></span>
+ <span ng-show="item.lab_number">Lab number [[ item.lab_number ]]</span>
+ <span ng-show="item.date_ordered">(ordered [[ item.date_ordered  | shortDate ]])</span>
+ <span ng-show="item.lab_number || item.ordered"><br /></span>
  <span ng-show="item.source">Source [[ item.source ]] <br /></span>
 <br />
 <div ng-repeat="isAerobic in [true, false]">
@@ -10,12 +11,12 @@
    <br />
    <table class="table">
      <tr>
-       <th>Date of positive</th>
+       <th>Date pos</th>
        <th>Microscopy</th>
        <th>Organism</th>
-       <th>Organism (FISH)</th>
-       <th>Sensitive Antibiotics</th>
-       <th>Resistant Antibiotics</th>
+       <th>FISH</th>
+       <th>Sensitive</th>
+       <th>Resistant</th>
      <tr ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
        <td></td>
        <td>[[ isolate.microscopy ]]</td>
