@@ -34,6 +34,7 @@ h1, h2, h3, h4, h5{
 .panel.panel-primary > .panel-heading {
     background-color: $primary;
     color: white;
+    border-color: $primary;
 }
 
 h5{

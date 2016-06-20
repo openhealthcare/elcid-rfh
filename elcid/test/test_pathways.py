@@ -1,5 +1,6 @@
-from opal.core.test import OpalTestCase
 from datetime import date
+
+from opal.core.test import OpalTestCase
 
 
 class TestPathwayPost(OpalTestCase):
