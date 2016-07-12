@@ -79,7 +79,10 @@ module.exports =  function(config){
             'opal/controllers/*.js',
             'opal/app.js',
             '../../core/search/static/js/search/controllers/*',
-            '../../core/search/static/js/search/services/*',,
+            '../../core/search/static/js/search/services/*',
+            '../../../../opal-pathway/pathway/static/js/pathway/controllers/*.js',
+            '../../../../opal-pathway/pathway/static/js/pathway/services/*.js',
+
 
 
             // Our application

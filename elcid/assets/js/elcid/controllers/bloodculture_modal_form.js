@@ -2,14 +2,17 @@ angular.module('opal.controllers').controller('BloodCultureFormCtrl',
 function($scope, $cookieStore, $timeout,
                          $modalInstance, $modal, $q,
                          ngProgressLite, $controller,
-                         profile, item, options, episode) {
+                         profile, item, referencedata,
+                         metadata, episode
+) {
       "use strict";
 
       var parentCtrl = $controller("EditItemCtrl", {
           $scope: $scope,
           $modalInstance: $modalInstance,
           episode: episode,
-          options: options,
+          referencedata: referencedata,
+          metadata: metadata,
           item: item,
           profile: profile
       });
