@@ -5,7 +5,7 @@
  <span ng-show="item.source">Source [[ item.source ]] <br /></span>
 <br />
 <div ng-repeat="isAerobic in [true, false]">
-  <div ng-show="isolates.length">
+  <div ng-show="item.isolates.length">
    <b ng-show="isAerobic">Aerobic</b>
    <b ng-hide="isAerobic">Anaerobic</b>
    <br />
@@ -22,8 +22,8 @@
        <td>[[ isolate.microscopy ]]</td>
        <td>[[ isolate.organism ]]</td>
        <td>[[ isolate.FISH ]]</td>
-       <td>[[ isolate.sensitive_antibiotics.join(", ") ]]
-       <td>[[ isolate.resistant_antibiotics.join(", ") ]]
+       <td>[[ isolate.sensitive_antibiotics.join(", ") ]]</td>
+       <td>[[ isolate.resistant_antibiotics.join(", ") ]]</td>
      </tr>
    </table>
   </div>
