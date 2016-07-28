@@ -22,9 +22,6 @@ module.exports =  function(config){
     preprocessors[__dirname + '/../elcid/assets/js/elcid/*'] = 'coverage';
     preprocessors[__dirname + '/../elcid/assets/js/elcid/controllers/*'] = 'coverage';
     preprocessors[__dirname + '/../elcid/assets/js/elcid/services/*'] = 'coverage';
-    preprocessors[__dirname + '/../opat/static/js/opat/controllers/*'] = 'coverage';
-    preprocessors[__dirname + '/../research/static/js/research/controllers/*'] = 'coverage';
-    preprocessors[__dirname + '/../walkin/static/js/walkin/controllers/*'] = 'coverage';
 
     config.set({
         frameworks: ['jasmine'],
@@ -81,22 +78,13 @@ module.exports =  function(config){
             '../../core/search/static/js/search/controllers/*',
             '../../core/search/static/js/search/services/*',,
 
-
             // Our application
-
             __dirname + '/../elcid/assets/js/elcid/*.js',
             __dirname + '/../elcid/assets/js/elcid/controllers/*.js',
             __dirname + '/../elcid/assets/js/elcid/services/*.js',
-            __dirname + '/../opat/static/js/opat/controllers/*.js',
-            __dirname + '/../research/static/js/research/controllers/*.js',
-            __dirname + '/../walkin/static/js/walkin/controllers/*.js',
-
 
             // The tests
             __dirname + '/../elcid/assets/js/elcidtest/*.js',
-            __dirname + '/../opat/static/js/test/*.js',
-            __dirname + '/../research/static/js/test/*.js',
-            __dirname + '/../walkin/static/js/walkintest/*.js',
         ],
 
         preprocessors: preprocessors,

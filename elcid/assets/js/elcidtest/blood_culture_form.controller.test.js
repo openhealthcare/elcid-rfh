@@ -53,7 +53,9 @@ describe('BloodCultureFormCtrlTest', function() {
             $modalInstance: fakeModalInstance,
             item          : fakeItem,
             options       : {},
+            referencedata : {toLookuplists: function(){ return {} }},
             profile       : {},
+            metadata      : {},
             episode       : episode,
             ngProgressLite: ngProgressLite,
         });
@@ -71,12 +73,9 @@ describe('BloodCultureFormCtrlTest', function() {
           spyOn(fakeItem, 'save').and.callFake(function() {
               return deferred.promise;
           });
-          expect($scope.saving).toBe(false);
           $scope.save('save');
-          expect($scope.saving).toBe(true);
           deferred.resolve("episode returned");
           $scope.$digest();
-          expect($scope.saving).toBe(false);
           callArgs = fakeItem.save.calls.mostRecent().args;
           expect(callArgs.length).toBe(1);
           expect(callArgs[0]).toEqual({});
