@@ -4923,10 +4923,6 @@
     },
     {
       "synonyms": [],
-      "name": "Crimean-congo Haemorrhagic fever"
-    },
-    {
-      "synonyms": [],
       "name": "Crohn's Disease"
     },
     {
@@ -5895,10 +5891,6 @@
     {
       "synonyms": [],
       "name": "Myasthenia gravia"
-    },
-    {
-      "synonyms": [],
-      "name": "Mycobacterium Avium Intracellulare "
     },
     {
       "synonyms": [],
@@ -7173,19 +7165,7 @@
       "synonyms": [],
       "name": "Citrobacter koseri"
     },
-    {
-      "synonyms": [],
-      "name": "Clostridium difficile"
-    },
-    {
-      "synonyms": [],
-      "name": "Enterococcus faecalis"
-    },
-    {
-      "synonyms": [],
-      "name": "Enterococcus faecium"
-    },
-    {
+   {
       "synonyms": [],
       "name": "Group C Streptococcus"
     },
@@ -7203,31 +7183,7 @@
     },
     {
       "synonyms": [],
-      "name": "Mycobacterium avium intracellulare"
-    },
-    {
-      "synonyms": [],
-      "name": "Mycobacterium tuberculosis"
-    },
-    {
-      "synonyms": [],
-      "name": "Neisseria gonorrheae"
-    },
-    {
-      "synonyms": [],
-      "name": "Neisseria meningitidis"
-    },
-    {
-      "synonyms": [],
       "name": "Proteus"
-    },
-    {
-      "synonyms": [],
-      "name": "Streptococcus agalactiae"
-    },
-    {
-      "synonyms": [],
-      "name": "Streptococcus pyogenes"
     },
     {
       "synonyms": [],
@@ -7627,22 +7583,6 @@
         "Sputum TB MC&S"
       ],
       "name": "Sputum AFB MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "CSF AFB microscopy & TB culture"
-    },
-    {
-      "synonyms": [],
-      "name": "Sputum AFB microscopy & TB culture"
-    },
-    {
-      "synonyms": [],
-      "name": "Tissue AFB microscopy & TB culture"
-    },
-    {
-      "synonyms": [],
-      "name": "Urine AFB microscopy & TB culture"
     },
     {
       "synonyms": [
