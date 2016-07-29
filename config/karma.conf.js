@@ -22,9 +22,10 @@ module.exports =  function(config){
     preprocessors[__dirname + '/../elcid/assets/js/elcid/*'] = 'coverage';
     preprocessors[__dirname + '/../elcid/assets/js/elcid/controllers/*'] = 'coverage';
     preprocessors[__dirname + '/../elcid/assets/js/elcid/services/*'] = 'coverage';
-    preprocessors[__dirname + '/../opat/static/js/opat/controllers/*'] = 'coverage';
-    preprocessors[__dirname + '/../research/static/js/research/controllers/*'] = 'coverage';
-    preprocessors[__dirname + '/../walkin/static/js/walkin/controllers/*'] = 'coverage';
+    preprocessors[__dirname + '/../elcid/assets/js/elcid/services/records/*'] = 'coverage';
+    // preprocessors[__dirname + '/../opat/static/js/opat/controllers/*'] = 'coverage';
+    // preprocessors[__dirname + '/../research/static/js/research/controllers/*'] = 'coverage';
+    // preprocessors[__dirname + '/../walkin/static/js/walkin/controllers/*'] = 'coverage';
 
     config.set({
         frameworks: ['jasmine'],
@@ -34,7 +35,6 @@ module.exports =  function(config){
         files: [
             //JASMINE,
             //JASMINE_ADAPTER,
-
             "lib/bower_components/angular/angular.js",
             "lib/bower_components/angular-route/angular-route.js",
             "lib/bower_components/angular-resource/angular-resource.js",
@@ -68,18 +68,17 @@ module.exports =  function(config){
             'lib/bower_components/ment.io/dist/templates.js',
             'lib/bower_components/angular-ui-select/dist/select.js',
             "lib/bower_components/angular-local-storage/dist/angular-local-storage.js",
+
             'opal/utils.js',
-            'opal/opaldown.js',
             'opal/directives.js',
             'opal/filters.js',
             'opal/services_module.js',
             'opal/services/*.js',
-            'opal/services/flow.js',
             'opal/controllers_module.js',
             'opal/controllers/*.js',
             'opal/app.js',
             '../../core/search/static/js/search/controllers/*',
-            '../../core/search/static/js/search/services/*',,
+            '../../core/search/static/js/search/services/*',
 
 
             // Our application
@@ -87,16 +86,17 @@ module.exports =  function(config){
             __dirname + '/../elcid/assets/js/elcid/*.js',
             __dirname + '/../elcid/assets/js/elcid/controllers/*.js',
             __dirname + '/../elcid/assets/js/elcid/services/*.js',
-            __dirname + '/../opat/static/js/opat/controllers/*.js',
-            __dirname + '/../research/static/js/research/controllers/*.js',
-            __dirname + '/../walkin/static/js/walkin/controllers/*.js',
+            // __dirname + '/../elcid/assets/js/elcid/services/records/*.js',
+            // __dirname + '/../opat/static/js/opat/controllers/*.js',
+            // __dirname + '/../research/static/js/research/controllers/*.js',
+            // __dirname + '/../walkin/static/js/walkin/controllers/*.js',
 
 
             // The tests
             __dirname + '/../elcid/assets/js/elcidtest/*.js',
-            __dirname + '/../opat/static/js/test/*.js',
-            __dirname + '/../research/static/js/test/*.js',
-            __dirname + '/../walkin/static/js/walkintest/*.js',
+            // __dirname + '/../opat/static/js/test/*.js',
+            // __dirname + '/../research/static/js/test/*.js',
+            // __dirname + '/../walkin/static/js/walkintest/*.js',
         ],
 
         preprocessors: preprocessors,
