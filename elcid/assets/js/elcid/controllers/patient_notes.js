@@ -1,124 +1,70 @@
-//
-// Editing/detail page for ward round episodes
-//
-angular.module('opal.controllers').controller(
-   'PatientDetailCtrl', function($rootScope, $scope, $cookieStore,
-                                episodes, options, profile, recordLoader,
-                                EpisodeDetailMixin, ngProgressLite, $q,
-                                growl
-                                   ){
-       "use strict";
+angular.module('opal.controllers').controller('PatientDetailCtrl', function($scope){
+  "use strict";
+  var vm = this;
+  function getAlertInvestigations(episode){
+      if(episode.microbiology_test){
+        return _.filter(episode.microbiology_test, function(mt){
+           return mt.alert_investigation;
+        });
+      }
+      else{
+        return [];
+      }
+  }
 
-       var COOKIE_NAME = "patientNotes-inlineForm";
+  var orderByDate = function(significantDate){
+     // order by -date where date could be null, so we put that at the bottom
+     if(significantDate){
+         return -(moment(significantDate).unix());
+     }
+     else{
+         // this should never happen, but if it does, put it at the bottom
+         return 0;
+     }
+  };
 
-       $scope.episodes = _.sortBy(episodes, function(e){
-           var significantDate = e.discharge_date || e.date_of_episode || e.date_of_admission;
+  vm.getClinicalAdviceDate = function(clinicalAdvice){
+     return clinicalAdvice.when || clinicalAdvice.created;
+  };
 
-           if(significantDate){
-              significantDate = moment(significantDate).toDate();
-           }
-            else{
-                significantDate = new Date(1900, 1, 1);
-            }
+  vm.clinicalAdviceOrdering = function(clinicalAdvice){
+     var clinicalAdviceDate = vm.getClinicalAdviceDate(clinicalAdvice);
+     return orderByDate(clinicalAdviceDate);
+  };
 
-           return significantDate;
-       }).reverse();
+  if($scope.patient.episodes.length){
+      $scope.episode.alertInvestigations = function(){
+              return _.reduce($scope.patient.episodes, function(r, e){
+              var alertInvestigations = getAlertInvestigations(e);
+              if(alertInvestigations.length){
+                  r = r.concat(alertInvestigations);
+              }
 
-       $scope.orderByDate = function(x){
-          return -moment(x.when, 'DD/MM/YYYY').unix();
-       };
+              return r;
+          }, []);
+      };
 
-       $scope.inlineForm = {};
+      this.isRecentHaemInformation = function(haemInformationRow){
+         var haemInformation = _.reduce($scope.patient.episodes, function(hi, e){
+             var episodeHaemInfo = e.haem_information || [];
+             hi = hi.concat(episodeHaemInfo);
+             return hi;
+         }, []);
 
-       $scope.initialiseForm = function(default_arg){
-           $scope.inlineForm.name = $cookieStore.get(COOKIE_NAME) || default_arg;
-       };
+         haemInformation = _.sortBy(haemInformation, "patient_type");
 
-       $scope.$watch("inlineForm.name", function(){
-           if($scope.inlineForm.name){
-               $cookieStore.put(COOKIE_NAME, $scope.inlineForm.name);
-           }
-       }, true);
+         haemInformation = _.sortBy(haemInformation, function(hi){
+             var significantDate = hi.count_recovery || hi.created;
+             return new Date(significantDate);
+         });
 
-       $scope.profile = profile;
-       $scope.options = options;
-       $scope.episode = {
-           alertInvestigations: []
-       };
+         var result = {};
 
-       $scope.markAsDuplicate = function(){
-           var item = $scope.episode.newItem(name, {column: $rootScope.fields.duplicate_patient});
-           $scope.isDuplicate = true;
-           item.save({}).then(function(){
-             growl.success("Thanks, we'll take a look");
-           },
-           function(){
-              $scope.isDuplcate = false;
-           });
-       };
+         _.forEach(haemInformation, function(hi){
+             result[hi.patient_type] = hi.id;
+         });
 
-       function getAlertInvestigations(episode){
-           if(episode.microbiology_test){
-             return _.filter(episode.microbiology_test, function(mt){
-                return mt.alert_investigation;
-             });
-           }
-           else{
-             return [];
-           }
-       }
-
-       if($scope.episodes.length){
-           $scope.episode = $scope.episodes[0];
-           $scope.firstEpisode = $scope.episode;
-           $scope.isDuplicate = $scope.episode.duplicate_patient && $scope.episode.duplicate_patient.length;
-
-           $scope.episode.alertInvestigations = function(){
-                   return _.reduce(episodes, function(r, e){
-                   var alertInvestigations = getAlertInvestigations(e);
-                   if(alertInvestigations.length){
-                       r = r.concat(alertInvestigations);
-                   }
-
-                   return r;
-               }, []);
-           };
-
-           $scope.isRecentHaemInformation = function(haemInformationRow){
-              var haemInformation = _.reduce($scope.episodes, function(hi, e){
-                  var episodeHaemInfo = e.haem_information || [];
-                  hi = hi.concat(episodeHaemInfo)
-                  return hi;
-              }, []);
-
-              haemInformation = _.sortBy(haemInformation, "patient_type");
-
-              haemInformation = _.sortBy(haemInformation, function(hi){
-                  var significantDate = hi.count_recovery || hi.created;
-                  return new Date(significantDate);
-              });
-
-              result = {};
-
-              _.forEach(haemInformation, function(hi){
-                  result[hi.patient_type] = hi.id;
-              });
-
-              return _.contains(_.values(result), haemInformationRow.id);
-           };
-
-           EpisodeDetailMixin($scope);
-           if($scope.episodes.length &&
-               _.last($scope.episodes).microbiology_input &&
-               _.last($scope.episodes).microbiology_input.length){
-               $scope.lastInputId = _.last(_.last($scope.episodes).microbiology_input).id;
-           }
-       }
-
-       $scope.patient = episodes[0].demographics[0];
-
-       $scope.getEpisodeLink = function(episode){
-           return "/#/episode/" + episode.id;
-       };
-   }
-);
+         return _.contains(_.values(result), haemInformationRow.id);
+      };
+  }
+});

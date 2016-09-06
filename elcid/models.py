@@ -395,6 +395,7 @@ class MicrobiologyInput(EpisodeSubrecord):
     _icon = 'fa fa-comments'
     _modal = 'lg'
     _list_limit = 3
+    _angular_service = 'MicrobiologyInput'
 
     when = models.DateTimeField(null=True, blank=True)
     initials = models.CharField(max_length=255, blank=True)
@@ -533,7 +534,6 @@ class BloodCulture(EpisodeSubrecord):
         field_names = super(BloodCulture, cls)._get_fieldnames_to_serialize()
         field_names.append("isolates")
         return field_names
-
 
     def update_from_dict(self, data, *args, **kwargs):
         isolates = data.get("isolates", [])

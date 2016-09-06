@@ -82,29 +82,10 @@
 {% record_panel models.BloodCulture %}
 {% record_panel models.FinalDiagnosis %}
 
+{% include "inline_forms/clinical_advice.html" %}
+
 <div class="panel panel-default">
-  <div class="panel-heading"><h3>
-    <i class="fa fa-comments"></i> Clinical Advice
-  </div></h3>
   <div class="panel-body">
-    <div ng-controller="ClinicalAdviceForm as clinicalAdviceForm">
-      <div class="row">
-        <div class="col-md-12">
-          <form class="form-horizontal">
-            {% include models.MicrobiologyInput.get_form_template %}
-          </form>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12 text-right">
-          <button class="btn btn-primary" ng-click="clinicalAdviceForm.save('save')">
-            <i class="fa fa-save"></i>
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-    <hr />
     <div ng-show="episode.microbiology_input.length" class="patient-timeline-container">
       <div class="row">
         <div class="col-md-3 patient-timeline">
