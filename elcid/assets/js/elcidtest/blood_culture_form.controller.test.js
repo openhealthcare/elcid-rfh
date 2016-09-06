@@ -52,7 +52,6 @@ describe('BloodCultureFormCtrlTest', function() {
             $timeout      : $timeout,
             $modalInstance: fakeModalInstance,
             item          : fakeItem,
-            options       : {},
             referencedata : {toLookuplists: function(){ return {} }},
             profile       : {},
             metadata      : {},

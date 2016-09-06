@@ -1,10 +1,9 @@
 angular.module('opal.controllers').controller(
     'ClinicalAdviceForm',
     function(
-        $rootScope, $scope, $window,
-            recordLoader, ngProgressLite, $q,
-            $cookieStore
-            ){
+        $rootScope, $scope, $window, recordLoader, ngProgressLite, $cookieStore,
+        Referencedata, $q
+      ){
         "use strict";
 
         var REASON_FOR_INTERACTION_COOKIE = "patientNotes-reasonForInteraction";
@@ -15,8 +14,6 @@ angular.module('opal.controllers').controller(
         function getCopy(item){
             var copy = item.makeCopy();
             var defaults = _.clone({
-                when: new Date(),
-                initials: $window.initials,
                 reason_for_interaction: $cookieStore.get(REASON_FOR_INTERACTION_COOKIE),
                 discussed_with: $cookieStore.get(DISCUSSED_WITH_COOKIE)
             });
@@ -25,23 +22,23 @@ angular.module('opal.controllers').controller(
         }
 
         var self = this;
-        recordLoader.then(function(){
+
+        $q.all([Referencedata, recordLoader]).then(function(datasets){
+
+            angular.extend($scope, datasets[0].toLookuplists());
             var item = $scope.episode.newItem("microbiology_input", {column: $rootScope.fields.microbiology_input});
-            self.editing = {};
-            self.editing.microbiology_input = getCopy(item);
+            self.editing = getCopy(item);
 
             self.save = function(){
-                    ngProgressLite.set(0);
-                    ngProgressLite.start();
-                    $cookieStore.put(REASON_FOR_INTERACTION_COOKIE, self.editing.microbiology_input.reason_for_interaction || "");
-                    $cookieStore.put(DISCUSSED_WITH_COOKIE, self.editing.microbiology_input.discussed_with || "");
-                    to_save = [item.save(self.editing.microbiology_input)];
-
-                    $q.all(to_save).then(function() {
-                        ngProgressLite.done();
-                        item = $scope.episode.newItem('microbiology_input', {column: $rootScope.fields.microbiology_input});
-                        self.editing.microbiology_input = getCopy(item);
-                    });
+              ngProgressLite.set(0);
+              ngProgressLite.start();
+              $cookieStore.put(REASON_FOR_INTERACTION_COOKIE, self.editing.reason_for_interaction || "");
+              $cookieStore.put(DISCUSSED_WITH_COOKIE, self.editing.discussed_with || "");
+              item.save(self.editing).then(function() {
+                  ngProgressLite.done();
+                  item = $scope.episode.newItem('microbiology_input', {column: $rootScope.fields.microbiology_input});
+                  self.editing = getCopy(item);
+              });
             };
         });
     }

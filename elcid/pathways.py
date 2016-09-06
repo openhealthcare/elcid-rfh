@@ -23,7 +23,6 @@ class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
         ),
         Step(
             model=Location,
-            controller_class="BloodCultureLocationCtrl",
             template_url="/templates/pathway/blood_culture_location.html"
         ),
     )
