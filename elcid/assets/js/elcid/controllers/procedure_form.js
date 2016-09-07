@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller(
-  'ProcedureFormCtrl', function($scope, Options) {
+  'ProcedureFormCtrl', function($scope) {
     "use strict";
     var vm = this;
     vm.editing = {procedure_type: undefined};
@@ -11,20 +11,18 @@ angular.module('opal.controllers').controller(
       $scope.editing.procedure = {};
     }
 
-    Options.then(function(options){
-      vm.procedures = _.union(options.medicalprocedure, options.surgicalprocedure);
+    vm.procedures = _.union($scope.medicalprocedure_list, $scope.surgicalprocedure_list);
 
-      $scope.$watch(angular.bind(vm, function () {
-          return this.selectedProcedure;
-      }), function(procedureType){
-          if(_.contains(options.medicalprocedure, vm.selectedProcedure)){
-              $scope.editing.procedure.medical_procedure = vm.selectedProcedure;
-              $scope.editing.procedure.surgical_procedure = undefined;
-          }
-          else if(_.contains(options.surgicalprocedure, vm.selectedProcedure)){
-              $scope.editing.procedure.surgical_procedure = vm.selectedProcedure;
-              $scope.editing.procedure.medical_procedure = undefined;
-          }
-      });
+    $scope.$watch(angular.bind(vm, function () {
+        return this.selectedProcedure;
+    }), function(procedureType){
+        if(_.contains($scope.medicalprocedure_list, vm.selectedProcedure)){
+            $scope.editing.procedure.medical_procedure = vm.selectedProcedure;
+            $scope.editing.procedure.surgical_procedure = undefined;
+        }
+        else if(_.contains($scope.surgicalprocedure_list, vm.selectedProcedure)){
+            $scope.editing.procedure.surgical_procedure = vm.selectedProcedure;
+            $scope.editing.procedure.medical_procedure = undefined;
+        }
     });
 });

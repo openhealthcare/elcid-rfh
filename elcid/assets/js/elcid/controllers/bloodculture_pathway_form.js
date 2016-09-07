@@ -1,15 +1,8 @@
 angular.module('opal.controllers').controller('BloodCulturePathwayFormCtrl',
-function( $modal, $q, ngProgressLite, $controller, scope, step, Options, episode) {
+function( $modal, $q, ngProgressLite, scope, step, episode) {
       "use strict";
 
-      var parentCtrl = $controller("MultiSaveCtrl", {
-          scope: scope,
-          episode: episode,
-          step: step
-      });
-      var vm = this;
-
-      _.extend(vm, parentCtrl);
+      scope.step = step;
 
       scope.addAerobic = function(){
         scope.aerobicModels.push({
@@ -31,12 +24,11 @@ function( $modal, $q, ngProgressLite, $controller, scope, step, Options, episode
         scope.aerobicModels.splice(index, 1);
       }
 
-      scope.toSave = function(editing){
-
-      };
-
-      this.toSave = function(editing){
+      scope.preSave = function(editing){
         // filter out completely empty fields
+        if(!editing.blood_culture && scope.aerobicModels.length && scope.anaerobicModels.length){
+          editing.blood_culture = [{}];
+        }
         var toUpdate = scope.aerobicModels.concat(scope.anaerobicModels);
 
         var nonEmpties = _.reject(toUpdate, function(x){
@@ -44,7 +36,6 @@ function( $modal, $q, ngProgressLite, $controller, scope, step, Options, episode
         });
 
         editing.blood_culture.isolates = nonEmpties;
-        parentCtrl.toSave(editing);
       }
 
       scope.initialise = function(item){
