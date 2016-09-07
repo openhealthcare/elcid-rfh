@@ -1,12 +1,9 @@
-from elcid.models import (
-    Diagnosis, Line, Antimicrobial, Location, PrimaryDiagnosis,
-    Procedure, Demographics, MicrobiologyInput, FinalDiagnosis,
-    BloodCulture, Imaging
-)
+from elcid import models
 
 from pathway.pathways import (
     Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin,
-    MultSaveStep, ModalPathway
+    MultiSaveStep, ModalPathway, RedirectsToPatientMixin,
+    delete_others
 )
 
 
@@ -22,37 +19,36 @@ class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
             icon="fa fa-user"
         ),
         Step(
-            model=Location,
+            model=models.Location,
             template_url="/templates/pathway/blood_culture_location.html"
         ),
     )
 
 
-class CernerDemoPathway(UnrolledPathway):
+class CernerDemoPathway(RedirectsToPatientMixin, Pathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
+    template_url = "/templates/pathway/unrolled_form_base.html"
 
     steps = (
-        # TODO: Do we want to pass this like this ?
-        # Wouldn't it be nicer if I could set it on the class?
-        Demographics,
         Step(
-            model=Location,
-            controller_class="BloodCultureLocationCtrl",
-            template_url="/templates/pathway/blood_culture_location.html",
-        ),
-        MultSaveStep(model=Procedure),
-        PrimaryDiagnosis,
-        MultSaveStep(model=Diagnosis),
-        # Infection,
-        MultSaveStep(model=Line),
-        MultSaveStep(model=Antimicrobial),
-        MultSaveStep(
-            model=BloodCulture,
+            template_url="/templates/pathway/cerner_letter_pathway.html",
+            title="Cerner Letter",
+            icon="fa fa-user",
             controller_class="BloodCulturePathwayFormCtrl"
         ),
-        MultSaveStep(model=Imaging),
-        FinalDiagnosis,
-        MultSaveStep(model=MicrobiologyInput),
-        Step(api_name="cerner_note", title="Clinical Note", icon="fa fa-envelope", template_url='/templates/pathway/cernerletter.html')
     )
+
+    def save(self, data, user):
+        multi_saved_models = [
+            models.Diagnosis,
+            models.Infection,
+            models.Line,
+            models.Antimicrobial,
+            models.BloodCulture,
+            models.Imaging,
+            models.MicrobiologyInput
+        ]
+        for model in models:
+            delete_others(data, self.patient, self.episode)
+        super(CernerDemoPathway, self).save(data, user)
