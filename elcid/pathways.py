@@ -49,6 +49,6 @@ class CernerDemoPathway(RedirectsToPatientMixin, Pathway):
             models.Imaging,
             models.MicrobiologyInput
         ]
-        for model in models:
-            delete_others(data, self.patient, self.episode)
-        super(CernerDemoPathway, self).save(data, user)
+        for model in multi_saved_models:
+            delete_others(data, model, self.patient, self.episode)
+        return super(CernerDemoPathway, self).save(data, user)

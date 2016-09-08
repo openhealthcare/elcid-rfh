@@ -5,15 +5,14 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
+
 
 from jsonfield import JSONField
 
 import opal.models as omodels
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel,
-    TrackedModel
+    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel
 )
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
@@ -535,15 +534,14 @@ class BloodCulture(EpisodeSubrecord):
         field_names.append("isolates")
         return field_names
 
-    def update_from_dict(self, data, *args, **kwargs):
-        isolates = data.get("isolates", [])
-        new_data = {k: v for k, v in data.iteritems() if k != "isolates"}
-
-        super(BloodCulture, self).update_from_dict(new_data, *args, **kwargs)
-
+    def update_from_dict(self, data, user, **kwargs):
+        isolates = data.pop("isolates", [])
         existing = [i["id"] for i in isolates if "id" in i]
-
         self.isolates.exclude(id__in=existing).delete()
+        kwargs.pop("fields", None)
+        fields = set(self.__class__._get_fieldnames_to_serialize())
+        fields.remove("isolates")
+        super(BloodCulture, self).update_from_dict(data, user, fields=fields, **kwargs)
 
         for isolate in isolates:
             isolate_id = isolate.get("id")
@@ -556,13 +554,15 @@ class BloodCulture(EpisodeSubrecord):
                 blood_culture_isolate = BloodCultureIsolate(
                     blood_culture_id=self.id
                 )
-            blood_culture_isolate.update_from_dict(isolate, *args, **kwargs)
+
+            blood_culture_isolate.update_from_dict(isolate, user, **kwargs)
 
     def get_isolates(self, user):
         return [i.to_dict(user) for i in self.isolates.all()]
 
 
-class BloodCultureIsolate(TrackedModel):
+class BloodCultureIsolate(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omodels.TrackedModel):
+    consistency_token = models.CharField(max_length=8)
     aerobic = models.BooleanField()
     organism = models.ForeignKey(
         omodels.Microbiology_organism,
@@ -590,25 +590,40 @@ class BloodCultureIsolate(TrackedModel):
     )
     blood_culture = models.ForeignKey(BloodCulture, related_name="isolates")
 
-    def to_dict(self, user):
-        return dict(
-            aerobic=self.aerobic,
-            organism= self.organism.name if self.organism else None,
-            FISH=self.FISH.name if self.FISH else None,
-            microscopy=self.microscopy.name if self.microscopy else None,
-            sensitive_antibiotics=[
-                i.name for i in self.sensitive_antibiotics.all()
-            ],
-            resistant_antibiotics=[
-                i.name for i in self.resistant_antibiotics.all()
-            ],
-            blood_culture_id=self.blood_culture_id,
-            id=self.id
-        )
+    @classmethod
+    def _get_fieldnames_to_serialize(cls):
+        field_names = super(BloodCultureIsolate, cls)._get_fieldnames_to_serialize()
+        fk_fields = [
+            "blood_culture_id",
+            "aerobic",
+            "FISH",
+            "microscopy",
+            "organism",
+            "sensitive_antibiotics"
+        ]
+        field_names.extend(fk_fields)
+        return field_names
 
-    def update_from_dict(self, data, user, *args, **kwargs):
+    def get_organism(self, user):
+        return self.organism.name if self.organism else None
+
+    def get_FISH(self, user):
+        return self.FISH.name if self.FISH else None
+
+    def get_microscopy(self, user):
+        return self.microscopy.name if self.microscopy else None
+
+    def get_sensitive_antibiotics(self, user):
+        return [i.name for i in self.sensitive_antibiotics.all()]
+
+    def get_resistant_antibiotics(self, user):
+        return [i.name for i in self.resistant_antibiotics.all()]
+
+    def update_from_dict(self, data, user, **kwargs):
         self.aerobic = data["aerobic"]
         organisms = ["FISH", "microscopy", "organism"]
+
+        fields = set(self._get_fieldnames_to_serialize())
 
         for k in organisms:
             v = data.get(k)
@@ -632,10 +647,13 @@ class BloodCultureIsolate(TrackedModel):
                 field.clear()
                 field.add(*antimicrobials)
 
-        self.set_created_by_id(None, user)
-        self.set_updated_by_id(None, user)
-        self.set_updated(None, user)
-        self.set_created(None, user)
+        fields = {
+            "created_by", "updated_by", "updated", "created", "consistency_token"
+        }
+        additional_data = {i: v for i, v in data.iteritems() if i in fields}
+        super(BloodCultureIsolate, self).update_from_dict(
+            additional_data, user, fields=fields, **kwargs
+        )
 
 
 class FinalDiagnosis(EpisodeSubrecord):
