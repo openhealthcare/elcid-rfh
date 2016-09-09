@@ -40,9 +40,15 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
       }
 
       self.addAerobic = function(){
-        bloodCulture.isolates.push({
-            aerobic: true
+        // insert an element between the last aerobic and the
+        // first anaerobic
+        var firstAnaerobicIndex = _.findIndex(bloodCulture.isolates, function(bc){
+          return !i.aerobic;
         });
+        var isolate = {
+          aerobic: true
+        };
+        bloodCulture.isolates.splice(firstAnaerobicIndex, 0, isolate);
       };
 
       self.addAnaerobic = function(){
@@ -69,7 +75,7 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
         }
         else{
             var position = self.aerobicIsolates().length + index;
-            bloodCulture.isolates.splice(index, 1);
+            bloodCulture.isolates.splice(position, 1);
         }
       }
   };
