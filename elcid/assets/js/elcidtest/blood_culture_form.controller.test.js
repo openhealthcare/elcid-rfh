@@ -43,7 +43,8 @@ describe('BloodCultureFormCtrlTest', function() {
             makeCopy: function(){
                 return {};
             },
-            episode: episode
+            episode: episode,
+            columnName: "blood_culture"
         };
 
         controller = $controller('BloodCultureFormCtrl', {
@@ -63,9 +64,9 @@ describe('BloodCultureFormCtrlTest', function() {
 
     describe('it should inherit from EditItem', function(){
         it('should have a save method that saves', function(){
-          $scope.editing.blood_culture = [{
+          $scope.editing.blood_culture = {
             lab_number: "1"
-          }];
+          };
           $scope.$digest();
           var callArgs;
           var deferred = $q.defer();
@@ -77,54 +78,16 @@ describe('BloodCultureFormCtrlTest', function() {
           $scope.$digest();
           callArgs = fakeItem.save.calls.mostRecent().args;
           expect(callArgs.length).toBe(1);
-          expect(callArgs[0]).toEqual({});
+          expect(fakeItem.save).toHaveBeenCalledWith({lab_number: "1"});
         });
     });
 
-    describe('it should add isolates', function(){
-        it("should add aerobic models", function(){
-          $scope.addAerobic();
-          expect($scope.aerobicModels).toEqual([{aerobic: true}]);
-        });
-
-        it("should add anaerobic models", function(){
-          $scope.addAnaerobic();
-          expect($scope.anaerobicModels).toEqual([{aerobic: false}]);
-        });
+    it("it should attatch form helpers", function(){
+        expect(!!$scope.editing.blood_culture._formHelper).toBe(true);
     });
 
-    describe('it should remove isolates', function(){
-        it("should remove aerobic models", function(){
-          $scope.aerobicModels = [{aerobic: true}];
-          $scope.deleteAerobic(0);
-          expect($scope.aerobicModels).toEqual([]);
-        });
-
-        it("should remove anaerobic models", function(){
-          $scope.anaerobicModels = [{aerobic: false}];
-          $scope.deleteAnaerobic(0);
-          expect($scope.anaerobicModels).toEqual([]);
-        });
-    });
-
-    describe('is should concat the list of models to save', function(){
-        it("should ignore empty models as part of the presave", function(){
-          var editing = {blood_culture: {}};
-          $scope.anaerobicModels = [{aerobic: false}];
-          $scope.aerobicModels = [{aerobic: true}];
-          $scope.preSave(editing);
-          expect(editing.blood_culture.isolates).toEqual([]);
-        });
-
-        it('should concat aerobic models as part of the presave', function(){
-          var editing = {blood_culture: {}};
-          $scope.anaerobicModels = [{organism: 'something', aerobic: false}];
-          $scope.aerobicModels = [{organism: 'something else', aerobic: true}];
-          $scope.preSave(editing);
-          expect(editing.blood_culture.isolates).toEqual([
-            {organism: 'something else', aerobic: true},
-            {organism: 'something', aerobic: false}
-          ]);
-        });
+    it("it should remove form helpers in preSave", function(){
+        $scope.preSave($scope.editing);
+        expect($scope.editing.blood_culture._formHelper).toBe(undefined);
     });
 });

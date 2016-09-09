@@ -1,57 +1,31 @@
 angular.module('opal.controllers').controller('BloodCulturePathwayFormCtrl',
-function( $modal, $q, ngProgressLite, scope, step, episode) {
+function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureFormHelper) {
       "use strict";
 
-      scope.step = step;
-
-      scope.addAerobic = function(){
-        scope.aerobicModels.push({
-          aerobic: true
-        });
+      scope.initialise = function(bloodCultures){
+          _.each(bloodCultures, function(bloodCulture){
+            bloodCulture._formHelper = new BloodCultureFormHelper(bloodCulture);
+          });
       };
 
-      scope.addAnaerobic = function(){
-        scope.anaerobicModels.push({
-          aerobic: false
-        });
+      if(_.isUndefined(scope.editing.blood_culture)){
+        scope.editing.blood_culture = [{}];
+      }
+      else if(!_.isArray(scope.editing.blood_culture)){
+        scope.editing.blood_culture = [scope.editing.blood_culture];
+      }
+
+      scope.addBloodCulture = function(){
+          var newBloodCulture = {};
+          newBloodCulture._formHelper = new BloodCultureFormHelper(newBloodCulture);
+          scope.editing.blood_culture.push(newBloodCulture);
       };
-
-      scope.deleteAnaerobic = function(index){
-        scope.anaerobicModels.splice(index, 1);
-      }
-
-      scope.deleteAerobic = function(index){
-        scope.aerobicModels.splice(index, 1);
-      }
 
       scope.preSave = function(editing){
-        // filter out completely empty fields
-        if(!editing.blood_culture && scope.aerobicModels.length && scope.anaerobicModels.length){
-          editing.blood_culture = [{}];
-        }
-        var toUpdate = scope.aerobicModels.concat(scope.anaerobicModels);
-
-        var nonEmpties = _.reject(toUpdate, function(x){
-            return _.isEmpty(_.omit(x, "aerobic"));
+        _.each(editing.blood_culture, function(bc){
+          delete bc._formHelper;
         });
+      };
 
-        editing.blood_culture.isolates = nonEmpties;
-      }
-
-      scope.initialise = function(item){
-          var isolates = item.isolates || [];
-          scope.aerobicModels = angular.copy(_.filter(isolates, function(x){
-            return x.aerobic
-          }));
-          scope.anaerobicModels = angular.copy(_.filter(isolates, function(x){
-            return !x.aerobic
-          }));
-      }
-
-      if(scope.editing.blood_culture){
-          scope.initialise(scope.editing.blood_culture);
-      }
-      else{
-          scope.initialise({});
-      }
+      scope.initialise(scope.editing.blood_culture);
 });

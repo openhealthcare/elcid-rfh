@@ -17,7 +17,6 @@
     </div>
   </div>
 </div>
-
 <div class="row">
   <div class="col-md-8 col-md-push-2">
     <div class="panel panel-default">
@@ -135,6 +134,7 @@
   </div>
 </div>
 
+
 <div class="row">
   <div class="col-md-8 col-md-push-2">
     <div class="panel panel-default">
@@ -145,7 +145,7 @@
         </h3>
       </div>
       <div class="panel-body">
-        {% multisave models.BloodCulture %}
+        {% include "partials/blood_culture_add_many.html" %}
       </div>
     </div>
   </div>

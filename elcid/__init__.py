@@ -19,6 +19,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/result_view.js',
         'js/elcid/controllers/bloodculture_modal_form.js',
         'js/elcid/controllers/bloodculture_pathway_form.js',
+        'js/elcid/services/blood_culture_form_helper.js',
         'js/elcid/services/dicharge_patient.js',
         'js/elcid/services/blood_culture_record.js',
         'js/elcid/services/flow.js',
