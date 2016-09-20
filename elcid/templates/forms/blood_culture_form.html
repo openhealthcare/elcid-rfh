@@ -9,9 +9,125 @@
   <hr />
 
   <div class="row content-offset-25" ng-repeat="aerobicModel in editing.blood_culture._formHelper.aerobicIsolates()">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-2">
+          <div class="row">
+            <div class="col-md-12">
+              Isolate [[ $index + 1 ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <a ng-click="editing.blood_culture._formHelper.delete($index, aerobicModel)"><small>remove</small></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-10">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-4">
+                  <button class="btn btn-default" ng-class="{'btn-default': !aerobicModel.fish.length, 'btn-primary': aerobicModel.fish.length}" ng-click="editing.blood_culture._formHelper.addFish(aerobicModel)">
+                    Add Fish
+                  </button>
+                </div>
+                <div ng-show="aerobicModel.fish.length" class="col-md-3">
+                  <div class="row">
+                    <div class="col-md-12 text-center">
+                      <button class="btn btn-default">
+                        Quick Fish
+                      </button>
+                    </div>
+                  </div>
+                  <div class="row content-offset-10">
+                    <div class="col-md-12 text-center">
+                      <button class="btn btn-primary">
+                        GPC Staph
+                      </button>
+                    </div>
+                  </div>
+                  <div class="row content-offset-10">
+                    <div class="col-md-12 text-center">
+                      <button class="btn btn-default">
+                        GPC Strep
+                      </button>
+                    </div>
+                  </div>
+                  <div class="row content-offset-10">
+                    <div class="col-md-12 text-center">
+                      <button class="btn btn-default">
+                        GNR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="row">
+                    <div class="col-md-12 text-center">
+                      <button class="btn btn-default">
+                        S. aureus
+                      </button>
+                    </div>
+                  </div>
+                  <div class="row content-offset-10">
+                    <div class="col-md-12 text-center">
+                      <button class="btn btn-default">
+                        CNS
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <hr ng-show="aerobicModel.fish.length">
+            </div>
+          </div>
+          <div class="row row content-offset-10">
+            <div class="col-md-12">
+              <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
+                Add Microscopy
+              </button>
+            </div>
+          </div>
+          <div class="row row content-offset-10">
+            <div class="col-md-12">
+              <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
+                Add Organism
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% comment %}
       <div class="row">
         <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
           <h4>Isolate [[ $index + 1 ]] <a ng-click="editing.blood_culture._formHelper.delete($index, aerobicModel)"><small>  remove</small></a></h4>
+        </div>
+      </div>
+      <div class="row content-offset-20">
+        <div class="col-sm-12 text-center">
+          <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
+            Add Fish
+          </button>
+        </div>
+      </div>
+      <div class="row content-offset-20">
+        <div class="col-sm-12 text-center">
+          <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
+            Add Microscopy
+          </button>
+        </div>
+      </div>
+      <div class="row content-offset-20">
+        <div class="col-sm-12 text-center">
+          <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
+            Add Organism
+          </button>
         </div>
       </div>
       {% select label="FISH" model="aerobicModel.FISH" lookuplist="microbiology_organism_list" %}
@@ -49,3 +165,4 @@
     </button>
   </div>
 </div>
+{% endcomment %}

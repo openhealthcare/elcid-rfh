@@ -39,11 +39,18 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
         });
       }
 
+      self.addFish = function(isolate){
+        if(_.isUndefined(isolate.fish)){
+          isolate.fish = [];
+        }
+        isolate.fish.push({});
+      };
+
       self.addAerobic = function(){
         // insert an element between the last aerobic and the
         // first anaerobic
         var firstAnaerobicIndex = _.findIndex(bloodCulture.isolates, function(bc){
-          return !i.aerobic;
+          return !bc.aerobic;
         });
         var isolate = {
           aerobic: true

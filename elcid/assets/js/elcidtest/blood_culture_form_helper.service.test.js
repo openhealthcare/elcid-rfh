@@ -29,7 +29,7 @@ describe("BloodCultureFormHelper", function(){
   beforeEach(function(){
     module('opal');
     inject(function($injector){
-      BloodCultureFormHelper = $injector.get('BloodCultureFormHelper');
+      BloodCultureFormHelper = $injector.get('BloodultureFormHelper');
     });
     bloodCultureRecord = {};
     bloodCultureFormHelper = new BloodCultureFormHelper(bloodCultureRecord);
@@ -57,6 +57,14 @@ describe("BloodCultureFormHelper", function(){
 
   it("should add aerobic bloodcultures", function(){
       bloodCultureFormHelper.addAerobic();
+      expect(bloodCultureRecord.isolates[0].aerobic).toBe(true);
+  });
+
+  it("should add aerobic bloodcultures to the end of the existing aerobic records", function(){
+      loadInIsolates(bloodCultureRecord);
+      bloodCultureFormHelper.addAerobic();
+      var tokens = _.pluck(bloodCultureRecord.isolates, "consistency_token");
+      expect(tokens).toEqual(["1", "2", undefined, "3"])
       expect(bloodCultureRecord.isolates[0].aerobic).toBe(true);
   });
 

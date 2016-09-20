@@ -6,6 +6,8 @@ from django.dispatch import receiver
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from opal.utils import AbstractBase, _itersubclasses, camelcase_to_underscore
 
 from jsonfield import JSONField
 
@@ -499,9 +501,9 @@ class Line(EpisodeSubrecord):
     removal_reason = ForeignKeyOrFreeText(omodels.Line_removal_reason)
     special_instructions = models.TextField()
     button_hole = models.NullBooleanField()
-    tunnelled_or_temp       = models.CharField(max_length=200, blank=True, null=True)
-    fistula                 = models.NullBooleanField(blank=True, null=True)
-    graft                   = models.NullBooleanField(blank=True, null=True)
+    tunnelled_or_temp = models.CharField(max_length=200, blank=True, null=True)
+    fistula = models.NullBooleanField(blank=True, null=True)
+    graft = models.NullBooleanField(blank=True, null=True)
 
 
 class Appointment(EpisodeSubrecord):
@@ -561,6 +563,73 @@ class BloodCulture(EpisodeSubrecord):
         return [i.to_dict(user) for i in self.isolates.all()]
 
 
+class LabTest(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omodels.TrackedModel):
+    consistency_token = models.CharField(max_length=8)
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    test_name = models.CharField(max_length=256)
+    details = JSONField(blank=True, null=True)
+    result = models.CharField(blank=True, null=True, max_length=256)
+    sensitive_antibiotics = models.ManyToManyField(
+        omodels.Antimicrobial, related_name="test_sensitive"
+    )
+    resistant_antibiotics = models.ManyToManyField(
+        omodels.Antimicrobial, related_name="test_resistant"
+    )
+
+    def get_object(self):
+        if self.test_name:
+            test_class = self.__class__.get_class_from_test_name(
+                self.test_name
+            )
+
+            if test_class:
+                self.__class__ = test_class
+        return self
+
+    @classmethod
+    def get_class_from_test_name(cls, test_name):
+        for test_class in _itersubclasses(cls):
+            if test_class.get_api_name() == test_name:
+                return test_class
+
+    def save(self, *args, **kwargs):
+        if not isinstance(models.Model, AbstractBase):
+            self.test_name = self.__class__.get_api_name()
+
+        return super(LabTest, self).save(*args, **kwargs)
+
+    @classmethod
+    def get_api_name(cls):
+        return camelcase_to_underscore(cls._meta.object_name)
+
+    def update_from_dict(self, data, user, **kwargs):
+        fields = set(self.__class__._get_fieldnames_to_serialize())
+
+        # for now lets not save the details
+        fields.remove('details')
+        fields.remove('sensitive_antibiotics')
+        fields.remove('resistant_antibiotics')
+
+        antibiotics = ["sensitive_antibiotics", "resistant_antibiotics"]
+
+        super(LabTest, self).update_from_dict(data, user, fields=fields, **kwargs)
+
+        for k in antibiotics:
+            v = data.get(k)
+
+            if v:
+                antimicrobials = get_for_lookup_list(omodels.Antimicrobial, v)
+                field = getattr(self, k)
+                field.clear()
+                field.add(*antimicrobials)
+
+
+class Fish(LabTest):
+    pass
+
+
 class BloodCultureIsolate(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omodels.TrackedModel):
     consistency_token = models.CharField(max_length=8)
     aerobic = models.BooleanField()
@@ -570,12 +639,7 @@ class BloodCultureIsolate(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omo
         null=True,
         blank=True
     )
-    FISH = models.ForeignKey(
-        omodels.Microbiology_organism,
-        related_name="blood_culture_fish_organisms",
-        null=True,
-        blank=True
-    )
+
     microscopy = models.ForeignKey(
         omodels.Microbiology_organism,
         related_name="blood_culture_microscopy_organisms",
@@ -596,7 +660,7 @@ class BloodCultureIsolate(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omo
         fk_fields = [
             "blood_culture_id",
             "aerobic",
-            "FISH",
+            "fish",
             "microscopy",
             "organism",
             "sensitive_antibiotics"
@@ -607,8 +671,8 @@ class BloodCultureIsolate(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omo
     def get_organism(self, user):
         return self.organism.name if self.organism else None
 
-    def get_FISH(self, user):
-        return self.FISH.name if self.FISH else None
+    def get_fish(self, user):
+        return [i.to_dict(user) for i in self.get_tests("fish")]
 
     def get_microscopy(self, user):
         return self.microscopy.name if self.microscopy else None
@@ -619,11 +683,28 @@ class BloodCultureIsolate(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omo
     def get_resistant_antibiotics(self, user):
         return [i.name for i in self.resistant_antibiotics.all()]
 
+    def get_tests(self, test_name):
+        ct = ContentType.objects.get_for_model(self.__class__)
+        object_id = self.id
+        return LabTest.objects.filter(
+            content_type=ct, object_id=object_id, test_name=test_name
+        )
+
+    def save_tests(self, tests, user):
+        for test in tests:
+            ct = ContentType.objects.get_for_model(self.__class__)
+            object_id = self.id
+            if "id" in test:
+                test_obj = LabTest.objects.get(id=test["id"])
+            else:
+                test_obj = LabTest()
+                test_obj.content_type = ct
+                test_obj.object_id = object_id
+            test_obj.update_from_dict(test, user)
+
     def update_from_dict(self, data, user, **kwargs):
         self.aerobic = data["aerobic"]
-        organisms = ["FISH", "microscopy", "organism"]
-
-        fields = set(self._get_fieldnames_to_serialize())
+        organisms = ["microscopy", "organism"]
 
         for k in organisms:
             v = data.get(k)
@@ -646,6 +727,13 @@ class BloodCultureIsolate(omodels.UpdatesFromDictMixin, omodels.ToDictMixin, omo
                 field = getattr(self, k)
                 field.clear()
                 field.add(*antimicrobials)
+
+        fishes = data.get("fish", [])
+
+        for fish in fishes:
+            fish["test_name"] = "fish"
+
+        self.save_tests(fishes, user)
 
         fields = {
             "created_by", "updated_by", "updated", "created", "consistency_token"

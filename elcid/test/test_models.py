@@ -16,7 +16,7 @@ from opal.models import (
 )
 from elcid.models import (
     Location, PresentingComplaint, Result, Allergies, Demographics,
-    BloodCulture, BloodCultureIsolate, get_for_lookup_list
+    BloodCulture, BloodCultureIsolate, get_for_lookup_list, LabTest
 )
 
 HERE = ffs.Path.here()
@@ -463,6 +463,49 @@ class GetForLookupListTestCase(OpalTestCase):
         )
 
 
+class LabTestTestCase(OpalTestCase):
+    def setUp(self):
+        self.new_data = dict(
+            test_name="fish",
+            result="success"
+        )
+
+        self.old_data = dict(
+            id="1",
+            test_name="fish",
+            result="failed"
+        )
+
+
+        _, self.episode = self.new_patient_and_episode_please()
+        self.blood_culture = BloodCulture.objects.create(
+            episode=self.episode
+        )
+
+        self.blood_culture_isolate = BloodCultureIsolate.objects.create(
+            blood_culture=self.blood_culture,
+            aerobic=True
+        )
+        ct = ContentType.objects.get_for_model(BloodCultureIsolate)
+        object_id = self.blood_culture_isolate.id
+        self.some_fish_test = LabTest(
+            test_name="fish",
+            content_type=ct,
+            object_id=object_id
+        )
+        self.some_fish_test.save()
+
+    def test_create_new_test(self):
+        self.blood_culture_isolate.save_tests([self.new_data], self.user)
+        self.assertEqual(LabTest.objects.count(), 2)
+        self.assertEqual(LabTest.objects.last().result, "success")
+
+    def test_update_old_test(self):
+        self.blood_culture_isolate.save_tests([self.old_data], self.user)
+        self.assertEqual(LabTest.objects.count(), 1)
+        self.assertEqual(LabTest.objects.last().result, "failed")
+
+
 class BloodCultureTestCase(OpalTestCase):
 
     def setUp(self):
@@ -670,7 +713,7 @@ class BloodCultureTestCase(OpalTestCase):
         isolate = blood_culture.isolates.get(aerobic=False)
 
         self.assertEqual(isolate.organism, self.fish_organism)
-        self.assertEqual(isolate.FISH, None)
+        self.assertEqual(isolate.get_fish([]), [])
         self.assertEqual(isolate.microscopy, None)
 
         self.assertEqual(
