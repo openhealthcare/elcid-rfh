@@ -1,17 +1,71 @@
 {% load forms %}
+{% load lab %}
 <div name="form" class="form-horizontal" novalidate>
   {% input field="BloodCulture.lab_number" %}
   {% datepicker field="BloodCulture.date_ordered" %}
   {% select field="BloodCulture.source" %}
+
+  <div class="row">
+    <h4 class="text-center">Gram Stain</h4>
+  </div>
+  <div class="row">
+    <div class="col-md-10 col-md-push-1">
+      <div class="col-sm-3 text-center" ng-repeat="(result, value) in editing.blood_culture._formHelper.multiGramStain">
+        <label style="width: 100%; white-space: normal" class="btn btn-default" ng-change="editing.blood_culture._formHelper.updateTests()" ng-model="editing.blood_culture._formHelper.multiGramStain[[ result ]]" btn-checkbox>[[ result ]]</label>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-10 col-md-push-1">
+      <p class="help-block">
+        Certain Gram stain results point to types of organisms. Specific FISH tests can then be used
+        to narrow down the specific organism. So for certain organisms, certain FISH TESTs should
+        be carried out.
+      </p>
+      <div class="row">
+        <div class="col-md-6 col-md-push-4">
+          <ul class="help-block">
+            <li>Yeast &#8594; QuickFISH</li>
+            <li>Gram +ve Cocci Cluster &#8594; GPC Staph</li>
+            <li>Gram +ve Cocci Chains &#8594; GPC Strep</li>
+            <li>Gram -ve &#8594; GNR</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- fish tests -->
+  <div ng-show="editing.blood_culture._formHelper.hasFishTest()">
+    <div class="row content-offset-20">
+      <h4 class="text-center">FISH Tests</h4>
+    </div>
+    <div ng-repeat="test in editing.blood_culture.lab_tests | filter:editing.blood_culture._formHelper.isFishTest">
+      <div ng-show="test.test_name === 'QuickFISH'">
+        {% render_lab_form lab_tests.QuickFISH %}
+      </div>
+      <div ng-show="test.test_name === 'GPC Staph'">
+        {% render_lab_form lab_tests.GPCStaph %}
+      </div>
+      <div ng-show="test.test_name === 'GPC Strep'">
+        {% render_lab_form lab_tests.GPCStrep %}
+      </div>
+      <div ng-show="test.test_name === 'GNR'">
+        {% render_lab_form lab_tests.GNR %}
+      </div>
+    </div>
+  </div>
+
+  <!--  do a gram stain -->
   <div class="row text-center content-offset-25">
-    <h3>Aerobic</h3>
+    <h4>Aerobic</h4>
   </div>
   <hr />
 
   <div class="row content-offset-25" ng-repeat="aerobicModel in editing.blood_culture._formHelper.aerobicIsolates()">
     <div class="col-md-12">
       <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-2 text-right">
           <div class="row">
             <div class="col-md-12">
               Isolate [[ $index + 1 ]]
@@ -23,141 +77,46 @@
             </div>
           </div>
         </div>
-        <div class="col-md-10">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="row">
-                <div class="col-md-4">
-                  <button class="btn btn-default" ng-class="{'btn-default': !aerobicModel.fish.length, 'btn-primary': aerobicModel.fish.length}" ng-click="editing.blood_culture._formHelper.addFish(aerobicModel)">
-                    Add Fish
-                  </button>
-                </div>
-                <div ng-show="aerobicModel.fish.length" class="col-md-3">
-                  <div class="row">
-                    <div class="col-md-12 text-center">
-                      <button class="btn btn-default">
-                        Quick Fish
-                      </button>
-                    </div>
-                  </div>
-                  <div class="row content-offset-10">
-                    <div class="col-md-12 text-center">
-                      <button class="btn btn-primary">
-                        GPC Staph
-                      </button>
-                    </div>
-                  </div>
-                  <div class="row content-offset-10">
-                    <div class="col-md-12 text-center">
-                      <button class="btn btn-default">
-                        GPC Strep
-                      </button>
-                    </div>
-                  </div>
-                  <div class="row content-offset-10">
-                    <div class="col-md-12 text-center">
-                      <button class="btn btn-default">
-                        GNR
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="row">
-                    <div class="col-md-12 text-center">
-                      <button class="btn btn-default">
-                        S. aureus
-                      </button>
-                    </div>
-                  </div>
-                  <div class="row content-offset-10">
-                    <div class="col-md-12 text-center">
-                      <button class="btn btn-default">
-                        CNS
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr ng-show="aerobicModel.fish.length">
-            </div>
+        <div ng-repeat="test in aerobicModel.lab_tests" class="col-md-10">
+          <div class="text-center">
+            <h4>Organism</h4>
           </div>
-          <div class="row row content-offset-10">
-            <div class="col-md-12">
-              <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
-                Add Microscopy
-              </button>
-            </div>
-          </div>
-          <div class="row row content-offset-10">
-            <div class="col-md-12">
-              <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
-                Add Organism
-              </button>
-            </div>
-          </div>
+          {% render_lab_form lab_tests.OrganismTest %}
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-
-{% comment %}
-      <div class="row">
-        <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
-          <h4>Isolate [[ $index + 1 ]] <a ng-click="editing.blood_culture._formHelper.delete($index, aerobicModel)"><small>  remove</small></a></h4>
-        </div>
-      </div>
-      <div class="row content-offset-20">
-        <div class="col-sm-12 text-center">
-          <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
-            Add Fish
-          </button>
-        </div>
-      </div>
-      <div class="row content-offset-20">
-        <div class="col-sm-12 text-center">
-          <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
-            Add Microscopy
-          </button>
-        </div>
-      </div>
-      <div class="row content-offset-20">
-        <div class="col-sm-12 text-center">
-          <button class="btn btn-default" ng-click="editing.blood_culture._formHelper.addFish()">
-            Add Organism
-          </button>
-        </div>
-      </div>
-      {% select label="FISH" model="aerobicModel.FISH" lookuplist="microbiology_organism_list" %}
-      {% select label="Microscopy" model="aerobicModel.microscopy" lookuplist="microbiology_organism_list" %}
-      {% select label="Organism" model="aerobicModel.organism" lookuplist="microbiology_organism_list" %}
-      {% select label="Sensitive" model="aerobicModel.sensitive_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
-      {% select label="Resistant" model="aerobicModel.resistant_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
   </div>
   <div class="row text-center">
     <button ng-click="editing.blood_culture._formHelper.addAerobic()" class="btn btn-primary">
       <i class="fa fa-plus-circle"></i> New Isolate
     </button>
   </div>
-
   <div class="row text-center content-offset-25">
-    <h3>Anaerobic</h3>
+    <h4>Anaerobic</h4>
   </div>
-  <hr />
-
   <div class="row content-offset-25" ng-repeat="anaerobicModel in editing.blood_culture._formHelper.anaerobicIsolates()">
+    <div class="col-md-12">
       <div class="row">
-        <div class="col-md-10 col-md-push-1 content-offset-below-10 text-center">
-          <h4>Isolate [[ $index + 1 ]] <a ng-click="editing.blood_culture._formHelper.delete($index, anaerobicModel)"><small>remove</small></a></h4>
+        <div class="col-md-2 text-right">
+          <div class="row">
+            <div class="col-md-12">
+              Isolate [[ $index + 1 ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <a ng-click="editing.blood_culture._formHelper.delete($index, anaerobicModel)"><small>remove</small></a>
+            </div>
+          </div>
+        </div>
+        <div ng-repeat="test in anaerobicModel.lab_tests" class="col-md-10">
+          <div class="text-center">
+            <h4>Organism</h4>
+          </div>
+          {% render_lab_form lab_tests.OrganismTest %}
         </div>
       </div>
-      {% select label="Organism" model="anaerobicModel.organism" lookuplist="microbiology_organism_list" %}
-      {% select label="FISH" model="anaerobicModel.fish" lookuplist="microbiology_organism_list" %}
-      {% select label="Microscopy" model="anaerobicModel.microscopy" lookuplist="microbiology_organism_list" %}
-      {% select label="Sensitive" model="anaerobicModel.sensitive_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
-      {% select label="Resistant" model="anaerobicModel.resistant_antibiotics" lookuplist="antimicrobial_list" multiple=True tagging=False %}
+    </div>
   </div>
   <div class="row text-center content-offset-below-25">
     <button  ng-click="editing.blood_culture._formHelper.addAnaerobic()" class="btn btn-primary">
@@ -165,4 +124,3 @@
     </button>
   </div>
 </div>
-{% endcomment %}

@@ -19,10 +19,12 @@ function(
       _.extend(vm, parentCtrl);
 
       $scope.editing.blood_culture._formHelper = new BloodCultureFormHelper(
-        $scope.editing.blood_culture
+        $scope.editing.blood_culture, metadata
       );
+      $scope.singleModel = 0;
+      window.scope = $scope;
 
       $scope.preSave = function(editing){
-          delete editing.blood_culture._formHelper
+        delete editing.blood_culture._formHelper
       }
 });

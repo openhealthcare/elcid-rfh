@@ -1,4 +1,5 @@
 angular.module('opal.services').factory('BloodCultureFormHelper', function(Item){
+  "use strict";
 
   /*
    Blood cultures are dealt with in a staged manner
@@ -27,23 +28,17 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
       - Negative
   */
 
-  var BloodCultureFormHelper = function(bloodCulture){
+  var BloodCultureFormHelper = function(bloodCulture, metadata){
       var self = this;
+      var gramStainMeta = _.find(metadata.lab_test, function(lt){
+        return lt.name === 'gram_stain';
+      }).result_choices;
 
-      if(_.isUndefined(bloodCulture.isolates)){
-        bloodCulture.isolates = [];
-      }
-      else{
-        bloodCulture.isolates = _.sortBy(bloodCulture.isolates, function(i){
-          return i.aerobic;
-        });
-      }
-
-      self.addFish = function(isolate){
-        if(_.isUndefined(isolate.fish)){
-          isolate.fish = [];
-        }
-        isolate.fish.push({});
+      var fishTests = {
+          "Yeast": "QuickFISH",
+          "Gram +ve Cocci Cluster": "GPC Staph",
+          "Gram +ve Cocci Chains": "GPC Strep",
+          "Gram -ve": "GNR"
       };
 
       self.addAerobic = function(){
@@ -53,16 +48,23 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
           return !bc.aerobic;
         });
         var isolate = {
-          aerobic: true
+          aerobic: true,
+          lab_tests: [{test_name: "Organism"}]
         };
-        bloodCulture.isolates.splice(firstAnaerobicIndex, 0, isolate);
+        if(firstAnaerobicIndex=== -1){
+          bloodCulture.isolates.push(isolate);
+        }
+        else{
+          bloodCulture.isolates.splice(firstAnaerobicIndex, 0, isolate);
+        }
       };
 
       self.addAnaerobic = function(){
         bloodCulture.isolates.push({
             aerobic: false,
-        })
-      }
+            lab_tests: [{test_name: "Organism"}]
+        });
+      };
 
       self.aerobicIsolates = function(){
         return _.filter(bloodCulture.isolates, function(bc){
@@ -84,7 +86,63 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
             var position = self.aerobicIsolates().length + index;
             bloodCulture.isolates.splice(position, 1);
         }
+      };
+
+      self.updateTests = function(){
+        bloodCulture.lab_tests = _.filter(bloodCulture.lab_tests, function(lt){
+          return !_.contains(_.values(fishTests), lt.test_name) && lt.test_name !== "Gram Stain";
+        });
+
+        _.each(self.multiGramStain, function(v, k){
+          if(v){
+            bloodCulture.lab_tests.push({
+              test_name: fishTests[k],
+              result: "Not Done"
+            });
+            bloodCulture.lab_tests.push({
+              test_name: "Gram Stain",
+              result: k
+            });
+          }
+        });
+      };
+
+      self.isFishTest = function(someTest){
+        return _.contains(_.values(fishTests), someTest.test_name);
+      };
+
+      self.hasFishTest = function(){
+        return _.any(bloodCulture.lab_tests, function(lt){
+          return self.isFishTest(lt);
+        });
       }
+
+      self.initialise = function(){
+        if(_.isUndefined(bloodCulture.isolates)){
+          bloodCulture.isolates = [];
+        }
+        else{
+          bloodCulture.isolates = _.sortBy(bloodCulture.isolates, function(i){
+            return i.aerobic;
+          });
+        }
+
+        if(!bloodCulture.lab_tests || !bloodCulture.lab_tests.length){
+          bloodCulture.lab_tests = [{test_name: "Gram Stain"}];
+        }
+
+        self.multiGramStain = {};
+
+        _.each(_.values(gramStainMeta), function(gm){
+          self.multiGramStain[gm] = _.any(bloodCulture.lab_tests, function(lt){
+            return lt.test_name === "Gram Stain" && lt.result === gm;
+          });
+        });
+
+        self.fishTestNames = _.values(fishTests);
+      };
+
+      self.initialise();
   };
 
   return BloodCultureFormHelper;
