@@ -574,13 +574,13 @@ class FishForm(object):
 
         if not result or result == "Not Done":
             if id_field:
-                LabTest.objects.get(id=id_field).delete()
+                lmodels.LabTest.objects.get(id=id_field).delete()
             return
 
         super(FishForm, self).update_from_dict(data, user, **kwargs)
 
 
-class GramStain(FishForm, lmodels.LabTest):
+class GramStain(lmodels.LabTest):
     class Meta:
         proxy = True
 
@@ -596,6 +596,8 @@ class GramStain(FishForm, lmodels.LabTest):
 
 
 class QuickFISH(FishForm, lmodels.LabTest):
+    _title = "QuickFISH"
+
     class Meta:
         proxy = True
         verbose_name = "QuickFISH"
@@ -609,6 +611,7 @@ class QuickFISH(FishForm, lmodels.LabTest):
 
 
 class GPCStaph(FishForm, lmodels.LabTest):
+    _title = "GPC Staph"
     class Meta:
         proxy = True
         verbose_name = "GPC Staph"
@@ -621,6 +624,7 @@ class GPCStaph(FishForm, lmodels.LabTest):
 
 
 class GPCStrep(FishForm, lmodels.LabTest):
+    _title = "GPC Strep"
     class Meta:
         proxy = True
         verbose_name = "GPC Strep"
@@ -633,6 +637,8 @@ class GPCStrep(FishForm, lmodels.LabTest):
 
 
 class GNR(FishForm, lmodels.LabTest):
+    _title = "GNR"
+
     class Meta:
         proxy = True
         verbose_name = "GNR"
@@ -646,6 +652,8 @@ class GNR(FishForm, lmodels.LabTest):
 
 
 class OrganismTest(lmodels.LabTest):
+    _title = "Organism"
+
     class Meta:
         proxy = True
         verbose_name = "Organism"

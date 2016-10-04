@@ -34,6 +34,13 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
         return lt.name === 'gram_stain';
       }).result_choices;
 
+      var LabTest = function(test_name, result){
+        this.date_ordered = moment().format("DD/MM/YYYY");
+        this.date_received = moment().format("DD/MM/YYYY");
+        this.test_name = test_name;
+        this.result = result;
+      };
+
       self.fishTests = {
           "Yeast": "QuickFISH",
           "Gram +ve Cocci Cluster": "GPC Staph",
@@ -49,8 +56,9 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
         });
         var isolate = {
           aerobic: true,
-          lab_tests: [{test_name: "Organism"}]
+          lab_tests: [new LabTest("Organism")],
         };
+
         if(firstAnaerobicIndex=== -1){
           bloodCulture.isolates.push(isolate);
         }
@@ -62,7 +70,7 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
       self.addAnaerobic = function(){
         bloodCulture.isolates.push({
             aerobic: false,
-            lab_tests: [{test_name: "Organism"}]
+            lab_tests: [new LabTest("Organism")],
         });
       };
 
@@ -106,17 +114,12 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
               });
 
               if(!testExists){
-                bloodCulture.lab_tests.push({
-                  test_name: self.fishTests[k],
-                  result: "Not Done"
-                });
+                var fishTest = new LabTest(self.fishTests[k], "Not Done");
+                bloodCulture.lab_tests.push(fishTest);
               }
             }
 
-            bloodCulture.lab_tests.push({
-              test_name: "Gram Stain",
-              result: k
-            });
+            bloodCulture.lab_tests.push(new LabTest("Gram Stain", k));
           }
         });
       };
@@ -142,7 +145,7 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
         }
 
         if(!bloodCulture.lab_tests || !bloodCulture.lab_tests.length){
-          bloodCulture.lab_tests = [{test_name: "Gram Stain"}];
+          bloodCulture.lab_tests = [new LabTest("Gram Stain")];
         }
 
         self.multiGramStain = {};
@@ -162,6 +165,8 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
         self.gramStainChunkNames.push(_.filter(_.keys(self.multiGramStain), function(stain){
           return !self.fishTests[stain];
         }).sort());
+
+        self.updateTests();
       };
 
       self.initialise();
