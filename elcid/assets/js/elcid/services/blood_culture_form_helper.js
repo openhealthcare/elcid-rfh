@@ -107,6 +107,10 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
         });
 
         _.each(self.multiGramStain, function(v, k){
+          var gramStainExists = _.find(bloodCulture.lab_tests, function(lt){
+            return lt.test_name === "Gram Stain" && lt.result === k;
+          });
+
           if(v){
             if(self.fishTests[k]){
               var testExists = _.find(bloodCulture.lab_tests, function(lt){
@@ -119,7 +123,19 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
               }
             }
 
-            bloodCulture.lab_tests.push(new LabTest("Gram Stain", k));
+            if(!gramStainExists){
+              bloodCulture.lab_tests.push(new LabTest("Gram Stain", k));
+            }
+          }
+          else{
+            if(gramStainExists){
+              bloodCulture.lab_tests = _.filter(bloodCulture.lab_tests, function(lt){
+                if(lt.test_name === "Gram Stain" && lt.result === k){
+                  return false;
+                }
+                return true;
+              });
+            }
           }
         });
       };

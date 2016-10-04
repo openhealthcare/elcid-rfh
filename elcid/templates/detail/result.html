@@ -5,7 +5,7 @@
       <div class="row">
         <div class="col-md-6">
           <h3>
-            {{ models.Result.get_display_name }} <i class="{{ models.Result.get_icon }}"></i>
+            Lab Tests <i class="fa fa-flask"></i>
           </h3>
         </div>
         <div class="col-md-6 text-right">
@@ -16,9 +16,22 @@
       </div>
     </div>
     <ul class="list-group">
-      <li class="list-group-item" ng-show="resultView.filter(item)" ng-repeat="item in episode.result">
+      <li class="list-group-item">
         <div class="row">
-          {% include models.Result.get_detail_template %}
+          <div class="col-md-2"></div>
+          <div class="col-md-2"><b>Date Ordered</b></div>
+          <div class="col-md-2"><b>Result</b></div>
+          <div class="col-md-3"><b>Sensitive</b></div>
+          <div class="col-md-3"><b>Resistant</b></div>
+        </div>
+      </li>
+      <li class="list-group-item" ng-repeat="item in resultView.getLabTests(patient)">
+        <div class="row">
+          <div class="col-md-2">[[ item.test_name ]]</div>
+          <div class="col-md-2">[[ item.date_ordered ]]</div>
+          <div class="col-md-2">[[ item.result ]]</div>
+          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
+          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
         </div>
       </li>
     </ul>
