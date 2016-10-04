@@ -55,7 +55,7 @@ describe('BloodCultureFormCtrlTest', function() {
             item          : fakeItem,
             referencedata : {toLookuplists: function(){ return {} }},
             profile       : {},
-            metadata      : {},
+            metadata      : {lab_test: [{name: "gram_stain", result_choices: []}]},
             episode       : episode,
             ngProgressLite: ngProgressLite,
         });
@@ -63,23 +63,23 @@ describe('BloodCultureFormCtrlTest', function() {
 
 
     describe('it should inherit from EditItem', function(){
-        it('should have a save method that saves', function(){
-          $scope.editing.blood_culture = {
-            lab_number: "1"
-          };
-          $scope.$digest();
-          var callArgs;
-          var deferred = $q.defer();
-          spyOn(fakeItem, 'save').and.callFake(function() {
-              return deferred.promise;
-          });
-          $scope.save('save');
-          deferred.resolve("episode returned");
-          $scope.$digest();
-          callArgs = fakeItem.save.calls.mostRecent().args;
-          expect(callArgs.length).toBe(1);
-          expect(fakeItem.save).toHaveBeenCalledWith({lab_number: "1"});
+      it('should have a save method that saves', function(){
+        $scope.editing.blood_culture = {
+          lab_number: "1"
+        };
+        $scope.$digest();
+        var callArgs;
+        var deferred = $q.defer();
+        spyOn(fakeItem, 'save').and.callFake(function() {
+            return deferred.promise;
         });
+        $scope.save('save');
+        deferred.resolve("episode returned");
+        $scope.$digest();
+        callArgs = fakeItem.save.calls.mostRecent().args;
+        expect(callArgs.length).toBe(1);
+        expect(fakeItem.save).toHaveBeenCalledWith({lab_number: "1"});
+      });
     });
 
     it("it should attatch form helpers", function(){

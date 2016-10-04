@@ -38,7 +38,7 @@ static3==0.6.1
 -e git+https://github.com/openhealthcare/opal-lab.git@generic-lab-relations#egg=opal_lab
 
 -e git+https://github.com/openhealthcare/opal-wardround.git@v0.6#egg=opal_wardround
--e git+https://github.com/openhealthcare/opal-pathway.git@save-multiple-with-context#egg=opal_pathway
+-e git+https://github.com/openhealthcare/opal-pathway.git@v0.2#egg=opal_pathway
 
 -e git+https://github.com/openhealthcare/opal-dischargesummary.git@v0.2#egg=opal_dischargesummary
 -e git+https://github.com/openhealthcare/opal-guidelines.git@#egg=opal_guidelines

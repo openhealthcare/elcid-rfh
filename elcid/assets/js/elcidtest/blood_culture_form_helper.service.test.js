@@ -5,6 +5,21 @@ describe("BloodCultureFormHelper", function(){
   var bloodCultureRecord;
   var aerobic, anaerobic;
 
+  var metadata = {
+    lab_test: [{
+      name: "gram_stain",
+      result_choices: {
+        gram_negative_cocci: "Gram -ve Cocci",
+        gram_negative_rods: "Gram -ve Rods",
+        gram_positive_cocci_chains: "Gram +ve Cocci Chains",
+        gram_positive_cocci_cluster: "Gram +ve Cocci Cluster",
+        modified_zn_stain: "Modified ZN Stain",
+        yeast: "Yeast",
+        zn_stain: "ZN Stain"
+      }
+    }]
+  }
+
   var loadInIsolates= function(bcr){
     aerobic = [{
       aerobic: true,
@@ -29,10 +44,11 @@ describe("BloodCultureFormHelper", function(){
   beforeEach(function(){
     module('opal');
     inject(function($injector){
-      BloodCultureFormHelper = $injector.get('BloodultureFormHelper');
+      BloodCultureFormHelper = $injector.get('BloodCultureFormHelper');
     });
-    bloodCultureRecord = {};
-    bloodCultureFormHelper = new BloodCultureFormHelper(bloodCultureRecord);
+    bloodCultureRecord = {isolates: []};
+
+    bloodCultureFormHelper = new BloodCultureFormHelper(bloodCultureRecord, metadata);
   });
 
   it("should sort blood cultures on load", function(){
@@ -49,7 +65,7 @@ describe("BloodCultureFormHelper", function(){
 
     var bc = {isolates: tests};
 
-    BloodCultureFormHelper(bc);
+    new BloodCultureFormHelper(bc, metadata);
 
     var tokens = _.pluck(bc.isolates, "consistency_token");
     expect(tokens).toEqual(["2", "1", "3"]);
@@ -98,6 +114,4 @@ describe("BloodCultureFormHelper", function(){
     bloodCultureFormHelper.delete(0, anaerobic);
     expect(bloodCultureRecord.isolates).toEqual(aerobic);
   });
-
-
 });

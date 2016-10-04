@@ -8,10 +8,12 @@
   <div class="row">
     <h4 class="text-center">Gram Stain</h4>
   </div>
-  <div class="row">
+  <div class="row" ng-repeat="stainArray in editing.blood_culture._formHelper.gramStainChunkNames">
     <div class="col-md-10 col-md-push-1">
-      <div class="col-sm-3 text-center" ng-repeat="(result, value) in editing.blood_culture._formHelper.multiGramStain">
-        <label style="width: 100%; white-space: normal" class="btn btn-default" ng-change="editing.blood_culture._formHelper.updateTests()" ng-model="editing.blood_culture._formHelper.multiGramStain[[ result ]]" btn-checkbox>[[ result ]]</label>
+      <div ng-repeat="stain in stainArray" class="col-md-[[ 12/stainArray.length ]] text-center">
+        <label class="btn btn-default btn-text-wrap content-offset-below-20 multilined-btn" ng-change="editing.blood_culture._formHelper.updateTests()" ng-model="editing.blood_culture._formHelper.multiGramStain[[ stain ]]" btn-checkbox>
+            [[ stain ]]
+        </label>
       </div>
     </div>
   </div>
@@ -25,10 +27,9 @@
       <div class="row">
         <div class="col-md-6 col-md-push-4">
           <ul class="help-block">
-            <li>Yeast &#8594; QuickFISH</li>
-            <li>Gram +ve Cocci Cluster &#8594; GPC Staph</li>
-            <li>Gram +ve Cocci Chains &#8594; GPC Strep</li>
-            <li>Gram -ve &#8594; GNR</li>
+            <li ng-repeat="stain in editing.blood_culture._formHelper.gramStainChunkNames[0]">
+              [[ stain ]] &#8594; [[ editing.blood_culture._formHelper.fishTests[stain] ]]
+            </li>
           </ul>
         </div>
       </div>

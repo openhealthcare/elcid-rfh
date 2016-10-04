@@ -517,10 +517,6 @@ class Appointment(EpisodeSubrecord):
     date             = models.DateField(blank=True, null=True)
 
 
-class BloodCultureSource(lookuplists.LookupList):
-    pass
-
-
 class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
     _icon = 'fa fa-crosshairs'
     _title = 'Blood Culture'
@@ -529,7 +525,7 @@ class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
     lab_number = models.CharField(max_length=255, blank=True)
     date_ordered = models.DateField(null=True, blank=True)
     date_positive = models.DateField(null=True, blank=True)
-    source = ForeignKeyOrFreeText(BloodCultureSource)
+    source = ForeignKeyOrFreeText(omodels.Line_type)
 
     @classmethod
     def _get_fieldnames_to_serialize(cls):
@@ -592,7 +588,10 @@ class GramStain(FishForm, lmodels.LabTest):
         ("yeast", "Yeast",),
         ("gram_positive_cocci_cluster", "Gram +ve Cocci Cluster",),
         ("gram_positive_cocci_chains", "Gram +ve Cocci Chains",),
-        ("gram_negative", "Gram -ve",),
+        ("gram_negative_rods", "Gram -ve Rods",),
+        ("gram_negative_cocci", "Gram -ve Cocci",),
+        ("zn_stain", "ZN Stain",),
+        ("modified_zn_stain", "Modified ZN Stain",),
     )
 
 

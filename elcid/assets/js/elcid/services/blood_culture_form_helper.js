@@ -1,4 +1,4 @@
-angular.module('opal.services').factory('BloodCultureFormHelper', function(Item){
+angular.module('opal.services').factory('BloodCultureFormHelper', function(){
   "use strict";
 
   /*
@@ -30,15 +30,15 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
 
   var BloodCultureFormHelper = function(bloodCulture, metadata){
       var self = this;
-      var gramStainMeta = _.find(metadata.lab_test, function(lt){
+      self.gramStainMeta = _.find(metadata.lab_test, function(lt){
         return lt.name === 'gram_stain';
       }).result_choices;
 
-      var fishTests = {
+      self.fishTests = {
           "Yeast": "QuickFISH",
           "Gram +ve Cocci Cluster": "GPC Staph",
           "Gram +ve Cocci Chains": "GPC Strep",
-          "Gram -ve": "GNR"
+          "Gram -ve Rods": "GNR"
       };
 
       self.addAerobic = function(){
@@ -88,17 +88,31 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
         }
       };
 
+      /*
+      * when we update tests, we nuke all existing tests, unless they have an id
+      * if they have an id, the user can nuke them just by setting them to 'not done'
+      * and saving them, in which case they will be deleted by the server
+      */
       self.updateTests = function(){
         bloodCulture.lab_tests = _.filter(bloodCulture.lab_tests, function(lt){
-          return !_.contains(_.values(fishTests), lt.test_name) && lt.test_name !== "Gram Stain";
+          return lt.id || (!_.contains(_.values(self.fishTests), lt.test_name) && lt.test_name !== "Gram Stain");
         });
 
         _.each(self.multiGramStain, function(v, k){
           if(v){
-            bloodCulture.lab_tests.push({
-              test_name: fishTests[k],
-              result: "Not Done"
-            });
+            if(self.fishTests[k]){
+              var testExists = _.find(bloodCulture.lab_tests, function(lt){
+                return lt.test_name === self.fishTests[k];
+              });
+
+              if(!testExists){
+                bloodCulture.lab_tests.push({
+                  test_name: self.fishTests[k],
+                  result: "Not Done"
+                });
+              }
+            }
+
             bloodCulture.lab_tests.push({
               test_name: "Gram Stain",
               result: k
@@ -108,7 +122,7 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
       };
 
       self.isFishTest = function(someTest){
-        return _.contains(_.values(fishTests), someTest.test_name);
+        return _.contains(_.values(self.fishTests), someTest.test_name);
       };
 
       self.hasFishTest = function(){
@@ -133,13 +147,21 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
 
         self.multiGramStain = {};
 
-        _.each(_.values(gramStainMeta), function(gm){
+        _.each(_.values(self.gramStainMeta), function(gm){
           self.multiGramStain[gm] = _.any(bloodCulture.lab_tests, function(lt){
             return lt.test_name === "Gram Stain" && lt.result === gm;
           });
         });
 
-        self.fishTestNames = _.values(fishTests);
+        /*
+        * we chunk the gram stains into those with fish tests
+        * and those without
+        */
+        self.gramStainChunkNames = [];
+        self.gramStainChunkNames.push(_.keys(self.fishTests).sort())
+        self.gramStainChunkNames.push(_.filter(_.keys(self.multiGramStain), function(stain){
+          return !self.fishTests[stain];
+        }).sort());
       };
 
       self.initialise();
