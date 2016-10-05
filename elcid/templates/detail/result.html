@@ -34,6 +34,25 @@
           <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
         </div>
       </li>
+      <li class="list-group-item" ng-show="patient.demographics[0].first_name ==== 'Indiana'">
+        <div class="row">
+          <div class="col-md-2">Full Blood Count</div>
+          <div class="col-md-2">20/09 14:56</div>
+          <div class="col-md-2">
+            <p>Hb: 150 g/l</p>
+            <p>WBC: 10.00</p>
+            <p>Platelets: 300</p>
+            <p>RBC: 5.00</p>
+            <p>HCT: 0.400 L/L</p>
+            <p>MCV: 80.0 fl</p>
+            <p>MCH: 30.0 pg</p>
+            <p>MCHU: 250 g/l</p>
+            <p>NEUT: 5.50</p>
+          </div>
+          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
+          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
+        </div>
+      </li>
     </ul>
   </div>
 </div>
