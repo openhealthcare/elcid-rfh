@@ -1,4 +1,5 @@
-angular.module('opal.services').factory('BloodCultureFormHelper', function(Item){
+angular.module('opal.services').factory('BloodCultureFormHelper', function(){
+  "use strict";
 
   /*
    Blood cultures are dealt with in a staged manner
@@ -27,35 +28,43 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
       - Negative
   */
 
-  var BloodCultureFormHelper = function(bloodCulture){
+  var BloodCultureFormHelper = function(bloodCulture, metadata){
       var self = this;
+      self.gramStainMeta = _.find(metadata.lab_test, function(lt){
+        return lt.name === 'gram_stain';
+      }).result_choices;
 
-      if(_.isUndefined(bloodCulture.isolates)){
-        bloodCulture.isolates = [];
-      }
-      else{
-        bloodCulture.isolates = _.sortBy(bloodCulture.isolates, function(i){
-          return i.aerobic;
-        });
-      }
+      self.fishTests = {
+          "Yeast": "QuickFISH",
+          "Gram +ve Cocci Cluster": "GPC Staph",
+          "Gram +ve Cocci Chains": "GPC Strep",
+          "Gram -ve Rods": "GNR"
+      };
 
       self.addAerobic = function(){
         // insert an element between the last aerobic and the
         // first anaerobic
         var firstAnaerobicIndex = _.findIndex(bloodCulture.isolates, function(bc){
-          return !i.aerobic;
+          return !bc.aerobic;
         });
         var isolate = {
-          aerobic: true
+          aerobic: true,
+          lab_tests: [{test_name: "Organism"}]
         };
-        bloodCulture.isolates.splice(firstAnaerobicIndex, 0, isolate);
+        if(firstAnaerobicIndex=== -1){
+          bloodCulture.isolates.push(isolate);
+        }
+        else{
+          bloodCulture.isolates.splice(firstAnaerobicIndex, 0, isolate);
+        }
       };
 
       self.addAnaerobic = function(){
         bloodCulture.isolates.push({
             aerobic: false,
-        })
-      }
+            lab_tests: [{test_name: "Organism"}]
+        });
+      };
 
       self.aerobicIsolates = function(){
         return _.filter(bloodCulture.isolates, function(bc){
@@ -77,7 +86,85 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(Item)
             var position = self.aerobicIsolates().length + index;
             bloodCulture.isolates.splice(position, 1);
         }
+      };
+
+      /*
+      * when we update tests, we nuke all existing tests, unless they have an id
+      * if they have an id, the user can nuke them just by setting them to 'not done'
+      * and saving them, in which case they will be deleted by the server
+      */
+      self.updateTests = function(){
+        bloodCulture.lab_tests = _.filter(bloodCulture.lab_tests, function(lt){
+          return lt.id || (!_.contains(_.values(self.fishTests), lt.test_name) && lt.test_name !== "Gram Stain");
+        });
+
+        _.each(self.multiGramStain, function(v, k){
+          if(v){
+            if(self.fishTests[k]){
+              var testExists = _.find(bloodCulture.lab_tests, function(lt){
+                return lt.test_name === self.fishTests[k];
+              });
+
+              if(!testExists){
+                bloodCulture.lab_tests.push({
+                  test_name: self.fishTests[k],
+                  result: "Not Done"
+                });
+              }
+            }
+
+            bloodCulture.lab_tests.push({
+              test_name: "Gram Stain",
+              result: k
+            });
+          }
+        });
+      };
+
+      self.isFishTest = function(someTest){
+        return _.contains(_.values(self.fishTests), someTest.test_name);
+      };
+
+      self.hasFishTest = function(){
+        return _.any(bloodCulture.lab_tests, function(lt){
+          return self.isFishTest(lt);
+        });
       }
+
+      self.initialise = function(){
+        if(_.isUndefined(bloodCulture.isolates)){
+          bloodCulture.isolates = [];
+        }
+        else{
+          bloodCulture.isolates = _.sortBy(bloodCulture.isolates, function(i){
+            return i.aerobic;
+          });
+        }
+
+        if(!bloodCulture.lab_tests || !bloodCulture.lab_tests.length){
+          bloodCulture.lab_tests = [{test_name: "Gram Stain"}];
+        }
+
+        self.multiGramStain = {};
+
+        _.each(_.values(self.gramStainMeta), function(gm){
+          self.multiGramStain[gm] = _.any(bloodCulture.lab_tests, function(lt){
+            return lt.test_name === "Gram Stain" && lt.result === gm;
+          });
+        });
+
+        /*
+        * we chunk the gram stains into those with fish tests
+        * and those without
+        */
+        self.gramStainChunkNames = [];
+        self.gramStainChunkNames.push(_.keys(self.fishTests).sort())
+        self.gramStainChunkNames.push(_.filter(_.keys(self.multiGramStain), function(stain){
+          return !self.fishTests[stain];
+        }).sort());
+      };
+
+      self.initialise();
   };
 
   return BloodCultureFormHelper;

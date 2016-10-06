@@ -1,8 +1,6 @@
 body {
-  background-color: #EEE; }
-
-h1 .small, h1 small, h2 .small, h2 small, h3 .small, h3 small, h4 .small, h4 small, h5 .small, h5 small {
-  color: #FFF; }
+  background-color: #EEE;
+}
 
 .bg-primary {
   background-color: #0091C9; }
@@ -78,5 +76,26 @@ a.list-group-item:hover, a.list-group-item:focus {
   color: #FFF; }
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
   background-color: #343637; }
+
+.btn-text-wrap{
+  white-space: normal;
+}
+
+.multilined-btn{
+  /*
+  * this is used in the blood culture buttons to make all buttons
+  * the same height whether the ext is on 2 lines or not
+  * and to vertically/horizontally centre the text
+  */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+}
+
+.full-width{
+  width: 100%;
+}
 
 /*# sourceMappingURL=elcid.css.map */
