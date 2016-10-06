@@ -403,6 +403,7 @@ class MicrobiologyInput(EpisodeSubrecord):
     reason_for_interaction = ForeignKeyOrFreeText(
         omodels.Clinical_advice_reason_for_interaction
     )
+    infection_control = models.TextField(blank=True)
     clinical_discussion = models.TextField(blank=True)
     agreed_plan = models.TextField(blank=True)
     discussed_with = models.CharField(max_length=255, blank=True)
@@ -516,6 +517,8 @@ class Appointment(EpisodeSubrecord):
     appointment_with = models.CharField(max_length=200, blank=True, null=True)
     date             = models.DateField(blank=True, null=True)
 
+class BloodCultureSource(lookuplists.LookupList):
+    pass
 
 class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
     _icon = 'fa fa-crosshairs'
@@ -525,7 +528,7 @@ class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
     lab_number = models.CharField(max_length=255, blank=True)
     date_ordered = models.DateField(null=True, blank=True)
     date_positive = models.DateField(null=True, blank=True)
-    source = ForeignKeyOrFreeText(omodels.Line_type)
+    source = ForeignKeyOrFreeText(BloodCultureSource)
 
     @classmethod
     def _get_fieldnames_to_serialize(cls):
