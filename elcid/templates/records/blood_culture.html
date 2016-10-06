@@ -17,31 +17,35 @@
 </div>
 <div ng-show="item.isolates.length">
   <div ng-repeat="isAerobic in [true, false]">
-    <b ng-show="isAerobic">Aerobic</b>
-    <b ng-hide="isAerobic">Anaerobic</b>
-    <div>
-      <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
-        <span ng-repeat="test in isolate.lab_tests | filter:{test_name: 'Gram Stain'}">
-          <span ng-show="$index === 0"><b>Gram Stain:</b> </span> [[ test.result ]]
-          <span ng-hide="$last">, </span>
-        </span>
-      </span>
-    </div>
-    <div>
-      <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
-        <span ng-repeat="test in isolate.lab_tests | filter:{test_name: '!Gram Stain && !Organism'}">
-          <span ng-show="$index === 0"><b>Fish:</b> </span> [[ test.name ]]: [[ test.result ]]
-          <span ng-hide="$last">, </span>
-        </span>
-      </span>
-    </div>
-    <div>
-      <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
-        <span ng-repeat="test in isolate.lab_tests | filter:{test_name: 'Organism'}">
-          <span ng-show="$index === 0"><b>Organism:</b> </span> [[ test.result ]]
-          <span ng-hide="$last">, </span>
-        </span>
-      </span>
+    <b ng-show="isAerobic">Aerobic:</b>
+    <b ng-hide="isAerobic">Anaerobic:</b>
+    <div class="row">
+      <div class="col-md-11 col-md-push-1">
+        <div>
+          <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
+            <span ng-repeat="test in isolate.lab_tests | filter:{test_name: 'Gram Stain'}">
+              <span ng-show="$index === 0"><b>Gram Stain:</b> </span> [[ test.result ]]
+              <span ng-hide="$last">, </span>
+            </span>
+          </span>
+        </div>
+        <div>
+          <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
+            <span ng-repeat="test in isolate.lab_tests | filter:{test_name: '!Gram Stain && !Organism'}">
+              <span ng-show="$index === 0"><b>Fish:</b> </span> [[ test.name ]]: [[ test.result ]]
+              <span ng-hide="$last">, </span>
+            </span>
+          </span>
+        </div>
+        <div>
+          <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
+            <span ng-repeat="test in isolate.lab_tests | filter:{test_name: 'Organism'}">
+              <span ng-show="$index === 0"><b>Organism:</b> </span> [[ test.result ]]
+              <span ng-hide="$last">, </span>
+            </span>
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
