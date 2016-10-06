@@ -417,7 +417,6 @@ class MicrobiologyInput(EpisodeSubrecord):
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
 
-
 class Todo(EpisodeSubrecord):
     _title = 'To Do'
     _icon = 'fa fa-th-list'
