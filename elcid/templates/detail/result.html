@@ -34,6 +34,8 @@
           <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
         </div>
       </li>
+      {% comment %}
+      This was example results from the hl7 messages
       <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
         <div class="row">
           <div class="col-md-2">Full Blood Count</div>
@@ -117,6 +119,7 @@
           <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
         </div>
       </li>
+      {% endcomment %}
     </ul>
   </div>
 </div>
