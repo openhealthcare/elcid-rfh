@@ -1,0 +1,52 @@
+{% load lab %}
+<div class="row">
+  <h4 class="text-center">Gram Stain</h4>
+</div>
+<div class="row" ng-repeat="stainArray in editing.blood_culture._formHelper.gramStainChunkNames">
+  <div class="col-md-10 col-md-push-1">
+    <div ng-repeat="stain in stainArray" class="col-md-[[ 12/stainArray.length ]] text-center">
+      <label class="btn btn-default btn-text-wrap content-offset-below-20 multilined-btn" ng-change="isolate._formHelper.updateTests()" ng-model="isolate._formHelper.multiGramStain[[ stain ]]" btn-checkbox>
+          [[ stain ]]
+      </label>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-10 col-md-push-1">
+    <p class="help-block">
+      Certain Gram stain results point to types of organisms. Specific FISH tests can then be used
+      to narrow down the specific organism. So for certain organisms, certain FISH TESTs should
+      be carried out.
+    </p>
+    <div class="row">
+      <div class="col-md-6 col-md-push-4">
+        <ul class="help-block">
+          <li ng-repeat="stain in editing.blood_culture._formHelper.gramStainChunkNames[0]">
+            [[ stain ]] &#8594; [[ editing.blood_culture._formHelper.fishTests[stain] ]]
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- fish tests -->
+<div ng-show="isolate._formHelper.hasFishTest()">
+  <div class="row content-offset-20">
+    <h4 class="text-center">FISH Tests</h4>
+  </div>
+  <div ng-repeat="test in isolate.lab_tests | filter:isolate._formHelper.isFishTest">
+    <div ng-show="test.test_name === 'QuickFISH'">
+      {% render_lab_form lab_tests.QuickFISH %}
+    </div>
+    <div ng-show="test.test_name === 'GPC Staph'">
+      {% render_lab_form lab_tests.GPCStaph %}
+    </div>
+    <div ng-show="test.test_name === 'GPC Strep'">
+      {% render_lab_form lab_tests.GPCStrep %}
+    </div>
+    <div ng-show="test.test_name === 'GNR'">
+      {% render_lab_form lab_tests.GNR %}
+    </div>
+  </div>
+</div>
