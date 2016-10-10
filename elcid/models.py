@@ -5,17 +5,27 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from lab import models as lmodels
+
 from jsonfield import JSONField
 
 import opal.models as omodels
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, Episode, Team,
-    Tagging, ExternallySourcedModel
+    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel
 )
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
-from microhaem.constants import MICROHAEM_CONSULTATIONS, MICROHAEM_TAG
+
+
+def get_for_lookup_list(model, values):
+    ct = ContentType.objects.get_for_model(model)
+    return model.objects.filter(
+        models.Q(name__in=values) |
+        models.Q(synonyms__name__in=values, synonyms__content_type=ct)
+    )
 
 
 class Demographics(PatientSubrecord, ExternallySourcedModel):
@@ -50,6 +60,13 @@ class Demographics(PatientSubrecord, ExternallySourcedModel):
 
     class Meta:
         verbose_name_plural = "Demographics"
+
+    @classmethod
+    def get_form_template(cls, patient_list=None, episode_type=None):
+        if settings.GLOSS_ENABLED:
+            return super(Demographics, cls).get_form_template(patient_list=None, episode_type=None)
+        else:
+            return "forms/demographics_form_pre_gloss.html"
 
 
 class ContactDetails(PatientSubrecord):
@@ -96,27 +113,23 @@ class DuplicatePatient(PatientSubrecord):
         return self._icon
 
 
+class LocationCategory(lookuplists.LookupList):
+    pass
+
+
+class Provenance(lookuplists.LookupList):
+    pass
+
+
 class Location(EpisodeSubrecord):
     _is_singleton = True
     _icon = 'fa fa-map-marker'
 
-    category                   = models.CharField(max_length=255, blank=True)
-    hospital                   = models.CharField(max_length=255, blank=True)
-    ward                       = models.CharField(max_length=255, blank=True)
-    bed                        = models.CharField(max_length=255, blank=True)
-    # This is completely the wrong place for these - they need to go in their
-    # own OPATReferral model. The ticket for that work is currently
-    # opal-ideas#21
-    opat_referral_route        = models.CharField(max_length=255, blank=True,
-                                                  null=True)
-    opat_referral_team         = models.CharField(max_length=255, blank=True,
-                                                  null=True)
-    opat_referral_consultant   = models.CharField(max_length=255, blank=True,
-                                                  null=True)
-    opat_referral_team_address = models.TextField(blank=True, null=True)
-    opat_referral              = models.DateField(blank=True, null=True)
-    opat_acceptance            = models.DateField(blank=True, null=True)
-    opat_discharge             = models.DateField(blank=True, null=True)
+    category = ForeignKeyOrFreeText(LocationCategory)
+    provenance = ForeignKeyOrFreeText(Provenance)
+    hospital = ForeignKeyOrFreeText(omodels.Hospital)
+    ward = ForeignKeyOrFreeText(omodels.Ward)
+    bed = models.CharField(max_length=255, blank=True)
 
     def __unicode__(self):
         try:
@@ -162,6 +175,34 @@ class Result(PatientSubrecord):
         super(Result, self).update_from_dict(data, *args, **kwargs)
 
 
+class InfectionSource(lookuplists.LookupList):
+    pass
+
+
+class Infection(EpisodeSubrecord):
+    _title = 'Infection related issues'
+    _icon = 'fa fa-eyedropper'
+    # this needs to be fixed
+    source = ForeignKeyOrFreeText(InfectionSource)
+    site = models.CharField(max_length=255, blank=True)
+
+
+class MedicalProcedure(lookuplists.LookupList):
+    pass
+
+
+class SurgicalProcedure(lookuplists.LookupList):
+    pass
+
+
+class Procedure(EpisodeSubrecord):
+    _title = 'Operation / Procedures'
+    _icon = 'fa fa-sitemap'
+    date = models.DateField(blank=True, null=True)
+    medical_procedure = ForeignKeyOrFreeText(MedicalProcedure)
+    surgical_procedure = ForeignKeyOrFreeText(SurgicalProcedure)
+
+
 class PresentingComplaint(EpisodeSubrecord):
     _title = 'Presenting Complaint'
     _icon = 'fa fa-stethoscope'
@@ -191,22 +232,24 @@ class PresentingComplaint(EpisodeSubrecord):
         return field_names
 
 
+class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
+
 class PrimaryDiagnosis(EpisodeSubrecord):
     """
     This is the confirmed primary diagnosisa
     """
     _is_singleton = True
     _title = 'Primary Diagnosis'
+    _icon = 'fa fa-eye'
 
-    condition = ForeignKeyOrFreeText(omodels.Condition)
+    condition = ForeignKeyOrFreeText(PrimaryDiagnosisCondition)
     confirmed = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Primary diagnoses"
 
 
-class Consultant(lookuplists.LookupList):
-    pass
+class Consultant(lookuplists.LookupList): pass
 
 class ConsultantAtDischarge(EpisodeSubrecord):
     _title = 'Consultant At Discharge'
@@ -339,12 +382,21 @@ class Allergies(PatientSubrecord, ExternallySourcedModel):
         verbose_name_plural = "Allergies"
 
 
+class RenalFunction(lookuplists.LookupList):
+    pass
+
+
+class LiverFunction(lookuplists.LookupList):
+    pass
+
+
 class MicrobiologyInput(EpisodeSubrecord):
     _title = 'Clinical Advice'
     _sort = 'when'
     _icon = 'fa fa-comments'
     _modal = 'lg'
     _list_limit = 3
+    _angular_service = 'MicrobiologyInput'
 
     when = models.DateTimeField(null=True, blank=True)
     initials = models.CharField(max_length=255, blank=True)
@@ -358,26 +410,11 @@ class MicrobiologyInput(EpisodeSubrecord):
     infection_control_advice_given = models.NullBooleanField()
     change_in_antibiotic_prescription = models.NullBooleanField()
     referred_to_opat = models.NullBooleanField()
-
-    def set_reason_for_interaction(self, incoming_value, user, data):
-        if(incoming_value in MICROHAEM_CONSULTATIONS):
-            if self.id:
-                episode = self.episode
-            else:
-                episode = Episode.objects.get(pk=data["episode_id"])
-
-            existing = Tagging.objects.filter(
-                episode=episode, value=MICROHAEM_TAG
-            )
-
-            if existing.exists():
-                existing.update(archived=False)
-            else:
-                Tagging.objects.create(
-                    episode=episode,
-                    value=MICROHAEM_TAG
-                )
-        self.reason_for_interaction = incoming_value
+    white_cell_count = models.IntegerField(null=True, blank=True)
+    c_reactive_protein = models.CharField(max_length=255, blank=True)
+    maximum_temperature = models.IntegerField(null=True, blank=True)
+    renal_function = ForeignKeyOrFreeText(RenalFunction)
+    liver_function = ForeignKeyOrFreeText(LiverFunction)
 
 
 class Todo(EpisodeSubrecord):
@@ -454,15 +491,20 @@ class Line(EpisodeSubrecord):
     _sort = 'insertion_datetime'
     _icon = 'fa fa-bolt'
 
-    line_type            = ForeignKeyOrFreeText(omodels.Line_type)
-    site                 = ForeignKeyOrFreeText(omodels.Line_site)
-    insertion_datetime   = models.DateTimeField(blank=True, null=True)
-    inserted_by          = models.CharField(max_length=255, blank=True, null=True)
-    external_length      = models.CharField(max_length=255, blank=True, null=True)
-    removal_datetime     = models.DateTimeField(blank=True, null=True)
-    complications        = ForeignKeyOrFreeText(omodels.Line_complication)
-    removal_reason       = ForeignKeyOrFreeText(omodels.Line_removal_reason)
+    line_type = ForeignKeyOrFreeText(omodels.Line_type)
+    site = ForeignKeyOrFreeText(omodels.Line_site)
+    insertion_datetime = models.DateTimeField(blank=True, null=True)
+    inserted_by = models.CharField(max_length=255, blank=True, null=True)
+    external_length = models.CharField(max_length=255, blank=True, null=True)
+    removal_datetime = models.DateTimeField(blank=True, null=True)
+    complications = ForeignKeyOrFreeText(omodels.Line_complication)
+    removal_reason = ForeignKeyOrFreeText(omodels.Line_removal_reason)
     special_instructions = models.TextField()
+    button_hole = models.NullBooleanField()
+    tunnelled_or_temp = models.CharField(max_length=200, blank=True, null=True)
+    fistula = models.NullBooleanField(blank=True, null=True)
+    graft = models.NullBooleanField(blank=True, null=True)
+
 
 class Appointment(EpisodeSubrecord):
     _title = 'Upcoming Appointments'
@@ -473,6 +515,186 @@ class Appointment(EpisodeSubrecord):
     appointment_type = models.CharField(max_length=200, blank=True, null=True)
     appointment_with = models.CharField(max_length=200, blank=True, null=True)
     date             = models.DateField(blank=True, null=True)
+
+
+class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
+    _icon = 'fa fa-crosshairs'
+    _title = 'Blood Culture'
+    _angular_service = 'BloodCultureRecord'
+
+    lab_number = models.CharField(max_length=255, blank=True)
+    date_ordered = models.DateField(null=True, blank=True)
+    date_positive = models.DateField(null=True, blank=True)
+    source = ForeignKeyOrFreeText(omodels.Line_type)
+
+    @classmethod
+    def _get_fieldnames_to_serialize(cls):
+        field_names = super(BloodCulture, cls)._get_fieldnames_to_serialize()
+        field_names.append("isolates")
+        return field_names
+
+    def update_from_dict(self, data, user, **kwargs):
+        isolates = data.pop("isolates", [])
+        existing = [i["id"] for i in isolates if "id" in i]
+        self.isolates.exclude(id__in=existing).delete()
+        kwargs.pop("fields", None)
+        fields = set(self.__class__._get_fieldnames_to_serialize())
+        fields.remove("isolates")
+        super(BloodCulture, self).update_from_dict(data, user, fields=fields, **kwargs)
+
+        for isolate in isolates:
+            isolate_id = isolate.get("id")
+
+            if isolate_id:
+                blood_culture_isolate = self.isolates.get(
+                    id=isolate_id
+                )
+            else:
+                blood_culture_isolate = BloodCultureIsolate(
+                    blood_culture_id=self.id
+                )
+
+            blood_culture_isolate.update_from_dict(isolate, user, **kwargs)
+
+    def get_isolates(self, user):
+        return [i.to_dict(user) for i in self.isolates.all()]
+
+class FishForm(object):
+    def get_result_look_up_list(self):
+        lookup_list = super(FishForm, self).get_result_look_up_list()
+        lookup_list.append("Not Done")
+        return lookup_list
+
+    def update_from_dict(self, data, user, **kwargs):
+        """
+            if there is no result or its not done, skip
+        """
+        result = data.get("result")
+        id_field = data.get("id")
+
+        if not result or result == "Not Done":
+            if id_field:
+                LabTest.objects.get(id=id_field).delete()
+            return
+
+        super(FishForm, self).update_from_dict(data, user, **kwargs)
+
+
+class GramStain(FishForm, lmodels.LabTest):
+    class Meta:
+        proxy = True
+
+    RESULT_CHOICES = (
+        ("yeast", "Yeast",),
+        ("gram_positive_cocci_cluster", "Gram +ve Cocci Cluster",),
+        ("gram_positive_cocci_chains", "Gram +ve Cocci Chains",),
+        ("gram_negative_rods", "Gram -ve Rods",),
+        ("gram_negative_cocci", "Gram -ve Cocci",),
+        ("zn_stain", "ZN Stain",),
+        ("modified_zn_stain", "Modified ZN Stain",),
+    )
+
+
+class QuickFISH(FishForm, lmodels.LabTest):
+    class Meta:
+        proxy = True
+        verbose_name = "QuickFISH"
+
+    RESULT_CHOICES = (
+        ("c_albicans", "C. albicans",),
+        ("c_parapsilosis", "C. parapsilosis",),
+        ("c_glabrata", "C. glabrata",),
+        ("negative", "Negative",),
+    )
+
+
+class GPCStaph(FishForm, lmodels.LabTest):
+    class Meta:
+        proxy = True
+        verbose_name = "GPC Staph"
+
+    RESULT_CHOICES = (
+        ("s_aureus", "S. aureus",),
+        ("cns", "CNS",),
+        ("negative", "Negative",),
+    )
+
+
+class GPCStrep(FishForm, lmodels.LabTest):
+    class Meta:
+        proxy = True
+        verbose_name = "GPC Strep"
+
+    RESULT_CHOICES = (
+        ("e_faecalis", "E.faecalis",),
+        ("other_enterocci", "Other enterococci",),
+        ("negative", "Negative",),
+    )
+
+
+class GNR(FishForm, lmodels.LabTest):
+    class Meta:
+        proxy = True
+        verbose_name = "GNR"
+
+    RESULT_CHOICES = (
+        ("e_coli", "E.coli",),
+        ("k_pneumoniae", "K. pneumoniae",),
+        ("p_aeruginosa", "P. aeruginosa",),
+        ("negative", "Negative",),
+    )
+
+
+class OrganismTest(lmodels.LabTest):
+    class Meta:
+        proxy = True
+        verbose_name = "Organism"
+
+    def get_result_look_up_list(self):
+        return "microbiology_organism_list"
+
+    @classmethod
+    def get_form_template(self, *args, **kwargs):
+        return "lab_tests/forms/sensitive_resistant_form.html"
+
+
+class BloodCultureIsolate(
+    lmodels.LabTestCollection,
+    omodels.UpdatesFromDictMixin,
+    omodels.ToDictMixin,
+    omodels.TrackedModel
+):
+    consistency_token = models.CharField(max_length=8)
+    aerobic = models.BooleanField()
+    blood_culture = models.ForeignKey(BloodCulture, related_name="isolates")
+
+    @classmethod
+    def _get_fieldnames_to_serialize(cls):
+        field_names = super(BloodCultureIsolate, cls)._get_fieldnames_to_serialize()
+        field_names.append("blood_culture_id")
+        return field_names
+
+
+class FinalDiagnosis(EpisodeSubrecord):
+    _icon = 'fa fa-eye'
+    _title = "Final Diagnosis"
+
+    source = models.CharField(max_length=255, blank=True)
+    contaminant = models.BooleanField(default=False)
+    community_related = models.BooleanField(default=False)
+    hcai_related = models.BooleanField(default=False)
+
+
+class ImagingTypes(lookuplists.LookupList): pass
+
+
+class Imaging(EpisodeSubrecord):
+    _icon = 'fa fa-eye'
+
+    date = models.DateField(blank=True, null=True)
+    imaging_type = ForeignKeyOrFreeText(ImagingTypes)
+    site = models.CharField(max_length=200, blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
 
 
 @receiver(post_save, sender=Episode)

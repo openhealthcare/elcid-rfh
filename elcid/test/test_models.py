@@ -1,15 +1,25 @@
 import datetime
 import ffs
 import pytz
+
 from mock import patch
 
 from django.conf import settings
 from django.test import TestCase, override_settings
+from django.contrib.contenttypes.models import ContentType
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
-from opal.models import Patient, Episode, Condition, Synonym, Symptom
-from elcid.models import Location, PresentingComplaint, Result, Allergies
+from opal.models import (
+    Patient, Episode, Condition, Synonym, Symptom, Antimicrobial,
+    Microbiology_organism
+)
+from elcid.models import (
+    Location, PresentingComplaint, Result, Allergies, Demographics,
+    BloodCulture, BloodCultureIsolate, get_for_lookup_list, QuickFISH
+)
+from lab import models as lmodels
+
 
 HERE = ffs.Path.here()
 TEST_DATA = HERE/'test_data'
@@ -49,11 +59,7 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'first_name': 'John',
             'surname': 'Smith',
             'middle_name': None,
-            'title_fk_id': None,
-            'title_ft': u'',
             'title': '',
-            'marital_status_fk_id': None,
-            'marital_status_ft': u'',
             'marital_status': u'',
             'religion': None,
             'created': None,
@@ -62,13 +68,7 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'updated_by_id': None,
             'date_of_birth': datetime.date(1972, 6, 20),
             'birth_place': '',
-            'birth_place_fk_id': None,
-            'birth_place_ft': '',
-            'ethnicity_fk_id': None,
-            'ethnicity_ft': u'',
             'ethnicity': u'',
-            'sex_fk_id': None,
-            'sex_ft': '',
             'sex': '',
             'hospital_number': 'AA1111',
             'nhs_number': None,
@@ -107,6 +107,20 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
         with self.assertRaises(exceptions.ConsistencyError):
             self.demographics.update_from_dict({'consistency_token': '87654321'}, self.user)
 
+    @override_settings(GLOSS_ENABLED=True)
+    @patch("opal.models.Subrecord.get_form_template")
+    def test_get_demographics_form_with_gloss(self, form_template_mock):
+        form_template_mock.return_value = "some_template.html"
+        form_template = Demographics.get_form_template()
+        self.assertEqual(form_template, "some_template.html")
+
+    @override_settings(GLOSS_ENABLED=False)
+    def test_get_demographics_form_without_gloss(self):
+        form_template = Demographics.get_form_template()
+        self.assertEqual(
+            form_template, "forms/demographics_form_pre_gloss.html"
+        )
+
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 
@@ -135,13 +149,7 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'updated': None,
             'updated_by_id': None,
             'created_by_id': None,
-            'opat_acceptance': None,
-            'opat_discharge': None,
-            'opat_referral': None,
-            'opat_referral_route': None,
-            'opat_referral_team': None,
-            'opat_referral_consultant': None,
-            'opat_referral_team_address': None,
+            'provenance': '',
             }
         result = {str(k): v for k, v in self.location.to_dict(self.user).iteritems()}
         self.assertEqual(expected_data, result)
@@ -225,6 +233,7 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
         )
 
         result_args = dict(
+
             patient_id=self.patient.id,
             lab_number="234324",
             profile_code="2343344",
@@ -385,6 +394,162 @@ class AllergyTest(OpalTestCase):
             "partials/_sourced_modal_footer.html"
         )
 
+class GetForLookupListTestCase(OpalTestCase):
+    def setUp(self):
+        self.antimicrobial_1 = Antimicrobial.objects.create(
+            name="antimicrobial_1",
+        )
+
+        self.antimicrobial_2 = Antimicrobial.objects.create(
+            name="antimicrobial_2",
+        )
+
+        self.antimicrobial_3 = Antimicrobial.objects.create(
+            name="antimicrobial_3",
+        )
+
+        antimicrobial_content_type = ContentType.objects.get_for_model(
+            Antimicrobial
+        )
+
+        self.synonym_1 = Synonym.objects.get_or_create(
+            content_type=antimicrobial_content_type,
+            object_id=self.antimicrobial_2.id,
+            name="synonym_1"
+        )
+
+        self.synonym_2 = Synonym.objects.get_or_create(
+            content_type=antimicrobial_content_type,
+            object_id=self.antimicrobial_3.id,
+            name="synonym_2"
+        )
+
+        # make sure content type querying works
+        # lets add in an item with a different content type but the same name
+        self.synonym_3 = Synonym.objects.get_or_create(
+            content_type=ContentType.objects.get_for_model(Condition),
+            object_id=self.antimicrobial_3.id,
+            name="synonym_2"
+        )
+
+    def test_translate_to_models(self):
+        models = get_for_lookup_list(
+            Antimicrobial,
+            [
+                "antimicrobial_1", "antimicrobial_2", "antimicrobial_3",
+                "synonym_1", "synonym_2"
+            ]
+        )
+        self.assertEqual(
+            set(models),
+            set([
+                self.antimicrobial_1,
+                self.antimicrobial_2,
+                self.antimicrobial_3
+            ])
+        )
+
+    def test_does_synonym_lookups(self):
+        models = get_for_lookup_list(
+            Antimicrobial,
+            [
+                "synonym_1", "synonym_2"
+            ]
+        )
+        self.assertEqual(
+            set(models),
+            set([
+                self.antimicrobial_2,
+                self.antimicrobial_3
+            ])
+        )
+
+
+class LabTestTestCase(OpalTestCase):
+    def setUp(self):
+        self.new_data = dict(
+            test_name="QuickFISH",
+            result="success"
+        )
+
+        self.old_data = dict(
+            id="1",
+            test_name="QuickFISH",
+            result="failed"
+        )
+
+        _, self.episode = self.new_patient_and_episode_please()
+        self.blood_culture = BloodCulture.objects.create(
+            episode=self.episode
+        )
+
+        self.blood_culture_isolate = BloodCultureIsolate.objects.create(
+            blood_culture=self.blood_culture,
+            aerobic=True
+        )
+        ct = ContentType.objects.get_for_model(BloodCultureIsolate)
+        object_id = self.blood_culture_isolate.id
+        self.some_fish_test = QuickFISH(
+            test_name="QuickFISH",
+            content_type=ct,
+            object_id=object_id
+        )
+        self.some_fish_test.save()
+
+    def test_create_new_test(self):
+        self.blood_culture_isolate.save_tests([self.new_data], self.user)
+        self.assertEqual(lmodels.LabTest.objects.count(), 1)
+        self.assertEqual(lmodels.LabTest.objects.last().result, "success")
+
+    def test_update_old_test(self):
+        self.blood_culture_isolate.save_tests([self.old_data], self.user)
+        self.assertEqual(lmodels.LabTest.objects.count(), 1)
+        self.assertEqual(lmodels.LabTest.objects.last().result, "failed")
+
+
+
+class BloodCultureTestCase(OpalTestCase):
+    def setUp(self):
+        _, self.episode = self.new_patient_and_episode_please()
+
+    def test_update_from_dict_with_old_isolate(self):
+        bc = BloodCulture.objects.create(episode=self.episode)
+        bci = BloodCultureIsolate.objects.create(
+            aerobic=False,
+            blood_culture=bc
+        )
+        bc.update_from_dict(dict(isolates=[dict(id=bci.id)]), self.user)
+
+        self.assertEqual(bc.isolates.get(), bci)
+
+    def test_update_from_dict_with_new_isolate(self):
+        bc = BloodCulture.objects.create(episode=self.episode)
+        bc.update_from_dict(dict(isolates=[dict(aerobic=True)]), self.user)
+        self.assertTrue(bc.isolates.get().aerobic)
+
+    def test_update_from_dict_delete_old_isolate(self):
+        bc = BloodCulture.objects.create(episode=self.episode)
+        bci = BloodCultureIsolate.objects.create(
+            aerobic=False,
+            blood_culture=bc
+        )
+        bc.update_from_dict(dict(), self.user)
+        self.assertEqual(bc.isolates.count(), 0)
+
+    def test_get_isolates(self):
+        bc = BloodCulture.objects.create(episode=self.episode)
+        bci = BloodCultureIsolate.objects.create(
+            aerobic=False,
+            blood_culture=bc
+        )
+        isolates = bc.get_isolates(self.user)
+        self.assertEqual(len(isolates), 1)
+        self.assertEqual(isolates[0]["id"], bci.id)
+
+    def test_get_fieldnames_to_serialize(self):
+        fields = BloodCulture._get_fieldnames_to_serialize()
+        self.assertIn("isolates", fields)
+
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
 
@@ -424,8 +589,6 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
             'episode_id': self.episode.id,
             'id': self.diagnosis.id,
             'condition': 'Some condition',
-            'condition_fk_id': self.condition_1.id,
-            'condition_ft': u'',
             'provisional': False,
             'details': u'',
             'date_of_diagnosis': datetime.date(2013, 7, 25),

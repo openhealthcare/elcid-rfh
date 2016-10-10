@@ -4,10 +4,9 @@ from fabric.context_managers import warn_only
 import os
 
 
-env.hosts = ["elcid-uch-test.openhealthcare.org.uk"]
+env.hosts = ["elcid-rfh-test.openhealthcare.org.uk"]
 env.user = "ubuntu"
-project_name = "elcid"
-virtual_env_name = "elcid"
+virtual_env_name = "elcid-rfh"
 fabfile_dir = os.path.realpath(os.path.dirname(__file__))
 
 
@@ -90,7 +89,6 @@ def db_commands(username):
         "python manage.py migrate",
         "python manage.py loaddata data/elcid.teams.json",
         "python manage.py load_lookup_lists -f data/lookuplists/lookuplists.json",
-        'echo "from opal.models import Role; Role.objects.create(name=\'micro_haem\')" | python ./manage.py shell',
         "python manage.py create_random_data"
     ]
     python_cmd = "echo '"
@@ -174,7 +172,6 @@ def deploy(key_file_name="../ec2.pem"):
 
         if not proceed:
             return
-
 
     git_branch_name = local('git rev-parse --abbrev-ref HEAD', capture=True)
     with prefix(". /usr/share/virtualenvwrapper/virtualenvwrapper.sh"):

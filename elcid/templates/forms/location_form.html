@@ -1,33 +1,5 @@
 {% load forms %}
-<div class="form-group">
-  <label class="control-label col-sm-3">Category</label>
-  <div class="col-sm-8" ng-show="editing.location.category == 'Discharged'">
-    <label class="readonly">
-      [[ editing.location.category | title]] &nbsp;
-      <button class="btn" ng-click="undischarge()">Undischarge</button>
-    </label>
-  </div>
-  <div class="col-sm-8" ng-hide="editing.location.category && editing.location.category == 'Discharged' || episode_category_list.indexOf(editing.location.category) == -1">
-    <select class="form-control" ng-model="editing.location.category" autofocus>
-      <option value="">---------</option>
-      <option ng-repeat="category in episode_category_list">[[category]]</option>
-    </select>
-  </div>
-  <div class="col-sm-8" ng-show="episode_category_list.indexOf(editing.location.category) == -1 && editing.location.category != 'Discharged'">
-    <p>[[ episode.category_name ]]</p>
-  </div>
-</div>
-
-<div ng-hide="episode.category_name == 'OPAT'">
-  {% select field="Location.hospital" lookuplist="hospital_list" other=True %}
-</div>
-
-{% select model="editing.location.ward" label="Ward" lookuplist="ward_list" hide="episode.category_name == 'OPAT'" %}
-{% input model="editing.location.bed" label="Bed" hide="episode.category_name == 'OPAT'" %}
-{% datepicker model="episode.date_of_admission" label="Date of admission" %}
-
-<!-- OPAT Only fields -->
-{% datepicker label="Date of referral to OPAT" model="editing.location.opat_referral" show="episode.category_name == 'OPAT'"%}
-{% input label="Referring consultant" model="editing.location.opat_referral_consultant" show="episode.category_name == 'OPAT'" %}
-{% select label="Referring team" model="editing.location.opat_referral_team" lookuplist="speciality_list" show="episode.category_name == 'OPAT'" %}
-{% textarea label="Referring team address" model="editing.location.opat_referral_team_address" show="episode.category_name == 'OPAT'" %}
+{% select field="Location.hospital" %}
+{% input field="Location.ward" %}
+{% input field="Location.bed" %}
+{% select field="Location.provenance" %}

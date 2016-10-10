@@ -29,5 +29,5 @@ class LoggingMiddleware(object):
             )
         except Exception, e:
             logging.error("LoggingMiddleware Error: %s" % e)
-            
+
         return response

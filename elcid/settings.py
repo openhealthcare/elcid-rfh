@@ -25,9 +25,11 @@ except ImportError:
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+AUTOCOMPLETE_SEARCH = True
 
 ADMINS = (
     ('David Miller', 'david@openhealthcare.org.uk'),
+    ('Fred Kingham', 'fred.kingham@openhealthcare.org.uk'),
 )
 
 MANAGERS = ADMINS
@@ -37,7 +39,8 @@ MANAGERS = ADMINS
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
     'localhost',
-    '.herokuapp.com'
+    'ec2-52-16-175-249.eu-west-1.compute.amazonaws.com',
+    '.openhealthcare.org.uk',
     ]
 
 # Local time zone for this installation. Choices can be found here:
@@ -103,13 +106,19 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'hq6wg27$1pnjvuesa-1%-wiqrpnms_kx+w4g&&o^wr$5@stjbu'
 
-# This should be over written by local settings in the development environment
-TEMPLATE_LOADERS = (
-    ('django.template.loaders.cached.Loader', (
+# List of callables that know how to import templates from various sources.
+if DEBUG:
+    TEMPLATE_LOADERS = (
         'django.template.loaders.filesystem.Loader',
         'django.template.loaders.app_directories.Loader',
-        )),
-)
+    )
+else:
+    TEMPLATE_LOADERS = (
+        ('django.template.loaders.cached.Loader', (
+            'django.template.loaders.filesystem.Loader',
+            'django.template.loaders.app_directories.Loader',
+            )),
+    )
 
 
 MIDDLEWARE_CLASSES = (
@@ -146,7 +155,8 @@ TEMPLATE_CONTEXT_PROCESSORS= (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'opal.context_processors.settings',
-    'opal.context_processors.models'
+    'opal.context_processors.models',
+    'lab.context_processors.lab_tests',
 )
 
 INSTALLED_APPS = (
@@ -160,22 +170,15 @@ INSTALLED_APPS = (
     'reversion',
     'opal',
     'rest_framework',
+    'rest_framework.authtoken',
     'compressor',
     'opal.core.search',
     'elcid',
     'obs',
     'django.contrib.admin',
-    'opat',
-    'walkin',
-    'research',
-    'wardround',
-    'microhaem',
-    'infectiousdiseases',
-    'referral',
-    'dashboard',
-    'iframeapi',
-#    'opal.core.collaborative',
-    'guidelines',
+    'pathway',
+    'lab',
+    # 'guidelines',
     'dischargesummary',
     'djcelery',
     'taskrunner',
@@ -197,6 +200,7 @@ if 'test' in sys.argv:
         'iframeapi': 'iframeapi.nomigrations',
         'obs': 'obs.nomigrations'
     }
+
 
 LOGGING = {
     'version': 1,
@@ -250,7 +254,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # New modular settings!
 # !!! TODO: Are these how we want to discover these ?
 OPAL_OPTIONS_MODULE = 'elcid.options'
-OPAL_BRAND_NAME = 'elCID'
+OPAL_BRAND_NAME = 'elCID Royal Free Hospital'
 OPAL_LOG_OUT_MINUTES = 15
 OPAL_LOG_OUT_DURATION = OPAL_LOG_OUT_MINUTES*60*1000
 OPAL_FLOW_SERVICE = 'elCIDFlow'
@@ -278,7 +282,8 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.6.0'
+VERSION_NUMBER = '0.2'
+
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
 
@@ -289,25 +294,26 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.wsgi')
 
 
-INTEGRATING = False
-GLOSSOLALIA_URL = 'http://localhost:5000/'
-GLOSSOLALIA_NAME = 'elcid'
-OPAL_SEARCH_BACKEND = "elcid.search.GlossQuery"
 
-GLOSS_URL_BASE = "http://0.0.0.0:6767"
 GLOSS_ENABLED = False
+
+if GLOSS_ENABLED:
+    GLOSS_URL_BASE = "http://0.0.0.0:6767"
+    GLOSS_USERNAME = "override_this"
+    GLOSS_PASSWORD = "and_override_this"
+
 EXTRACT_ASYNC = True
 
-GLOSS_USERNAME = "override_this"
-GLOSS_PASSWORD = "and_override_this"
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
 
-try:
-    from local_settings import *
-except ImportError:
-    pass
-
-# #DEBUG_TOOLBAR_PATCH_SETTINGS = False
-# MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + ('debug_toolbar.middleware.DebugToolbarMiddleware',)
-# INSTALLED_APPS = INSTALLED_APPS + ('debug_toolbar',)
-# #INTERNAL_IPS = ('127.0.0.1',)
+if 'test' not in sys.argv:
+    try:
+        from local_settings import *
+    except ImportError:
+        pass

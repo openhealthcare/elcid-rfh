@@ -1,0 +1,221 @@
+{% load forms %}
+{% load pathways %}
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Demographics.get_icon }}"></i>
+          {{ models.Demographics.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          {% include models.Demographics.get_form_template %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Location.get_icon }}"></i>
+          {{ models.Location.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          {% include models.Location.get_form_template %}
+          {% include 'partials/_teams_select.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Procedure.get_icon }}"></i>
+          {{ models.Procedure.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% multisave models.Procedure %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.PrimaryDiagnosis.get_icon }}"></i>
+          {{ models.PrimaryDiagnosis.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          {% include models.PrimaryDiagnosis.get_form_template %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Diagnosis.get_icon }}"></i>
+          {{ models.Diagnosis.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% multisave models.Diagnosis %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Infection.get_icon }}"></i>
+          {{ models.Infection.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          {% include models.Infection.get_form_template %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Line.get_icon }}"></i>
+          {{ models.Line.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% multisave models.Line %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Antimicrobial.get_icon }}"></i>
+          {{ models.Antimicrobial.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% multisave models.Antimicrobial %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.BloodCulture.get_icon }}"></i>
+          {{ models.BloodCulture.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% include "partials/blood_culture_add_many.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.Imaging.get_icon }}"></i>
+          {{ models.Imaging.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% multisave models.Imaging %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.FinalDiagnosis.get_icon }}"></i>
+          {{ models.FinalDiagnosis.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          {% include models.FinalDiagnosis.get_form_template %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ model.MicrobiologyInput.get_icon }}"></i>
+          {{ models.MicrobiologyInput.get_display_name }}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% multisave models.MicrobiologyInput %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-push-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="fa fa-envelope"></i>
+          Clinical note on [[ editing.demographics.first_name ]] [[ editing.demographics.surname ]]
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="form-horizontal">
+          {% include 'pathway/cernerletter.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

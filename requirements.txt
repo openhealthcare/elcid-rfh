@@ -1,4 +1,8 @@
-django==1.8.3
+# cryptography is required for heroku deployment
+#cryptography==1.3.2
+
+cffi==1.7.0
+django==1.8.13
 coverage==3.6
 dj-database-url==0.2.1
 gunicorn==0.17.4
@@ -6,7 +10,7 @@ psycopg2==2.5
 wsgiref==0.1.2
 dj-static==0.0.6
 django-reversion==1.8.7
-django-axes==1.4.0
+django-axes==1.7.0
 ffs==0.0.8.1
 letter==0.4.1
 supervisor==3.0
@@ -20,16 +24,23 @@ django-celery==3.1.17
 django-compressor==1.5
 jsonfield==1.0.3
 pycrypto==2.6.1
+paramiko==1.16.0
+pyasn1==0.1.9
+pycparser==2.14
+pytz==2015.7
+six==1.9.0
+sqlparse==0.1.16
+static3==0.6.1
 
--e git+https://github.com/openhealthcare/opal.git@v0.7.0#egg=opal
+
+-e git+https://github.com/openhealthcare/opal.git@v0.8.0#egg=opal
 -e git+https://github.com/openhealthcare/opal-observations.git@v0.1.2#egg=opal_observations
+-e git+https://github.com/openhealthcare/opal-lab.git@generic-lab-relations#egg=opal_lab
 
 -e git+https://github.com/openhealthcare/opal-wardround.git@v0.6#egg=opal_wardround
--e git+https://github.com/openhealthcare/opal-referral.git@v0.1.4#egg=opal_referral
--e git+https://github.com/openhealthcare/opal-dashboard.git@v0.1.3#egg=opal_dashboard
+-e git+https://github.com/openhealthcare/opal-pathway.git@v0.2#egg=opal_pathway
 
 -e git+https://github.com/openhealthcare/opal-dischargesummary.git@v0.2#egg=opal_dischargesummary
 -e git+https://github.com/openhealthcare/opal-guidelines.git@#egg=opal_guidelines
--e git+https://github.com/openhealthcare/opal-iframe-api.git@#egg=opal-iframe-api
 -e git+https://github.com/srosro/django-test-coverage#egg=django-test-coverage
 -e git+https://github.com/openhealthcare/opal-taskrunner.git@#egg=opal_taskrunner

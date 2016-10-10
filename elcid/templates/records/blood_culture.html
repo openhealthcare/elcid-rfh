@@ -1,0 +1,26 @@
+
+<span ng-show="item.lab_number">Lab number [[ item.lab_number ]]</span>
+<span ng-show="item.date_ordered">(ordered [[ item.date_ordered  | shortDate ]])</span>
+<span ng-show="item.lab_number || item.ordered"><br /></span>
+<span ng-show="item.source">Source [[ item.source ]] <br /></span>
+<br />
+<div>
+ <span ng-repeat="test in item.lab_tests | filter:{test_name: 'Gram Stain'}">
+   <span ng-show="$index === 0"><b>Gram Stain:</b> </span> [[ test.result ]]
+   <span ng-hide="$last">, </span>
+ </span>
+</div>
+<div>
+ <span ng-repeat="test in item.lab_tests | filter:{test_name: '!Gram Stain'}">
+   <span ng-show="$index === 0"><b>FISH: </b></span>
+   <span>[[ test.test_name ]]: [[ test.result ]]</span><span ng-hide="$last">, </span> </span>
+</div>
+<div ng-show="item.isolates.length">
+  <div ng-repeat="isAerobic in [true, false]">
+    <b ng-show="isAerobic">Aerobic</b>
+    <b ng-hide="isAerobic">Anaerobic</b>
+    <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
+      <span ng-repeat="test in isolate.lab_tests">[[ test.result ]]<span ng-hide="$last">, </span></span>
+    </span>
+  </div>
+</div>
