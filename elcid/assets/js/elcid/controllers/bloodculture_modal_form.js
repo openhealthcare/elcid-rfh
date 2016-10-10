@@ -24,6 +24,9 @@ function(
       $scope.singleModel = 0;
 
       $scope.preSave = function(editing){
+        _.each(editing.blood_culture.isolates, function(i){
+          delete i._formHelper;
+        })
         delete editing.blood_culture._formHelper
-      }
+      };
 });
