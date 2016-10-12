@@ -25,6 +25,9 @@ function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureFormHelp
 
       scope.preSave = function(editing){
         _.each(editing.blood_culture, function(bc){
+          _.each(bc.isolates, function(i){
+            delete i._formHelper;
+          })
           delete bc._formHelper;
         });
       };
