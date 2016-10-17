@@ -10,7 +10,6 @@ class Application(application.OpalApplication):
     javascripts = [
         'js/elcid/routes.js',
         'js/elcid/controllers/discharge.js',
-        'js/elcid/controllers/diagnosis_discharge.js',
         'js/elcid/services/records/microbiology_input.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/welcome.js',
@@ -27,10 +26,6 @@ class Application(application.OpalApplication):
 
     styles = [
         "css/elcid.css"
-    ]
-
-    actions = [
-        'actions/presenting_complaint.html'
     ]
 
     patient_view_forms = {
