@@ -181,7 +181,6 @@ INSTALLED_APPS = (
     # 'guidelines',
     'dischargesummary',
     'djcelery',
-    'taskrunner',
 )
 
 if 'test' in sys.argv:
