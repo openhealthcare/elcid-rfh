@@ -33,7 +33,7 @@ sqlparse==0.1.16
 static3==0.6.1
 
 
-https://github.com/openhealthcare/opal/archive/v0.8.0.zip
+https://github.com/openhealthcare/opal/archive/rfh-patch-angular.zip
 https://github.com/openhealthcare/opal-observations/archive/v0.1.2.zip
 https://github.com/openhealthcare/opal-lab/archive/generic-lab-relations.zip
 
