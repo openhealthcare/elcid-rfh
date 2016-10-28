@@ -12,7 +12,7 @@ describe('BloodCultureFormCtrlTest', function() {
         var $controller;
         var Episode;
         var Item;
-        var $cookieStore;
+        var $cookies;
         var $timeout;
         var ngProgressLite;
 
@@ -23,7 +23,7 @@ describe('BloodCultureFormCtrlTest', function() {
             $q           = $injector.get('$q');
             ngProgressLite = $injector.get('ngProgressLite');
             $timeout       = $injector.get('$timeout');
-            $cookieStore   = $injector.get('$cookieStore');
+            $cookies     = $injector.get('$cookies');
             Episode      = $injector.get('Episode');
             Item         = $injector.get('Item');
         });
@@ -49,7 +49,7 @@ describe('BloodCultureFormCtrlTest', function() {
 
         controller = $controller('BloodCultureFormCtrl', {
             $scope        : $scope,
-            $cookieStore  : $cookieStore,
+            $cookies      : $cookies,
             $timeout      : $timeout,
             $modalInstance: fakeModalInstance,
             item          : fakeItem,
