@@ -1,13 +1,17 @@
 from elcid import models
 
+
 from pathway.pathways import (
-    Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin,
-    MultiSaveStep, ModalPathway, RedirectsToPatientMixin,
+    RedirectsToPatientMixin,
+    RedirectsToEpisodeMixin,
+    Step,
+    PagePathway,
+    WizardPathway,
     delete_others
 )
 
 
-class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
+class AddPatientPathway(RedirectsToEpisodeMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
 
@@ -25,10 +29,9 @@ class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
     )
 
 
-class CernerDemoPathway(RedirectsToPatientMixin, Pathway):
+class CernerDemoPathway(RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
-    template_url = "/templates/pathway/unrolled_form_base.html"
 
     steps = (
         Step(
