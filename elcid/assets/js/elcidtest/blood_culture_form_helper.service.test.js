@@ -5,6 +5,21 @@ describe("BloodCultureFormHelper", function(){
   var bloodCultureRecord;
   var aerobic, anaerobic;
 
+  var metadata = {
+    lab_test: [{
+      name: "gram_stain",
+      result_choices: {
+        gram_negative_cocci: "Gram -ve Cocci",
+        gram_negative_rods: "Gram -ve Rods",
+        gram_positive_cocci_chains: "Gram +ve Cocci Chains",
+        gram_positive_cocci_cluster: "Gram +ve Cocci Cluster",
+        modified_zn_stain: "Modified ZN Stain",
+        yeast: "Yeast",
+        zn_stain: "ZN Stain"
+      }
+    }]
+  }
+
   var loadInIsolates= function(bcr){
     aerobic = [{
       aerobic: true,
@@ -31,8 +46,9 @@ describe("BloodCultureFormHelper", function(){
     inject(function($injector){
       BloodCultureFormHelper = $injector.get('BloodCultureFormHelper');
     });
-    bloodCultureRecord = {};
-    bloodCultureFormHelper = new BloodCultureFormHelper(bloodCultureRecord);
+    bloodCultureRecord = {isolates: []};
+
+    bloodCultureFormHelper = new BloodCultureFormHelper(bloodCultureRecord, metadata);
   });
 
   it("should sort blood cultures on load", function(){
@@ -49,7 +65,7 @@ describe("BloodCultureFormHelper", function(){
 
     var bc = {isolates: tests};
 
-    BloodCultureFormHelper(bc);
+    new BloodCultureFormHelper(bc, metadata);
 
     var tokens = _.pluck(bc.isolates, "consistency_token");
     expect(tokens).toEqual(["2", "1", "3"]);
@@ -57,6 +73,14 @@ describe("BloodCultureFormHelper", function(){
 
   it("should add aerobic bloodcultures", function(){
       bloodCultureFormHelper.addAerobic();
+      expect(bloodCultureRecord.isolates[0].aerobic).toBe(true);
+  });
+
+  it("should add aerobic bloodcultures to the end of the existing aerobic records", function(){
+      loadInIsolates(bloodCultureRecord);
+      bloodCultureFormHelper.addAerobic();
+      var tokens = _.pluck(bloodCultureRecord.isolates, "consistency_token");
+      expect(tokens).toEqual(["1", "2", undefined, "3"])
       expect(bloodCultureRecord.isolates[0].aerobic).toBe(true);
   });
 
@@ -90,6 +114,4 @@ describe("BloodCultureFormHelper", function(){
     bloodCultureFormHelper.delete(0, anaerobic);
     expect(bloodCultureRecord.isolates).toEqual(aerobic);
   });
-
-
 });

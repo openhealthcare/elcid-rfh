@@ -4,7 +4,9 @@ function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureFormHelp
 
       scope.initialise = function(bloodCultures){
           _.each(bloodCultures, function(bloodCulture){
-            bloodCulture._formHelper = new BloodCultureFormHelper(bloodCulture);
+            bloodCulture._formHelper = new BloodCultureFormHelper(
+              bloodCulture, scope.metadata
+            );
           });
       };
 
@@ -16,13 +18,16 @@ function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureFormHelp
       }
 
       scope.addBloodCulture = function(){
-          var newBloodCulture = {};
-          newBloodCulture._formHelper = new BloodCultureFormHelper(newBloodCulture);
-          scope.editing.blood_culture.push(newBloodCulture);
+        var newBloodCulture = {};
+        newBloodCulture._formHelper = new BloodCultureFormHelper(newBloodCulture);
+        scope.editing.blood_culture.push(newBloodCulture);
       };
 
       scope.preSave = function(editing){
         _.each(editing.blood_culture, function(bc){
+          _.each(bc.isolates, function(i){
+            delete i._formHelper;
+          })
           delete bc._formHelper;
         });
       };

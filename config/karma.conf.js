@@ -83,9 +83,7 @@ module.exports =  function(config){
 
             // Our application
 
-            __dirname + '/../elcid/assets/js/elcid/*.js',
-            __dirname + '/../elcid/assets/js/elcid/controllers/*.js',
-            __dirname + '/../elcid/assets/js/elcid/services/*.js',
+            __dirname + '/../elcid/assets/js/elcid/**/*.js',
             // __dirname + '/../elcid/assets/js/elcid/services/records/*.js',
             // __dirname + '/../opat/static/js/opat/controllers/*.js',
             // __dirname + '/../research/static/js/research/controllers/*.js',

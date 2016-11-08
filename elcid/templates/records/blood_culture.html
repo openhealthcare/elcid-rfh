@@ -1,47 +1,51 @@
 
- <span ng-show="item.lab_number">Lab number [[ item.lab_number ]]</span>
- <span ng-show="item.date_ordered">(ordered [[ item.date_ordered  | shortDate ]])</span>
- <span ng-show="item.lab_number || item.ordered"><br /></span>
- <span ng-show="item.source">Source [[ item.source ]] <br /></span>
+<span ng-show="item.lab_number">Lab number [[ item.lab_number ]]</span>
+<span ng-show="item.date_ordered">(ordered [[ item.date_ordered  | shortDate ]])</span>
+<span ng-show="item.lab_number || item.ordered"><br /></span>
+<span ng-show="item.source">Source [[ item.source ]] <br /></span>
 <br />
-<div ng-repeat="isAerobic in [true, false]">
-  <div ng-show="isolates.length">
-   <b ng-show="isAerobic">Aerobic</b>
-   <b ng-hide="isAerobic">Anaerobic</b>
-   <br />
-   <table class="table">
-     <tr>
-       <th>Date pos</th>
-       <th>Microscopy</th>
-       <th>Organism</th>
-       <th>FISH</th>
-       <th>Sensitive</th>
-       <th>Resistant</th>
-     <tr ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
-       <td></td>
-       <td>[[ isolate.microscopy ]]</td>
-       <td>[[ isolate.organism ]]</td>
-       <td>[[ isolate.FISH ]]</td>
-       <td>[[ isolate.sensitive_antibiotics.join(", ") ]]
-       <td>[[ isolate.resistant_antibiotics.join(", ") ]]
-     </tr>
-   </table>
+<div>
+ <span ng-repeat="test in item.lab_tests | filter:{test_name: 'Gram Stain'}">
+   <span ng-show="$index === 0"><b>Gram Stain:</b> </span> [[ test.result ]]
+   <span ng-hide="$last">, </span>
+ </span>
+</div>
+<div>
+ <span ng-repeat="test in item.lab_tests | filter:{test_name: '!Gram Stain'}">
+   <span ng-show="$index === 0"><b>FISH: </b></span>
+   <span>[[ test.test_name ]]: [[ test.result ]]</span><span ng-hide="$last">, </span> </span>
+</div>
+<div ng-show="item.isolates.length">
+  <div ng-repeat="isAerobic in [true, false]">
+    <b ng-show="isAerobic">Aerobic:</b>
+    <b ng-hide="isAerobic">Anaerobic:</b>
+    <div class="row">
+      <div class="col-md-11 col-md-push-1">
+        <div>
+          <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
+            <span ng-repeat="test in isolate.lab_tests | filter:{test_name: 'Gram Stain'}">
+              <span ng-show="$index === 0"><b>Gram Stain:</b> </span> [[ test.result ]]
+              <span ng-hide="$last">, </span>
+            </span>
+          </span>
+        </div>
+        <div>
+          <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
+            <span ng-repeat="test in isolate.lab_tests | filter:{test_name: '!Gram Stain && !Organism'}">
+              <span ng-show="$index === 0"><b>Fish:</b> </span>
+              <div class="push-left-12">[[ test.test_name ]] - [[ test.result ]]</div>
+            </span>
+          </span>
+        </div>
+        <div>
+          <span ng-repeat="isolate in item.isolates | filter: {aerobic: isAerobic} as isolates">
+            <span ng-repeat="test in isolate.lab_tests | filter:{test_name: 'Organism'}">
+              <span ng-show="$index === 0"><b>Organism:</b> </span> [[ test.result ]]
+              <span ng-hide="$last">, </span>
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-
-<!-- <div ng-show="anaerobicIsolates.length">
- <b>Anerobic</b><br />
- <ul>
-   <li ng-repeat="isolate in item.isolates | filter: {aerobic: false} as anaerobicIsolates">
-     <span ng-show="isolate.organism">[[ isolate.organism ]]
-     <span ng-show="isolate.aerobic">(aerobic)</span>
-     <span ng-show="!isolate.aerobic">(anaerobic)</span>
-     <br />
-     <span ng-show="isolate.FISH">FISH [[ isolate.FISH ]] <br /></span>
-     <span ng-show="isolate.microscopy">microscopy [[ isolate.microscopy ]] <br /></span>
-
-     <span ng-show="isolate.sensitive_antibiotics.length">sensitive: [[ isolate.sensitive_antibiotics.join(", ") ]] <br /></span>
-     <span ng-show="isolate.resistant_antibiotics.length">resistant: [[ isolate.resistant_antibiotics.join(", ") ]] <br /></span>
-   </li>
- </ul>
-</div> -->

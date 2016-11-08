@@ -156,6 +156,7 @@ TEMPLATE_CONTEXT_PROCESSORS= (
     'django.contrib.messages.context_processors.messages',
     'opal.context_processors.settings',
     'opal.context_processors.models',
+    'lab.context_processors.lab_tests',
 )
 
 INSTALLED_APPS = (
@@ -176,10 +177,10 @@ INSTALLED_APPS = (
     'obs',
     'django.contrib.admin',
     'pathway',
+    'lab',
     # 'guidelines',
     'dischargesummary',
     'djcelery',
-    'taskrunner',
 )
 
 if 'test' in sys.argv:
@@ -255,7 +256,6 @@ OPAL_OPTIONS_MODULE = 'elcid.options'
 OPAL_BRAND_NAME = 'elCID Royal Free Hospital'
 OPAL_LOG_OUT_MINUTES = 15
 OPAL_LOG_OUT_DURATION = OPAL_LOG_OUT_MINUTES*60*1000
-OPAL_FLOW_SERVICE = 'elCIDFlow'
 
 # Do we need this at all ?
 OPAL_EXTRA_HEADER = 'elcid/print_header.html'
