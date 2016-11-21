@@ -7,7 +7,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from lab import models as lmodels
+# from lab import models as lmodels
 
 from jsonfield import JSONField
 
@@ -519,170 +519,170 @@ class Appointment(EpisodeSubrecord):
 class BloodCultureSource(lookuplists.LookupList):
     pass
 
-class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
-    _icon = 'fa fa-crosshairs'
-    _title = 'Blood Culture'
-    _angular_service = 'BloodCultureRecord'
+# class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
+#     _icon = 'fa fa-crosshairs'
+#     _title = 'Blood Culture'
+#     _angular_service = 'BloodCultureRecord'
+#
+#     lab_number = models.CharField(max_length=255, blank=True)
+#     date_ordered = models.DateField(null=True, blank=True)
+#     date_positive = models.DateField(null=True, blank=True)
+#     source = ForeignKeyOrFreeText(BloodCultureSource)
+#
+#     @classmethod
+#     def _get_fieldnames_to_serialize(cls):
+#         field_names = super(BloodCulture, cls)._get_fieldnames_to_serialize()
+#         field_names.append("isolates")
+#         return field_names
+#
+#     def update_from_dict(self, data, user, **kwargs):
+#         isolates = data.pop("isolates", [])
+#         existing = [i["id"] for i in isolates if "id" in i]
+#         self.isolates.exclude(id__in=existing).delete()
+#         kwargs.pop("fields", None)
+#         fields = set(self.__class__._get_fieldnames_to_serialize())
+#         fields.remove("isolates")
+#         super(BloodCulture, self).update_from_dict(data, user, fields=fields, **kwargs)
+#
+#         for isolate in isolates:
+#             isolate_id = isolate.get("id")
+#
+#             if isolate_id:
+#                 blood_culture_isolate = self.isolates.get(
+#                     id=isolate_id
+#                 )
+#             else:
+#                 blood_culture_isolate = BloodCultureIsolate(
+#                     blood_culture_id=self.id
+#                 )
+#
+#             blood_culture_isolate.update_from_dict(isolate, user, **kwargs)
+#
+#     def get_isolates(self, user):
+#         return [i.to_dict(user) for i in self.isolates.all()]
+#
+# class FishForm(object):
+#     def get_result_look_up_list(self):
+#         lookup_list = super(FishForm, self).get_result_look_up_list()
+#         lookup_list.append("Not Done")
+#         return lookup_list
+#
+#     def update_from_dict(self, data, user, **kwargs):
+#         """
+#             if there is no result or its not done, skip
+#         """
+#         result = data.get("result")
+#         id_field = data.get("id")
+#
+#         if not result or result == "Not Done":
+#             if id_field:
+#                 lmodels.LabTest.objects.get(id=id_field).delete()
+#             return
+#
+#         super(FishForm, self).update_from_dict(data, user, **kwargs)
+#
+#
+# class GramStain(lmodels.LabTest):
+#     class Meta:
+#         proxy = True
+#
+#     RESULT_CHOICES = (
+#         ("yeast", "Yeast",),
+#         ("gram_positive_cocci_cluster", "Gram +ve Cocci Cluster",),
+#         ("gram_positive_cocci_chains", "Gram +ve Cocci Chains",),
+#         ("gram_negative_rods", "Gram -ve Rods",),
+#         ("gram_negative_cocci", "Gram -ve Cocci",),
+#         ("zn_stain", "ZN Stain",),
+#         ("modified_zn_stain", "Modified ZN Stain",),
+#     )
+#
+#
+# class QuickFISH(FishForm, lmodels.LabTest):
+#     _title = "QuickFISH"
+#
+#     class Meta:
+#         proxy = True
+#         verbose_name = "QuickFISH"
+#
+#     RESULT_CHOICES = (
+#         ("c_albicans", "C. albicans",),
+#         ("c_parapsilosis", "C. parapsilosis",),
+#         ("c_glabrata", "C. glabrata",),
+#         ("negative", "Negative",),
+#     )
+#
+#
+# class GPCStaph(FishForm, lmodels.LabTest):
+#     _title = "GPC Staph"
+#     class Meta:
+#         proxy = True
+#         verbose_name = "GPC Staph"
+#
+#     RESULT_CHOICES = (
+#         ("s_aureus", "S. aureus",),
+#         ("cns", "CNS",),
+#         ("negative", "Negative",),
+#     )
+#
+#
+# class GPCStrep(FishForm, lmodels.LabTest):
+#     _title = "GPC Strep"
+#     class Meta:
+#         proxy = True
+#         verbose_name = "GPC Strep"
+#
+#     RESULT_CHOICES = (
+#         ("e_faecalis", "E.faecalis",),
+#         ("other_enterocci", "Other enterococci",),
+#         ("negative", "Negative",),
+#     )
+#
+#
+# class GNR(FishForm, lmodels.LabTest):
+#     _title = "GNR"
+#
+#     class Meta:
+#         proxy = True
+#         verbose_name = "GNR"
+#
+#     RESULT_CHOICES = (
+#         ("e_coli", "E.coli",),
+#         ("k_pneumoniae", "K. pneumoniae",),
+#         ("p_aeruginosa", "P. aeruginosa",),
+#         ("negative", "Negative",),
+#     )
+#
+#
+# class OrganismTest(lmodels.LabTest):
+#     _title = "Organism"
+#
+#     class Meta:
+#         proxy = True
+#         verbose_name = "Organism"
+#
+#     def get_result_look_up_list(self):
+#         return "microbiology_organism_list"
+#
+#     @classmethod
+#     def get_form_template(self, *args, **kwargs):
+#         return "lab_tests/forms/sensitive_resistant_form.html"
 
-    lab_number = models.CharField(max_length=255, blank=True)
-    date_ordered = models.DateField(null=True, blank=True)
-    date_positive = models.DateField(null=True, blank=True)
-    source = ForeignKeyOrFreeText(BloodCultureSource)
 
-    @classmethod
-    def _get_fieldnames_to_serialize(cls):
-        field_names = super(BloodCulture, cls)._get_fieldnames_to_serialize()
-        field_names.append("isolates")
-        return field_names
-
-    def update_from_dict(self, data, user, **kwargs):
-        isolates = data.pop("isolates", [])
-        existing = [i["id"] for i in isolates if "id" in i]
-        self.isolates.exclude(id__in=existing).delete()
-        kwargs.pop("fields", None)
-        fields = set(self.__class__._get_fieldnames_to_serialize())
-        fields.remove("isolates")
-        super(BloodCulture, self).update_from_dict(data, user, fields=fields, **kwargs)
-
-        for isolate in isolates:
-            isolate_id = isolate.get("id")
-
-            if isolate_id:
-                blood_culture_isolate = self.isolates.get(
-                    id=isolate_id
-                )
-            else:
-                blood_culture_isolate = BloodCultureIsolate(
-                    blood_culture_id=self.id
-                )
-
-            blood_culture_isolate.update_from_dict(isolate, user, **kwargs)
-
-    def get_isolates(self, user):
-        return [i.to_dict(user) for i in self.isolates.all()]
-
-class FishForm(object):
-    def get_result_look_up_list(self):
-        lookup_list = super(FishForm, self).get_result_look_up_list()
-        lookup_list.append("Not Done")
-        return lookup_list
-
-    def update_from_dict(self, data, user, **kwargs):
-        """
-            if there is no result or its not done, skip
-        """
-        result = data.get("result")
-        id_field = data.get("id")
-
-        if not result or result == "Not Done":
-            if id_field:
-                lmodels.LabTest.objects.get(id=id_field).delete()
-            return
-
-        super(FishForm, self).update_from_dict(data, user, **kwargs)
-
-
-class GramStain(lmodels.LabTest):
-    class Meta:
-        proxy = True
-
-    RESULT_CHOICES = (
-        ("yeast", "Yeast",),
-        ("gram_positive_cocci_cluster", "Gram +ve Cocci Cluster",),
-        ("gram_positive_cocci_chains", "Gram +ve Cocci Chains",),
-        ("gram_negative_rods", "Gram -ve Rods",),
-        ("gram_negative_cocci", "Gram -ve Cocci",),
-        ("zn_stain", "ZN Stain",),
-        ("modified_zn_stain", "Modified ZN Stain",),
-    )
-
-
-class QuickFISH(FishForm, lmodels.LabTest):
-    _title = "QuickFISH"
-
-    class Meta:
-        proxy = True
-        verbose_name = "QuickFISH"
-
-    RESULT_CHOICES = (
-        ("c_albicans", "C. albicans",),
-        ("c_parapsilosis", "C. parapsilosis",),
-        ("c_glabrata", "C. glabrata",),
-        ("negative", "Negative",),
-    )
-
-
-class GPCStaph(FishForm, lmodels.LabTest):
-    _title = "GPC Staph"
-    class Meta:
-        proxy = True
-        verbose_name = "GPC Staph"
-
-    RESULT_CHOICES = (
-        ("s_aureus", "S. aureus",),
-        ("cns", "CNS",),
-        ("negative", "Negative",),
-    )
-
-
-class GPCStrep(FishForm, lmodels.LabTest):
-    _title = "GPC Strep"
-    class Meta:
-        proxy = True
-        verbose_name = "GPC Strep"
-
-    RESULT_CHOICES = (
-        ("e_faecalis", "E.faecalis",),
-        ("other_enterocci", "Other enterococci",),
-        ("negative", "Negative",),
-    )
-
-
-class GNR(FishForm, lmodels.LabTest):
-    _title = "GNR"
-
-    class Meta:
-        proxy = True
-        verbose_name = "GNR"
-
-    RESULT_CHOICES = (
-        ("e_coli", "E.coli",),
-        ("k_pneumoniae", "K. pneumoniae",),
-        ("p_aeruginosa", "P. aeruginosa",),
-        ("negative", "Negative",),
-    )
-
-
-class OrganismTest(lmodels.LabTest):
-    _title = "Organism"
-
-    class Meta:
-        proxy = True
-        verbose_name = "Organism"
-
-    def get_result_look_up_list(self):
-        return "microbiology_organism_list"
-
-    @classmethod
-    def get_form_template(self, *args, **kwargs):
-        return "lab_tests/forms/sensitive_resistant_form.html"
-
-
-class BloodCultureIsolate(
-    lmodels.LabTestCollection,
-    omodels.UpdatesFromDictMixin,
-    omodels.ToDictMixin,
-    omodels.TrackedModel
-):
-    consistency_token = models.CharField(max_length=8)
-    aerobic = models.BooleanField()
-    blood_culture = models.ForeignKey(BloodCulture, related_name="isolates")
-
-    @classmethod
-    def _get_fieldnames_to_serialize(cls):
-        field_names = super(BloodCultureIsolate, cls)._get_fieldnames_to_serialize()
-        field_names.append("blood_culture_id")
-        return field_names
+# class BloodCultureIsolate(
+#     lmodels.LabTestCollection,
+#     omodels.UpdatesFromDictMixin,
+#     omodels.ToDictMixin,
+#     omodels.TrackedModel
+# ):
+#     consistency_token = models.CharField(max_length=8)
+#     aerobic = models.BooleanField()
+#     blood_culture = models.ForeignKey(BloodCulture, related_name="isolates")
+#
+#     @classmethod
+#     def _get_fieldnames_to_serialize(cls):
+#         field_names = super(BloodCultureIsolate, cls)._get_fieldnames_to_serialize()
+#         field_names.append("blood_culture_id")
+#         return field_names
 
 
 class FinalDiagnosis(EpisodeSubrecord):

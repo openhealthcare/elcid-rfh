@@ -15,8 +15,8 @@ from opal.models import (
     Microbiology_organism
 )
 from elcid.models import (
-    Location, PresentingComplaint, Result, Allergies, Demographics,
-    BloodCulture, BloodCultureIsolate, get_for_lookup_list, QuickFISH
+    Location, PresentingComplaint, Result, Allergies, Demographics, get_for_lookup_list
+    # BloodCulture, BloodCultureIsolate, QuickFISH
 )
 from lab import models as lmodels
 
@@ -465,91 +465,91 @@ class GetForLookupListTestCase(OpalTestCase):
         )
 
 
-class LabTestTestCase(OpalTestCase):
-    def setUp(self):
-        self.new_data = dict(
-            test_name="QuickFISH",
-            result="success"
-        )
+# class LabTestTestCase(OpalTestCase):
+#     def setUp(self):
+#         self.new_data = dict(
+#             test_name="QuickFISH",
+#             result="success"
+#         )
+#
+#         self.old_data = dict(
+#             id="1",
+#             test_name="QuickFISH",
+#             result="failed"
+#         )
+#
+#         _, self.episode = self.new_patient_and_episode_please()
+#         self.blood_culture = BloodCulture.objects.create(
+#             episode=self.episode
+#         )
+#
+#         self.blood_culture_isolate = BloodCultureIsolate.objects.create(
+#             blood_culture=self.blood_culture,
+#             aerobic=True
+#         )
+#         ct = ContentType.objects.get_for_model(BloodCultureIsolate)
+#         object_id = self.blood_culture_isolate.id
+#         self.some_fish_test = QuickFISH(
+#             test_name="QuickFISH",
+#             content_type=ct,
+#             object_id=object_id
+#         )
+#         self.some_fish_test.save()
+#
+#     def test_create_new_test(self):
+#         self.blood_culture_isolate.save_tests([self.new_data], self.user)
+#         self.assertEqual(lmodels.LabTest.objects.count(), 1)
+#         self.assertEqual(lmodels.LabTest.objects.last().result, "success")
+#
+#     def test_update_old_test(self):
+#         self.blood_culture_isolate.save_tests([self.old_data], self.user)
+#         self.assertEqual(lmodels.LabTest.objects.count(), 1)
+#         self.assertEqual(lmodels.LabTest.objects.last().result, "failed")
+#
 
-        self.old_data = dict(
-            id="1",
-            test_name="QuickFISH",
-            result="failed"
-        )
 
-        _, self.episode = self.new_patient_and_episode_please()
-        self.blood_culture = BloodCulture.objects.create(
-            episode=self.episode
-        )
-
-        self.blood_culture_isolate = BloodCultureIsolate.objects.create(
-            blood_culture=self.blood_culture,
-            aerobic=True
-        )
-        ct = ContentType.objects.get_for_model(BloodCultureIsolate)
-        object_id = self.blood_culture_isolate.id
-        self.some_fish_test = QuickFISH(
-            test_name="QuickFISH",
-            content_type=ct,
-            object_id=object_id
-        )
-        self.some_fish_test.save()
-
-    def test_create_new_test(self):
-        self.blood_culture_isolate.save_tests([self.new_data], self.user)
-        self.assertEqual(lmodels.LabTest.objects.count(), 1)
-        self.assertEqual(lmodels.LabTest.objects.last().result, "success")
-
-    def test_update_old_test(self):
-        self.blood_culture_isolate.save_tests([self.old_data], self.user)
-        self.assertEqual(lmodels.LabTest.objects.count(), 1)
-        self.assertEqual(lmodels.LabTest.objects.last().result, "failed")
-
-
-
-class BloodCultureTestCase(OpalTestCase):
-    def setUp(self):
-        _, self.episode = self.new_patient_and_episode_please()
-
-    def test_update_from_dict_with_old_isolate(self):
-        bc = BloodCulture.objects.create(episode=self.episode)
-        bci = BloodCultureIsolate.objects.create(
-            aerobic=False,
-            blood_culture=bc
-        )
-        bc.update_from_dict(dict(isolates=[dict(id=bci.id)]), self.user)
-
-        self.assertEqual(bc.isolates.get(), bci)
-
-    def test_update_from_dict_with_new_isolate(self):
-        bc = BloodCulture.objects.create(episode=self.episode)
-        bc.update_from_dict(dict(isolates=[dict(aerobic=True)]), self.user)
-        self.assertTrue(bc.isolates.get().aerobic)
-
-    def test_update_from_dict_delete_old_isolate(self):
-        bc = BloodCulture.objects.create(episode=self.episode)
-        bci = BloodCultureIsolate.objects.create(
-            aerobic=False,
-            blood_culture=bc
-        )
-        bc.update_from_dict(dict(), self.user)
-        self.assertEqual(bc.isolates.count(), 0)
-
-    def test_get_isolates(self):
-        bc = BloodCulture.objects.create(episode=self.episode)
-        bci = BloodCultureIsolate.objects.create(
-            aerobic=False,
-            blood_culture=bc
-        )
-        isolates = bc.get_isolates(self.user)
-        self.assertEqual(len(isolates), 1)
-        self.assertEqual(isolates[0]["id"], bci.id)
-
-    def test_get_fieldnames_to_serialize(self):
-        fields = BloodCulture._get_fieldnames_to_serialize()
-        self.assertIn("isolates", fields)
-
+# class BloodCultureTestCase(OpalTestCase):
+#     def setUp(self):
+#         _, self.episode = self.new_patient_and_episode_please()
+#
+#     def test_update_from_dict_with_old_isolate(self):
+#         bc = BloodCulture.objects.create(episode=self.episode)
+#         bci = BloodCultureIsolate.objects.create(
+#             aerobic=False,
+#             blood_culture=bc
+#         )
+#         bc.update_from_dict(dict(isolates=[dict(id=bci.id)]), self.user)
+#
+#         self.assertEqual(bc.isolates.get(), bci)
+#
+#     def test_update_from_dict_with_new_isolate(self):
+#         bc = BloodCulture.objects.create(episode=self.episode)
+#         bc.update_from_dict(dict(isolates=[dict(aerobic=True)]), self.user)
+#         self.assertTrue(bc.isolates.get().aerobic)
+#
+#     def test_update_from_dict_delete_old_isolate(self):
+#         bc = BloodCulture.objects.create(episode=self.episode)
+#         bci = BloodCultureIsolate.objects.create(
+#             aerobic=False,
+#             blood_culture=bc
+#         )
+#         bc.update_from_dict(dict(), self.user)
+#         self.assertEqual(bc.isolates.count(), 0)
+#
+#     def test_get_isolates(self):
+#         bc = BloodCulture.objects.create(episode=self.episode)
+#         bci = BloodCultureIsolate.objects.create(
+#             aerobic=False,
+#             blood_culture=bc
+#         )
+#         isolates = bc.get_isolates(self.user)
+#         self.assertEqual(len(isolates), 1)
+#         self.assertEqual(isolates[0]["id"], bci.id)
+#
+#     def test_get_fieldnames_to_serialize(self):
+#         fields = BloodCulture._get_fieldnames_to_serialize()
+#         self.assertIn("isolates", fields)
+#
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
 

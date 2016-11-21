@@ -48,7 +48,7 @@ class CernerDemoPathway(RedirectsToPatientMixin, PagePathway):
             models.Infection,
             models.Line,
             models.Antimicrobial,
-            models.BloodCulture,
+            # models.BloodCulture,
             models.Imaging,
             models.MicrobiologyInput
         ]
