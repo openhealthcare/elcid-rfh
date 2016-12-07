@@ -2,6 +2,13 @@ angular.module('opal.controllers').controller('BloodCulturePathwayFormCtrl',
 function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureFormHelper) {
       "use strict";
 
+      if(episode && episode.tagging.length){
+        scope.editing = {tagging: episode.tagging[0].makeCopy()};
+      }
+      else{
+        scope.editing.tagging = {};
+      }
+
       // scope.initialise = function(bloodCultures){
       //     _.each(bloodCultures, function(bloodCulture){
       //       bloodCulture._formHelper = new BloodCultureFormHelper(

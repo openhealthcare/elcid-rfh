@@ -18,7 +18,7 @@ from elcid.models import (
     Location, PresentingComplaint, Result, Allergies, Demographics, get_for_lookup_list
     # BloodCulture, BloodCultureIsolate, QuickFISH
 )
-from lab import models as lmodels
+# from lab import models as lmodels
 
 
 HERE = ffs.Path.here()
