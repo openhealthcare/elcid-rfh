@@ -686,13 +686,13 @@ class BloodCultureSource(lookuplists.LookupList):
 
 
 class FinalDiagnosis(EpisodeSubrecord):
-    _icon = 'fa fa-eye'
+    _icon = 'fa fa-pencil-square'
     _title = "Final Diagnosis"
 
     source = models.CharField(max_length=255, blank=True)
     contaminant = models.BooleanField(default=False)
     community_related = models.BooleanField(default=False)
-    hcai_related = models.BooleanField(default=False)
+    hcai_related = models.BooleanField(verbose_name="HCAI related", default=False)
 
 
 class ImagingTypes(lookuplists.LookupList): pass
