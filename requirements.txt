@@ -41,4 +41,3 @@ static3==0.6.1
 -e git+https://github.com/openhealthcare/opal-dischargesummary.git@v0.2#egg=opal_dischargesummary
 -e git+https://github.com/openhealthcare/opal-guidelines.git@#egg=opal_guidelines
 -e git+https://github.com/srosro/django-test-coverage#egg=django-test-coverage
--e git+https://github.com/openhealthcare/opal-taskrunner.git@#egg=opal_taskrunner
