@@ -25,7 +25,7 @@ except ImportError:
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-AUTOCOMPLETE_SEARCH = True
+AUTOCOMPLETE_SEARCH = False
 
 ADMINS = (
     ('David Miller', 'david@openhealthcare.org.uk'),
