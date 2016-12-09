@@ -84,11 +84,9 @@
 {% endcomment %}
 {% record_panel models.FinalDiagnosis %}
 
-{% include "inline_forms/clinical_advice.html" %}
-
-<div class="panel panel-default">
+<div ng-show="episode.microbiology_input.length" class="panel panel-default">
   <div class="panel-body">
-    <div ng-show="episode.microbiology_input.length" class="patient-timeline-container">
+    <div class="patient-timeline-container">
       <div class="row">
         <div class="col-md-3 patient-timeline">
           <div class="patient-timeline-now">
@@ -136,6 +134,8 @@
     </div>
   </div>
 </div>
+{% include "inline_forms/clinical_advice.html" %}
+
 
 <div class="panel panel-default">
   <div class="panel-heading">
