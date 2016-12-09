@@ -105,3 +105,10 @@ class TB(TaggedPatientList):
     tag = "tb"
     template_name = 'episode_list.html'
     schema = []
+
+class Bacteraemia(TaggedPatientList):
+    display_name = 'Bacteraemia'
+    direct_add = True
+    tag = "bacteraemia"
+    template_name = 'episode_list.html'
+    schema = []

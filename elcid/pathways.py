@@ -1,4 +1,5 @@
 from elcid import models
+from django.db import transaction
 
 
 from pathway.pathways import (
@@ -11,7 +12,20 @@ from pathway.pathways import (
 )
 
 
-class AddPatientPathway(RedirectsToEpisodeMixin, WizardPathway):
+class SaveTagging(object):
+    @transaction.atomic
+    def save(self, data, user):
+        tagging = data.pop("tagging", {})
+        patient = super(SaveTagging, self).save(data, user)
+        tag_names = [n for n, v in list(tagging[0].items()) if v]
+        if self.episode:
+            episode = self.episode
+        else:
+            episode = patient.episode_set.last()
+        episode.set_tag_names(tag_names, user)
+        return patient
+
+class AddPatientPathway(SaveTagging, RedirectsToEpisodeMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
 
@@ -24,12 +38,13 @@ class AddPatientPathway(RedirectsToEpisodeMixin, WizardPathway):
         ),
         Step(
             model=models.Location,
-            template_url="/templates/pathway/blood_culture_location.html"
+            template_url="/templates/pathway/blood_culture_location.html",
+            controller_class="BloodCulturePathwayFormCtrl"
         ),
     )
 
 
-class CernerDemoPathway(RedirectsToPatientMixin, PagePathway):
+class CernerDemoPathway(SaveTagging, RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 
@@ -42,13 +57,14 @@ class CernerDemoPathway(RedirectsToPatientMixin, PagePathway):
         ),
     )
 
+    @transaction.atomic
     def save(self, data, user):
         multi_saved_models = [
             models.Diagnosis,
             models.Infection,
             models.Line,
             models.Antimicrobial,
-            models.BloodCulture,
+            # models.BloodCulture,
             models.Imaging,
             models.MicrobiologyInput
         ]

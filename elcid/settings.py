@@ -25,7 +25,7 @@ except ImportError:
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-AUTOCOMPLETE_SEARCH = True
+AUTOCOMPLETE_SEARCH = False
 
 ADMINS = (
     ('David Miller', 'david@openhealthcare.org.uk'),
@@ -156,7 +156,6 @@ TEMPLATE_CONTEXT_PROCESSORS= (
     'django.contrib.messages.context_processors.messages',
     'opal.context_processors.settings',
     'opal.context_processors.models',
-    'lab.context_processors.lab_tests',
 )
 
 INSTALLED_APPS = (
@@ -177,7 +176,6 @@ INSTALLED_APPS = (
     'obs',
     'django.contrib.admin',
     'pathway',
-    'lab',
     # 'guidelines',
     'dischargesummary',
     'djcelery',
