@@ -41,72 +41,16 @@ class SearchTestCase(OpalTestCase):
         OPAL_SEARCH_BACKEND="elcid.search.GlossQuery",
         GLOSS_URL_BASE="http://0.0.0.0:6767"
     )
-    def test_recusive_gloss_search(self, requests_mock):
-        return_1 = copy(self.returned_gloss_result)
-        return_1["duplicate_patient"] = [dict(new_id="1000")]
-
-        return_2 = copy(self.returned_gloss_result)
-        return_2["duplicate_patient"] = [dict(new_id="1001")]
-        return_2["demographics"][0]["first_name"] = "Sue"
-        return_2["demographics"][0]["hospital_number"] = "1000"
-
-        return_3 = copy(self.returned_gloss_result)
-        return_3["demographics"][0]["first_name"] = "Sarah"
-        return_3["demographics"][0]["hospital_number"] = "1001"
-
-        side_effects = []
-
-        for result in [return_1, return_2, return_3]:
-            response = MagicMock()
-            response.content = json.dumps({
-                "status": "success",
-                "messages": result
-            })
-            side_effects.append(response)
-
-        requests_mock.side_effect = side_effects
-        query = queries.create_query(self.user, self.criteria)
-        result = query.patients_as_json()[0]
-        self.assertEqual(requests_mock.call_count, 3)
-        merged = [{
-            'duplicate_patient': [],
-            'demographics': [{
-                'first_name': u'Sarah',
-                'post_code': None,
-                'surname': u'Smith',
-                'gp_practice_code': None,
-                'title': u'Ms',
-                'hospital_number': 1001,
-                'marital_status': None,
-                'date_of_death': None,
-                'sex': None,
-                'external_system': 'Carecast',
-                'date_of_birth': u'12/12/1983',
-                'death_indicator': False,
-                'middle_name': None,
-                'hospital_number': "1001",
-                'ethnicity': None}]
-        }]
-
-        expected = copy(self.returned_gloss_result)
-        expected["demographics"][0]['hospital_number'] = "1231111"
-        expected["duplicate_patient"] = [{u'new_id': "1001"}]
-        expected["merged"] = merged
-        self.assertEqual(result, expected)
-
-    @override_settings(
-        OPAL_SEARCH_BACKEND="elcid.search.GlossQuery",
-        GLOSS_URL_BASE="http://0.0.0.0:6767"
-    )
     def test_gloss_query_flow(self, requests_mock):
         requests_mock.return_value = MagicMock()
         requests_mock.return_value.content = json.dumps({
             "status": "success",
             "messages": self.returned_gloss_result
         })
+        requests_mock.return_value.status_code = 200
         self.assertFalse(omodels.Patient.objects.exists())
-
         query = queries.create_query(self.user, self.criteria)
+
         result = query.patients_as_json()[0]
 
         expected = copy(self.returned_gloss_result)
@@ -114,7 +58,7 @@ class SearchTestCase(OpalTestCase):
         expected["demographics"][0]["external_system"] = "Carecast"
         self.assertEqual(result, expected)
         requests_mock.assert_called_once_with(
-            "http://0.0.0.0:6767/api/demographics/1231111"
+            "http://0.0.0.0:6767/api/patient/1231111"
         )
 
     def test_database_flow(self, requests_mock):

@@ -40,7 +40,7 @@ def subscribe(hospital_number):
     assert(response.status_code == 200)
 
 
-def patient_query(hospital_number, episode):
+def gloss_query(hospital_number):
     base_url = settings.GLOSS_URL_BASE
     url = "{0}/api/patient/{1}".format(base_url, hospital_number)
     response = requests.get(url)
@@ -59,7 +59,13 @@ def patient_query(hospital_number, episode):
                 )
             )
         else:
-            bulk_create_from_gloss_response(content, episode=episode)
+            return content
+
+
+def patient_query(hospital_number, episode=None):
+    content = gloss_query(hospital_number)
+    if content:
+        return bulk_create_from_gloss_response(content, episode=episode)
 
 
 def get_external_source(api_name):
@@ -79,11 +85,8 @@ def get_external_source(api_name):
 
 
 def demographics_query(hospital_number):
-    base_url = settings.GLOSS_URL_BASE
-    url = "{0}/api/demographics/{1}".format(base_url, hospital_number)
-    result = json.loads(requests.get(url).content)
-
-    if result["status"] == "success" and result["messages"]:
+    result = gloss_query(hospital_number)
+    if result and "demographics" in result["messages"]:
         demographics = result["messages"]["demographics"]
         external_system = get_external_source("demographics")
 
@@ -105,8 +108,6 @@ def demographics_query(hospital_number):
 
 
 def bulk_create_from_gloss_response(request_data, episode=None):
-    from elcid.models import Allergies
-
     hospital_number = request_data["hospital_number"]
     update_dict = request_data["messages"]
     logging.info("running a bulk update with")
@@ -123,24 +124,26 @@ def bulk_create_from_gloss_response(request_data, episode=None):
 
     user = get_gloss_user()
 
-    with transaction.atomic():
-        if "allergies" in update_dict:
-            Allergies.objects.filter(
-                patient__demographics__hospital_number=hospital_number
-            ).delete()
+    if update_dict:
+        with transaction.atomic():
+            # as these are only going to have been sourced from upstream
+            # make sure it says they're sourced from upstream
+            for api_name, updates_list in update_dict.iteritems():
+                external_system = get_external_source(api_name)
 
-        # as these are only going to have been sourced from upstream
-        # make sure it says they're sourced from upstream
-        for api_name, updates_list in update_dict.iteritems():
-            external_system = get_external_source(api_name)
+                if external_system:
+                    for i in updates_list:
+                        i["external_system"] = external_system
 
-            if external_system:
-                for i in updates_list:
-                    i["external_system"] = external_system
+            if "demographics" not in update_dict:
+                update_dict["demographics"] = [
+                    dict(hospital_number=hospital_number)
+                ]
 
-        if "demographics" not in update_dict:
-            update_dict["demographics"] = [
-                dict(hospital_number=hospital_number)
-            ]
+            patient.bulk_update(update_dict, user, force=True, episode=episode)
+            if not episode:
+                episode = patient.episode_set.first()
 
-        patient.bulk_update(update_dict, user, force=True, episode=episode)
+            if not episode:
+                episode = patient.create_episode()
+            return patient, episode

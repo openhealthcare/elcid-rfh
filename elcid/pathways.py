@@ -1,5 +1,7 @@
 from elcid import models
 from django.db import transaction
+from django.conf import settings
+from elcid import gloss_api
 
 
 from pathway.pathways import (
@@ -15,14 +17,16 @@ from pathway.pathways import (
 class SaveTagging(object):
     @transaction.atomic
     def save(self, data, user):
-        tagging = data.pop("tagging", {})
+        tagging = data.pop("tagging", [])
         patient = super(SaveTagging, self).save(data, user)
-        tag_names = [n for n, v in list(tagging[0].items()) if v]
-        if self.episode:
-            episode = self.episode
-        else:
-            episode = patient.episode_set.last()
-        episode.set_tag_names(tag_names, user)
+
+        if tagging:
+            tag_names = [n for n, v in list(tagging[0].items()) if v]
+            if self.episode:
+                episode = self.episode
+            else:
+                episode = patient.episode_set.last()
+            episode.set_tag_names(tag_names, user)
         return patient
 
 class AddPatientPathway(SaveTagging, RedirectsToEpisodeMixin, WizardPathway):
@@ -42,6 +46,39 @@ class AddPatientPathway(SaveTagging, RedirectsToEpisodeMixin, WizardPathway):
             controller_class="BloodCulturePathwayFormCtrl"
         ),
     )
+
+    def save(self, data, *args, **kwargs):
+        """
+            saves the patient.
+
+            if the patient already exists, create a new episode.
+
+            if the patient doesn't exist and we're gloss enabled query gloss.
+
+            if the patient isn't in gloss, or gloss is down, just create a
+            new patient/episode
+        """
+        if settings.GLOSS_ENABLED:
+            if not self.patient:
+                demographics = data.get("demographics")
+                hospital_number = demographics[0]["hospital_number"]
+                created = gloss_api.patient_query(hospital_number)
+
+                if created:
+                    data.pop("demographics")
+                    patient, episode = created
+                    # nuke whatever is passed in in demographics as this will
+                    # have been updated by gloss
+                    data["demographics"] = [dict(
+                        hospital_number=hospital_number,
+                        consistency_token=patient.demographics_set.first().consistency_token
+                    )]
+                    self.patient_id = patient.id
+                    self.episode_id = episode.id
+
+            gloss_api.subscribe(hospital_number)
+
+        return super(AddPatientPathway, self).save(data, *args, **kwargs)
 
 
 class CernerDemoPathway(SaveTagging, RedirectsToPatientMixin, PagePathway):
