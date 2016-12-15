@@ -118,7 +118,7 @@ def bulk_create_from_gloss_response(request_data, episode=None):
     )
 
     if not patient_query.exists():
-        patient = models.Patient()
+        patient = models.Patient.objects.create()
     else:
         patient = patient_query.get()
 
@@ -144,8 +144,5 @@ def bulk_create_from_gloss_response(request_data, episode=None):
                 ]
 
             patient.bulk_update(update_dict, user, force=True, episode=episode)
-            if not episode:
-                episode = patient.episode_set.first()
-
 
             return patient, episode

@@ -709,16 +709,3 @@ class Imaging(EpisodeSubrecord):
     imaging_type = ForeignKeyOrFreeText(ImagingTypes)
     site = models.CharField(max_length=200, blank=True, null=True)
     details = models.TextField(blank=True, null=True)
-
-
-# @receiver(post_save, sender=Episode)
-# def get_information_from_gloss(sender, **kwargs):
-#     from elcid import gloss_api
-#
-#     episode = kwargs.pop("instance")
-#     created = kwargs.pop("created")
-#     if created and settings.GLOSS_ENABLED:
-#         import ipdb; ipdb.set_trace()
-#         hospital_number = episode.patient.demographics_set.first().hospital_number
-#         gloss_api.subscribe(hospital_number)
-#         gloss_api.patient_query(hospital_number, episode=episode)
