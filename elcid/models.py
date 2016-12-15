@@ -53,7 +53,11 @@ class Demographics(PatientSubrecord, ExternallySourcedModel):
     # are updated
     sex = ForeignKeyOrFreeText(omodels.Gender)
 
-    pid_fields       = (
+    def set_death_indicator(self, value, *args, **kwargs):
+        if not value:
+            return
+
+    pid_fields = (
         'hospital_number', 'nhs_number', 'surname', 'first_name',
         'middle_name', 'post_code',
     )
@@ -705,15 +709,3 @@ class Imaging(EpisodeSubrecord):
     imaging_type = ForeignKeyOrFreeText(ImagingTypes)
     site = models.CharField(max_length=200, blank=True, null=True)
     details = models.TextField(blank=True, null=True)
-
-
-@receiver(post_save, sender=Episode)
-def get_information_from_gloss(sender, **kwargs):
-    from elcid import gloss_api
-
-    episode = kwargs.pop("instance")
-    created = kwargs.pop("created")
-    if created and settings.GLOSS_ENABLED:
-        hospital_number = episode.patient.demographics_set.first().hospital_number
-        gloss_api.subscribe(hospital_number)
-        gloss_api.patient_query(hospital_number, episode=episode)

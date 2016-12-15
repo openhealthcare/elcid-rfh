@@ -291,12 +291,14 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
 
 
 
-GLOSS_ENABLED = False
+GLOSS_ENABLED = True
 
 if GLOSS_ENABLED:
     GLOSS_URL_BASE = "http://0.0.0.0:6767"
     GLOSS_USERNAME = "override_this"
     GLOSS_PASSWORD = "and_override_this"
+    OPAL_SEARCH_BACKEND = "elcid.search.GlossQuery"
+
 
 EXTRACT_ASYNC = True
 

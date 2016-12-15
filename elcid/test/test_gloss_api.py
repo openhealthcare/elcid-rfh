@@ -48,81 +48,6 @@ class TestInpatientAdmission(AbstractGlossTestCase):
         self.assertEqual(inpatient_admission.external_system, "Carecast")
 
 
-class TestAllergyInteraction(AbstractGlossTestCase):
-    def setUp(self, *args, **kwargs):
-        super(TestAllergyInteraction, self).setUp(*args, **kwargs)
-
-        self.before_allergy = Allergies.objects.create(
-            patient=self.patient,
-            drug_ft="some drug"
-        )
-
-    def test_remove_allergies(self, *args):
-        # if allergies are present, delete allergies and create new ones
-        # also run any other updates that are required
-        data = dict(
-            demographics=[{
-                "first_name": "Susan",
-                "hospital_number": "1",
-            }],
-            allergies=[
-                {"allergy_description": "penicillin"},
-            ]
-        )
-
-        self.run_create(data)
-        allergy = Allergies.objects.get()
-        self.assertFalse(allergy.id == self.before_allergy.id)
-        self.assertEqual(allergy.allergy_description, "penicillin")
-        self.assertEqual(
-            Demographics.objects.get(hospital_number="1").first_name, "Susan"
-        )
-
-        # all allergies should be marked as having been source
-        # from upstream
-        self.assertEqual(allergy.external_system, "ePMA")
-
-    def test_doesnt_remove_allergies(self, *args):
-        # if no allergies are present, don't delete allergies, but run
-        # the other updates
-        data = dict(
-            demographics=[{
-                "first_name": "Susan",
-                "hospital_number": "1",
-            }],
-        )
-        self.run_create(data)
-        allergy = Allergies.objects.get()
-        self.assertEqual(allergy, self.before_allergy)
-        self.assertEqual(
-            Demographics.objects.get(hospital_number="1").first_name, "Susan"
-        )
-
-    def test_transaction_atomicity(self):
-        # if the update fails, make sure we don't delete allergies
-        data = dict(
-            demographics=[{
-                "first_name": "Susan",
-                "hospital_number": "1",
-            }],
-            allergies=[
-                {"allergy_description": "penicillin"},
-            ]
-        )
-        with patch(
-            "elcid.gloss_api.models.Patient.bulk_update",
-            side_effect=ValueError("some error")
-        ):
-            with self.assertRaises(ValueError):
-                self.run_create(data)
-
-        self.assertEqual(
-            Demographics.objects.get(hospital_number="1").first_name, ""
-        )
-        allergy = Allergies.objects.get()
-        self.assertEqual(allergy, self.before_allergy)
-
-
 @override_settings(
     GLOSS_USERNAME="test_gloss_user",
     GLOSS_PASSWORD="test_gloss_password"
@@ -184,22 +109,62 @@ class TestPatientApi(OpalTestCase):
         self.assertEqual(hat_wearers[1].name, "wizard")
 
 
-class TestPatientQuery(AbstractEpisodeTestCase):
-
-    @override_settings(GLOSS_URL_BASE="http://fake_url.com")
-    @patch("elcid.gloss_api.bulk_create_from_gloss_response")
-    @patch("elcid.gloss_api.requests.get")
-    def test_patient_query_with_error(self, request_mock, bulk_create_mock):
+@override_settings(GLOSS_URL_BASE="http://fake_url.com")
+@patch("elcid.gloss_api.requests.get")
+class TestGlossQuery(OpalTestCase):
+    def test_query_with_error(self, request_mock):
         response = MagicMock()
         response.status_code = 200
         response.content = json.dumps(
             dict(status="error", data="didn't work")
         )
         request_mock.return_value = response
-        gloss_api.patient_query("AA1111", self.episode)
+        response = gloss_api.gloss_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
         )
+        self.assertIsNone(response)
+
+    def test_query_with_inaccessible_url(
+        self, request_mock
+    ):
+        response = MagicMock()
+        response.status_code = 500
+        response.content = None
+        request_mock.return_value = response
+        gloss_api.gloss_query("AA1111")
+        request_mock.assert_called_once_with(
+            "http://fake_url.com/api/patient/AA1111"
+        )
+
+    def test_query_with_empty_response(self, request_mock):
+        response = MagicMock()
+        response.status_code = 200
+        data = {
+            "hospital_number": "AA1111",
+            "status": "success",
+            "messages": {"demographics": [{"first_name": "Indiana"}]}
+        }
+        response.content = json.dumps(data)
+        request_mock.return_value = response
+        response = gloss_api.gloss_query("AA1111")
+        request_mock.assert_called_once_with(
+            "http://fake_url.com/api/patient/AA1111"
+        )
+        self.assertEqual(response, data)
+
+
+class TestDemographicsQuery(AbstractEpisodeTestCase):
+    pass
+
+
+class TestPatientQuery(AbstractEpisodeTestCase):
+    @override_settings(GLOSS_URL_BASE="http://fake_url.com")
+    @patch("elcid.gloss_api.bulk_create_from_gloss_response")
+    @patch("elcid.gloss_api.gloss_query")
+    def test_patient_query_with_error(self, api_query_mock, bulk_create_mock):
+        api_query_mock.return_value = None
+        gloss_api.patient_query("AA1111", self.episode)
         self.assertFalse(bulk_create_mock.called)
 
     @override_settings(GLOSS_URL_BASE="http://fake_url.com")
@@ -229,7 +194,7 @@ class TestPatientQuery(AbstractEpisodeTestCase):
         data = {
             "hospital_number": "AA1111",
             "status": "success",
-            "messages": []
+            "messages": [{"demographics": [{"first_name": "Indiana"}]}]
         }
 
         response = MagicMock()
