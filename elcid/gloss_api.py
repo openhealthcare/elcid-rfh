@@ -122,6 +122,9 @@ def bulk_create_from_gloss_response(request_data, episode=None):
     else:
         patient = patient_query.get()
 
+    if not episode:
+        episode = patient.create_episode()
+
     user = get_gloss_user()
 
     if update_dict:
@@ -144,6 +147,5 @@ def bulk_create_from_gloss_response(request_data, episode=None):
             if not episode:
                 episode = patient.episode_set.first()
 
-            if not episode:
-                episode = patient.create_episode()
+
             return patient, episode
