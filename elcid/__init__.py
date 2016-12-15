@@ -36,9 +36,4 @@ class Application(application.OpalApplication):
         dict(
             href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
             activepattern='/pathway/#/add_patient'),
-        dict(
-            href='/pathway/#/cernerdemo', display='New Cerner Patient', icon='fa fa-plus',
-            activepattern='/pathway/#/cernerdemo'
-        )
-
     ]
