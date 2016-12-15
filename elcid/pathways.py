@@ -14,11 +14,11 @@ from pathway.pathways import (
 )
 
 
-class SaveTagging(object):
+class SaveTaggingMixin(object):
     @transaction.atomic
     def save(self, data, user):
         tagging = data.pop("tagging", [])
-        patient = super(SaveTagging, self).save(data, user)
+        patient = super(SaveTaggingMixin, self).save(data, user)
 
         if tagging:
             tag_names = [n for n, v in list(tagging[0].items()) if v]
@@ -29,7 +29,8 @@ class SaveTagging(object):
             episode.set_tag_names(tag_names, user)
         return patient
 
-class AddPatientPathway(SaveTagging, RedirectsToEpisodeMixin, WizardPathway):
+
+class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
 
@@ -81,7 +82,7 @@ class AddPatientPathway(SaveTagging, RedirectsToEpisodeMixin, WizardPathway):
         return super(AddPatientPathway, self).save(data, *args, **kwargs)
 
 
-class CernerDemoPathway(SaveTagging, RedirectsToPatientMixin, PagePathway):
+class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 
