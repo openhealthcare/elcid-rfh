@@ -1,10 +1,12 @@
 import json
-from copy import copy
+import datetime
+from copy import deepcopy
 from django.test import override_settings
 from mock import patch, MagicMock
 from opal.core.test import OpalTestCase
 from opal.models import Patient, InpatientAdmission
-from elcid.models import Allergies, Demographics
+from lab import models as lmodels
+from elcid.models import Allergies, Demographics, HL7Result
 from elcid.test.test_models import AbstractEpisodeTestCase
 from elcid import gloss_api
 
@@ -244,3 +246,82 @@ class TestGetExternalSource(OpalTestCase):
         external_system.get = MagicMock(return_value="ePMA")
         with self.assertRaises(ValueError):
             gloss_api.get_external_source("Appointment")
+
+
+class TestUpdateLabTests(AbstractGlossTestCase):
+    UPDATE_DICT = {
+        u'demographics': [{u'date_of_birth': None,
+                    u'date_of_death': None,
+                    u'death_indicator': None,
+                    u'ethnicity': None,
+                    'external_system': 'Carecast',
+                    u'first_name': u'TESTING',
+                    u'gp_practice_code': None,
+                    u'marital_status': None,
+                    u'middle_name': None,
+                    u'post_code': None,
+                    u'religion': None,
+                    u'sex': u'Female',
+                    u'surname': u'ZZZTEST',
+                    u'title': None
+        }],
+         u'result': [{
+                u'external_identifier': u'0015M383790_1.WS',
+                u'lab_number': u'0015M383790_1',
+                u'last_edited': u'22/11/2016 13:10:07',
+                u'observation_datetime': u'22/11/2016 13:03:00',
+                u'observations': [
+                    {
+                        u'comments': None,
+                        u'external_identifier': u'53916547',
+                        u'observation_value': u'No significant growth',
+                        u'reference_range': u' -',
+                        u'result_status': u'Final',
+                        u'test_code': u'CRES',
+                        u'test_name': u'Culture Result',
+                        u'units': u'',
+                        u'value_type': None
+                    },
+                    {
+                        u'comments': None,
+                        u'external_identifier': u'53916548',
+                        u'observation_value': u'Preliminary Report - Final report to follow.',
+                        u'reference_range': u' -',
+                        u'result_status': u'Final',
+                        u'test_code': u'MCOM',
+                        u'test_name': u'Comments',
+                        u'units': u'',
+                        u'value_type': None
+                    },
+                ],
+                u'profile_code': u'WS',
+                u'profile_description': u'WOUND SWAB CULTURE + SENS',
+                u'request_datetime': u'22/11/2016 13:02:00',
+                u'result_status': u'Final'
+        }],
+    }
+
+    def test_tests_cast(self):
+        """ tests should be cast from result to lab_test
+            and they should have an hl7 test test type attatched
+        """
+        update_dict = gloss_api.update_tests(deepcopy(self.UPDATE_DICT))
+        self.assertNotIn("result", update_dict)
+        self.assertTrue(bool(len(update_dict["hl7_result"])))
+
+
+    def test_tests_update(self):
+        """ An integration test that makes sure the lab tests are
+            all created
+        """
+        self.run_create(deepcopy(self.UPDATE_DICT))
+        hl7_result = HL7Result.objects.get()
+        self.assertEqual(hl7_result, lmodels.LabTest.objects.get())
+        self.assertEqual(hl7_result.status, HL7Result.COMPLETE)
+        self.assertEqual(hl7_result.date_ordered, datetime.date(2016, 11, 22))
+        self.assertEqual(hl7_result.extras["last_edited"], '22/11/2016 13:10:07')
+        self.assertEqual(hl7_result.external_identifier, '0015M383790_1')
+        observation_1 = hl7_result.extras["observations"][0]
+        self.assertEqual(observation_1["external_identifier"], "53916547")
+        observation_2 = hl7_result.extras["observations"][1]
+        self.assertEqual(observation_2["external_identifier"], "53916548")
