@@ -19,21 +19,26 @@
       <li class="list-group-item">
         <div class="row">
           <div class="col-md-2"></div>
-          <div class="col-md-2"><b>Date Ordered</b></div>
+          <div class="col-md-2"><b>Ordered</b></div>
+          <div class="col-md-2"><b>Tested</b></div>
           <div class="col-md-2"><b>Result</b></div>
-          <div class="col-md-3"><b>Sensitive</b></div>
-          <div class="col-md-3"><b>Resistant</b></div>
         </div>
       </li>
-      <li class="list-group-item" ng-repeat="item in resultView.getLabTests(patient)">
+      <li class="list-group-item" ng-repeat="item in patient.lab_test">
         <div class="row">
-          <div class="col-md-2">[[ item.test_name ]]</div>
-          <div class="col-md-2">[[ item.date_ordered ]]</div>
-          <div class="col-md-2">[[ item.result ]]</div>
-          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
-          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
+          <div class="col-md-2">[[ item.extras.profile_description ]]</div>
+          <div class="col-md-2">[[ item.date_ordered | shortDate ]]</div>
+          <div class="col-md-2">[[ item.extras.observation_datetime | shortDateTime ]]</div>
+          <div class="col-md-6">
+            <ul>
+              <li ng-repeat="observation in item.observations">
+                [[ observation.test_name ]]: [[ observation.observation_value ]]
+              </li>
+            </ul>
+          </div>
         </div>
       </li>
+      {% comment %}
       <span ng-repeat="result in patient.result">
         <li ng-show="observation.test_name" class="list-group-item" ng-repeat="observation in result.observations">
           <div class="row">
@@ -43,7 +48,6 @@
           </div>
         </li>
       </span>
-      {% comment %}
       This was example results from the hl7 messages
       <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
         <div class="row">

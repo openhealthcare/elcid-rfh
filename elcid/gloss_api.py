@@ -5,8 +5,9 @@ from django.db import transaction
 
 from rest_framework.reverse import reverse
 
-from opal import models
+from opal import models as omodels
 from elcid import models as eModels
+from lab import models as lmodels
 from opal.core import subrecords
 
 import requests
@@ -14,7 +15,7 @@ import json
 import logging
 
 EXTERNAL_SYSTEM_MAPPING = {
-    models.InpatientAdmission: "Carecast",
+    omodels.InpatientAdmission: "Carecast",
     eModels.Demographics: "Carecast",
     eModels.Allergies: "ePMA"
 }
@@ -69,19 +70,19 @@ def patient_query(hospital_number, episode=None):
 
 
 def get_external_source(api_name):
-        model = subrecords.get_subrecord_from_api_name(api_name)
-        external_system = EXTERNAL_SYSTEM_MAPPING.get(model)
+    model = subrecords.get_subrecord_from_api_name(api_name)
+    external_system = EXTERNAL_SYSTEM_MAPPING.get(model)
 
-        try:
-            field = model._meta.get_field("external_system")
-        except FieldDoesNotExist:
-            field = None
+    try:
+        field = model._meta.get_field("external_system")
+    except FieldDoesNotExist:
+        field = None
 
-        if not field and external_system:
-            e = "We cannot supply the mapping for {} as it is not an externally sourced model"
-            raise ValueError(e.format(model.__name__))
-        else:
-            return external_system
+    if not field and external_system:
+        e = "We cannot supply the mapping for {} as it is not an externally sourced model"
+        raise ValueError(e.format(model.__name__))
+    else:
+        return external_system
 
 
 def demographics_query(hospital_number):
@@ -107,18 +108,48 @@ def demographics_query(hospital_number):
         return []
 
 
+def update_tests(update_dict):
+    """ casts the dicts results if they exist to lab tests and removes
+        the results
+    """
+    results = update_dict.pop("result", [])
+    for result in results:
+        upstream_status = result.pop('result_status', None)
+        if upstream_status == 'Final':
+            result['status'] = lmodels.LabTest.COMPLETE
+        else:
+            result['status'] = lmodels.LabTest.PENDING
+        result['date_ordered'] = result.pop('request_datetime', None)
+
+        # TODO, change date ordered to datetime ordered
+        if result['date_ordered']:
+            result['date_ordered'] = result['date_ordered'][:10]
+
+        result['extras'] = dict(
+            observation_datetime=result.pop('observation_datetime', None),
+            profile_description=result.pop('profile_description', None),
+            last_edited=result.pop('last_edited', None)
+        )
+        result['external_identifier'] = result.pop('lab_number')
+        result.pop('profile_code')
+
+    update_dict[eModels.HL7Result.get_api_name()] = results
+    return update_dict
+
+
 def bulk_create_from_gloss_response(request_data, episode=None):
     hospital_number = request_data["hospital_number"]
     update_dict = request_data["messages"]
+    update_dict = update_tests(update_dict)
     logging.info("running a bulk update with")
     logging.info(update_dict)
 
-    patient_query = models.Patient.objects.filter(
+    patient_query = omodels.Patient.objects.filter(
         demographics__hospital_number=hospital_number
     )
 
     if not patient_query.exists():
-        patient = models.Patient.objects.create()
+        patient = omodels.Patient.objects.create()
     else:
         patient = patient_query.get()
 
@@ -142,6 +173,11 @@ def bulk_create_from_gloss_response(request_data, episode=None):
                 update_dict["demographics"] = [
                     dict(hospital_number=hospital_number)
                 ]
+
+            results = update_dict.pop("results", None)
+
+            if results:
+                update_dict[lmodels.HL7Result.get_api_name()] = results
 
             patient.bulk_update(update_dict, user, force=True, episode=episode)
 

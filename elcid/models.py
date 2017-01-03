@@ -7,7 +7,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-# from lab import models as lmodels
+from lab import models as lmodels
 
 from jsonfield import JSONField
 
@@ -148,6 +148,14 @@ class Location(EpisodeSubrecord):
             )
         except:
             return 'demographics'
+
+
+class HL7Result(lmodels.ReadOnlyLabTest):
+    verbose_name = "HL7 Result"
+
+    @classmethod
+    def get_api_name(cls):
+        return "hl7_result"
 
 
 class Result(PatientSubrecord):

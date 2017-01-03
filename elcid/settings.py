@@ -172,6 +172,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'compressor',
     'opal.core.search',
+    'lab',
     'elcid',
     'obs',
     'django.contrib.admin',
@@ -195,7 +196,8 @@ if 'test' in sys.argv:
         'opat': 'opat.nomigrations',
         'microhaem': 'microhaem.nomigrations',
         'iframeapi': 'iframeapi.nomigrations',
-        'obs': 'obs.nomigrations'
+        'obs': 'obs.nomigrations',
+        'lab': 'lab.nomigrations',
     }
 
 
