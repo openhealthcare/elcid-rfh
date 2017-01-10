@@ -536,6 +536,7 @@ class BloodCultureSource(lookuplists.LookupList):
 class SourceObservation(lmodels.Observation):
     class Meta:
         proxy = True
+        auto_created = True
 
     lookup_list = BloodCultureSource
 
@@ -568,6 +569,7 @@ class BloodCultureMixin(object):
 class GramStainResult(lmodels.Observation):
     class Meta:
         proxy = True
+        auto_created = True
 
     RESULT_CHOICES = (
         ("Yeast", "Yeast"),
@@ -586,6 +588,7 @@ class GramStain(BloodCultureMixin, lmodels.LabTest):
 class QuickFishResult(lmodels.Observation):
     class Meta:
         proxy = True
+        auto_created = True
 
     RESULT_CHOICES = (
         ("C. albicans", "C. albicans"),
@@ -604,6 +607,7 @@ class QuickFISH(BloodCultureMixin, lmodels.LabTest):
 class GPCStaphResult(lmodels.Observation):
     class Meta:
         proxy = True
+        auto_created = True
 
     RESULT_CHOICES = (
         ("S. aureus", "S. aureus"),
@@ -621,6 +625,8 @@ class GPCStaph(BloodCultureMixin, lmodels.LabTest):
 class GPCStrepResult(lmodels.Observation):
     class Meta:
         proxy = True
+        auto_created = True
+
 
     RESULT_CHOICES = (
         ("E.faecalis", "E.faecalis"),
@@ -638,6 +644,7 @@ class GPCStrep(BloodCultureMixin, lmodels.LabTest):
 class GNRResult(lmodels.Observation):
     class Meta:
         proxy = True
+        auto_created = True
 
     RESULT_CHOICES = (
         ("E.faecalis", "E.coli"),
