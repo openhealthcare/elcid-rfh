@@ -8,6 +8,9 @@ function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureHelper) 
       else{
         scope.editing.tagging = {};
       }
+      if(!scope.editing.lab_test){
+        scope.editing.lab_test = [];
+      }
       scope.bloodCultureHelper = new BloodCultureHelper(scope.editing.lab_test);
 
       scope.preSave = function(editing){
