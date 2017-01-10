@@ -54,7 +54,7 @@ angular.module('opal.services').factory('BloodCultureFormHelper', function(){
           return lt.id || (!_.contains(_.values(fishTests), lt.test_name) && lt.test_name !== "Gram Stain");
         });
 
-        _.each(self.multiGramStain, function(v, k){
+        _.each(self.multiramStain, function(v, k){
           var gramStainExists = _.find(isolate.lab_tests, function(lt){
             return lt.test_name === "Gram Stain" && lt.result === k;
           });

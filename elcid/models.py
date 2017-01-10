@@ -526,10 +526,137 @@ class Appointment(EpisodeSubrecord):
 
     appointment_type = models.CharField(max_length=200, blank=True, null=True)
     appointment_with = models.CharField(max_length=200, blank=True, null=True)
-    date             = models.DateField(blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
+
 
 class BloodCultureSource(lookuplists.LookupList):
     pass
+
+
+class SourceObservation(lmodels.Observation):
+    class Meta:
+        proxy = True
+
+    lookup_list = BloodCultureSource
+
+
+class BloodCultureMixin(object):
+    # note the isolate field isn't an official reference, its just
+    # used to group isolates on the front end (at present)
+    _extras = ['isolate', 'aerobic', 'source', 'lab_number']
+    source = SourceObservation()
+
+    @classmethod
+    def get_record(cls):
+        return "lab/records/blood_culture.html"
+
+    def update_from_dict(self, data, *args, **kwargs):
+        result = data.get("result", None)
+
+        if result:
+            result = result.get("result", None)
+
+        if result:
+            result = result.strip()
+        if not result or result == 'Not Done':
+            if self.id:
+                self.delete()
+        else:
+            super(BloodCultureMixin, self).update_from_dict(data, *args, **kwargs)
+
+
+class GramStainResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+
+    RESULT_CHOICES = (
+        ("Yeast", "Yeast"),
+        ("Gram +ve Cocci Cluster", "Gram +ve Cocci Cluster"),
+        ("Gram +ve Cocci Chains", "Gram +ve Cocci Chains"),
+        ("Gram -ve Rods", "Gram -ve Rods"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class GramStain(BloodCultureMixin, lmodels.LabTest):
+    _title="Gram Stain"
+    result = GramStainResult()
+
+
+class QuickFishResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+
+    RESULT_CHOICES = (
+        ("C. albicans", "C. albicans"),
+        ("C. parapsilosis", "C. parapsilosis"),
+        ("C. glabrata", "C. glabrata"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class QuickFISH(BloodCultureMixin, lmodels.LabTest):
+    _title = "QuickFISH"
+    result = QuickFishResult()
+
+
+class GPCStaphResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+
+    RESULT_CHOICES = (
+        ("S. aureus", "S. aureus"),
+        ("CNS", "CNS"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class GPCStaph(BloodCultureMixin, lmodels.LabTest):
+    result = GPCStaphResult()
+    _title = 'GPC Staph'
+
+
+class GPCStrepResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+
+    RESULT_CHOICES = (
+        ("E.faecalis", "E.faecalis"),
+        ("Other enterococci", "Other enterococci"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class GPCStrep(BloodCultureMixin, lmodels.LabTest):
+    result = GPCStrepResult()
+    _title = "GPC Strep"
+
+
+class GNRResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+
+    RESULT_CHOICES = (
+        ("E.faecalis", "E.coli"),
+        ("K. pneumoniae", "K. pneumoniae"),
+        ("P. aeruginosa", "P. aeruginosa"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class GNR(BloodCultureMixin, lmodels.LabTest):
+    _title = 'GNR'
+    result = GNRResult()
+
+
+class BloodCultureOrganism(BloodCultureMixin, lmodels.LabTest):
+    _title = 'Organism'
+    result = lmodels.Organism()
+
 
 # class BloodCulture(lmodels.LabTestCollection, EpisodeSubrecord):
 #     _icon = 'fa fa-crosshairs'
@@ -539,7 +666,7 @@ class BloodCultureSource(lookuplists.LookupList):
 #     lab_number = models.CharField(max_length=255, blank=True)
 #     date_ordered = models.DateField(null=True, blank=True)
 #     date_positive = models.DateField(null=True, blank=True)
-#     source = ForeignKeyOrFreeText(BloodCultureSource)
+#     source = ForeignKeyOrFreeText(BloodCultureMixin)
 #
 #     @classmethod
 #     def _get_fieldnames_to_serialize(cls):

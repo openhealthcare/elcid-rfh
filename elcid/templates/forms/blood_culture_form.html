@@ -3,7 +3,7 @@
 <div name="form" class="form-horizontal" novalidate>
   {% input field="BloodCulture.lab_number" %}
   {% datepicker field="BloodCulture.date_ordered" %}
-  {% select field="BloodCulture.source" %}
+  {% select field="BloodCulture.source" lookuplist='bloodculturesource_list' %}
 
 
   <!--  do a gram stain -->
