@@ -11,3 +11,5 @@
     [[ item.{{ observation.name }}.result ]]
   </span>
 {% endfor %}
+<div ng-show="item.sensitive_antibiotics.length"><strong>Sensitive </strong>[[ item.sensitive_antibiotics.join(",") ]]</div>
+<div ng-show="item.resistant_antibiotics.length"><strong>Reistant </strong>[[ item.resistant_antibiotics.join(",") ]]</div>
