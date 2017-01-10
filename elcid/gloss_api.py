@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from django.db.models import FieldDoesNotExist
 from django.conf import settings
 from django.db import transaction
-
 from rest_framework.reverse import reverse
 
 from opal import models as omodels
@@ -37,14 +36,25 @@ def subscribe(hospital_number):
     base_url = settings.GLOSS_URL_BASE
     url = "{0}/api/subscribe/{1}".format(base_url, hospital_number)
     data = {"end_point": reverse("glossapi-list")}
-    response = requests.post(url, data=data)
-    assert(response.status_code == 200)
+    try:
+        requests.post(url, data=data)
+    except Exception as e:
+        logging.error("unable to load patient details for {0} with {1}".format(
+            hospital_number, e.message
+        ))
+        return
 
 
 def gloss_query(hospital_number):
     base_url = settings.GLOSS_URL_BASE
     url = "{0}/api/patient/{1}".format(base_url, hospital_number)
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except Exception as e:
+        logging.error("unable to load patient details for {0} with {1}".format(
+            hospital_number, e.message
+        ))
+        return
 
     if not response.status_code == 200:
         logging.error("unable to load patient details for {0} with {1}".format(
@@ -56,7 +66,7 @@ def gloss_query(hospital_number):
         if content["status"] == "error":
             logging.error(
                 "unable to load patient details for {0}, return error {1}".format(
-                hospital_number, content["data"]
+                    hospital_number, content["data"]
                 )
             )
         else:
