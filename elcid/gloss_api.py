@@ -42,7 +42,6 @@ def subscribe(hospital_number):
         logging.error("unable to load patient details for {0} with {1}".format(
             hospital_number, e.message
         ))
-        return
 
 
 def gloss_query(hospital_number):
