@@ -14,11 +14,7 @@ from opal.models import (
     Patient, Episode, Condition, Synonym, Symptom, Antimicrobial,
     Microbiology_organism
 )
-from elcid.models import (
-    Location, PresentingComplaint, Result, Allergies, Demographics, get_for_lookup_list
-    # BloodCulture, BloodCultureIsolate, QuickFISH
-)
-# from lab import models as lmodels
+from elcid import models as emodels
 
 
 HERE = ffs.Path.here()
@@ -111,12 +107,12 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
     @patch("opal.models.Subrecord.get_form_template")
     def test_get_demographics_form_with_gloss(self, form_template_mock):
         form_template_mock.return_value = "some_template.html"
-        form_template = Demographics.get_form_template()
+        form_template = emodels.Demographics.get_form_template()
         self.assertEqual(form_template, "some_template.html")
 
     @override_settings(GLOSS_ENABLED=False)
     def test_get_demographics_form_without_gloss(self):
-        form_template = Demographics.get_form_template()
+        form_template = emodels.Demographics.get_form_template()
         self.assertEqual(
             form_template, "forms/demographics_form_pre_gloss.html"
         )
@@ -127,7 +123,7 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
     def setUp(self):
         super(LocationTest, self).setUp()
 
-        self.location = Location.objects.create(
+        self.location = emodels.Location.objects.create(
             bed="13",
             category="Inpatient",
             consistency_token="12345678",
@@ -173,7 +169,7 @@ class PresentingComplaintTest(OpalTestCase, AbstractEpisodeTestCase):
         self.symptom_1 = Symptom.objects.create(name="tiredness")
         self.symptom_2 = Symptom.objects.create(name="alertness")
         self.symptom_3 = Symptom.objects.create(name="apathy")
-        self.presenting_complaint = PresentingComplaint.objects.create(
+        self.presenting_complaint = emodels.PresentingComplaint.objects.create(
             symptom=self.symptom_1,
             duration="a week",
             details="information",
@@ -264,10 +260,10 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
             }]
         )
 
-        result = Result()
+        result = emodels.Result()
         result.update_from_dict(result_args, self.user)
 
-        found_result = Result.objects.get()
+        found_result = emodels.Result.objects.get()
         self.assertEqual(found_result.lab_number, "234324")
         self.assertEqual(found_result.profile_code, "2343344")
 
@@ -291,7 +287,7 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
         self.assertEqual(result_args, back_to_dict)
 
     def test_updates_with_external_identifer(self):
-        Result.objects.create(
+        emodels.Result.objects.create(
             result_status="Incomplete",
             external_identifier="1",
             patient=self.patient
@@ -303,16 +299,16 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
             patient_id=self.patient.id
         )
 
-        a = Result()
+        a = emodels.Result()
         a.update_from_dict(update_dict, self.user)
 
-        result = Result.objects.get()
+        result = emodels.Result.objects.get()
         self.assertEqual(
             result.result_status, "Complete"
         )
 
     def test_no_external_identifier(self):
-        Result.objects.create(
+        emodels.Result.objects.create(
             result_status="Incomplete",
             external_identifier="1",
             patient=self.patient
@@ -323,9 +319,9 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
             patient_id=self.patient.id
         )
 
-        a = Result()
+        a = emodels.Result()
         a.update_from_dict(update_dict, self.user)
-        results = Result.objects.all()
+        results = emodels.Result.objects.all()
         self.assertEqual(2, len(results))
         self.assertEqual(
             results[0].result_status, "Incomplete"
@@ -338,7 +334,7 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
         )
 
     def test_doesnt_update_empty_external_identifier(self):
-        Result.objects.create(
+        emodels.Result.objects.create(
             result_status="Incomplete",
             external_identifier="",
             patient=self.patient
@@ -350,9 +346,9 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
             patient_id=self.patient.id
         )
 
-        a = Result()
+        a = emodels.Result()
         a.update_from_dict(update_dict, self.user)
-        results = Result.objects.all()
+        results = emodels.Result.objects.all()
         self.assertEqual(2, len(results))
         self.assertEqual(
             results[0].result_status, "Incomplete"
@@ -363,7 +359,7 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
 
     def test_next_updates_a_different_patient(self):
         other_patient = Patient.objects.create()
-        Result.objects.create(
+        emodels.Result.objects.create(
             result_status="Incomplete",
             external_identifier="1",
             patient=self.patient
@@ -375,9 +371,9 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
             patient_id=other_patient.id
         )
 
-        a = Result()
+        a = emodels.Result()
         a.update_from_dict(update_dict, self.user)
-        results = Result.objects.all()
+        results = emodels.Result.objects.all()
         self.assertEqual(2, len(results))
         self.assertEqual(
             results[0].patient, self.patient
@@ -390,7 +386,7 @@ class ResultTest(OpalTestCase, AbstractPatientTestCase):
 class AllergyTest(OpalTestCase):
     def test_get_modal_footer_template(self):
         self.assertEqual(
-            Allergies.get_modal_footer_template(),
+            emodels.Allergies.get_modal_footer_template(),
             "partials/_sourced_modal_footer.html"
         )
 
@@ -433,7 +429,7 @@ class GetForLookupListTestCase(OpalTestCase):
         )
 
     def test_translate_to_models(self):
-        models = get_for_lookup_list(
+        models = emodels.get_for_lookup_list(
             Antimicrobial,
             [
                 "antimicrobial_1", "antimicrobial_2", "antimicrobial_3",
@@ -450,7 +446,7 @@ class GetForLookupListTestCase(OpalTestCase):
         )
 
     def test_does_synonym_lookups(self):
-        models = get_for_lookup_list(
+        models = emodels.get_for_lookup_list(
             Antimicrobial,
             [
                 "synonym_1", "synonym_2"
@@ -464,92 +460,73 @@ class GetForLookupListTestCase(OpalTestCase):
             ])
         )
 
+class BloodCultureMixinTestCase(OpalTestCase):
+    def test_subclassed(self):
+        blood_culture_tests = [
+            emodels.GramStain,
+            emodels.QuickFISH,
+            emodels.GPCStaph,
+            emodels.GPCStrep,
+            emodels.GNR,
+            emodels.BloodCultureOrganism
+        ]
 
-# class LabTestTestCase(OpalTestCase):
-#     def setUp(self):
-#         self.new_data = dict(
-#             test_name="QuickFISH",
-#             result="success"
-#         )
-#
-#         self.old_data = dict(
-#             id="1",
-#             test_name="QuickFISH",
-#             result="failed"
-#         )
-#
-#         _, self.episode = self.new_patient_and_episode_please()
-#         self.blood_culture = BloodCulture.objects.create(
-#             episode=self.episode
-#         )
-#
-#         self.blood_culture_isolate = BloodCultureIsolate.objects.create(
-#             blood_culture=self.blood_culture,
-#             aerobic=True
-#         )
-#         ct = ContentType.objects.get_for_model(BloodCultureIsolate)
-#         object_id = self.blood_culture_isolate.id
-#         self.some_fish_test = QuickFISH(
-#             test_name="QuickFISH",
-#             content_type=ct,
-#             object_id=object_id
-#         )
-#         self.some_fish_test.save()
-#
-#     def test_create_new_test(self):
-#         self.blood_culture_isolate.save_tests([self.new_data], self.user)
-#         self.assertEqual(lmodels.LabTest.objects.count(), 1)
-#         self.assertEqual(lmodels.LabTest.objects.last().result, "success")
-#
-#     def test_update_old_test(self):
-#         self.blood_culture_isolate.save_tests([self.old_data], self.user)
-#         self.assertEqual(lmodels.LabTest.objects.count(), 1)
-#         self.assertEqual(lmodels.LabTest.objects.last().result, "failed")
-#
+        for model in blood_culture_tests:
+            self.assertTrue(
+                issubclass(model, emodels.BloodCultureMixin)
+            )
 
+    def test_get_record(self):
+        self.assertEqual(
+            emodels.BloodCultureMixin.get_record(),
+            "lab/records/blood_culture.html"
+        )
 
-# class BloodCultureTestCase(OpalTestCase):
-#     def setUp(self):
-#         _, self.episode = self.new_patient_and_episode_please()
-#
-#     def test_update_from_dict_with_old_isolate(self):
-#         bc = BloodCulture.objects.create(episode=self.episode)
-#         bci = BloodCultureIsolate.objects.create(
-#             aerobic=False,
-#             blood_culture=bc
-#         )
-#         bc.update_from_dict(dict(isolates=[dict(id=bci.id)]), self.user)
-#
-#         self.assertEqual(bc.isolates.get(), bci)
-#
-#     def test_update_from_dict_with_new_isolate(self):
-#         bc = BloodCulture.objects.create(episode=self.episode)
-#         bc.update_from_dict(dict(isolates=[dict(aerobic=True)]), self.user)
-#         self.assertTrue(bc.isolates.get().aerobic)
-#
-#     def test_update_from_dict_delete_old_isolate(self):
-#         bc = BloodCulture.objects.create(episode=self.episode)
-#         bci = BloodCultureIsolate.objects.create(
-#             aerobic=False,
-#             blood_culture=bc
-#         )
-#         bc.update_from_dict(dict(), self.user)
-#         self.assertEqual(bc.isolates.count(), 0)
-#
-#     def test_get_isolates(self):
-#         bc = BloodCulture.objects.create(episode=self.episode)
-#         bci = BloodCultureIsolate.objects.create(
-#             aerobic=False,
-#             blood_culture=bc
-#         )
-#         isolates = bc.get_isolates(self.user)
-#         self.assertEqual(len(isolates), 1)
-#         self.assertEqual(isolates[0]["id"], bci.id)
-#
-#     def test_get_fieldnames_to_serialize(self):
-#         fields = BloodCulture._get_fieldnames_to_serialize()
-#         self.assertIn("isolates", fields)
-#
+    def test_update_from_dict_with_no_result_observation(self):
+        patient, _ = self.new_patient_and_episode_please()
+        gram_stain = emodels.GramStain.objects.create(patient=patient)
+        gram_stain.update_from_dict(dict(
+            lab_test_type=emodels.GramStain.get_display_name(),
+            result=None
+        ))
+        self.assertEqual(emodels.GramStain.objects.count(), 0)
+
+    def test_update_from_dict_with_empty_result_observation(self):
+        patient, _ = self.new_patient_and_episode_please()
+        gram_stain = emodels.GramStain.objects.create(patient=patient)
+        gram_stain.update_from_dict(dict(
+            lab_test_type=emodels.GramStain.get_display_name(),
+            result=None
+        ))
+        self.assertEqual(emodels.GramStain.objects.count(), 0)
+
+    def test_update_from_dict_with_not_done(self):
+        patient, _ = self.new_patient_and_episode_please()
+        gram_stain = emodels.GramStain.objects.create(patient=patient)
+        gram_stain.update_from_dict(dict(
+            lab_test_type=emodels.GramStain.get_display_name(),
+            result=dict(result="Not Done")
+        ))
+        self.assertEqual(emodels.GramStain.objects.count(), 0)
+
+    def test_update_from_dict_with_not_done_with_a_new_model(self):
+        patient, _ = self.new_patient_and_episode_please()
+        gram_stain = emodels.GramStain(patient=patient)
+        gram_stain.update_from_dict(dict(
+            lab_test_type=emodels.GramStain.get_display_name(),
+            result=dict(result="Not Done")
+        ))
+        self.assertEqual(emodels.GramStain.objects.count(), 0)
+
+    def test_update_from_dict_with_valid_result(self):
+        patient, _ = self.new_patient_and_episode_please()
+        gram_stain = emodels.GramStain(patient=patient)
+        gram_stain.update_from_dict(dict(
+            lab_test_type=emodels.GramStain.get_display_name(),
+            result=dict(result="Yeast")
+        ), self.user)
+        self.assertEqual(emodels.GramStain.objects.count(), 1)
+
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
 

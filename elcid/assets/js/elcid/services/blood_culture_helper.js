@@ -1,15 +1,33 @@
 angular.module('opal.services').service('BloodCultureHelper', function(){
   "use strict";
+
   /*
-  * A mapping of Gramstain result to the
-  * fish test (display name) that should be done
-  * depending on the gram stain result
-  *
-  * Yeast -> QuickFish
-  * Gram +ve Cocci Cluster -> GPC Staph
-  * Gram +ve Cocci Chains -> GPC Strep
-  * Gram -ve Rods -> GNR
+   Blood cultures are dealt with in a staged manner
+   first you perform 4 fish tests
+
+   1. Quick Fish -> Yeast, possible results
+      - Candida albicans (C. albicans)
+      - Candida parapsilosis (C.parapsilosis)
+      - Candida glabrata (C. glabrata)
+      - Negative
+
+    2. GPC Staph -> Gram positive cocci in clusters, possible results
+      - Staphylococcus aureus (S.aureus)
+      - Coagulase-negative staphylococci (CNS)
+      - Negative
+
+    3. GPC Strep -> Gram positive cocci in chains, possible results
+      - Enterococcus faecalis  (E. faecalis)
+      - Other enterococci
+      - Negative
+
+    3. GGram -ve Rods -> GNR
+      - E.coli
+      - K. pneumoniae
+      - P. aeruginosa
+      - Negative
   */
+
   var GRAM_STAIN_TO_FISH_TEST = {
     Yeast: "QuickFISH",
     "Gram +ve Cocci Cluster": "GPC Staph",
@@ -48,9 +66,9 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
         self.gramStainTests[gramStainResultChoice] = _.contains(gramStainResults, gramStainResultChoice);
       });
 
-      var organismTestExists = !!_.find(self.lab_tests, function(lab_test){
-        return lab_test.lab_test_type === 'Organism';
-      });
+      var organismTestExists = !!_.find(self.lab_tests, {
+        lab_test_type: "Organism"
+      })
 
       if(!organismTestExists){
         self.lab_tests.push({
@@ -208,12 +226,12 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
     * (assumes groupLabTestsToCultures has already been called)
     */
     var grouped = _.groupBy(lab_tests, function(lab_test){
-      return [lab_test.aerobic, lab_test.extras.isolate];
+      return [lab_test.extras.aerobic, lab_test.extras.isolate];
     });
 
     return _.map(grouped, function(group){
       return new Isolate(
-        group[0].aerobic,
+        group[0].extras.aerobic,
         group[0].extras.isolate,
         group
       );
