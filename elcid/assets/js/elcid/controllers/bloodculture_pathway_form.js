@@ -1,12 +1,20 @@
 angular.module('opal.controllers').controller('BloodCulturePathwayFormCtrl',
-function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureFormHelper) {
+function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureHelper) {
       "use strict";
 
       if(episode && episode.tagging.length){
-        scope.editing = {tagging: episode.tagging[0].makeCopy()};
+        scope.editing.tagging = episode.tagging[0].makeCopy();
       }
       else{
         scope.editing.tagging = {};
+      }
+      if(!scope.editing.lab_test){
+        scope.editing.lab_test = [];
+      }
+      scope.bloodCultureHelper = new BloodCultureHelper(scope.editing.lab_test);
+
+      scope.preSave = function(editing){
+        scope.bloodCultureHelper.preSave(editing);
       }
 
       // scope.initialise = function(bloodCultures){

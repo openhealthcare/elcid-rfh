@@ -1,0 +1,72 @@
+{% load forms %}
+{% load lab %}
+<div class="form-horizontal" ng-repeat="bloodCulture in bloodCultureHelper.bloodCultures">
+  <div ng-show="$index">
+    <h3>Blood Culture [[ $index + 1]]</h3>
+  </div>
+  {% datepicker label="Date Ordered" model="bloodCulture.date_ordered" %}
+  {% input label="Source" model="bloodCulture.source" lookuplist="bloodculturesource_list" %}
+  {% input label="Lab Number" model="bloodCulture.lab_number" %}
+  <div ng-repeat="aerobic in [true, false]">
+    <div class="row text-center content-offset-25">
+      <h3 ng-show="aerobic">Aerobic</h3>
+      <h3 ng-show="!aerobic">Anaerobic</h3>
+    </div>
+    <div ng-repeat="isolate in bloodCulture.getIsolates(aerobic)">
+      <div ng-show="$index > 0">
+        <hr>
+      </div>
+      <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-2 text-right">
+            <div class="row">
+              <div class="col-md-12">
+                Isolate [[ $index + 1 ]]
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <a class="pointer" ng-click="bloodCulture.removeIsolate(isolate)"><small>remove</small></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            {% include "partials/gram_stain_form.html" %}
+            <div class="row" ng-repeat="lab_test in isolate.lab_tests | filter:{ lab_test_type: 'Organism' }">
+              <div class="col-md-10 col-md-push-1">
+                <div class="text-center">
+                  <h4>Organism</h4>
+                </div>
+                {% render_observation models.BloodCultureOrganism.result model="lab_test.result.result" element_name="lab_test.uniqueName + 'result'" %}
+                {% select field="BloodCultureOrganism.sensitive_antibiotics" model="lab_test.sensitive_antibiotics" element_name="lab_test.sensitiveName" required=False multiple=True tagging=False %}
+                {% select field="BloodCultureOrganism.resistant_antibiotics" model="lab_test.resistant_antibiotics" element_name="lab_test.resistantName" required=False multiple=True tagging=False %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row text-center">
+      <button ng-click="bloodCulture.addIsolate(aerobic)" class="btn btn-primary">
+        <i class="fa fa-plus-circle"></i> New Isolate
+      </button>
+    </div>
+  </div>
+  <div ng-show="bloodCultureHelper.getAllLabTests().length" class="row">
+    <div class="col-sm-11">
+      <button ng-show="bloodCultureHelper.bloodCultures.length" ng-click="bloodCultureHelper.removeBloodCulture($index)" class="pull-right btn btn-secondary"><i class="fa fa-trash"></i>
+        Remove Blood Culture <span ng-show="$index">[[ $index ]]</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="text-center row ng-scope content-offset-25">
+ <a ng-click="bloodCultureHelper.addBloodCulture()" class="text-center btn btn-primary">
+   <i class="glyphicon glyphicon-plus"></i>
+   Add Another Blood Culture
+ </a>
+</div>

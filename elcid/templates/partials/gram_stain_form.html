@@ -2,10 +2,10 @@
 <div class="row">
   <h4 class="text-center">Gram Stain</h4>
 </div>
-<div class="row" ng-repeat="stainArray in editing.blood_culture._formHelper.gramStainChunkNames">
+<div class="row">
   <div class="col-md-10 col-md-push-1">
-    <div ng-repeat="stain in stainArray" class="col-md-[[ 12/stainArray.length ]] text-center">
-      <label class="btn btn-default btn-text-wrap content-offset-below-20 multilined-btn" ng-change="isolate._formHelper.updateTests()" ng-model="isolate._formHelper.multiGramStain[[ stain ]]" btn-checkbox>
+    <div ng-repeat="stain in isolate.gramStainResultChoices" class="col-md-[[ 12/isolate.gramStainResultChoices.length ]] text-center">
+      <label class="btn btn-default btn-text-wrap content-offset-below-20 multilined-btn" ng-change="isolate.updateTests()" ng-model="isolate.gramStainTests[ stain ]" btn-checkbox>
           [[ stain ]]
       </label>
     </div>
@@ -29,24 +29,24 @@
     </div>
   </div>
 </div>
-
-<!-- fish tests -->
-<div ng-show="isolate._formHelper.hasFishTest()">
-  <div class="row content-offset-20">
-    <h4 class="text-center">FISH Tests</h4>
-  </div>
-  <div ng-repeat="test in isolate.lab_tests | filter:isolate._formHelper.isFishTest">
-    <div ng-show="test.test_name === 'QuickFISH'">
-      {% render_lab_form lab_tests.QuickFISH %}
-    </div>
-    <div ng-show="test.test_name === 'GPC Staph'">
-      {% render_lab_form lab_tests.GPCStaph %}
-    </div>
-    <div ng-show="test.test_name === 'GPC Strep'">
-      {% render_lab_form lab_tests.GPCStrep %}
-    </div>
-    <div ng-show="test.test_name === 'GNR'">
-      {% render_lab_form lab_tests.GNR %}
+<div class="row">
+  <div class="col-md-10 col-md-push-1">
+    <div ng-repeat="lab_test in isolate.lab_tests | filter:isolate.isFishTest">
+      <div ng-show="$index === 0" class="row content-offset-20">
+        <h4 class="text-center">FISH Tests</h4>
+      </div>
+      <div ng-show="lab_test.lab_test_type === 'QuickFISH'" class="row">
+        {% render_observation models.QuickFISH.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+      </div>
+      <div ng-show="lab_test.lab_test_type === 'GPC Staph'" class="row">
+        {% render_observation models.GPCStaph.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+      </div>
+      <div ng-show="lab_test.lab_test_type === 'GPC Strep'" class="row">
+        {% render_observation models.GPCStrep.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+      </div>
+      <div ng-show="lab_test.lab_test_type === 'GNR'" class="row">
+        {% render_observation models.GNR.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+      </div>
     </div>
   </div>
 </div>

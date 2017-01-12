@@ -26,7 +26,7 @@
       </li>
       <li class="list-group-item" ng-repeat="item in patient.lab_test">
         <div class="row">
-          <div class="col-md-2">[[ item.extras.profile_description ]]</div>
+          <div class="col-md-2">[[ item.extras.profile_description || item.lab_test_type ]]</div>
           <div class="col-md-2">[[ item.date_ordered | shortDate ]]</div>
           <div class="col-md-2">[[ item.extras.observation_datetime | shortDateTime ]]</div>
           <div class="col-md-6">
@@ -34,105 +34,15 @@
               <li ng-repeat="observation in item.observations">
                 [[ observation.test_name ]]: [[ observation.observation_value ]]
               </li>
+              <li ng-show="item.result">
+                [[ item.result.result ]]
+              </li>
+              <li ng-show="item.sensitive_antibiotics.length"><strong>Sensitive </strong>[[ item.sensitive_antibiotics.join(",") ]]</li>
+              <li ng-show="item.resistant_antibiotics.length"><strong>Reistant </strong>[[ item.resistant_antibiotics.join(",") ]]</li>
             </ul>
           </div>
         </div>
       </li>
-      {% comment %}
-      <span ng-repeat="result in patient.result">
-        <li ng-show="observation.test_name" class="list-group-item" ng-repeat="observation in result.observations">
-          <div class="row">
-            <div class="col-md-2">[[ observation.test_name ]]</div>
-            <div class="col-md-2">[[ result.observation_datetime | shortDate ]]</div>
-            <div class="col-md-2">[[ observation.observation_value ]]</div>
-          </div>
-        </li>
-      </span>
-      This was example results from the hl7 messages
-      <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
-        <div class="row">
-          <div class="col-md-2">Full Blood Count</div>
-          <div class="col-md-2">20/09 14:56</div>
-          <div class="col-md-2">
-            <p>Hb: 150 g/l</p>
-            <p>WBC: 10.00</p>
-            <p>Platelets: 300</p>
-            <p>RBC: 5.00</p>
-            <p>HCT: 0.400 L/L</p>
-            <p>MCV: 80.0 fL</p>
-            <p>MCH: 30.0 pg</p>
-            <p>MCHU: 250 g/l</p>
-            <p>NEUT: 5.50</p>
-          </div>
-          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
-          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
-        </div>
-      </li>
-      <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
-        <div class="row">
-          <div class="col-md-2">APTT</div>
-          <div class="col-md-2">30/08 14:36</div>
-          <div class="col-md-2">
-            <p>41.8</p>
-          </div>
-          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
-          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
-        </div>
-      </li>
-      <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
-        <div class="row">
-          <div class="col-md-2">Heparin ratio</div>
-          <div class="col-md-2">30/08 14:52</div>
-          <div class="col-md-2">
-            <p>1.4</p>
-          </div>
-          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
-          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
-        </div>
-      </li>
-      <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
-        <div class="row">
-          <div class="col-md-2">APTT</div>
-          <div class="col-md-2">30/09 12:16</div>
-          <div class="col-md-2">
-            <p>33.2</p>
-          </div>
-          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
-          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
-        </div>
-      </li>
-      <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
-        <div class="row">
-          <div class="col-md-2">UFH (APTT RATIO)</div>
-          <div class="col-md-2">28/09 13:16</div>
-          <div class="col-md-2">
-            <p>1.1</p>
-          </div>
-          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
-          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
-        </div>
-      </li>
-      <li class="list-group-item" ng-show="patient.demographics[0].first_name === 'Indiana'">
-        <div class="row">
-          <div class="col-md-2">Full Blood Count</div>
-          <div class="col-md-2">5/10 11:22</div>
-          <div class="col-md-2">
-            <p>Hb: 150 g/l</p>
-            <p>WBC: 10.00</p>
-            <p>Platelets: 250</p>
-            <p>RBC: 5.20</p>
-            <p>RDW: 15%</p>
-            <p>HCT: 0.400 L/L</p>
-            <p>MCV: 95.0 fL</p>
-            <p>MCH: 31.0 pg</p>
-            <p>MCHU: 340 g/l</p>
-            <p>NEUT: 5.70</p>
-          </div>
-          <div class="col-md-3"><span ng-show="item.sensitive_antibiotics.length">[[ item.sensitive_antibiotics.join(",") ]]</div>
-          <div class="col-md-3"><span ng-show="item.resistant_antibiotics.length">[[ item.resistant_antibiotics.join(",") ]]</div>
-        </div>
-      </li>
-      {% endcomment %}
     </ul>
   </div>
 </div>

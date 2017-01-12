@@ -1,4 +1,5 @@
 from elcid import models
+from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
 from elcid import gloss_api
@@ -10,6 +11,7 @@ from pathway.pathways import (
     Step,
     PagePathway,
     WizardPathway,
+    ModalPagePathway,
     delete_others
 )
 
@@ -102,10 +104,30 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
             models.Infection,
             models.Line,
             models.Antimicrobial,
-            # models.BloodCulture,
             models.Imaging,
-            models.MicrobiologyInput
+            models.MicrobiologyInput,
+            lmodels.LabTest
         ]
         for model in multi_saved_models:
             delete_others(data, model, self.patient, self.episode)
+
         return super(CernerDemoPathway, self).save(data, user)
+
+
+class BloodCulturePathway(ModalPagePathway):
+    display_name = "Blood Culture"
+    slug = "blood_culture"
+
+    steps = (
+        Step(
+            template_url="/templates/pathway/blood_culture.html",
+            title="Blood Culture",
+            icon="fa fa-crosshairs",
+            controller_class="BloodCulturePathwayFormCtrl"
+        ),
+    )
+
+    @transaction.atomic
+    def save(self, data, user):
+        delete_others(data, lmodels.LabTest, self.patient, self.episode)
+        return super(BloodCulturePathway, self).save(data, user)

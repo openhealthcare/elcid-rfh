@@ -13,7 +13,8 @@ from elcid import gloss_api
 
 @override_settings(
     GLOSS_USERNAME="test_gloss_user",
-    GLOSS_PASSWORD="test_gloss_password"
+    GLOSS_PASSWORD="test_gloss_password",
+    GLOSS_URL_BASE="somewhere"
 )
 class AbstractGlossTestCase(OpalTestCase):
     def setUp(self, *args, **kwargs):
@@ -30,6 +31,27 @@ class AbstractGlossTestCase(OpalTestCase):
             hospital_number="1"
         )
         gloss_api.bulk_create_from_gloss_response(expected_request, episode)
+
+@patch("elcid.gloss_api.requests.post")
+class TestSubscribe(AbstractGlossTestCase):
+    def test_subscribe(self, post):
+        response = gloss_api.subscribe("1232212")
+        self.assertEqual(response, None)
+        post.assert_called_once_with(
+            "somewhere/api/subscribe/1232212",
+            data=dict(end_point="/glossapi/v0.1/glossapi/")
+        )
+
+    @patch('elcid.gloss_api.logging')
+    def test_handle_error(self, logging, post):
+        post.side_effect = ValueError
+        response = gloss_api.subscribe("1232212")
+        self.assertEqual(response, None)
+        error = logging.error.call_args[0][0]
+        self.assertEqual(
+            "unable to load patient details for 1232212 with ",
+            error
+        )
 
 
 class TestInpatientAdmission(AbstractGlossTestCase):
@@ -137,6 +159,18 @@ class TestGlossQuery(OpalTestCase):
         gloss_api.gloss_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
+        )
+
+    @patch('elcid.gloss_api.logging')
+    def test_raises_exception(
+        self,logging, request_mock
+    ):
+        request_mock.side_effect = ValueError
+        result = gloss_api.gloss_query("AA1111")
+        error = logging.error.call_args[0][0]
+        self.assertEqual(
+            "unable to load patient details for AA1111 with ",
+            error
         )
 
     def test_query_with_empty_response(self, request_mock):
