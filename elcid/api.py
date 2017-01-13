@@ -3,7 +3,10 @@ import json
 from rest_framework import viewsets
 from rest_framework.response import Response
 from elcid import gloss_api
-from opal.core.api import OPALRouter, patient_from_pk, LoginRequiredViewset
+from opal.core.api import (
+    OPALRouter, patient_from_pk, LoginRequiredViewset,
+)
+from opal.core.api import router as opal_api_router
 from opal.core.views import _build_json_response
 
 
@@ -20,7 +23,7 @@ class RefreshPatientApi(LoginRequiredViewset):
     """ goes to gloss, updates the patient locally
         and sends a copy of that patient to the client
     """
-    base_name = "refresh_patient"
+    base_name = "refresh-patient"
 
     @patient_from_pk
     def retrieve(self, request, patient):
@@ -32,5 +35,4 @@ class RefreshPatientApi(LoginRequiredViewset):
 gloss_router = OPALRouter()
 gloss_router.register('glossapi', GlossEndpointApi)
 
-elcid_router = OPALRouter()
-elcid_router.register('refresh_patient', RefreshPatientApi)
+opal_api_router.register('refresh_patient', RefreshPatientApi)

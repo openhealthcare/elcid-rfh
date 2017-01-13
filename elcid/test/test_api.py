@@ -1,11 +1,7 @@
 import json
-# from django.test import override_settings
 from mock import MagicMock, patch
 from opal.core.test import OpalTestCase
-# from opal.models import Patient
-# from elcid.models import Allergies, Demographics
-#
-#
+from rest_framework.reverse import reverse
 from elcid.api import GlossEndpointApi
 
 
@@ -57,8 +53,15 @@ class TestRefreshPatientApi(OpalTestCase):
             demographics.first_name = "Indiana"
             demographics.save()
 
+        request = self.rf.get("/")
+        url = reverse(
+            "refresh-patient-detail",
+            kwargs=dict(pk=patient.id),
+            request=request
+        )
         patient_query.side_effect = update_patient
-        response = self.client.get("/elicdapi/v0.1/refresh_patient/1/")
+        # response = self.client.get("/elicdapi/v0.1/refresh_patient/1/")
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         serialised_patient = json.loads(response.content)
         self.assertEqual(

@@ -20,7 +20,6 @@ urlpatterns = patterns(
     url(r'^templates/elcid/modals/(?P<name>[a-z_]+.html)$', views.ElcidTemplateView.as_view()),
     url(r'stories/$', views.TemplateView.as_view(template_name='stories.html')),
     url(r'glossapi/v0.1/', include(api.gloss_router.urls)),
-    url(r'elicdapi/v0.1/', include(api.elcid_router.urls)),
 )
 
 urlpatterns += opatterns
