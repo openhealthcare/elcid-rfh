@@ -98,6 +98,7 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
+
     @override_settings(GLOSS_ENABLED=True)
     @patch("elcid.pathways.gloss_api")
     def test_gloss_interaction_when_found(self, gloss_api):
@@ -143,6 +144,31 @@ class TestAddPatientPathway(OpalTestCase):
         saved_episode = models.Episode.objects.get()
         self.assertEqual(
             list(saved_episode.get_tag_names(None)),
+            ['antifungal']
+        )
+        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
+
+    @override_settings(GLOSS_ENABLED=True)
+    @patch("elcid.pathways.gloss_api")
+    def test_gloss_interaction_when_not_creating_a_patient(self, gloss_api):
+        patient, existing_episode = self.new_patient_and_episode_please()
+        url = AddPatientPathway(patient_id=patient.id).save_url()
+        demographics = patient.demographics_set.first()
+        demographics.hospital_number = "234"
+        gloss_api.patient_query.return_value = None
+        test_data = dict(
+            demographics=[dict(hospital_number="234", nhs_number="12312")],
+            tagging=[{u'antifungal': True}]
+        )
+        self.post_json(url, test_data)
+        new_episode = patient.episode_set.last()
+        self.assertEqual(
+            list(patient.episode_set.all()),
+            [existing_episode, new_episode]
+        )
+
+        self.assertEqual(
+            list(new_episode.get_tag_names(None)),
             ['antifungal']
         )
         self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
