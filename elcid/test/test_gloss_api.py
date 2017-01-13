@@ -107,10 +107,6 @@ class TestPatientApi(OpalTestCase):
                 "first_name": "Susan",
                 "hospital_number": "12312312",
             }],
-            "hat_wearer": [
-                {"name": "top"},
-                {"name": "wizard"},
-            ]
         }
         self.run_create(request_data)
         patient = Patient.objects.get()
@@ -118,9 +114,6 @@ class TestPatientApi(OpalTestCase):
         self.assertEqual(demographics.first_name, "Susan")
         self.assertEqual(demographics.hospital_number, "12312312")
         episode = patient.episode_set.get()
-        hat_wearers = episode.hatwearer_set.all()
-        self.assertEqual(hat_wearers[0].name, "top")
-        self.assertEqual(hat_wearers[1].name, "wizard")
 
     def test_existing_patient(self, *args):
         request_data = {
@@ -128,10 +121,6 @@ class TestPatientApi(OpalTestCase):
                 "first_name": "Susan",
                 "hospital_number": "12312312",
             }],
-            "hat_wearer": [
-                {"name": "top"},
-                {"name": "wizard"},
-            ],
         }
         patient_before = Patient.objects.create()
         demographics = patient_before.demographics_set.get()
@@ -145,9 +134,6 @@ class TestPatientApi(OpalTestCase):
         self.assertEqual(demographics.first_name, "Susan")
         self.assertEqual(demographics.hospital_number, "12312312")
         episode = patient.episode_set.get()
-        hat_wearers = episode.hatwearer_set.all()
-        self.assertEqual(hat_wearers[0].name, "top")
-        self.assertEqual(hat_wearers[1].name, "wizard")
 
 
 @override_settings(GLOSS_URL_BASE="http://fake_url.com")
