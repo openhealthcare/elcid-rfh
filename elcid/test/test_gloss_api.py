@@ -30,7 +30,7 @@ class AbstractGlossTestCase(OpalTestCase):
             messages=some_dict,
             hospital_number="1"
         )
-        gloss_api.bulk_create_from_gloss_response(expected_request, episode)
+        gloss_api.bulk_create_from_gloss_response(expected_request)
 
 @patch("elcid.gloss_api.requests.post")
 class TestSubscribe(AbstractGlossTestCase):
@@ -69,7 +69,6 @@ class TestInpatientAdmission(AbstractGlossTestCase):
         self.run_create(data)
         inpatient_admission = InpatientAdmission.objects.get()
         self.assertEqual(inpatient_admission.hospital, "ucl")
-        self.assertEqual(inpatient_admission.external_system, "Carecast")
 
 
 @override_settings(
@@ -83,6 +82,24 @@ class TestPatientApi(OpalTestCase):
             hospital_number=hospital_number
         )
         gloss_api.bulk_create_from_gloss_response(expected_request)
+
+    def test_with_episode_subrecords(self, *args):
+        request_data = {
+            "demographics": [{
+                "first_name": "Susan",
+                "hospital_number": "12312312",
+            }],
+            "location": [
+                {"ward": "West"},
+            ]
+        }
+        with self.assertRaises(ValueError) as e:
+            self.run_create(request_data)
+            self.assertEqual(
+                str(e.exception),
+                'Gloss is not expected to provide episode subrecords'
+            )
+        self.assertTrue(True)
 
     def test_nonexisting_patient(self, *args):
         request_data = {
@@ -190,17 +207,13 @@ class TestGlossQuery(OpalTestCase):
         self.assertEqual(response, data)
 
 
-class TestDemographicsQuery(AbstractEpisodeTestCase):
-    pass
-
-
 class TestPatientQuery(AbstractEpisodeTestCase):
     @override_settings(GLOSS_URL_BASE="http://fake_url.com")
     @patch("elcid.gloss_api.bulk_create_from_gloss_response")
     @patch("elcid.gloss_api.gloss_query")
     def test_patient_query_with_error(self, api_query_mock, bulk_create_mock):
         api_query_mock.return_value = None
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         self.assertFalse(bulk_create_mock.called)
 
     @override_settings(GLOSS_URL_BASE="http://fake_url.com")
@@ -215,7 +228,7 @@ class TestPatientQuery(AbstractEpisodeTestCase):
             dict(status="error", data="didn't work")
         )
         request_mock.return_value = response
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
         )
@@ -237,11 +250,11 @@ class TestPatientQuery(AbstractEpisodeTestCase):
         response.status_code = 200
         response.content = json.dumps(data)
         request_mock.return_value = response
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
         )
-        bulk_create_mock.assert_called_once_with(data, episode=self.episode)
+        bulk_create_mock.assert_called_once_with(data)
 
     @override_settings(GLOSS_URL_BASE="http://fake_url.com")
     @patch("elcid.gloss_api.bulk_create_from_gloss_response")
@@ -262,11 +275,11 @@ class TestPatientQuery(AbstractEpisodeTestCase):
         response.status_code = 200
         response.content = json.dumps(data)
         request_mock.return_value = response
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
         )
-        bulk_create_mock.assert_called_once_with(data, episode=self.episode)
+        bulk_create_mock.assert_called_once_with(data)
 
 
 @patch("elcid.gloss_api.EXTERNAL_SYSTEM_MAPPING")
@@ -288,7 +301,6 @@ class TestUpdateLabTests(AbstractGlossTestCase):
                     u'date_of_death': None,
                     u'death_indicator': None,
                     u'ethnicity': None,
-                    'external_system': 'Carecast',
                     u'first_name': u'TESTING',
                     u'gp_practice_code': None,
                     u'marital_status': None,

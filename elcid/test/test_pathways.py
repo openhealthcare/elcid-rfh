@@ -106,7 +106,7 @@ class TestAddPatientPathway(OpalTestCase):
         demographics.hospital_number = "234"
         demographics.first_name = "Indiana"
         demographics.save()
-        gloss_api.patient_query.return_value = (patient, episode,)
+        gloss_api.patient_query.return_value = patient
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
