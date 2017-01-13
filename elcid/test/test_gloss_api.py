@@ -113,7 +113,12 @@ class TestPatientApi(OpalTestCase):
         demographics = patient.demographics_set.get()
         self.assertEqual(demographics.first_name, "Susan")
         self.assertEqual(demographics.hospital_number, "12312312")
-        episode = patient.episode_set.get()
+
+    def test_nonexisting_patient_without_demographics(self, *args):
+        self.run_create({})
+        patient = Patient.objects.get()
+        demographics = patient.demographics_set.get()
+        self.assertEqual(demographics.hospital_number, "12312312")
 
     def test_existing_patient(self, *args):
         request_data = {
@@ -133,7 +138,6 @@ class TestPatientApi(OpalTestCase):
         demographics = patient.demographics_set.get()
         self.assertEqual(demographics.first_name, "Susan")
         self.assertEqual(demographics.hospital_number, "12312312")
-        episode = patient.episode_set.get()
 
 
 @override_settings(GLOSS_URL_BASE="http://fake_url.com")
@@ -283,53 +287,54 @@ class TestGetExternalSource(OpalTestCase):
 
 class TestUpdateLabTests(AbstractGlossTestCase):
     UPDATE_DICT = {
-        u'demographics': [{u'date_of_birth': None,
-                    u'date_of_death': None,
-                    u'death_indicator': None,
-                    u'ethnicity': None,
-                    u'first_name': u'TESTING',
-                    u'gp_practice_code': None,
-                    u'marital_status': None,
-                    u'middle_name': None,
-                    u'post_code': None,
-                    u'religion': None,
-                    u'sex': u'Female',
-                    u'surname': u'ZZZTEST',
-                    u'title': None
+        u'demographics': [{
+            u'date_of_birth': None,
+            u'date_of_death': None,
+            u'death_indicator': None,
+            u'ethnicity': None,
+            u'first_name': u'TESTING',
+            u'gp_practice_code': None,
+            u'marital_status': None,
+            u'middle_name': None,
+            u'post_code': None,
+            u'religion': None,
+            u'sex': u'Female',
+            u'surname': u'ZZZTEST',
+            u'title': None
         }],
          u'result': [{
-                u'external_identifier': u'0015M383790_1.WS',
-                u'lab_number': u'0015M383790_1',
-                u'last_edited': u'22/11/2016 13:10:07',
-                u'observation_datetime': u'22/11/2016 13:03:00',
-                u'observations': [
-                    {
-                        u'comments': None,
-                        u'external_identifier': u'53916547',
-                        u'observation_value': u'No significant growth',
-                        u'reference_range': u' -',
-                        u'result_status': u'Final',
-                        u'test_code': u'CRES',
-                        u'test_name': u'Culture Result',
-                        u'units': u'',
-                        u'value_type': None
-                    },
-                    {
-                        u'comments': None,
-                        u'external_identifier': u'53916548',
-                        u'observation_value': u'Preliminary Report - Final report to follow.',
-                        u'reference_range': u' -',
-                        u'result_status': u'Final',
-                        u'test_code': u'MCOM',
-                        u'test_name': u'Comments',
-                        u'units': u'',
-                        u'value_type': None
-                    },
-                ],
-                u'profile_code': u'WS',
-                u'profile_description': u'WOUND SWAB CULTURE + SENS',
-                u'request_datetime': u'22/11/2016 13:02:00',
-                u'result_status': u'Final'
+            u'external_identifier': u'0015M383790_1.WS',
+            u'lab_number': u'0015M383790_1',
+            u'last_edited': u'22/11/2016 13:10:07',
+            u'observation_datetime': u'22/11/2016 13:03:00',
+            u'observations': [
+                {
+                    u'comments': None,
+                    u'external_identifier': u'53916547',
+                    u'observation_value': u'No significant growth',
+                    u'reference_range': u' -',
+                    u'result_status': u'Final',
+                    u'test_code': u'CRES',
+                    u'test_name': u'Culture Result',
+                    u'units': u'',
+                    u'value_type': None
+                },
+                {
+                    u'comments': None,
+                    u'external_identifier': u'53916548',
+                    u'observation_value': u'Preliminary Report - Final report to follow.',
+                    u'reference_range': u' -',
+                    u'result_status': u'Final',
+                    u'test_code': u'MCOM',
+                    u'test_name': u'Comments',
+                    u'units': u'',
+                    u'value_type': None
+                },
+            ],
+            u'profile_code': u'WS',
+            u'profile_description': u'WOUND SWAB CULTURE + SENS',
+            u'request_datetime': u'22/11/2016 13:02:00',
+            u'result_status': u'Final'
         }],
     }
 
