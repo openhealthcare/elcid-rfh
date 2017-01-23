@@ -12,6 +12,7 @@ from pathway.pathways import (
     PagePathway,
     WizardPathway,
     ModalPagePathway,
+    SingleStepModalPathway,
     delete_others
 )
 
@@ -39,8 +40,8 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
     steps = (
         Step(
             template_url="/templates/pathway/find_patient_form.html",
-            controller_class="FindPatientCtrl",
-            title="Find Patient",
+            step_controller="FindPatientCtrl",
+            display_name="Find Patient",
             icon="fa fa-user"
         ),
         Step(
@@ -89,12 +90,33 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
     slug = 'cernerdemo'
 
     steps = (
+        # Step(
+        #     template_url="/templates/pathway/cerner_letter_pathway.html",
+        #     display_name="Cerner Letter",
+        #     icon="fa fa-user",
+        #     step_controller="BloodCulturePathwayFormCtrl"
+        # ),
+        models.Demographics,
+        models.Location,
         Step(
-            template_url="/templates/pathway/cerner_letter_pathway.html",
-            title="Cerner Letter",
-            icon="fa fa-user",
-            controller_class="BloodCulturePathwayFormCtrl"
+            template_url="/templates/pathway/blood_culture.html",
+            display_name="Blood Culture",
+            icon="fa fa-crosshairs",
+            step_controller="BloodCulturePathwayFormCtrl"
         ),
+        models.Procedure,
+        models.Diagnosis,
+        models.Infection,
+        models.Line,
+        models.Antimicrobial,
+        models.Imaging,
+        models.FinalDiagnosis,
+        models.MicrobiologyInput,
+        Step(
+            template_url="/templates/pathway/cernerletter.html'",
+            display_name="Clinical note",
+            icon="fa fa-envelope"
+        )
     )
 
     @transaction.atomic
@@ -114,16 +136,16 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
         return super(CernerDemoPathway, self).save(data, user)
 
 
-class BloodCulturePathway(ModalPagePathway):
+class BloodCulturePathway(SingleStepModalPathway):
     display_name = "Blood Culture"
     slug = "blood_culture"
 
     steps = (
         Step(
             template_url="/templates/pathway/blood_culture.html",
-            title="Blood Culture",
+            display_name="Blood Culture",
             icon="fa fa-crosshairs",
-            controller_class="BloodCulturePathwayFormCtrl"
+            step_controller="BloodCulturePathwayFormCtrl"
         ),
     )
 

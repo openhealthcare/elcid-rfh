@@ -25,7 +25,7 @@ except ImportError:
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
-AUTOCOMPLETE_SEARCH = False
+AUTOCOMPLETE_SEARCH = True
 
 ADMINS = (
     ('David Miller', 'david@openhealthcare.org.uk'),
@@ -293,7 +293,7 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
 
 
 
-GLOSS_ENABLED = True
+GLOSS_ENABLED = False
 
 if GLOSS_ENABLED:
     GLOSS_URL_BASE = "http://0.0.0.0:6767"
