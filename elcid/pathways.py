@@ -11,8 +11,6 @@ from pathway.pathways import (
     Step,
     PagePathway,
     WizardPathway,
-    ModalPagePathway,
-    SingleStepModalPathway,
     delete_others
 )
 
@@ -136,7 +134,7 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
         return super(CernerDemoPathway, self).save(data, user)
 
 
-class BloodCulturePathway(SingleStepModalPathway):
+class BloodCulturePathway(PagePathway):
     display_name = "Blood Culture"
     slug = "blood_culture"
 
