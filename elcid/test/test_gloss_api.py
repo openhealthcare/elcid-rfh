@@ -30,7 +30,7 @@ class AbstractGlossTestCase(OpalTestCase):
             messages=some_dict,
             hospital_number="1"
         )
-        gloss_api.bulk_create_from_gloss_response(expected_request, episode)
+        gloss_api.bulk_create_from_gloss_response(expected_request)
 
 @patch("elcid.gloss_api.requests.post")
 class TestSubscribe(AbstractGlossTestCase):
@@ -69,7 +69,6 @@ class TestInpatientAdmission(AbstractGlossTestCase):
         self.run_create(data)
         inpatient_admission = InpatientAdmission.objects.get()
         self.assertEqual(inpatient_admission.hospital, "ucl")
-        self.assertEqual(inpatient_admission.external_system, "Carecast")
 
 
 @override_settings(
@@ -84,26 +83,42 @@ class TestPatientApi(OpalTestCase):
         )
         gloss_api.bulk_create_from_gloss_response(expected_request)
 
+    def test_with_episode_subrecords(self, *args):
+        request_data = {
+            "demographics": [{
+                "first_name": "Susan",
+                "hospital_number": "12312312",
+            }],
+            "location": [
+                {"ward": "West"},
+            ]
+        }
+        with self.assertRaises(ValueError) as e:
+            self.run_create(request_data)
+            self.assertEqual(
+                str(e.exception),
+                'Gloss is not expected to provide episode subrecords'
+            )
+        self.assertTrue(True)
+
     def test_nonexisting_patient(self, *args):
         request_data = {
             "demographics": [{
                 "first_name": "Susan",
                 "hospital_number": "12312312",
             }],
-            "hat_wearer": [
-                {"name": "top"},
-                {"name": "wizard"},
-            ]
         }
         self.run_create(request_data)
         patient = Patient.objects.get()
         demographics = patient.demographics_set.get()
         self.assertEqual(demographics.first_name, "Susan")
         self.assertEqual(demographics.hospital_number, "12312312")
-        episode = patient.episode_set.get()
-        hat_wearers = episode.hatwearer_set.all()
-        self.assertEqual(hat_wearers[0].name, "top")
-        self.assertEqual(hat_wearers[1].name, "wizard")
+
+    def test_nonexisting_patient_without_demographics(self, *args):
+        self.run_create({})
+        patient = Patient.objects.get()
+        demographics = patient.demographics_set.get()
+        self.assertEqual(demographics.hospital_number, "12312312")
 
     def test_existing_patient(self, *args):
         request_data = {
@@ -111,10 +126,6 @@ class TestPatientApi(OpalTestCase):
                 "first_name": "Susan",
                 "hospital_number": "12312312",
             }],
-            "hat_wearer": [
-                {"name": "top"},
-                {"name": "wizard"},
-            ],
         }
         patient_before = Patient.objects.create()
         demographics = patient_before.demographics_set.get()
@@ -127,10 +138,6 @@ class TestPatientApi(OpalTestCase):
         demographics = patient.demographics_set.get()
         self.assertEqual(demographics.first_name, "Susan")
         self.assertEqual(demographics.hospital_number, "12312312")
-        episode = patient.episode_set.get()
-        hat_wearers = episode.hatwearer_set.all()
-        self.assertEqual(hat_wearers[0].name, "top")
-        self.assertEqual(hat_wearers[1].name, "wizard")
 
 
 @override_settings(GLOSS_URL_BASE="http://fake_url.com")
@@ -190,17 +197,13 @@ class TestGlossQuery(OpalTestCase):
         self.assertEqual(response, data)
 
 
-class TestDemographicsQuery(AbstractEpisodeTestCase):
-    pass
-
-
 class TestPatientQuery(AbstractEpisodeTestCase):
     @override_settings(GLOSS_URL_BASE="http://fake_url.com")
     @patch("elcid.gloss_api.bulk_create_from_gloss_response")
     @patch("elcid.gloss_api.gloss_query")
     def test_patient_query_with_error(self, api_query_mock, bulk_create_mock):
         api_query_mock.return_value = None
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         self.assertFalse(bulk_create_mock.called)
 
     @override_settings(GLOSS_URL_BASE="http://fake_url.com")
@@ -215,7 +218,7 @@ class TestPatientQuery(AbstractEpisodeTestCase):
             dict(status="error", data="didn't work")
         )
         request_mock.return_value = response
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
         )
@@ -237,11 +240,11 @@ class TestPatientQuery(AbstractEpisodeTestCase):
         response.status_code = 200
         response.content = json.dumps(data)
         request_mock.return_value = response
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
         )
-        bulk_create_mock.assert_called_once_with(data, episode=self.episode)
+        bulk_create_mock.assert_called_once_with(data)
 
     @override_settings(GLOSS_URL_BASE="http://fake_url.com")
     @patch("elcid.gloss_api.bulk_create_from_gloss_response")
@@ -262,11 +265,11 @@ class TestPatientQuery(AbstractEpisodeTestCase):
         response.status_code = 200
         response.content = json.dumps(data)
         request_mock.return_value = response
-        gloss_api.patient_query("AA1111", self.episode)
+        gloss_api.patient_query("AA1111")
         request_mock.assert_called_once_with(
             "http://fake_url.com/api/patient/AA1111"
         )
-        bulk_create_mock.assert_called_once_with(data, episode=self.episode)
+        bulk_create_mock.assert_called_once_with(data)
 
 
 @patch("elcid.gloss_api.EXTERNAL_SYSTEM_MAPPING")
@@ -284,54 +287,54 @@ class TestGetExternalSource(OpalTestCase):
 
 class TestUpdateLabTests(AbstractGlossTestCase):
     UPDATE_DICT = {
-        u'demographics': [{u'date_of_birth': None,
-                    u'date_of_death': None,
-                    u'death_indicator': None,
-                    u'ethnicity': None,
-                    'external_system': 'Carecast',
-                    u'first_name': u'TESTING',
-                    u'gp_practice_code': None,
-                    u'marital_status': None,
-                    u'middle_name': None,
-                    u'post_code': None,
-                    u'religion': None,
-                    u'sex': u'Female',
-                    u'surname': u'ZZZTEST',
-                    u'title': None
+        u'demographics': [{
+            u'date_of_birth': None,
+            u'date_of_death': None,
+            u'death_indicator': None,
+            u'ethnicity': None,
+            u'first_name': u'TESTING',
+            u'gp_practice_code': None,
+            u'marital_status': None,
+            u'middle_name': None,
+            u'post_code': None,
+            u'religion': None,
+            u'sex': u'Female',
+            u'surname': u'ZZZTEST',
+            u'title': None
         }],
          u'result': [{
-                u'external_identifier': u'0015M383790_1.WS',
-                u'lab_number': u'0015M383790_1',
-                u'last_edited': u'22/11/2016 13:10:07',
-                u'observation_datetime': u'22/11/2016 13:03:00',
-                u'observations': [
-                    {
-                        u'comments': None,
-                        u'external_identifier': u'53916547',
-                        u'observation_value': u'No significant growth',
-                        u'reference_range': u' -',
-                        u'result_status': u'Final',
-                        u'test_code': u'CRES',
-                        u'test_name': u'Culture Result',
-                        u'units': u'',
-                        u'value_type': None
-                    },
-                    {
-                        u'comments': None,
-                        u'external_identifier': u'53916548',
-                        u'observation_value': u'Preliminary Report - Final report to follow.',
-                        u'reference_range': u' -',
-                        u'result_status': u'Final',
-                        u'test_code': u'MCOM',
-                        u'test_name': u'Comments',
-                        u'units': u'',
-                        u'value_type': None
-                    },
-                ],
-                u'profile_code': u'WS',
-                u'profile_description': u'WOUND SWAB CULTURE + SENS',
-                u'request_datetime': u'22/11/2016 13:02:00',
-                u'result_status': u'Final'
+            u'external_identifier': u'0015M383790_1.WS',
+            u'lab_number': u'0015M383790_1',
+            u'last_edited': u'22/11/2016 13:10:07',
+            u'observation_datetime': u'22/11/2016 13:03:00',
+            u'observations': [
+                {
+                    u'comments': None,
+                    u'external_identifier': u'53916547',
+                    u'observation_value': u'No significant growth',
+                    u'reference_range': u' -',
+                    u'result_status': u'Final',
+                    u'test_code': u'CRES',
+                    u'test_name': u'Culture Result',
+                    u'units': u'',
+                    u'value_type': None
+                },
+                {
+                    u'comments': None,
+                    u'external_identifier': u'53916548',
+                    u'observation_value': u'Preliminary Report - Final report to follow.',
+                    u'reference_range': u' -',
+                    u'result_status': u'Final',
+                    u'test_code': u'MCOM',
+                    u'test_name': u'Comments',
+                    u'units': u'',
+                    u'value_type': None
+                },
+            ],
+            u'profile_code': u'WS',
+            u'profile_description': u'WOUND SWAB CULTURE + SENS',
+            u'request_datetime': u'22/11/2016 13:02:00',
+            u'result_status': u'Final'
         }],
     }
 
