@@ -28,8 +28,7 @@ TEMPLATE_DEBUG = DEBUG
 AUTOCOMPLETE_SEARCH = False
 
 ADMINS = (
-    ('David Miller', 'david@openhealthcare.org.uk'),
-    ('Fred Kingham', 'fred.kingham@openhealthcare.org.uk'),
+    ('Support', 'support@openhealthcare.org.uk',),
 )
 
 MANAGERS = ADMINS
