@@ -84,6 +84,12 @@ class TestPatientApi(OpalTestCase):
         gloss_api.bulk_create_from_gloss_response(expected_request)
 
     def test_with_episode_subrecords(self, *args):
+        err = "Gloss is not expected to provide episode "
+        err += "subrecords found location in {'demographics': "
+        err += "[{'hospital_number': '12312312', 'first_name': "
+        err += "'Susan', 'external_system': 'Carecast'}], "
+        err += "'lab_test': [], 'location': [{'ward': 'West'}]}"
+
         request_data = {
             "demographics": [{
                 "first_name": "Susan",
@@ -95,11 +101,11 @@ class TestPatientApi(OpalTestCase):
         }
         with self.assertRaises(ValueError) as e:
             self.run_create(request_data)
-            self.assertEqual(
-                str(e.exception),
-                'Gloss is not expected to provide episode subrecords'
-            )
-        self.assertTrue(True)
+
+        self.assertEqual(
+            str(e.exception),
+            err
+        )
 
     def test_nonexisting_patient(self, *args):
         request_data = {
@@ -344,7 +350,8 @@ class TestUpdateLabTests(AbstractGlossTestCase):
         """
         update_dict = gloss_api.update_tests(deepcopy(self.UPDATE_DICT))
         self.assertNotIn("result", update_dict)
-        self.assertTrue(bool(len(update_dict["hl7_result"])))
+        self.assertIn("lab_test", update_dict)
+        self.assertEqual(update_dict["lab_test"][0]["lab_test_type"], "HL7Result")
 
 
     def test_tests_update(self):

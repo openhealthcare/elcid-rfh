@@ -14,6 +14,7 @@ import json
 import logging
 
 EXTERNAL_SYSTEM_MAPPING = {
+    omodels.InpatientAdmission: "Carecast",
     eModels.Demographics: "Carecast",
     eModels.Allergies: "ePMA"
 }
@@ -128,6 +129,7 @@ def update_tests(update_dict):
         else:
             result['status'] = lmodels.LabTest.PENDING
         result['date_ordered'] = result.pop('request_datetime', None)
+        result['lab_test_type'] = eModels.HL7Result.get_display_name()
 
         # TODO, change date ordered to datetime ordered
         if result['date_ordered']:
@@ -141,10 +143,11 @@ def update_tests(update_dict):
         result['external_identifier'] = result.pop('lab_number')
         result.pop('profile_code')
 
-    update_dict[eModels.HL7Result.get_api_name()] = results
+    update_dict[lmodels.LabTest.get_api_name()] = results
     return update_dict
 
 
+@transaction.atomic()
 def bulk_create_from_gloss_response(request_data):
     hospital_number = request_data["hospital_number"]
     update_dict = request_data["messages"]
@@ -152,52 +155,40 @@ def bulk_create_from_gloss_response(request_data):
     logging.info("running a bulk update with")
     logging.info(update_dict)
 
+
     patient_query = omodels.Patient.objects.filter(
         demographics__hospital_number=hospital_number
     )
 
     if not patient_query.exists():
         patient = omodels.Patient.objects.create()
+        patient.create_episode()
     else:
         patient = patient_query.get()
 
     user = get_gloss_user()
-    episode_subrecords = set(
-        i.get_api_name() for i in subrecords.episode_subrecords()
-    )
+    episode_subrecords = {i.get_api_name() for i in subrecords.episode_subrecords()}
 
     if update_dict:
-        with transaction.atomic():
-            # as these are only going to have been sourced from upstream
-            # make sure it says they're sourced from upstream
-            for api_name, updates_list in update_dict.iteritems():
+        # as these are only going to have been sourced from upstream
+        # make sure it says they're sourced from upstream
+        for api_name, updates_list in update_dict.iteritems():
+            if api_name in episode_subrecords:
+                err = "Gloss is not expected to provide episode subrecords"
+                err += " found {0} in {1}".format(api_name, update_dict)
+                raise ValueError(err)
 
-                # we use the gloss api to update patients, e.g. with the ,
-                # refresh patient functionality
-                # we don't know what episode that patient will be using
-                # we don't accept episode subrecords so lets
-                # blow up accordingly
-                if api_name in episode_subrecords:
-                    raise ValueError(
-                        "Gloss is not expected to provide episode subrecords"
-                    )
+            external_system = get_external_source(api_name)
 
-                external_system = get_external_source(api_name)
+            if external_system:
+                for i in updates_list:
+                    i["external_system"] = external_system
 
-                if external_system:
-                    for i in updates_list:
-                        i["external_system"] = external_system
+        if "demographics" not in update_dict:
+            update_dict["demographics"] = [
+                dict(hospital_number=hospital_number)
+            ]
 
-            if "demographics" not in update_dict:
-                update_dict["demographics"] = [
-                    dict(hospital_number=hospital_number)
-                ]
+        patient.bulk_update(update_dict, user, force=True)
 
-            results = update_dict.pop("results", None)
-
-            if results:
-                update_dict[lmodels.HL7Result.get_api_name()] = results
-
-            patient.bulk_update(update_dict, user, force=True)
-
-            return patient
+        return patient

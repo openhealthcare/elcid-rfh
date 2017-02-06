@@ -1,4 +1,5 @@
 import json
+from django.test import override_settings
 from mock import MagicMock, patch
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
@@ -35,24 +36,29 @@ class GlossApiQueryMonkeyPatchTestCase(OpalTestCase):
             request=request
         )
 
+    @override_settings(GLOSS_ENABLED=True)
     def test_retrieve(self, patient_query):
         patient, _ = self.new_patient_and_episode_please()
         patient_query.return_value = patient
         self.assertEqual(models.PatientRecordAccess.objects.count(), 0)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(patient_query.called)
         self.assertEqual(models.PatientRecordAccess.objects.count(), 1)
         serialised_patient = json.loads(response.content)
         self.assertEqual(serialised_patient["id"], patient.id)
 
+    @override_settings(GLOSS_ENABLED=True)
     def test_retrieve_not_found_in_gloss(self, patient_query):
         patient, _ = self.new_patient_and_episode_please()
         patient_query.return_value = None
         response = self.client.get(self.url)
+        self.assertTrue(patient_query.called)
         self.assertEqual(response.status_code, 200)
         serialised_patient = json.loads(response.content)
         self.assertEqual(serialised_patient["id"], patient.id)
 
+    @override_settings(GLOSS_ENABLED=True)
     def test_retrieve_updates_patient_from_gloss(self, patient_query):
         patient, _ = self.new_patient_and_episode_please()
 
@@ -63,6 +69,20 @@ class GlossApiQueryMonkeyPatchTestCase(OpalTestCase):
 
         patient_query.side_effect = update_patient
         response = self.client.get(self.url)
+        self.assertTrue(patient_query.called)
+        self.assertEqual(response.status_code, 200)
+        serialised_patient = json.loads(response.content)
+        self.assertEqual(
+            serialised_patient["demographics"][0]["first_name"],
+            "Indiana"
+        )
+
+    @override_settings(GLOSS_ENABLED=False)
+    def test_dont_retrieve_if_gloss_is_disabled(self, patient_query):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(first_name="Indiana")
+        response = self.client.get(self.url)
+        self.assertFalse(patient_query.called)
         self.assertEqual(response.status_code, 200)
         serialised_patient = json.loads(response.content)
         self.assertEqual(
