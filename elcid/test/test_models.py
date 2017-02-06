@@ -214,175 +214,6 @@ class PresentingComplaintTest(OpalTestCase, AbstractEpisodeTestCase):
         )
 
 
-class ResultTest(OpalTestCase, AbstractPatientTestCase):
-    def test_to_dict_and_from_dict(self):
-        datetime_format = settings.DATETIME_INPUT_FORMATS[0]
-
-        request_datetime = datetime.datetime(2016, 1, 2).strftime(
-            datetime_format
-        )
-        observation_datetime = datetime.datetime(2016, 1, 6).strftime(
-            datetime_format
-        )
-        last_edited = datetime.datetime(2016, 1, 7).strftime(
-            datetime_format
-        )
-
-        result_args = dict(
-
-            patient_id=self.patient.id,
-            lab_number="234324",
-            profile_code="2343344",
-            external_identifier="234324.2343344",
-            profile_description="RENAL PROFILE",
-            request_datetime=request_datetime,
-            observation_datetime=observation_datetime,
-            last_edited=last_edited,
-            result_status="FINAL",
-            observations=[{
-                u'comments': None,
-                u'observation_value': u'250',
-                u'reference_range': u'150-400',
-                u'result_status': None,
-                u'test_code': u'PLT',
-                u'test_name': u'Platelet count',
-                u'units': u'x10^9/L',
-                u'value_type': u'NM'
-            }, {
-                u'comments': None,
-                u'observation_value': u'10.0',
-                u'reference_range': u'7-13',
-                u'result_status': None,
-                u'test_code': u'MPVU',
-                u'test_name': u'MPV',
-                u'units': u'fL',
-                u'value_type': u'NM'
-            }]
-        )
-
-        result = emodels.Result()
-        result.update_from_dict(result_args, self.user)
-
-        found_result = emodels.Result.objects.get()
-        self.assertEqual(found_result.lab_number, "234324")
-        self.assertEqual(found_result.profile_code, "2343344")
-
-        back_to_dict = found_result.to_dict(self.user)
-        del back_to_dict["updated"]
-        del back_to_dict["updated_by_id"]
-        del back_to_dict["created"]
-        del back_to_dict["created_by_id"]
-        del back_to_dict["consistency_token"]
-        del back_to_dict["id"]
-        result_args["request_datetime"] = datetime.datetime(
-            2016, 1, 2, tzinfo=pytz.UTC
-        )
-        result_args["observation_datetime"] = datetime.datetime(
-            2016, 1, 6, tzinfo=pytz.UTC
-        )
-        result_args["last_edited"] = datetime.datetime(
-            2016, 1, 7, tzinfo=pytz.UTC
-        )
-
-        self.assertEqual(result_args, back_to_dict)
-
-    def test_updates_with_external_identifer(self):
-        emodels.Result.objects.create(
-            result_status="Incomplete",
-            external_identifier="1",
-            patient=self.patient
-        )
-
-        update_dict = dict(
-            result_status="Complete",
-            external_identifier="1",
-            patient_id=self.patient.id
-        )
-
-        a = emodels.Result()
-        a.update_from_dict(update_dict, self.user)
-
-        result = emodels.Result.objects.get()
-        self.assertEqual(
-            result.result_status, "Complete"
-        )
-
-    def test_no_external_identifier(self):
-        emodels.Result.objects.create(
-            result_status="Incomplete",
-            external_identifier="1",
-            patient=self.patient
-        )
-
-        update_dict = dict(
-            result_status="Complete",
-            patient_id=self.patient.id
-        )
-
-        a = emodels.Result()
-        a.update_from_dict(update_dict, self.user)
-        results = emodels.Result.objects.all()
-        self.assertEqual(2, len(results))
-        self.assertEqual(
-            results[0].result_status, "Incomplete"
-        )
-        self.assertEqual(
-            results[1].result_status, "Complete"
-        )
-        self.assertEqual(
-            results[1].external_identifier, None
-        )
-
-    def test_doesnt_update_empty_external_identifier(self):
-        emodels.Result.objects.create(
-            result_status="Incomplete",
-            external_identifier="",
-            patient=self.patient
-        )
-
-        update_dict = dict(
-            result_status="Complete",
-            external_identifier="",
-            patient_id=self.patient.id
-        )
-
-        a = emodels.Result()
-        a.update_from_dict(update_dict, self.user)
-        results = emodels.Result.objects.all()
-        self.assertEqual(2, len(results))
-        self.assertEqual(
-            results[0].result_status, "Incomplete"
-        )
-        self.assertEqual(
-            results[1].result_status, "Complete"
-        )
-
-    def test_next_updates_a_different_patient(self):
-        other_patient = Patient.objects.create()
-        emodels.Result.objects.create(
-            result_status="Incomplete",
-            external_identifier="1",
-            patient=self.patient
-        )
-
-        update_dict = dict(
-            result_status="Complete",
-            external_identifier="1",
-            patient_id=other_patient.id
-        )
-
-        a = emodels.Result()
-        a.update_from_dict(update_dict, self.user)
-        results = emodels.Result.objects.all()
-        self.assertEqual(2, len(results))
-        self.assertEqual(
-            results[0].patient, self.patient
-        )
-        self.assertEqual(
-            results[1].patient, other_patient
-        )
-
-
 class AllergyTest(OpalTestCase):
     def test_get_modal_footer_template(self):
         self.assertEqual(
@@ -526,6 +357,48 @@ class BloodCultureMixinTestCase(OpalTestCase):
             result=dict(result="Yeast")
         ), self.user)
         self.assertEqual(emodels.GramStain.objects.count(), 1)
+
+class HL7ResultTestCase(OpalTestCase, AbstractEpisodeTestCase):
+    def test_update_from_dict_repeated(self):
+        emodels.HL7Result.objects.create(
+            patient=self.patient,
+            external_identifier="1",
+            status=emodels.HL7Result.PENDING
+        )
+        update_dict = dict(
+            external_identifier="1",
+            status=emodels.HL7Result.COMPLETE
+        )
+        hl7_result = emodels.HL7Result(patient_id=self.patient.id)
+        hl7_result.update_from_dict(update_dict, self. user)
+
+        found_hl7_result = emodels.HL7Result.objects.get()
+        self.assertEqual(found_hl7_result.status, emodels.HL7Result.COMPLETE)
+
+    def test_update_from_dict_first_time(self):
+        update_dict = dict(
+            external_identifier="1",
+            status=emodels.HL7Result.COMPLETE
+        )
+        hl7_result = emodels.HL7Result(patient_id=self.patient.id)
+        hl7_result.update_from_dict(update_dict, self. user)
+
+        found_hl7_result = emodels.HL7Result.objects.get()
+        self.assertEqual(found_hl7_result.status, emodels.HL7Result.COMPLETE)
+
+    def test_error_raised_if_external_identifier_not_in_dict(self):
+        update_dict = dict(
+            status=emodels.HL7Result.COMPLETE
+        )
+        hl7_result = emodels.HL7Result(patient_id=self.patient.id)
+
+        with self.assertRaises(ValueError) as e:
+            hl7_result.update_from_dict(update_dict, self. user)
+
+        self.assertEqual(
+            str(e.exception),
+            "an external identifier is required in {'status': 'complete'}"
+        )
 
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
