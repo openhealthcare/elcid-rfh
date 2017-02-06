@@ -291,7 +291,6 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.wsgi')
 
 
-
 GLOSS_ENABLED = True
 
 if GLOSS_ENABLED:
