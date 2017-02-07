@@ -1,4 +1,4 @@
-{% load lab %}
+{% load lab_tags %}
 <div class="row">
   <h4 class="text-center">Gram Stain</h4>
 </div>
@@ -36,16 +36,16 @@
         <h4 class="text-center">FISH Tests</h4>
       </div>
       <div ng-show="lab_test.lab_test_type === 'QuickFISH'" class="row">
-        {% render_observation models.QuickFISH.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+        {% observation_form lab_tests.QuickFISH.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
       </div>
       <div ng-show="lab_test.lab_test_type === 'GPC Staph'" class="row">
-        {% render_observation models.GPCStaph.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+        {% observation_form lab_tests.GPCStaph.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
       </div>
       <div ng-show="lab_test.lab_test_type === 'GPC Strep'" class="row">
-        {% render_observation models.GPCStrep.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+        {% observation_form lab_tests.GPCStrep.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
       </div>
       <div ng-show="lab_test.lab_test_type === 'GNR'" class="row">
-        {% render_observation models.GNR.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
+        {% observation_form lab_tests.GNR.result label="[[ lab_test.lab_test_type ]]" model="lab_test.result.result" element_name="lab_test.uniqueName" %}
       </div>
     </div>
   </div>
