@@ -36,7 +36,7 @@ static3==0.6.1
 -e git+https://github.com/openhealthcare/opal-observations.git@v0.1.2#egg=opal_observations
 
 -e git+https://github.com/openhealthcare/opal-wardround.git@v0.6#egg=opal_wardround
--e git+https://github.com/openhealthcare/opal-pathway.git@v0.2#egg=opal_pathway
+-e git+https://github.com/openhealthcare/opal-pathway.git@v0.3#egg=opal_pathway
 -e git+https://github.com/openhealthcare/opal-lab.git@v0.2.0#egg=opal_lab
 
 -e git+https://github.com/openhealthcare/opal-dischargesummary.git@v0.2#egg=opal_dischargesummary
