@@ -95,12 +95,6 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
     slug = 'cernerdemo'
 
     steps = (
-        # Step(
-        #     template_url="/templates/pathway/cerner_letter_pathway.html",
-        #     display_name="Cerner Letter",
-        #     icon="fa fa-user",
-        #     step_controller="BloodCulturePathwayFormCtrl"
-        # ),
         models.Demographics,
         models.Location,
         Step(
