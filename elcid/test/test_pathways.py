@@ -4,11 +4,10 @@ from mock import patch
 
 from opal import models
 from opal.core.test import OpalTestCase
-from elcid.pathways import AddPatientPathway
+from elcid.pathways import AddPatientPathway, CernerDemoPathway
 
 
 class TestCernerDemoPathway(OpalTestCase):
-    url = "/pathway/cernerdemo/save"
     data = dict(
         demographics=[dict(hospital_number="234", nhs_number="12312")],
         procedure=[dict(date=date.today())],
@@ -16,41 +15,30 @@ class TestCernerDemoPathway(OpalTestCase):
     )
 
     def setUp(self):
+        super(TestCernerDemoPathway, self).setUp()
+
         self.assertTrue(
             self.client.login(
                 username=self.user.username, password=self.PASSWORD
             )
         )
 
-    def test_post_new_pathway(self):
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        self.post_json(self.url, test_data)
-        demographics = models.Patient.objects.get().demographics_set.first()
-        self.assertEqual(demographics.hospital_number, "234")
-        tags = models.Episode.objects.get().get_tag_names(self.user)
-        self.assertEqual(list(tags), ['antifungal'])
-
     def test_post_existing_pathway(self):
         patient, episode = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number="234")
         test_data = dict(
             demographics=[dict(
                 hospital_number="234",
                 nhs_number="12312",
                 patient_id=patient.id
             )],
-            tagging=[{u'antifungal': True}]
         )
-        url = "{0}/{1}/{2}".format(self.url, patient.id, episode.id)
-        self.post_json(url, test_data)
-        self.assertEqual(
-            list(models.Episode.objects.get().get_tag_names(self.user)),
-            ['antifungal']
-        )
+        pathway = CernerDemoPathway(patient_id=patient.id, episode_id=episode.id)
+        url = pathway.save_url()
+        result = self.post_json(url, test_data)
+        self.assertEqual(result.status_code, 200)
         demographics = models.Patient.objects.get().demographics_set.first()
-        self.assertEqual(demographics.hospital_number, "234")
+        self.assertEqual(demographics.nhs_number, "12312")
 
 
 class TestAddPatientPathway(OpalTestCase):
