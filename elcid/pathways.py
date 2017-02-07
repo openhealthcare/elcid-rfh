@@ -61,22 +61,29 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
             new patient/episode
         """
         if settings.GLOSS_ENABLED:
-            if not self.patient:
-                demographics = data.get("demographics")
-                hospital_number = demographics[0]["hospital_number"]
-                created = gloss_api.patient_query(hospital_number)
+            demographics = data.get("demographics")
+            hospital_number = demographics[0]["hospital_number"]
 
-                if created:
-                    data.pop("demographics")
-                    patient, episode = created
+            if self.patient:
+                # the patient already exists
+
+                # refreshes the saved patient
+                gloss_api.patient_query(hospital_number)
+                self.episode_id = self.patient.create_episode().id
+            else:
+                # the patient doesn't exist
+                patient = gloss_api.patient_query(hospital_number)
+
+                if patient:
                     # nuke whatever is passed in in demographics as this will
                     # have been updated by gloss
+                    consistency_token = patient.demographics_set.first().consistency_token
                     data["demographics"] = [dict(
                         hospital_number=hospital_number,
-                        consistency_token=patient.demographics_set.first().consistency_token
+                        consistency_token=consistency_token
                     )]
                     self.patient_id = patient.id
-                    self.episode_id = episode.id
+                    self.episode_id = patient.episode_set.get().id
 
             gloss_api.subscribe(hospital_number)
 

@@ -72,10 +72,10 @@ def gloss_query(hospital_number):
             return content
 
 
-def patient_query(hospital_number, episode=None):
+def patient_query(hospital_number):
     content = gloss_query(hospital_number)
     if content:
-        return bulk_create_from_gloss_response(content, episode=episode)
+        return bulk_create_from_gloss_response(content)
 
 
 def get_external_source(api_name):
@@ -129,6 +129,7 @@ def update_tests(update_dict):
         else:
             result['status'] = lmodels.LabTest.PENDING
         result['date_ordered'] = result.pop('request_datetime', None)
+        result['lab_test_type'] = eModels.HL7Result.get_display_name()
 
         # TODO, change date ordered to datetime ordered
         if result['date_ordered']:
@@ -142,16 +143,18 @@ def update_tests(update_dict):
         result['external_identifier'] = result.pop('lab_number')
         result.pop('profile_code')
 
-    update_dict[eModels.HL7Result.get_api_name()] = results
+    update_dict[lmodels.LabTest.get_api_name()] = results
     return update_dict
 
 
-def bulk_create_from_gloss_response(request_data, episode=None):
+@transaction.atomic()
+def bulk_create_from_gloss_response(request_data):
     hospital_number = request_data["hospital_number"]
     update_dict = request_data["messages"]
     update_dict = update_tests(update_dict)
     logging.info("running a bulk update with")
     logging.info(update_dict)
+
 
     patient_query = omodels.Patient.objects.filter(
         demographics__hospital_number=hospital_number
@@ -159,35 +162,33 @@ def bulk_create_from_gloss_response(request_data, episode=None):
 
     if not patient_query.exists():
         patient = omodels.Patient.objects.create()
+        patient.create_episode()
     else:
         patient = patient_query.get()
 
-    if not episode:
-        episode = patient.create_episode()
-
     user = get_gloss_user()
+    episode_subrecords = {i.get_api_name() for i in subrecords.episode_subrecords()}
 
     if update_dict:
-        with transaction.atomic():
-            # as these are only going to have been sourced from upstream
-            # make sure it says they're sourced from upstream
-            for api_name, updates_list in update_dict.iteritems():
-                external_system = get_external_source(api_name)
+        # as these are only going to have been sourced from upstream
+        # make sure it says they're sourced from upstream
+        for api_name, updates_list in update_dict.iteritems():
+            if api_name in episode_subrecords:
+                err = "Gloss is not expected to provide episode subrecords"
+                err += " found {0} in {1}".format(api_name, update_dict)
+                raise ValueError(err)
 
-                if external_system:
-                    for i in updates_list:
-                        i["external_system"] = external_system
+            external_system = get_external_source(api_name)
 
-            if "demographics" not in update_dict:
-                update_dict["demographics"] = [
-                    dict(hospital_number=hospital_number)
-                ]
+            if external_system:
+                for i in updates_list:
+                    i["external_system"] = external_system
 
-            results = update_dict.pop("results", None)
+        if "demographics" not in update_dict:
+            update_dict["demographics"] = [
+                dict(hospital_number=hospital_number)
+            ]
 
-            if results:
-                update_dict[lmodels.HL7Result.get_api_name()] = results
+        patient.bulk_update(update_dict, user, force=True)
 
-            patient.bulk_update(update_dict, user, force=True, episode=episode)
-
-            return patient, episode
+        return patient

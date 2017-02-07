@@ -1,5 +1,5 @@
 {% load forms %}
-{% load lab %}
+{% load lab_tags %}
 <div class="form-horizontal" ng-repeat="bloodCulture in bloodCultureHelper.bloodCultures">
   <div ng-show="$index">
     <h3>Blood Culture [[ $index + 1]]</h3>
@@ -40,9 +40,9 @@
                 <div class="text-center">
                   <h4>Organism</h4>
                 </div>
-                {% render_observation models.BloodCultureOrganism.result model="lab_test.result.result" element_name="lab_test.uniqueName + 'result'" %}
-                {% select field="BloodCultureOrganism.sensitive_antibiotics" model="lab_test.sensitive_antibiotics" element_name="lab_test.sensitiveName" required=False multiple=True tagging=False %}
-                {% select field="BloodCultureOrganism.resistant_antibiotics" model="lab_test.resistant_antibiotics" element_name="lab_test.resistantName" required=False multiple=True tagging=False %}
+                {% observation_form lab_tests.BloodCultureOrganism.result model="lab_test.result.result" element_name="lab_test.uniqueName + 'result'" %}
+                {% select field="LabTest.sensitive_antibiotics" model="lab_test.sensitive_antibiotics" element_name="lab_test.sensitiveName" required=False multiple=True tagging=False %}
+                {% select field="LabTest.resistant_antibiotics" model="lab_test.resistant_antibiotics" element_name="lab_test.resistantName" required=False multiple=True tagging=False %}
               </div>
             </div>
           </div>

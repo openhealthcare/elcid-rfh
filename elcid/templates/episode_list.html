@@ -31,14 +31,6 @@
                 {% endfor %}
               </ul>
             </div>
-            {% if not user.profile.explicit_access_only %}
-            <button class="btn btn-primary pull-right"
-                    ng-show="!profile.readonly"
-                    ng-click="addEpisode()">
-              <i class="glyphicon glyphicon-plus"></i>
-              Add Patient
-            </button>
-            {% endif %}
           </h1>
         </div>
       </div>
@@ -49,10 +41,12 @@
             <div class="panel panel-default content-offset">
               <div class="panel-heading">
                 <h3><i class="fa fa-user"></i>
-                  [[ row.demographics[0].name ]] [[ row.demographics[0].hospital_number ]]
+                  [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
                   <small>
                     [[ row.demographics[0].date_of_birth|shortDate ]]
-                    ([[ row.demographics[0].date_of_birth | age ]])
+                    <span ng-show="row.demographics[0].date_of_birth">
+                      ([[ row.demographics[0].date_of_birth | age ]])
+                    </span>
                   </small>
                 </h3>
               </div>
