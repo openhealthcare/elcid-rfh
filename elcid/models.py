@@ -1,9 +1,12 @@
 """
 elCID implementation specific models!
 """
+import datetime
+from elcid.patient_lists import Bacteraemia
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
+from django.db.models.signals import post_save
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -676,3 +679,21 @@ class Imaging(EpisodeSubrecord):
     imaging_type = ForeignKeyOrFreeText(ImagingTypes)
     site = models.CharField(max_length=200, blank=True, null=True)
     details = models.TextField(blank=True, null=True)
+
+
+class PositiveBloodCultureHistory(PatientSubrecord):
+    when = models.DateTimeField(default=datetime.datetime.now)
+
+    @classmethod
+    def _get_field_default(cls, name):
+        # this should not be necessary...
+        return None
+
+
+# method for updating
+@receiver(post_save, sender=omodels.Tagging)
+def record_positive_blood_culture(sender, instance, **kwargs):
+    if instance.value == Bacteraemia.tag:
+        PositiveBloodCultureHistory.objects.get_or_create(
+            patient_id=instance.episode.patient.id
+        )

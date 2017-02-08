@@ -476,3 +476,22 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
         self.diagnosis.update_from_dict(data, self.user)
         diagnosis = self.episode.diagnosis_set.first()
         self.assertEqual('New condition', diagnosis.condition)
+
+
+class PositiveBloodCultureHistoryTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+
+    def test_creation_on_tagging_save(self):
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), datetime.date.today())
+
+    def test_not_created_on_a_different_tag_save(self):
+        self.episode.set_tag_names(["something"], self.user)
+        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 0)
+
+    def test_only_one_instance_created(self):
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
