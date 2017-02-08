@@ -45,6 +45,7 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
         Step(
             model=models.Location,
             template_url="/templates/pathway/blood_culture_location.html",
+            step_controller="TaggingStepCtrl",
         ),
     )
 
