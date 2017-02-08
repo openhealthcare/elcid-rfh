@@ -74,6 +74,9 @@
 {% record_panel models.Diagnosis %}
 {% record_panel models.Infection %}
 {% record_panel models.Procedure %}
+<div class="visible-print">
+  {% record_panel models.MicrobiologyInput %}
+</div>
 
 {% record_panel models.Line %}
 {% record_panel models.Antimicrobial %}
@@ -91,7 +94,7 @@
   <ul>
 </div>
 {% record_panel models.FinalDiagnosis %}
-<div ng-show="episode.microbiology_input.length" class="panel panel-default">
+<div ng-show="episode.microbiology_input.length" class="panel panel-default hidden-print">
   <div class="panel-body">
     <div class="patient-timeline-container">
       <div class="row">
@@ -144,7 +147,8 @@
 {% include "inline_forms/clinical_advice.html" %}
 
 
-<div class="panel panel-default">
+
+<div class="panel panel-default hidden-print">
   <div class="panel-heading">
     <h3>Demo</h3>
   </div>
