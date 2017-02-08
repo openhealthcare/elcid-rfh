@@ -40,15 +40,26 @@
           <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id]]" ng-repeat="row in rows">
             <div class="panel panel-default content-offset">
               <div class="panel-heading">
-                <h3><i class="fa fa-user"></i>
-                  [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
-                  <small>
-                    [[ row.demographics[0].date_of_birth|shortDate ]]
-                    <span ng-show="row.demographics[0].date_of_birth">
-                      ([[ row.demographics[0].date_of_birth | age ]])
-                    </span>
-                  </small>
-                </h3>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <h3><i class="fa fa-user"></i>
+                      [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
+                      <small>
+                        [[ row.demographics[0].date_of_birth|shortDate ]]
+                        <span ng-show="row.demographics[0].date_of_birth">
+                          ([[ row.demographics[0].date_of_birth | age ]])
+                        </span>
+                      </small>
+                    </h3>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="text-right">
+                      <button class="btn" open-pathway="remove" pathway-callback="post_discharge">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="panel-body">
 

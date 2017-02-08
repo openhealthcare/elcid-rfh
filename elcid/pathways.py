@@ -31,6 +31,20 @@ class SaveTaggingMixin(object):
         return patient
 
 
+class RemovePatientPathway(SaveTaggingMixin, PagePathway):
+    display_name = "Remove"
+    finish_button_text = "Remove"
+    finish_button_icon = "fa fa-sign-out"
+    modal_template_url = "/templates/pathway/modal_no_footer.html"
+    slug = "remove"
+    steps = (
+        Step(
+            template_url="/templates/pathway/remove.html",
+            step_controller="RemovePatientCtrl"
+        ),
+    )
+
+
 class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
@@ -45,6 +59,7 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
         Step(
             model=models.Location,
             template_url="/templates/pathway/blood_culture_location.html",
+            step_controller="TaggingStepCtrl",
         ),
     )
 
