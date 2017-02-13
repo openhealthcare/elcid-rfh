@@ -491,6 +491,27 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["something"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 0)
 
+    def test_not_updated_on_other_removal(self):
+        weeks_ago = datetime.datetime(2017, 1, 1)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.patient.positivebloodculturehistory_set.update(
+            when=weeks_ago
+        )
+        self.episode.set_tag_names(["something"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), weeks_ago.date())
+
+    def test_updated_on_repeat_saves(self):
+        weeks_ago = datetime.datetime(2017, 1, 1)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.patient.positivebloodculturehistory_set.update(
+            when=weeks_ago
+        )
+        self.episode.set_tag_names(["something"], self.user)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), datetime.date.today())
+
     def test_only_one_instance_created(self):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)

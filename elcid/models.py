@@ -694,6 +694,8 @@ class PositiveBloodCultureHistory(PatientSubrecord):
 @receiver(post_save, sender=omodels.Tagging)
 def record_positive_blood_culture(sender, instance, **kwargs):
     if instance.value == Bacteraemia.tag:
-        PositiveBloodCultureHistory.objects.get_or_create(
+        pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
             patient_id=instance.episode.patient.id
         )
+        pbch.when = datetime.datetime.now()
+        pbch.save()
