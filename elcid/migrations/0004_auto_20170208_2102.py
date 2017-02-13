@@ -9,7 +9,7 @@ import opal.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('opal', '0028_auto_20170208_2102'),
+        ('opal', '0027_auto_20170114_1302'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('elcid', '0003_auto_20170122_1723'),
     ]

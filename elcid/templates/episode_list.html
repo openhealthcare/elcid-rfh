@@ -41,7 +41,7 @@
             <div class="panel panel-default content-offset">
               <div class="panel-heading">
                 <div class="row">
-                  <div class="col-sm-10">
+                  <div class="col-sm-12">
                     <h3><i class="fa fa-user"></i>
                       [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
                       <small>
@@ -49,15 +49,15 @@
                         <span ng-show="row.demographics[0].date_of_birth">
                           ([[ row.demographics[0].date_of_birth | age ]])
                         </span>
+                        <span class="pull-right" ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length">
+                          <span ng-show="row.positive_blood_culture_history[0].when.add(6, 'months') | future">
+                            <span class="label label-danger">
+                              <i class="fa fa-bullhorn"></i> Historical positive blood culture
+                            </span>
+                          </span>
+                        </span>
                       </small>
                     </h3>
-                    <div ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length" class="row content-offset-10">
-                      <div ng-show="row.positive_blood_culture_history[0].when.add(6, 'months') | future" class="col-md-12">
-                        <span class="label label-danger">
-                          <i class="fa fa-bullhorn"></i> historical positive blood culture
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
