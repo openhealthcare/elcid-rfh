@@ -106,3 +106,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .label-danger{
   background-color: #DA163E;
 }
+
+.panel-link .panel-footer{
+  background-color: inherit;
+}

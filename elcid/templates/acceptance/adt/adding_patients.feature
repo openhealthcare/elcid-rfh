@@ -23,3 +23,11 @@ I should see a message in the demographics panel stating they have had recent po
 Given that a patient is on the Hepatology list and has recently been removed from the Bacteraemia list
 Given that I am on the Hepatology list
 I should see the patient with a message stating they recently have had a positive blood culture
+
+Given that I am on a patient list
+Given that I can see a patient
+I should be able to see a 'Remove' button on the top right of their card
+When I click the 'Remove' button
+I should be able to see a modal that offers me the option to remove
+When I click remove, the patient should be removed from the list
+When I search for that patient, that patient should not have the list tag
