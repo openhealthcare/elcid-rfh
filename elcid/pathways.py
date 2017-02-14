@@ -35,7 +35,7 @@ class RemovePatientPathway(SaveTaggingMixin, PagePathway):
     display_name = "Remove"
     finish_button_text = "Remove"
     finish_button_icon = "fa fa-sign-out"
-    modal_template_url = "/templates/pathway/modal_no_footer.html"
+    modal_template_url = "/templates/pathway/modal_only_cancel.html"
     slug = "remove"
     steps = (
         Step(
