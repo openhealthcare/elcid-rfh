@@ -99,3 +99,10 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 }
 
 /*# sourceMappingURL=elcid.css.map */
+.label-warning{
+  background-color: #A03110;
+}
+
+.label-danger{
+  background-color: #DA163E;
+}

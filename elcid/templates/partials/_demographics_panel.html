@@ -64,11 +64,9 @@
         [[ patient.demographics[0].ethnicity ]]
       </div>
     </div>
-    <div ng-show="patient.positive_blood_culture_history.length" class="row">
-      <div ng-show="patient.positive_blood_culture_history[0].when.add(6, 'months') | future" class="col-md-12">
-        <span class="label label-danger">
-          <i class="fa fa-bullhorn"></i> historical positive blood culture
-        </span>
+    <div class="row">
+      <div class="col-md-12">
+        {% include "partials/historical_bacteraemia.html" %}
       </div>
     </div>
   </div>

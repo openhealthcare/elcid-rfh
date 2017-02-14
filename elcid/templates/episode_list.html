@@ -49,12 +49,8 @@
                         <span ng-show="row.demographics[0].date_of_birth">
                           ([[ row.demographics[0].date_of_birth | age ]])
                         </span>
-                        <span class="pull-right" ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length">
-                          <span ng-show="row.positive_blood_culture_history[0].when.add(6, 'months') | future">
-                            <span class="label label-danger">
-                              <i class="fa fa-bullhorn"></i> Historical positive blood culture
-                            </span>
-                          </span>
+                        <span class="pull-right" ng-repeat="episode in [row]" ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length">
+                          {% include "partials/historical_bacteraemia.html" %}
                         </span>
                       </small>
                     </h3>
