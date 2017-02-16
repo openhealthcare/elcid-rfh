@@ -2,7 +2,7 @@
 Admin for elcid fields
 """
 from django.contrib import admin
-from opal.admin import PatientSubRecordAdmin, EpisodeSubRecordAdmin
+from opal.admin import PatientSubrecordAdmin, EpisodeSubrecordAdmin
 
 from elcid import models
 
