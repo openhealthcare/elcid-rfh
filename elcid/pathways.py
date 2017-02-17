@@ -31,6 +31,21 @@ class SaveTaggingMixin(object):
         return patient
 
 
+class RemovePatientPathway(SaveTaggingMixin, PagePathway):
+    icon = "fa fa-sign-out"
+    display_name = "Remove"
+    finish_button_text = "Remove"
+    finish_button_icon = "fa fa-sign-out"
+    modal_template_url = "/templates/pathway/modal_only_cancel.html"
+    slug = "remove"
+    steps = (
+        Step(
+            template_url="/templates/pathway/remove.html",
+            step_controller="RemovePatientCtrl"
+        ),
+    )
+
+
 class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
