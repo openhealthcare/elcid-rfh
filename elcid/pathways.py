@@ -32,6 +32,7 @@ class SaveTaggingMixin(object):
 
 
 class RemovePatientPathway(SaveTaggingMixin, PagePathway):
+    icon = "fa fa-sign-out"
     display_name = "Remove"
     finish_button_text = "Remove"
     finish_button_icon = "fa fa-sign-out"
