@@ -24,7 +24,7 @@ class Application(application.OpalApplication):
     ]
 
     styles = [
-        "css/elcid.css"
+        "css/elcid.scss"
     ]
 
     patient_view_forms = {

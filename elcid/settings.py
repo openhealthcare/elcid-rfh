@@ -312,6 +312,11 @@ REST_FRAMEWORK = {
     )
 }
 
+# if you want sass, uncomment the below and gem install sass
+COMPRESS_PRECOMPILERS = (
+    ('text/x-scss', 'sass --scss {infile} {outfile}'),
+)
+
 if 'test' not in sys.argv:
     try:
         from local_settings import *
