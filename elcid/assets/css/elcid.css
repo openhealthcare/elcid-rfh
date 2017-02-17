@@ -1,6 +1,5 @@
 body {
-  background-color: #EEE;
-}
+  background-color: #EEE; }
 
 .bg-primary {
   background-color: #0091C9; }
@@ -77,11 +76,29 @@ a.list-group-item:hover, a.list-group-item:focus {
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
   background-color: #343637; }
 
-.btn-text-wrap{
-  white-space: normal;
-}
+.patient-row .label-warning {
+  margin-top: 5px;
+  display: inline-block;
+  padding-top: 4px; }
+.patient-row .label-danger {
+  margin-top: 5px;
+  display: inline-block;
+  padding-top: 4px; }
 
-.multilined-btn{
+/*# sourceMappingURL=elcid.css.map */
+.label-warning {
+  background-color: #A03110; }
+
+.label-danger {
+  background-color: #DA163E; }
+
+.panel-link .panel-footer {
+  background-color: inherit; }
+
+.full-width {
+  width: 100%; }
+
+.multilined-btn {
   /*
   * this is used in the blood culture buttons to make all buttons
   * the same height whether the ext is on 2 lines or not
@@ -91,22 +108,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: 64px;
-}
+  min-height: 64px; }
 
-.full-width{
-  width: 100%;
-}
-
-/*# sourceMappingURL=elcid.css.map */
-.label-warning{
-  background-color: #A03110;
-}
-
-.label-danger{
-  background-color: #DA163E;
-}
-
-.panel-link .panel-footer{
-  background-color: inherit;
-}
+.btn-text-wrap {
+  white-space: normal; }

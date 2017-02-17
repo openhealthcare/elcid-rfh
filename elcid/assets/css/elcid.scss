@@ -20,13 +20,6 @@ body{
     background-color: $bg;
 }
 
-h1, h2, h3, h4, h5{
-    .small, small{
-        color: $white;
-    }
-}
-
-
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
 
@@ -117,4 +110,53 @@ a.list-group-item {
   &.active:focus{
     background-color: $obsidian;
   }
+}
+
+.patient-row{
+  .label-warning{
+    margin-top: 5px;
+    display: inline-block;
+    padding-top: 4px;
+  }
+  .label-danger{
+    margin-top: 5px;
+    display: inline-block;
+    padding-top: 4px;
+  }
+}
+
+/*# sourceMappingURL=elcid.css.map */
+.label-warning{
+  background-color: #A03110;
+
+}
+
+.label-danger{
+  background-color: #DA163E;
+
+}
+
+.panel-link .panel-footer{
+  background-color: inherit;
+}
+
+.full-width{
+  width: 100%;
+}
+
+.multilined-btn{
+  /*
+  * this is used in the blood culture buttons to make all buttons
+  * the same height whether the ext is on 2 lines or not
+  * and to vertically/horizontally centre the text
+  */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 64px;
+}
+
+.btn-text-wrap{
+  white-space: normal;
 }
