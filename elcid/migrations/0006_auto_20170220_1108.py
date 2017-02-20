@@ -13,7 +13,7 @@ def migrate_forwards(apps, schema_editor):
     episodes = Episode.objects.filter(tagging__value=Bacteraemia.tag)
     episodes = episodes.filter(patient__positivebloodculturehistory=None)
     for episode in episodes:
-        tag = episode.tagging_set.filter(value=Bacteraemia.tag)
+        tag = episode.tagging_set.filter(value=Bacteraemia.tag).first()
         PositiveBloodCultureHistory.objects.create(
             patient=episode.patient,
             when=tag.created
