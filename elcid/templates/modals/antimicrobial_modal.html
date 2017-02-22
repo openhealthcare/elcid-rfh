@@ -1,14 +1,14 @@
 {% extends 'base_templates/modal_base.html' %}
 {% block icon %}<i class="fa fa-flask"></i>{% endblock %}
 {% block modal_body %}
-  <div class="row">
-    <div class="col-md-8">
-      <form class="form-horizontal">
+  <form name="form" class="form-horizontal">
+    <div class="row">
+      <div class="col-md-8">
         {% include column.get_form_template %}
-      </form>
+      </div>
+      <div class="col-md-4">
+        {% include 'modals/_allergies_sidebar.html' %}
+      </div>
     </div>
-    <div class="col-md-4">
-      {% include 'modals/_allergies_sidebar.html' %}
-    </div>
-  </div>
+  </form>
 {% endblock %}
