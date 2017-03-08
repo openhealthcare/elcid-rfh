@@ -76,10 +76,8 @@
                     <p ng-repeat="item in row.antimicrobial">
                       {% include models.Antimicrobial.get_display_template %}
                     </p>
-
                   </div>
                 </div>
-
                 <div class="row">
                   <div class="col-md-6">
                     <h4><strong>
@@ -98,7 +96,7 @@
               </div>
               <div class="panel-footer">
                 <div class="text-right">
-                  <button class="btn btn-primary" open-pathway="remove" pathway-callback="removeFromList(episode.id)">
+                  <button class="btn btn-primary" pathway-episode="row" open-pathway="remove" pathway-callback="removeFromList(row.id)">
                     {% icon 'fa-sign-out' %} Remove
                   </button>
                 </div>
