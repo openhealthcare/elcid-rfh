@@ -82,7 +82,9 @@ class ContactDetails(PatientSubrecord):
                                      blank=True, null=True)
     address_line2 = models.CharField("Address line 2", max_length = 45,
                                      blank=True, null=True)
-    city          = models.CharField(max_length = 50, blank = True)
+    city = models.CharField(
+        max_length = 50, blank=True, null=True
+    )
     county        = models.CharField("County", max_length = 40,
                                      blank=True, null=True)
     post_code     = models.CharField("Post Code", max_length = 10,
@@ -133,7 +135,7 @@ class Location(EpisodeSubrecord):
     provenance = ForeignKeyOrFreeText(Provenance)
     hospital = ForeignKeyOrFreeText(omodels.Hospital)
     ward = ForeignKeyOrFreeText(omodels.Ward)
-    bed = models.CharField(max_length=255, blank=True)
+    bed = models.CharField(max_length=255, blank=True, null=True)
 
     def __unicode__(self):
         try:
