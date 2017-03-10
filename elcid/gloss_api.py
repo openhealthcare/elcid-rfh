@@ -14,7 +14,6 @@ import json
 import logging
 
 EXTERNAL_SYSTEM_MAPPING = {
-    omodels.InpatientAdmission: "Carecast",
     eModels.Demographics: "Carecast",
     eModels.Allergies: "ePMA"
 }
@@ -72,10 +71,10 @@ def gloss_query(hospital_number):
             return content
 
 
-def patient_query(hospital_number, episode=None):
+def patient_query(hospital_number):
     content = gloss_query(hospital_number)
     if content:
-        return bulk_create_from_gloss_response(content, episode=episode)
+        return bulk_create_from_gloss_response(content)
 
 
 def get_external_source(api_name):
@@ -146,7 +145,7 @@ def update_tests(update_dict):
     return update_dict
 
 
-def bulk_create_from_gloss_response(request_data, episode=None):
+def bulk_create_from_gloss_response(request_data):
     hospital_number = request_data["hospital_number"]
     update_dict = request_data["messages"]
     update_dict = update_tests(update_dict)
@@ -162,16 +161,27 @@ def bulk_create_from_gloss_response(request_data, episode=None):
     else:
         patient = patient_query.get()
 
-    if not episode:
-        episode = patient.create_episode()
-
     user = get_gloss_user()
+    episode_subrecords = set(
+        i.get_api_name() for i in subrecords.episode_subrecords()
+    )
 
     if update_dict:
         with transaction.atomic():
             # as these are only going to have been sourced from upstream
             # make sure it says they're sourced from upstream
             for api_name, updates_list in update_dict.iteritems():
+
+                # we use the gloss api to update patients, e.g. with the ,
+                # refresh patient functionality
+                # we don't know what episode that patient will be using
+                # we don't accept episode subrecords so lets
+                # blow up accordingly
+                if api_name in episode_subrecords:
+                    raise ValueError(
+                        "Gloss is not expected to provide episode subrecords"
+                    )
+
                 external_system = get_external_source(api_name)
 
                 if external_system:
@@ -188,6 +198,6 @@ def bulk_create_from_gloss_response(request_data, episode=None):
             if results:
                 update_dict[lmodels.HL7Result.get_api_name()] = results
 
-            patient.bulk_update(update_dict, user, force=True, episode=episode)
+            patient.bulk_update(update_dict, user, force=True)
 
-            return patient, episode
+            return patient
