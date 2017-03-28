@@ -19,8 +19,10 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/bloodculture_pathway_form.js',
         'js/elcid/controllers/remove_patient_step.js',
         'js/elcid/controllers/tagging_step.js',
+        'js/elcid/controllers/investigations.js',
         'js/elcid/services/blood_culture_helper.js',
         'js/elcid/services/blood_culture_record.js',
+        'js/elcid/directives.js',
     ]
 
     styles = [

@@ -179,6 +179,21 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
         super(HL7Result, self).update_from_dict(data, *args, **kwargs)
 
+    @classmethod
+    def get_relevant_tests(self):
+        relevent_tests = [
+            "C REACTIVE PROTEIN",
+            "FULL BLOOD COUNT",
+            "UREA AND ELECTROLYTES",
+            "LIVER FUNCTION",
+            "LIVER PROFILE",
+            "GENTAMICIN LEVEL",
+            "CLOTTING SCREEN"
+        ]
+        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
+        qs = HL7Result.objects.filter(date_ordered__gt=six_months_ago).order_by("date_ordered")
+        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
+
 
 class InfectionSource(lookuplists.LookupList):
     pass
