@@ -82,9 +82,9 @@
                   </div>
                   <div class="col-md-6">
                     <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
-                    <div ng-controller="InvestigationsCtrl as investigations">
+                    <div populate-lab-tests="row">
                       <table class="col-md-12">
-                        <tr class="row" ng-repeat="item in investigations.data">
+                        <tr class="row" ng-repeat="item in data">
                           <td>
                             [[ item.name ]]
                           </td>
@@ -92,7 +92,7 @@
                             [[ value[0] ]]
                           </td>
                           <td>
-                            <div investigation-graph="item.graphValues"></div>
+                            <div loaded="loaded" investigation-graph="item.graphValues"></div>
                           </td>
                         </tr>
                       </table>

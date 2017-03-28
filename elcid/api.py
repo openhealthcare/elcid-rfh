@@ -5,7 +5,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from elcid import gloss_api
 from opal.core.api import OPALRouter
-from opal.core.api import PatientViewSet
+from opal.core.api import PatientViewSet, patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
 from opal import models
 from elcid import models as emodels
@@ -20,11 +20,12 @@ class GlossEndpointApi(viewsets.ViewSet):
         return Response("ok")
 
 
-class ReleventLabTestApi(viewsets.ViewSet):
+class ReleventLabTestApi(LoginRequiredViewset):
     base_name = 'relevent_lab_test_api'
 
-    def list(self, request):
-        test_data = emodels.HL7Result.get_relevant_tests()
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        test_data = emodels.HL7Result.get_relevant_tests(patient)
         relevant_tests = {
             "C REACTIVE PROTEIN": ["C Reactive Protein"],
             "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
@@ -33,6 +34,8 @@ class ReleventLabTestApi(viewsets.ViewSet):
         }
 
         result = []
+        units = None
+        reference_range = None
         for relevant_test, relevant_observations in relevant_tests.items():
             for relevant_observation in relevant_observations:
                 grouped = [t for t in test_data if t.extras['profile_description'] == relevant_test]
