@@ -31,8 +31,11 @@ class Application(application.OpalApplication):
         "General Consultation": "inline_forms/clinical_advice.html",
     }
 
-    menuitems = [
-        dict(
-            href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
-            activepattern='/pathway/#/add_patient'),
-    ]
+    @classmethod
+    def get_menu_items(klass, user=None):
+        items = application.OpalApplication.get_menu_items(user=user)
+        items.append(
+            dict(
+                href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
+                activepattern='/pathway/#/add_patient'))
+        return items
