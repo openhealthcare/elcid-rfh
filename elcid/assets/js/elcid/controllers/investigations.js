@@ -10,7 +10,7 @@ controllers.controller('InvestigationsCtrl',
         });
 
         _.each(self.data, function(data){
-          data.graphValues = _.map(self.data[0].values, function(someData){
+          data.graphValues = _.map(data.values, function(someData){
             return parseInt(someData[0]);
           });
         });

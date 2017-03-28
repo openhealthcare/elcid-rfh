@@ -25,31 +25,35 @@ class ReleventLabTestApi(viewsets.ViewSet):
 
     def list(self, request):
         test_data = emodels.HL7Result.get_relevant_tests()
-        relevant_tests = [
-            "C REACTIVE PROTEIN",
-#            "FULL BLOOD COUNT",
-            # "UREA AND ELECTROLYTES",
-#            "LIVER PROFILE",
-#            "GENTAMICIN LEVEL",
-            # "CLOTTING SCREEN"
-        ]
-        for relevant_test in relevant_tests:
-            grouped = [t for t in test_data if t.extras['profile_description'] == relevant_test]
-            timeseries = []
-            for group in grouped:
-                for observation in group.extras["observations"]:
-                    if observation["test_name"] == "C Reactive Protein":
-                        units = observation["units"]
-                        reference_range = observation["reference_range"]
-                        timeseries.append((observation["observation_value"], group.date_ordered, ))
-            for_rendering = {
-                'name': "C Reactive Protein",
-                'values': timeseries,
-                'unit': units,
-                'range': reference_range
-            }
+        relevant_tests = {
+            "C REACTIVE PROTEIN": ["C Reactive Protein"],
+            "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
+            "LIVER PROFILE": ["ALT", "AST", "Alkaline Phosphatase"],
+            "CLOTTING SCREEN": ["INR"]
+        }
 
-        return json_response([for_rendering])
+        result = []
+        for relevant_test, relevant_observations in relevant_tests.items():
+            for relevant_observation in relevant_observations:
+                grouped = [t for t in test_data if t.extras['profile_description'] == relevant_test]
+                timeseries = []
+                for group in grouped:
+                    for observation in group.extras["observations"]:
+                        if observation["test_name"] == relevant_observation:
+                            units = observation["units"]
+                            reference_range = observation["reference_range"]
+                            timeseries.append((
+                                observation["observation_value"].split("~")[0],
+                                group.date_ordered,
+                            ))
+                result.append({
+                    'name': relevant_observation,
+                    'values': timeseries,
+                    'unit': units,
+                    'range': reference_range
+                })
+
+        return json_response(result)
 
 
 def gloss_api_query_monkey_patch(fn):
