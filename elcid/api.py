@@ -45,10 +45,17 @@ class ReleventLabTestApi(LoginRequiredViewset):
                         if observation["test_name"] == relevant_observation:
                             units = observation["units"]
                             reference_range = observation["reference_range"]
-                            timeseries.append((
-                                observation["observation_value"].split("~")[0],
-                                group.date_ordered,
-                            ))
+                            obs_result = observation["observation_value"].split("~")[0]
+
+                            try:
+                                float(obs_result)
+                                timeseries.append((
+                                    observation["observation_value"].split("~")[0],
+                                    group.date_ordered,
+                                ))
+                            except ValueError:
+                                pass
+
                 result.append({
                     'name': relevant_observation,
                     'values': timeseries,
