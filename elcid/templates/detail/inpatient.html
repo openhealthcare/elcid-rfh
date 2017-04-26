@@ -130,33 +130,35 @@
               <div class="col-sm-10 timeline-data-[[ $index ]]">
                 <span ng-show="microbiology_input.initials && microbiology_input.initials.trim().length">
                   <b>By: </b> [[microbiology_input.initials]]<span ng-show="microbiology_input.discussed_with"> with [[microbiology_input.discussed_with]]</span>
+                  <br />
                 </span>
                 <span ng-show="microbiology_input.reason_for_interaction">
-                  <br />
                   <b>Reason For Interaction: </b>[[microbiology_input.reason_for_interaction]]
+                  <br />
                 </span>
                 <span ng-show="microbiology_input.clinical_discussion">
-                  <br />
                   <b>Clinical Discussion: </b>[[ microbiology_input.clinical_discussion]]
+                  <br />
                 </span>
                 <span ng-show="microbiology_input.infection_control">
-                  <br />
                   <b>Infection control: </b>[[ microbiology_input.infection_control ]]
+                  <br />
                 </span>
                 <span ng-show="microbiology_input.agreed_plan">
-                  <br />
                   <b>Plan: </b>[[ microbiology_input.agreed_plan ]]
+                  <br />
                 </span>
               </div>
-            <div class="col-sm-2">
-              <div class="row">
-                <div class="col-md-12">
-                  <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(microbiology_input, 'microbiology_input')"></i>
+              <div class="col-sm-2">
+                <div class="row">
+                  <div class="col-md-12">
+                    <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(microbiology_input, 'microbiology_input')"></i>
+                  </div>
                 </div>
-              </div>
-              <div class="row content-offset-10">
-                <div class="col-md-12">
-                  <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
+                <div class="row content-offset-10">
+                  <div class="col-md-12">
+                    <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
+                  </div>
                 </div>
               </div>
             </div>
