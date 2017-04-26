@@ -2,7 +2,7 @@ describe('ClinicalAdviceFormTest', function() {
     "use strict";
 
     var $scope, $httpBackend, $rootScope, $controller;
-    var Episode;
+    var Episode, ctrl;
     var mkcontroller;
 
     var episodedata = {
@@ -11,7 +11,9 @@ describe('ClinicalAdviceFormTest', function() {
     var recorddata = {
             'microbiology_input': {
                 'name': 'microbiology_input',
-                'fields': []
+                'fields': [
+                    {name: 'reason_for_interaction', type: 'string'},
+                ]
             }
     };
 
@@ -30,7 +32,7 @@ describe('ClinicalAdviceFormTest', function() {
         $scope.episode = new Episode(episodedata);
 
         mkcontroller = function(){
-            var ret = $controller('ClinicalAdviceForm', {
+            ctrl = $controller('ClinicalAdviceForm', {
                 $rootScope: $rootScope,
                 $scope: $scope,
             });
@@ -40,13 +42,36 @@ describe('ClinicalAdviceFormTest', function() {
         $httpBackend.expectGET('/api/v0.1/referencedata/').respond({});
     });
 
-    describe('initialization', function() {
+    afterEach(function() {
+        $httpBackend.verifyNoOutstandingExpectation();
+        $httpBackend.verifyNoOutstandingRequest();
+    });
 
-        it('should setup', function() {
-            mkcontroller();
-            $rootScope.$apply();
-            $httpBackend.flush();
-        });
+    describe('initialization', function() {
+      it('should setup editing', function() {
+          mkcontroller();
+          $rootScope.$apply();
+          $httpBackend.flush();
+          expect(!!ctrl.editing).toBe(true)
+      });
+    });
+
+    describe('it should save', function(){
+      beforeEach(function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        $httpBackend.expectPOST("/api/v0.1/microbiology_input/", {"reason_for_interaction":"something"}).respond({});
+      });
+
+      it('should reset item', function(){
+          ctrl.editing.reason_for_interaction = "something";
+          ctrl.save();
+          $rootScope.$apply();
+          $httpBackend.flush();
+          expect(ctrl.editing.reason_for_interaction).toBe(undefined);
+      });
+
 
     });
 
