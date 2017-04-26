@@ -127,7 +127,7 @@
         <div class="col-md-9">
           <div class="patient-timeline-discussion">
             <div class="row">
-              <div class="col-sm-10">
+              <div class="col-sm-10 timeline-data-[[ $index ]]">
                 <span ng-show="microbiology_input.initials && microbiology_input.initials.trim().length">
                   <b>By: </b> [[microbiology_input.initials]]<span ng-show="microbiology_input.discussed_with"> with [[microbiology_input.discussed_with]]</span>
                 </span>
@@ -149,7 +149,16 @@
                 </span>
               </div>
             <div class="col-sm-2">
-              <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(microbiology_input, 'microbiology_input')"></i>
+              <div class="row">
+                <div class="col-md-12">
+                  <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(microbiology_input, 'microbiology_input')"></i>
+                </div>
+              </div>
+              <div class="row content-offset-10">
+                <div class="col-md-12">
+                  <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>
