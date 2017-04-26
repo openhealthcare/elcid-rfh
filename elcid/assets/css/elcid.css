@@ -112,3 +112,13 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 
 .btn-text-wrap {
   white-space: normal; }
+
+.no-touchevents
+.patient-timeline-discussion i.edit{
+  display:none
+}
+
+.touchevents .patient-timeline-discussion i.edit,
+.no-touchevents .patient-timeline-discussion:hover i.edit{
+  display: inline-block;
+}
