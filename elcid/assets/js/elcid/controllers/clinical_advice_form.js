@@ -11,9 +11,9 @@ angular.module('opal.controllers').controller(
 
         this.watchMicroFields = function(mi){
           // apart from the keys when, _client, initials, are any of the fields not falsy, ie undeinfed
-          self.changed = !!_.compact(_.filter(mi, function(val, key){
+          self.changed = _.compact(_.filter(mi, function(val, key){
             return !(key == 'when' || key == '_client' || key == "initials");
-          })).length;
+          })).length > 0;
         };
 
         $q.all([Referencedata, recordLoader]).then(function(datasets){
