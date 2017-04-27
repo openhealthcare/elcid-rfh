@@ -34,8 +34,11 @@ class Application(application.OpalApplication):
     @classmethod
     def get_menu_items(klass, user=None):
         items = application.OpalApplication.get_menu_items(user=user)
-        items.append(
+        return items + [
             dict(
-                href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
-                activepattern='/pathway/#/add_patient'))
-        return items
+                href='/pathway/#/add_patient',
+                display='Add Patient',
+                icon='fa fa-plus',
+                activepattern='/pathway/#/add_patient'
+            )
+        ]
