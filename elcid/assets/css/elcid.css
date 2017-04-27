@@ -1,6 +1,10 @@
 body {
   background-color: #EEE; }
 
+.offset-right-5{
+  margin-right: 5px;
+}
+
 .bg-primary {
   background-color: #0091C9; }
 

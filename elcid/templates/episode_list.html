@@ -9,32 +9,36 @@
     </div>
 
     <div class="panel-body">
-
       <div class="row screen-only">
-        <div class="col-md-12">
-          <h1 >
-            <div class="btn-group pull-left" uib-dropdown is-open="status.isopen">
-              <button type="button" class="btn btn-secondary" uib-dropdown-toggle ng-disabled="disabled" id="list-dropdown">
-                <i class="fa fa-user-md"></i>
-                {{ patient_list.display_name }}
-                <i class="fa fa-angle-down"></i>
-              </button>
-              <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="list-dropdown">
-                {% for list in lists %}
-                {% if list.get_slug != list_slug %}
-                <li>
-                  <a href="#/list/{{ list.get_slug }}">
-                    {{ list.display_name }}
-                  </a>
-                </li>
-                {% endif %}
-                {% endfor %}
-              </ul>
+          <form class="form-inline">
+            <div class="col-md-12">
+            <h1 >
+              <div class="btn-group pull-left" uib-dropdown is-open="status.isopen">
+                <button type="button" class="btn btn-secondary" uib-dropdown-toggle ng-disabled="disabled" id="list-dropdown">
+                  <i class="fa fa-user-md"></i>
+                  {{ patient_list.display_name }}
+                  <i class="fa fa-angle-down"></i>
+                </button>
+                <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="list-dropdown">
+                  {% for list in lists %}
+                  {% if list.get_slug != list_slug %}
+                  <li>
+                    <a href="#/list/{{ list.get_slug }}">
+                      {{ list.display_name }}
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+                </ul>
+              </div>
+            </h1>
+            <div class="form-group pull-right">
+              <label class="offset-right-5" for="listfilter">{% icon "fa-filter" %} Filter </label>
+              <input ui-event="{focus: 'focusOnQuery()', blur: 'blurOnQuery()'}" ng-model="query.hospital_number" type="text" class="form-control" id="listfilter" placeholder="Name or Hospital Num">
             </div>
-          </h1>
-        </div>
+          </div>
+          </form>
       </div>
-
       <div class="row">
         <div class="col-md-8 col-md-push-2">
           <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id]]" ng-repeat="row in rows">
