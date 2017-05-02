@@ -173,3 +173,13 @@ a.list-group-item {
     list-style-type: decimal;
   }
 }
+
+.no-touchevents
+.patient-timeline-discussion i.edit{
+  display:none
+}
+
+.touchevents .patient-timeline-discussion i.edit,
+.no-touchevents .patient-timeline-discussion:hover i.edit{
+  display: inline-block;
+}
