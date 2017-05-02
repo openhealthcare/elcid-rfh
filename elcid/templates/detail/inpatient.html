@@ -112,15 +112,15 @@
         <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
         <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
       </svg>
-      <div ng-repeat="microbiology_input in episode.microbiology_input | orderBy:orderByDate" class="row content-offset-20">
+      <div ng-repeat="item in episode.microbiology_input | orderBy:orderByDate" class="row content-offset-20">
 
         <div class="col-md-3 patient-timeline">
           <div class="patient-timeline-speech-bubble">
             <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
           </div>
-          <div ng-show="microbiology_input.when">
+          <div ng-show="item.when">
             <div class="patient-timeline-date">
-              [[ microbiology_input.when | momentDateFormat:'DD MMM YYYY' ]]
+              [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
             </div>
           </div>
         </div>
@@ -128,31 +128,36 @@
           <div class="patient-timeline-discussion">
             <div class="row">
               <div class="col-sm-10 timeline-data-[[ $index ]]">
-                <span ng-show="microbiology_input.initials && microbiology_input.initials.trim().length">
-                  <b>By: </b> [[microbiology_input.initials]]<span ng-show="microbiology_input.discussed_with"> with [[microbiology_input.discussed_with]]</span>
+                <span ng-show="item.initials && item.initials.trim().length">
+                  <b>By: </b> [[item.initials]]<span ng-show="item.discussed_with"> with [[item.discussed_with]]</span>
+                  <br />
                   <br />
                 </span>
-                <span ng-show="microbiology_input.reason_for_interaction">
-                  <b>Reason For Interaction: </b>[[microbiology_input.reason_for_interaction]]
+                <span ng-show="item.reason_for_interaction">
+                  <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
+                  <br />
                   <br />
                 </span>
-                <span ng-show="microbiology_input.clinical_discussion">
-                  <b>Clinical Discussion: </b>[[ microbiology_input.clinical_discussion]]
+                <span ng-show="item.clinical_discussion">
+                  <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
+                  <br />
                   <br />
                 </span>
-                <span ng-show="microbiology_input.infection_control">
-                  <b>Infection control: </b>[[ microbiology_input.infection_control ]]
+                <span ng-show="item.infection_control">
+                  <b>Infection control: </b><div markdown="infection_control"></div>
+                  <br />
                   <br />
                 </span>
-                <span ng-show="microbiology_input.agreed_plan">
-                  <b>Plan: </b>[[ microbiology_input.agreed_plan ]]
+                <span ng-show="item.agreed_plan">
+                  <b>Plan: </b><div markdown="agreed_plan"></div>
+                  <br />
                   <br />
                 </span>
               </div>
               <div class="col-sm-2">
                 <div class="row">
                   <div class="col-md-12">
-                    <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(microbiology_input, 'microbiology_input')"></i>
+                    <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(item, 'microbiology_input')"></i>
                   </div>
                 </div>
                 <div class="row content-offset-10">
