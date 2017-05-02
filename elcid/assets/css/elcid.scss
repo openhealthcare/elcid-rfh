@@ -160,3 +160,16 @@ a.list-group-item {
 .btn-text-wrap{
   white-space: normal;
 }
+
+.patient-timeline-discussion{
+  ul{
+    padding-left: 40px;
+  }
+  ul li{
+    list-style-type: disc;
+  }
+
+  ol li{
+    list-style-type: decimal;
+  }
+}
