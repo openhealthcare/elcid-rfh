@@ -120,16 +120,12 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .patient-timeline-discussion ol li {
   list-style-type: decimal; }
 
-.offset-right-5 {
-  margin-right: 5px; }
+.no-touchevents
+.patient-timeline-discussion i.edit {
+  display: none; }
 
-.patient-timeline-discussion ul {
-  padding-left: 40px; }
-
-.patient-timeline-discussion ul li {
-  list-style-type: disc; }
-
-.patient-timeline-discussion ol li {
-  list-style-type: decimal; }
+.touchevents .patient-timeline-discussion i.edit,
+.no-touchevents .patient-timeline-discussion:hover i.edit {
+  display: inline-block; }
 
 /*# sourceMappingURL=elcid.css.map */
