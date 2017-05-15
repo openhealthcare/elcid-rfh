@@ -1,8 +1,8 @@
-from opal.core.patient_lists import TaggedPatientList, CardListPatientList
+from opal.core.patient_lists import TaggedPatientList, CardPatientList
 from elcid import models
 
 
-class ElcidPatientList(CardListPatientList, TaggedPatientList):
+class ElcidPatientList(CardPatientList, TaggedPatientList):
     card_footer_template = "patient_lists/card_footer.html"
     schema = [
         models.PrimaryDiagnosis,
