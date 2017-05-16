@@ -2,7 +2,7 @@
 
 elCID is an electronic Clinical Infection Database.
 
-This is the implementation of the [OPAL](https://github.com/openhealthcare/opal) project in use at RFH.
+It is built using the [Opal](https://github.com/openhealthcare/opal) framework.
 
 It is highly customisable open source software for managing research data
 
@@ -11,7 +11,7 @@ It is highly customisable open source software for managing inpatients & outpati
 
 [![Build
 Status](https://travis-ci.org/openhealthcare/elcid-rfh.png)](https://travis-ci.org/openhealthcare/elcid-rfh)
-[![Coverage Status](https://coveralls.io/repos/github/openhealthcare/elcid/badge.svg?branch=master)](https://coveralls.io/github/openhealthcare/elcid?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/openhealthcare/elcid/badge.svg?branch=v0.2.4)](https://coveralls.io/github/openhealthcare/elcid?branch=v0.2.4)
 
 http://elcid.openhealthcare.org.uk
 
@@ -23,15 +23,6 @@ GNU Affero GPLv3
 ## Developing
 
 Developer documentation is available in DEVELOPERS.md
-
-# Deployment
-
-deployment is done via the fab deploy command, this takes an optional key file
-or defaults to using a key file called ec2.pem in the directory a level higher
-
-the command is fab deploy or with arguments either
-fab task:my.pem
-fab task:key_file_name=my.pem
 
 ## Communications
 
