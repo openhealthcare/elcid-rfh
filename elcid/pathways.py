@@ -11,24 +11,20 @@ from pathway.pathways import (
     Step,
     PagePathway,
     WizardPathway,
-    delete_others
 )
+from pathway.steps import delete_others
 
 
 class SaveTaggingMixin(object):
     @transaction.atomic
     def save(self, data, user):
         tagging = data.pop("tagging", [])
-        patient = super(SaveTaggingMixin, self).save(data, user)
+        patient, episode = super(SaveTaggingMixin, self).save(data, user)
 
         if tagging:
             tag_names = [n for n, v in list(tagging[0].items()) if v]
-            if self.episode:
-                episode = self.episode
-            else:
-                episode = patient.episode_set.last()
             episode.set_tag_names(tag_names, user)
-        return patient
+        return patient, episode
 
 
 class RemovePatientPathway(SaveTaggingMixin, PagePathway):
@@ -36,11 +32,12 @@ class RemovePatientPathway(SaveTaggingMixin, PagePathway):
     display_name = "Remove"
     finish_button_text = "Remove"
     finish_button_icon = "fa fa-sign-out"
-    modal_template_url = "/templates/pathway/modal_only_cancel.html"
+    modal_template = "pathway/modal_only_cancel.html"
     slug = "remove"
     steps = (
         Step(
-            template_url="/templates/pathway/remove.html",
+            display_name="No",
+            template="pathway/remove.html",
             step_controller="RemovePatientCtrl"
         ),
     )
@@ -52,14 +49,14 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
 
     steps = (
         Step(
-            template_url="/templates/pathway/find_patient_form.html",
+            template="pathway/find_patient_form.html",
             step_controller="FindPatientCtrl",
-            display_name="Find Patient",
+            display_name="Find patient",
             icon="fa fa-user"
         ),
         Step(
             model=models.Location,
-            template_url="/templates/pathway/blood_culture_location.html",
+            template="pathway/blood_culture_location.html",
             step_controller="TaggingStepCtrl",
         ),
     )
@@ -114,7 +111,7 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
         models.Demographics,
         models.Location,
         Step(
-            template_url="/templates/pathway/blood_culture.html",
+            template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
             step_controller="BloodCulturePathwayFormCtrl"
@@ -128,7 +125,7 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
         models.FinalDiagnosis,
         models.MicrobiologyInput,
         Step(
-            template_url="/templates/pathway/cernerletter.html'",
+            template="pathway/cernerletter.html",
             display_name="Clinical note",
             icon="fa fa-envelope"
         )
@@ -157,7 +154,7 @@ class BloodCulturePathway(PagePathway):
 
     steps = (
         Step(
-            template_url="/templates/pathway/blood_culture.html",
+            template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
             step_controller="BloodCulturePathwayFormCtrl"
