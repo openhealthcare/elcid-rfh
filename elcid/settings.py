@@ -174,11 +174,8 @@ INSTALLED_APPS = (
     'opal.core.search',
     'lab',
     'elcid',
-    'obs',
     'django.contrib.admin',
     'pathway',
-    # 'guidelines',
-    'dischargesummary',
     'djcelery',
 )
 
@@ -196,7 +193,6 @@ if 'test' in sys.argv:
         'opat': 'opat.nomigrations',
         'microhaem': 'microhaem.nomigrations',
         'iframeapi': 'iframeapi.nomigrations',
-        'obs': 'obs.nomigrations',
         'lab': 'lab.nomigrations',
     }
 
