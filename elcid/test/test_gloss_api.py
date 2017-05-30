@@ -351,8 +351,7 @@ class TestUpdateLabTests(AbstractGlossTestCase):
         update_dict = gloss_api.update_tests(deepcopy(self.UPDATE_DICT))
         self.assertNotIn("result", update_dict)
         self.assertIn("lab_test", update_dict)
-        self.assertEqual(update_dict["lab_test"][0]["lab_test_type"], "HL7Result")
-
+        self.assertEqual(update_dict["lab_test"][0]["lab_test_type"], "HL7 Result")
 
     def test_tests_update(self):
         """ An integration test that makes sure the lab tests are

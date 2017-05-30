@@ -156,7 +156,8 @@ class Location(EpisodeSubrecord):
 
 
 class HL7Result(lmodels.ReadOnlyLabTest):
-    verbose_name = "HL7 Result"
+    class Meta:
+        verbose_name = "HL7 Result"
 
     @classmethod
     def get_api_name(cls):
