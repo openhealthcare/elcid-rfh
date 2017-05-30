@@ -1,4 +1,5 @@
 from elcid import models
+from opal import models as omodels
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
@@ -17,9 +18,11 @@ from pathway.steps import delete_others
 
 class SaveTaggingMixin(object):
     @transaction.atomic
-    def save(self, data, user):
+    def save(self, data, user, patient=None, episode=None):
         tagging = data.pop("tagging", [])
-        patient, episode = super(SaveTaggingMixin, self).save(data, user)
+        patient, episode = super(SaveTaggingMixin, self).save(
+            data, user, patient=patient, episode=episode
+        )
 
         if tagging:
             tag_names = [n for n, v in list(tagging[0].items()) if v]
@@ -62,7 +65,7 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
     )
 
     @transaction.atomic
-    def save(self, data, *args, **kwargs):
+    def save(self, data, user, patient=None, episode=None):
         """
             saves the patient.
 
@@ -77,12 +80,17 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
 
-            if self.patient:
+            if not patient:
+                patient = omodels.Patient.objects.filter(
+                    demographics__hospital_number=hospital_number
+                )
+
+            if patient:
                 # the patient already exists
 
                 # refreshes the saved patient
                 gloss_api.patient_query(hospital_number)
-                self.episode_id = self.patient.create_episode().id
+                self.episode_id = patient.create_episode().id
             else:
                 # the patient doesn't exist
                 patient = gloss_api.patient_query(hospital_number)
@@ -100,7 +108,9 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
 
             gloss_api.subscribe(hospital_number)
 
-        return super(AddPatientPathway, self).save(data, *args, **kwargs)
+        return super(AddPatientPathway, self).save(
+            data, user, patient=patient, episode=episode
+        )
 
 
 class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
@@ -132,7 +142,7 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
     )
 
     @transaction.atomic
-    def save(self, data, user):
+    def save(self, data, user, patient=None, episode=None):
         multi_saved_models = [
             models.Diagnosis,
             models.Infection,
@@ -143,9 +153,11 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
             lmodels.LabTest
         ]
         for model in multi_saved_models:
-            delete_others(data, model, self.patient, self.episode)
+            delete_others(data, model, patient, episode)
 
-        return super(CernerDemoPathway, self).save(data, user)
+        return super(CernerDemoPathway, self).save(
+            data, user, patient=patient, episode=episode
+        )
 
 
 class BloodCulturePathway(PagePathway):
@@ -162,6 +174,8 @@ class BloodCulturePathway(PagePathway):
     )
 
     @transaction.atomic
-    def save(self, data, user):
-        delete_others(data, lmodels.LabTest, self.patient, self.episode)
-        return super(BloodCulturePathway, self).save(data, user)
+    def save(self, data, user, patient=None, episode=None):
+        delete_others(data, lmodels.LabTest, patient, episode)
+        return super(BloodCulturePathway, self).save(
+            data, user, patient=patient, episode=episode
+        )
