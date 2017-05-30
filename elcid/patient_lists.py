@@ -110,6 +110,6 @@ class Bacteraemia(TaggedPatientList):
     display_name = 'Bacteraemia'
     direct_add = True
     tag = "bacteraemia"
-    template_name = 'patient_lists/rfh_card_list.html'
+    template_name = 'episode_list.html'
     schema = []
     order = -10

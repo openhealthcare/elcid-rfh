@@ -100,15 +100,17 @@ class TestAddPatientPathway(OpalTestCase):
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
         )
-        self.post_json(self.url, test_data)
+        url = AddPatientPathway(patient_id=patient.id).save_url()
+        self.post_json(url, test_data)
         saved_demographics = models.Patient.objects.get().demographics_set.get()
 
         # we don't expect demographics to have changed as these will have been
         # loaded in from gloss
         self.assertEqual(saved_demographics.first_name, "Indiana")
 
-        # we expect don't expect a new episode to be created
-        saved_episode = models.Episode.objects.get()
+        # we expect a new episode to have been created on the same patient
+        saved_episode = patient.episode_set.last()
+        self.assertNotEqual(episode.id, saved_episode.id)
         self.assertEqual(
             list(saved_episode.get_tag_names(None)),
             ['antifungal']
