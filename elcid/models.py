@@ -2,7 +2,7 @@
 elCID implementation specific models!
 """
 import datetime
-from elcid.patient_lists import Bacteraemia
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
@@ -156,7 +156,8 @@ class Location(EpisodeSubrecord):
 
 
 class HL7Result(lmodels.ReadOnlyLabTest):
-    verbose_name = "HL7 Result"
+    class Meta:
+        verbose_name = "HL7 Result"
 
     @classmethod
     def get_api_name(cls):
@@ -693,6 +694,8 @@ class PositiveBloodCultureHistory(PatientSubrecord):
 # method for updating
 @receiver(post_save, sender=omodels.Tagging)
 def record_positive_blood_culture(sender, instance, **kwargs):
+    from elcid.patient_lists import Bacteraemia
+
     if instance.value == Bacteraemia.tag:
         pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
             patient_id=instance.episode.patient.id
