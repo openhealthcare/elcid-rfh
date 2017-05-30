@@ -86,7 +86,6 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
-
     @override_settings(GLOSS_ENABLED=True)
     @patch("elcid.pathways.gloss_api")
     def test_gloss_interaction_when_found(self, gloss_api):
@@ -119,8 +118,16 @@ class TestAddPatientPathway(OpalTestCase):
 
     @override_settings(GLOSS_ENABLED=True)
     @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_not_found(self, gloss_api):
-        gloss_api.patient_query.return_value = None
+    def test_gloss_interaction_when_only_found_in_gloss(self, gloss_api):
+        def side_effect(arg):
+            patient, _ = self.new_patient_and_episode_please()
+            demographics = patient.demographics_set.first()
+            demographics.consistency_token = "1231222"
+            demographics.first_name = "Sarah"
+            demographics.save()
+            return patient
+
+        gloss_api.patient_query.side_effect = side_effect
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
@@ -129,7 +136,7 @@ class TestAddPatientPathway(OpalTestCase):
         saved_demographics = models.Patient.objects.get().demographics_set.get()
 
         # if the patient isn't found, everything should just work
-        self.assertEqual(saved_demographics.nhs_number, "12312")
+        self.assertEqual(saved_demographics.first_name, "Sarah")
 
         saved_episode = models.Episode.objects.get()
         self.assertEqual(

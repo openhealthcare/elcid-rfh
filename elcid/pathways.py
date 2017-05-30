@@ -17,9 +17,11 @@ from pathway.steps import delete_others
 
 class SaveTaggingMixin(object):
     @transaction.atomic
-    def save(self, data, user):
+    def save(self, data, user, episode=None, patient=None):
         tagging = data.pop("tagging", [])
-        patient, episode = super(SaveTaggingMixin, self).save(data, user)
+        patient, episode = super(SaveTaggingMixin, self).save(
+            data, user, episode=episode, patient=patient
+        )
 
         if tagging:
             tag_names = [n for n, v in list(tagging[0].items()) if v]
@@ -62,7 +64,7 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
     )
 
     @transaction.atomic
-    def save(self, data, *args, **kwargs):
+    def save(self, data, user, patient=None, episode=None):
         """
             saves the patient.
 
@@ -82,7 +84,8 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
 
                 # refreshes the saved patient
                 gloss_api.patient_query(hospital_number)
-                self.episode_id = self.patient.create_episode().id
+                patient = self.patient
+                episode = self.patient.create_episode()
             else:
                 # the patient doesn't exist
                 patient = gloss_api.patient_query(hospital_number)
@@ -90,17 +93,14 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
                 if patient:
                     # nuke whatever is passed in in demographics as this will
                     # have been updated by gloss
-                    consistency_token = patient.demographics_set.first().consistency_token
-                    data["demographics"] = [dict(
-                        hospital_number=hospital_number,
-                        consistency_token=consistency_token
-                    )]
-                    self.patient_id = patient.id
-                    self.episode_id = patient.episode_set.get().id
+                    data.pop("demographics")
+                    episode = patient.episode_set.get()
 
             gloss_api.subscribe(hospital_number)
 
-        return super(AddPatientPathway, self).save(data, *args, **kwargs)
+        return super(AddPatientPathway, self).save(
+            data, user, patient=patient, episode=episode
+        )
 
 
 class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
