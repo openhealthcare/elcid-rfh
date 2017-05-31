@@ -84,7 +84,11 @@
 <div class="panel panel-default">
   <div class="panel-heading"><h3>
     <i class="fa fa-crosshairs"></i> Blood Cultures
-    <i class="fa fa-pencil edit pull-right pointer" open-pathway="blood_culture">
+    <i class="fa fa-pencil edit pull-right pointer"
+       open-pathway="blood_culture"
+       pathway-episode="episode"
+       pathway-callback="refresh()"
+       >
    </i>
   </div></h3>
   <ul class="list-group">
@@ -177,7 +181,7 @@
     <h3>Demo</h3>
   </div>
   <div class="panel-body">
-    <a href="/pathway/#/cernerdemo/[[ episode.id ]]">View Cerner form for this patient</a>
+    <a href="/pathway/#/cernerdemo/[[ patient.id ]]/[[ episode.id ]]">View Cerner form for this patient</a>
   </div>
 </div>
 </div>

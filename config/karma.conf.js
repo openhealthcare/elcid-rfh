@@ -4,14 +4,12 @@ module.exports = function(config){
   var baseDir = __dirname + '/..';
   var coverageFiles = [
     __dirname + '/../elcid/assets/js/elcid/*',
-    __dirname + '/../elcid/assets/js/opal/**/*',
     __dirname + '/../elcid/assets/js/elcid/controllers/*',
     __dirname + '/../elcid/assets/js/elcid/services/*',
     __dirname + '/../elcid/assets/js/elcid/services/records/*'
   ];
   var includedFiles = [
     'opal/app.js',
-    __dirname + '/../elcid/assets/js/opal/**/*',
     __dirname + '/../elcid/assets/js/elcid/**/*.js',
     __dirname + '/../elcid/assets/js/elcidtest/*.js',
   ];
