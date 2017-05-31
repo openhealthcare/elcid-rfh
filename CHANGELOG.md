@@ -1,3 +1,10 @@
+## 0.2.4 Release
+
+Dependency upgdrade:
+
+Opal -> 0.8.2
+Pathway -> 0.4
+
 ## 0.2.2 Release
 Updates the favicon
 

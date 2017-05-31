@@ -86,7 +86,6 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
-
     @override_settings(GLOSS_ENABLED=True)
     @patch("elcid.pathways.gloss_api")
     def test_gloss_interaction_when_found(self, gloss_api):
@@ -100,15 +99,17 @@ class TestAddPatientPathway(OpalTestCase):
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
         )
-        self.post_json(self.url, test_data)
+        url = AddPatientPathway(patient_id=patient.id).save_url()
+        self.post_json(url, test_data)
         saved_demographics = models.Patient.objects.get().demographics_set.get()
 
         # we don't expect demographics to have changed as these will have been
         # loaded in from gloss
         self.assertEqual(saved_demographics.first_name, "Indiana")
 
-        # we expect don't expect a new episode to be created
-        saved_episode = models.Episode.objects.get()
+        # we expect a new episode to have been created on the same patient
+        saved_episode = patient.episode_set.last()
+        self.assertNotEqual(episode.id, saved_episode.id)
         self.assertEqual(
             list(saved_episode.get_tag_names(None)),
             ['antifungal']
@@ -117,8 +118,16 @@ class TestAddPatientPathway(OpalTestCase):
 
     @override_settings(GLOSS_ENABLED=True)
     @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_not_found(self, gloss_api):
-        gloss_api.patient_query.return_value = None
+    def test_gloss_interaction_when_only_found_in_gloss(self, gloss_api):
+        def side_effect(arg):
+            patient, _ = self.new_patient_and_episode_please()
+            demographics = patient.demographics_set.first()
+            demographics.consistency_token = "1231222"
+            demographics.first_name = "Sarah"
+            demographics.save()
+            return patient
+
+        gloss_api.patient_query.side_effect = side_effect
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
@@ -127,7 +136,7 @@ class TestAddPatientPathway(OpalTestCase):
         saved_demographics = models.Patient.objects.get().demographics_set.get()
 
         # if the patient isn't found, everything should just work
-        self.assertEqual(saved_demographics.nhs_number, "12312")
+        self.assertEqual(saved_demographics.first_name, "Sarah")
 
         saved_episode = models.Episode.objects.get()
         self.assertEqual(

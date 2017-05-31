@@ -32,10 +32,10 @@ sqlparse==0.1.16
 static3==0.6.1
 
 
--e git+https://github.com/openhealthcare/opal.git@v0.8.1#egg=opal
+-e git+https://github.com/openhealthcare/opal.git@v0.8.2#egg=opal
 -e git+https://github.com/openhealthcare/opal-observations.git@v0.3.0#egg=opal_observations
 
--e git+https://github.com/openhealthcare/opal-pathway.git@v0.3#egg=opal_pathway
+-e git+https://github.com/openhealthcare/opal-pathway.git@v0.4#egg=opal_pathway
 -e git+https://github.com/openhealthcare/opal-lab.git@v0.2.0#egg=opal_lab
 
 -e git+https://github.com/openhealthcare/opal-dischargesummary.git@v0.2#egg=opal_dischargesummary
