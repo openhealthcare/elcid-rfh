@@ -34,8 +34,8 @@ opal==0.8.2.1
 opal-observations==0.3.0
 opal-lab==0.2.0
 
-
 -e git+https://github.com/openhealthcare/opal-pathway.git@v0.4#egg=opal_pathway
+
 -e git+https://github.com/openhealthcare/opal-dischargesummary.git@v0.2#egg=opal_dischargesummary
 -e git+https://github.com/openhealthcare/opal-guidelines.git@#egg=opal_guidelines
 -e git+https://github.com/srosro/django-test-coverage#egg=django-test-coverage
