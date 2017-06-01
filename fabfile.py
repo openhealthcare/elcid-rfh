@@ -76,7 +76,7 @@ def checkout(package_name_version):
                             package_name, version
                         )
                 else:
-                    local("git fetch")
+                    local("git fetch origin")
 
                 with lcd(package_name):
                     local("git checkout {}".format(version))
