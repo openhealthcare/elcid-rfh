@@ -112,7 +112,8 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
             template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
-            step_controller="BloodCulturePathwayFormCtrl"
+            step_controller="BloodCulturePathwayFormCtrl",
+            model=lmodels.LabTest
         ),
         models.Procedure,
         models.Diagnosis,
@@ -131,18 +132,6 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
 
     @transaction.atomic
     def save(self, data, user=None, episode=None, patient=None):
-        multi_saved_models = [
-            models.Diagnosis,
-            models.Infection,
-            models.Line,
-            models.Antimicrobial,
-            models.Imaging,
-            models.MicrobiologyInput,
-            lmodels.LabTest
-        ]
-        for model in multi_saved_models:
-            delete_others(data, model, patient=patient, episode=episode)
-
         return super(CernerDemoPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
@@ -157,13 +146,7 @@ class BloodCulturePathway(PagePathway):
             template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
-            step_controller="BloodCulturePathwayFormCtrl"
+            step_controller="BloodCulturePathwayFormCtrl",
+            model=lmodels.LabTest
         ),
     )
-
-    @transaction.atomic
-    def save(self, data, user=None, episode=None, patient=None):
-        delete_others(data, lmodels.LabTest, self.patient, self.episode)
-        return super(BloodCulturePathway, self).save(
-            data, user=user, patient=patient, episode=episode
-        )
