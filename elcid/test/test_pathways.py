@@ -4,7 +4,40 @@ from mock import patch
 
 from opal import models
 from opal.core.test import OpalTestCase
-from elcid.pathways import AddPatientPathway, CernerDemoPathway
+from elcid.pathways import (
+    AddPatientPathway, CernerDemoPathway, BloodCulturePathway
+)
+
+
+class TestBloodCulturePathway(OpalTestCase):
+    def test_update_lab_tests(self):
+        # in theory this should just work, but lets
+        # double check the underlying api hasn't changed
+        patient, episode = self.new_patient_and_episode_please()
+        gram_stain = patient.labtest_set.create(
+            lab_test_type='Gram Stain',
+        )
+        patient.labtest_set.create(
+            lab_test_type='QuickFISH',
+        )
+        data = dict(
+            lab_test=[{
+                "id": gram_stain.id,
+                "lab_test_type": "QuickFISH"
+            }]
+        )
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        pathway = BloodCulturePathway()
+        url = pathway.save_url(patient=patient, episode=episode)
+        result = self.post_json(url, data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(
+            patient.labtest_set.get().lab_test_type, "QuickFISH"
+        )
 
 
 class TestCernerDemoPathway(OpalTestCase):
