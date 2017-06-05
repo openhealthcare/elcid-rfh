@@ -33,8 +33,8 @@ class TestCernerDemoPathway(OpalTestCase):
                 patient_id=patient.id
             )],
         )
-        pathway = CernerDemoPathway(patient_id=patient.id, episode_id=episode.id)
-        url = pathway.save_url()
+        pathway = CernerDemoPathway()
+        url = pathway.save_url(patient=patient, episode=episode)
         result = self.post_json(url, test_data)
         self.assertEqual(result.status_code, 200)
         demographics = models.Patient.objects.get().demographics_set.first()
@@ -99,7 +99,7 @@ class TestAddPatientPathway(OpalTestCase):
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
         )
-        url = AddPatientPathway(patient_id=patient.id).save_url()
+        url = AddPatientPathway().save_url(patient=patient)
         self.post_json(url, test_data)
         saved_demographics = models.Patient.objects.get().demographics_set.get()
 
@@ -149,7 +149,9 @@ class TestAddPatientPathway(OpalTestCase):
     @patch("elcid.pathways.gloss_api")
     def test_gloss_interaction_when_not_creating_a_patient(self, gloss_api):
         patient, existing_episode = self.new_patient_and_episode_please()
-        url = AddPatientPathway(patient_id=patient.id).save_url()
+        url = AddPatientPathway().save_url(
+            patient=patient
+        )
         demographics = patient.demographics_set.first()
         demographics.hospital_number = "234"
         gloss_api.patient_query.return_value = None
