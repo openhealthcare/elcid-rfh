@@ -10,7 +10,7 @@ from elcid.pathways import (
 
 
 class TestBloodCulturePathway(OpalTestCase):
-    def test_update_lab_tests(self):
+    def test_delete_others(self):
         # in theory this should just work, but lets
         # double check the underlying api hasn't changed
         patient, episode = self.new_patient_and_episode_please()
