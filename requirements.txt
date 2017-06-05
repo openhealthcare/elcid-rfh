@@ -30,9 +30,11 @@ pycparser==2.14
 pytz==2015.7
 sqlparse==0.1.16
 static3==0.6.1
-opal==0.8.2.1
 opal-observations==0.3.0
 opal-lab==0.2.0
+
+-e git+https://github.com/openhealthcare/opal.git@v0.8.3#egg=opal
+-e git+https://github.com/openhealthcare/opal-observations.git@v0.3.0#egg=opal_observations
 
 -e git+https://github.com/openhealthcare/opal-pathway.git@v0.4#egg=opal_pathway
 
