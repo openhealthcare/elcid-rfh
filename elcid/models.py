@@ -156,7 +156,7 @@ class Location(EpisodeSubrecord):
 
 
 class HL7Result(lmodels.ReadOnlyLabTest):
-    verbose_name = "HL7 Result"
+    _title = "HL7 Result"
 
     @classmethod
     def get_api_name(cls):
@@ -164,6 +164,9 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
     def update_from_dict(self, data, *args, **kwargs):
         if "id" not in data:
+            if 'patient_id' in data:
+                self.patient = omodels.Patient.objects.get(id=data['patient_id'])
+
             if "external_identifier" not in data:
                 raise ValueError(
                     "an external identifier is required in {}".format(data)
