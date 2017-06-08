@@ -174,11 +174,8 @@ INSTALLED_APPS = (
     'opal.core.search',
     'lab',
     'elcid',
-    'obs',
     'django.contrib.admin',
     'pathway',
-    # 'guidelines',
-    'dischargesummary',
     'djcelery',
 )
 
@@ -196,7 +193,6 @@ if 'test' in sys.argv:
         'opat': 'opat.nomigrations',
         'microhaem': 'microhaem.nomigrations',
         'iframeapi': 'iframeapi.nomigrations',
-        'obs': 'obs.nomigrations',
         'lab': 'lab.nomigrations',
     }
 
@@ -216,14 +212,14 @@ LOGGING = {
             'class': 'logging.StreamHandler'
         },
         'mail_admins': {
-            'level': 'CRITICAL',
+            'level': 'ERROR',
             'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+            'class': 'opal.core.log.ConfidentialEmailer'
+        },
     },
     'loggers': {
         'django.request': {
-            'handlers': ['console'],
+            'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },
@@ -231,7 +227,7 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
-        },
+        }
     }
 }
 
@@ -280,7 +276,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.2.2'
+VERSION_NUMBER = '0.2.4'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

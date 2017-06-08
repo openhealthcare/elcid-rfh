@@ -112,3 +112,20 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 
 .btn-text-wrap {
   white-space: normal; }
+
+.patient-timeline-discussion ul {
+  padding-left: 40px; }
+.patient-timeline-discussion ul li {
+  list-style-type: disc; }
+.patient-timeline-discussion ol li {
+  list-style-type: decimal; }
+
+.no-touchevents
+.patient-timeline-discussion i.edit {
+  display: none; }
+
+.touchevents .patient-timeline-discussion i.edit,
+.no-touchevents .patient-timeline-discussion:hover i.edit {
+  display: inline-block; }
+
+/*# sourceMappingURL=elcid.css.map */

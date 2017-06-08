@@ -3,6 +3,7 @@ elCID Royal Free Hospital implementation
 """
 
 from opal.core import application
+from opal.core import menus
 
 
 class Application(application.OpalApplication):
@@ -33,11 +34,14 @@ class Application(application.OpalApplication):
         "General Consultation": "inline_forms/clinical_advice.html",
     }
 
+    add_patient_menu_item = menus.MenuItem(
+        href='/pathway/#/add_patient',
+        display='Add Patient',
+        icon='fa fa-plus',
+        activepattern='/pathway/#/add_patient'
+    )
+
     @classmethod
     def get_menu_items(klass, user=None):
         items = application.OpalApplication.get_menu_items(user=user)
-        items.append(
-            dict(
-                href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
-                activepattern='/pathway/#/add_patient'))
-        return items
+        return items + [klass.add_patient_menu_item]

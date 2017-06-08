@@ -112,3 +112,4 @@ class Bacteraemia(TaggedPatientList):
     tag = "bacteraemia"
     template_name = 'episode_list.html'
     schema = []
+    order = -10

@@ -4,7 +4,40 @@ from mock import patch
 
 from opal import models
 from opal.core.test import OpalTestCase
-from elcid.pathways import AddPatientPathway, CernerDemoPathway
+from elcid.pathways import (
+    AddPatientPathway, CernerDemoPathway, BloodCulturePathway
+)
+
+
+class TestBloodCulturePathway(OpalTestCase):
+    def test_delete_others(self):
+        # in theory this should just work, but lets
+        # double check the underlying api hasn't changed
+        patient, episode = self.new_patient_and_episode_please()
+        gram_stain = patient.labtest_set.create(
+            lab_test_type='Gram Stain',
+        )
+        patient.labtest_set.create(
+            lab_test_type='QuickFISH',
+        )
+        data = dict(
+            lab_test=[{
+                "id": gram_stain.id,
+                "lab_test_type": "QuickFISH"
+            }]
+        )
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        pathway = BloodCulturePathway()
+        url = pathway.save_url(patient=patient, episode=episode)
+        result = self.post_json(url, data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(
+            patient.labtest_set.get().lab_test_type, "QuickFISH"
+        )
 
 
 class TestCernerDemoPathway(OpalTestCase):
@@ -33,8 +66,8 @@ class TestCernerDemoPathway(OpalTestCase):
                 patient_id=patient.id
             )],
         )
-        pathway = CernerDemoPathway(patient_id=patient.id, episode_id=episode.id)
-        url = pathway.save_url()
+        pathway = CernerDemoPathway()
+        url = pathway.save_url(patient=patient, episode=episode)
         result = self.post_json(url, test_data)
         self.assertEqual(result.status_code, 200)
         demographics = models.Patient.objects.get().demographics_set.first()
@@ -86,7 +119,6 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
-
     @override_settings(GLOSS_ENABLED=True)
     @patch("elcid.pathways.gloss_api")
     def test_gloss_interaction_when_found(self, gloss_api):
@@ -100,15 +132,17 @@ class TestAddPatientPathway(OpalTestCase):
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
         )
-        self.post_json(self.url, test_data)
+        url = AddPatientPathway().save_url(patient=patient)
+        self.post_json(url, test_data)
         saved_demographics = models.Patient.objects.get().demographics_set.get()
 
         # we don't expect demographics to have changed as these will have been
         # loaded in from gloss
         self.assertEqual(saved_demographics.first_name, "Indiana")
 
-        # we expect don't expect a new episode to be created
-        saved_episode = models.Episode.objects.get()
+        # we expect a new episode to have been created on the same patient
+        saved_episode = patient.episode_set.last()
+        self.assertNotEqual(episode.id, saved_episode.id)
         self.assertEqual(
             list(saved_episode.get_tag_names(None)),
             ['antifungal']
@@ -117,8 +151,16 @@ class TestAddPatientPathway(OpalTestCase):
 
     @override_settings(GLOSS_ENABLED=True)
     @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_not_found(self, gloss_api):
-        gloss_api.patient_query.return_value = None
+    def test_gloss_interaction_when_only_found_in_gloss(self, gloss_api):
+        def side_effect(arg):
+            patient, _ = self.new_patient_and_episode_please()
+            demographics = patient.demographics_set.first()
+            demographics.consistency_token = "1231222"
+            demographics.first_name = "Sarah"
+            demographics.save()
+            return patient
+
+        gloss_api.patient_query.side_effect = side_effect
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
@@ -127,7 +169,7 @@ class TestAddPatientPathway(OpalTestCase):
         saved_demographics = models.Patient.objects.get().demographics_set.get()
 
         # if the patient isn't found, everything should just work
-        self.assertEqual(saved_demographics.nhs_number, "12312")
+        self.assertEqual(saved_demographics.first_name, "Sarah")
 
         saved_episode = models.Episode.objects.get()
         self.assertEqual(
@@ -140,7 +182,9 @@ class TestAddPatientPathway(OpalTestCase):
     @patch("elcid.pathways.gloss_api")
     def test_gloss_interaction_when_not_creating_a_patient(self, gloss_api):
         patient, existing_episode = self.new_patient_and_episode_please()
-        url = AddPatientPathway(patient_id=patient.id).save_url()
+        url = AddPatientPathway().save_url(
+            patient=patient
+        )
         demographics = patient.demographics_set.first()
         demographics.hospital_number = "234"
         gloss_api.patient_query.return_value = None

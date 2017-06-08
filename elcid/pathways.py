@@ -7,28 +7,25 @@ from elcid import gloss_api
 
 from pathway.pathways import (
     RedirectsToPatientMixin,
-    RedirectsToEpisodeMixin,
     Step,
     PagePathway,
     WizardPathway,
-    delete_others
 )
+from pathway.steps import delete_others
 
 
 class SaveTaggingMixin(object):
     @transaction.atomic
-    def save(self, data, user):
+    def save(self, data, user=None, episode=None, patient=None):
         tagging = data.pop("tagging", [])
-        patient = super(SaveTaggingMixin, self).save(data, user)
+        patient, episode = super(SaveTaggingMixin, self).save(
+            data, user=user, episode=episode, patient=patient
+        )
 
         if tagging:
             tag_names = [n for n, v in list(tagging[0].items()) if v]
-            if self.episode:
-                episode = self.episode
-            else:
-                episode = patient.episode_set.last()
             episode.set_tag_names(tag_names, user)
-        return patient
+        return patient, episode
 
 
 class RemovePatientPathway(SaveTaggingMixin, PagePathway):
@@ -36,36 +33,37 @@ class RemovePatientPathway(SaveTaggingMixin, PagePathway):
     display_name = "Remove"
     finish_button_text = "Remove"
     finish_button_icon = "fa fa-sign-out"
-    modal_template_url = "/templates/pathway/modal_only_cancel.html"
+    modal_template = "pathway/modal_only_cancel.html"
     slug = "remove"
     steps = (
         Step(
-            template_url="/templates/pathway/remove.html",
+            display_name="No",
+            template="pathway/remove.html",
             step_controller="RemovePatientCtrl"
         ),
     )
 
 
-class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway):
+class AddPatientPathway(SaveTaggingMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
 
     steps = (
         Step(
-            template_url="/templates/pathway/find_patient_form.html",
+            template="pathway/find_patient_form.html",
             step_controller="FindPatientCtrl",
-            display_name="Find Patient",
+            display_name="Find patient",
             icon="fa fa-user"
         ),
         Step(
             model=models.Location,
-            template_url="/templates/pathway/blood_culture_location.html",
+            template="pathway/blood_culture_location.html",
             step_controller="TaggingStepCtrl",
         ),
     )
 
     @transaction.atomic
-    def save(self, data, *args, **kwargs):
+    def save(self, data, user, patient=None, episode=None):
         """
             saves the patient.
 
@@ -80,12 +78,12 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
 
-            if self.patient:
+            if patient:
                 # the patient already exists
 
                 # refreshes the saved patient
                 gloss_api.patient_query(hospital_number)
-                self.episode_id = self.patient.create_episode().id
+                episode = patient.create_episode()
             else:
                 # the patient doesn't exist
                 patient = gloss_api.patient_query(hospital_number)
@@ -93,17 +91,14 @@ class AddPatientPathway(SaveTaggingMixin, RedirectsToEpisodeMixin, WizardPathway
                 if patient:
                     # nuke whatever is passed in in demographics as this will
                     # have been updated by gloss
-                    consistency_token = patient.demographics_set.first().consistency_token
-                    data["demographics"] = [dict(
-                        hospital_number=hospital_number,
-                        consistency_token=consistency_token
-                    )]
-                    self.patient_id = patient.id
-                    self.episode_id = patient.episode_set.get().id
+                    data.pop("demographics")
+                    episode = patient.episode_set.get()
 
             gloss_api.subscribe(hospital_number)
 
-        return super(AddPatientPathway, self).save(data, *args, **kwargs)
+        return super(AddPatientPathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
 
 
 class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
@@ -114,10 +109,11 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
         models.Demographics,
         models.Location,
         Step(
-            template_url="/templates/pathway/blood_culture.html",
+            template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
-            step_controller="BloodCulturePathwayFormCtrl"
+            step_controller="BloodCulturePathwayFormCtrl",
+            model=lmodels.LabTest
         ),
         models.Procedure,
         models.Diagnosis,
@@ -128,27 +124,17 @@ class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
         models.FinalDiagnosis,
         models.MicrobiologyInput,
         Step(
-            template_url="/templates/pathway/cernerletter.html'",
+            template="pathway/cernerletter.html",
             display_name="Clinical note",
             icon="fa fa-envelope"
         )
     )
 
     @transaction.atomic
-    def save(self, data, user):
-        multi_saved_models = [
-            models.Diagnosis,
-            models.Infection,
-            models.Line,
-            models.Antimicrobial,
-            models.Imaging,
-            models.MicrobiologyInput,
-            lmodels.LabTest
-        ]
-        for model in multi_saved_models:
-            delete_others(data, model, self.patient, self.episode)
-
-        return super(CernerDemoPathway, self).save(data, user)
+    def save(self, data, user=None, episode=None, patient=None):
+        return super(CernerDemoPathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
 
 
 class BloodCulturePathway(PagePathway):
@@ -157,14 +143,10 @@ class BloodCulturePathway(PagePathway):
 
     steps = (
         Step(
-            template_url="/templates/pathway/blood_culture.html",
+            template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
-            step_controller="BloodCulturePathwayFormCtrl"
+            step_controller="BloodCulturePathwayFormCtrl",
+            model=lmodels.LabTest
         ),
     )
-
-    @transaction.atomic
-    def save(self, data, user):
-        delete_others(data, lmodels.LabTest, self.patient, self.episode)
-        return super(BloodCulturePathway, self).save(data, user)

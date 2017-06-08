@@ -8,19 +8,15 @@
           <div class="row">
             <div class="col-md-12">
               <form class="form-horizontal">
-                {% datetimepicker field="MicrobiologyInput.when" model="clinicalAdviceForm.editing.when" %}
-                {% input field="MicrobiologyInput.initials" model="clinicalAdviceForm.editing.initials" %}
-                {% select field="MicrobiologyInput.reason_for_interaction" model="clinicalAdviceForm.editing.reason_for_interaction" %}
-                {% textarea field="MicrobiologyInput.clinical_discussion" model="clinicalAdviceForm.editing.clinical_discussion" %}
-                {% textarea field="MicrobiologyInput.infection_control" model="clinicalAdviceForm.editing.infection_control" %}
-                {% input field="MicrobiologyInput.discussed_with" model="clinicalAdviceForm.editing.discussed_with" %}
-                {% textarea field="MicrobiologyInput.agreed_plan" model="clinicalAdviceForm.editing.agreed_plan" %}
+                <div ng-repeat="editing in [clinicalAdviceForm.editing]">
+                  {% include models.MicrobiologyInput.get_form_template %}
+                </div>
               </form>
             </div>
         </div>
       <div class="row">
           <div class="col-md-12 text-right">
-              <button class="btn btn-primary" ng-click="clinicalAdviceForm.save('save')">
+              <button ng-disabled="!clinicalAdviceForm.changed" class="btn btn-primary" ng-click="clinicalAdviceForm.save('save')">
               <i class="fa fa-save"></i>
               Save
               </button>

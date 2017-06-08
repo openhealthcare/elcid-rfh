@@ -2,7 +2,7 @@ describe('ClinicalAdviceFormTest', function() {
     "use strict";
 
     var $scope, $httpBackend, $rootScope, $controller;
-    var Episode;
+    var Episode, ctrl;
     var mkcontroller;
 
     var episodedata = {
@@ -11,7 +11,9 @@ describe('ClinicalAdviceFormTest', function() {
     var recorddata = {
             'microbiology_input': {
                 'name': 'microbiology_input',
-                'fields': []
+                'fields': [
+                    {name: 'reason_for_interaction', type: 'string'},
+                ]
             }
     };
 
@@ -30,7 +32,7 @@ describe('ClinicalAdviceFormTest', function() {
         $scope.episode = new Episode(episodedata);
 
         mkcontroller = function(){
-            var ret = $controller('ClinicalAdviceForm', {
+            ctrl = $controller('ClinicalAdviceForm', {
                 $rootScope: $rootScope,
                 $scope: $scope,
             });
@@ -40,14 +42,77 @@ describe('ClinicalAdviceFormTest', function() {
         $httpBackend.expectGET('/api/v0.1/referencedata/').respond({});
     });
 
+    afterEach(function() {
+        $httpBackend.verifyNoOutstandingExpectation();
+        $httpBackend.verifyNoOutstandingRequest();
+    });
+
     describe('initialization', function() {
+      it('should setup editing', function() {
+          mkcontroller();
+          $rootScope.$apply();
+          $httpBackend.flush();
+          expect(!!ctrl.editing.microbiology_input).toBe(true)
+      });
 
-        it('should setup', function() {
-            mkcontroller();
-            $rootScope.$apply();
-            $httpBackend.flush();
-        });
+      it('should set chagned to false', function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        expect(ctrl.changed).toBe(false);
+      })
+    });
 
+    describe('it should save', function(){
+      beforeEach(function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        $httpBackend.expectPOST("/api/v0.1/microbiology_input/", {"reason_for_interaction":"something"}).respond({});
+        ctrl.editing.microbiology_input.reason_for_interaction = "something";
+      });
+
+      it('should reset item', function(){
+          ctrl.save();
+          $rootScope.$apply();
+          $httpBackend.flush();
+          expect(ctrl.editing.microbiology_input.reason_for_interaction).toBe(undefined);
+      });
+
+      it('should reset changed', function(){
+        ctrl.changed = true;
+        ctrl.save();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        expect(ctrl.changed).toBe(false);
+      })
+    });
+
+    describe('it should notice changes to fields', function(){
+
+      beforeEach(function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+      });
+
+      it('should notice if a field has changed', function(){
+        expect(ctrl.changed).toBe(false);
+        var mi = {reason_for_interaction: "they had a problem"}
+        ctrl.watchMicroFields(mi);
+        expect(ctrl.changed).toBe(true);
+      });
+
+      it('should ignore changes that to _client, when and initials', function(){
+        expect(ctrl.changed).toBe(false);
+        var mi = {
+          _client: "something",
+          when: "something",
+          initials: "something"
+        }
+        ctrl.watchMicroFields(mi);
+        expect(ctrl.changed).toBe(false);
+      });
     });
 
 });
