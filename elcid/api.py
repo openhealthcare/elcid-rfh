@@ -54,7 +54,14 @@ class ReleventLabTestApi(LoginRequiredViewset):
                                     group.date_ordered,
                                 ))
                             except ValueError:
-                                pass
+                                timeseries.append((
+                                    None,
+                                    group.date_ordered,
+                                ))
+
+                # sort by date reversed
+                timeseries = sorted(timeseries, key=lambda x: x[1])
+                timeseries.reverse()
 
                 result.append({
                     'name': relevant_observation,
