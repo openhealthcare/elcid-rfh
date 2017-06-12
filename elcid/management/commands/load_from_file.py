@@ -1,4 +1,5 @@
 import json, os
+from elcid import gloss_api
 
 from django.contrib.auth.models import User
 
@@ -21,24 +22,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         data = json.loads(open(options['filename'], 'r').read())
-        tests = [t for t in data['lab_test'] if t['lab_test_type'] == 'HL7Result']
         patient = Patient.objects.get(id=options['patient'])
-
-        if not patient:
-            patient = Patient.objects.create()
+        data["hospital_number"] = patient.demographics_set.get().hospital_number
 
         patient.labtest_set.all().delete()
-
-        user = User.objects.first()
-
-        for t in tests:
-            t['lab_test_type'] = "HL7 Result"
-            del t['created_by_id']
-            del t['id']
-            t['patient_id'] = patient.id
-            LabTest().update_from_dict(t, user)
-            print t['external_identifier']
-            import pprint;
-            pprint.pprint(t)
-
+        gloss_api.bulk_create_from_gloss_response(data)
         print 'Added to', patient
