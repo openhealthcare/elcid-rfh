@@ -26,7 +26,7 @@ directives.directive("investigationGraph", function () {
         },
         size: {
           height: 25,
-          width: 50
+          width: 150
         }
       };
       setTimeout(function(){
@@ -46,7 +46,7 @@ directives.directive("populateLabTests", function($http){
       $http.get("/glossapi/v0.1/relevent_lab_test_api/" + patientId + "/").then(function(result){
         scope.data = result.data;
 
-        _.each(scope.data, function(data){
+        _.each(scope.data.obs_values, function(data){
           data.graphValues = _.map(data.values, function(someData){
             return parseInt(someData[0]);
           });

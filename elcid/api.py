@@ -33,7 +33,8 @@ class ReleventLabTestApi(LoginRequiredViewset):
             "CLOTTING SCREEN": ["INR"]
         }
 
-        result = []
+        obs_values = []
+        all_dates = set()
         units = None
         reference_range = None
         for relevant_test, relevant_observations in relevant_tests.items():
@@ -53,6 +54,7 @@ class ReleventLabTestApi(LoginRequiredViewset):
                                     observation["observation_value"].split("~")[0],
                                     group.date_ordered,
                                 ))
+                                all_dates.add(group.date_ordered)
                             except ValueError:
                                 timeseries.append((
                                     None,
@@ -63,13 +65,34 @@ class ReleventLabTestApi(LoginRequiredViewset):
                 timeseries = sorted(timeseries, key=lambda x: x[1])
                 timeseries.reverse()
 
-                result.append({
-                    'name': relevant_observation,
+                obs_values.append({
+                    'name': relevant_observation.strip(),
                     'values': timeseries,
                     'unit': units,
                     'range': reference_range
                 })
 
+        # so we want a table that shows the latest three dates
+        # so we get the latest three dates that these tests have
+        # and then we create an dictionary of of the latest 3 results {date: value}
+        # not all dates will have an element, we'll leave those blank
+        latest_results = sorted(list(all_dates))[:3]
+        latest_results.reverse()
+
+        for obs_value in obs_values:
+            obs_value["latest_results"] = {}
+            for series_element in obs_value["values"]:
+                if series_element[1] in latest_results:
+                    date_var = series_element[1].strftime(
+                        settings.DATE_INPUT_FORMATS[0]
+                    )
+                    print series_element[0]
+                    obs_value["latest_results"][date_var] = series_element[0]
+
+        result = dict(
+            obs_values=obs_values,
+            latest_results=latest_results
+        )
         return json_response(result)
 
 

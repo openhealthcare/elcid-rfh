@@ -36,7 +36,7 @@
           </form>
       </div>
       <div class="row">
-        <div class="col-md-8 col-md-push-2">
+        <div class="col-md-10 col-md-push-1">
           <div ng-repeat="row in rows" class="panel panel-default content-offset patient-row">
             <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id]]">
               <div class="panel-heading">
@@ -60,7 +60,7 @@
               </div>
               <div class="panel-body">
                 <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-md-5">
                     <h4><strong>
                         {% icon models.PrimaryDiagnosis.get_icon %} Primary Diagnosis
                     </strong></h4>
@@ -80,21 +80,35 @@
                     </p>
 
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-7">
                     <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
                     <div populate-lab-tests="row">
-                      <table class="col-md-12">
-                        <tr class="row" ng-repeat="item in data">
-                          <td>
-                            [[ item.name ]]
-                          </td>
-                          <td ng-show="(item.values.length - $index) < 4" ng-repeat="value in item.values">
-                            [[ value[0] ]]
-                          </td>
-                          <td>
-                            <div loaded="loaded" investigation-graph="item.graphValues"></div>
-                          </td>
-                        </tr>
+                      <table class="col-md-12 table">
+                        <thead>
+                          <tr>
+                            <th></th>
+                            <th class="col-md-2"></th>
+                            <th class="text-center" ng-repeat="date in data.latest_results">
+                              [[ date | shortDate ]]
+                            </th>
+                            <th class="text-center">
+                              3 month trend
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="row" ng-repeat="item in data.obs_values">
+                            <td class="text-center col-md-2">
+                              [[ item.name ]]
+                            </td>
+                            <td class="text-center" ng-repeat="date in data.latest_results">
+                              [[ item.latest_results[date] ]]
+                            </td>
+                            <td class="text-center">
+                              <div loaded="loaded" investigation-graph="item.graphValues"></div>
+                            </td>
+                          </tr>
+                        </tbody>
                       </table>
                     </div>
                   </div>
