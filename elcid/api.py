@@ -1,4 +1,6 @@
 import json
+import datetime
+from collections import defaultdict
 from django.conf import settings
 
 from rest_framework import viewsets
@@ -9,6 +11,7 @@ from opal.core.api import PatientViewSet, patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
 from opal import models
 from elcid import models as emodels
+from lab import models as lmodels
 
 
 class GlossEndpointApi(viewsets.ViewSet):
@@ -20,7 +23,40 @@ class GlossEndpointApi(viewsets.ViewSet):
         return Response("ok")
 
 
+class LabTestResultsView(LoginRequiredViewset):
+    """ The Api view of the the results view in the patient detail
+        We want to show everything grouped by test, then observation, then
+        date.
+    """
+    base_name = 'lab_test_results_view'
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        # so what I want to return is all observations to lab test desplay
+        # name with the lab test properties on the observation
+
+        three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
+        lab_tests = lmodels.LabTest.objects.filter(patient=patient)
+        lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
+        result = defaultdict(list)
+
+        for lab_test in lab_tests:
+            as_dict = lab_test.to_dict(None)
+            observations = as_dict.get("observations", [])
+            lab_test_type = as_dict["extras"].get(
+                "profile_description", lab_test.lab_test_type
+            )
+
+            for observation in observations:
+                observation["date_ordered"] = lab_test.date_ordered
+                result[lab_test_type].append(observation)
+        return json_response(result)
+
+
 class ReleventLabTestApi(LoginRequiredViewset):
+    """ The API View used in the card list. Returns the last 3 months (approixmately)
+        of the tests we care about the most.
+    """
     base_name = 'relevent_lab_test_api'
 
     @patient_from_pk
@@ -114,3 +150,4 @@ PatientViewSet.retrieve = gloss_api_query_monkey_patch(PatientViewSet.retrieve)
 gloss_router = OPALRouter()
 gloss_router.register('glossapi', GlossEndpointApi)
 gloss_router.register('relevent_lab_test_api', ReleventLabTestApi)
+gloss_router.register('lab_test_results_view', LabTestResultsView)

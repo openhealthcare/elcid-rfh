@@ -1,4 +1,4 @@
-angular.module('opal.controllers').controller('ResultView', function(){
+angular.module('opal.controllers').controller('ResultView', function(LabTestResultsView){
       "use strict";
       var vm = this;
       this.filterValue = "";
@@ -12,34 +12,39 @@ angular.module('opal.controllers').controller('ResultView', function(){
           return nameContains || resultContains;
       };
 
-      var extractLabTests = function(labTestCollections){
-          var result = [];
-          _.each(labTestCollections, function(labTestCollection){
-            if(labTestCollection && labTestCollection.lab_tests){
-              result = _.union(result, labTestCollection.lab_tests);
-            }
-          });
-
-          return result;
-      };
-
       this.getLabTests = function(patient){
-        var result = [];
+        return LabTestResultsView.load(patient.id);
+      });
 
-        _.each(patient.episodes, function(episode){
-          _.each(episode, function(subrecords, subrecordName){
-            result = _.union(result, extractLabTests(subrecords));
 
-            if(subrecordName === 'blood_culture'){
-              _.each(subrecords, function(subrecord){
-                  result = _.union(result, extractLabTests(subrecord.isolates));
-              });
-            }
-          });
-        });
-        result = _.filter(result, function(r){
-          return r.result !== "Not Done";
-        });
-        return _.filter(result, vm.filter)
-      };
+      // var extractLabTests = function(labTestCollections){
+      //     var result = [];
+      //     _.each(labTestCollections, function(labTestCollection){
+      //       if(labTestCollection && labTestCollection.lab_tests){
+      //         result = _.union(result, labTestCollection.lab_tests);
+      //       }
+      //     });
+      //
+      //     return result;
+      // };
+      //
+      // this.getLabTests = function(patient){
+      //   var result = [];
+      //
+      //   _.each(patient.episodes, function(episode){
+      //     _.each(episode, function(subrecords, subrecordName){
+      //       result = _.union(result, extractLabTests(subrecords));
+      //
+      //       if(subrecordName === 'blood_culture'){
+      //         _.each(subrecords, function(subrecord){
+      //             result = _.union(result, extractLabTests(subrecord.isolates));
+      //         });
+      //       }
+      //     });
+      //   });
+      //   result = _.filter(result, function(r){
+      //     return r.result !== "Not Done";
+      //   });
+      //   return _.filter(result, vm.filter)
+      // };
 });

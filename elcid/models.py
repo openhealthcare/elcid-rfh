@@ -195,10 +195,10 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             "GENTAMICIN LEVEL",
             "CLOTTING SCREEN"
         ]
-        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
+        three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
         qs = HL7Result.objects.filter(
             patient=patient,
-            date_ordered__gt=six_months_ago
+            date_ordered__gt=three_months_ago
         ).order_by("date_ordered")
         return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
 
