@@ -30,6 +30,24 @@ class LabTestResultsView(LoginRequiredViewset):
     """
     base_name = 'lab_test_results_view'
 
+    def generate_time_series(self, observations):
+        timeseries = ["values"]
+        for observation in observations:
+            obs_result = observation["observation_value"].split("~")[0]
+            try:
+                # we can fail if the result is not numeric
+                timeseries.append(
+                    float(obs_result),
+                )
+            except ValueError:
+                timeseries.append((
+                    None,
+                ))
+        if len([t for t in timeseries if not t == 'values' and t]) > 3:
+            return timeseries
+        else:
+            return []
+
     @patient_from_pk
     def retrieve(self, request, patient):
         # so what I want to return is all observations to lab test desplay
@@ -38,7 +56,7 @@ class LabTestResultsView(LoginRequiredViewset):
         three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
         lab_tests = lmodels.LabTest.objects.filter(patient=patient)
         lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
-        result = defaultdict(list)
+        by_test = defaultdict(list)
 
         for lab_test in lab_tests:
             as_dict = lab_test.to_dict(None)
@@ -48,8 +66,31 @@ class LabTestResultsView(LoginRequiredViewset):
             )
 
             for observation in observations:
+                if not len(observation["reference_range"].replace("-", "").strip()):
+                    observation["reference_range"]
                 observation["date_ordered"] = lab_test.date_ordered
-                result[lab_test_type].append(observation)
+                by_test[lab_test_type].append(observation)
+
+        result = []
+        for lab_test_type, observations in by_test.items():
+            observations = sorted(observations, key=lambda x: x["date_ordered"])
+            observations.reverse()
+            observations = sorted(observations, key=lambda x: x["test_name"])
+            observation_time_series = {}
+
+            for observation in observations:
+                if observation["test_name"] not in observation_time_series:
+                    observation_time_series[observation["test_name"]] = self.generate_time_series(
+                        [i for i in observations if i["test_name"] == observation["test_name"]]
+                    )
+
+            serialised_lab_teset = dict(
+                lab_test_type=lab_test_type,
+                observations=observations,
+                observation_time_series=observation_time_series
+            )
+            result.append(serialised_lab_teset)
+
         return json_response(result)
 
 
@@ -87,7 +128,7 @@ class ReleventLabTestApi(LoginRequiredViewset):
                             try:
                                 float(obs_result)
                                 timeseries.append((
-                                    observation["observation_value"].split("~")[0],
+                                    obs_result,
                                     group.date_ordered,
                                 ))
                                 all_dates.add(group.date_ordered)

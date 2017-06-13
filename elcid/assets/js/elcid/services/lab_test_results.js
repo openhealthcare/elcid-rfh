@@ -1,4 +1,4 @@
-angular.module('opal.services').factory('LabTestResultsView', function($q, $http, $window, $log) {
+angular.module('opal.services').factory('LabTestResults', function($q, $http, $window, $log) {
 
     "use strict";
 
@@ -6,8 +6,8 @@ angular.module('opal.services').factory('LabTestResultsView', function($q, $http
 
     var load = function(patientId){
       var deferred = $q.defer();
-      var patientUrl = url + '/' + patientId + '/';
-      $http({ cache: true, url: url, method: 'GET'}).then(function(response) {
+      var patientUrl = url + '' + patientId + '/';
+      $http({ cache: true, url: patientUrl, method: 'GET'}).then(function(response) {
           deferred.resolve(response.data);
       }, function() {
         // handle error better

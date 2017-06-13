@@ -23,6 +23,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/investigations.js',
         'js/elcid/services/blood_culture_helper.js',
         'js/elcid/services/blood_culture_record.js',
+        'js/elcid/services/lab_test_results.js',
         'js/elcid/directives.js',
     ]
 

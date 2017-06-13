@@ -10,35 +10,39 @@
         </div>
         <div class="col-md-6 text-right">
           <div class="form-inline">
-            <input placeholder="Filter" class="form-control" id="filterValue" type="text" ng-model="resultView.filterValue">
+            <input placeholder="Filter" ng-change="resultView.filterRows()" class="form-control" id="filterValue" type="text" ng-model="resultView.filterValue">
           </div>
         </div>
       </div>
     </div>
     <ul class="list-group">
-      <li class="list-group-item">
-        <div class="row">
-          <div class="col-md-2"></div>
-          <div class="col-md-2"><b>Ordered</b></div>
-          <div class="col-md-2"><b>Tested</b></div>
-          <div class="col-md-2"><b>Result</b></div>
-        </div>
-      </li>
-      <li class="list-group-item" ng-repeat="(testName, observations) in resultView.getLabTests(patient)">
+      <li class="list-group-item" ng-repeat="labTest in resultView.labTests">
         <div class="row">
           <div class="col-md-12">
-            <h5>[[ testName ]]</h5>
+            <h5>[[ labTest.lab_test_type ]]</h5>
           </div>
         </div>
-        <div ng-repeat="observation in observations" class="row">
+        <div ng-repeat="observation in labTest.observations" class="row" ng-class="{'content-offset-25': $index && labTest.observations[$index-1].test_name !== observation.test_name}">
           <div class="col-md-3">
-            [[ observation.test_name ]]
+            {# only show this if its not the same as the previous observation test name #}
+            <span ng-show="!$index || labTest.observations[$index-1].test_name !== observation.test_name">
+              [[ observation.test_name ]]
+              <span ng-show="observation.units && observation.units.length">
+                ([[ observation.units ]])
+              </span>
+              <span ng-show="observation.reference_range">
+                range: [[ observation.reference_range ]]
+              </span>
+            </span>
           </div>
           <div class="col-md-3">
-            [[ observation.date_ordered ]]
+            [[ observation.date_ordered | shortDate ]]
           </div>
           <div class="col-md-3">
             [[ observation.observation_value ]]
+          </div>
+          <div ng-if="(!$index || labTest.observations[$index-1].test_name !== observation.test_name) && labTest.observation_time_series[observation.test_name].length" class="col-md-3">
+            <div investigation-graph="labTest.observation_time_series[observation.test_name]"></div>
           </div>
         </div>
           {% comment %}
