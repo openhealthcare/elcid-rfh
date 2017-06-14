@@ -26,7 +26,8 @@
           <thead>
             <tr>
               <td></td>
-              <td class="text-center" ng-repeat="obsDate in labTest.observation_date_range track by $index">
+              <td></td>
+              <td ng-repeat="obsDate in labTest.observation_date_range track by $index">
                 [[ obsDate|shortDate ]]
               </td>
             </th>
@@ -39,10 +40,13 @@
                   ([[ labTest.observation_metadata[observation_name].units ]])
                 </span>
                 <span ng-show="labTest.observation_metadata[observation_name].reference_range">
-                  range: [[ labTest.observation_metadata[observation_name].reference_range ]]
+                  [[ labTest.observation_metadata[observation_name].reference_range ]]
                 </span>
               </td>
-              <td class="text-center" ng-repeat="obsDate in labTest.observation_date_range track by $index">
+              <td>
+                <div investigation-graph="labTest.observation_time_series[observation_name]"></div>
+              </td>
+              <td ng-repeat="obsDate in labTest.observation_date_range track by $index">
                 [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
               </td>
             </tr>

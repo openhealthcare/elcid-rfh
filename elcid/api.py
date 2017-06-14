@@ -95,11 +95,11 @@ class LabTestResultsView(LoginRequiredViewset):
             by_observations = defaultdict(list)
             observation_metadata = {}
 
-
             observation_date_range = {
                 observation["date_ordered"] for observation in observations
             }
             observation_date_range = sorted(list(observation_date_range))
+            observation_date_range.reverse()
 
             for observation in observations:
                 test_name = observation["test_name"]
@@ -118,8 +118,12 @@ class LabTestResultsView(LoginRequiredViewset):
             # construct time series from the labtest/observation/daterange key values
             for observation_name, observations_by_date in by_observations.items():
                 for observation_date in observation_date_range:
+                    obvs_dict = observations_by_date.get(self.to_date_str(observation_date), None)
+                    obvs_value = None
+                    if obvs_dict:
+                        obvs_value = obvs_dict["observation_value"]
                     observation_time_series[observation_name].append(
-                        observations_by_date.get(self.to_date_str(observation_date), None)
+                        obvs_value
                     )
 
             serialised_lab_teset = dict(
@@ -143,6 +147,23 @@ class ReleventLabTestApi(LoginRequiredViewset):
         of the tests we care about the most.
     """
     base_name = 'relevent_lab_test_api'
+
+    PREFERRED_ORDER = [
+        "WBC",
+        "Lymphocytes",
+        "Neutrophils",
+        "INR",
+        "C Reactive Protein",
+        "ALT",
+        "AST",
+        "Alkaline Phosphatase"
+    ]
+
+    def sort_observations(self, obv):
+        if obv["name"] in self.PREFERRED_ORDER:
+            return self.PREFERRED_ORDER.index(obv["name"])
+        else:
+            return len(self.PREFERRED_ORDER)
 
     @patient_from_pk
     def retrieve(self, request, patient):
@@ -210,6 +231,7 @@ class ReleventLabTestApi(LoginRequiredViewset):
                     print series_element[0]
                     obs_value["latest_results"][date_var] = series_element[0]
 
+        obs_values = sorted(obs_values, key=self.sort_observations)
         result = dict(
             obs_values=obs_values,
             latest_results=latest_results
