@@ -1,0 +1,48 @@
+{% load panels %}
+<div ng-controller="ResultView as resultView" class="col-md-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-6">
+          <h3>
+            Lab Tests <i class="fa fa-flask"></i>
+          </h3>
+        </div>
+        <div class="col-md-6 text-right">
+          <div class="form-inline">
+            <input placeholder="Filter" ng-change="resultView.filterRows()" class="form-control" id="filterValue" type="text" ng-model="resultView.filterValue">
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="list-group">
+      <li class="list-group-item" ng-repeat="labTest in resultView.labTests">
+        <div class="row">
+          <div class="col-md-12">
+            <h5>[[ labTest.lab_test_type ]]</h5>
+          </div>
+        </div>
+        <table class="table" ng-show="labTest.observations.length">
+          <thead>
+            <tr>
+              <td></td>
+              <td class="text-center" ng-repeat="obsDate in labTest.observation_date_range track by $index">
+                [[ obsDate|shortDate ]]
+              </td>
+            </th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="observation_name in labTest.observation_names">
+              <td>
+                [[ observation_name ]]
+              </td>
+              <td class="text-center" ng-repeat="obsDate in labTest.observation_date_range track by $index">
+                [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+    </ul>
+  </div>
+</div>

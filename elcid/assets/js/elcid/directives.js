@@ -6,10 +6,12 @@ directives.directive("investigationGraph", function () {
       data: "=investigationGraph",
     },
     link: function (scope, element, attrs) {
+      var data = angular.copy(scope.data);
+      data.unshift("values");
       var graphParams = {
         bindto: element[0],
         data: {
-          columns: [scope.data]
+          columns: [data]
         },
         legend: {
           show: false
@@ -50,7 +52,6 @@ directives.directive("populateLabTests", function($http){
           data.graphValues = _.map(data.values, function(someData){
             return parseInt(someData[0]);
           });
-          data.graphValues.unshift("values");
         });
       });
     }

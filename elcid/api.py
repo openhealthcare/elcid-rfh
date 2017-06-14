@@ -1,5 +1,6 @@
 import json
 import datetime
+from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
 
@@ -31,7 +32,7 @@ class LabTestResultsView(LoginRequiredViewset):
     base_name = 'lab_test_results_view'
 
     def generate_time_series(self, observations):
-        timeseries = ["values"]
+        timeseries = []
         for observation in observations:
             obs_result = observation["observation_value"].split("~")[0]
             try:
@@ -48,6 +49,11 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return []
 
+    def to_date_str(self, some_date):
+        return some_date.strftime(
+            settings.DATE_INPUT_FORMATS[0]
+        )
+
     @patient_from_pk
     def retrieve(self, request, patient):
         # so what I want to return is all observations to lab test desplay
@@ -58,6 +64,10 @@ class LabTestResultsView(LoginRequiredViewset):
         lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
         by_test = defaultdict(list)
 
+        # lab tests are sorted by lab test type
+        # this is either the lab test type if its a lab test we've
+        # defined or its what is in the profile description
+        # if its an HL7 jobby
         for lab_test in lab_tests:
             as_dict = lab_test.to_dict(None)
             observations = as_dict.get("observations", [])
@@ -67,29 +77,54 @@ class LabTestResultsView(LoginRequiredViewset):
 
             for observation in observations:
                 if not len(observation["reference_range"].replace("-", "").strip()):
-                    observation["reference_range"]
+                    observation["reference_range"] = None
                 observation["date_ordered"] = lab_test.date_ordered
                 by_test[lab_test_type].append(observation)
 
         result = []
+
+        # within the lab test observations should be sorted by test name
+        # and within the if we have a date range we want to be exposing
+        # them as part of a time series, ie adding in blanks if they
+        # aren't populated
         for lab_test_type, observations in by_test.items():
             observations = sorted(observations, key=lambda x: x["date_ordered"])
             observations.reverse()
             observations = sorted(observations, key=lambda x: x["test_name"])
-            observation_time_series = {}
+            observation_time_series = defaultdict(list)
+            by_observations = defaultdict(list)
+            observation_date_range = {
+                observation["date_ordered"] for observation in observations
+            }
+            observation_date_range = sorted(list(observation_date_range))
 
             for observation in observations:
-                if observation["test_name"] not in observation_time_series:
-                    observation_time_series[observation["test_name"]] = self.generate_time_series(
-                        [i for i in observations if i["test_name"] == observation["test_name"]]
+                if observation["test_name"] not in by_observations:
+                    test_name = observation["test_name"]
+                    obs_for_test_name = {
+                        self.to_date_str(i["date_ordered"]): i for i in observations if i["test_name"] == observation["test_name"]
+                    }
+                    by_observations[test_name] = obs_for_test_name
+
+
+            # construct time series from the labtest/observation/daterange key values
+            for observation_name, observations_by_date in by_observations.items():
+                for observation_date in observation_date_range:
+                    observation_time_series[observation_name].append(
+                        observations_by_date.get(self.to_date_str(observation_date), None)
                     )
 
             serialised_lab_teset = dict(
                 lab_test_type=lab_test_type,
                 observations=observations,
-                observation_time_series=observation_time_series
+                observation_date_range=observation_date_range,
+                observation_time_series=observation_time_series,
+                by_observations=by_observations,
+                observation_names=sorted(by_observations.keys())
             )
             result.append(serialised_lab_teset)
+
+            result = sorted(result, key=itemgetter("lab_test_type"))
 
         return json_response(result)
 

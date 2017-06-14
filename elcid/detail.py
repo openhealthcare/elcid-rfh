@@ -12,3 +12,15 @@ class Result(detail.PatientDetailView):
         if user.is_superuser:
             return True
         return settings.GLOSS_ENABLED
+
+
+class HorizontalResult(detail.PatientDetailView):
+    display_name = "Horizontal Results"
+    order = 5
+    template = "detail/horizontal_result.html"
+
+    @classmethod
+    def visible_to(klass, user):
+        if user.is_superuser:
+            return True
+        return settings.GLOSS_ENABLED
