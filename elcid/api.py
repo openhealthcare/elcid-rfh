@@ -93,19 +93,27 @@ class LabTestResultsView(LoginRequiredViewset):
             observations = sorted(observations, key=lambda x: x["test_name"])
             observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
+            observation_metadata = {}
+
+
             observation_date_range = {
                 observation["date_ordered"] for observation in observations
             }
             observation_date_range = sorted(list(observation_date_range))
 
             for observation in observations:
-                if observation["test_name"] not in by_observations:
-                    test_name = observation["test_name"]
+                test_name = observation["test_name"]
+                if test_name not in by_observations:
                     obs_for_test_name = {
-                        self.to_date_str(i["date_ordered"]): i for i in observations if i["test_name"] == observation["test_name"]
+                        self.to_date_str(i["date_ordered"]): i for i in observations if i["test_name"] == test_name
                     }
                     by_observations[test_name] = obs_for_test_name
 
+                if test_name not in observation_metadata:
+                    observation_metadata[test_name] = dict(
+                        units=observation["units"],
+                        reference_range=observation["reference_range"]
+                    )
 
             # construct time series from the labtest/observation/daterange key values
             for observation_name, observations_by_date in by_observations.items():
@@ -115,6 +123,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     )
 
             serialised_lab_teset = dict(
+                observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
                 observations=observations,
                 observation_date_range=observation_date_range,

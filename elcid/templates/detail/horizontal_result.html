@@ -35,6 +35,12 @@
             <tr ng-repeat="observation_name in labTest.observation_names">
               <td>
                 [[ observation_name ]]
+                <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
+                  ([[ labTest.observation_metadata[observation_name].units ]])
+                </span>
+                <span ng-show="labTest.observation_metadata[observation_name].reference_range">
+                  range: [[ labTest.observation_metadata[observation_name].reference_range ]]
+                </span>
               </td>
               <td class="text-center" ng-repeat="obsDate in labTest.observation_date_range track by $index">
                 [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
