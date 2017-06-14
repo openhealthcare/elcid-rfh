@@ -76,6 +76,12 @@ a.list-group-item:hover, a.list-group-item:focus {
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
   background-color: #343637; }
 
+.too-high {
+  color: #E02F03; }
+
+.too-low {
+  color: #03C3EA; }
+
 .patient-row .label-warning {
   margin-top: 5px;
   display: inline-block;
@@ -127,5 +133,3 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit {
   display: inline-block; }
-
-/*# sourceMappingURL=elcid.css.map */

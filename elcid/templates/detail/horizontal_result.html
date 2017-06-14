@@ -40,7 +40,6 @@
                 <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
                   ([[ labTest.observation_metadata[observation_name].units ]])
                 </span>
-
               </td>
               <td>
                 <div investigation-graph="labTest.observation_time_series[observation_name]"></div>
@@ -52,7 +51,7 @@
                   [[ labTest.observation_metadata[observation_name].reference_range.max ]]
                 </span>
               </td>
-              <td ng-repeat="obsDate in labTest.observation_date_range track by $index">
+              <td ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range track by $index">
                 [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
               </td>
             </tr>
