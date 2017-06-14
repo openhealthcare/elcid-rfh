@@ -76,8 +76,23 @@ class LabTestResultsView(LoginRequiredViewset):
             )
 
             for observation in observations:
+                observation["reference_range"] = observation["reference_range"].replace("]", "").replace("[", "")
                 if not len(observation["reference_range"].replace("-", "").strip()):
                     observation["reference_range"] = None
+                    continue
+                range_min_max = observation["reference_range"].split("-")
+                if not range_min_max[0].strip():
+                    observation["reference_range"] = None
+                else:
+                    if not len(range_min_max) == 2:
+                        import ipdb; ipdb.set_trace()
+                        raise ValueError("unable to properly judge the range")
+                    else:
+                        observation["reference_range"] = dict(
+                            min=float(range_min_max[0].strip()),
+                            max=float(range_min_max[1].strip())
+                        )
+
                 observation["date_ordered"] = lab_test.date_ordered
                 by_test[lab_test_type].append(observation)
 
