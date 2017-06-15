@@ -17,7 +17,7 @@
             </button>
             <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="list-dropdown">
               <li ng-show="tag !== resultView.currentTag" ng-repeat="tag in resultView.tags">
-                <a href="#">
+                <a ng-click="resultView.filter(tag)">
                   [[ tag ]]
                 </a>
               </li>
@@ -35,7 +35,7 @@
             </div>
             <div class="text-right col-md-6">
               <span ng-repeat="tag in labTest.tags">
-                <a class="btn btn-default pointer btn-sm" href="/#/">[[ tag ]]</a>
+                <a ng-click="resultView.filter(tag)" class="btn btn-default pointer btn-sm">[[ tag ]]</a>
               </span>
             </div>
           </div>
@@ -46,11 +46,11 @@
               <div class="col-sm-1">
               Range
               </div>
-              <div ng-repeat="obsDate in labTest.observation_date_range track by $index | limitTo:8" class="col-sm-1">
+              <div ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
                   [[ obsDate|shortDate ]]
               </div>
             </div>
-            <div class="lab-test-row row" ng-repeat="observation_name in labTest.observation_names">
+            <div class="lab-test-row selectable row" ng-repeat="observation_name in labTest.observation_names">
               <div class="col-sm-3">
                 [[ observation_name ]]
                 <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
@@ -62,7 +62,7 @@
                 -
                 [[ labTest.observation_metadata[observation_name].reference_range.max ]]
               </div>
-              <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range track by $index | limitTo:8" class="col-sm-1">
+              <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
                 [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
               </div>
               <div class="row">

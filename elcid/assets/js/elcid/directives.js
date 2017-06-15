@@ -14,6 +14,10 @@ directives.directive("observationGraph", function (toMomentFilter) {
         return observation;
       });
 
+      observations = _.sortBy(observations, function(observation){
+        return observation["date_ordered"];
+      });
+
       var dates = _.pluck(observations, "date_ordered");
       var values = _.pluck(observations, "observation_value");
 
@@ -24,6 +28,7 @@ directives.directive("observationGraph", function (toMomentFilter) {
         bindto: element[0],
         data: {
           x: "date",
+          xFormat: '%d/%m/%Y',
           columns: [dates, values]
         },
         legend: {
@@ -32,6 +37,9 @@ directives.directive("observationGraph", function (toMomentFilter) {
         size: {
           height: 250,
           width: 1000
+        },
+        subchart: {
+           show: true
         },
         axis: {
           x: {
@@ -45,6 +53,12 @@ directives.directive("observationGraph", function (toMomentFilter) {
           }
         }
       };
+
+      var threeMonthsAgo = moment().subtract(3, "M");
+
+      if(moment(observations[0].date_ordered).diff(threeMonthsAgo) < 0){
+        graphParams.axis.x.extent = [threeMonthsAgo.toDate(), new Date()];
+      }
 
       if(scope.observationRange){
         graphParams.regions = [

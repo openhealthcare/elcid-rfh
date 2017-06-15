@@ -200,8 +200,9 @@ a.list-group-item {
     margin-left: 10px;
     margin-right: 10px;
 
-    &:hover{
+    &.selectable:hover{
       background-color: #f5f5f5;
+      cursor: pointer;
     }
   }
 

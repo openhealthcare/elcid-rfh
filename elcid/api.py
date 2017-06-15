@@ -3,6 +3,8 @@ import datetime
 from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
+from django.utils.text import slugify
+from django.http import Http404
 
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -52,6 +54,65 @@ class GlossEndpointApi(viewsets.ViewSet):
         return Response("ok")
 
 
+class ObservationCollection(object):
+    def clean_ref_range(self, obv):
+        ref_range = obv["reference_range"]
+        return ref_range.replace("]", "").replace("[", "")
+
+    def get_reference_range(self, observation):
+        observation["reference_range"] = observation["reference_range"]
+        ref_range = self.clean_ref_range(observation)
+        if not len(ref_range.replace("-", "").strip()):
+            return None
+        range_min_max = observation["reference_range"].split("-")
+        if len(range_min_max) > 2:
+            return None
+        return {"min": range_min_max[0], "max": range_min_max[1]}
+
+    def to_date_str(self, some_date):
+        return some_date.strftime(
+            settings.DATE_INPUT_FORMATS[0]
+        )
+
+    def __init__(self, observations):
+        obv = observations[0]
+        self.observations = observations
+        self.test_name = obv["test_name"]
+        self.units = obv["units"]
+        self.reference_range = self.get_reference_range(obv)
+
+    def to_dict(self):
+        return {
+            "observations": self.observations,
+            "test_name": self.test_name,
+            "units": self.units,
+            "reference_range": self.reference_range
+        }
+
+
+class LabTestObservationDetail(LoginRequiredViewset):
+    base_name = "lab_test_observation_detail"
+    lookup_field = "slug"
+
+    def retrieve(self, request, slug=None):
+        found_observations = []
+        for lab_test in lmodels.LabTest.objects.all():
+            existing_observations = lab_test.extras.get("observations", [])
+
+            for existing_observation in existing_observations:
+                sluged_test_name = slugify(
+                    existing_observation.get("test_name", None)
+                )
+                if sluged_test_name == slug:
+                    existing_observation["date_ordered"] = lab_test.date_ordered
+                    found_observations.append(existing_observation)
+
+        if not found_observations:
+            raise Http404
+        collection = ObservationCollection(found_observations)
+        return json_response(collection.to_dict())
+
+
 class LabTestResultsView(LoginRequiredViewset):
     """ The Api view of the the results view in the patient detail
         We want to show everything grouped by test, then observation, then
@@ -89,7 +150,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
         lab_tests = lmodels.LabTest.objects.filter(patient=patient)
-        lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
+        # lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
         by_test = defaultdict(list)
 
         # lab tests are sorted by lab test type
@@ -113,7 +174,8 @@ class LabTestResultsView(LoginRequiredViewset):
                     observation["reference_range"] = None
                 else:
                     if not len(range_min_max) == 2:
-                        raise ValueError("unable to properly judge the range")
+                        observation["reference_range"] = None
+                        # raise ValueError("unable to properly judge the range")
                     else:
                         observation["reference_range"] = dict(
                             min=float(range_min_max[0].strip()),
@@ -121,6 +183,7 @@ class LabTestResultsView(LoginRequiredViewset):
                         )
 
                 observation["date_ordered"] = lab_test.date_ordered
+                observation["api_name"] = slugify(observation["test_name"])
                 by_test[lab_test_type].append(observation)
 
         serialised_tests = []
@@ -310,3 +373,4 @@ gloss_router = OPALRouter()
 gloss_router.register('glossapi', GlossEndpointApi)
 gloss_router.register('relevent_lab_test_api', ReleventLabTestApi)
 gloss_router.register('lab_test_results_view', LabTestResultsView)
+gloss_router.register('lab_test_observation_detail', LabTestObservationDetail)
