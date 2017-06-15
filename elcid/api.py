@@ -15,6 +15,34 @@ from elcid import models as emodels
 from lab import models as lmodels
 
 
+_LAB_TEST_TAGS = {
+    "BIOCHEMISTRY": [
+        "BONE PROFILE",
+        "UREA AND ELECTROLYTES",
+        "LIVER PROFILE",
+        "IMMUNOGLOBULINS",
+        "C REACTIVE PROTEIN",
+        "RENAL"
+
+    ],
+    "HAEMATOLOGY": [
+        "FULL BLOOD COUNT", "HAEMATINICS", "HBA1C"
+    ],
+    "ENDOCRINOLOGY": [
+        "CORTISOL AT 9AM", "THYROID FUNCTION TESTS"
+    ],
+    "URINE": [
+        "OSMALITY", "PROTEIN ELECTROPHORESIS"
+    ],
+}
+
+LAB_TEST_TAGS = defaultdict(list)
+
+for tag, profile_descriptions in _LAB_TEST_TAGS.items():
+    for profile_description in profile_descriptions:
+        LAB_TEST_TAGS[profile_description].append(tag)
+
+
 class GlossEndpointApi(viewsets.ViewSet):
     base_name = 'glossapi'
 
@@ -96,7 +124,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 observation["date_ordered"] = lab_test.date_ordered
                 by_test[lab_test_type].append(observation)
 
-        result = []
+        serialised_tests = []
 
         # within the lab test observations should be sorted by test name
         # and within the if we have a date range we want to be exposing
@@ -106,6 +134,7 @@ class LabTestResultsView(LoginRequiredViewset):
             observations = sorted(observations, key=lambda x: x["date_ordered"])
             observations.reverse()
             observations = sorted(observations, key=lambda x: x["test_name"])
+
             observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
             observation_metadata = {}
@@ -118,6 +147,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
             for observation in observations:
                 test_name = observation["test_name"]
+
                 if test_name not in by_observations:
                     obs_for_test_name = {
                         self.to_date_str(i["date_ordered"]): i for i in observations if i["test_name"] == test_name
@@ -148,13 +178,21 @@ class LabTestResultsView(LoginRequiredViewset):
                 observation_date_range=observation_date_range,
                 observation_time_series=observation_time_series,
                 by_observations=by_observations,
-                observation_names=sorted(by_observations.keys())
+                observation_names=sorted(by_observations.keys()),
+                tags = LAB_TEST_TAGS.get(lab_test_type, [])
             )
-            result.append(serialised_lab_teset)
+            serialised_tests.append(serialised_lab_teset)
 
-            result = sorted(result, key=itemgetter("lab_test_type"))
+            serialised_tests = sorted(serialised_tests, key=itemgetter("lab_test_type"))
 
-        return json_response(result)
+            all_tags = _LAB_TEST_TAGS.keys()
+
+        return json_response(
+            dict(
+                tags=all_tags,
+                tests=serialised_tests
+            )
+        )
 
 
 class ReleventLabTestApi(LoginRequiredViewset):

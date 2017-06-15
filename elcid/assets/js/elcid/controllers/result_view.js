@@ -44,7 +44,11 @@ angular.module('opal.controllers').controller('ResultView', function($scope, Lab
 
       this.getLabTests = function(patient){
         return LabTestResults.load(patient.id).then(function(result){
-          vm.originalLabTests = result;
+          vm.originalLabTests = result.tests;
+          var tags = result.tags;
+          tags.unshift("ALL");
+          vm.currentTag = "ALL";
+          vm.tags = result.tags;
           vm.labTests = angular.copy(vm.originalLabTests)
         });
       };

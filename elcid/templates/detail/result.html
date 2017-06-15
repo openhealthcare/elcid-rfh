@@ -42,7 +42,7 @@
             [[ observation.observation_value ]]
           </div>
           <div ng-if="(!$index || labTest.observations[$index-1].test_name !== observation.test_name) && labTest.observation_time_series[observation.test_name].length" class="col-md-3">
-            <div investigation-graph="labTest.observation_time_series[observation.test_name]"></div>
+            <div spark-line="labTest.observation_time_series[observation.test_name]"></div>
           </div>
         </div>
       </li>

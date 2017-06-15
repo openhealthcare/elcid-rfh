@@ -1,9 +1,48 @@
-directives.directive("investigationGraph", function () {
+directives.directive("observationGraph", function () {
   "use strict";
   return {
     restrict: 'A',
     scope: {
-      data: "=investigationGraph",
+      data: "=sparkLine",
+    },
+    link: function (scope, element, attrs) {
+      var data = angular.copy(scope.data);
+      var dates = _.pluck(scope.data, "date_ordered");
+      dates.unshift('date');
+      var values = _.pluck(scope.data, "observation_value")
+      values.unshift("values");
+      var graphParams = {
+        bindto: element[0],
+        x: 'date',
+        data: {
+          columns: [dates, values]
+        },
+        legend: {
+          show: false
+        },
+        axis: {
+          x: {type: 'timeseries'},
+        },
+        size: {
+          height: 25,
+          width: 150
+        }
+      };
+      setTimeout(function(){
+        var chart = c3.generate(graphParams);
+      }, 100);
+    }
+  };
+});
+
+
+
+directives.directive("sparkLine", function () {
+  "use strict";
+  return {
+    restrict: 'A',
+    scope: {
+      data: "=sparkLine",
     },
     link: function (scope, element, attrs) {
       var data = angular.copy(scope.data);
