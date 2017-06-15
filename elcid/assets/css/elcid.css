@@ -76,12 +76,6 @@ a.list-group-item:hover, a.list-group-item:focus {
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
   background-color: #343637; }
 
-.too-high {
-  color: #E02F03; }
-
-.too-low {
-  color: #03C3EA; }
-
 .patient-row .label-warning {
   margin-top: 5px;
   display: inline-block;
@@ -133,3 +127,23 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit {
   display: inline-block; }
+
+.lab-tests hr {
+  margin-top: 10px;
+  margin-bottom: 0; }
+.lab-tests .lab-test-row {
+  padding-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px; }
+  .lab-tests .lab-test-row:hover {
+    background-color: #f5f5f5; }
+.lab-tests .c3-region.too-high {
+  fill: rgba(224, 47, 3, 0.5); }
+.lab-tests .c3-region.too-low {
+  fill: rgba(3, 195, 234, 0.5); }
+.lab-tests .too-high {
+  color: #E02F03; }
+.lab-tests .too-low {
+  color: #03C3EA; }
+
+/*# sourceMappingURL=elcid.css.map */

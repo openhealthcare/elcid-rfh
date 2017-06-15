@@ -1,33 +1,65 @@
-directives.directive("observationGraph", function () {
+directives.directive("observationGraph", function (toMomentFilter) {
   "use strict";
   return {
     restrict: 'A',
     scope: {
-      data: "=sparkLine",
+      observations: "=observationGraph",
+      observationRange: "=observationRange"
     },
     link: function (scope, element, attrs) {
-      var data = angular.copy(scope.data);
-      var dates = _.pluck(scope.data, "date_ordered");
+      var observations = angular.copy(_.values(scope.observations));
+      observations = _.map(observations, function(observation){
+        var dt = observation["date_ordered"];
+        observation["date_ordered"] = toMomentFilter(dt).toDate()
+        return observation;
+      });
+
+      var dates = _.pluck(observations, "date_ordered");
+      var values = _.pluck(observations, "observation_value");
+
       dates.unshift('date');
-      var values = _.pluck(scope.data, "observation_value")
       values.unshift("values");
+
       var graphParams = {
         bindto: element[0],
-        x: 'date',
         data: {
+          x: "date",
           columns: [dates, values]
         },
         legend: {
           show: false
         },
-        axis: {
-          x: {type: 'timeseries'},
-        },
         size: {
-          height: 25,
-          width: 150
+          height: 250,
+          width: 1000
+        },
+        axis: {
+          x: {
+            type: 'timeseries',
+          },
+          y: {
+            tick: {
+              count: 5,
+              format: d3.format('.2f')
+            }
+          }
         }
       };
+
+      if(scope.observationRange){
+        graphParams.regions = [
+          {
+            axis: 'y',
+            end: scope.observationRange.min,
+            class: 'too-low'
+          },
+          {
+            axis: 'y',
+            start: scope.observationRange.max,
+            class: 'too-high'
+          }
+        ];
+      }
       setTimeout(function(){
         var chart = c3.generate(graphParams);
       }, 100);

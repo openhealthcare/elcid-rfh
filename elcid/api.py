@@ -113,7 +113,6 @@ class LabTestResultsView(LoginRequiredViewset):
                     observation["reference_range"] = None
                 else:
                     if not len(range_min_max) == 2:
-                        import ipdb; ipdb.set_trace()
                         raise ValueError("unable to properly judge the range")
                     else:
                         observation["reference_range"] = dict(
@@ -135,7 +134,7 @@ class LabTestResultsView(LoginRequiredViewset):
             observations.reverse()
             observations = sorted(observations, key=lambda x: x["test_name"])
 
-            observation_time_series = defaultdict(list)
+            # observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
             observation_metadata = {}
 
@@ -160,23 +159,23 @@ class LabTestResultsView(LoginRequiredViewset):
                         reference_range=observation["reference_range"]
                     )
 
-            # construct time series from the labtest/observation/daterange key values
-            for observation_name, observations_by_date in by_observations.items():
-                for observation_date in observation_date_range:
-                    obvs_dict = observations_by_date.get(self.to_date_str(observation_date), None)
-                    obvs_value = None
-                    if obvs_dict:
-                        obvs_value = obvs_dict["observation_value"]
-                    observation_time_series[observation_name].append(
-                        obvs_value
-                    )
+            # # construct time series from the labtest/observation/daterange key values
+            # for observation_name, observations_by_date in by_observations.items():
+            #     for observation_date in observation_date_range:
+            #         obvs_dict = observations_by_date.get(self.to_date_str(observation_date), None)
+            #         obvs_value = None
+            #         if obvs_dict:
+            #             obvs_value = obvs_dict["observation_value"]
+            #         observation_time_series[observation_name].append(
+            #             obvs_value
+            #         )
 
             serialised_lab_teset = dict(
                 observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
                 observations=observations,
                 observation_date_range=observation_date_range,
-                observation_time_series=observation_time_series,
+                # observation_time_series=observation_time_series,
                 by_observations=by_observations,
                 observation_names=sorted(by_observations.keys()),
                 tags = LAB_TEST_TAGS.get(lab_test_type, [])

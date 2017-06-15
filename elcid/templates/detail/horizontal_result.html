@@ -27,52 +27,56 @@
       </div>
     </div>
     <ul class="list-group">
-      <li class="list-group-item" ng-repeat="labTest in resultView.labTests">
-        <div class="row">
-          <div class="col-md-6">
-            <h5>[[ labTest.lab_test_type ]]</h5>
+      <li class="list-group-item " ng-repeat="labTest in resultView.labTests">
+        <div class="content-offset-below">
+          <div class="row">
+            <div class="col-md-6">
+              <h5>[[ labTest.lab_test_type ]]</h5>
+            </div>
+            <div class="text-right col-md-6">
+              <span ng-repeat="tag in labTest.tags">
+                <a class="btn btn-default pointer btn-sm" href="/#/">[[ tag ]]</a>
+              </span>
+            </div>
           </div>
-          <div class="text-right col-md-6">
-            <span ng-repeat="tag in labTest.tags">
-              <a class="btn btn-default pointer btn-sm" href="/#/">[[ tag ]]</a>
-            </span>
-          </div>
-        </div>
-        <table class="table" ng-show="labTest.observations.length">
-          <thead>
-            <tr>
-              <td></td>
-              <td></td>
-              <td>Range</td>
-              <td ng-repeat="obsDate in labTest.observation_date_range track by $index">
-                [[ obsDate|shortDate ]]
-              </td>
-            </th>
-          </thead>
-          <tbody>
-            <tr ng-repeat="observation_name in labTest.observation_names">
-              <td>
+          <div ng-show="labTest.observations.length">
+            <div class="row lab-test-row content-offset-below-10">
+              <div class="col-sm-3">
+              </div>
+              <div class="col-sm-1">
+              Range
+              </div>
+              <div ng-repeat="obsDate in labTest.observation_date_range track by $index | limitTo:8" class="col-sm-1">
+                  [[ obsDate|shortDate ]]
+              </div>
+            </div>
+            <div class="lab-test-row row" ng-repeat="observation_name in labTest.observation_names">
+              <div class="col-sm-3">
                 [[ observation_name ]]
                 <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
                   ([[ labTest.observation_metadata[observation_name].units ]])
                 </span>
-              </td>
-              <td>
-                <div investigation-graph="labTest.observation_time_series[observation_name]"></div>
-              </td>
-              <td>
-                <span ng-show="labTest.observation_metadata[observation_name].reference_range">
-                  [[ labTest.observation_metadata[observation_name].reference_range.min ]]
-                  -
-                  [[ labTest.observation_metadata[observation_name].reference_range.max ]]
-                </span>
-              </td>
-              <td ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range track by $index">
+              </div>
+              <div class="col-sm-1">
+                [[ labTest.observation_metadata[observation_name].reference_range.min ]]
+                -
+                [[ labTest.observation_metadata[observation_name].reference_range.max ]]
+              </div>
+              <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range track by $index | limitTo:8" class="col-sm-1">
                 [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div observation-range="labTest.observation_metadata[observation_name].reference_range" observation-graph="labTest.by_observations[observation_name]"></div>
+                </div>
+              </div>
+              <div ng-show="!$last" class="row">
+                <div class="col-md-12">
+                  <hr />
+                </div>
+              </div>
+            </div>
+          </div>
       </li>
     </ul>
   </div>
