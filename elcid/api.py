@@ -143,16 +143,8 @@ class LabTestResultsView(LoginRequiredViewset):
             settings.DATE_INPUT_FORMATS[0]
         )
 
-    @patient_from_pk
-    def retrieve(self, request, patient):
-        # so what I want to return is all observations to lab test desplay
-        # name with the lab test properties on the observation
-
-        three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
-        lab_tests = lmodels.LabTest.objects.filter(patient=patient)
-        lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
+    def aggregate_observations_by_lab_test(self, lab_tests):
         by_test = defaultdict(list)
-
         # lab tests are sorted by lab test type
         # this is either the lab test type if its a lab test we've
         # defined or its what is in the profile description
@@ -168,22 +160,33 @@ class LabTestResultsView(LoginRequiredViewset):
                 observation["reference_range"] = observation["reference_range"].replace("]", "").replace("[", "")
                 if not len(observation["reference_range"].replace("-", "").strip()):
                     observation["reference_range"] = None
-                    continue
-                range_min_max = observation["reference_range"].split("-")
-                if not range_min_max[0].strip():
-                    observation["reference_range"] = None
                 else:
-                    if not len(range_min_max) == 2:
+                    range_min_max = observation["reference_range"].split("-")
+                    if not range_min_max[0].strip():
                         observation["reference_range"] = None
-                        # raise ValueError("unable to properly judge the range")
                     else:
-                        observation["reference_range"] = dict(
-                            min=float(range_min_max[0].strip()),
-                            max=float(range_min_max[1].strip())
-                        )
+                        if not len(range_min_max) == 2:
+                            observation["reference_range"] = None
+                            # raise ValueError("unable to properly judge the range")
+                        else:
+                            observation["reference_range"] = dict(
+                                min=float(range_min_max[0].strip()),
+                                max=float(range_min_max[1].strip())
+                            )
 
                 observation["date_ordered"] = lab_test.date_ordered
                 by_test[lab_test_type].append(observation)
+        return by_test
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        # so what I want to return is all observations to lab test desplay
+        # name with the lab test properties on the observation
+
+        three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
+        lab_tests = lmodels.LabTest.objects.filter(patient=patient)
+        lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
+        by_test = self.aggregate_observations_by_lab_test(lab_tests)
 
         serialised_tests = []
 
@@ -222,17 +225,6 @@ class LabTestResultsView(LoginRequiredViewset):
                         api_name=slugify(observation["test_name"])
                     )
 
-            # # construct time series from the labtest/observation/daterange key values
-            # for observation_name, observations_by_date in by_observations.items():
-            #     for observation_date in observation_date_range:
-            #         obvs_dict = observations_by_date.get(self.to_date_str(observation_date), None)
-            #         obvs_value = None
-            #         if obvs_dict:
-            #             obvs_value = obvs_dict["observation_value"]
-            #         observation_time_series[observation_name].append(
-            #             obvs_value
-            #         )
-
             serialised_lab_teset = dict(
                 observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
@@ -241,7 +233,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 # observation_time_series=observation_time_series,
                 by_observations=by_observations,
                 observation_names=sorted(by_observations.keys()),
-                tags = LAB_TEST_TAGS.get(lab_test_type, [])
+                tags=LAB_TEST_TAGS.get(lab_test_type, [])
             )
             serialised_tests.append(serialised_lab_teset)
 
