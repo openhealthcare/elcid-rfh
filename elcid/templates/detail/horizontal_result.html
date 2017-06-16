@@ -50,27 +50,42 @@
                   [[ obsDate|shortDate ]]
               </div>
             </div>
-            <div class="lab-test-row selectable row" ng-repeat="observation_name in labTest.observation_names">
-              <div class="col-sm-3">
-                [[ observation_name ]]
-                <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
-                  ([[ labTest.observation_metadata[observation_name].units ]])
-                </span>
-              </div>
-              <div class="col-sm-1">
-                [[ labTest.observation_metadata[observation_name].reference_range.min ]]
-                -
-                [[ labTest.observation_metadata[observation_name].reference_range.max ]]
-              </div>
-              <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
-                [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
-              </div>
-              <div class="row">
-                <div class="col-md-12">
-                  <div observation-range="labTest.observation_metadata[observation_name].reference_range" observation-graph="labTest.by_observations[observation_name]"></div>
+            <div ng-repeat="observation_name in labTest.observation_names">
+              <div ng-click="resultView.showObservation(labTest, observation_name)" class="lab-test-row selectable row">
+                <div class="col-sm-3">
+                  [[ observation_name ]]
+                  <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
+                    ([[ labTest.observation_metadata[observation_name].units ]])
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  [[ labTest.observation_metadata[observation_name].reference_range.min ]]
+                  -
+                  [[ labTest.observation_metadata[observation_name].reference_range.max ]]
+                </div>
+                <div ng-hide="resultView.isShownObservation(observation_name)" ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
+                  [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
                 </div>
               </div>
-              <div ng-show="!$last" class="row">
+              <div ng-show="resultView.isShownObservation(observation_name)" class="row">
+                <div class="col-md-12">
+                  <div class="observation-graph-pane" ng-show="resultView.observationDetail[observation_name]">
+                    <div ng-if="resultView.observationDetail[observation_name].length">
+                      <div observation-range="labTest.observation_metadata[observation_name].reference_range" observation-graph="resultView.observationDetail[observation_name]"></div>
+                    </div>
+                    <div ng-show="!resultView.observationDetail[observation_name].length">
+                      <div class="row">
+                        <div class="result-loading col-md-12 text-center">
+                          <h3>
+                            <i class="fa fa-cog fa-spin"></i> Loading...
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div ng-show="!$last" class="row ">
                 <div class="col-md-12">
                   <hr />
                 </div>

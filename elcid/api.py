@@ -150,7 +150,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
         lab_tests = lmodels.LabTest.objects.filter(patient=patient)
-        # lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
+        lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
         by_test = defaultdict(list)
 
         # lab tests are sorted by lab test type
@@ -183,7 +183,6 @@ class LabTestResultsView(LoginRequiredViewset):
                         )
 
                 observation["date_ordered"] = lab_test.date_ordered
-                observation["api_name"] = slugify(observation["test_name"])
                 by_test[lab_test_type].append(observation)
 
         serialised_tests = []
@@ -219,7 +218,8 @@ class LabTestResultsView(LoginRequiredViewset):
                 if test_name not in observation_metadata:
                     observation_metadata[test_name] = dict(
                         units=observation["units"],
-                        reference_range=observation["reference_range"]
+                        reference_range=observation["reference_range"],
+                        api_name=slugify(observation["test_name"])
                     )
 
             # # construct time series from the labtest/observation/daterange key values
