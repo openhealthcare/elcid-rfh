@@ -4,7 +4,8 @@ directives.directive("observationGraph", function (toMomentFilter) {
     restrict: 'A',
     scope: {
       observations: "=observationGraph",
-      observationRange: "=observationRange"
+      observationRange: "=observationRange",
+      observationName:"=observationName"
     },
     link: function (scope, element, attrs) {
       var observations = angular.copy(_.values(scope.observations));
@@ -21,13 +22,14 @@ directives.directive("observationGraph", function (toMomentFilter) {
       var dates = _.pluck(observations, "date_ordered");
       var values = _.pluck(observations, "observation_value");
 
-      dates.unshift('date');
-      values.unshift("values");
+      dates.unshift('Date');
+      values.unshift(scope.observationName);
 
       var graphParams = {
         bindto: element[0],
         data: {
-          x: "date",
+          x: "Date",
+          y: scope.observationName,
           xFormat: '%d/%m/%Y',
           columns: [dates, values]
         },
@@ -40,6 +42,9 @@ directives.directive("observationGraph", function (toMomentFilter) {
         axis: {
           x: {
             type: 'timeseries',
+            tick: {
+              format: '%d/%m/%Y'
+            }
           },
           y: {
             tick: {

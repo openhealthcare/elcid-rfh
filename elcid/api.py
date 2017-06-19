@@ -97,15 +97,19 @@ class LabTestObservationDetail(LoginRequiredViewset):
     def retrieve(self, request, slug=None):
         found_observations = []
         for lab_test in lmodels.LabTest.objects.all():
-            existing_observations = lab_test.extras.get("observations", [])
+            lab_test_type = lab_test.extras.get(
+                "profile_description", lab_test.lab_test_type
+            )
+            if slugify(lab_test_type) == request.query_params["lab_test"]:
+                existing_observations = lab_test.extras.get("observations", [])
 
-            for existing_observation in existing_observations:
-                sluged_test_name = slugify(
-                    existing_observation.get("test_name", None)
-                )
-                if sluged_test_name == slug:
-                    existing_observation["date_ordered"] = lab_test.date_ordered
-                    found_observations.append(existing_observation)
+                for existing_observation in existing_observations:
+                    sluged_test_name = slugify(
+                        existing_observation.get("test_name", None)
+                    )
+                    if sluged_test_name == slug:
+                        existing_observation["date_ordered"] = lab_test.date_ordered
+                        found_observations.append(existing_observation)
 
         if not found_observations:
             raise Http404
@@ -226,6 +230,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     )
 
             serialised_lab_teset = dict(
+                api_name=slugify(lab_test_type),
                 observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
                 observations=observations,

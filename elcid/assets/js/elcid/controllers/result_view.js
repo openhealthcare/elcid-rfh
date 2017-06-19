@@ -7,24 +7,30 @@ angular.module('opal.controllers').controller('ResultView', function($scope, Lab
       this.originalLabTests = [];
       this.observationDetail = {};
 
-      this.filterValue = "";
-
-      this.shownObservations = [];
+      this.shownObservations = {};
 
       this.showObservation = function(labTest, observationName){
         this.getObservationDetail(labTest, observationName);
-        if(this.isShownObservation(observationName)){
-          this.shownObservations = _.without(
-            this.shownObservations, observationName
+        if(this.isShownObservation(labTest, observationName)){
+          this.shownObservations[labTest.lab_test_type] = _.without(
+            this.shownObservations[labTest.lab_test_type], observationName
           );
         }
         else{
-          this.shownObservations.push(observationName);
+          if(!(labTest.lab_test_type in this.shownObservations)){
+              this.shownObservations[labTest.lab_test_type] = [];
+          };
+          this.shownObservations[labTest.lab_test_type].push(observationName);
         }
       };
 
-      this.isShownObservation = function(observationName){
-        return _.contains(this.shownObservations, observationName);
+      this.isShownObservation = function(labTest, observationName){
+        if(labTest.lab_test_type in this.shownObservations){
+          if(_.contains(this.shownObservations[labTest.lab_test_type], observationName)){
+            return true;
+          }
+        }
+        return false;
       }
 
       this.filter = function(someTag){
@@ -85,8 +91,13 @@ angular.module('opal.controllers').controller('ResultView', function($scope, Lab
       };
 
       this.getObservationDetail = function(labTest, observationName){
-        if(_.contains(vm.observationDetail, observationName)){
-          return;
+        if(labTest.lab_test_type in vm.observationDetail){
+          if(_.contains(vm.observationDetail[labTest.lab_test_type], observationName)){
+            return;;
+          }
+        }
+        else{
+          vm.observationDetail[labTest.lab_test_type] = {};
         }
 
         var apiName = labTest.observation_metadata[observationName].api_name;
@@ -94,8 +105,8 @@ angular.module('opal.controllers').controller('ResultView', function($scope, Lab
         vm.observationDetail[observationName] = [];
 
         // _.each(vm.originalLabTests, function())
-        ObservationDetail.load(apiName).then(function(detail){
-          vm.observationDetail[observationName] = detail.observations;
+        ObservationDetail.load(labTest.api_name, apiName).then(function(detail){
+          vm.observationDetail[labTest.lab_test_type][observationName] = detail.observations;
         });
       };
 

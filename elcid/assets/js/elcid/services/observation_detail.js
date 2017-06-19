@@ -4,9 +4,9 @@ angular.module('opal.services').factory('ObservationDetail', function($q, $http,
 
     var url = '/glossapi/v0.1/lab_test_observation_detail/';
 
-    var load = function(observationSlug){
+    var load = function(labTestSlug, observationSlug){
       var deferred = $q.defer();
-      var specificUrl = url + observationSlug + "/";
+      var specificUrl = url + observationSlug + "/?lab_test=" + labTestSlug;
       $http({ cache: true, url: specificUrl, method: 'GET'}).then(function(response) {
           deferred.resolve(response.data);
       }, function() {

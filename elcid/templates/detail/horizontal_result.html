@@ -54,6 +54,12 @@
             <div ng-repeat="observation_name in labTest.observation_names">
               <div ng-click="resultView.showObservation(labTest, observation_name)" class="lab-test-row selectable row">
                 <div class="col-sm-3">
+                  <span ng-show="resultView.trendChange(labTest, observation_name) === 1">
+                    {% icon "fa-angle-up" %}
+                  </span>
+                  <span ng-show="resultView.trendChange(labTest, observation_name) === -1">
+                    {% icon "fa-angle-down" %}
+                  </span>
                   [[ observation_name ]]
                   <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
                     ([[ labTest.observation_metadata[observation_name].units ]])
@@ -64,23 +70,17 @@
                   -
                   [[ labTest.observation_metadata[observation_name].reference_range.max ]]
                 </div>
-                <div ng-hide="resultView.isShownObservation(observation_name)" ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
+                <div ng-hide="resultView.isShownObservation(labTest, observation_name)" ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
                   [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
-                  <span ng-show="$index === 0 && resultView.trendChange(labTest, observation_name) === 1">
-                    {% icon "fa-angle-up" %}
-                  </span>
-                  <span ng-show="$index === 0 && resultView.trendChange(labTest, observation_name) === -1">
-                    {% icon "fa-angle-down" %}
-                  </span>
                 </div>
               </div>
-              <div ng-show="resultView.isShownObservation(observation_name)" class="row">
+              <div ng-show="resultView.isShownObservation(labTest, observation_name)" class="row">
                 <div class="col-md-12">
                   <div class="observation-graph-pane" ng-show="resultView.observationDetail[observation_name]">
-                    <div ng-if="resultView.observationDetail[observation_name].length">
-                      <div observation-range="labTest.observation_metadata[observation_name].reference_range" observation-graph="resultView.observationDetail[observation_name]"></div>
+                    <div ng-if="resultView.observationDetail[labTest.lab_test_type][observation_name].length">
+                      <div observation-name="observation_name" observation-range="labTest.observation_metadata[observation_name].reference_range" observation-graph="resultView.observationDetail[labTest.lab_test_type][observation_name]"></div>
                     </div>
-                    <div ng-show="!resultView.observationDetail[observation_name].length">
+                    <div ng-show="!resultView.observationDetail[labTest.lab_test_type][observation_name].length">
                       <div class="row">
                         <div class="result-loading col-md-12 text-center">
                           <h3>
