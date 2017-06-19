@@ -117,6 +117,20 @@ class LabTestObservationDetail(LoginRequiredViewset):
         return json_response(collection.to_dict())
 
 
+class LabTestJsonDumpView(LoginRequiredViewset):
+    base_name = 'lab_test_json_dump_view'
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        lab_tests = lmodels.LabTest.objects.filter(patient=patient)
+        lab_tests = sorted(lab_tests, key=lambda x: x.extras["profile_description"])
+        return json_response(
+            dict(
+                tests=[i.to_dict(None) for i in lab_tests]
+            )
+        )
+
+
 class LabTestResultsView(LoginRequiredViewset):
     """ The Api view of the the results view in the patient detail
         We want to show everything grouped by test, then observation, then
@@ -205,6 +219,8 @@ class LabTestResultsView(LoginRequiredViewset):
 
             # observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
+            timeseries = {}
+
             observation_metadata = {}
 
             observation_date_range = {
@@ -229,7 +245,17 @@ class LabTestResultsView(LoginRequiredViewset):
                         api_name=slugify(observation["test_name"])
                     )
 
+            # timeseries[test_name] = by_observations[test_name].values()
+            # timeseries[test_name] = sorted(
+            #     timeseries[test_name], key=lambda x: x["date_ordered"]
+            # )
+            # timeseries[test_name].reverse()
+            # timeseries[test_name] = [
+            #     i["observation_value"] for i in timeseries[test_name]
+            # ]
+
             serialised_lab_teset = dict(
+                timeseries=timeseries,
                 api_name=slugify(lab_test_type),
                 observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
@@ -371,3 +397,4 @@ gloss_router.register('glossapi', GlossEndpointApi)
 gloss_router.register('relevent_lab_test_api', ReleventLabTestApi)
 gloss_router.register('lab_test_results_view', LabTestResultsView)
 gloss_router.register('lab_test_observation_detail', LabTestObservationDetail)
+gloss_router.register('lab_test_json_dump_view', LabTestJsonDumpView)
