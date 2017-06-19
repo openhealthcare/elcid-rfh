@@ -1,4 +1,5 @@
 {% load panels %}
+{% load forms %}
 <div ng-controller="ResultView as resultView" class="col-md-12 lab-tests">
   <div class="panel panel-default">
     <div class="panel-heading">
@@ -65,6 +66,12 @@
                 </div>
                 <div ng-hide="resultView.isShownObservation(observation_name)" ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
                   [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
+                  <span ng-show="$index === 0 && resultView.trendChange(labTest, observation_name) === 1">
+                    {% icon "fa-angle-up" %}
+                  </span>
+                  <span ng-show="$index === 0 && resultView.trendChange(labTest, observation_name) === -1">
+                    {% icon "fa-angle-down" %}
+                  </span>
                 </div>
               </div>
               <div ng-show="resultView.isShownObservation(observation_name)" class="row">

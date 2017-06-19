@@ -34,10 +34,6 @@ directives.directive("observationGraph", function (toMomentFilter) {
         legend: {
           show: false
         },
-        size: {
-          height: 250,
-          width: 1000
-        },
         subchart: {
            show: true
         },

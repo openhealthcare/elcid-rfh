@@ -41,6 +41,38 @@ angular.module('opal.controllers').controller('ResultView', function($scope, Lab
         }
       }
 
+      this.trendChange = function(labTest, observationName){
+        /*
+          tells us with the latest observation value
+          is going up or down compared to the previous
+          return -1 if its going down, 1 if its going up
+          0 if neither or unknown.
+        */
+
+        var observationDateRange = labTest.observation_date_range;
+
+        if(observationDateRange.length < 2){
+          return 0
+        }
+        var mostRecent = labTest.by_observations[observationName][observationDateRange[0]].observation_value;
+        var nextRecent = labTest.by_observations[observationName][observationDateRange[1]].observation_value;
+
+        if(isNaN(mostRecent) || isNaN(nextRecent)){
+          return 0
+        }
+        var roundedMostRecent = Math.round(mostRecent * 100)/100;
+        var roundedNextRecent = Math.round(nextRecent * 100)/100;
+
+        if(roundedMostRecent < roundedNextRecent){
+          return -1;
+        }
+        if(roundedMostRecent === roundedNextRecent){
+          return 0;
+        }
+
+        return 1;
+      }
+
       this.getLabTests = function(patient){
         return LabTestResults.load(patient.id).then(function(result){
           vm.originalLabTests = result.tests;
