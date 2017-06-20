@@ -228,9 +228,15 @@ class LabTestResultsView(LoginRequiredViewset):
             }
             observation_date_range = sorted(list(observation_date_range))
             observation_date_range.reverse()
+            long_form = False
 
             for observation in observations:
                 test_name = observation["test_name"]
+
+                # arbitrary but fine for prototyping, should we show it in a
+                # table
+                if len(observation["observation_value"]) > 10:
+                    long_form = True
 
                 if test_name not in by_observations:
                     obs_for_test_name = {
@@ -255,6 +261,7 @@ class LabTestResultsView(LoginRequiredViewset):
             # ]
 
             serialised_lab_teset = dict(
+                long_form=long_form,
                 timeseries=timeseries,
                 api_name=slugify(lab_test_type),
                 observation_metadata=observation_metadata,
