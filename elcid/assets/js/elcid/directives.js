@@ -36,6 +36,13 @@ directives.directive("observationGraph", function (toMomentFilter) {
         legend: {
           show: false
         },
+        tooltip: {
+            format: {
+                value: function(value, ratio, id){
+                    return value
+                }
+            }
+        },
         subchart: {
            show: true
         },
