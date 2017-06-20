@@ -71,11 +71,11 @@
               <div ng-repeat="observation_name in labTest.observation_names">
                 <div ng-click="resultView.showObservation(labTest, observation_name)" class="lab-test-row selectable row">
                   <div class="col-sm-3">
-                    <span ng-show="resultView.trendChange(labTest, observation_name) === 1">
-                      {% icon "fa-angle-up" %}
+                    <span class="too-high" ng-show="resultView.trendChange(labTest, observation_name) === 1">
+                      {% icon "fa-chevron-circle-up" %}
                     </span>
-                    <span ng-show="resultView.trendChange(labTest, observation_name) === -1">
-                      {% icon "fa-angle-down" %}
+                    <span class="too-down" ng-show="resultView.trendChange(labTest, observation_name) === -1">
+                      {% icon "fa-chevron-circle-down" %}
                     </span>
                     [[ observation_name ]]
                     <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">

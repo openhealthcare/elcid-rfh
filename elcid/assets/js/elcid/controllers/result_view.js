@@ -59,12 +59,25 @@ angular.module('opal.controllers').controller('ResultView', function(
         */
 
         var observationDateRange = labTest.observation_date_range;
+        var obvsLength = observationDateRange.length;
 
-        if(observationDateRange.length < 2){
+        if(obvsLength < 2){
           return 0
         }
-        var mostRecent = labTest.by_observations[observationName][observationDateRange[0]].observation_value;
-        var nextRecent = labTest.by_observations[observationName][observationDateRange[1]].observation_value;
+
+        var recentObservation = labTest.by_observations[observationName][observationDateRange[obvsLength - 1]];
+        var nextObservation = labTest.by_observations[observationName][observationDateRange[obvsLength - 2]];
+
+        if(!recentObservation){
+          return 0;
+        }
+
+        if(!nextObservation){
+          return 0;
+        }
+
+        var mostRecent = recentObservation.observation_value;
+        var nextRecent = nextObservation.observation_value;
 
         if(isNaN(mostRecent) || isNaN(nextRecent)){
           return 0
