@@ -10,16 +10,16 @@ directives.directive("observationGraph", function (toMomentFilter) {
     link: function (scope, element, attrs) {
       var observations = angular.copy(_.values(scope.observations));
       observations = _.map(observations, function(observation){
-        var dt = observation["date_ordered"];
-        observation["date_ordered"] = toMomentFilter(dt).toDate()
+        var dt = observation["datetime_ordered"];
+        observation["datetime_ordered"] = toMomentFilter(dt).toDate()
         return observation;
       });
 
       observations = _.sortBy(observations, function(observation){
-        return observation["date_ordered"];
+        return observation["datetime_ordered"];
       });
 
-      var dates = _.pluck(observations, "date_ordered");
+      var dates = _.pluck(observations, "datetime_ordered");
       var values = _.pluck(observations, "observation_value");
 
       dates.unshift('Date');
@@ -30,7 +30,7 @@ directives.directive("observationGraph", function (toMomentFilter) {
         data: {
           x: "Date",
           y: scope.observationName,
-          xFormat: '%d/%m/%Y',
+          xFormat: '%d/%m/%Y %H:%M:%S',
           columns: [dates, values]
         },
         legend: {
@@ -43,7 +43,7 @@ directives.directive("observationGraph", function (toMomentFilter) {
           x: {
             type: 'timeseries',
             tick: {
-              format: '%d/%m/%Y'
+              format: '%d/%m/%Y %H:%M:%S'
             }
           },
           y: {
@@ -57,7 +57,7 @@ directives.directive("observationGraph", function (toMomentFilter) {
 
       var threeMonthsAgo = moment().subtract(3, "M");
 
-      if(moment(observations[0].date_ordered).diff(threeMonthsAgo) < 0){
+      if(moment(observations[0].datetime_ordered).diff(threeMonthsAgo) < 0){
         graphParams.axis.x.extent = [threeMonthsAgo.toDate(), new Date()];
       }
 

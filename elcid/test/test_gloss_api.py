@@ -361,7 +361,7 @@ class TestUpdateLabTests(AbstractGlossTestCase):
         hl7_result = HL7Result.objects.get()
         self.assertEqual(hl7_result, lmodels.LabTest.objects.get())
         self.assertEqual(hl7_result.status, HL7Result.COMPLETE)
-        self.assertEqual(hl7_result.date_ordered, datetime.date(2016, 11, 22))
+        self.assertEqual(hl7_result.datetime_ordered, datetime.date(2016, 11, 22))
         self.assertEqual(hl7_result.extras["last_edited"], '22/11/2016 13:10:07')
         self.assertEqual(hl7_result.external_identifier, '0015M383790_1')
         observation_1 = hl7_result.extras["observations"][0]

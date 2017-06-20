@@ -69,11 +69,6 @@ class ObservationCollection(object):
             return None
         return {"min": range_min_max[0], "max": range_min_max[1]}
 
-    def to_date_str(self, some_date):
-        return some_date.strftime(
-            settings.DATE_INPUT_FORMATS[0]
-        )
-
     def __init__(self, observations):
         obv = observations[0]
         self.observations = observations
@@ -108,8 +103,9 @@ class LabTestObservationDetail(LoginRequiredViewset):
                         existing_observation.get("test_name", None)
                     )
                     if sluged_test_name == slug:
-                        existing_observation["date_ordered"] = lab_test.date_ordered
-                        found_observations.append(existing_observation)
+                        if lab_test.datetime_ordered:
+                            existing_observation["datetime_ordered"] = lab_test.datetime_ordered
+                            found_observations.append(existing_observation)
 
         if not found_observations:
             raise Http404
@@ -156,9 +152,9 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return []
 
-    def to_date_str(self, some_date):
+    def to_datetime_str(self, some_date):
         return some_date.strftime(
-            settings.DATE_INPUT_FORMATS[0]
+            settings.DATETIME_INPUT_FORMATS[0]
         )
 
     def aggregate_observations_by_lab_test(self, lab_tests):
@@ -192,7 +188,7 @@ class LabTestResultsView(LoginRequiredViewset):
                                 max=float(range_min_max[1].strip())
                             )
 
-                observation["date_ordered"] = lab_test.date_ordered
+                observation["datetime_ordered"] = lab_test.datetime_ordered
                 by_test[lab_test_type].append(observation)
         return by_test
 
@@ -203,7 +199,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
         lab_tests = lmodels.LabTest.objects.filter(patient=patient)
-        lab_tests = lab_tests.filter(date_ordered__gte=three_months_ago)
+        lab_tests = lab_tests.filter(datetime_ordered__gte=three_months_ago)
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
 
         serialised_tests = []
@@ -213,8 +209,7 @@ class LabTestResultsView(LoginRequiredViewset):
         # them as part of a time series, ie adding in blanks if they
         # aren't populated
         for lab_test_type, observations in by_test.items():
-            observations = sorted(observations, key=lambda x: x["date_ordered"])
-            observations.reverse()
+            observations = sorted(observations, key=lambda x: x["datetime_ordered"])
             observations = sorted(observations, key=lambda x: x["test_name"])
 
             # observation_time_series = defaultdict(list)
@@ -224,10 +219,9 @@ class LabTestResultsView(LoginRequiredViewset):
             observation_metadata = {}
 
             observation_date_range = {
-                observation["date_ordered"] for observation in observations
+                self.to_datetime_str(observation["datetime_ordered"]) for observation in observations
             }
             observation_date_range = sorted(list(observation_date_range))
-            observation_date_range.reverse()
             long_form = False
 
             for observation in observations:
@@ -240,7 +234,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
                 if test_name not in by_observations:
                     obs_for_test_name = {
-                        self.to_date_str(i["date_ordered"]): i for i in observations if i["test_name"] == test_name
+                        self.to_datetime_str(i["datetime_ordered"]): i for i in observations if i["test_name"] == test_name
                     }
                     by_observations[test_name] = obs_for_test_name
 
@@ -253,7 +247,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
             # timeseries[test_name] = by_observations[test_name].values()
             # timeseries[test_name] = sorted(
-            #     timeseries[test_name], key=lambda x: x["date_ordered"]
+            #     timeseries[test_name], key=lambda x: x["datetime_ordered"]
             # )
             # timeseries[test_name].reverse()
             # timeseries[test_name] = [
@@ -339,13 +333,13 @@ class ReleventLabTestApi(LoginRequiredViewset):
                                 float(obs_result)
                                 timeseries.append((
                                     obs_result,
-                                    group.date_ordered,
+                                    group.datetime_ordered,
                                 ))
-                                all_dates.add(group.date_ordered)
+                                all_dates.add(group.datetime_ordered)
                             except ValueError:
                                 timeseries.append((
                                     None,
-                                    group.date_ordered,
+                                    group.datetime_ordered,
                                 ))
 
                 # sort by date reversed
