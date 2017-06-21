@@ -77,12 +77,14 @@ class Chronic(RfhPatientList):
     template_name = 'episode_list.html'
     schema = []
 
+
 class Haematology(RfhPatientList):
     display_name = 'Haematology'
     direct_add = True
     tag = "haem"
     template_name = 'episode_list.html'
     schema = []
+
 
 class HIV(RfhPatientList):
     display_name = 'HIV'
@@ -91,12 +93,14 @@ class HIV(RfhPatientList):
     template_name = 'episode_list.html'
     schema = []
 
+
 class Paediatric(RfhPatientList):
     display_name = 'Paediatric'
     direct_add = True
     tag = "paediatric"
     template_name = 'episode_list.html'
     schema = []
+
 
 class MalboroughClinic(RfhPatientList):
     display_name = 'Malborough Clinic'
@@ -105,6 +109,7 @@ class MalboroughClinic(RfhPatientList):
     template_name = 'episode_list.html'
     schema = []
 
+
 class Renal(RfhPatientList):
     display_name = 'Renal'
     direct_add = True
@@ -112,12 +117,22 @@ class Renal(RfhPatientList):
     template_name = 'episode_list.html'
     schema = []
 
+
 class TB(RfhPatientList):
     display_name = 'TB'
     direct_add = True
     tag = "tb"
     template_name = 'episode_list.html'
     schema = []
+
+
+class Sepsis(RfhPatientList):
+    display_name = 'Sepsis'
+    direct_add = True
+    tag = "sepsis"
+    template_name = 'episode_list.html'
+    schema = []
+
 
 class Bacteraemia(RfhPatientList):
     display_name = 'Bacteraemia'
