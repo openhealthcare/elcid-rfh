@@ -143,7 +143,7 @@ directives.directive("populateLabTests", function($http){
 
         _.each(scope.data.obs_values, function(data){
           data.graphValues = _.map(data.values, function(someData){
-            return parseInt(someData[0]);
+            return parseInt(someData);
           });
         });
       });

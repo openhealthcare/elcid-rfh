@@ -45,6 +45,23 @@ for tag, profile_descriptions in _LAB_TEST_TAGS.items():
         LAB_TEST_TAGS[profile_description].append(tag)
 
 
+def generate_time_series(observations):
+    """
+        take in a bunch of observations and return a list
+        of numeric observation values
+        If we can't pass the observation to a float, we skip it.
+    """
+    timeseries = []
+    for observation in observations:
+        obs_result = observation["observation_value"].split("~")[0]
+        try:
+            float(obs_result)
+            timeseries.append(obs_result)
+        except ValueError:
+            pass
+    return timeseries
+
+
 class GlossEndpointApi(viewsets.ViewSet):
     base_name = 'glossapi'
 
@@ -304,9 +321,15 @@ class ReleventLabTestApi(LoginRequiredViewset):
         else:
             return len(self.PREFERRED_ORDER)
 
-    @patient_from_pk
-    def retrieve(self, request, patient):
+    def aggregate_observations(self, patient):
+        """
+            takes the specific test/observations
+            aggregates them by lab test, observation name
+            adds the lab test datetime ordered to the observation dict
+            sorts the observations by datetime ordered
+        """
         test_data = emodels.HL7Result.get_relevant_tests(patient)
+        result = defaultdict(lambda: defaultdict(list))
         relevant_tests = {
             "C REACTIVE PROTEIN": ["C Reactive Protein"],
             "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
@@ -314,68 +337,55 @@ class ReleventLabTestApi(LoginRequiredViewset):
             "CLOTTING SCREEN": ["INR"]
         }
 
-        obs_values = []
+        for test in test_data:
+            test_name = test.extras["profile_description"]
+            if test_name in relevant_tests:
+                relevent_observations = relevant_tests[test_name]
+
+                for observation in test.extras["observations"]:
+                    observation_name = observation["test_name"]
+                    if observation_name in relevent_observations:
+                        observation["datetime_ordered"] = test.datetime_ordered
+                        result[test_name][observation_name].append(observation)
+
+        for test, obs_collection in result.items():
+            for obs_name, obs in obs_collection.items():
+                result[test][obs_name] = sorted(obs, key=lambda x: x["datetime_ordered"])
+
+        return result
+
+    def datetime_to_str(self, dt):
+        return dt.strftime(
+            settings.DATETIME_INPUT_FORMATS[0]
+        )
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        aggregated_data = self.aggregate_observations(patient)
+
+        serialised_obvs = []
         all_dates = set()
-        units = None
-        reference_range = None
-        for relevant_test, relevant_observations in relevant_tests.items():
-            for relevant_observation in relevant_observations:
-                grouped = [t for t in test_data if t.extras['profile_description'] == relevant_test]
-                timeseries = []
-                for group in grouped:
-                    for observation in group.extras["observations"]:
-                        if observation["test_name"] == relevant_observation:
-                            units = observation["units"]
-                            reference_range = observation["reference_range"]
-                            obs_result = observation["observation_value"].split("~")[0]
 
-                            try:
-                                float(obs_result)
-                                timeseries.append((
-                                    obs_result,
-                                    group.datetime_ordered,
-                                ))
-                                all_dates.add(group.datetime_ordered)
-                            except ValueError:
-                                timeseries.append((
-                                    None,
-                                    group.datetime_ordered,
-                                ))
+        for test_name, obs_collection in aggregated_data.items():
+            for observation_name, observations in obs_collection.items():
+                serialised_obvs.append(dict(
+                    name=observation_name,
+                    values=generate_time_series(observations),
+                    units=observations[0]["units"],
+                    reference_range=observations[0]["reference_range"],
+                    latest_results={
+                        self.datetime_to_str(i["datetime_ordered"]): i["observation_value"] for i in observations
+                    }
+                ))
+                all_dates = all_dates.union(
+                    i["datetime_ordered"] for i in observations
+                )
 
-                # sort by date reversed
-                timeseries = sorted(timeseries, key=lambda x: x[1])
-                timeseries.reverse()
-
-                obs_values.append({
-                    'name': relevant_observation.strip(),
-                    'values': timeseries,
-                    'unit': units,
-                    'range': reference_range
-                })
-
-        # so we want a table that shows the latest three dates
-        # so we get the latest three dates that these tests have
-        # and then we create an dictionary of of the latest 3 results {date: value}
-        # not all dates will have an element, we'll leave those blank
-        latest_results = sorted(list(all_dates))[:3]
-        latest_results.reverse()
-
-        for obs_value in obs_values:
-            obs_value["latest_results"] = {}
-            for series_element in obs_value["values"]:
-                if series_element[1] in latest_results:
-                    if not series_element[1]:
-                        import ipdb; ipdb.set_trace()
-
-                    date_var = series_element[1].strftime(
-                        settings.DATETIME_INPUT_FORMATS[0]
-                    )
-                    obs_value["latest_results"][date_var] = series_element[0]
-
-        obs_values = sorted(obs_values, key=self.sort_observations)
+        recent_dates = sorted(list(all_dates))[-3:]
+        obs_values = sorted(serialised_obvs, key=self.sort_observations)
         result = dict(
             obs_values=obs_values,
-            latest_results=latest_results
+            latest_results=recent_dates
         )
         return json_response(result)
 
