@@ -3,7 +3,7 @@ from opal.core.patient_lists import TaggedPatientList
 
 
 class RfhPatientList(TaggedPatientList, AbstractBase):
-    comparator_service = "DateCreatedComparator"
+    comparator_service = "EpisodeAddedComparator"
 
 
 class Hepatology(RfhPatientList):

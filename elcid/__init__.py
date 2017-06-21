@@ -22,7 +22,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/tagging_step.js',
         'js/elcid/services/blood_culture_helper.js',
         'js/elcid/services/blood_culture_record.js',
-        'js/elcid/services/date_added_comparator.js',
+        'js/elcid/services/episode_added_comparator.js',
     ]
 
     styles = [
