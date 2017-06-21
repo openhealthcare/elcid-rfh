@@ -2,7 +2,7 @@ angular.module('opal.services').factory('LabTestResults', function($q, $http, $w
 
     "use strict";
 
-    var url = '/glossapi/v0.1/lab_test_results_view/';
+    var url = '/labtest/v0.1/lab_test_results_view/';
 
     var load = function(patientId){
       var deferred = $q.defer();

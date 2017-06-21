@@ -364,10 +364,12 @@ class ReleventLabTestApi(LoginRequiredViewset):
             obs_value["latest_results"] = {}
             for series_element in obs_value["values"]:
                 if series_element[1] in latest_results:
+                    if not series_element[1]:
+                        import ipdb; ipdb.set_trace()
+
                     date_var = series_element[1].strftime(
-                        settings.DATE_INPUT_FORMATS[0]
+                        settings.DATETIME_INPUT_FORMATS[0]
                     )
-                    print series_element[0]
                     obs_value["latest_results"][date_var] = series_element[0]
 
         obs_values = sorted(obs_values, key=self.sort_observations)
@@ -395,7 +397,9 @@ PatientViewSet.retrieve = gloss_api_query_monkey_patch(PatientViewSet.retrieve)
 
 gloss_router = OPALRouter()
 gloss_router.register('glossapi', GlossEndpointApi)
-gloss_router.register('relevent_lab_test_api', ReleventLabTestApi)
-gloss_router.register('lab_test_results_view', LabTestResultsView)
-gloss_router.register('lab_test_observation_detail', LabTestObservationDetail)
-gloss_router.register('lab_test_json_dump_view', LabTestJsonDumpView)
+
+lab_test_router = OPALRouter()
+lab_test_router.register('relevent_lab_test_api', ReleventLabTestApi)
+lab_test_router.register('lab_test_results_view', LabTestResultsView)
+lab_test_router.register('lab_test_observation_detail', LabTestObservationDetail)
+lab_test_router.register('lab_test_json_dump_view', LabTestJsonDumpView)

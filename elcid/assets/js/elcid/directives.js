@@ -138,7 +138,7 @@ directives.directive("populateLabTests", function($http){
     scope: true,
     link: function(scope){
       var patientId = scope.row.demographics[0].patient_id;
-      $http.get("/glossapi/v0.1/relevent_lab_test_api/" + patientId + "/").then(function(result){
+      $http.get("/labtest/v0.1/relevent_lab_test_api/" + patientId + "/").then(function(result){
         scope.data = result.data;
 
         _.each(scope.data.obs_values, function(data){
