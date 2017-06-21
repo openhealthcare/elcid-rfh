@@ -127,7 +127,7 @@ class TB(RfhPatientList):
 
 
 class Sepsis(RfhPatientList):
-    display_name = 'Sepsis'
+    display_name = 'Sepsis Pathway'
     direct_add = True
     tag = "sepsis"
     template_name = 'episode_list.html'
