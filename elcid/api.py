@@ -53,13 +53,37 @@ def generate_time_series(observations):
     """
     timeseries = []
     for observation in observations:
-        obs_result = observation["observation_value"].split("~")[0]
-        try:
-            float(obs_result)
+        obs_result = get_observation_value(observation)
+
+        if obs_result:
             timeseries.append(obs_result)
-        except ValueError:
-            pass
+
     return timeseries
+
+
+def get_observation_value(observation):
+    obs_result = observation["observation_value"].split("~")[0]
+    try:
+        # we return None if its not numeric
+        return float(obs_result)
+    except ValueError:
+        return None
+
+
+def clean_ref_range(obv):
+    ref_range = obv["reference_range"]
+    return ref_range.replace("]", "").replace("[", "")
+
+
+def get_reference_range(observation):
+    observation["reference_range"] = observation["reference_range"]
+    ref_range = clean_ref_range(observation)
+    if not len(ref_range.replace("-", "").strip()):
+        return None
+    range_min_max = observation["reference_range"].split("-")
+    if len(range_min_max) > 2:
+        return None
+    return {"min": range_min_max[0], "max": range_min_max[1]}
 
 
 class GlossEndpointApi(viewsets.ViewSet):
@@ -298,7 +322,7 @@ class LabTestResultsView(LoginRequiredViewset):
         )
 
 
-class ReleventLabTestApi(LoginRequiredViewset):
+class LabTestSummaryApi(LoginRequiredViewset):
     """ The API View used in the card list. Returns the last 3 months (approixmately)
         of the tests we care about the most.
     """
@@ -361,6 +385,10 @@ class ReleventLabTestApi(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
+        if settings.GLOSS_ENABLED:
+            gloss_api.patient_query(
+                patient.demographics_set.first().hospital_number
+            )
         aggregated_data = self.aggregate_observations(patient)
 
         serialised_obvs = []
@@ -370,22 +398,22 @@ class ReleventLabTestApi(LoginRequiredViewset):
             for observation_name, observations in obs_collection.items():
                 serialised_obvs.append(dict(
                     name=observation_name,
-                    values=generate_time_series(observations),
+                    graph_values=generate_time_series(observations),
                     units=observations[0]["units"],
-                    reference_range=observations[0]["reference_range"],
+                    reference_range=get_reference_range(observations[0]),
                     latest_results={
-                        self.datetime_to_str(i["datetime_ordered"]): i["observation_value"] for i in observations
+                        self.datetime_to_str(i["datetime_ordered"]): get_observation_value(i) for i in observations if get_observation_value(i)
                     }
                 ))
                 all_dates = all_dates.union(
-                    i["datetime_ordered"] for i in observations
+                    i["datetime_ordered"] for i in observations if get_observation_value(i)
                 )
 
         recent_dates = sorted(list(all_dates))[-3:]
         obs_values = sorted(serialised_obvs, key=self.sort_observations)
         result = dict(
             obs_values=obs_values,
-            latest_results=recent_dates
+            recent_dates=recent_dates
         )
         return json_response(result)
 
@@ -409,7 +437,7 @@ gloss_router = OPALRouter()
 gloss_router.register('glossapi', GlossEndpointApi)
 
 lab_test_router = OPALRouter()
-lab_test_router.register('relevent_lab_test_api', ReleventLabTestApi)
+lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)
 lab_test_router.register('lab_test_results_view', LabTestResultsView)
 lab_test_router.register('lab_test_observation_detail', LabTestObservationDetail)
 lab_test_router.register('lab_test_json_dump_view', LabTestJsonDumpView)

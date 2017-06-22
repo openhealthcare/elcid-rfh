@@ -3,7 +3,7 @@ from django.test import override_settings
 from mock import MagicMock, patch
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
-from elcid.api import GlossEndpointApi
+from elcid import api
 from opal import models
 
 
@@ -16,9 +16,56 @@ class TestEndPoint(OpalTestCase):
             hospital_number="1"
         )
         request.data = json.dumps(expected_dict)
-        endpoint = GlossEndpointApi()
+        endpoint = api.GlossEndpointApi()
         endpoint.create(request)
         bulk_create.assert_called_once_with(expected_dict)
+
+
+class ApiUtilsTestCase(OpalTestCase):
+    def test_generate_time_series(self):
+        observations = [
+            dict(observation_value=1),
+            dict(observation_value=3),
+            dict(observation_value=2),
+        ]
+        self.assertEqual(
+            api.generate_time_series(observations),
+            [1, 3, 2]
+        )
+
+    def test_get_observation_value(self):
+        pass
+
+    def test_clean_ref_range(self):
+        pass
+
+    def test_get_reference_range(self):
+        pass
+
+class LabTestSummaryApiTestCase(OpalTestCase):
+    def test_sort_observations_in_preferred_order(self):
+        pass
+
+    def test_sort_observations_not_in_preferred_order(self):
+        pass
+
+    def test_aggregate_observations(self):
+        pass
+
+    def test_aggregate_tests_we_dont_care_about(self):
+        pass
+
+    def test_aggregate_observations_we_dont_care_about(self):
+        pass
+
+    def test_retrieve_recent_dates(self):
+        pass
+
+    def test_retrieve_sorted(self):
+        pass
+
+    def test_retrieve_serialised_data(self):
+        pass
 
 
 @patch('elcid.api.gloss_api.patient_query')

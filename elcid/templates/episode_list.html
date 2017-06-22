@@ -88,7 +88,7 @@
                           <tr>
                             <th></th>
                             <th class="col-md-2"></th>
-                            <th class="text-center" ng-repeat="date in data.latest_results">
+                            <th class="text-center" ng-repeat="date in data.recent_dates">
                               [[ date | shortDate ]]
                             </th>
                             <th class="text-center">
@@ -100,12 +100,11 @@
                           <tr class="row" ng-repeat="item in data.obs_values">
                             <td class="text-center col-md-2">
                               [[ item.name ]]
-                            </td>
-                            <td class="text-center" ng-repeat="date in data.latest_results">
-                              [[ item.latest_results[date] ]]
+                            <td class="text-center" ng-repeat="date in data.recent_dates">
+                              [[ item.recent_dates[date] ]]
                             </td>
                             <td class="text-center">
-                              <div loaded="loaded" spark-line="item.graphValues"></div>
+                              <div spark-line="item.graph_values"></div>
                             </td>
                           </tr>
                         </tbody>

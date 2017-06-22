@@ -24,6 +24,7 @@ class Application(application.OpalApplication):
         'js/elcid/services/blood_culture_helper.js',
         'js/elcid/services/blood_culture_record.js',
         'js/elcid/services/lab_test_results.js',
+        'js/elcid/services/lab_test_summary_loader.js',
         'js/elcid/services/lab_test_json_dump.js',
         'js/elcid/services/observation_detail.js',
         'js/elcid/directives.js',
