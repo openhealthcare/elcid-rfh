@@ -58,13 +58,17 @@ class ApiUtilsTestCase(OpalTestCase):
 
 class LabTestSummaryApiTestCase(OpalTestCase):
     def setUp(self):
-        request = self.rf.get("/")
-        self.now = timezone.make_aware(datetime.datetime.now(), timezone.get_current_timezone())
+        self.request = self.rf.get("/")
+        self.now = timezone.make_aware(
+            datetime.datetime.now(),
+            timezone.get_current_timezone()
+        )
         self.patient, _ = self.new_patient_and_episode_please()
+        self.patient.demographics_set.update(hospital_number="123")
         url = reverse(
             "lab_test_summary_api-detail",
             kwargs=dict(pk=self.patient.id),
-            request=request
+            request=self.request
         )
         unneeded_lab_test_extras = dict(
             profile_description="UNEEDED",
@@ -185,6 +189,12 @@ class LabTestSummaryApiTestCase(OpalTestCase):
             self.result["recent_dates"],
             [self.previous_date, self.now]
         )
+
+    @override_settings(GLOSS_ENABLED=True)
+    @patch('elcid.api.gloss_api.patient_query')
+    def test_gloss_settings_are_used(self, patient_query):
+        api.LabTestSummaryApi().retrieve(self.request, 1)
+        patient_query.assert_called_once_with('123')
 
 
 @patch('elcid.api.gloss_api.patient_query')
