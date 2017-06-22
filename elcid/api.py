@@ -70,20 +70,18 @@ def get_observation_value(observation):
         return None
 
 
-def clean_ref_range(obv):
-    ref_range = obv["reference_range"]
-    return ref_range.replace("]", "").replace("[", "")
+def clean_ref_range(ref_range):
+    return ref_range.replace("]", "").replace("[", "").strip()
 
 
 def get_reference_range(observation):
-    observation["reference_range"] = observation["reference_range"]
-    ref_range = clean_ref_range(observation)
+    ref_range = clean_ref_range(observation["reference_range"])
     if not len(ref_range.replace("-", "").strip()):
         return None
-    range_min_max = observation["reference_range"].split("-")
+    range_min_max = ref_range.split("-")
     if len(range_min_max) > 2:
         return None
-    return {"min": range_min_max[0], "max": range_min_max[1]}
+    return {"min": range_min_max[0].strip(), "max": range_min_max[1].strip()}
 
 
 class GlossEndpointApi(viewsets.ViewSet):
@@ -323,10 +321,11 @@ class LabTestResultsView(LoginRequiredViewset):
 
 
 class LabTestSummaryApi(LoginRequiredViewset):
-    """ The API View used in the card list. Returns the last 3 months (approixmately)
+    """
+        The API View used in the card list. Returns the last 3 months (approixmately)
         of the tests we care about the most.
     """
-    base_name = 'relevent_lab_test_api'
+    base_name = 'lab_test_summary_api'
 
     PREFERRED_ORDER = [
         "WBC",
