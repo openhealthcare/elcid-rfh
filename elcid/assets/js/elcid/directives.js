@@ -131,21 +131,16 @@ directives.directive("sparkLine", function () {
   };
 });
 
-directives.directive("populateLabTests", function($http){
+
+directives.directive("populateLabTests", function(LabTestSummaryLoader){
   "use strict";
   return {
     restrict: 'A',
     scope: true,
     link: function(scope){
       var patientId = scope.row.demographics[0].patient_id;
-      $http.get("/labtest/v0.1/relevent_lab_test_api/" + patientId + "/").then(function(result){
-        scope.data = result.data;
-
-        _.each(scope.data.obs_values, function(data){
-          data.graphValues = _.map(data.values, function(someData){
-            return parseInt(someData);
-          });
-        });
+      LabTestSummaryLoader.load(patientId).then(function(result){
+        scope.data = result;
       });
     }
   };
