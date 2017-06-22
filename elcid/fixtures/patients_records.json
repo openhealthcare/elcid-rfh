@@ -236,7 +236,7 @@
             "consistency_token": "12345678",
             "episode": 1,
             "test": "Blood Culture",
-            "datetime_ordered": "2013-07-25",
+            "date_ordered": "2013-07-25",
             "details": "",
             "microscopy": "",
             "organism": "",

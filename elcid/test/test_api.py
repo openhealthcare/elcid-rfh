@@ -24,9 +24,9 @@ class TestEndPoint(OpalTestCase):
 class ApiUtilsTestCase(OpalTestCase):
     def test_generate_time_series(self):
         observations = [
-            dict(observation_value=1),
-            dict(observation_value=3),
-            dict(observation_value=2),
+            dict(observation_value="1"),
+            dict(observation_value="3"),
+            dict(observation_value="2"),
         ]
         self.assertEqual(
             api.generate_time_series(observations),
