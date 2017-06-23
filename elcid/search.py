@@ -1,4 +1,5 @@
 from opal.core.search.queries import DatabaseQuery
+from django.conf import settings
 from gloss_api import demographics_query
 
 
@@ -8,7 +9,7 @@ class GlossQuery(DatabaseQuery):
 
         if exists_in_elcid:
             return [e.to_dict(self.user) for e in exists_in_elcid]
-        else:
+        elif settings.GLOSS_ENABLED:
             return demographics_query(self.query[0]["query"])
 
         return []
