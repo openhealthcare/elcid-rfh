@@ -39,7 +39,8 @@ class SearchTestCase(OpalTestCase):
 
     @override_settings(
         OPAL_SEARCH_BACKEND="elcid.search.GlossQuery",
-        GLOSS_URL_BASE="http://0.0.0.0:6767"
+        GLOSS_URL_BASE="http://0.0.0.0:6767",
+        GLOSS_ENABLED=True
     )
     def test_gloss_query_flow(self, requests_mock):
         requests_mock.return_value = MagicMock()
@@ -60,6 +61,20 @@ class SearchTestCase(OpalTestCase):
         requests_mock.assert_called_once_with(
             "http://0.0.0.0:6767/api/patient/1231111"
         )
+
+    @override_settings(
+        OPAL_SEARCH_BACKEND="elcid.search.GlossQuery",
+        GLOSS_ENABLED=False
+    )
+    @patch('elcid.search.demographics_query')
+    @patch('elcid.search.DatabaseQuery')
+    def test_return_empty_if_gloss_not_enabled(
+        self, db_query, demo_query, requests_mock
+    ):
+        db_query.get_patients.return_value = False
+        query = queries.create_query(self.user, self.criteria)
+        self.assertEqual(query.patients_as_json(), [])
+        self.assertFalse(demo_query.called)
 
     def test_database_flow(self, requests_mock):
         patient = omodels.Patient.objects.create()
