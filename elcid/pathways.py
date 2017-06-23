@@ -1,4 +1,6 @@
+import datetime
 from elcid import models
+from opal import models as omodels
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
@@ -95,6 +97,14 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
                     episode = patient.episode_set.get()
 
             gloss_api.subscribe(hospital_number)
+
+        if not patient:
+            patient = omodels.Patient.objects.create()
+
+        if not episode:
+            episode = patient.create_episode()
+
+        episode.date_of_admission = datetime.date.today()
 
         return super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
