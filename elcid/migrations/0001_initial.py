@@ -502,7 +502,7 @@ class Migration(migrations.Migration):
                 ('consistency_token', models.CharField(max_length=8)),
                 ('test', models.CharField(max_length=255)),
                 ('alert_investigation', models.BooleanField(default=False)),
-                ('datetime_ordered', models.DateField(null=True, blank=True)),
+                ('date_ordered', models.DateField(null=True, blank=True)),
                 ('details', models.CharField(max_length=255, blank=True)),
                 ('microscopy', models.CharField(max_length=255, blank=True)),
                 ('organism', models.CharField(max_length=255, blank=True)),
