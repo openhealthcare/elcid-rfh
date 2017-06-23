@@ -207,8 +207,9 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
+            'level': 'INFO',
+            # 'filters': ['require_debug_false'],
+            'filters': [],
             'class': 'logging.StreamHandler'
         },
         'mail_admins': {
@@ -224,6 +225,11 @@ LOGGING = {
             'propagate': True,
         },
         'elcid.requestLogger': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'elcid.api_logger': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,

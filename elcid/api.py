@@ -15,6 +15,24 @@ from opal.core.views import json_response
 from opal import models
 from elcid import models as emodels
 from lab import models as lmodels
+import logging
+from functools import wraps
+from time import time
+
+logger = logging.getLogger('elcid.api_logger')
+
+
+def timing(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time()
+        result = f(*args, **kw)
+        te = time()
+        logger.info('func:%r args:[%r, %r] took: %2.4f sec' % (
+            f.__name__, args, kw, te-ts
+        ))
+        return result
+    return wrap
 
 
 _LAB_TEST_TAGS = {
@@ -382,12 +400,15 @@ class LabTestSummaryApi(LoginRequiredViewset):
             settings.DATETIME_INPUT_FORMATS[0]
         )
 
-    @patient_from_pk
-    def retrieve(self, request, patient):
+    @timing
+    def refresh_gloss(self, patient):
         if settings.GLOSS_ENABLED:
             gloss_api.patient_query(
                 patient.demographics_set.first().hospital_number
             )
+
+    @timing
+    def serialise_lab_tests(self, patient):
         aggregated_data = self.aggregate_observations(patient)
 
         serialised_obvs = []
@@ -414,6 +435,13 @@ class LabTestSummaryApi(LoginRequiredViewset):
             obs_values=obs_values,
             recent_dates=recent_dates
         )
+
+        return result
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        self.refresh_gloss(patient)
+        result = self.serialise_lab_tests(patient)
         return json_response(result)
 
 

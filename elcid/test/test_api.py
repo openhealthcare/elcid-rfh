@@ -27,6 +27,17 @@ class TestEndPoint(OpalTestCase):
 
 class ApiUtilsTestCase(OpalTestCase):
 
+    @patch("elcid.api.time")
+    @patch("elcid.api.logging")
+    def test_timing(self, logging, time):
+        time.time.return_value = 2
+        @api.timing
+        def something():
+            pass
+
+        something()
+        time.time.assert_called_once()
+
     def test_generate_time_series(self):
         observations = [
             dict(observation_value="1"),
