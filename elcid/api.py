@@ -176,7 +176,9 @@ class LabTestJsonDumpView(LoginRequiredViewset):
     @patient_from_pk
     def retrieve(self, request, patient):
         lab_tests = lmodels.LabTest.objects.filter(patient=patient)
-        lab_tests = sorted(lab_tests, key=lambda x: x.extras["profile_description"])
+        lab_tests = sorted(
+            lab_tests, key=lambda x: x.extras.get("profile_description")
+        )
         return json_response(
             dict(
                 tests=[i.to_dict(None) for i in lab_tests]
@@ -379,7 +381,7 @@ class LabTestSummaryApi(LoginRequiredViewset):
         }
 
         for test in test_data:
-            test_name = test.extras["profile_description"]
+            test_name = test.extras.get("profile_description")
             if test_name in relevant_tests:
                 relevent_observations = relevant_tests[test_name]
 
