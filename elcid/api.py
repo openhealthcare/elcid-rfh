@@ -144,22 +144,23 @@ class ObservationCollection(object):
 
 class LabTestObservationDetail(LoginRequiredViewset):
     base_name = "lab_test_observation_detail"
-    lookup_field = "slug"
 
-    def retrieve(self, request, slug=None):
+    @patient_from_pk
+    def retrieve(self, request, patient):
         found_observations = []
-        for lab_test in lmodels.LabTest.objects.all():
+        observation_slug = request.query_params["observation"]
+        for lab_test in patient.labtest_set.all():
             lab_test_type = lab_test.extras.get(
                 "profile_description", lab_test.lab_test_type
             )
-            if slugify(lab_test_type) == request.query_params["lab_test"]:
+            if slugify(lab_test_type) == request.query_params["labtest"]:
                 existing_observations = lab_test.extras.get("observations", [])
 
                 for existing_observation in existing_observations:
                     sluged_test_name = slugify(
                         existing_observation.get("test_name", None)
                     )
-                    if sluged_test_name == slug:
+                    if sluged_test_name == observation_slug:
                         if lab_test.datetime_ordered:
                             existing_observation["datetime_ordered"] = lab_test.datetime_ordered
                             found_observations.append(existing_observation)

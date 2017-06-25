@@ -148,7 +148,7 @@ angular.module('opal.controllers').controller('ResultView', function(
         vm.observationDetail[observationName] = [];
 
         // _.each(vm.originalLabTests, function())
-        ObservationDetail.load(labTest.api_name, apiName).then(function(detail){
+        ObservationDetail.load($scope.patient.id, labTest.api_name, apiName).then(function(detail){
           vm.observationDetail[labTest.lab_test_type][observationName] = detail.observations;
         });
       };
