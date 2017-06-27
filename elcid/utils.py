@@ -11,7 +11,7 @@ def timing(f):
         ts = time()
         result = f(*args, **kw)
         te = time()
-        logger.info('func: %r %2.4f sec' % (
+        logger.critical('func: %r %2.4f sec' % (
             f.__name__, te-ts
         ))
         return result
