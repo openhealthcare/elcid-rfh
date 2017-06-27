@@ -229,7 +229,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'elcid.api_logger': {
+        'elcid.time_logger': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
