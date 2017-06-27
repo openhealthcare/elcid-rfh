@@ -384,7 +384,6 @@ class LabTestSummaryApi(LoginRequiredViewset):
             settings.DATETIME_INPUT_FORMATS[0]
         )
 
-    @timing
     def refresh_gloss(self, patient):
         if settings.GLOSS_ENABLED:
             gloss_api.patient_query(

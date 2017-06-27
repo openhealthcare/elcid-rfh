@@ -8,6 +8,7 @@ from opal import models as omodels
 from elcid import models as eModels
 from lab import models as lmodels
 from opal.core import subrecords
+from elcid.utils import timing
 
 import requests
 import json
@@ -44,6 +45,7 @@ def subscribe(hospital_number):
         ))
 
 
+@timing
 def gloss_query(hospital_number):
     base_url = settings.GLOSS_URL_BASE
     url = "{0}/api/patient/{1}".format(base_url, hospital_number)
@@ -142,7 +144,7 @@ def update_tests(update_dict):
     update_dict[lmodels.LabTest.get_api_name()] = results
     return update_dict
 
-
+@timing
 @transaction.atomic()
 def bulk_create_from_gloss_response(request_data):
     hospital_number = request_data["hospital_number"]
@@ -162,7 +164,9 @@ def bulk_create_from_gloss_response(request_data):
         patient = patient_query.get()
 
     user = get_gloss_user()
-    episode_subrecords = {i.get_api_name() for i in subrecords.episode_subrecords()}
+    episode_subrecords = {
+        i.get_api_name() for i in subrecords.episode_subrecords()
+    }
 
     if update_dict:
         # as these are only going to have been sourced from upstream
