@@ -1,5 +1,5 @@
 {% load forms %}
-<div class="container content-offset">
+<div class="container content-offset episode-list">
   <div class="panel panel-primary panel-container">
     <div class="panel-heading">
       <h2>
@@ -31,6 +31,10 @@
                   {% endfor %}
                 </ul>
               </div>
+              <div class="btn-group pull-right">
+                  <label class="btn btn-primary" ng-model="isNavCollapsed" uib-btn-radio="false">{% icon 'fa-list-alt' %}</label>
+                  <label class="btn btn-primary" ng-model="isNavCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+              </div>
             </h1>
           </div>
           </form>
@@ -58,7 +62,7 @@
 
                 </div>
               </div>
-              <div class="panel-body">
+              <div uib-collapse="isNavCollapsed" class="panel-body">
                 <div class="row">
                   <div class="col-md-6">
                     <h4><strong>
