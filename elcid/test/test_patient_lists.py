@@ -51,3 +51,7 @@ class TestPatientList(OpalTestCase):
                 url, 200,
                 msg="Failed to load the template for {}".format(slug)
             )
+
+    def test_patient_list_episode_comparators(self):
+        patient_lists = PatientList.list()
+        self.assertTrue(all(i.comparator_service for i in patient_lists))
