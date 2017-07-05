@@ -37,9 +37,8 @@ describe('ClinicalAdviceFormTest', function() {
                 $scope: $scope,
             });
         };
-        $httpBackend.expectGET('/api/v0.1/userprofile/').respond({});
-        $httpBackend.expectGET('/api/v0.1/record/').respond(recorddata);
         $httpBackend.expectGET('/api/v0.1/referencedata/').respond({});
+        $httpBackend.expectGET('/api/v0.1/record/').respond(recorddata);
     });
 
     afterEach(function() {
