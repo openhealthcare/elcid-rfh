@@ -35,4 +35,4 @@ static3==0.6.1
 opal-observations==0.3.0
 -e git+https://github.com/openhealthcare/opal-lab.git@v0.3.0#egg=opal_lab
 -e git+https://github.com/openhealthcare/opal-pathway.git@v0.4#egg=opal_pathway
-opal==0.9.0
+-e git+https://github.com/openhealthcare/opal.git@v0.9.0#egg=opal
