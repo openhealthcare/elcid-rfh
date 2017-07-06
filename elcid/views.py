@@ -6,14 +6,9 @@ import random
 
 from django import forms
 from django.apps import apps
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.generic import TemplateView, FormView, View
-
-import letter
-from letter.contrib.contact import EmailForm, EmailView
-
 
 from opal.core import application
 
@@ -21,7 +16,6 @@ from elcid.forms import BulkCreateUsersForm
 
 app = application.get_app()
 u = unicode
-POSTIE = letter.DjangoPostman()
 
 
 def temp_password():
