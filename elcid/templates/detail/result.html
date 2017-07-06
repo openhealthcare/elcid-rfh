@@ -27,7 +27,7 @@
       <li class="list-group-item" ng-repeat="item in patient.lab_test">
         <div class="row">
           <div class="col-md-2">[[ item.extras.profile_description || item.lab_test_type ]]</div>
-          <div class="col-md-2">[[ item.date_ordered | shortDate ]]</div>
+          <div class="col-md-2">[[ item.datetime_ordered | shortDate ]]</div>
           <div class="col-md-2">[[ item.extras.observation_datetime | shortDateTime ]]</div>
           <div class="col-md-6">
             <ul>

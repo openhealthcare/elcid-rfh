@@ -4,7 +4,7 @@
   <div ng-show="$index">
     <h3>Blood Culture [[ $index + 1]]</h3>
   </div>
-  {% datepicker element_name="'blood_culture_date_ordered' + $index" label="Date Ordered" model="bloodCulture.date_ordered" %}
+  {% datetimepicker element_name="'blood_culture_datetime_ordered' + $index" label="Date Ordered" model="bloodCulture.datetime_ordered" %}
   {% input label="Source" element_name="'blood_culture_source' + $index" model="bloodCulture.source" lookuplist="bloodculturesource_list" %}
   {% input label="Lab Number" element_name="'blood_culture_lab_number' + $index" model="bloodCulture.lab_number" %}
   <div ng-repeat="aerobic in [true, false]">
