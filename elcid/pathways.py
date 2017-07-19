@@ -6,14 +6,12 @@ from django.db import transaction
 from django.conf import settings
 from elcid import gloss_api
 
-
-from pathway.pathways import (
+from opal.core.pathway import (
     RedirectsToPatientMixin,
     Step,
     PagePathway,
     WizardPathway,
 )
-from pathway.steps import delete_others
 
 
 class SaveTaggingMixin(object):
@@ -104,7 +102,8 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         if not episode:
             episode = patient.create_episode()
 
-        episode.start = datetime.date.today()
+        episode.date_of_admission = datetime.date.today()
+        episode.save()
 
         return super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
