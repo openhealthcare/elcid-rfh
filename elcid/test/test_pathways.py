@@ -223,3 +223,6 @@ class TestAddPatientPathway(OpalTestCase):
         episode = parent_save.call_args[1].get("episode")
         self.assertIsNotNone(episode)
         self.assertEqual(episode.date_of_admission, date(2016, 5, 1))
+
+        # make sure we've saved it
+        self.assertEqual(models.Episode.objects.last().date_of_admission, date(2016, 5, 1))
