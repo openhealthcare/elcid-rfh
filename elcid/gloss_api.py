@@ -8,7 +8,6 @@ from opal import models as omodels
 from elcid import models as eModels
 from lab import models as lmodels
 from opal.core import subrecords
-from elcid.utils import timing
 
 import requests
 import json
@@ -45,7 +44,6 @@ def subscribe(hospital_number):
         ))
 
 
-@timing
 def gloss_query(hospital_number):
     base_url = settings.GLOSS_URL_BASE
     url = "{0}/api/patient/{1}".format(base_url, hospital_number)
@@ -132,7 +130,6 @@ def update_tests(update_dict):
             result['status'] = lmodels.LabTest.PENDING
         result['datetime_ordered'] = result.pop('request_datetime', None)
         result['lab_test_type'] = eModels.HL7Result.get_display_name()
-
         result['extras'] = dict(
             observation_datetime=result.pop('observation_datetime', None),
             profile_description=result.pop('profile_description', None),
@@ -144,7 +141,7 @@ def update_tests(update_dict):
     update_dict[lmodels.LabTest.get_api_name()] = results
     return update_dict
 
-@timing
+
 @transaction.atomic()
 def bulk_create_from_gloss_response(request_data):
     hospital_number = request_data["hospital_number"]
@@ -152,6 +149,7 @@ def bulk_create_from_gloss_response(request_data):
     update_dict = update_tests(update_dict)
     logging.info("running a bulk update with")
     logging.info(update_dict)
+
 
     patient_query = omodels.Patient.objects.filter(
         demographics__hospital_number=hospital_number
@@ -164,9 +162,7 @@ def bulk_create_from_gloss_response(request_data):
         patient = patient_query.get()
 
     user = get_gloss_user()
-    episode_subrecords = {
-        i.get_api_name() for i in subrecords.episode_subrecords()
-    }
+    episode_subrecords = {i.get_api_name() for i in subrecords.episode_subrecords()}
 
     if update_dict:
         # as these are only going to have been sourced from upstream
