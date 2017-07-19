@@ -208,7 +208,7 @@ class TestAddPatientPathway(OpalTestCase):
     @override_settings(GLOSS_ENABLED=False)
     @patch("elcid.pathways.SaveTaggingMixin.save")
     @patch("elcid.pathways.datetime")
-    def test_episode_date_of_admission(self, datetime, parent_save):
+    def test_episode_start(self, datetime, parent_save):
         patient, episode = self.new_patient_and_episode_please()
         parent_save.return_value = (patient, episode,)
         datetime.date.today.return_value = date(2016, 5, 1)
@@ -222,4 +222,4 @@ class TestAddPatientPathway(OpalTestCase):
         self.assertIsNotNone(patient)
         episode = parent_save.call_args[1].get("episode")
         self.assertIsNotNone(episode)
-        self.assertEqual(episode.date_of_admission, date(2016, 5, 1))
+        self.assertEqual(episode.start, date(2016, 5, 1))
