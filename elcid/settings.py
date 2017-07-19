@@ -171,10 +171,10 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'compressor',
     'opal.core.search',
+    'opal.core.pathway',
     'lab',
     'elcid',
     'django.contrib.admin',
-    'pathway',
     'djcelery',
 )
 

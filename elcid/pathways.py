@@ -6,14 +6,12 @@ from django.db import transaction
 from django.conf import settings
 from elcid import gloss_api
 
-
-from pathway.pathways import (
+from opal.core.pathway import (
     RedirectsToPatientMixin,
     Step,
     PagePathway,
     WizardPathway,
 )
-from pathway.steps import delete_others
 
 
 class SaveTaggingMixin(object):
