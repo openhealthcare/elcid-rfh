@@ -102,7 +102,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         if not episode:
             episode = patient.create_episode()
 
-        episode.date_of_admission = datetime.date.today()
+        episode.start = datetime.date.today()
         episode.save()
 
         return super(AddPatientPathway, self).save(

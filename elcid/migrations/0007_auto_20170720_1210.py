@@ -17,6 +17,11 @@ def migrate_forwards(apps, schema_editor):
             if first_updated:
                 e.start = r.field_dict["updated"].date()
                 e.save()
+        else:
+            if location.updated:
+                e.start = location.updated
+                e.save()
+
 
 
 def migrate_backwards(app, schema_editor):
