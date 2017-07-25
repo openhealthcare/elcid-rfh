@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 import ffs
 
+from opal.core.patient_lists import PatientList
 from opal.core.test import OpalTestCase
 from opal.models import Patient
 from opal.core.subrecords import subrecords
@@ -49,6 +50,15 @@ class ViewsTest(OpalTestCase):
             if i.get_form_template():
                 url = reverse("{}_modal".format(i.get_api_name()))
                 self.assertStatusCode(url, 200)
+
+        for p in PatientList.list():
+            for i in subrecords():
+                if i.get_form_template():
+                    url = reverse(
+                        "{}_modal".format(i.get_api_name()),
+                        kwargs={"list": p.get_slug()}
+                    )
+                    self.assertStatusCode(url, 200)
 
 
 class DetailSchemaViewTest(OpalTestCase):
