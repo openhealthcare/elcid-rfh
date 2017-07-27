@@ -1,12 +1,7 @@
-from opal.utils import AbstractBase
 from opal.core.patient_lists import TaggedPatientList
 
 
-class RfhPatientList(TaggedPatientList, AbstractBase):
-    comparator_service = "EpisodeAddedComparator"
-
-
-class Hepatology(RfhPatientList):
+class Hepatology(TaggedPatientList):
     display_name = 'Hepatology'
     direct_add = True
     tag = 'hepatology'
@@ -14,7 +9,7 @@ class Hepatology(RfhPatientList):
     schema = []
 
 
-class SurgicalAntibioti(RfhPatientList):
+class SurgicalAntibioti(TaggedPatientList):
     display_name = 'Surgical Antibiotic Stewardship Round'
     direct_add = True
     tag = 'sasr'
@@ -22,7 +17,7 @@ class SurgicalAntibioti(RfhPatientList):
     schema = []
 
 
-class MAU(RfhPatientList):
+class MAU(TaggedPatientList):
     display_name = 'MAU Round'
     direct_add = True
     tag = 'mau'
@@ -30,7 +25,7 @@ class MAU(RfhPatientList):
     schema = []
 
 
-class Antifungal(RfhPatientList):
+class Antifungal(TaggedPatientList):
     display_name = 'Antifungal Stewardship'
     direct_add = True
     tag = 'antifungal'
@@ -38,7 +33,7 @@ class Antifungal(RfhPatientList):
     schema = []
 
 
-class RnohWardround(RfhPatientList):
+class RnohWardround(TaggedPatientList):
     display_name = 'RNOH Ward Round'
     direct_add = True
     tag = "rnoh_wardround"
@@ -46,7 +41,7 @@ class RnohWardround(RfhPatientList):
     schema = []
 
 
-class CDIFF(RfhPatientList):
+class CDIFF(TaggedPatientList):
     display_name = 'CDIFF Round'
     direct_add = True
     tag = "cdiff_wardround"
@@ -54,7 +49,7 @@ class CDIFF(RfhPatientList):
     schema = []
 
 
-class ICU(RfhPatientList):
+class ICU(TaggedPatientList):
     display_name = 'ICU'
     direct_add = True
     tag = "icu"
@@ -62,7 +57,7 @@ class ICU(RfhPatientList):
     schema = []
 
 
-class Acute(RfhPatientList):
+class Acute(TaggedPatientList):
     display_name = 'Acute'
     direct_add = True
     tag = "acute"
@@ -70,7 +65,7 @@ class Acute(RfhPatientList):
     schema = []
 
 
-class Chronic(RfhPatientList):
+class Chronic(TaggedPatientList):
     display_name = 'Chronic Infections'
     direct_add = True
     tag = "chronic"
@@ -78,7 +73,7 @@ class Chronic(RfhPatientList):
     schema = []
 
 
-class Haematology(RfhPatientList):
+class Haematology(TaggedPatientList):
     display_name = 'Haematology'
     direct_add = True
     tag = "haem"
@@ -86,7 +81,7 @@ class Haematology(RfhPatientList):
     schema = []
 
 
-class HIV(RfhPatientList):
+class HIV(TaggedPatientList):
     display_name = 'HIV'
     direct_add = True
     tag = "hiv"
@@ -94,7 +89,7 @@ class HIV(RfhPatientList):
     schema = []
 
 
-class Paediatric(RfhPatientList):
+class Paediatric(TaggedPatientList):
     display_name = 'Paediatric'
     direct_add = True
     tag = "paediatric"
@@ -102,7 +97,7 @@ class Paediatric(RfhPatientList):
     schema = []
 
 
-class MalboroughClinic(RfhPatientList):
+class MalboroughClinic(TaggedPatientList):
     display_name = 'Malborough Clinic'
     direct_add = True
     tag = "malborough"
@@ -110,7 +105,7 @@ class MalboroughClinic(RfhPatientList):
     schema = []
 
 
-class Renal(RfhPatientList):
+class Renal(TaggedPatientList):
     display_name = 'Renal'
     direct_add = True
     tag = "renal"
@@ -118,7 +113,7 @@ class Renal(RfhPatientList):
     schema = []
 
 
-class TB(RfhPatientList):
+class TB(TaggedPatientList):
     display_name = 'TB'
     direct_add = True
     tag = "tb"
@@ -126,7 +121,7 @@ class TB(RfhPatientList):
     schema = []
 
 
-class Sepsis(RfhPatientList):
+class Sepsis(TaggedPatientList):
     display_name = 'Sepsis Pathway'
     direct_add = True
     tag = "sepsis"
@@ -134,7 +129,7 @@ class Sepsis(RfhPatientList):
     schema = []
 
 
-class Bacteraemia(RfhPatientList):
+class Bacteraemia(TaggedPatientList):
     display_name = 'Bacteraemia'
     direct_add = True
     tag = "bacteraemia"
