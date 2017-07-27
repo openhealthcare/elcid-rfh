@@ -1,5 +1,4 @@
 # Django settings for elcid project.
-import commands
 import os
 import sys
 
@@ -25,10 +24,10 @@ except ImportError:
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+AUTOCOMPLETE_SEARCH = True
 
 ADMINS = (
-    ('David Miller', 'david@openhealthcare.org.uk'),
-    ('Fred Kingham', 'fred.kingham@openhealthcare.org.uk'),
+    ('Support', 'support@openhealthcare.org.uk',),
 )
 
 MANAGERS = ADMINS
@@ -155,6 +154,7 @@ TEMPLATE_CONTEXT_PROCESSORS= (
     'django.contrib.messages.context_processors.messages',
     'opal.context_processors.settings',
     'opal.context_processors.models',
+    'lab.context_processors.lab_tests',
 )
 
 INSTALLED_APPS = (
@@ -168,16 +168,14 @@ INSTALLED_APPS = (
     'reversion',
     'opal',
     'rest_framework',
+    'rest_framework.authtoken',
     'compressor',
     'opal.core.search',
+    'opal.core.pathway',
+    'lab',
     'elcid',
-    'obs',
     'django.contrib.admin',
-    'pathway',
-    # 'guidelines',
-    'dischargesummary',
     'djcelery',
-    'taskrunner',
 )
 
 if 'test' in sys.argv:
@@ -194,7 +192,7 @@ if 'test' in sys.argv:
         'opat': 'opat.nomigrations',
         'microhaem': 'microhaem.nomigrations',
         'iframeapi': 'iframeapi.nomigrations',
-        'obs': 'obs.nomigrations'
+        'lab': 'lab.nomigrations',
     }
 
 
@@ -213,14 +211,14 @@ LOGGING = {
             'class': 'logging.StreamHandler'
         },
         'mail_admins': {
-            'level': 'CRITICAL',
+            'level': 'ERROR',
             'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+            'class': 'opal.core.log.ConfidentialEmailer'
+        },
     },
     'loggers': {
         'django.request': {
-            'handlers': ['console'],
+            'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },
@@ -228,7 +226,7 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
-        },
+        }
     }
 }
 
@@ -253,7 +251,6 @@ OPAL_OPTIONS_MODULE = 'elcid.options'
 OPAL_BRAND_NAME = 'elCID Royal Free Hospital'
 OPAL_LOG_OUT_MINUTES = 15
 OPAL_LOG_OUT_DURATION = OPAL_LOG_OUT_MINUTES*60*1000
-OPAL_FLOW_SERVICE = 'elCIDFlow'
 
 # Do we need this at all ?
 OPAL_EXTRA_HEADER = 'elcid/print_header.html'
@@ -278,7 +275,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.2'
+VERSION_NUMBER = 'v0.4.0'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -297,9 +294,18 @@ if GLOSS_ENABLED:
     GLOSS_URL_BASE = "http://0.0.0.0:6767"
     GLOSS_USERNAME = "override_this"
     GLOSS_PASSWORD = "and_override_this"
+    OPAL_SEARCH_BACKEND = "elcid.search.GlossQuery"
+
 
 EXTRACT_ASYNC = True
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
 
 if 'test' not in sys.argv:
     try:

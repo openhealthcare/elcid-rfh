@@ -7,7 +7,7 @@ app.config(
             controllerAs: 'welcome',
             templateUrl: '/templates/welcome.html',
             resolve: {
-              options: function(Options) { return Options; },
+              referencedata: function(Referencedata) { return Referencedata; },
             },
         });
      }]);

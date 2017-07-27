@@ -1,0 +1,11 @@
+{% load lab_tags %}
+{% load forms %}
+<div class="form-horizontal">
+  {% block lab_test_form %}
+    {% if lab_test.RESULT_CHOICES %}
+      {% test_result_radio lab_test %}
+    {% else %}
+      {% test_result_input lab_test %}
+    {% endif %}
+  {% endblock %}
+</div>

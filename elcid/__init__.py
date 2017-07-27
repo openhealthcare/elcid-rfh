@@ -3,6 +3,7 @@ elCID Royal Free Hospital implementation
 """
 
 from opal.core import application
+from opal.core import menus
 
 
 class Application(application.OpalApplication):
@@ -10,35 +11,36 @@ class Application(application.OpalApplication):
     javascripts = [
         'js/elcid/routes.js',
         'js/elcid/controllers/discharge.js',
-        'js/elcid/controllers/diagnosis_hospital_number.js',
-        'js/elcid/controllers/diagnosis_add_episode.js',
-        'js/elcid/controllers/diagnosis_discharge.js',
-        # 'js/elcid/controllers/patient_notes.js',
+        'js/elcid/services/records/microbiology_input.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/welcome.js',
         'js/elcid/controllers/procedure_form.js',
-        'js/elcid/controllers/blood_culture_location.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/result_view.js',
-        'js/elcid/services/dicharge_patient.js',
-        'js/elcid/services/flow.js',
+        'js/elcid/controllers/bloodculture_pathway_form.js',
+        'js/elcid/controllers/remove_patient_step.js',
+        'js/elcid/controllers/tagging_step.js',
+        'js/elcid/services/blood_culture_helper.js',
+        'js/elcid/services/blood_culture_record.js',
+        'js/elcid/services/episode_added_comparator.js',
     ]
 
-    actions = [
-        'actions/presenting_complaint.html'
+    styles = [
+        "css/elcid.css"
     ]
 
     patient_view_forms = {
         "General Consultation": "inline_forms/clinical_advice.html",
     }
 
-    menuitems = [
-        dict(
-            href='/pathway/#/add_patient', display='Add Patient', icon='fa fa-plus',
-            activepattern='/pathway/#/add_patient'),
-        dict(
-            href='/pathway/#/cernerdemo', display='New Cerner Patient', icon='fa fa-plus',
-            activepattern='/pathway/#/cernerdemo'
-        )
+    add_patient_menu_item = menus.MenuItem(
+        href='/pathway/#/add_patient',
+        display='Add Patient',
+        icon='fa fa-plus',
+        activepattern='/pathway/#/add_patient'
+    )
 
-    ]
+    @classmethod
+    def get_menu_items(klass, user=None):
+        items = application.OpalApplication.get_menu_items(user=user)
+        return items + [klass.add_patient_menu_item]

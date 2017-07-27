@@ -1,10 +1,17 @@
 """
 elCID implementation specific models!
 """
+import datetime
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
+from django.db.models.signals import post_save
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from lab import models as lmodels
+
 from jsonfield import JSONField
 
 import opal.models as omodels
@@ -14,6 +21,14 @@ from opal.models import (
 )
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
+
+
+def get_for_lookup_list(model, values):
+    ct = ContentType.objects.get_for_model(model)
+    return model.objects.filter(
+        models.Q(name__in=values) |
+        models.Q(synonyms__name__in=values, synonyms__content_type=ct)
+    )
 
 
 class Demographics(PatientSubrecord, ExternallySourcedModel):
@@ -41,7 +56,11 @@ class Demographics(PatientSubrecord, ExternallySourcedModel):
     # are updated
     sex = ForeignKeyOrFreeText(omodels.Gender)
 
-    pid_fields       = (
+    def set_death_indicator(self, value, *args, **kwargs):
+        if not value:
+            return
+
+    pid_fields = (
         'hospital_number', 'nhs_number', 'surname', 'first_name',
         'middle_name', 'post_code',
     )
@@ -66,7 +85,9 @@ class ContactDetails(PatientSubrecord):
                                      blank=True, null=True)
     address_line2 = models.CharField("Address line 2", max_length = 45,
                                      blank=True, null=True)
-    city          = models.CharField(max_length = 50, blank = True)
+    city = models.CharField(
+        max_length = 50, blank=True, null=True
+    )
     county        = models.CharField("County", max_length = 40,
                                      blank=True, null=True)
     post_code     = models.CharField("Post Code", max_length = 10,
@@ -117,7 +138,7 @@ class Location(EpisodeSubrecord):
     provenance = ForeignKeyOrFreeText(Provenance)
     hospital = ForeignKeyOrFreeText(omodels.Hospital)
     ward = ForeignKeyOrFreeText(omodels.Ward)
-    bed = models.CharField(max_length=255, blank=True)
+    bed = models.CharField(max_length=255, blank=True, null=True)
 
     def __unicode__(self):
         try:
@@ -134,33 +155,30 @@ class Location(EpisodeSubrecord):
             return 'demographics'
 
 
-class Result(PatientSubrecord):
-    _icon = 'fa fa-crosshairs'
+class HL7Result(lmodels.ReadOnlyLabTest):
+    class Meta:
+        verbose_name = "HL7 Result"
 
-    lab_number = models.CharField(max_length=255, blank=True, null=True)
-    profile_code = models.CharField(max_length=255, blank=True, null=True)
-    external_identifier = models.CharField(max_length=255, blank=True, null=True)
-    profile_description = models.CharField(max_length=255, blank=True, null=True)
-    request_datetime = models.DateTimeField(blank=True, null=True)
-    observation_datetime = models.DateTimeField(blank=True, null=True)
-    last_edited = models.DateTimeField(blank=True, null=True)
-    result_status = models.CharField(max_length=255, blank=True, null=True)
-    observations = JSONField(blank=True, null=True)
+    @classmethod
+    def get_api_name(cls):
+        return "hl7_result"
 
     def update_from_dict(self, data, *args, **kwargs):
         if "id" not in data:
-            if "patient_id" not in data:
-                raise ValueError("no patient id found for result in %s" % data)
+            if "external_identifier" not in data:
+                raise ValueError(
+                    "an external identifier is required in {}".format(data)
+                )
             if "external_identifier" in data and data["external_identifier"]:
-                existing = Result.objects.filter(
+                existing = self.__class__.objects.filter(
+                    patient=self.patient,
                     external_identifier=data["external_identifier"],
-                    patient=data["patient_id"]
                 ).first()
 
                 if existing:
                     data["id"] = existing.id
 
-        super(Result, self).update_from_dict(data, *args, **kwargs)
+        super(HL7Result, self).update_from_dict(data, *args, **kwargs)
 
 
 class InfectionSource(lookuplists.LookupList):
@@ -384,12 +402,14 @@ class MicrobiologyInput(EpisodeSubrecord):
     _icon = 'fa fa-comments'
     _modal = 'lg'
     _list_limit = 3
+    _angular_service = 'MicrobiologyInput'
 
     when = models.DateTimeField(null=True, blank=True)
     initials = models.CharField(max_length=255, blank=True)
     reason_for_interaction = ForeignKeyOrFreeText(
         omodels.Clinical_advice_reason_for_interaction
     )
+    infection_control = models.TextField(blank=True)
     clinical_discussion = models.TextField(blank=True)
     agreed_plan = models.TextField(blank=True)
     discussed_with = models.CharField(max_length=255, blank=True)
@@ -402,7 +422,6 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
-
 
 class Todo(EpisodeSubrecord):
     _title = 'To Do'
@@ -488,9 +507,9 @@ class Line(EpisodeSubrecord):
     removal_reason = ForeignKeyOrFreeText(omodels.Line_removal_reason)
     special_instructions = models.TextField()
     button_hole = models.NullBooleanField()
-    tunnelled_or_temp       = models.CharField(max_length=200, blank=True, null=True)
-    fistula                 = models.NullBooleanField(blank=True, null=True)
-    graft                   = models.NullBooleanField(blank=True, null=True)
+    tunnelled_or_temp = models.CharField(max_length=200, blank=True, null=True)
+    fistula = models.NullBooleanField(blank=True, null=True)
+    graft = models.NullBooleanField(blank=True, null=True)
 
 
 class Appointment(EpisodeSubrecord):
@@ -501,38 +520,154 @@ class Appointment(EpisodeSubrecord):
 
     appointment_type = models.CharField(max_length=200, blank=True, null=True)
     appointment_with = models.CharField(max_length=200, blank=True, null=True)
-    date             = models.DateField(blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
 
 
 class BloodCultureSource(lookuplists.LookupList):
     pass
 
 
-class BloodCulture(EpisodeSubrecord):
-    _icon = 'fa fa-crosshairs'
-    _title = 'Blood Culture'
-    source = ForeignKeyOrFreeText(BloodCultureSource)
-    date_ordered = models.DateField(null=True, blank=True)
-    date_positive = models.DateField(null=True, blank=True)
-    anaerobic = models.CharField(max_length=255, blank=True)
-    details = models.CharField(max_length=255, blank=True)
-    microscopy = models.CharField(max_length=255, blank=True)
-    organisms = models.ManyToManyField(omodels.Microbiology_organism)
-    sensitive_antibiotics = models.ManyToManyField(
-        omodels.Antimicrobial, related_name="blood_culture_sensitive"
+class SourceObservation(lmodels.Observation):
+    class Meta:
+        proxy = True
+        auto_created = True
+
+    lookup_list = BloodCultureSource
+
+
+class BloodCultureMixin(object):
+    # note the isolate field isn't an official reference, its just
+    # used to group isolates on the front end (at present)
+    _extras = ['isolate', 'aerobic', 'source', 'lab_number']
+    source = SourceObservation()
+
+    @classmethod
+    def get_record(cls):
+        return "lab/records/blood_culture.html"
+
+    def update_from_dict(self, data, *args, **kwargs):
+        result = data.get("result", None)
+
+        if result:
+            result = result.get("result", None)
+
+        if result:
+            result = result.strip()
+
+        if not result or result == 'Not Done':
+            if self.id:
+                self.delete()
+        else:
+            super(BloodCultureMixin, self).update_from_dict(data, *args, **kwargs)
+
+
+class GramStainResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+        auto_created = True
+
+    RESULT_CHOICES = (
+        ("Yeast", "Yeast"),
+        ("Gram +ve Cocci Cluster", "Gram +ve Cocci Cluster"),
+        ("Gram +ve Cocci Chains", "Gram +ve Cocci Chains"),
+        ("Gram -ve Rods", "Gram -ve Rods"),
+        ("Not Done", "Not Done"),
     )
-    resistant_antibiotics = models.ManyToManyField(
-        omodels.Antimicrobial, related_name="blood_culture_resistant"
+
+
+class GramStain(BloodCultureMixin, lmodels.LabTest):
+    _title="Gram Stain"
+    result = GramStainResult()
+
+
+class QuickFishResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+        auto_created = True
+
+    RESULT_CHOICES = (
+        ("C. albicans", "C. albicans"),
+        ("C. parapsilosis", "C. parapsilosis"),
+        ("C. glabrata", "C. glabrata"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
     )
+
+
+class QuickFISH(BloodCultureMixin, lmodels.LabTest):
+    _title = "QuickFISH"
+    result = QuickFishResult()
+
+
+class GPCStaphResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+        auto_created = True
+
+    RESULT_CHOICES = (
+        ("S. aureus", "S. aureus"),
+        ("CNS", "CNS"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class GPCStaph(BloodCultureMixin, lmodels.LabTest):
+    result = GPCStaphResult()
+    _title = 'GPC Staph'
+
+
+class GPCStrepResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+        auto_created = True
+
+
+    RESULT_CHOICES = (
+        ("E.faecalis", "E.faecalis"),
+        ("Other enterococci", "Other enterococci"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class GPCStrep(BloodCultureMixin, lmodels.LabTest):
+    result = GPCStrepResult()
+    _title = "GPC Strep"
+
+
+class GNRResult(lmodels.Observation):
+    class Meta:
+        proxy = True
+        auto_created = True
+
+    RESULT_CHOICES = (
+        ("E.faecalis", "E.coli"),
+        ("K. pneumoniae", "K. pneumoniae"),
+        ("P. aeruginosa", "P. aeruginosa"),
+        ("Negative", "Negative"),
+        ("Not Done", "Not Done"),
+    )
+
+
+class GNR(BloodCultureMixin, lmodels.LabTest):
+    _title = 'GNR'
+    result = GNRResult()
+
+
+class BloodCultureOrganism(BloodCultureMixin, lmodels.LabTest):
+    _title = 'Organism'
+    result = lmodels.Organism()
 
 
 class FinalDiagnosis(EpisodeSubrecord):
-    _icon = 'fa fa-eye'
+    _icon = 'fa fa-pencil-square'
+    _title = "Final Diagnosis"
 
     source = models.CharField(max_length=255, blank=True)
     contaminant = models.BooleanField(default=False)
     community_related = models.BooleanField(default=False)
-    hcai_related = models.BooleanField(default=False)
+    hcai_related = models.BooleanField(verbose_name="HCAI related", default=False)
 
 
 class ImagingTypes(lookuplists.LookupList): pass
@@ -547,13 +682,23 @@ class Imaging(EpisodeSubrecord):
     details = models.TextField(blank=True, null=True)
 
 
-@receiver(post_save, sender=Episode)
-def get_information_from_gloss(sender, **kwargs):
-    from elcid import gloss_api
+class PositiveBloodCultureHistory(PatientSubrecord):
+    when = models.DateTimeField(default=datetime.datetime.now)
 
-    episode = kwargs.pop("instance")
-    created = kwargs.pop("created")
-    if created and settings.GLOSS_ENABLED:
-        hospital_number = episode.patient.demographics_set.first().hospital_number
-        gloss_api.subscribe(hospital_number)
-        gloss_api.patient_query(hospital_number, episode=episode)
+    @classmethod
+    def _get_field_default(cls, name):
+        # this should not be necessary...
+        return None
+
+
+# method for updating
+@receiver(post_save, sender=omodels.Tagging)
+def record_positive_blood_culture(sender, instance, **kwargs):
+    from elcid.patient_lists import Bacteraemia
+
+    if instance.value == Bacteraemia.tag:
+        pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
+            patient_id=instance.episode.patient.id
+        )
+        pbch.when = datetime.datetime.now()
+        pbch.save()

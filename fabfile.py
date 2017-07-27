@@ -1,25 +1,12 @@
-<<<<<<< HEAD
-from fabric.api import env, task, run, local, prefix
-from fabric.operations import prompt
-
-
-env.hosts = ["ec2-52-16-175-249.eu-west-1.compute.amazonaws.com"]
-env.user = "ubuntu"
-virtual_env_name = "elcid-rfh"
-
-
-@task
-=======
 from fabric.api import env, task, local, lcd, run, prefix
 from fabric.operations import prompt
 from fabric.context_managers import warn_only
 import os
 
 
-env.hosts = ["elcid-uch-test.openhealthcare.org.uk"]
+env.hosts = ["elcid-rfh-test.openhealthcare.org.uk"]
 env.user = "ubuntu"
-project_name = "elcid"
-virtual_env_name = "elcid"
+virtual_env_name = "elcid-rfh"
 fabfile_dir = os.path.realpath(os.path.dirname(__file__))
 
 
@@ -89,7 +76,7 @@ def checkout(package_name_version):
                             package_name, version
                         )
                 else:
-                    local("git fetch")
+                    local("git fetch origin")
 
                 with lcd(package_name):
                     local("git checkout {}".format(version))
@@ -102,7 +89,6 @@ def db_commands(username):
         "python manage.py migrate",
         "python manage.py loaddata data/elcid.teams.json",
         "python manage.py load_lookup_lists -f data/lookuplists/lookuplists.json",
-        'echo "from opal.models import Role; Role.objects.create(name=\'micro_haem\')" | python ./manage.py shell',
         "python manage.py create_random_data"
     ]
     python_cmd = "echo '"
@@ -173,7 +159,6 @@ def create_db(username):
             local(db_command)
 
 @task
->>>>>>> v0.6.0
 def deploy(key_file_name="../ec2.pem"):
     env.key_filename = key_file_name
     changes = local("git status --porcelain", capture=True)
@@ -188,25 +173,16 @@ def deploy(key_file_name="../ec2.pem"):
         if not proceed:
             return
 
-<<<<<<< HEAD
-    git_branch_name = local('git rev-parse --abbrev-ref HEAD', capture=True)
-    with prefix(". /usr/share/virtualenvwrapper/virtualenvwrapper.sh"):
-        with prefix("workon {}".format(virtual_env_name)):
-=======
-
     git_branch_name = local('git rev-parse --abbrev-ref HEAD', capture=True)
     with prefix(". /usr/share/virtualenvwrapper/virtualenvwrapper.sh"):
         with prefix("workon {}".format(virtual_env_name)):
             run("git fetch")
             run("git checkout {}".format(git_branch_name))
->>>>>>> v0.6.0
             run("git pull origin {}".format(git_branch_name))
             run("pip install -r requirements.txt")
             run("python manage.py migrate")
             run("python manage.py collectstatic --noinput")
             run("supervisorctl -c etc/test.conf restart gunicorn")
-<<<<<<< HEAD
-=======
             run("supervisorctl -c etc/test.conf restart celery")
 
 
@@ -219,4 +195,3 @@ def restart_all(key_file_name="../ec2.pem"):
             run("supervisorctl -c etc/test.conf restart celery")
             run("supervisorctl -c etc/test.conf restart gloss")
             run("supervisorctl -c etc/test.conf restart gloss_flask")
->>>>>>> v0.6.0

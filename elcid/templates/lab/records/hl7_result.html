@@ -1,0 +1,9 @@
+[[ item.extras.profile_description ]]<br />
+ordered: [[ item.datetime_ordered | shortDate ]]<br />
+tested: [[ item.extras.observation_datetime | shortDateTime ]]<br />
+observations:
+<ul>
+  <li ng-repeat="observation in item.observations">
+    [[ observation.test_name ]]: [[ observation.observation_value ]]
+  </li>
+</ul>

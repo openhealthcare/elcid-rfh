@@ -1,56 +1,161 @@
-from elcid.models import (
-    Diagnosis, Line, Antimicrobial, Location, PrimaryDiagnosis,
-    Procedure, Demographics, MicrobiologyInput, FinalDiagnosis,
-    BloodCulture, Imaging
+import datetime
+from elcid import models
+from opal import models as omodels
+from lab import models as lmodels
+from django.db import transaction
+from django.conf import settings
+from elcid import gloss_api
+
+from opal.core.pathway import (
+    RedirectsToPatientMixin,
+    Step,
+    PagePathway,
+    WizardPathway,
 )
 
-from pathway.pathways import (
-    Pathway, UnrolledPathway, Step, RedirectsToEpisodeMixin,
-    MultSaveStep
-)
+
+class SaveTaggingMixin(object):
+    @transaction.atomic
+    def save(self, data, user=None, episode=None, patient=None):
+        tagging = data.pop("tagging", [])
+        patient, episode = super(SaveTaggingMixin, self).save(
+            data, user=user, episode=episode, patient=patient
+        )
+
+        if tagging:
+            tag_names = [n for n, v in list(tagging[0].items()) if v]
+            episode.set_tag_names(tag_names, user)
+        return patient, episode
 
 
-class AddPatientPathway(RedirectsToEpisodeMixin, Pathway):
+class RemovePatientPathway(SaveTaggingMixin, PagePathway):
+    icon = "fa fa-sign-out"
+    display_name = "Remove"
+    finish_button_text = "Remove"
+    finish_button_icon = "fa fa-sign-out"
+    modal_template = "pathway/modal_only_cancel.html"
+    slug = "remove"
+    steps = (
+        Step(
+            display_name="No",
+            template="pathway/remove.html",
+            step_controller="RemovePatientCtrl"
+        ),
+    )
+
+
+class AddPatientPathway(SaveTaggingMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
 
     steps = (
         Step(
-            template_url="/templates/pathway/find_patient_form.html",
-            controller_class="FindPatientCtrl",
-            title="Find Patient",
+            template="pathway/find_patient_form.html",
+            step_controller="FindPatientCtrl",
+            display_name="Find patient",
             icon="fa fa-user"
         ),
         Step(
-            model=Location,
-            controller_class="BloodCultureLocationCtrl",
-            template_url="/templates/pathway/blood_culture_location.html"
+            model=models.Location,
+            template="pathway/blood_culture_location.html",
+            step_controller="TaggingStepCtrl",
         ),
     )
 
+    @transaction.atomic
+    def save(self, data, user, patient=None, episode=None):
+        """
+            saves the patient.
 
-class CernerDemoPathway(UnrolledPathway):
+            if the patient already exists, create a new episode.
+
+            if the patient doesn't exist and we're gloss enabled query gloss.
+
+            if the patient isn't in gloss, or gloss is down, just create a
+            new patient/episode
+        """
+        if settings.GLOSS_ENABLED:
+            demographics = data.get("demographics")
+            hospital_number = demographics[0]["hospital_number"]
+
+            if patient:
+                # the patient already exists
+
+                # refreshes the saved patient
+                gloss_api.patient_query(hospital_number)
+                episode = patient.create_episode()
+            else:
+                # the patient doesn't exist
+                patient = gloss_api.patient_query(hospital_number)
+
+                if patient:
+                    # nuke whatever is passed in in demographics as this will
+                    # have been updated by gloss
+                    data.pop("demographics")
+                    episode = patient.episode_set.get()
+
+            gloss_api.subscribe(hospital_number)
+
+        if not patient:
+            patient = omodels.Patient.objects.create()
+
+        if not episode:
+            episode = patient.create_episode()
+
+        episode.start = datetime.date.today()
+        episode.save()
+
+        return super(AddPatientPathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
+
+
+class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 
     steps = (
-        # TODO: Do we want to pass this like this ?
-        # Wouldn't it be nicer if I could set it on the class?
-        Demographics,
+        models.Demographics,
+        models.Location,
         Step(
-            model=Location,
-            controller_class="BloodCultureLocationCtrl",
-            template_url="/templates/pathway/blood_culture_location.html",
+            template="pathway/blood_culture.html",
+            display_name="Blood Culture",
+            icon="fa fa-crosshairs",
+            step_controller="BloodCulturePathwayFormCtrl",
+            model=lmodels.LabTest
         ),
-        MultSaveStep(model=Procedure),
-        PrimaryDiagnosis,
-        MultSaveStep(model=Diagnosis),
-        # Infection,
-        MultSaveStep(model=Line),
-        MultSaveStep(model=Antimicrobial),
-        MultSaveStep(model=BloodCulture),
-        MultSaveStep(model=Imaging),
-        FinalDiagnosis,
-        MultSaveStep(model=MicrobiologyInput),
-        Step(api_name="cerner_note", title="Clinical Note", icon="fa fa-envelope", template_url='/templates/pathway/cernerletter.html')
+        models.Procedure,
+        models.Diagnosis,
+        models.Infection,
+        models.Line,
+        models.Antimicrobial,
+        models.Imaging,
+        models.FinalDiagnosis,
+        models.MicrobiologyInput,
+        Step(
+            template="pathway/cernerletter.html",
+            display_name="Clinical note",
+            icon="fa fa-envelope"
+        )
+    )
+
+    @transaction.atomic
+    def save(self, data, user=None, episode=None, patient=None):
+        return super(CernerDemoPathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
+
+
+class BloodCulturePathway(PagePathway):
+    display_name = "Blood Culture"
+    slug = "blood_culture"
+
+    steps = (
+        Step(
+            template="pathway/blood_culture.html",
+            display_name="Blood Culture",
+            icon="fa fa-crosshairs",
+            step_controller="BloodCulturePathwayFormCtrl",
+            model=lmodels.LabTest
+        ),
     )

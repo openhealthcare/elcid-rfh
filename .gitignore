@@ -1,6 +1,7 @@
 *~
 *.sqlite
 *.pyc
+.project
 static/*
 elcid/opal.sqlite*
 elcid/local_settings.py
@@ -11,5 +12,7 @@ elcid/static
 opal.sqlite.*
 *.DS_Store
 .coveragerc
+**/.sass-cache
+**/.sass-cache/*
 *#
 .project

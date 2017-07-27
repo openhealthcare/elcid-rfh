@@ -1,7 +1,7 @@
   {% load forms %}
 <form class="form-horizontal">
   <div class="form-group">
-    {% include "forms/location_form.html" %}
-    {% select name="teams" label="Teams" lookuplist="currentStep.controller.tagging_display_list" model="currentStep.controller.selectedTags" multiple=True tagging=False %}
+    {% include models.Location.get_form_template %}
+    {% include 'partials/_teams_select.html' %}
   </div>
 </form>
