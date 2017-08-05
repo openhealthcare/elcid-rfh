@@ -1,4 +1,4 @@
-describe('FindPatientCtrl', function() {
+describe('RfhFindPatientCtrl', function() {
   "use strict";
   var scope, parent, Episode, $controller, controller, $window;
 
@@ -36,7 +36,7 @@ describe('FindPatientCtrl', function() {
     scope.pathway = {
       save_url: "/some_url"
     };
-    controller = $controller('FindPatientCtrl', {
+    controller = $controller('RfhFindPatientCtrl', {
       scope: scope,
       Episode: Episode,
       step: {},
