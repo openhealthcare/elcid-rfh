@@ -1,3 +1,10 @@
+/*
+* Different from the standard find patient in that it copies over
+* the demographics and location from what is found on the server.
+* it also makes sure that you save to last episode that was created
+* becuase it assumes episodes are never ended.
+*/
+
 angular.module('opal.controllers').controller('RfhFindPatientCtrl',
   function(scope, Episode, Patient, step, episode, $window) {
     "use strict";
@@ -42,6 +49,9 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
           var location = _.last(episode.location);
 
           if(location){
+            // the patient already exists
+            // copy the location onto the scope for use
+            // by the location form
             scope.$parent.editing.location = location.makeCopy();
           }
 
