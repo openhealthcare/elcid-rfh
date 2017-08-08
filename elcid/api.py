@@ -47,12 +47,22 @@ class BloodCultureResultApi(viewsets.ViewSet):
         "QuickFISH",
         "GPC Staph",
         "GPC Strep",
-        "GNR"
+        "GNR",
         "Organism",
     ]
 
     def sort_by_date_ordered_and_lab_number(self, some_keys):
-        return sorted(some_keys)
+        """ takes in a tuple of (date, lab number)
+            both date or lab number will be "" if empty
+
+            it sorts them by most recent and lowest lab number
+        """
+        def comparator(some_key):
+            dt = some_key[0]
+            if not dt:
+                dt = datetime.date.max
+            return (dt, some_key[1],)
+        return sorted(some_keys, key=comparator, reverse=True)
 
     def sort_by_lab_test_order(self, some_results):
         """
@@ -66,6 +76,9 @@ class BloodCultureResultApi(viewsets.ViewSet):
         )
 
     def translate_date_to_string(self, some_date):
+        if not some_date:
+            return ""
+
         dt = datetime.datetime(
             some_date.year, some_date.month, some_date.day
         )
@@ -104,7 +117,7 @@ class BloodCultureResultApi(viewsets.ViewSet):
                 )
             else:
                 cultures[date_ordered][lab_number][ANAEROBIC].append(
-                    lab_test.to_dict(self.request.user)
+                    lab_test.to_dict(request.user)
                 )
 
         bc_order = self.sort_by_date_ordered_and_lab_number(bc_order)

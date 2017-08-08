@@ -1,10 +1,12 @@
 import json
+import datetime
 from django.test import override_settings
 from mock import MagicMock, patch
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
-from elcid.api import GlossEndpointApi
+from elcid.api import GlossEndpointApi, BloodCultureResultApi
 from opal import models
+from elcid import models as emodels
 
 
 class TestEndPoint(OpalTestCase):
@@ -19,6 +21,199 @@ class TestEndPoint(OpalTestCase):
         endpoint = GlossEndpointApi()
         endpoint.create(request)
         bulk_create.assert_called_once_with(expected_dict)
+
+
+class BloodCultureResultApiTestCase(OpalTestCase):
+    def setUp(self):
+        self.api = BloodCultureResultApi()
+
+    def test_sort_by_date_ordered_and_lab_number_by_date(self):
+        some_keys = [
+            (datetime.date(2017, 10, 1), "123222",),
+            (datetime.date(2017, 10, 2), "123222",),
+        ]
+
+        expected = [
+            (datetime.date(2017, 10, 2), "123222",),
+            (datetime.date(2017, 10, 1), "123222",),
+        ]
+
+        result = self.api.sort_by_date_ordered_and_lab_number(some_keys)
+        self.assertEqual(
+            result, expected
+        )
+
+    def test_sort_by_date_ordered_and_lab_number_by_lab_number(self):
+        some_keys = [
+            (datetime.date(2017, 10, 1), "123222",),
+            (datetime.date(2017, 10, 1), "123228",),
+        ]
+
+        expected = [
+            (datetime.date(2017, 10, 1), "123228",),
+            (datetime.date(2017, 10, 1), "123222",),
+        ]
+
+        result = self.api.sort_by_date_ordered_and_lab_number(some_keys)
+        self.assertEqual(
+            result, expected
+        )
+
+    def test_sort_by_date_ordered_and_lab_number_primacy(self):
+        some_keys = [
+            (datetime.date(2017, 10, 2), "123222",),
+            (datetime.date(2017, 10, 1), "123228",),
+        ]
+
+        expected = [
+            (datetime.date(2017, 10, 2), "123222",),
+            (datetime.date(2017, 10, 1), "123228",),
+        ]
+
+        result = self.api.sort_by_date_ordered_and_lab_number(some_keys)
+        self.assertEqual(
+            result, expected
+        )
+
+    def test_sort_by_date_ordered_and_lab_number_no_lab_number(self):
+        some_keys = [
+            (datetime.date(2017, 10, 1), "",),
+            (datetime.date(2017, 10, 1), "123228",),
+        ]
+
+        expected = [
+            (datetime.date(2017, 10, 1), "123228",),
+            (datetime.date(2017, 10, 1), "",),
+        ]
+
+        result = self.api.sort_by_date_ordered_and_lab_number(some_keys)
+        self.assertEqual(
+            result, expected
+        )
+
+    def test_sort_by_date_ordered_and_lab_number_no_date_ordered(self):
+        some_keys = [
+            (None, "123228",),
+            (datetime.date(2017, 10, 1), "123228",),
+        ]
+
+        expected = [
+            (None, "123228",),
+            (datetime.date(2017, 10, 1), "123228",),
+        ]
+
+        result = self.api.sort_by_date_ordered_and_lab_number(some_keys)
+        self.assertEqual(
+            result, expected
+        )
+
+    def test_sort_by_lab_test_order(self):
+        lab_tests = [
+            dict(lab_test_type="Organism"),
+            dict(lab_test_type="GNR"),
+            dict(lab_test_type="GPC Strep"),
+            dict(lab_test_type="GPC Staph"),
+            dict(lab_test_type="QuickFISH"),
+            dict(lab_test_type="Gram Stain")
+        ]
+
+        expected = list(lab_tests)
+        expected.reverse()
+        result = self.api.sort_by_lab_test_order(lab_tests)
+        self.assertEqual(
+            result, expected
+        )
+
+    def test_translate_date_to_string(self):
+        some_date = datetime.date(2017, 3, 1)
+        self.assertEqual(
+            self.api.translate_date_to_string(some_date),
+            "01/03/2017"
+        )
+
+    def test_translate_date_to_string_none(self):
+        some_date = ""
+        self.assertEqual(
+            self.api.translate_date_to_string(some_date), ""
+        )
+
+    def test_retrieve(self):
+        request = self.rf.get("/")
+        self.url = reverse(
+            "blood_culture_results-detail",
+            kwargs=dict(pk=1),
+            request=request
+        )
+        some_date = datetime.date(2017, 1, 1)
+        patient, _ = self.new_patient_and_episode_please()
+
+        gram_stain = emodels.GramStain.objects.create(
+            date_ordered=some_date,
+            patient=patient
+        )
+
+        gram_stain.extras = dict(
+            lab_number="212",
+            aerobic=False
+        )
+        gram_stain.save()
+        gram_stain.result.result = "Yeast"
+        gram_stain.result.lab_test_id = gram_stain.id
+        gram_stain.result.save()
+
+        some_other_date = datetime.date(2017, 1, 2)
+        quick_fish = emodels.QuickFISH.objects.create(
+            date_ordered=some_other_date,
+            patient=patient
+        )
+
+        quick_fish.extras = dict(
+            lab_number="212",
+            aerobic=True
+        )
+        quick_fish.save()
+        quick_fish.result.result = "C. albicans"
+        quick_fish.result.lab_test_id = quick_fish.id
+        quick_fish.result.save()
+        result = self.client.get(self.url)
+        self.assertEqual(result.status_code, 200)
+        contents = json.loads(result.content)
+
+        found_bc_order = contents["bc_order"]
+        self.assertEqual(
+            found_bc_order,
+            [
+                ["02/01/2017", "212"],
+                ["01/01/2017", "212"]
+            ]
+        )
+        self.assertEqual(
+            len(contents["cultures"]["02/01/2017"]["212"]["aerobic"]),
+            1
+        )
+        found_fish = contents["cultures"]["02/01/2017"]["212"]["aerobic"][0]
+
+        self.assertEqual(
+            found_fish["id"],
+            quick_fish.id
+        )
+
+        self.assertEqual(
+            found_fish["lab_test_type"],
+            quick_fish.get_display_name()
+        )
+
+        found_gram = contents["cultures"]["01/01/2017"]["212"]["anaerobic"][0]
+
+        self.assertEqual(
+            found_gram["id"],
+            gram_stain.id
+        )
+
+        self.assertEqual(
+            found_gram["lab_test_type"],
+            gram_stain.get_display_name()
+        )
 
 
 @patch('elcid.api.gloss_api.patient_query')
