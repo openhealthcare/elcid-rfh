@@ -25,6 +25,7 @@ describe('OPAL Directives', function(){
       });
 
       scope = $rootScope.$new();
+      scope.refresh = jasmine.createSpy();
 
       spyOn(BloodCultureLoader, "load").and.returnValue({
         then: function(fn){
@@ -54,8 +55,13 @@ describe('OPAL Directives', function(){
       expect(scope.cultures).toBe(undefined);
     });
 
+    it("should not refresh the episode on initialisation", function(){
+      expect(innerScope.refresh).not.toHaveBeenCalled();
+    });
+
     it("should add a refresh option", function(){
       innerScope.refreshBloodCultures();
       expect(BloodCultureLoader.load.calls.count()).toBe(2);
+      expect(innerScope.refresh.calls.count()).toBe(1);
     });
 });
