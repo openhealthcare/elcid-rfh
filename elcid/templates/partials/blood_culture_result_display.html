@@ -1,0 +1,24 @@
+<div blood-culture-result-display class="panel panel-default">
+  <div class="panel-heading"><h3>
+    <i class="fa fa-crosshairs"></i> Blood Cultures
+    <i class="fa fa-pencil edit pull-right pointer"
+       open-pathway="blood_culture"
+       pathway-episode="episode"
+       pathway-callback="refreshBloodCultures()"
+       >
+   </i>
+  </div></h3>
+  <ul class="list-group">
+    <li class="list-group-item" ng-repeat="key in bc_order">
+      <h5>[[ key[0]|shortDate ]] [[ key[1] ]]</h5>
+      <div ng-repeat="item in cultures[key[0]][key[1]].aerobic">
+        <div><strong ng-show="$first">Aerobic</strong></div>
+        <span ng-include src="metadata.lab_tests[item.lab_test_type].record_url"></span>
+      </div>
+      <div ng-repeat="item in cultures[key[0]][key[1]].anaerobic">
+       <div><strong ng-show="$first">Anaerobic</strong></div>
+       <span ng-include src="metadata.lab_tests[item.lab_test_type].record_url"></span>
+      </div>
+    </li>
+  <ul>
+</div>

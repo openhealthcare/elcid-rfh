@@ -1,11 +1,4 @@
-<strong>[[ item.lab_test_type ]]
-  <span ng-show="item.date_ordered">
-    ([[ item.date_ordered | shortDate ]]/
-      <span ng-show="item.extras.aerobic">Aerobic</span>
-      <span ng-hide="item.extras.aerobic">Anaerobic</span>
-    )
-  </span>
-</strong>
+[[ item.lab_test_type ]]:
 {% for observation in lab_test.retrieve_observations %}
   <span ng-show="item.{{ observation.name }}.result">
     [[ item.{{ observation.name }}.result ]]
