@@ -3,7 +3,7 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
     restrict: 'A',
     scope: true,
     link : function($scope, $element){
-      $scope.bc_order = [];
+      $scope.culture_order = [];
       $scope.cultures = {}
       $scope.refreshBloodCultures = function(){
         // we need to refresh the parent so that
@@ -11,7 +11,7 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
         // form updates
         $scope.refresh();
         BloodCultureLoader.load($scope.patient.id).then(function(bc_results){
-          $scope.bc_order = bc_results.bc_order;
+          $scope.culture_order = bc_results.culture_order;
           $scope.cultures = bc_results.cultures;
         });
       }

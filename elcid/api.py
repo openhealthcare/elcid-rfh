@@ -10,6 +10,8 @@ from opal.core.api import OPALRouter
 from opal.core.api import PatientViewSet, patient_from_pk
 from opal import models
 from opal.core.views import json_response
+from elcid import models as emodels
+
 
 AEROBIC = "aerobic"
 ANAEROBIC = "anaerobic"
@@ -43,12 +45,12 @@ class BloodCultureResultApi(viewsets.ViewSet):
     base_name = 'blood_culture_results'
 
     BLOOD_CULTURES = [
-        "Gram Stain",
-        "QuickFISH",
-        "GPC Staph",
-        "GPC Strep",
-        "GNR",
-        "Organism",
+        emodels.GramStain.get_display_name(),
+        emodels.QuickFISH.get_display_name(),
+        emodels.GPCStaph.get_display_name(),
+        emodels.GPCStrep.get_display_name(),
+        emodels.GNR.get_display_name(),
+        emodels.BloodCultureOrganism.get_display_name()
     ]
 
     def sort_by_date_ordered_and_lab_number(self, some_keys):
@@ -93,7 +95,7 @@ class BloodCultureResultApi(viewsets.ViewSet):
         )
         lab_tests = lab_tests.order_by("date_ordered")
         cultures = defaultdict(lambda: defaultdict(dict))
-        bc_order = set()
+        culture_order = set()
 
         for lab_test in lab_tests:
             lab_number = lab_test.extras.get("lab_number", "")
@@ -102,10 +104,10 @@ class BloodCultureResultApi(viewsets.ViewSet):
                     lab_test.date_ordered
                 )
 
-                bc_order.add((lab_test.date_ordered, lab_number,))
+                culture_order.add((lab_test.date_ordered, lab_number,))
             else:
                 date_ordered = ""
-                bc_order.add(("", lab_number,))
+                culture_order.add(("", lab_number,))
 
             if lab_number not in cultures[date_ordered]:
                 cultures[date_ordered][lab_number][AEROBIC] = []
@@ -120,9 +122,9 @@ class BloodCultureResultApi(viewsets.ViewSet):
                     lab_test.to_dict(request.user)
                 )
 
-        bc_order = self.sort_by_date_ordered_and_lab_number(bc_order)
+        culture_order = self.sort_by_date_ordered_and_lab_number(culture_order)
 
-        for dt, lab_number in bc_order:
+        for dt, lab_number in culture_order:
             dt_string = self.translate_date_to_string(dt)
             by_date_lab_number = cultures[dt_string][lab_number]
             for robic in [AEROBIC, ANAEROBIC]:
@@ -132,7 +134,7 @@ class BloodCultureResultApi(viewsets.ViewSet):
 
         return json_response(dict(
             cultures=cultures,
-            bc_order=bc_order
+            culture_order=culture_order
         ))
 
 elcid_router = OPALRouter()

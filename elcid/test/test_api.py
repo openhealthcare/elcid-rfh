@@ -179,9 +179,9 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         self.assertEqual(result.status_code, 200)
         contents = json.loads(result.content)
 
-        found_bc_order = contents["bc_order"]
+        found_culture_order = contents["culture_order"]
         self.assertEqual(
-            found_bc_order,
+            found_culture_order,
             [
                 ["02/01/2017", "212"],
                 ["01/01/2017", "212"]

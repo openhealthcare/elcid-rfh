@@ -9,7 +9,7 @@
    </i>
   </div></h3>
   <ul class="list-group">
-    <li class="list-group-item" ng-repeat="key in bc_order">
+    <li class="list-group-item" ng-repeat="key in culture_order">
       <h5>[[ key[0]|shortDate ]] [[ key[1] ]]</h5>
       <div ng-repeat="item in cultures[key[0]][key[1]].aerobic">
         <div><strong ng-show="$first">Aerobic</strong></div>

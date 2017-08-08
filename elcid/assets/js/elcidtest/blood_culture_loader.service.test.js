@@ -2,7 +2,7 @@ describe('BloodCultureLoader', function(){
   "use strict";
 
   var BloodCultureLoader, $rootScope, $httpBackend;
-  var bc_order = [["21/10/2000", "12222L21323"]];
+  var culture_order = [["21/10/2000", "12222L21323"]];
   var cultures = {
     "21/10/2000": {
       "12222L21323": {

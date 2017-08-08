@@ -3,7 +3,7 @@ describe('OPAL Directives', function(){
 
     var $compile, BloodCultureLoader, scope, $rootScope, innerScope;
 
-    var bc_order = [["21/10/2000", "12222L21323"]];
+    var culture_order = [["21/10/2000", "12222L21323"]];
     var cultures = {
       "21/10/2000": {
         "12222L21323": {
@@ -29,7 +29,7 @@ describe('OPAL Directives', function(){
       spyOn(BloodCultureLoader, "load").and.returnValue({
         then: function(fn){
           return fn({
-            bc_order: angular.copy(bc_order),
+            culture_order: angular.copy(culture_order),
             cultures: angular.copy(cultures)
           });
         }
@@ -46,11 +46,11 @@ describe('OPAL Directives', function(){
     it("should make a call to load blood cultures on initialisation", function(){
 
       expect(BloodCultureLoader.load).toHaveBeenCalledWith(12222);
-      expect(innerScope.bc_order).toEqual(bc_order);
+      expect(innerScope.culture_order).toEqual(culture_order);
       expect(innerScope.cultures).toEqual(cultures);
 
       // check that the scope is isolated
-      expect(scope.bc_order).toBe(undefined);
+      expect(scope.culture_order).toBe(undefined);
       expect(scope.cultures).toBe(undefined);
     });
 
