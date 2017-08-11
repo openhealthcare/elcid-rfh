@@ -110,15 +110,19 @@ class BloodCultureResultApi(viewsets.ViewSet):
                 culture_order.add(("", lab_number,))
 
             if lab_number not in cultures[date_ordered]:
-                cultures[date_ordered][lab_number][AEROBIC] = []
-                cultures[date_ordered][lab_number][ANAEROBIC] = []
+                cultures[date_ordered][lab_number][AEROBIC] = defaultdict(list)
+                cultures[date_ordered][lab_number][ANAEROBIC] = defaultdict(
+                    list
+                )
+
+            isolate = lab_test.extras["isolate"]
 
             if lab_test.extras[AEROBIC]:
-                cultures[date_ordered][lab_number][AEROBIC].append(
+                cultures[date_ordered][lab_number][AEROBIC][isolate].append(
                     lab_test.to_dict(self.request.user)
                 )
             else:
-                cultures[date_ordered][lab_number][ANAEROBIC].append(
+                cultures[date_ordered][lab_number][ANAEROBIC][isolate].append(
                     lab_test.to_dict(request.user)
                 )
 
@@ -128,9 +132,10 @@ class BloodCultureResultApi(viewsets.ViewSet):
             dt_string = self.translate_date_to_string(dt)
             by_date_lab_number = cultures[dt_string][lab_number]
             for robic in [AEROBIC, ANAEROBIC]:
-                by_date_lab_number[robic] = self.sort_by_lab_test_order(
-                    by_date_lab_number[robic]
-                )
+                for isolate in by_date_lab_number[robic].keys():
+                    by_date_lab_number[robic][isolate] = self.sort_by_lab_test_order(
+                        by_date_lab_number[robic][isolate]
+                    )
 
         return json_response(dict(
             cultures=cultures,
