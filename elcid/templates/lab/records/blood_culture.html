@@ -4,5 +4,5 @@
     [[ item.{{ observation.name }}.result ]]
   </span>
 {% endfor %}
-<div class="push-left-12" ng-show="item.sensitive_antibiotics.length">- Sensitive [[ item.sensitive_antibiotics.join(", ") ]]</div>
-<div class="push-left-12" ng-show="item.resistant_antibiotics.length">- Resistant [[ item.resistant_antibiotics.join(", ") ]]</div>
+<div class="push-left-12" ng-show="item.sensitive_antibiotics.length">- Sensitive: [[ item.sensitive_antibiotics.join(", ") ]]</div>
+<div class="push-left-12" ng-show="item.resistant_antibiotics.length">- Resistant: [[ item.resistant_antibiotics.join(", ") ]]</div>
