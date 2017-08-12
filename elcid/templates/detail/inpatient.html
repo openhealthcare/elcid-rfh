@@ -81,22 +81,7 @@
 {% record_panel models.Line %}
 {% record_panel models.Antimicrobial %}
 {% record_panel models.Imaging %}
-<div class="panel panel-default">
-  <div class="panel-heading"><h3>
-    <i class="fa fa-crosshairs"></i> Blood Cultures
-    <i class="fa fa-pencil edit pull-right pointer"
-       open-pathway="blood_culture"
-       pathway-episode="episode"
-       pathway-callback="refresh()"
-       >
-   </i>
-  </div></h3>
-  <ul class="list-group">
-    <li class="list-group-item" ng-repeat="item in episode.lab_test" ng-if="['Gram Stain', 'QuickFISH', 'GPC Staph', 'GPC Strep', 'GNR', 'Organism'].indexOf(item.lab_test_type) > -1">
-      <span ng-include src="metadata.lab_tests[item.lab_test_type].record_url">
-    </li>
-  <ul>
-</div>
+{% include "partials/blood_culture_result_display.html" %}
 {% record_panel models.FinalDiagnosis %}
 </div>
 <div class="col-md-6">
