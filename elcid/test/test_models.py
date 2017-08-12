@@ -291,6 +291,7 @@ class GetForLookupListTestCase(OpalTestCase):
             ])
         )
 
+
 class BloodCultureMixinTestCase(OpalTestCase):
     def test_subclassed(self):
         blood_culture_tests = [

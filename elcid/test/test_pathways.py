@@ -7,6 +7,7 @@ from opal.core.test import OpalTestCase
 from elcid.pathways import (
     AddPatientPathway, CernerDemoPathway, BloodCulturePathway
 )
+from elcid.models import GramStain, QuickFISH, HL7Result
 
 
 class TestBloodCulturePathway(OpalTestCase):
@@ -14,16 +15,20 @@ class TestBloodCulturePathway(OpalTestCase):
         # in theory this should just work, but lets
         # double check the underlying api hasn't changed
         patient, episode = self.new_patient_and_episode_please()
-        gram_stain = patient.labtest_set.create(
-            lab_test_type='Gram Stain',
+        gram_stain = GramStain.objects.create(
+            patient=patient
         )
-        patient.labtest_set.create(
-            lab_test_type='QuickFISH',
+        gram_stain_name = GramStain.get_display_name()
+
+        QuickFISH.objects.create(
+            patient=patient
         )
+
         data = dict(
             lab_test=[{
                 "id": gram_stain.id,
-                "lab_test_type": "QuickFISH"
+                "lab_test_type": gram_stain_name,
+                "result": dict(result="Yeast")
             }]
         )
         self.assertTrue(
@@ -36,7 +41,46 @@ class TestBloodCulturePathway(OpalTestCase):
         result = self.post_json(url, data)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(
-            patient.labtest_set.get().lab_test_type, "QuickFISH"
+            patient.labtest_set.get().lab_test_type, gram_stain_name
+        )
+
+    def test_doesnt_delete_non_blood_cultures(self):
+        # in theory this should just work, but lets
+        # double check the underlying api hasn't changed
+        patient, episode = self.new_patient_and_episode_please()
+        gram_stain = GramStain.objects.create(
+            patient=patient
+        )
+        gram_stain_name = GramStain.get_display_name()
+
+        HL7Result.objects.create(
+            patient=patient,
+            extras={}
+        )
+
+        data = dict(
+            lab_test=[{
+                "id": gram_stain.id,
+                "lab_test_type": gram_stain_name,
+                "result": dict(result="Yeast")
+            }]
+        )
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        pathway = BloodCulturePathway()
+        url = pathway.save_url(patient=patient, episode=episode)
+        result = self.post_json(url, data)
+        self.assertEqual(result.status_code, 200)
+        lab_test_types = list(patient.labtest_set.all().values_list(
+            "lab_test_type", flat=True
+        ))
+
+        self.assertEqual(
+            lab_test_types,
+            [GramStain.get_display_name(), HL7Result.get_display_name()]
         )
 
 

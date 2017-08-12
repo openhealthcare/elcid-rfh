@@ -3,15 +3,16 @@ from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
 from elcid import gloss_api
+from elcid import models as emodels
 
 
 from pathway.pathways import (
     RedirectsToPatientMixin,
+    MultiModelStep,
     Step,
     PagePathway,
     WizardPathway,
 )
-from pathway.steps import delete_others
 
 
 class SaveTaggingMixin(object):
@@ -142,11 +143,38 @@ class BloodCulturePathway(PagePathway):
     slug = "blood_culture"
 
     steps = (
-        Step(
+        MultiModelStep(
             template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
             step_controller="BloodCulturePathwayFormCtrl",
-            model=lmodels.LabTest
+            model=lmodels.LabTest,
+            # manually override delete others below
+            delete_others=False
         ),
     )
+
+    @transaction.atomic
+    def save(self, data, user=None, patient=None, episode=None):
+        # overwrite this to make sure we only delete
+        # blood culture tests
+        blood_culture_lab_tests = [
+            emodels.GramStain,
+            emodels.QuickFISH,
+            emodels.GPCStaph,
+            emodels.GPCStrep,
+            emodels.GNR,
+            emodels.BloodCultureOrganism
+        ]
+        blood_culture_lab_types = [
+            i.get_display_name() for i in blood_culture_lab_tests
+        ]
+
+        ids = [i["id"] for i in data.get('lab_test', []) if "id" in i]
+        blood_cultures = lmodels.LabTest.objects.filter(
+            lab_test_type__in=blood_culture_lab_types
+        )
+        blood_cultures.exclude(id__in=ids).delete()
+        return super(BloodCulturePathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
