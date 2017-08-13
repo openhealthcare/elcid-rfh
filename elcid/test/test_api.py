@@ -139,7 +139,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
 
     def test_retrieve(self):
         request = self.rf.get("/")
-        self.url = reverse(
+        url = reverse(
             "blood_culture_results-detail",
             kwargs=dict(pk=1),
             request=request
@@ -149,12 +149,13 @@ class BloodCultureResultApiTestCase(OpalTestCase):
 
         gram_stain = emodels.GramStain.objects.create(
             date_ordered=some_date,
-            patient=patient
+            patient=patient,
         )
 
         gram_stain.extras = dict(
             lab_number="212",
-            aerobic=False
+            aerobic=False,
+            isolate=1
         )
         gram_stain.save()
         gram_stain.result.result = "Yeast"
@@ -164,18 +165,19 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         some_other_date = datetime.date(2017, 1, 2)
         quick_fish = emodels.QuickFISH.objects.create(
             date_ordered=some_other_date,
-            patient=patient
+            patient=patient,
         )
 
         quick_fish.extras = dict(
             lab_number="212",
-            aerobic=True
+            aerobic=True,
+            isolate=2
         )
         quick_fish.save()
         quick_fish.result.result = "C. albicans"
         quick_fish.result.lab_test_id = quick_fish.id
         quick_fish.result.save()
-        result = self.client.get(self.url)
+        result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
         contents = json.loads(result.content)
 
@@ -191,7 +193,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             len(contents["cultures"]["02/01/2017"]["212"]["aerobic"]),
             1
         )
-        found_fish = contents["cultures"]["02/01/2017"]["212"]["aerobic"][0]
+        found_fish = contents["cultures"]["02/01/2017"]["212"]["aerobic"]['2'][0]
 
         self.assertEqual(
             found_fish["id"],
@@ -203,7 +205,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             quick_fish.get_display_name()
         )
 
-        found_gram = contents["cultures"]["01/01/2017"]["212"]["anaerobic"][0]
+        found_gram = contents["cultures"]["01/01/2017"]["212"]["anaerobic"]['1'][0]
 
         self.assertEqual(
             found_gram["id"],
