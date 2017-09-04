@@ -1,0 +1,1 @@
+0 2 * * * postgres pg_dump {{ database_name }} > /usr/local/ohc/var/back.$(date +"%d-%m-%y").{{ database_name }}.sql

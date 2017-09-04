@@ -8,6 +8,7 @@ from opal.models import Episode, Patient
 
 from elcid.management.commands import randomise_admission_dates
 
+
 class RandomiseAdmissionDates(OpalTestCase):
 
     def test_handle(self):
