@@ -3,8 +3,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '{{ db_name }}',
-        'USER': '{{ app_user }}',
-        'PASSWORD': '{{ app_password }}',
+        'USER': '{{ db_user }}',
+        'PASSWORD': '{{ db_password }}',
         'HOST': '',
         'PORT': '',
     }
@@ -13,5 +13,5 @@ DATABASES = {
 DEBUG = False
 
 {% for k, v in additional_settings.iteritems() %}
-  {{ k }} = {{ v }}
+{{ k }} = {{ v }}
 {% endfor %}
