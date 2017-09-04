@@ -1,3 +1,22 @@
+"""
+This deals with deployment for the rfh.
+
+Before you being make sure that in ../private_settings.json
+you have
+    1) a db_user
+    2) a db_password
+    3) an empty dictionary called additional_settings or a dictionary
+       of any other variables you want set in your local settings
+
+2 big tasks to look at
+
+deploy_test, this takes the name of
+
+deploy_prod, this will take a database back up and load it in and set up the
+cron jobs to copy it over
+
+"""
+
 import datetime
 import json
 import copy
@@ -7,7 +26,6 @@ from fabric.context_managers import lcd
 from fabric.contrib.files import _expand_path
 from fabric.operations import put
 from ..secure.secure_settings import PROXY
-
 import os.path
 
 UNIX_USER = "ohc"
@@ -64,7 +82,9 @@ def run_management_command(some_command, env):
         cmd = "{0}/bin/python manage.py {1}".format(
             env.virtual_env_path, some_command
         )
-        local(cmd)
+        result = local(cmd, capture=True)
+
+    return result
 
 
 def lexists(path):
@@ -297,20 +317,12 @@ def get_private_settings():
     return result
 
 
-def deploy_test(old_branch, new_branch):
-    # the old env that is currently live
-    old_env = Env(old_branch)
-
-    # the new env that is going to be live
+def create_empty_env(new_branch):
+    # creates an environment with an empty database
     new_env = Env(new_branch)
 
-    # the addit
+    # the private settings
     private_settings = get_private_settings()
-
-    # Measure old environmenti
-    run_management_command("status_report", old_env)
-
-    # take a database back up
 
     # Setup environment
     pip_create_virtual_env(new_env)
@@ -319,9 +331,6 @@ def deploy_test(old_branch, new_branch):
 
     # create a database
     postgres_create_database(new_env)
-
-    # load in a backup
-    postgres_load_database(old_env.backup_name, new_env)
 
     # symlink the nginx conf
     services_symlink_nginx(new_env)
@@ -338,7 +347,76 @@ def deploy_test(old_branch, new_branch):
     run_management_command("collect_static", new_env)
     run_management_command("migrate", new_env)
     run_management_command("load_lookup_lists", new_env)
-    run_management_command("status_report", new_env)
 
+
+def deploy_test(old_branch, new_branch, backup_name=None):
+    # the old env that is currently live
+    old_env = Env(old_branch)
+
+    if backup_name is None:
+        backup_name = old_env.backup_name
+
+    if not lexists(backup_name):
+        raise ValueError("unable to find backup {}".format(backup_name))
+
+    # the new env that is going to be live
+    new_env = Env(new_branch)
+
+    # the private settings
+    private_settings = get_private_settings()
+
+    # Measure old environment
+    old_status = run_management_command("status_report", old_env)
+
+    # Setup environment
+    pip_create_virtual_env(new_env)
+    pip_set_project_directory(new_env)
+    pip_install_requirements(new_env)
+
+    # create a database
+    postgres_create_database(new_env)
+
+    # load in a backup
+    postgres_load_database(backup_name, new_env)
+
+    # symlink the nginx conf
+    services_symlink_nginx(new_env)
+
+    # symlink the upstart conf
+    services_symlink_upstart(new_env)
+
+    # create the local settings used by the django app
+    services_create_local_settings(new_env, private_settings)
+
+    services_create_gunicorn_settings(new_env)
+
+    # django setup
+    run_management_command("collect_static", new_env)
+    run_management_command("migrate", new_env)
+    run_management_command("load_lookup_lists", new_env)
+    new_status = run_management_command("status_report", new_env)
+
+    print "=" * 20
+    print "old environment was"
+    old_status
+    print "=" * 20
+    print "old environment was"
+    new_status
+    print "=" * 20
+
+
+def deploy_prod(new_branch, old_branch):
+    old_env = Env(old_branch)
+    new_env = Env(new_branch)
+
+    backup_name = "/usr/local/ohc/var/release.{dt}.{db_name}.sql".format(
+        dt=datetime.now().strftime("%d.%m.%Y.%H.%M"),
+        db_name=old_env.database_name
+    )
+
+    dump_str = "pg_dump -d {0} -U postgres > {2}"
+    local(dump_str.format(old_env.database_name, backup_name))
+
+    deploy_test(new_branch, old_branch)
     cron_write_backup(new_env)
     cron_copy_backup(new_env)

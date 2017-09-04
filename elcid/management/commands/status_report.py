@@ -35,4 +35,4 @@ class Command(BaseCommand):
 
             result["all_time"][subrecord.get_display_name()] = count_all_time
             result["last_week"][subrecord.get_display_name()] = count_last_week
-        self.stdout.write(json.dumps(result))
+        self.stdout.write(json.dumps(result, indent=4))
