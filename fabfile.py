@@ -1,7 +1,7 @@
 """
 This deals with deployment for the RFH.
 
-Before you being make sure that in ../private_settings.json
+Before you begin make sure that in ../private_settings.json
 you have
     1) the proxy address
     2) a db_password
