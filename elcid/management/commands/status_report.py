@@ -18,6 +18,7 @@ class Command(BaseCommand):
         return model.objects.filter(created__gte=last_week).count()
 
     def handle(self, *args, **options):
+        # we want to catch the output, so lets not output info level logging
         root_logger = logging.getLogger('')
         root_logger.setLevel(logging.ERROR)
         result = dict(

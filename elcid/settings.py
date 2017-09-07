@@ -180,7 +180,7 @@ INSTALLED_APPS = (
 )
 
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('opal.tests',)
+    INSTALLED_APPS += ('opal.tests', 'fabric_tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )

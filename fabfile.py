@@ -18,11 +18,11 @@ git clone https://github.com/openhealthcare/elcid-rfh.git elcidrfh-{your branch 
 cd elcidrfh-{your branch name}
 
 e.g.
-workon elcid-deployment
-cd /usr/local/ohc
-git clone https://github.com/openhealthcare/elcid-rfh.git elcidrfh-v0.1
-cd elcidrfh-{your branch name}
+workon elcid-deployment or another environment
+fab clone_branch your-branch
+cd /usr/local/ohc/elcidrfh-{your branch name}
 
+clone_branch
 
 Then 2 choices
 
@@ -39,16 +39,17 @@ the appropriate place with the fields for you to fill in
 
 create_empty_env, takes in an environment name
 creates you an empty database and a virtual env
+
 """
 
 import datetime
 import json
 import copy
 from jinja2 import Environment, FileSystemLoader
-from fabric.api import local, env, settings, hide
-from fabric.contrib.files import _expand_path
+from fabric.api import local, env
 from fabric.operations import put
 from fabric.context_managers import lcd
+from fabric.decorators import task
 import os.path
 
 env.hosts = ['127.0.0.1']
@@ -60,6 +61,7 @@ VIRTUAL_ENV_PATH = "/home/{usr}/.virtualenvs/{release_name}"
 PROJECT_ROOT = "/usr/local/{unix_user}".format(unix_user=UNIX_USER)
 PROJECT_DIRECTORY = "{project_root}/{release_name}"
 BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
+GIT_URL = "https://github.com/openhealthcare/elcid-rfh"
 
 # the daily back up
 BACKUP_NAME = "{backup_dir}/back.{dt}.{db_name}.sql"
@@ -132,8 +134,8 @@ def run_management_command(some_command, env):
 
 
 def pip_create_virtual_env(new_env):
-    if not os.path.isdir(new_env.virtual_env_path):
-        local("/usr/bin/virtualenv {}".format(new_env.virtual_env_path))
+    local("rm -rf {}".format(new_env.virtual_env_path))
+    local("/usr/bin/virtualenv {}".format(new_env.virtual_env_path))
     return
 
 
@@ -144,7 +146,6 @@ def pip_install_requirements(new_env, proxy):
 
     # local("{0} install --proxy {1} requirements.txt".format(pip, proxy))
 
-    # TODO proxy switched out just for local settings
     local("{0} install -r requirements.txt".format(pip))
 
 
@@ -152,15 +153,6 @@ def pip_set_project_directory(some_env):
     local("echo '{0}' > {1}/.project".format(
         some_env.project_directory, some_env.virtual_env_path
     ))
-
-
-def install_requirements(cls):
-    if env.http_proxy:
-        local("{0} install -r requirements.txt --proxy {1}".format(
-            cls.get_pip(), env.http_proxy
-        ))
-    else:
-        local("{0} install -r requirements.txt".format(cls.get_pip()))
 
 
 def postgres_command(command, capture=False):
@@ -203,7 +195,7 @@ def postgres_load_database(backup_name, new_env):
 
 
 def services_symlink_nginx(new_env):
-    abs_address = os.path.join(new_env.project_directory, "etc/nginx.conf")
+    abs_address = "{}/etc/nginx.conf".format(new_env.project_directory, "")
     if not os.path.isfile(abs_address):
         raise ValueError(
             "we expect an nginx conf to exist at {}".format(abs_address)
@@ -217,14 +209,13 @@ def services_symlink_nginx(new_env):
 
 
 def services_symlink_upstart(new_env):
-    abs_address = os.path.join(new_env.project_directory, "etc/upstart.conf")
+    abs_address = "{}/etc/upstart.conf".format(new_env.project_directory, "")
     if not os.path.isfile(abs_address):
         raise ValueError(
             "we expect an upstart conf to exist {}".format(abs_address)
         )
     symlink_name = '/etc/init/{}.conf'.format(PROJECT_NAME)
-    if os.path.islink(symlink_name):
-        local("sudo rm {}".format(symlink_name))
+    local("sudo rm -f {}".format(symlink_name))
 
     local('sudo ln -s {0} {1}'.format(
         abs_address,
@@ -255,7 +246,9 @@ def services_create_gunicorn_settings(new_env):
     output = template.render(
         env_name=new_env.virtual_env_path
     )
-    gunicorn_conf = "etc/gunicorn.conf"
+    gunicorn_conf = '{0}/etc/gunicorn.conf'.format(
+        new_env.project_directory
+    )
 
     local("rm -f {}".format(gunicorn_conf))
 
@@ -283,8 +276,7 @@ def cron_write_backup(new_env):
     )
 
     cron_file = "/etc/cron.d/{0}_backup".format(PROJECT_NAME)
-    local("sudo rm -f {}".format(cron_file))
-    local("echo '{0}' | sudo tee -a {1}".format(
+    local("echo '{0}' | sudo tee {1}".format(
         output, cron_file
     ))
 
@@ -301,8 +293,7 @@ def cron_copy_backup(new_env):
         unix_user=UNIX_USER
     )
     cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
-    local("sudo rm -f {}".format(cron_file))
-    local("echo '{0}' | sudo tee -a {1}".format(
+    local("echo '{0}' | sudo tee {1}".format(
         output, cron_file
     ))
 
@@ -320,21 +311,61 @@ def copy_backup(branch_name):
             ),
             current_env
         )
+    else:
+        try:
+            put(
+                local_path=current_env.backup_name,
+                remote_path=current_env.backup_name
+            )
+        except Exception as e:
+            run_management_command(
+                "send error 'unable to copy backup {}' with '{}'".format(
+                    current_env.backup_name, str(e)
+                ),
+                current_env
+            )
 
-    try:
-        put(
-            local_path=current_env.backup_name,
-            remote_path=current_env.backup_name
+
+def get_private_settings():
+    if not os.path.isfile(PRIVATE_SETTINGS):
+        raise ValueError(
+            "unable to find additional settings at {}".format(
+                PRIVATE_SETTINGS
+            )
         )
-    except Exception as e:
-        run_management_command(
-            "send error 'unable to copy backup {}' with '{}'".format(
-                current_env.backup_name, str(e)
-            ),
-            current_env
+
+    with open(PRIVATE_SETTINGS) as privado:
+        result = json.load(privado)
+        err_template = "we require {} in your private settings"
+        if "db_password" not in result:
+            raise ValueError(err_template.format("a db password"))
+        if "additional_settings" not in result:
+            raise ValueError(err_template.format(
+                "an additional_settings dict (even if its empty)"
+            ))
+        if "proxy" not in result:
+            raise ValueError(err_template.format("proxy variable"))
+        if "host_string" not in result:
+            e = "we host string to be set, this should be 127.0.0.1 on test, \
+or the address you want to sync to on prod in your private settings"
+            raise ValueError(e)
+
+    return result
+
+
+@task
+def clone_branch(branch_name):
+    branch_env = Env(branch_name)
+    local(
+        "git clone -b {0} {1} {2}".format(
+            branch_name,
+            GIT_URL,
+            branch_env.project_directory
         )
+    )
 
 
+@task
 def create_private_settings():
     with open(PRIVATE_SETTINGS, "w") as privado:
         json.dump(
@@ -349,38 +380,7 @@ def create_private_settings():
         )
 
 
-def get_private_settings():
-    if not os.path.isfile(PRIVATE_SETTINGS):
-        raise ValueError(
-            "unable to find additional settings at {}".format(
-                PRIVATE_SETTINGS
-            )
-        )
-
-    with open(PRIVATE_SETTINGS) as privado:
-        result = json.load(privado)
-        if "db_password" not in result:
-            raise ValueError('we require a db password')
-        if "additional_settings" not in result:
-            e = """
-            we require a dictionary of additional_settings (even if its empty)
-            """.strip()
-            raise ValueError(e)
-        if "proxy" not in result:
-            e = """
-            we require a proxy variable in the private settings
-            """.strip()
-            raise ValueError(e)
-        if "host_string" not in result:
-            e = """
-            we host string to be set, this should be
-            127.0.0.1 on test, or the address you want to sync to on prod
-            """.strip()
-            raise ValueError(e)
-
-    return result
-
-
+@task
 def create_empty_env(new_branch):
     # creates an environment with an empty database
     new_env = Env(new_branch)
@@ -415,6 +415,7 @@ def create_empty_env(new_branch):
     run_management_command("load_lookup_lists", new_env)
 
 
+@task
 def deploy_test(new_branch, backup_name=None, old_branch=None):
     # the old env that is currently live
     if (not old_branch and not backup_name) or (old_branch and backup_name):
@@ -474,6 +475,7 @@ def deploy_test(new_branch, backup_name=None, old_branch=None):
     print "=" * 20
 
 
+@task
 def deploy_prod(new_branch, old_branch):
     old_env = Env(old_branch)
     new_env = Env(new_branch)
