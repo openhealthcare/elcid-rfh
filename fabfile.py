@@ -363,7 +363,7 @@ def get_private_settings():
             raise ValueError('we require a db password')
         if "additional_settings" not in result:
             e = """
-            we require a dictionary of additional_settings (even if its empty)
+            we require a dictionary of additional_settings (even if it's empty)
             """.strip()
             raise ValueError(e)
         if "proxy" not in result:
