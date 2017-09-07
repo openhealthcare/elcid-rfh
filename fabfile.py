@@ -1,5 +1,5 @@
 """
-This deals with deployment for the rfh.
+This deals with deployment for the RFH.
 
 Before you being make sure that in ../private_settings.json
 you have
