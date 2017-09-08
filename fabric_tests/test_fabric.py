@@ -18,6 +18,7 @@ from opal.core.test import OpalTestCase
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fabfile
+from fabfile import Env
 
 
 @mock.patch("fabfile.local")
@@ -402,14 +403,18 @@ copy_backup:elcidrfh_some_branch' | sudo tee /etc/cron.d/elcid_copy")
 @mock.patch("fabfile.put")
 @mock.patch("fabfile.env")
 @mock.patch("fabfile.os")
+@mock.patch("fabfile.datetime")
 class CopyBackupTestCase(FabfileTestCase):
     def test_copy_backup(
-        self, os, env, put, run_management_command, get_private_settings
+        self, dt, os, env, put, run_management_command, get_private_settings
     ):
         get_private_settings.return_value(dict(
             host_string="121.1.1.1",
             password="some_password"
         ))
+        dt.datetime.now.return_value = datetime.datetime(
+            2017, 9, 7
+        )
         os.path.isfile.return_value = True
         fabfile.copy_backup(self.env.branch)
         p = "/usr/local/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
@@ -419,7 +424,7 @@ class CopyBackupTestCase(FabfileTestCase):
         )
 
     def test_copy_backup_no_backup(
-        self, os, env, put, run_management_command, get_private_settings
+        self, dt, os, env, put, run_management_command, get_private_settings
     ):
         get_private_settings.return_value(dict(
             host_string="121.1.1.1",
@@ -439,7 +444,7 @@ class CopyBackupTestCase(FabfileTestCase):
         )
 
     def test_put_raises_exception(
-        self, os, env, put, run_management_command, get_private_settings
+        self, dt, os, env, put, run_management_command, get_private_settings
     ):
         get_private_settings.return_value(dict(
             host_string="121.1.1.1",
@@ -550,3 +555,376 @@ the address you want to sync to on prod in your private settings"
             result = fabfile.get_private_settings()
 
         self.assertEqual(result, expected)
+
+
+class DeployTestCase(FabfileTestCase):
+    @mock.patch("fabfile.Env")
+    @mock.patch("fabfile.get_private_settings")
+    @mock.patch("fabfile.pip_create_virtual_env")
+    @mock.patch("fabfile.pip_set_project_directory")
+    @mock.patch("fabfile.pip_install_requirements")
+    @mock.patch("fabfile.postgres_create_database")
+    @mock.patch("fabfile.postgres_load_database")
+    @mock.patch("fabfile.services_symlink_nginx")
+    @mock.patch("fabfile.services_symlink_upstart")
+    @mock.patch("fabfile.services_create_local_settings")
+    @mock.patch("fabfile.services_create_gunicorn_settings")
+    @mock.patch("fabfile.run_management_command")
+    def test_deploy_no_backup(
+        self,
+        run_management_command,
+        services_create_gunicorn_settings,
+        services_create_local_settings,
+        services_symlink_upstart,
+        services_symlink_nginx,
+        postgres_load_database,
+        postgres_create_database,
+        pip_install_requirements,
+        pip_set_project_directory,
+        pip_create_virtual_env,
+        get_private_settings,
+        env_constructor
+    ):
+        pv = dict(
+            proxy="1.2.3",
+            host_string="0.0.0.0"
+        )
+        get_private_settings.return_value = pv
+        env_constructor.return_value = self.env
+        fabfile._deploy("some_branch")
+        env_constructor.assert_called_once_with("some_branch")
+        self.assertTrue(get_private_settings.called)
+        get_private_settings.assert_called_once_with()
+        self.assertEqual(
+            fabfile.env.host_string,
+            "0.0.0.0"
+        )
+        pip_create_virtual_env.assert_called_once_with(self.env)
+        pip_set_project_directory.assert_called_once_with(self.env)
+        pip_install_requirements.assert_called_once_with(self.env, "1.2.3")
+
+        postgres_create_database.assert_called_once_with(self.env)
+        self.assertFalse(postgres_load_database.called)
+        services_symlink_nginx.assert_called_once_with(self.env)
+        services_symlink_upstart.assert_called_once_with(self.env)
+        services_create_local_settings.assert_called_once_with(self.env, pv)
+        services_create_gunicorn_settings.assert_called_once_with(self.env)
+        self.assertEqual(
+            run_management_command.call_count, 3
+        )
+        first_call = run_management_command.call_args_list[0][0]
+        self.assertEqual(
+            first_call[0], "collectstatic --noinput"
+        )
+
+        self.assertEqual(
+            first_call[1], self.env
+        )
+
+        second_call = run_management_command.call_args_list[1][0]
+        self.assertEqual(
+            second_call[0], "migrate"
+        )
+
+        self.assertEqual(
+            second_call[1], self.env
+        )
+
+        third_call = run_management_command.call_args_list[2][0]
+        self.assertEqual(
+            third_call[0], "load_lookup_lists"
+        )
+
+        self.assertEqual(
+            third_call[1], self.env
+        )
+
+    @mock.patch("fabfile.os")
+    @mock.patch("fabfile.Env")
+    @mock.patch("fabfile.get_private_settings")
+    @mock.patch("fabfile.pip_create_virtual_env")
+    @mock.patch("fabfile.pip_set_project_directory")
+    @mock.patch("fabfile.pip_install_requirements")
+    @mock.patch("fabfile.postgres_create_database")
+    @mock.patch("fabfile.postgres_load_database")
+    @mock.patch("fabfile.services_symlink_nginx")
+    @mock.patch("fabfile.services_symlink_upstart")
+    @mock.patch("fabfile.services_create_local_settings")
+    @mock.patch("fabfile.services_create_gunicorn_settings")
+    @mock.patch("fabfile.run_management_command")
+    def test_deploy_backup(
+        self,
+        run_management_command,
+        services_create_gunicorn_settings,
+        services_create_local_settings,
+        services_symlink_upstart,
+        services_symlink_nginx,
+        postgres_load_database,
+        postgres_create_database,
+        pip_install_requirements,
+        pip_set_project_directory,
+        pip_create_virtual_env,
+        get_private_settings,
+        env_constructor,
+        os
+    ):
+        pv = dict(
+            proxy="1.2.3",
+            host_string="0.0.0.0"
+        )
+        get_private_settings.return_value = pv
+        env_constructor.return_value = self.env
+        os.path.isfile.return_value = True
+        fabfile._deploy("some_branch", "some_backup")
+
+        os.path.isfile.assert_called_once_with("some_backup")
+        env_constructor.assert_called_once_with("some_branch")
+        self.assertTrue(get_private_settings.called)
+        get_private_settings.assert_called_once_with()
+        self.assertEqual(
+            fabfile.env.host_string,
+            "0.0.0.0"
+        )
+        pip_create_virtual_env.assert_called_once_with(self.env)
+        pip_set_project_directory.assert_called_once_with(self.env)
+        pip_install_requirements.assert_called_once_with(self.env, "1.2.3")
+
+        postgres_create_database.assert_called_once_with(self.env)
+        postgres_load_database.assert_called_once_with("some_backup", self.env)
+        services_symlink_nginx.assert_called_once_with(self.env)
+        services_symlink_upstart.assert_called_once_with(self.env)
+        services_create_local_settings.assert_called_once_with(self.env, pv)
+        services_create_gunicorn_settings.assert_called_once_with(self.env)
+        self.assertEqual(
+            run_management_command.call_count, 3
+        )
+        first_call = run_management_command.call_args_list[0][0]
+        self.assertEqual(
+            first_call[0], "collectstatic --noinput"
+        )
+
+        self.assertEqual(
+            first_call[1], self.env
+        )
+
+        second_call = run_management_command.call_args_list[1][0]
+        self.assertEqual(
+            second_call[0], "migrate"
+        )
+
+        self.assertEqual(
+            second_call[1], self.env
+        )
+
+        third_call = run_management_command.call_args_list[2][0]
+        self.assertEqual(
+            third_call[0], "load_lookup_lists"
+        )
+
+        self.assertEqual(
+            third_call[1], self.env
+        )
+
+    @mock.patch("fabfile.os")
+    @mock.patch("fabfile.Env")
+    @mock.patch("fabfile.get_private_settings")
+    @mock.patch("fabfile.pip_create_virtual_env")
+    @mock.patch("fabfile.pip_set_project_directory")
+    @mock.patch("fabfile.pip_install_requirements")
+    @mock.patch("fabfile.postgres_create_database")
+    @mock.patch("fabfile.postgres_load_database")
+    @mock.patch("fabfile.services_symlink_nginx")
+    @mock.patch("fabfile.services_symlink_upstart")
+    @mock.patch("fabfile.services_create_local_settings")
+    @mock.patch("fabfile.services_create_gunicorn_settings")
+    @mock.patch("fabfile.run_management_command")
+    def test_deploy_backup_raises(
+        self,
+        run_management_command,
+        services_create_gunicorn_settings,
+        services_create_local_settings,
+        services_symlink_upstart,
+        services_symlink_nginx,
+        postgres_load_database,
+        postgres_create_database,
+        pip_install_requirements,
+        pip_set_project_directory,
+        pip_create_virtual_env,
+        get_private_settings,
+        env_constructor,
+        os
+    ):
+        # mock everything because if this fails, we don't want it to
+        # accidentally run roughshod on our env
+        os.path.isfile.return_value = False
+        with self.assertRaises(ValueError) as er:
+            fabfile._deploy("some_branch", "some_nonexistent_backup")
+
+        self.assertEqual(
+            str(er.exception),
+            "unable to find backup some_nonexistent_backup"
+        )
+
+
+class DeployTestTestCase(FabfileTestCase):
+    @mock.patch("fabfile.Env")
+    @mock.patch("fabfile._deploy")
+    @mock.patch("fabfile.run_management_command")
+    @mock.patch("fabfile.print_function")
+    def test_deploy_test(
+        self, print_function, run_management_command, deploy, env_constructor
+    ):
+        env_constructor.return_value = self.env
+        run_management_command.return_value = "some status"
+        fabfile.deploy_test("some_backup", "new_branch")
+        deploy.assert_called_once_with("new_branch", "some_backup")
+        env_constructor.assert_called_once_with("new_branch")
+
+        self.assertEqual(
+            print_function.call_count, 4
+        )
+        first_call = print_function.call_args_list[0][0][0]
+        self.assertEqual(
+            first_call, "=" * 20
+        )
+
+        second_call = print_function.call_args_list[1][0][0]
+        self.assertEqual(
+            second_call, "new environment was"
+        )
+
+        third_call = print_function.call_args_list[2][0][0]
+        self.assertEqual(
+            third_call, "some status"
+        )
+
+        fourth_call = print_function.call_args_list[3][0][0]
+        self.assertEqual(
+            fourth_call, "=" * 20
+        )
+
+
+@mock.patch("fabfile.get_private_settings")
+class ValidatePrivateSettingsTestCase(FabfileTestCase):
+    def test_error_on_no_host(self, get_private_settings):
+        get_private_settings.return_value = dict(password="something")
+        with self.assertRaises(ValueError) as er:
+            fabfile.validate_private_settings()
+
+        self.assertEqual(
+            str(er.exception),
+            'we need a host string inorder to scp data to a backup server'
+        )
+
+    def test_error_on_no_password(self, get_private_settings):
+        get_private_settings.return_value = dict(host_string="something")
+        with self.assertRaises(ValueError) as er:
+            fabfile.validate_private_settings()
+
+        self.assertEqual(
+            str(er.exception),
+            'we need the password of the backup server inorder to scp data \
+to a backup server'
+        )
+
+    def test_no_error_when_valid(self, get_private_settings):
+        get_private_settings.return_value = dict(
+            host_string="something",
+            password="password"
+        )
+
+
+class DeployProdTestCase(FabfileTestCase):
+    @mock.patch("fabfile.datetime")
+    @mock.patch("fabfile.Env")
+    @mock.patch("fabfile.validate_private_settings")
+    @mock.patch("fabfile.local")
+    @mock.patch("fabfile.cron_write_backup")
+    @mock.patch("fabfile.cron_copy_backup")
+    @mock.patch("fabfile.run_management_command")
+    @mock.patch("fabfile._deploy")
+    @mock.patch("fabfile.print_function")
+    def test_deploy_prod(
+        self,
+        print_function,
+        _deploy,
+        run_management_command,
+        cron_copy_backup,
+        cron_write_backup,
+        local,
+        validate_private_settings,
+        env_constructor,
+        dt
+    ):
+        dt.datetime.now.return_value = datetime.datetime(
+            2017, 9, 8, 10, 47
+        )
+        old_env = Env("old_env")
+        new_env = Env("new_env")
+        env_constructor.side_effect = [old_env, new_env]
+        run_management_command.side_effect = [
+            "old_status", "new_status"
+        ]
+        fabfile.deploy_prod("old_branch", "new_branch")
+        validate_private_settings.assert_called_once_with()
+        local.assert_called_once_with(
+            "sudo -u postgres pg_dump elcidrfh_old_env -U postgres > \
+/usr/local/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql"
+        )
+        cron_write_backup.assert_called_once_with(new_env)
+        cron_copy_backup.assert_called_once_with(new_env)
+        _deploy.assert_called_once_with(
+            new_env, old_env.backup_name
+        )
+
+        self.assertEqual(
+            run_management_command.call_count, 2
+        )
+        first_call = run_management_command.call_args_list[0][0]
+        self.assertEqual(
+            first_call, ("status_report", old_env,)
+        )
+
+        second_call = run_management_command.call_args_list[1][0]
+        self.assertEqual(
+            second_call, ("status_report", new_env,)
+        )
+
+        self.assertEqual(
+            print_function.call_count, 7
+        )
+
+        self.assertEqual(
+            print_function.call_args_list[0][0][0],
+            "=" * 20
+        )
+
+        self.assertEqual(
+            print_function.call_args_list[1][0][0],
+            "old environment was"
+        )
+
+        self.assertEqual(
+            print_function.call_args_list[2][0][0],
+            "old_status"
+        )
+
+        self.assertEqual(
+            print_function.call_args_list[3][0][0],
+            "=" * 20
+        )
+
+        self.assertEqual(
+            print_function.call_args_list[4][0][0],
+            "new environment was"
+        )
+
+        self.assertEqual(
+            print_function.call_args_list[5][0][0],
+            "new_status"
+        )
+
+        self.assertEqual(
+            print_function.call_args_list[6][0][0],
+            "=" * 20
+        )

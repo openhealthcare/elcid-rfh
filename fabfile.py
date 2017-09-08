@@ -41,7 +41,7 @@ create_empty_env, takes in an environment name
 creates you an empty database and a virtual env
 
 """
-
+from __future__ import print_function
 import datetime
 import json
 import copy
@@ -382,12 +382,18 @@ def create_private_settings():
 
 @task
 def create_empty_env(new_branch):
-    # creates an environment with an empty database
+    _deploy(new_branch)
+
+
+def _deploy(new_branch, backup_name=None):
+    if backup_name and not os.path.isfile(backup_name):
+        raise ValueError("unable to find backup {}".format(backup_name))
+
+    # the new env that is going to be live
     new_env = Env(new_branch)
 
     # the private settings
     private_settings = get_private_settings()
-
     env.host_string = private_settings["host_string"]
 
     # Setup environment
@@ -398,56 +404,9 @@ def create_empty_env(new_branch):
     # create a database
     postgres_create_database(new_env)
 
-    # symlink the nginx conf
-    services_symlink_nginx(new_env)
-
-    # symlink the upstart conf
-    services_symlink_upstart(new_env)
-
-    # create the local settings used by the django app
-    services_create_local_settings(new_env, private_settings)
-
-    services_create_gunicorn_settings(new_env)
-
-    # django setup
-    run_management_command("collectstatic --noinput", new_env)
-    run_management_command("migrate", new_env)
-    run_management_command("load_lookup_lists", new_env)
-
-
-@task
-def deploy_test(new_branch, backup_name=None, old_branch=None):
-    # the old env that is currently live
-    if (not old_branch and not backup_name) or (old_branch and backup_name):
-        raise ValueError("we expect either an old branch or a back up name")
-
-    if old_branch:
-        old_env = Env(old_branch)
-        # Measure old environment
-        old_status = run_management_command("status_report", old_env)
-        backup_name = old_env.release_backup_name
-    else:
-        old_status = "Unknown"
-
-    if not os.path.isfile(backup_name):
-        raise ValueError("unable to find backup {}".format(backup_name))
-
-    # the new env that is going to be live
-    new_env = Env(new_branch)
-
-    # the private settings
-    private_settings = get_private_settings()
-
-    # Setup environment
-    pip_create_virtual_env(new_env)
-    pip_set_project_directory(new_env)
-    pip_install_requirements(new_env, private_settings["proxy"])
-
-    # create a database
-    postgres_create_database(new_env)
-
     # load in a backup
-    postgres_load_database(backup_name, new_env)
+    if backup_name:
+        postgres_load_database(backup_name, new_env)
 
     # symlink the nginx conf
     services_symlink_nginx(new_env)
@@ -464,21 +423,19 @@ def deploy_test(new_branch, backup_name=None, old_branch=None):
     run_management_command("collectstatic --noinput", new_env)
     run_management_command("migrate", new_env)
     run_management_command("load_lookup_lists", new_env)
-    new_status = run_management_command("status_report", new_env)
-
-    print "=" * 20
-    print "old environment was"
-    print old_status
-    print "=" * 20
-    print "new environment was"
-    print new_status
-    print "=" * 20
 
 
 @task
-def deploy_prod(new_branch, old_branch):
-    old_env = Env(old_branch)
-    new_env = Env(new_branch)
+def deploy_test(backup_name, new_branch):
+    _deploy(new_branch, backup_name)
+    new_status = run_management_command("status_report", Env(new_branch))
+    print_function("=" * 20)
+    print_function("new environment was")
+    print_function(new_status)
+    print_function("=" * 20)
+
+
+def validate_private_settings():
     private_settings = get_private_settings()
     if "host_string" not in private_settings:
         raise ValueError(
@@ -487,11 +444,30 @@ def deploy_prod(new_branch, old_branch):
 
     if "password" not in private_settings:
         raise ValueError(
-            'we need the passord of the backup server inorder to scp data to a backup server'
+            'we need the password of the backup server inorder to scp data to a backup server'
         )
 
+
+@task
+def deploy_prod(old_branch, new_branch):
+    old_env = Env(old_branch)
+    new_env = Env(new_branch)
+
+    validate_private_settings()
     dump_str = "sudo -u postgres pg_dump {0} -U postgres > {1}"
     local(dump_str.format(old_env.database_name, old_env.release_backup_name))
-    deploy_test(new_branch, old_branch=old_branch)
+
     cron_write_backup(new_env)
     cron_copy_backup(new_env)
+    old_status = run_management_command("status_report", old_env)
+    _deploy(new_env, old_env.backup_name)
+    new_status = run_management_command("status_report", new_env)
+
+    print_function("=" * 20)
+    print_function("old environment was")
+    print_function(old_status)
+    print_function("=" * 20)
+
+    print_function("new environment was")
+    print_function(new_status)
+    print_function("=" * 20)
