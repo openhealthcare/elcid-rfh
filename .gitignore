@@ -5,6 +5,7 @@
 static/*
 elcid/opal.sqlite*
 elcid/local_settings.py
+etc/gunicorn.conf
 .coverage
 htmlcov
 libpeerconnection.log

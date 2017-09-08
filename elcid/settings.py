@@ -180,7 +180,7 @@ INSTALLED_APPS = (
 )
 
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('opal.tests',)
+    INSTALLED_APPS += ('opal.tests', 'fabric_tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )
@@ -216,8 +216,19 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'opal.core.log.ConfidentialEmailer'
         },
+        'standard_error_emailer': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True
+        }
     },
     'loggers': {
+        'django.request': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
@@ -227,7 +238,12 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
-        }
+        },
+        'error_emailer': {
+            'handlers': ['standard_error_emailer'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
     }
 }
 
