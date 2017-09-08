@@ -13,16 +13,10 @@ that is at BACKUP_DIR
 
 Make sure you have a deployment env that has fabric available
 
+e.g.
 cd {PROJECT_ROOT}
 git clone https://github.com/openhealthcare/elcid-rfh.git elcidrfh-{your branch name}
 cd elcidrfh-{your branch name}
-
-e.g.
-workon elcid-deployment or another environment
-fab clone_branch your-branch
-cd /usr/local/ohc/elcidrfh-{your branch name}
-
-clone_branch
 
 Then 2 choices
 
@@ -56,7 +50,7 @@ DB_USER = "ohc"
 RELEASE_NAME = "elcidrfh-{branch}"
 
 VIRTUAL_ENV_PATH = "/home/{usr}/.virtualenvs/{release_name}"
-PROJECT_ROOT = "/usr/local/{unix_user}".format(unix_user=UNIX_USER)
+PROJECT_ROOT = "/usr/lib/{unix_user}".format(unix_user=UNIX_USER)
 PROJECT_DIRECTORY = "{project_root}/{release_name}"
 BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
 GIT_URL = "https://github.com/openhealthcare/elcid-rfh"
