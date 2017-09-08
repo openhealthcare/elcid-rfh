@@ -14,9 +14,9 @@ that is at BACKUP_DIR
 Make sure you have a deployment env that has fabric available
 
 e.g.
-cd {PROJECT_ROOT}
-git clone https://github.com/openhealthcare/elcid-rfh.git elcidrfh-{your branch name}
-cd elcidrfh-{your branch name}
+workon elcid-deployment or another environment
+fab clone_branch your-branch
+cd /usr/local/ohc/elcidrfh-{your branch name}
 
 Then 2 choices
 
