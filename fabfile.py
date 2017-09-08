@@ -26,12 +26,10 @@ clone_branch
 
 Then 2 choices
 
-deploy_test, this takes the name of the new branch and either the
-the back up env and
-a back up file path that it will load the environment a database back up from
+deploy_test, this takes the back up file and name of the new branch.
+the back up file will be loaded the environment a database back up from
 
-deploy_prod, this will take a database back up, it will then pass this name
-to deploy test. Then replace cron jobs to copy it over.
+deploy_prod, this takes the old env and the new env
 
 2 small tasks to look at
 create_private_settings will create an empty private settings file in
