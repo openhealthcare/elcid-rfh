@@ -390,12 +390,15 @@ class CronTestCase(FabfileTestCase):
 > /usr/local/ohc/var/back.$(date +"%d.%m.%Y").elcidrfh_some_branch.sql\' | \
 sudo tee /etc/cron.d/elcid_backup')
 
-    def test_cron_copy_backup(self, local):
+    @mock.patch("fabfile.os")
+    def test_cron_copy_backup(self, os, local):
+        os.path.abspath.return_value = "/somthing/somewhere/fabfile.py"
         fabfile.cron_copy_backup(self.env)
         local.assert_called_once_with("echo '0 2 * * * ohc \
 /home/ohc/.virtualenvs/elcidrfh-some_branch/bin/fab -f \
-/Users/fredkingham/Scripts/ohcdev/src/elcid-rfh/fabfile.py \
+/somthing/somewhere/fabfile.py \
 copy_backup:elcidrfh_some_branch' | sudo tee /etc/cron.d/elcid_copy")
+        self.assertTrue(os.path.abspath)
 
 
 @mock.patch("fabfile.get_private_settings")
