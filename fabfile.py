@@ -32,6 +32,12 @@ the appropriate place with the fields for you to fill in
 create_empty_env, takes in an environment name
 creates you an empty database and a virtual env
 
+The log environment for this project is considered to be
+/usr/lib/ohc/log/
+
+The backups are stored in
+/usr/lib/ohc/var/
+
 """
 from __future__ import print_function
 import datetime
@@ -133,12 +139,8 @@ def pip_create_virtual_env(new_env):
 
 def pip_install_requirements(new_env, proxy):
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
-
-    local("{} install --upgrade pip".format(pip))
-
-    # local("{0} install --proxy {1} requirements.txt".format(pip, proxy))
-
-    local("{0} install -r requirements.txt".format(pip))
+    local("{0} install --upgrade pip --proxy {1}".format(pip, proxy))
+    local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
 
 
 def pip_set_project_directory(some_env):

@@ -138,13 +138,13 @@ class PipTestCase(FabfileTestCase):
         self.assertEqual(
             first_call,
             "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/pip install \
---upgrade pip"
+--upgrade pip --proxy some_proxy"
         )
         second_call = local.call_args_list[1][0][0]
         self.assertEqual(
             second_call,
             "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/pip install -r \
-requirements.txt"
+requirements.txt --proxy some_proxy"
         )
 
     def test_set_project_directory(self, local):
