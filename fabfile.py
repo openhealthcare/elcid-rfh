@@ -438,10 +438,10 @@ def deploy_test(backup_name):
     new_branch = infer_current_branch()
     _deploy(new_branch, backup_name)
     new_status = run_management_command("status_report", Env(new_branch))
-    print_function("=" * 20)
-    print_function("new environment was")
-    print_function(new_status)
-    print_function("=" * 20)
+    print("=" * 20)
+    print("new environment was")
+    print(new_status)
+    print("=" * 20)
 
 
 def validate_private_settings():
@@ -473,11 +473,11 @@ def deploy_prod(old_branch):
     _deploy(new_env, old_env.backup_name)
     new_status = run_management_command("status_report", new_env)
 
-    print_function("=" * 20)
-    print_function("old environment was")
-    print_function(old_status)
-    print_function("=" * 20)
+    print("=" * 20)
+    print("old environment was")
+    print(old_status)
+    print("=" * 20)
 
-    print_function("new environment was")
-    print_function(new_status)
-    print_function("=" * 20)
+    print("new environment was")
+    print(new_status)
+    print("=" * 20)

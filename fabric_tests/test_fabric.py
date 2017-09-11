@@ -793,7 +793,7 @@ class DeployTestTestCase(FabfileTestCase):
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile._deploy")
     @mock.patch("fabfile.run_management_command")
-    @mock.patch("fabfile.print_function")
+    @mock.patch("fabfile.print", create=True)
     def test_deploy_test(
         self,
         print_function,
@@ -873,7 +873,7 @@ class DeployProdTestCase(FabfileTestCase):
     @mock.patch("fabfile.cron_copy_backup")
     @mock.patch("fabfile.run_management_command")
     @mock.patch("fabfile._deploy")
-    @mock.patch("fabfile.print_function")
+    @mock.patch("fabfile.print", create=True)
     def test_deploy_prod(
         self,
         print_function,
