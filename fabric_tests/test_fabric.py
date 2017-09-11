@@ -289,14 +289,14 @@ class ServicesTestCase(FabfileTestCase):
         first_call = local.call_args_list[0][0][0]
         self.assertEqual(
             first_call,
-            "sudo rm /etc/nginx/sites-enabled/elcidrfh-some_branch"
+            "sudo rm /etc/nginx/sites-enabled/elcid"
         )
 
         second = local.call_args_list[1][0][0]
         self.assertEqual(
             second,
             "sudo ln -s /usr/lib/ohc/elcidrfh-some_branch/etc/nginx.conf \
-/etc/nginx/sites-enabled/elcidrfh-some_branch"
+/etc/nginx/sites-enabled/elcid"
         )
 
     @mock.patch('fabfile.os')

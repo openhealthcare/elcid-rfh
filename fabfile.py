@@ -198,7 +198,7 @@ def services_symlink_nginx(new_env):
             "we expect an nginx conf to exist at {}".format(abs_address)
         )
 
-    symlink_name = '/etc/nginx/sites-enabled/{}'.format(new_env.release_name)
+    symlink_name = '/etc/nginx/sites-enabled/{}'.format(MODULE_NAME)
     if os.path.islink(symlink_name):
         local("sudo rm {}".format(symlink_name))
 
