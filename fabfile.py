@@ -470,7 +470,7 @@ def deploy_prod(old_branch):
     cron_write_backup(new_env)
     cron_copy_backup(new_env)
     old_status = run_management_command("status_report", old_env)
-    _deploy(new_env, old_env.backup_name)
+    _deploy(new_env, old_env.release_backup_name)
     new_status = run_management_command("status_report", new_env)
 
     print("=" * 20)
