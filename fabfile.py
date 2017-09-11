@@ -16,7 +16,7 @@ Make sure you have a deployment env that has fabric available
 e.g.
 workon elcid-deployment or another environment
 fab clone_branch your-branch
-cd /usr/local/ohc/elcidrfh-{your branch name}
+cd /usr/lib/ohc/elcidrfh-{your branch name}
 
 Then 2 choices
 
@@ -31,6 +31,9 @@ the appropriate place with the fields for you to fill in
 
 create_empty_env, takes in an environment name
 creates you an empty database and a virtual env
+
+The code is in
+/usr/lib/ohc/log
 
 The log environment for this project is considered to be
 /usr/lib/ohc/log/
@@ -419,8 +422,20 @@ def _deploy(new_branch, backup_name=None):
     run_management_command("load_lookup_lists", new_env)
 
 
+def infer_current_branch():
+    current_dir = os.path.abspath(os.path.dirname(__file__))
+    project_beginning = Env('').project_directory
+
+    if not current_dir.startswith(project_beginning):
+        er_temp = 'we are in {0} but expect to be in a directory beginning \
+with {1}'
+        raise ValueError(er_temp.format(current_dir, project_beginning))
+    return current_dir.replace(project_beginning, "")
+
+
 @task
-def deploy_test(backup_name, new_branch):
+def deploy_test(backup_name):
+    new_branch = infer_current_branch()
     _deploy(new_branch, backup_name)
     new_status = run_management_command("status_report", Env(new_branch))
     print_function("=" * 20)
@@ -443,7 +458,8 @@ def validate_private_settings():
 
 
 @task
-def deploy_prod(old_branch, new_branch):
+def deploy_prod(old_branch):
+    new_branch = infer_current_branch()
     old_env = Env(old_branch)
     new_env = Env(new_branch)
 

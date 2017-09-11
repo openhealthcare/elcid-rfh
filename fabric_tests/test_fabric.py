@@ -27,7 +27,7 @@ class CloneBranchTestCase(OpalTestCase):
         branch_name = "some-branch"
         expected = "git clone -b some-branch \
 https://github.com/openhealthcare/elcid-rfh \
-/usr/local/ohc/elcidrfh-some-branch"
+/usr/lib/ohc/elcidrfh-some-branch"
         fabfile.clone_branch(branch_name)
         local.assert_called_once_with(expected)
 
@@ -49,7 +49,7 @@ class CreatePrivateSettingsTestCase(OpalTestCase):
                 additional_settings={}
             )
         )
-        m.assert_called_once_with('/usr/local/ohc/private_settings.json', 'w')
+        m.assert_called_once_with('/usr/lib/ohc/private_settings.json', 'w')
 
 
 class FabfileTestCase(OpalTestCase):
@@ -61,7 +61,7 @@ class EnvTestCase(FabfileTestCase):
     def test_project_directory(self):
         self.assertEqual(
             self.env.project_directory,
-            "/usr/local/ohc/elcidrfh-some_branch"
+            "/usr/lib/ohc/elcidrfh-some_branch"
         )
 
     def test_release_name(self):
@@ -89,7 +89,7 @@ class EnvTestCase(FabfileTestCase):
         )
         self.assertEqual(
             self.env.backup_name,
-            "/usr/local/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
+            "/usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
         )
         self.assertTrue(dt.datetime.now.called)
 
@@ -100,10 +100,29 @@ class EnvTestCase(FabfileTestCase):
         )
         self.assertEqual(
             self.env.release_backup_name,
-            "/usr/local/ohc/var/release.07.09.2017.11.\
+            "/usr/lib/ohc/var/release.07.09.2017.11.\
 12.elcidrfh_some_branch.sql"
         )
         self.assertTrue(dt.datetime.now.called)
+
+
+@mock.patch('fabfile.os')
+class InferCurrentBranchTestCase(FabfileTestCase):
+    def test_infer_current_branch_success(self, os):
+        os.path.abspath.return_value = "/usr/lib/ohc/elcidrfh-something"
+        self.assertEqual(
+            fabfile.infer_current_branch(),
+            "something"
+        )
+
+    def test_infer_current_branch_error(self, os):
+        os.path.abspath.return_value = "/usr/lib/ohc/blah"
+        with self.assertRaises(ValueError) as er:
+            fabfile.infer_current_branch(),
+
+        expected = "we are in /usr/lib/ohc/blah but expect to be in a \
+directory beginning with /usr/lib/ohc/elcidrfh-"
+        self.assertEqual(str(er.exception), expected)
 
 
 @mock.patch("fabfile.local")
@@ -114,7 +133,7 @@ class RunManagementCommandTestCase(FabfileTestCase):
         result = fabfile.run_management_command("some_command", self.env)
         local.called_once_with("as")
         self.assertEqual(result, "something")
-        lcd.assert_called_once_with("/usr/local/ohc/elcidrfh-some_branch")
+        lcd.assert_called_once_with("/usr/lib/ohc/elcidrfh-some_branch")
 
 
 @mock.patch("fabfile.local")
@@ -150,7 +169,7 @@ requirements.txt --proxy some_proxy"
     def test_set_project_directory(self, local):
         fabfile.pip_set_project_directory(self.env)
         local.assert_called_once_with(
-            "echo '/usr/local/ohc/elcidrfh-some_branch' > \
+            "echo '/usr/lib/ohc/elcidrfh-some_branch' > \
 /home/ohc/.virtualenvs/elcidrfh-some_branch/.project"
         )
 
@@ -251,11 +270,11 @@ class ServicesTestCase(FabfileTestCase):
         self.assertEqual(
             str(er.exception),
             "we expect an nginx conf to exist at \
-/usr/local/ohc/elcidrfh-some_branch/etc/nginx.conf"
+/usr/lib/ohc/elcidrfh-some_branch/etc/nginx.conf"
         )
 
         os.path.isfile.assert_called_once_with(
-            "/usr/local/ohc/elcidrfh-some_branch/etc/nginx.conf"
+            "/usr/lib/ohc/elcidrfh-some_branch/etc/nginx.conf"
         )
 
     @mock.patch('fabfile.local')
@@ -265,7 +284,7 @@ class ServicesTestCase(FabfileTestCase):
         fabfile.services_symlink_nginx(self.env)
 
         os.path.isfile.assert_called_once_with(
-            "/usr/local/ohc/elcidrfh-some_branch/etc/nginx.conf"
+            "/usr/lib/ohc/elcidrfh-some_branch/etc/nginx.conf"
         )
         first_call = local.call_args_list[0][0][0]
         self.assertEqual(
@@ -276,7 +295,7 @@ class ServicesTestCase(FabfileTestCase):
         second = local.call_args_list[1][0][0]
         self.assertEqual(
             second,
-            "sudo ln -s /usr/local/ohc/elcidrfh-some_branch/etc/nginx.conf \
+            "sudo ln -s /usr/lib/ohc/elcidrfh-some_branch/etc/nginx.conf \
 /etc/nginx/sites-enabled/elcidrfh-some_branch"
         )
 
@@ -289,11 +308,11 @@ class ServicesTestCase(FabfileTestCase):
         self.assertEqual(
             str(er.exception),
             "we expect an upstart conf to exist \
-/usr/local/ohc/elcidrfh-some_branch/etc/upstart.conf"
+/usr/lib/ohc/elcidrfh-some_branch/etc/upstart.conf"
         )
 
         os.path.isfile.assert_called_once_with(
-            "/usr/local/ohc/elcidrfh-some_branch/etc/upstart.conf"
+            "/usr/lib/ohc/elcidrfh-some_branch/etc/upstart.conf"
         )
 
     @mock.patch('fabfile.local')
@@ -303,7 +322,7 @@ class ServicesTestCase(FabfileTestCase):
         fabfile.services_symlink_upstart(self.env)
 
         os.path.isfile.assert_called_once_with(
-            "/usr/local/ohc/elcidrfh-some_branch/etc/upstart.conf"
+            "/usr/lib/ohc/elcidrfh-some_branch/etc/upstart.conf"
         )
         first_call = local.call_args_list[0][0][0]
         self.assertEqual(
@@ -314,7 +333,7 @@ class ServicesTestCase(FabfileTestCase):
         second = local.call_args_list[1][0][0]
         self.assertEqual(
             second,
-            "sudo ln -s /usr/local/ohc/elcidrfh-some_branch/etc/upstart.conf \
+            "sudo ln -s /usr/lib/ohc/elcidrfh-some_branch/etc/upstart.conf \
 /etc/init/elcid.conf"
         )
 
@@ -387,7 +406,7 @@ class CronTestCase(FabfileTestCase):
     def test_cron_write_backup(self, local):
         fabfile.cron_write_backup(self.env)
         local.assert_called_once_with('echo \'0 2 * * * postgres pg_dump elcidrfh_some_branch \
-> /usr/local/ohc/var/back.$(date +"%d.%m.%Y").elcidrfh_some_branch.sql\' | \
+> /usr/lib/ohc/var/back.$(date +"%d.%m.%Y").elcidrfh_some_branch.sql\' | \
 sudo tee /etc/cron.d/elcid_backup')
 
     @mock.patch("fabfile.os")
@@ -420,7 +439,7 @@ class CopyBackupTestCase(FabfileTestCase):
         )
         os.path.isfile.return_value = True
         fabfile.copy_backup(self.env.branch)
-        p = "/usr/local/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
+        p = "/usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
         put.assert_called_once_with(
             local_path=p,
             remote_path=p
@@ -478,7 +497,7 @@ class GetPrivateSettingsTestCase(OpalTestCase):
         self.assertEqual(
             str(e.exception),
             "unable to find additional settings at \
-/usr/local/ohc/private_settings.json"
+/usr/lib/ohc/private_settings.json"
         )
 
     def test_db_password_not_present(self, os, json):
@@ -770,16 +789,23 @@ class DeployTestCase(FabfileTestCase):
 
 
 class DeployTestTestCase(FabfileTestCase):
+    @mock.patch("fabfile.infer_current_branch")
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile._deploy")
     @mock.patch("fabfile.run_management_command")
     @mock.patch("fabfile.print_function")
     def test_deploy_test(
-        self, print_function, run_management_command, deploy, env_constructor
+        self,
+        print_function,
+        run_management_command,
+        deploy,
+        env_constructor,
+        infer_current_branch
     ):
+        infer_current_branch.return_value = "new_branch"
         env_constructor.return_value = self.env
         run_management_command.return_value = "some status"
-        fabfile.deploy_test("some_backup", "new_branch")
+        fabfile.deploy_test("some_backup")
         deploy.assert_called_once_with("new_branch", "some_backup")
         env_constructor.assert_called_once_with("new_branch")
 
@@ -838,6 +864,7 @@ to a backup server'
 
 
 class DeployProdTestCase(FabfileTestCase):
+    @mock.patch("fabfile.infer_current_branch")
     @mock.patch("fabfile.datetime")
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile.validate_private_settings")
@@ -857,8 +884,10 @@ class DeployProdTestCase(FabfileTestCase):
         local,
         validate_private_settings,
         env_constructor,
-        dt
+        dt,
+        infer_current_branch
     ):
+        infer_current_branch.return_value = "new_branch"
         dt.datetime.now.return_value = datetime.datetime(
             2017, 9, 8, 10, 47
         )
@@ -868,11 +897,11 @@ class DeployProdTestCase(FabfileTestCase):
         run_management_command.side_effect = [
             "old_status", "new_status"
         ]
-        fabfile.deploy_prod("old_branch", "new_branch")
+        fabfile.deploy_prod("new_branch")
         validate_private_settings.assert_called_once_with()
         local.assert_called_once_with(
             "sudo -u postgres pg_dump elcidrfh_old_env -U postgres > \
-/usr/local/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql"
+/usr/lib/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql"
         )
         cron_write_backup.assert_called_once_with(new_env)
         cron_copy_backup.assert_called_once_with(new_env)
