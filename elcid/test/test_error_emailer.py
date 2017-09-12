@@ -11,3 +11,9 @@ class ErrorEmailerTestCase(OpalTestCase):
         command.handle("Some error")
         logging.getLogger.assert_called_once_with("error_emailer")
         logging.getLogger().error.assert_called_once_with("Some error")
+
+    def test_add_arguments(self):
+        command = error_emailer.Command()
+        parser = mock.MagicMock()
+        command.add_arguments(parser)
+        parser.add_argument.assert_called_once_with("error", type=str)

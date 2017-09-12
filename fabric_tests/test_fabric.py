@@ -906,7 +906,8 @@ class DeployProdTestCase(FabfileTestCase):
         cron_write_backup.assert_called_once_with(new_env)
         cron_copy_backup.assert_called_once_with(new_env)
         _deploy.assert_called_once_with(
-            new_env, old_env.backup_name
+            "new_branch",
+            '/usr/lib/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql'
         )
 
         self.assertEqual(
