@@ -286,7 +286,7 @@ def cron_copy_backup(new_env):
     output = template.render(
         fabric_file=fabfile,
         virtualenv=new_env.virtual_env_path,
-        database_name=new_env.database_name,
+        branch=new_env.branch,
         unix_user=UNIX_USER
     )
     cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
@@ -295,6 +295,7 @@ def cron_copy_backup(new_env):
     ))
 
 
+@task
 def copy_backup(branch_name):
     current_env = Env(branch_name)
     private_settings = get_private_settings()
