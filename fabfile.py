@@ -61,6 +61,7 @@ RELEASE_NAME = "elcidrfh-{branch}"
 VIRTUAL_ENV_PATH = "/home/{usr}/.virtualenvs/{release_name}"
 PROJECT_ROOT = "/usr/lib/{unix_user}".format(unix_user=UNIX_USER)
 PROJECT_DIRECTORY = "{project_root}/{release_name}"
+MODULE_DIRECTORY = "{project_root}/{release_name}/{module_name}"
 BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
 GIT_URL = "https://github.com/openhealthcare/elcid-rfh"
 
@@ -89,7 +90,15 @@ class Env(object):
     def project_directory(self):
         return PROJECT_DIRECTORY.format(
             project_root=PROJECT_ROOT,
-            release_name=self.release_name
+            release_name=self.release_name,
+        )
+
+    @property
+    def module_directory(self):
+        return MODULE_DIRECTORY.format(
+            project_root=PROJECT_ROOT,
+            release_name=self.release_name,
+            module_name=MODULE_NAME
         )
 
     @property
@@ -126,7 +135,7 @@ class Env(object):
 
 
 def run_management_command(some_command, env):
-    with lcd(env.project_directory):
+    with lcd(env.module_directory):
         cmd = "{0}/bin/python manage.py {1}".format(
             env.virtual_env_path, some_command
         )
