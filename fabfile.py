@@ -305,6 +305,16 @@ def cron_copy_backup(new_env):
 
 
 @task
+def send_error_email(error, current_env):
+    run_management_command(
+        "error_emailer '{}''".format(
+            error
+        ),
+        current_env
+    )
+
+
+@task
 def copy_backup(branch_name):
     current_env = Env(branch_name)
     private_settings = get_private_settings()
@@ -312,8 +322,8 @@ def copy_backup(branch_name):
     env.password = private_settings["password"]
 
     if not os.path.isfile(current_env.backup_name):
-        run_management_command(
-            "send error 'unable to find backup {}'".format(
+        send_error_email(
+            "unable to find backup {}".format(
                 current_env.backup_name
             ),
             current_env
@@ -325,8 +335,8 @@ def copy_backup(branch_name):
                 remote_path=current_env.backup_name
             )
         except Exception as e:
-            run_management_command(
-                "send error 'unable to copy backup {}' with '{}'".format(
+            send_error_email(
+                "unable to copy backup {} with {}".format(
                     current_env.backup_name, str(e)
                 ),
                 current_env
