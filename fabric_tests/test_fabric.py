@@ -406,7 +406,7 @@ class CronTestCase(FabfileTestCase):
     def test_cron_write_backup(self, local):
         fabfile.cron_write_backup(self.env)
         local.assert_called_once_with('echo \'0 2 * * * postgres pg_dump elcidrfh_some_branch \
-> /usr/lib/ohc/var/back.$(date +"%d.%m.%Y").elcidrfh_some_branch.sql\' | \
+> /usr/lib/ohc/var/back.$(date +"\%d.\%m.\%Y").elcidrfh_some_branch.sql\' | \
 sudo tee /etc/cron.d/elcid_backup')
 
     @mock.patch("fabfile.os")
@@ -416,7 +416,7 @@ sudo tee /etc/cron.d/elcid_backup')
         local.assert_called_once_with("echo '0 2 * * * ohc \
 /home/ohc/.virtualenvs/elcidrfh-some_branch/bin/fab -f \
 /somthing/somewhere/fabfile.py \
-copy_backup:elcidrfh_some_branch' | sudo tee /etc/cron.d/elcid_copy")
+copy_backup:some_branch' | sudo tee /etc/cron.d/elcid_copy")
         self.assertTrue(os.path.abspath)
 
 
@@ -462,7 +462,7 @@ class CopyBackupTestCase(FabfileTestCase):
 
         self.assertEqual(
             run_management_command.call_args[0][0],
-            "send error 'unable to find backup some_backup'"
+            "error_emailer 'unable to find backup some_backup'"
         )
 
     def test_put_raises_exception(
@@ -481,7 +481,21 @@ class CopyBackupTestCase(FabfileTestCase):
 
         self.assertEqual(
             run_management_command.call_args[0][0],
-            "send error 'unable to copy backup some_backup' with 'failed'"
+            "error_emailer 'unable to copy backup some_backup with failed'"
+        )
+
+
+class SendErrorEmailTestCase(OpalTestCase):
+    @mock.patch("fabfile.run_management_command")
+    def test_send_error_email(self, run_management_command):
+        fabfile.send_error_email("testing", 'some_branch')
+        self.assertEqual(
+            run_management_command.call_args[0][0],
+            "error_emailer 'testing'"
+        )
+        self.assertEqual(
+            run_management_command.call_args[0][1].branch,
+            "some_branch"
         )
 
 
