@@ -270,7 +270,9 @@ def services_create_upstart_conf(new_env):
 
 
 def restart_supervisord(new_env):
-    local("pkill super; pkill gunic")
+    # warn only in case nothing is running
+    with settings(warn_only=True):
+        local("pkill super; pkill gunic")
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
     local("{0}/bin/supervisord -c {1}/etc/supervisord.conf".format(
