@@ -272,10 +272,10 @@ def services_create_upstart_conf(new_env):
 def restart_supervisord(new_env):
     # warn only in case nothing is running
     with settings(warn_only=True):
-        local("pkill super; pkill gunic")
+        local("pkill super; pkill gunic; pkill gloss_flask")
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
-    local("{0}/bin/supervisord -c {1}/etc/supervisord.conf".format(
+    local("{0}/bin/supervisord -c {1}/etc/production.conf".format(
         new_env.virtual_env_path, new_env.project_directory
     ))
 

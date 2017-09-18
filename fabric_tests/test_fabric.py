@@ -416,10 +416,12 @@ class RestartTestCase(FabfileTestCase):
     def test_restart_supervisord(self, local):
         fabfile.restart_supervisord(self.env)
         first_call = local.call_args_list[0][0][0]
-        self.assertEqual(first_call, 'pkill super; pkill gunic')
+        self.assertEqual(
+            first_call, 'pkill super; pkill gunic; pkill gloss_flask'
+        )
         second_call = local.call_args_list[1][0][0]
         expected_second_call = "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin\
-/supervisord -c /usr/lib/ohc/elcidrfh-some_branch/etc/supervisord.conf"
+/supervisord -c /usr/lib/ohc/elcidrfh-some_branch/etc/production.conf"
         self.assertEqual(second_call, expected_second_call)
 
     def test_restart_nginx(self, local):
