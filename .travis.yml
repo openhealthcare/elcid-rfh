@@ -6,7 +6,7 @@ install:
   - pip install -r requirements.txt
   - pip install coveralls
   - gem install coveralls-lcov
-  - npm install jasmine-core@2.3.4 karma@1.1.2 karma-coverage@1.1.1 karma-jasmine@0.3.8 karma-firefox-launcher@1.0.0 karma-coveralls@1.1.2
+  - npm install jasmine-core@2.3.4 karma@1.1.2 karma-coverage@1.1.1 karma-jasmine@0.3.8 karma-firefox-launcher@1.0.1 karma-coveralls@1.1.2
 
 before_script:
   - export DISPLAY=:99.0
