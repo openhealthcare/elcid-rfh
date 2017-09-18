@@ -710,7 +710,7 @@ class DeployTestCase(FabfileTestCase):
             third_call[1], self.env
         )
         restart_supervisord.assert_called_once_with(self.env)
-        restart_nginx.assert_called_once_with(self.env)
+        restart_nginx.assert_called_once_with()
 
 
     @mock.patch("fabfile.os")
@@ -807,7 +807,7 @@ class DeployTestCase(FabfileTestCase):
         )
 
         restart_supervisord.assert_called_once_with(self.env)
-        restart_nginx.assert_called_once_with(self.env)
+        restart_nginx.assert_called_once_with()
 
     @mock.patch("fabfile.os")
     @mock.patch("fabfile.Env")
