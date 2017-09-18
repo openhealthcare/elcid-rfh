@@ -419,8 +419,7 @@ class RestartTestCase(FabfileTestCase):
         self.assertEqual(first_call, 'pkill super; pkill gunic')
         second_call = local.call_args_list[1][0][0]
         expected_second_call = "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin\
-/supervisord -c /usr/lib/ohc/elcidrfh-some_branch/etc/supervisord.conf restart\
- all"
+/supervisord -c /usr/lib/ohc/elcidrfh-some_branch/etc/supervisord.conf"
         self.assertEqual(second_call, expected_second_call)
 
     def test_restart_nginx(self, local):

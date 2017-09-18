@@ -273,7 +273,7 @@ def restart_supervisord(new_env):
     local("pkill super; pkill gunic")
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
-    local("{0}/bin/supervisord -c {1}/etc/supervisord.conf restart all".format(
+    local("{0}/bin/supervisord -c {1}/etc/supervisord.conf".format(
         new_env.virtual_env_path, new_env.project_directory
     ))
 
