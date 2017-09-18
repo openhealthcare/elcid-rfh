@@ -636,8 +636,12 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
+    @mock.patch("fabfile.restart_supervisord")
+    @mock.patch("fabfile.restart_nginx")
     def test_deploy_no_backup(
         self,
+        restart_nginx,
+        restart_supervisord,
         run_management_command,
         services_create_gunicorn_conf,
         services_create_upstart_conf,
@@ -706,6 +710,9 @@ class DeployTestCase(FabfileTestCase):
         self.assertEqual(
             third_call[1], self.env
         )
+        restart_supervisord.assert_called_once_with(self.env)
+        restart_nginx.assert_called_once_with(self.env)
+
 
     @mock.patch("fabfile.os")
     @mock.patch("fabfile.Env")
@@ -721,8 +728,12 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
+    @mock.patch("fabfile.restart_supervisord")
+    @mock.patch("fabfile.restart_nginx")
     def test_deploy_backup(
         self,
+        restart_nginx,
+        restart_supervisord,
         run_management_command,
         services_create_gunicorn_conf,
         services_create_upstart_conf,
@@ -796,6 +807,9 @@ class DeployTestCase(FabfileTestCase):
             third_call[1], self.env
         )
 
+        restart_supervisord.assert_called_once_with(self.env)
+        restart_nginx.assert_called_once_with(self.env)
+
     @mock.patch("fabfile.os")
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile.get_private_settings")
@@ -809,8 +823,12 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
+    @mock.patch("fabfile.restart_supervisord")
+    @mock.patch("fabfile.restart_nginx")
     def test_deploy_backup_raises(
         self,
+        restart_nginx,
+        restart_supervisord,
         run_management_command,
         services_create_gunicorn_conf,
         services_create_local_settings,
