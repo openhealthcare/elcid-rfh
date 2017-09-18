@@ -465,14 +465,16 @@ class CopyBackupTestCase(FabfileTestCase):
             "error_emailer 'unable to find backup some_backup'"
         )
 
-    def test_put_raises_exception(
+    def test_put_sends_email(
         self, dt, os, env, put, run_management_command, get_private_settings
     ):
         get_private_settings.return_value(dict(
             host_string="121.1.1.1",
             password="some_password"
         ))
-        put.side_effect = ValueError("failed")
+        put_result = mock.MagicMock()
+        put_result.failed = True
+        put.return_value = put_result
         with mock.patch(
             "fabfile.Env.backup_name", new_callable=mock.PropertyMock
         ) as prop:
@@ -481,21 +483,21 @@ class CopyBackupTestCase(FabfileTestCase):
 
         self.assertEqual(
             run_management_command.call_args[0][0],
-            "error_emailer 'unable to copy backup some_backup with failed'"
+            "error_emailer 'unable to copy backup some_backup'"
         )
 
 
-class SendErrorEmailTestCase(OpalTestCase):
+class SendErrorEmailTestCase(FabfileTestCase):
     @mock.patch("fabfile.run_management_command")
     def test_send_error_email(self, run_management_command):
-        fabfile.send_error_email("testing", 'some_branch')
+        fabfile.send_error_email("testing", self.env)
         self.assertEqual(
             run_management_command.call_args[0][0],
             "error_emailer 'testing'"
         )
         self.assertEqual(
-            run_management_command.call_args[0][1].branch,
-            "some_branch"
+            run_management_command.call_args[0][1],
+            self.env
         )
 
 

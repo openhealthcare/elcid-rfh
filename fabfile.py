@@ -49,7 +49,7 @@ import copy
 from jinja2 import Environment, FileSystemLoader
 from fabric.api import local, env
 from fabric.operations import put
-from fabric.context_managers import lcd
+from fabric.context_managers import lcd, settings
 from fabric.decorators import task
 import os.path
 
@@ -295,13 +295,12 @@ def cron_copy_backup(new_env):
     ))
 
 
-@task
-def send_error_email(error, our_branch):
+def send_error_email(error, some_env):
     run_management_command(
         "error_emailer '{}'".format(
             error
         ),
-        Env(our_branch)
+        some_env
     )
 
 
@@ -320,15 +319,16 @@ def copy_backup(branch_name):
             current_env
         )
     else:
-        try:
-            put(
+        with settings(warn_only=True):
+            failed = put(
                 local_path=current_env.backup_name,
                 remote_path=current_env.backup_name
-            )
-        except Exception as e:
+            ).failed
+
+        if failed:
             send_error_email(
-                "unable to copy backup {} with {}".format(
-                    current_env.backup_name, str(e)
+                "unable to copy backup {}".format(
+                    current_env.backup_name
                 ),
                 current_env
             )
