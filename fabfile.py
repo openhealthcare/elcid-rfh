@@ -435,17 +435,17 @@ def _deploy(new_branch, backup_name=None):
     if backup_name:
         postgres_load_database(backup_name, new_env)
 
-    # symlink the nginx conf
-    services_symlink_nginx(new_env)
-
-    # symlink the upstart conf
-    services_symlink_upstart(new_env)
-
     # create the local settings used by the django app
     services_create_local_settings(new_env, private_settings)
 
     services_create_gunicorn_conf(new_env)
     services_create_upstart_conf(new_env)
+
+    # symlink the nginx conf
+    services_symlink_nginx(new_env)
+
+    # symlink the upstart conf
+    services_symlink_upstart(new_env)
 
     # django setup
     run_management_command("collectstatic --noinput", new_env)
