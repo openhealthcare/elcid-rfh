@@ -238,7 +238,7 @@ def services_create_local_settings(new_env, additional_settings):
         f.write(output)
 
 
-def services_create_gunicorn_settings(new_env):
+def services_create_gunicorn_conf(new_env):
     template = jinja_env.get_template('conf_templates/gunicorn.conf.jinja2')
     output = template.render(
         env_name=new_env.virtual_env_path
@@ -253,9 +253,28 @@ def services_create_gunicorn_settings(new_env):
         f.write(output)
 
 
+def services_create_upstart_conf(new_env):
+    template = jinja_env.get_template('conf_templates/upstart.conf.jinja2')
+    output = template.render(
+        env_name=new_env.virtual_env_path,
+        project_directory=new_env.project_directory
+    )
+    upstart_conf = '{0}/etc/upstart.conf'.format(
+        new_env.project_directory
+    )
+
+    local("rm -f {}".format(upstart_conf))
+
+    with open(upstart_conf, 'w') as f:
+        f.write(output)
+
+
 def restart_supervisord(new_env):
-    local("{0}/bin/supervisorctl -c etc/supervisord.conf restart all".format(
-        new_env.virtual_env_path
+    local("pkill super; pkill gunic")
+    # don't restart supervisorctl as we need to be running the correct
+    # supervisord
+    local("{0}/bin/supervisord -c {1}/etc/supervisord.conf restart all".format(
+        new_env.virtual_env_path, new_env.project_directory
     ))
 
 
@@ -425,7 +444,8 @@ def _deploy(new_branch, backup_name=None):
     # create the local settings used by the django app
     services_create_local_settings(new_env, private_settings)
 
-    services_create_gunicorn_settings(new_env)
+    services_create_gunicorn_conf(new_env)
+    services_create_upstart_conf(new_env)
 
     # django setup
     run_management_command("collectstatic --noinput", new_env)

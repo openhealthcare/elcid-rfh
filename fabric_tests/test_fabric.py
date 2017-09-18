@@ -365,7 +365,7 @@ class ServicesTestCase(FabfileTestCase):
         )
 
     @mock.patch('fabfile.local')
-    def test_services_create_gunicorn_settings(self, local):
+    def test_services_create_gunicorn_conf(self, local):
         some_dir = tempfile.mkdtemp()
         project_dir = "{}/etc".format(some_dir)
         os.mkdir(project_dir)
@@ -373,7 +373,7 @@ class ServicesTestCase(FabfileTestCase):
             "fabfile.Env.project_directory", new_callable=mock.PropertyMock
         ) as prop:
             prop.return_value = some_dir
-            fabfile.services_create_gunicorn_settings(
+            fabfile.services_create_gunicorn_conf(
                 self.env
             )
 
@@ -387,14 +387,41 @@ class ServicesTestCase(FabfileTestCase):
             "rm -f {}".format(gunicorn_conf_file)
         )
 
+    @mock.patch('fabfile.local')
+    def test_services_create_upstart_conf(self, local):
+        some_dir = tempfile.mkdtemp()
+        project_dir = "{}/etc".format(some_dir)
+        os.mkdir(project_dir)
+        with mock.patch(
+            "fabfile.Env.project_directory", new_callable=mock.PropertyMock
+        ) as prop:
+            prop.return_value = some_dir
+            fabfile.services_create_upstart_conf(
+                self.env
+            )
+
+        upstart_conf_file = "{}/upstart.conf".format(project_dir)
+        with open(upstart_conf_file) as l:
+            output_file = l.read()
+
+        # make sure we're executing gunicorn with our project directory
+        self.assertIn("elcidrfh-some_branch/bin/activate;", output_file)
+        local.assert_called_once_with(
+            "rm -f {}".format(upstart_conf_file)
+        )
+
 
 @mock.patch('fabfile.local')
 class RestartTestCase(FabfileTestCase):
     def test_restart_supervisord(self, local):
         fabfile.restart_supervisord(self.env)
-        local.assert_called_once_with(
-            "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/supervisorctl \
--c etc/supervisord.conf restart all")
+        first_call = local.call_args_list[0][0][0]
+        self.assertEqual(first_call, 'pkill super; pkill gunic')
+        second_call = local.call_args_list[1][0][0]
+        expected_second_call = "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin\
+/supervisord -c /usr/lib/ohc/elcidrfh-some_branch/etc/supervisord.conf restart\
+ all"
+        self.assertEqual(second_call, expected_second_call)
 
     def test_restart_nginx(self, local):
         fabfile.restart_nginx()
@@ -606,12 +633,14 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_local_settings")
-    @mock.patch("fabfile.services_create_gunicorn_settings")
+    @mock.patch("fabfile.services_create_upstart_conf")
+    @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
     def test_deploy_no_backup(
         self,
         run_management_command,
-        services_create_gunicorn_settings,
+        services_create_gunicorn_conf,
+        services_create_upstart_conf,
         services_create_local_settings,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -646,7 +675,8 @@ class DeployTestCase(FabfileTestCase):
         services_symlink_nginx.assert_called_once_with(self.env)
         services_symlink_upstart.assert_called_once_with(self.env)
         services_create_local_settings.assert_called_once_with(self.env, pv)
-        services_create_gunicorn_settings.assert_called_once_with(self.env)
+        services_create_gunicorn_conf.assert_called_once_with(self.env)
+        services_create_upstart_conf.assert_called_once_with(self.env)
         self.assertEqual(
             run_management_command.call_count, 3
         )
@@ -688,12 +718,14 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_local_settings")
-    @mock.patch("fabfile.services_create_gunicorn_settings")
+    @mock.patch("fabfile.services_create_upstart_conf")
+    @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
     def test_deploy_backup(
         self,
         run_management_command,
-        services_create_gunicorn_settings,
+        services_create_gunicorn_conf,
+        services_create_upstart_conf,
         services_create_local_settings,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -732,7 +764,8 @@ class DeployTestCase(FabfileTestCase):
         services_symlink_nginx.assert_called_once_with(self.env)
         services_symlink_upstart.assert_called_once_with(self.env)
         services_create_local_settings.assert_called_once_with(self.env, pv)
-        services_create_gunicorn_settings.assert_called_once_with(self.env)
+        services_create_gunicorn_conf.assert_called_once_with(self.env)
+        services_create_upstart_conf.assert_called_once_with(self.env)
         self.assertEqual(
             run_management_command.call_count, 3
         )
@@ -774,12 +807,12 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_local_settings")
-    @mock.patch("fabfile.services_create_gunicorn_settings")
+    @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
     def test_deploy_backup_raises(
         self,
         run_management_command,
-        services_create_gunicorn_settings,
+        services_create_gunicorn_conf,
         services_create_local_settings,
         services_symlink_upstart,
         services_symlink_nginx,
