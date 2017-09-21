@@ -488,8 +488,36 @@ def validate_private_settings():
 
     if "password" not in private_settings:
         raise ValueError(
-            'we need the password of the backup server inorder to scp data to a backup server'
+            'we need the password of the backup server inorder to scp data to \
+a backup server'
         )
+
+
+def _roll_back(branch_name):
+    roll_to_env = Env(branch_name)
+    # symlink the nginx conf
+    services_symlink_nginx(roll_to_env)
+
+    # symlink the upstart conf
+    services_symlink_upstart(roll_to_env)
+
+    restart_supervisord(roll_to_env)
+    restart_nginx()
+
+
+@task
+def roll_back_test(branch_name):
+    _roll_back(branch_name)
+
+
+@task
+def roll_back_prod(branch_name):
+    validate_private_settings()
+
+    roll_to_env = Env(branch_name)
+    _roll_back(branch_name)
+    cron_write_backup(roll_to_env)
+    cron_copy_backup(roll_to_env)
 
 
 @task
