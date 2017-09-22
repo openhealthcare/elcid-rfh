@@ -469,21 +469,33 @@ def diff_status(old_status_json, new_status_json):
     new_status = json.loads(new_status_json)
 
     for time_period in ["all_time", "last_week"]:
-        missing = list(set(new_status.keys() - old_status.keys()))
+        flawed = False
+        print("looking at {}".format(time_period))
+        new_time_period = new_status[time_period]
+        old_time_period = old_status[time_period]
+        missing = list(
+            set(new_time_period.keys()) - set(old_time_period.keys())
+        )
 
         for m in missing:
+            flawed = True
             print("missing {} from old".format(m))
 
-        for k, v in old_status[time_period].items():
-            if k not in new_status[time_period]:
+        for k, v in old_time_period.items():
+            if k not in new_time_period:
+                flawed = True
                 print("missing {} from new".format(k))
-            new_result = new_status[time_period][k]
-            if not v == new_result:
-                print(
-                    "for {} we used to have {} but now have {}".format(
-                        k, v, new_result
+            else:
+                new_result = new_time_period[k]
+                if not v == new_result:
+                    flawed = True
+                    print(
+                        "for {} we used to have {} but now have {}".format(
+                            k, v, new_result
+                        )
                     )
-                )
+        if not flawed:
+            print("no difference")
 
 
 @task
@@ -628,11 +640,4 @@ def deploy_prod(old_branch):
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
     new_status = run_management_command("status_report", new_env)
 
-    print("=" * 20)
-    print("old environment was")
-    print(old_status)
-    print("=" * 20)
-
-    print("new environment was")
-    print(new_status)
-    print("=" * 20)
+    diff_status(new_status, old_status)

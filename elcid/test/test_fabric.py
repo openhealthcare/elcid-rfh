@@ -8,7 +8,7 @@
 
     Obviously its not as good as running it for realsies
 """
-
+import json
 import tempfile
 import os
 import sys
@@ -1116,7 +1116,135 @@ to a backup server'
         )
 
 
+@mock.patch('fabfile.print', create=True)
+class DiffStatusTestCase(FabfileTestCase):
+    def get_status(self, **kwargs):
+        return dict(
+            all_time=dict(
+                demographics=1
+            ),
+            last_week=dict(
+                demographics=1
+            )
+        )
+
+    def test_same(self, print_function):
+        fabfile.diff_status(
+            json.dumps(self.get_status()),
+            json.dumps(self.get_status())
+        )
+        self.assertEqual(print_function.call_count, 4)
+        all_calls = print_function.call_args_list
+        self.assertEqual(
+            all_calls[0][0][0],
+            'looking at all_time'
+        )
+
+        self.assertEqual(
+            all_calls[1][0][0],
+            'no difference'
+        )
+
+        self.assertEqual(
+            all_calls[2][0][0],
+            'looking at last_week'
+        )
+
+        self.assertEqual(
+            all_calls[3][0][0],
+            'no difference'
+        )
+
+    def test_new_status_new_subrecord(self, print_function):
+        new_status = self.get_status()
+        new_status["all_time"]["diagnoses"] = 2
+        fabfile.diff_status(
+            json.dumps(self.get_status()),
+            json.dumps(new_status)
+        )
+        self.assertEqual(print_function.call_count, 4)
+        all_calls = print_function.call_args_list
+        self.assertEqual(
+            all_calls[0][0][0],
+            'looking at all_time'
+        )
+
+        self.assertEqual(
+            all_calls[1][0][0],
+            'missing diagnoses from old'
+        )
+
+        self.assertEqual(
+            all_calls[2][0][0],
+            'looking at last_week'
+        )
+
+        self.assertEqual(
+            all_calls[3][0][0],
+            'no difference'
+        )
+
+    def test_old_status_new_subrecord(self, print_function):
+        old_status = self.get_status()
+        old_status["last_week"]["diagnoses"] = 2
+        fabfile.diff_status(
+            json.dumps(old_status),
+            json.dumps(self.get_status())
+        )
+        self.assertEqual(print_function.call_count, 4)
+        all_calls = print_function.call_args_list
+        self.assertEqual(
+            all_calls[0][0][0],
+            'looking at all_time'
+        )
+
+        self.assertEqual(
+            all_calls[1][0][0],
+            'no difference'
+        )
+
+        self.assertEqual(
+            all_calls[2][0][0],
+            'looking at last_week'
+        )
+
+        self.assertEqual(
+            all_calls[3][0][0],
+            'missing diagnoses from new'
+        )
+
+    def test_different_amount(self, print_function):
+        old_status = self.get_status()
+        old_status["all_time"]["demographics"] = 2
+        fabfile.diff_status(
+            json.dumps(old_status),
+            json.dumps(self.get_status())
+        )
+        self.assertEqual(print_function.call_count, 4)
+        all_calls = print_function.call_args_list
+        self.assertEqual(
+            all_calls[0][0][0],
+            'looking at all_time'
+        )
+
+        self.assertEqual(
+            all_calls[1][0][0],
+            'for demographics we used to have 2 but now have 1'
+        )
+
+        self.assertEqual(
+            all_calls[2][0][0],
+            'looking at last_week'
+        )
+
+        self.assertEqual(
+            all_calls[3][0][0],
+            'no difference'
+        )
+
+
 class DeployProdTestCase(FabfileTestCase):
+    @mock.patch("fabfile.diff_status")
     @mock.patch("fabfile.infer_current_branch")
     @mock.patch("fabfile.datetime")
     @mock.patch("fabfile.Env")
@@ -1138,7 +1266,8 @@ class DeployProdTestCase(FabfileTestCase):
         validate_private_settings,
         env_constructor,
         dt,
-        infer_current_branch
+        infer_current_branch,
+        diff_status
     ):
         infer_current_branch.return_value = "new_branch"
         dt.datetime.now.return_value = datetime.datetime(
@@ -1178,40 +1307,7 @@ class DeployProdTestCase(FabfileTestCase):
         )
 
         self.assertEqual(
-            print_function.call_count, 7
+            print_function.call_count, 0
         )
 
-        self.assertEqual(
-            print_function.call_args_list[0][0][0],
-            "=" * 20
-        )
-
-        self.assertEqual(
-            print_function.call_args_list[1][0][0],
-            "old environment was"
-        )
-
-        self.assertEqual(
-            print_function.call_args_list[2][0][0],
-            "old_status"
-        )
-
-        self.assertEqual(
-            print_function.call_args_list[3][0][0],
-            "=" * 20
-        )
-
-        self.assertEqual(
-            print_function.call_args_list[4][0][0],
-            "new environment was"
-        )
-
-        self.assertEqual(
-            print_function.call_args_list[5][0][0],
-            "new_status"
-        )
-
-        self.assertEqual(
-            print_function.call_args_list[6][0][0],
-            "=" * 20
-        )
+        diff_status.assert_called_once_with("new_status", "old_status")
