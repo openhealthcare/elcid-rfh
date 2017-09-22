@@ -188,7 +188,9 @@ def postgres_create_database(some_env):
     print("Creating the database")
 
     select_result = local(
-        "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='elcid065'\"",
+        "sudo -u postgres psql -tAc \"SELECT 1 FROM pg_database \
+WHERE datname='{}'\"".format(some_env.database_name),
+        capture=True
     )
     database_exists = "1" in select_result.stdout
     print(select_result.stderr)
@@ -559,7 +561,7 @@ with {1}'
 
 
 @task
-def deploy_test(backup_name):
+def deploy_test(backup_name=None):
     new_branch = infer_current_branch()
     _deploy(new_branch, backup_name, remove_existing=True)
     new_status = run_management_command("status_report", Env(new_branch))

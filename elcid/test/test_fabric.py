@@ -301,7 +301,8 @@ class PostgresTestCase(FabfileTestCase):
         self.assertEqual(len(call_args), 4)
         self.assertEqual(
             call_args[0][0][0],
-            'psql -tAc "SELECT 1 FROM pg_database WHERE datname=\'elcid065\'"'
+            'sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE \
+datname=\'elcidrfh_some_branch\'"'
         )
 
         self.assertEqual(
@@ -332,7 +333,8 @@ DATABASE elcidrfh_some_branch TO ohc"'
         self.assertEqual(len(call_args), 3)
         self.assertEqual(
             call_args[0][0][0],
-            'psql -tAc "SELECT 1 FROM pg_database WHERE datname=\'elcid065\'"'
+            'sudo -u postgres psql -tAc "SELECT 1 FROM pg_database \
+WHERE datname=\'elcidrfh_some_branch\'"'
         )
 
         self.assertEqual(
