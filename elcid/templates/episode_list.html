@@ -50,8 +50,8 @@
                       [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
                       <small>
                         [[ row.demographics[0].date_of_birth|shortDate ]]
-                        <span ng-show="row.demographics[0].date_of_birth">
-                          - {% icon models.Location.get_icon %} [[ row.location[0].ward ]]
+                        <span ng-show="row.location[0].ward">
+                          &nbsp; {% icon models.Location.get_icon %} [[ row.location[0].ward ]]
                         </span>
                         <span class="pull-right" ng-repeat="episode in [row]" ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length">
                           {% include "partials/historical_bacteraemia.html" %}
