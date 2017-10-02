@@ -71,7 +71,6 @@
                       {% include models.PrimaryDiagnosis.get_display_template %}
                     </p>
                   </div>
-
                   <div class="col-md-6">
                     <h4><strong>
                         {% icon models.Antimicrobial.get_icon %} Antimicrobials
@@ -89,7 +88,14 @@
                     <p ng-repeat="item in row.diagnosis">
                       {% include models.Diagnosis.get_display_template %}
                     </p>
-
+                  </div>
+                  <div class="col-md-6">
+                    <h4><strong>
+                        {% icon models.Location.get_icon %} {{ models.Location.get_display_name }}
+                    </strong></h4>
+                    <p ng-repeat="item in row.location">
+                      [[ row.location[0].ward ]]
+                    </p>
                   </div>
                 </div>
               </div>
