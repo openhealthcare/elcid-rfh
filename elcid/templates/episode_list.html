@@ -45,7 +45,7 @@
             <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id]]">
               <div class="panel-heading">
                 <div class="row">
-                  <div class="col-sm-12">
+                  <div class="col-sm-9">
                     <h3><i class="fa fa-user"></i>
                       [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
                       <small>
@@ -59,7 +59,13 @@
                       </small>
                     </h3>
                   </div>
-
+                  <div ng-show="row.location[0].ward" class="col-sm-3 text-right">
+                    <h3>
+                      <small>
+                        Ward: [[ row.location[0].ward ]]
+                      </small>
+                    </h3>
+                  </div>
                 </div>
               </div>
               <div uib-collapse="isCardCollapsed" class="panel-body">
