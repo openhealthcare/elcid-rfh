@@ -625,15 +625,26 @@ def roll_back_prod(branch_name):
 
 
 @task
-def deploy_prod(old_branch):
+def deploy_prod(old_branch, old_database_name=None):
+    """
+    Occassionally (for instance, when transitioning to new deployment
+    scripts) we will change the database naming scheme
+    We have an optional old_database_name for transitory deployments
+    where we need to pass it in rather than infer from the branch
+    name as normal.
+    """
     new_branch = infer_current_branch()
     old_env = Env(old_branch)
     new_env = Env(new_branch)
 
     validate_private_settings()
     dump_str = "sudo -u postgres pg_dump {0} -U postgres > {1}"
-    local(dump_str.format(old_env.database_name, old_env.release_backup_name))
-
+    if old_database_name is None:
+        dbname = old_env.database_name
+    else:
+        dbname = old_database_name
+    local(dump_str.format(dbname, old_env.release_backup_name))
+     
     cron_write_backup(new_env)
     cron_copy_backup(new_env)
     old_status = run_management_command("status_report", old_env)
