@@ -276,7 +276,7 @@ OPAL_EXTRA_HEADER = 'elcid/print_header.html'
 OPAL_ANALYTICS_ID = 'UA-XXXXXXX'
 OPAL_ANALYTICS_NODOMAIN = True
 
-CONTACT_EMAIL = ['michael.marks@uclh.nhs.uk', 'david@openhealthcare.org.uk']
+CONTACT_EMAIL = ['david@openhealthcare.org.uk']
 DEFAULT_FROM_EMAIL = 'elcid@openhealthcare.org.uk'
 DEFAULT_DOMAIN = 'http://ELCIDL/'
 
@@ -292,7 +292,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.2.5.5'
+VERSION_NUMBER = '0.2.5.7'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
