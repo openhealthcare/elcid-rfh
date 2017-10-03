@@ -229,8 +229,13 @@ def services_symlink_nginx(new_env):
         )
 
     symlink_name = '/etc/nginx/sites-enabled/{}'.format(MODULE_NAME)
-    if os.path.islink(symlink_name):
-        local("sudo rm {}".format(symlink_name))
+
+    # In case we have trailing enabled elcid configs.
+    # TODO >=2.6  remove this, just remove the one above
+    names = [symlink_name, symlink_name+'-rfh']
+    for name in names:
+        if os.path.islink(name):
+            local("sudo rm {}".format(symlink_name))
 
     local('sudo ln -s {0} {1}'.format(abs_address, symlink_name))
 
@@ -644,7 +649,7 @@ def deploy_prod(old_branch, old_database_name=None):
     else:
         dbname = old_database_name
     local(dump_str.format(dbname, old_env.release_backup_name))
-     
+
     cron_write_backup(new_env)
     cron_copy_backup(new_env)
     old_status = run_management_command("status_report", old_env)
