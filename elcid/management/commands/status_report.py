@@ -14,7 +14,10 @@ from opal import models
 class Command(BaseCommand):
 
     def count_created_last_week(self, model):
-        last_week = datetime.datetime.now() - datetime.timedelta(7)
+        today = datetime.datetime.combine(
+            datetime.date.today(), datetime.time.min
+        )
+        last_week = today - datetime.timedelta(7)
         return model.objects.filter(created__gte=last_week).count()
 
     def handle(self, *args, **options):
