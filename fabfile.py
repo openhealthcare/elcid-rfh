@@ -235,7 +235,7 @@ def services_symlink_nginx(new_env):
     names = [symlink_name, symlink_name+'-rfh']
     for name in names:
         if os.path.islink(name):
-            local("sudo rm {}".format(symlink_name))
+            local("sudo rm {}".format(name))
 
     local('sudo ln -s {0} {1}'.format(abs_address, symlink_name))
 
