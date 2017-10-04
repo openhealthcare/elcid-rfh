@@ -406,8 +406,15 @@ class ServicesTestCase(FabfileTestCase):
         )
 
         second = local.call_args_list[1][0][0]
+
         self.assertEqual(
             second,
+            "sudo rm /etc/nginx/sites-enabled/elcid-rfh"
+        )
+
+        third = local.call_args_list[2][0][0]
+        self.assertEqual(
+            third,
             "sudo ln -s /usr/lib/ohc/elcidrfh-some_branch/etc/nginx.conf \
 /etc/nginx/sites-enabled/elcid"
         )
@@ -562,8 +569,8 @@ class CronTestCase(FabfileTestCase):
     def test_cron_write_backup(self, print_function, local):
         fabfile.cron_write_backup(self.prod_env)
         local.assert_called_once_with(
-            'echo \'0 2 * * * postgres pg_dump elcidrfh_some_branch \
-> /usr/lib/ohc/var/back.$(date +"\\%d.\\%m.\\%Y").elcidrfh_some_branch.sql 2> \
+            'echo \'0 2 * * * postgres pg_dump elcidrfh_some_branch > \
+/usr/lib/ohc/var/back.$(date +"\\%d.\\%m.\\%Y").elcidrfh_some_branch.sql 2>> \
 /usr/lib/ohc/log/cron.log\' | sudo tee /etc/cron.d/elcid_backup'
         )
         print_function.assert_called_once_with('Writing cron backup')
