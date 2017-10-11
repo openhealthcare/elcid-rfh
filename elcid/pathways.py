@@ -15,21 +15,7 @@ from pathway.pathways import (
 )
 
 
-class SaveTaggingMixin(object):
-    @transaction.atomic
-    def save(self, data, user=None, episode=None, patient=None):
-        tagging = data.pop("tagging", [])
-        patient, episode = super(SaveTaggingMixin, self).save(
-            data, user=user, episode=episode, patient=patient
-        )
-
-        if tagging:
-            tag_names = [n for n, v in list(tagging[0].items()) if v]
-            episode.set_tag_names(tag_names, user)
-        return patient, episode
-
-
-class RemovePatientPathway(SaveTaggingMixin, PagePathway):
+class RemovePatientPathway(PagePathway):
     icon = "fa fa-sign-out"
     display_name = "Remove"
     finish_button_text = "Remove"
@@ -44,8 +30,24 @@ class RemovePatientPathway(SaveTaggingMixin, PagePathway):
         ),
     )
 
+    @transaction.atomic
+    def save(self, data, user, patient=None, episode=None):
+        """ Remove that tag for that list only which comes in as
+            e.g. {tagging: {bacteraemia: false}}
+        """
 
-class AddPatientPathway(SaveTaggingMixin, WizardPathway):
+        tagging = data.pop("tagging", [])
+        patient, episode = super(RemovePatientPathway, self).save(
+            data, user=user, episode=episode, patient=patient
+        )
+
+        if tagging:
+            tag_names = [n for n, v in list(tagging[0].items()) if v]
+            episode.set_tag_names(tag_names, user)
+        return patient, episode
+
+
+class AddPatientPathway(WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
 
@@ -74,7 +76,12 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             if the patient isn't in gloss, or gloss is down, just create a
             new patient/episode
+
+            if the user has already has a tag, put in a union
+            between that tag and the new tag
         """
+
+
         if settings.GLOSS_ENABLED:
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
@@ -97,12 +104,25 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             gloss_api.subscribe(hospital_number)
 
-        return super(AddPatientPathway, self).save(
+        patient, episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
 
+        tagging = data.pop("tagging", [])
 
-class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
+        if tagging:
+            if episode:
+                existing_tags = episode.get_tag_names(user)
+            else:
+                existing_tags = set()
+            new_tag_names = {n for n, v in list(tagging[0].items()) if v}
+            tag_names = list(set(existing_tags).union(new_tag_names))
+            episode.set_tag_names(tag_names, user)
+
+        return patient, episode
+
+
+class CernerDemoPathway(RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 

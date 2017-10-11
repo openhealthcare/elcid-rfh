@@ -125,7 +125,8 @@ class TestAddPatientPathway(OpalTestCase):
                 username=self.user.username, password=self.PASSWORD
             )
         )
-        self.url = AddPatientPathway().save_url()
+        self.pathway = AddPatientPathway()
+        self.url = self.pathway.save_url()
 
     @override_settings(GLOSS_ENABLED=False)
     def test_saves_tag(self):
@@ -161,6 +162,35 @@ class TestAddPatientPathway(OpalTestCase):
         self.assertEqual(
             list(episode.get_tag_names(None)),
             []
+        )
+
+    @override_settings(GLOSS_ENABLED=False)
+    def test_saves_union_tags(self):
+        patient, episode = self.new_patient_and_episode_please()
+        url = self.pathway.save_url(patient=patient, episode=episode)
+        episode.set_tag_names(["some_tag", "some_other_tag"], self.user)
+        demographics = patient.demographics_set.first()
+        consistency_token = demographics.consistency_token
+        test_data = dict(
+            demographics=[dict(
+                hospital_number="234",
+                nhs_number="12312",
+                consistency_token=consistency_token,
+                id=demographics.id,
+                patient_id=patient.id
+            )],
+            tagging=[dict(some_tag=True)],
+        )
+        self.post_json(url, test_data)
+        patient = models.Patient.objects.get()
+        self.assertEqual(
+            patient.demographics_set.first().hospital_number,
+            "234"
+        )
+        episode = patient.episode_set.get()
+        self.assertEqual(
+            set((episode.get_tag_names(None))),
+            set(["some_tag", "some_other_tag"])
         )
 
     @override_settings(GLOSS_ENABLED=True)
