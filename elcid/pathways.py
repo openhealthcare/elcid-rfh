@@ -3,19 +3,32 @@ from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
 from elcid import gloss_api
-from elcid import models as emodels
 
 
 from pathway.pathways import (
     RedirectsToPatientMixin,
-    MultiModelStep,
     Step,
     PagePathway,
     WizardPathway,
 )
+from pathway.steps import delete_others
 
 
-class RemovePatientPathway(PagePathway):
+class SaveTaggingMixin(object):
+    @transaction.atomic
+    def save(self, data, user=None, episode=None, patient=None):
+        tagging = data.pop("tagging", [])
+        patient, episode = super(SaveTaggingMixin, self).save(
+            data, user=user, episode=episode, patient=patient
+        )
+
+        if tagging:
+            tag_names = [n for n, v in list(tagging[0].items()) if v]
+            episode.set_tag_names(tag_names, user)
+        return patient, episode
+
+
+class RemovePatientPathway(SaveTaggingMixin, PagePathway):
     icon = "fa fa-sign-out"
     display_name = "Remove"
     finish_button_text = "Remove"
@@ -30,31 +43,15 @@ class RemovePatientPathway(PagePathway):
         ),
     )
 
-    @transaction.atomic
-    def save(self, data, user, patient=None, episode=None):
-        """ Remove that tag for that list only which comes in as
-            e.g. {tagging: {bacteraemia: false}}
-        """
 
-        tagging = data.pop("tagging", [])
-        patient, episode = super(RemovePatientPathway, self).save(
-            data, user=user, episode=episode, patient=patient
-        )
-
-        if tagging:
-            tag_names = [n for n, v in list(tagging[0].items()) if v]
-            episode.set_tag_names(tag_names, user)
-        return patient, episode
-
-
-class AddPatientPathway(WizardPathway):
+class AddPatientPathway(SaveTaggingMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
 
     steps = (
         Step(
             template="pathway/find_patient_form.html",
-            step_controller="RfhFindPatientCtrl",
+            step_controller="FindPatientCtrl",
             display_name="Find patient",
             icon="fa fa-user"
         ),
@@ -76,12 +73,7 @@ class AddPatientPathway(WizardPathway):
 
             if the patient isn't in gloss, or gloss is down, just create a
             new patient/episode
-
-            if the user has already has a tag, put in a union
-            between that tag and the new tag
         """
-
-
         if settings.GLOSS_ENABLED:
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
@@ -104,25 +96,12 @@ class AddPatientPathway(WizardPathway):
 
             gloss_api.subscribe(hospital_number)
 
-        patient, episode = super(AddPatientPathway, self).save(
+        return super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
 
-        tagging = data.pop("tagging", [])
 
-        if tagging:
-            if episode:
-                existing_tags = episode.get_tag_names(user)
-            else:
-                existing_tags = set()
-            new_tag_names = {n for n, v in list(tagging[0].items()) if v}
-            tag_names = list(set(existing_tags).union(new_tag_names))
-            episode.set_tag_names(tag_names, user)
-
-        return patient, episode
-
-
-class CernerDemoPathway(RedirectsToPatientMixin, PagePathway):
+class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 
@@ -163,38 +142,11 @@ class BloodCulturePathway(PagePathway):
     slug = "blood_culture"
 
     steps = (
-        MultiModelStep(
+        Step(
             template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
             step_controller="BloodCulturePathwayFormCtrl",
-            model=lmodels.LabTest,
-            # manually override delete others below
-            delete_others=False
+            model=lmodels.LabTest
         ),
     )
-
-    @transaction.atomic
-    def save(self, data, user=None, patient=None, episode=None):
-        # overwrite this to make sure we only delete
-        # blood culture tests
-        blood_culture_lab_tests = [
-            emodels.GramStain,
-            emodels.QuickFISH,
-            emodels.GPCStaph,
-            emodels.GPCStrep,
-            emodels.GNR,
-            emodels.BloodCultureOrganism
-        ]
-        blood_culture_lab_types = [
-            i.get_display_name() for i in blood_culture_lab_tests
-        ]
-
-        ids = [i["id"] for i in data.get('lab_test', []) if "id" in i]
-        blood_cultures = lmodels.LabTest.objects.filter(
-            lab_test_type__in=blood_culture_lab_types
-        )
-        blood_cultures.exclude(id__in=ids).delete()
-        return super(BloodCulturePathway, self).save(
-            data, user=user, patient=patient, episode=episode
-        )

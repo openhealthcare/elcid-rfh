@@ -7,7 +7,6 @@ from opal.core.test import OpalTestCase
 from elcid.pathways import (
     AddPatientPathway, CernerDemoPathway, BloodCulturePathway
 )
-from elcid.models import GramStain, QuickFISH, HL7Result
 
 
 class TestBloodCulturePathway(OpalTestCase):
@@ -15,20 +14,16 @@ class TestBloodCulturePathway(OpalTestCase):
         # in theory this should just work, but lets
         # double check the underlying api hasn't changed
         patient, episode = self.new_patient_and_episode_please()
-        gram_stain = GramStain.objects.create(
-            patient=patient
+        gram_stain = patient.labtest_set.create(
+            lab_test_type='Gram Stain',
         )
-        gram_stain_name = GramStain.get_display_name()
-
-        QuickFISH.objects.create(
-            patient=patient
+        patient.labtest_set.create(
+            lab_test_type='QuickFISH',
         )
-
         data = dict(
             lab_test=[{
                 "id": gram_stain.id,
-                "lab_test_type": gram_stain_name,
-                "result": dict(result="Yeast")
+                "lab_test_type": "QuickFISH"
             }]
         )
         self.assertTrue(
@@ -41,46 +36,7 @@ class TestBloodCulturePathway(OpalTestCase):
         result = self.post_json(url, data)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(
-            patient.labtest_set.get().lab_test_type, gram_stain_name
-        )
-
-    def test_doesnt_delete_non_blood_cultures(self):
-        # in theory this should just work, but lets
-        # double check the underlying api hasn't changed
-        patient, episode = self.new_patient_and_episode_please()
-        gram_stain = GramStain.objects.create(
-            patient=patient
-        )
-        gram_stain_name = GramStain.get_display_name()
-
-        HL7Result.objects.create(
-            patient=patient,
-            extras={}
-        )
-
-        data = dict(
-            lab_test=[{
-                "id": gram_stain.id,
-                "lab_test_type": gram_stain_name,
-                "result": dict(result="Yeast")
-            }]
-        )
-        self.assertTrue(
-            self.client.login(
-                username=self.user.username, password=self.PASSWORD
-            )
-        )
-        pathway = BloodCulturePathway()
-        url = pathway.save_url(patient=patient, episode=episode)
-        result = self.post_json(url, data)
-        self.assertEqual(result.status_code, 200)
-        lab_test_types = list(patient.labtest_set.all().values_list(
-            "lab_test_type", flat=True
-        ))
-
-        self.assertEqual(
-            lab_test_types,
-            [GramStain.get_display_name(), HL7Result.get_display_name()]
+            patient.labtest_set.get().lab_test_type, "QuickFISH"
         )
 
 
@@ -125,8 +81,7 @@ class TestAddPatientPathway(OpalTestCase):
                 username=self.user.username, password=self.PASSWORD
             )
         )
-        self.pathway = AddPatientPathway()
-        self.url = self.pathway.save_url()
+        self.url = AddPatientPathway().save_url()
 
     @override_settings(GLOSS_ENABLED=False)
     def test_saves_tag(self):
@@ -162,35 +117,6 @@ class TestAddPatientPathway(OpalTestCase):
         self.assertEqual(
             list(episode.get_tag_names(None)),
             []
-        )
-
-    @override_settings(GLOSS_ENABLED=False)
-    def test_saves_union_tags(self):
-        patient, episode = self.new_patient_and_episode_please()
-        url = self.pathway.save_url(patient=patient, episode=episode)
-        episode.set_tag_names(["some_tag", "some_other_tag"], self.user)
-        demographics = patient.demographics_set.first()
-        consistency_token = demographics.consistency_token
-        test_data = dict(
-            demographics=[dict(
-                hospital_number="234",
-                nhs_number="12312",
-                consistency_token=consistency_token,
-                id=demographics.id,
-                patient_id=patient.id
-            )],
-            tagging=[dict(some_tag=True)],
-        )
-        self.post_json(url, test_data)
-        patient = models.Patient.objects.get()
-        self.assertEqual(
-            patient.demographics_set.first().hospital_number,
-            "234"
-        )
-        episode = patient.episode_set.get()
-        self.assertEqual(
-            set((episode.get_tag_names(None))),
-            set(["some_tag", "some_other_tag"])
         )
 
     @override_settings(GLOSS_ENABLED=True)
