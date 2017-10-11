@@ -7,6 +7,7 @@ omit =
     elcid/test/*
     elcid/wsgi*
     elcid/settings.py
+    elcid/templates/acceptance/*
 
 
 [report]
