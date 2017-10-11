@@ -128,4 +128,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .no-touchevents .patient-timeline-discussion:hover i.edit {
   display: inline-block; }
 
-/*# sourceMappingURL=elcid.css.map */
+.growl-item.alert-success {
+  background-color: #5fa2dd;
+  border-color: #5fa2dd;
+  color: #FFF; }

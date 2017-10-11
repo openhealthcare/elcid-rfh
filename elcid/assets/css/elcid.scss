@@ -183,3 +183,9 @@ a.list-group-item {
 .no-touchevents .patient-timeline-discussion:hover i.edit{
   display: inline-block;
 }
+
+.growl-item.alert-success{
+  background-color: $primary;
+  border-color: $obsidian;
+  color: $white;
+}
