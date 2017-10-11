@@ -216,8 +216,19 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'opal.core.log.ConfidentialEmailer'
         },
+        'standard_error_emailer': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True
+        }
     },
     'loggers': {
+        'django.request': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
@@ -227,7 +238,12 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
-        }
+        },
+        'error_emailer': {
+            'handlers': ['standard_error_emailer'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
     }
 }
 
@@ -260,7 +276,7 @@ OPAL_EXTRA_HEADER = 'elcid/print_header.html'
 OPAL_ANALYTICS_ID = 'UA-XXXXXXX'
 OPAL_ANALYTICS_NODOMAIN = True
 
-CONTACT_EMAIL = ['michael.marks@uclh.nhs.uk', 'david@openhealthcare.org.uk']
+CONTACT_EMAIL = ['david@openhealthcare.org.uk']
 DEFAULT_FROM_EMAIL = 'elcid@openhealthcare.org.uk'
 DEFAULT_DOMAIN = 'http://ELCIDL/'
 
