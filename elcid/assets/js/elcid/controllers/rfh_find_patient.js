@@ -30,6 +30,15 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     };
 
     scope.new_for_patient = function(patient){
+        var allTags = [];
+        _.each(patient.episodes, function(episode){
+          _.each(_.keys(episode.tagging[0]), function(tag){
+            if(scope.metadata.tags[tag]){
+              allTags.push(tag);
+            }
+          });
+        });
+        scope.allTags = _.uniq(allTags);
         scope.demographics = patient.demographics[0];
         scope.state   = 'has_demographics';
         scope.hideFooter = false;
