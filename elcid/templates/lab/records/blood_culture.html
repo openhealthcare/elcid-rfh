@@ -1,4 +1,9 @@
-[[ item.lab_test_type ]]:
+<span ng-show="item.lab_test_type === 'QuickFISH' || item.lab_test_type === 'GPC Staph' || item.lab_test_type === 'GPC Strep' || item.lab_test_type === 'GNR'">
+  FISH
+</span>
+<span ng-hide="item.lab_test_type === 'QuickFISH' || item.lab_test_type === 'GPC Staph' || item.lab_test_type === 'GPC Strep' || item.lab_test_type === 'GNR'">
+  [[ item.lab_test_type ]]
+</span>
 {% for observation in lab_test.retrieve_observations %}
   <span ng-show="item.{{ observation.name }}.result">
     [[ item.{{ observation.name }}.result ]]
