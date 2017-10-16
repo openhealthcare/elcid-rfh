@@ -8,10 +8,10 @@ from elcid import gloss_api
 from pathway.pathways import (
     RedirectsToPatientMixin,
     Step,
+    MultiModelStep,
     PagePathway,
     WizardPathway,
 )
-from pathway.steps import delete_others
 
 
 class SaveTaggingMixin(object):
@@ -142,7 +142,7 @@ class BloodCulturePathway(PagePathway):
     slug = "blood_culture"
 
     steps = (
-        Step(
+        MultiModelStep(
             template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",
