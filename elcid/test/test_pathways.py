@@ -14,16 +14,17 @@ class TestBloodCulturePathway(OpalTestCase):
         # in theory this should just work, but lets
         # double check the underlying api hasn't changed
         patient, episode = self.new_patient_and_episode_please()
-        gram_stain = patient.labtest_set.create(
+        patient.labtest_set.create(
             lab_test_type='Gram Stain',
         )
-        patient.labtest_set.create(
+        quick_fish = patient.labtest_set.create(
             lab_test_type='QuickFISH',
         )
         data = dict(
             lab_test=[{
-                "id": gram_stain.id,
-                "lab_test_type": "QuickFISH"
+                "id": quick_fish.id,
+                "lab_test_type": "QuickFISH",
+                "result": {"result": "CNS"}
             }]
         )
         self.assertTrue(
