@@ -99,4 +99,92 @@ describe('RfhFindPatientCtrl', function() {
     scope.preSave(editing);
     expect(editing.demographics).toEqual(scope.demographics);
   });
+
+  it("should update the tags if a patient is found", function(){
+    var fakePatient = {
+      demographics: [{hospital_number: "1"}],
+      episodes: {
+        1: {
+          tagging: [{haem: true}]
+        }
+      }
+
+    };
+    scope.metadata = {tags: {haem: {}}};
+    scope.new_for_patient(fakePatient);
+    expect(scope.allTags).toEqual(['haem']);
+  });
+
+  it("should not update the tags if they're not in the metadata", function(){
+    var fakePatient = {
+      demographics: [{hospital_number: "1"}],
+      episodes: {
+        1: {
+          tagging: [{haem: true}]
+        }
+      }
+
+    };
+    scope.metadata = {tags: {}};
+    scope.new_for_patient(fakePatient);
+    expect(scope.allTags).toEqual([]);
+  });
+
+  it("should update the from multiple episodes if found", function(){
+    var fakePatient = {
+      demographics: [{hospital_number: "1"}],
+      episodes: {
+        1: {
+          tagging: [{
+            haem: true,
+            bacteraemia: true
+          }],
+        },
+        3: {
+          tagging: [{
+            oncology: true
+          }],
+        }
+      }
+
+    };
+    scope.metadata = {
+      tags: {
+        haem: {},
+        bacteraemia: {},
+        oncology: {}
+      }
+    };
+    scope.new_for_patient(fakePatient);
+    expect(scope.allTags).toEqual(['haem', 'bacteraemia', 'oncology']);
+  });
+
+  it("should update the tags removing duplicates if the patient is found", function(){
+    var fakePatient = {
+      demographics: [{hospital_number: "1"}],
+      episodes: {
+        1: {
+          tagging: [{
+            haem: true,
+            bacteraemia: true
+          }],
+        },
+        3: {
+          tagging: [{
+            bacteraemia: true
+          }],
+        }
+      }
+
+    };
+    scope.metadata = {
+      tags: {
+        haem: {},
+        bacteraemia: {},
+        oncology: {}
+      }
+    };
+    scope.new_for_patient(fakePatient);
+    expect(scope.allTags).toEqual(['haem', 'bacteraemia']);
+  });
 });
