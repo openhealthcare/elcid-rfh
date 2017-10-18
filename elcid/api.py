@@ -99,6 +99,9 @@ class BloodCultureResultApi(viewsets.ViewSet):
 
         for lab_test in lab_tests:
             lab_number = lab_test.extras.get("lab_number", "")
+            # if lab number is None or "", group it together
+            if not lab_number:
+                lab_number = ""
             if lab_test.date_ordered:
                 date_ordered = self.translate_date_to_string(
                     lab_test.date_ordered
