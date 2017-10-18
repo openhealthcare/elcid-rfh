@@ -261,9 +261,12 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
         contents = json.loads(result.content)
+        self.assertEqual(len(contents["cultures"]["01/01/2017"]), 1)
+        results = contents["cultures"]["01/01/2017"][""]["anaerobic"]["1"]
         self.assertEqual(
-            len(contents["cultures"]["01/01/2017"][""]["anaerobic"]["1"]),
-            2
+            [i["id"] for i in results],
+            [gram_stain.id, quick_fish.id]
+
         )
 
 
