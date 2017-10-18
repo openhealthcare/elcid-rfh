@@ -217,6 +217,55 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             gram_stain.get_display_name()
         )
 
+    def test_retrieve_with_falsy_lab_number(self):
+        # if lab number is None or "" we should group them together
+        request = self.rf.get("/")
+        url = reverse(
+            "blood_culture_results-detail",
+            kwargs=dict(pk=1),
+            request=request
+        )
+        some_date = datetime.date(2017, 1, 1)
+        patient, _ = self.new_patient_and_episode_please()
+
+        gram_stain = emodels.GramStain.objects.create(
+            date_ordered=some_date,
+            patient=patient,
+        )
+
+        gram_stain.extras = dict(
+            lab_number=None,
+            aerobic=False,
+            isolate=1
+        )
+        gram_stain.save()
+        gram_stain.result.result = "Yeast"
+        gram_stain.result.lab_test_id = gram_stain.id
+        gram_stain.result.save()
+
+        some_other_date = datetime.date(2017, 1, 1)
+        quick_fish = emodels.QuickFISH.objects.create(
+            date_ordered=some_other_date,
+            patient=patient,
+        )
+
+        quick_fish.extras = dict(
+            lab_number="",
+            aerobic=False,
+            isolate=1
+        )
+        quick_fish.save()
+        quick_fish.result.result = "C. albicans"
+        quick_fish.result.lab_test_id = quick_fish.id
+        quick_fish.result.save()
+        result = self.client.get(url)
+        self.assertEqual(result.status_code, 200)
+        contents = json.loads(result.content)
+        self.assertEqual(
+            len(contents["cultures"]["01/01/2017"][""]["anaerobic"]["1"]),
+            2
+        )
+
 
 @patch('elcid.api.gloss_api.patient_query')
 class GlossApiQueryMonkeyPatchTestCase(OpalTestCase):
