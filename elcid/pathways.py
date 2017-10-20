@@ -5,10 +5,9 @@ from django.conf import settings
 from elcid import gloss_api
 
 
-from pathway.pathways import (
+from opal.core.pathway.pathways import (
     RedirectsToPatientMixin,
     Step,
-    MultiModelStep,
     PagePathway,
     WizardPathway,
 )
@@ -142,7 +141,7 @@ class BloodCulturePathway(PagePathway):
     slug = "blood_culture"
 
     steps = (
-        MultiModelStep(
+        Step(
             template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",

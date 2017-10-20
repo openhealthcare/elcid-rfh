@@ -168,6 +168,7 @@ INSTALLED_APPS = (
     'axes',
     'reversion',
     'opal',
+    'opal.core.pathway',
     'rest_framework',
     'rest_framework.authtoken',
     'compressor',
@@ -175,7 +176,6 @@ INSTALLED_APPS = (
     'lab',
     'elcid',
     'django.contrib.admin',
-    'pathway',
     'djcelery',
 )
 
