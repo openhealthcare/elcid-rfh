@@ -1,3 +1,4 @@
+import datetime
 from elcid import models
 from lab import models as lmodels
 from django.db import transaction
@@ -95,9 +96,14 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             gloss_api.subscribe(hospital_number)
 
-        return super(AddPatientPathway, self).save(
+        patient, episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
+
+        episode.start = datetime.date.today()
+        episode.save()
+
+        return patient, episode
 
 
 class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
