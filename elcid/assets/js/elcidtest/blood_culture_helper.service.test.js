@@ -147,6 +147,7 @@ describe("BloodCultureHelper", function(){
       bloodCultureHelper.bloodCultures[0].addIsolate(true);
       var newIsolate = _.last(bloodCultureHelper.bloodCultures[0].isolates);
       expect(newIsolate.aerobic).toBe(true);
+      expect(newIsolate.isolate_number).toBe(4);
     });
 
     it('should add anaerobic isolates', function(){

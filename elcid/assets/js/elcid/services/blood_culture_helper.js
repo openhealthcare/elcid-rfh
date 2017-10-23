@@ -155,8 +155,7 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
       var highestIsolateNumber = _.max(self.isolates, function(isolate){
         return isolate.lab_tests[0].extras.isolate;
       }).lab_tests[0].extras.isolate;
-
-      this.nextIsolateNumber = _.max(highestIsolateNumber, this.isolates.length) + 1;
+      this.nextIsolateNumber = Math.max(highestIsolateNumber, this.isolates.length) + 1;
     }
     else{
       this.nextIsolateNumber = 1;
