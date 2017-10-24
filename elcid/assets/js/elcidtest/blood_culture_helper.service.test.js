@@ -151,17 +151,15 @@ describe("BloodCultureHelper", function(){
     });
 
     it('should set the isolate number to 1 if currently all isolates are number null', function(){
-      var existingLabTests = bloodCultureHelper.getAllLabTests()
-      _.each(existingLabTests, function(existingLabTest){
-        existingLabTest.extras.isolate = null;
+      var lts = angular.copy([labTests[0]]);
+      _.each(lts, function(lt){
+        lt.extras.isolate = null;
       });
-      bloodCultureHelper.bloodCultures[0].nextIsolateNumber = null;
+      bloodCultureHelper = new BloodCultureHelper(angular.copy(lts));
       bloodCultureHelper.bloodCultures[0].addIsolate(true);
-      var newIsolate = _.last(bloodCultureHelper.bloodCultures[0].isolates);
-      expect(newIsolate.aerobic).toBe(true);
-      expect(newIsolate.isolate_number).toBe(1);
+      var allLabTests = bloodCultureHelper.getAllLabTests()
+      expect(allLabTests[1].extras.isolate).toBe(2);
     });
-
 
     it('should add anaerobic isolates', function(){
       bloodCultureHelper.bloodCultures[0].addIsolate(false);

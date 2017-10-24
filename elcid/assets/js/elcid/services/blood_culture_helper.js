@@ -42,12 +42,7 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
   var Isolate = function(aerobic, isolate_number, lab_tests){
     var self = this;
     this.aerobic = aerobic;
-    if(isolate_number){
-      this.isolate_number = isolate_number;
-    }
-    else{
-      this.isolate_number = 1;
-    }
+    this.isolate_number = isolate_number;
     this.lab_tests = lab_tests || [];
 
     // this is used as the model for the mult select gram stains
@@ -164,6 +159,10 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
 
       this.nextIsolateNumber = Math.max(highestIsolateNumber, this.isolates.length) + 1;
     }
+    else{
+      this.nextIsolateNumber = 1;
+    }
+
 
     this.getIsolates = function(aerobic){
       return _.filter(self.isolates, function(isolate){
