@@ -240,6 +240,7 @@ class PresentingComplaint(EpisodeSubrecord):
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
 
+
 class PrimaryDiagnosis(EpisodeSubrecord):
     """
     This is the confirmed primary diagnosisa
@@ -527,7 +528,14 @@ class BloodCultureSource(lookuplists.LookupList):
     pass
 
 
-class SourceObservation(lmodels.Observation):
+class RfhObservation(object):
+    def __unicode__(self):
+        return "{} for {}".format(
+            self.observation_type, self.lab_test
+        )
+
+
+class SourceObservation(lmodels.Observation, RfhObservation):
     class Meta:
         proxy = True
         auto_created = True
@@ -561,7 +569,7 @@ class BloodCultureMixin(object):
             super(BloodCultureMixin, self).update_from_dict(data, *args, **kwargs)
 
 
-class GramStainResult(lmodels.Observation):
+class GramStainResult(lmodels.Observation, RfhObservation):
     class Meta:
         proxy = True
         auto_created = True
@@ -580,7 +588,7 @@ class GramStain(BloodCultureMixin, lmodels.LabTest):
     result = GramStainResult()
 
 
-class QuickFishResult(lmodels.Observation):
+class QuickFishResult(lmodels.Observation, RfhObservation):
     class Meta:
         proxy = True
         auto_created = True
@@ -599,7 +607,7 @@ class QuickFISH(BloodCultureMixin, lmodels.LabTest):
     result = QuickFishResult()
 
 
-class GPCStaphResult(lmodels.Observation):
+class GPCStaphResult(lmodels.Observation, RfhObservation):
     class Meta:
         proxy = True
         auto_created = True
@@ -617,11 +625,10 @@ class GPCStaph(BloodCultureMixin, lmodels.LabTest):
     _title = 'GPC Staph'
 
 
-class GPCStrepResult(lmodels.Observation):
+class GPCStrepResult(lmodels.Observation, RfhObservation):
     class Meta:
         proxy = True
         auto_created = True
-
 
     RESULT_CHOICES = (
         ("E.faecalis", "E.faecalis"),
@@ -636,7 +643,7 @@ class GPCStrep(BloodCultureMixin, lmodels.LabTest):
     _title = "GPC Strep"
 
 
-class GNRResult(lmodels.Observation):
+class GNRResult(lmodels.Observation, RfhObservation):
     class Meta:
         proxy = True
         auto_created = True
@@ -655,9 +662,16 @@ class GNR(BloodCultureMixin, lmodels.LabTest):
     result = GNRResult()
 
 
+class Organism(lmodels.Observation, RfhObservation):
+    class Meta:
+        proxy = True
+
+    lookup_list = omodels.Microbiology_organism
+
+
 class BloodCultureOrganism(BloodCultureMixin, lmodels.LabTest):
     _title = 'Organism'
-    result = lmodels.Organism()
+    result = Organism()
 
 
 class FinalDiagnosis(EpisodeSubrecord):

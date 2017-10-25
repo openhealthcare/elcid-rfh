@@ -359,6 +359,24 @@ class BloodCultureMixinTestCase(OpalTestCase):
         ), self.user)
         self.assertEqual(emodels.GramStain.objects.count(), 1)
 
+
+class RfhObservationMixinTestCase(OpalTestCase):
+    def test_to_unicode(self):
+        patient, _ = self.new_patient_and_episode_please()
+        gram_stain = emodels.GramStain(patient=patient)
+        gram_stain.update_from_dict(dict(
+            lab_test_type=emodels.GramStain.get_display_name(),
+            result=dict(result="Yeast")
+        ), self.user)
+        self.assertEqual(gram_stain.observations.count(), 1)
+        observation = gram_stain.observations.get()
+        self.assertTrue(
+            observation.__unicode__().startswith(
+                "GramStainResult for gram_stain: 1"
+            )
+        )
+
+
 class HL7ResultTestCase(OpalTestCase, AbstractEpisodeTestCase):
     def test_update_from_dict_repeated(self):
         emodels.HL7Result.objects.create(
