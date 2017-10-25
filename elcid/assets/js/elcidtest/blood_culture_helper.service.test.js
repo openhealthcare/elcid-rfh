@@ -89,7 +89,7 @@ describe("BloodCultureHelper", function(){
     module('opal.services');
     inject(function($injector){
       BloodCultureHelper  = $injector.get('BloodCultureHelper');
-      bloodCultureHelper = new BloodCultureHelper(labTests);
+      bloodCultureHelper = new BloodCultureHelper(angular.copy(labTests));
     });
   });
 
@@ -147,6 +147,18 @@ describe("BloodCultureHelper", function(){
       bloodCultureHelper.bloodCultures[0].addIsolate(true);
       var newIsolate = _.last(bloodCultureHelper.bloodCultures[0].isolates);
       expect(newIsolate.aerobic).toBe(true);
+      expect(newIsolate.isolate_number).toBe(4);
+    });
+
+    it('should set the isolate number to 1 if currently all isolates are number null', function(){
+      var lts = angular.copy([labTests[0]]);
+      _.each(lts, function(lt){
+        lt.extras.isolate = null;
+      });
+      bloodCultureHelper = new BloodCultureHelper(angular.copy(lts));
+      bloodCultureHelper.bloodCultures[0].addIsolate(true);
+      var allLabTests = bloodCultureHelper.getAllLabTests()
+      expect(allLabTests[1].extras.isolate).toBe(2);
     });
 
     it('should add anaerobic isolates', function(){
