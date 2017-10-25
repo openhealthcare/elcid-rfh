@@ -149,6 +149,7 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
     this.date_ordered = date_ordered;
     this.lab_number = lab_number;
     this.isolates = groupLabTestsToIsolates(lab_tests || []);
+    this.nextIsolateNumber = null;
 
     if(this.isolates.length){
       // we're just looking for a unique number for this isolate for all added isolates
@@ -156,11 +157,12 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
         return isolate.lab_tests[0].extras.isolate;
       }).lab_tests[0].extras.isolate;
 
-      this.nextIsolateNumber = _.max(highestIsolateNumber, this.isolates.length) + 1;
+      this.nextIsolateNumber = Math.max(highestIsolateNumber, this.isolates.length) + 1;
     }
     else{
       this.nextIsolateNumber = 1;
     }
+
 
     this.getIsolates = function(aerobic){
       return _.filter(self.isolates, function(isolate){
