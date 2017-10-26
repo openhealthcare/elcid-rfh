@@ -11,7 +11,7 @@
     {% select label="Ward" model="editing.location.ward" lookuplist="ward_list" %}
     {% input label="Bed" model="editing.location.bed" %}
 
-    {% datepicker label="Date of admission" model="editing.date_of_admission" %}
+    {% datepicker label="Date of admission" model="editing.start" %}
     {% if teams %}
       {% include 'partials/_teams_select.html' %}
     {% endif %}
