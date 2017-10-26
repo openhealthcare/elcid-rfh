@@ -25,6 +25,7 @@ angular.module('opal.controllers').controller(
             self.save = function(){
               ngProgressLite.set(0);
               ngProgressLite.start();
+              item.episode = $scope.episode;
               item.save(self.editing.microbiology_input).then(function() {
                   ngProgressLite.done();
                   item = $scope.episode.newItem('microbiology_input', {column: $rootScope.fields.microbiology_input});
