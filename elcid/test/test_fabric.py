@@ -871,7 +871,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf.assert_called_once_with(self.prod_env)
         services_create_upstart_conf.assert_called_once_with(self.prod_env)
         self.assertEqual(
-            run_management_command.call_count, 3
+            run_management_command.call_count, 4
         )
         first_call = run_management_command.call_args_list[0][0]
         self.assertEqual(
@@ -893,15 +893,23 @@ class DeployTestCase(FabfileTestCase):
 
         third_call = run_management_command.call_args_list[2][0]
         self.assertEqual(
-            third_call[0], "load_lookup_lists"
+            third_call[0], "create_singletons"
         )
 
         self.assertEqual(
             third_call[1], self.prod_env
         )
+
+        fourth_call = run_management_command.call_args_list[3][0]
+        self.assertEqual(
+            fourth_call[0], "load_lookup_lists"
+        )
+
+        self.assertEqual(
+            fourth_call[1], self.prod_env
+        )
         restart_supervisord.assert_called_once_with(self.prod_env)
         restart_nginx.assert_called_once_with()
-
 
     @mock.patch("fabfile.os")
     @mock.patch("fabfile.Env")
@@ -969,7 +977,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf.assert_called_once_with(self.prod_env)
         services_create_upstart_conf.assert_called_once_with(self.prod_env)
         self.assertEqual(
-            run_management_command.call_count, 3
+            run_management_command.call_count, 4
         )
         first_call = run_management_command.call_args_list[0][0]
         self.assertEqual(
@@ -991,11 +999,20 @@ class DeployTestCase(FabfileTestCase):
 
         third_call = run_management_command.call_args_list[2][0]
         self.assertEqual(
-            third_call[0], "load_lookup_lists"
+            third_call[0], "create_singletons"
         )
 
         self.assertEqual(
             third_call[1], self.prod_env
+        )
+
+        fourth_call = run_management_command.call_args_list[3][0]
+        self.assertEqual(
+            fourth_call[0], "load_lookup_lists"
+        )
+
+        self.assertEqual(
+            fourth_call[1], self.prod_env
         )
 
         restart_supervisord.assert_called_once_with(self.prod_env)
