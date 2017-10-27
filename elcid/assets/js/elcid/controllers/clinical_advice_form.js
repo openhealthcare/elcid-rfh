@@ -16,7 +16,7 @@ angular.module('opal.controllers').controller(
           })).length;
         };
 
-        $q.all([Referencedata, recordLoader]).then(function(datasets){
+        $q.all([Referencedata.load(), recordLoader.load()]).then(function(datasets){
             angular.extend($scope, datasets[0].toLookuplists());
             var item = $scope.episode.newItem("microbiology_input", {column: $rootScope.fields.microbiology_input});
 
@@ -25,6 +25,7 @@ angular.module('opal.controllers').controller(
             self.save = function(){
               ngProgressLite.set(0);
               ngProgressLite.start();
+              item.episode = $scope.episode;
               item.save(self.editing.microbiology_input).then(function() {
                   ngProgressLite.done();
                   item = $scope.episode.newItem('microbiology_input', {column: $rootScope.fields.microbiology_input});
