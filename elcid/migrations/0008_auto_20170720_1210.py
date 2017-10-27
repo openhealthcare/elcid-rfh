@@ -9,7 +9,7 @@ def migrate_forwards(apps, schema_editor):
     Episode = apps.get_model("opal", "Episode")
     for e in Episode.objects.filter(start=None):
         location = e.location_set.first()
-        reversions = reversion.get_for_object(location)
+        reversions = reversion.get_for_object(location).order_by("pk")
 
         if reversions:
             r = reversions[0]
