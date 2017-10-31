@@ -11,4 +11,4 @@ class Result(detail.PatientDetailView):
     def visible_to(klass, user):
         if user.is_superuser:
             return True
-        return settings.GLOSS_ENABLED
+        return settings.RESULTS_VIEW

@@ -70,10 +70,12 @@ class Demographics(PatientSubrecord, ExternallySourcedModel):
 
     @classmethod
     def get_form_template(cls, patient_list=None, episode_type=None):
-        if settings.GLOSS_ENABLED:
-            return super(Demographics, cls).get_form_template(patient_list=None, episode_type=None)
+        if settings.DEMOGRAPHICS_IMPORTED:
+            return super(Demographics, cls).get_form_template(
+                patient_list=None, episode_type=None
+            )
         else:
-            return "forms/demographics_form_pre_gloss.html"
+            return "forms/demographics_form_manual.html"
 
 
 class ContactDetails(PatientSubrecord):
@@ -81,19 +83,23 @@ class ContactDetails(PatientSubrecord):
     _advanced_searchable = False
     _icon = 'fa fa-phone'
 
-    address_line1 = models.CharField("Address line 1", max_length = 45,
-                                     blank=True, null=True)
-    address_line2 = models.CharField("Address line 2", max_length = 45,
-                                     blank=True, null=True)
-    city = models.CharField(
-        max_length = 50, blank=True, null=True
+    address_line1 = models.CharField(
+        "Address line 1", max_length=45, blank=True, null=True
     )
-    county        = models.CharField("County", max_length = 40,
-                                     blank=True, null=True)
-    post_code     = models.CharField("Post Code", max_length = 10,
-                                     blank=True, null=True)
-    tel1          = models.CharField(blank=True, null=True, max_length=50)
-    tel2          = models.CharField(blank=True, null=True, max_length=50)
+    address_line2 = models.CharField(
+        "Address line 2", max_length=45, blank=True, null=True
+    )
+    city = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    county = models.CharField(
+        "County", max_length=40, blank=True, null=True
+    )
+    post_code = models.CharField(
+        "Post Code", max_length=10, blank=True, null=True
+    )
+    tel1 = models.CharField(blank=True, null=True, max_length=50)
+    tel2 = models.CharField(blank=True, null=True, max_length=50)
 
     class Meta:
         verbose_name_plural = "Contact details"
@@ -165,6 +171,9 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
     def update_from_dict(self, data, *args, **kwargs):
         if "id" not in data:
+            if 'patient_id' in data:
+                self.patient = omodels.Patient.objects.get(id=data['patient_id'])
+
             if "external_identifier" not in data:
                 raise ValueError(
                     "an external identifier is required in {}".format(data)
@@ -179,6 +188,24 @@ class HL7Result(lmodels.ReadOnlyLabTest):
                     data["id"] = existing.id
 
         super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+
+    @classmethod
+    def get_relevant_tests(self, patient):
+        relevent_tests = [
+            "C REACTIVE PROTEIN",
+            "FULL BLOOD COUNT",
+            "UREA AND ELECTROLYTES",
+            "LIVER FUNCTION",
+            "LIVER PROFILE",
+            "GENTAMICIN LEVEL",
+            "CLOTTING SCREEN"
+        ]
+        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
+        qs = HL7Result.objects.filter(
+            patient=patient,
+            date_ordered__gt=six_months_ago
+        ).order_by("date_ordered")
+        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
 
 
 class InfectionSource(lookuplists.LookupList):
@@ -256,7 +283,9 @@ class PrimaryDiagnosis(EpisodeSubrecord):
         verbose_name_plural = "Primary diagnoses"
 
 
-class Consultant(lookuplists.LookupList): pass
+class Consultant(lookuplists.LookupList):
+    pass
+
 
 class ConsultantAtDischarge(EpisodeSubrecord):
     _title = 'Consultant At Discharge'

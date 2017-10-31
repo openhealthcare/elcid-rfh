@@ -71,31 +71,8 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             if the patient doesn't exist and we're gloss enabled query gloss.
 
-            if the patient isn't in gloss, or gloss is down, just create a
-            new patient/episode
+            we expect the patient to have already been updated by gloss
         """
-        if settings.GLOSS_ENABLED:
-            demographics = data.get("demographics")
-            hospital_number = demographics[0]["hospital_number"]
-
-            if patient:
-                # the patient already exists
-
-                # refreshes the saved patient
-                gloss_api.patient_query(hospital_number)
-                episode = patient.create_episode()
-            else:
-                # the patient doesn't exist
-                patient = gloss_api.patient_query(hospital_number)
-
-                if patient:
-                    # nuke whatever is passed in in demographics as this will
-                    # have been updated by gloss
-                    data.pop("demographics")
-                    episode = patient.episode_set.get()
-
-            gloss_api.subscribe(hospital_number)
-
         patient, episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )

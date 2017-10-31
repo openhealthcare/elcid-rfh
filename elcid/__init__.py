@@ -10,6 +10,7 @@ class Application(application.OpalApplication):
     schema_module = 'elcid.schema'
     javascripts = [
         'js/elcid/routes.js',
+        'js/elcid/filters.js',
         'js/elcid/directives.js',
         'js/elcid/controllers/discharge.js',
         'js/elcid/services/records/microbiology_input.js',
@@ -22,6 +23,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/bloodculture_pathway_form.js',
         'js/elcid/controllers/remove_patient_step.js',
         'js/elcid/controllers/tagging_step.js',
+        'js/elcid/controllers/investigations.js',
         # used in the blood culture forms
         'js/elcid/services/blood_culture_helper.js',
 

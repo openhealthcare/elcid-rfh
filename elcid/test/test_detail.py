@@ -11,16 +11,16 @@ class ResultViewTestCase(OpalTestCase):
     def test_slug(self):
         self.assertEqual('test_results', detail.Result.get_slug())
 
-    @override_settings(GLOSS_ENABLED=False)
+    @override_settings(RESULTS_VIEW=False)
     def test_invisible_without_gloss(self):
         ordinary_user = User.objects.create()
         self.assertFalse(detail.Result.visible_to(ordinary_user))
 
-    @override_settings(GLOSS_ENABLED=True)
+    @override_settings(RESULTS_VIEW=True)
     def test_visible_with_gloss(self):
         ordinary_user = User.objects.create()
         self.assertTrue(detail.Result.visible_to(ordinary_user))
 
-    @override_settings(GLOSS_ENABLED=False)
+    @override_settings(RESULTS_VIEW=False)
     def test_visible_with_superuser(self):
         self.assertTrue(detail.Result.visible_to(self.user))

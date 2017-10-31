@@ -84,7 +84,6 @@ class TestAddPatientPathway(OpalTestCase):
         )
         self.url = AddPatientPathway().save_url()
 
-    @override_settings(GLOSS_ENABLED=False)
     def test_saves_tag(self):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
@@ -103,7 +102,6 @@ class TestAddPatientPathway(OpalTestCase):
             ["antifungal"]
         )
 
-    @override_settings(GLOSS_ENABLED=False)
     def test_saves_without_tags(self):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
@@ -120,93 +118,6 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
-    @override_settings(GLOSS_ENABLED=True)
-    @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_found(self, gloss_api):
-        patient, episode = self.new_patient_and_episode_please()
-        demographics = patient.demographics_set.first()
-        demographics.hospital_number = "234"
-        demographics.first_name = "Indiana"
-        demographics.save()
-        gloss_api.patient_query.return_value = patient
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        url = AddPatientPathway().save_url(patient=patient)
-        self.post_json(url, test_data)
-        saved_demographics = models.Patient.objects.get().demographics_set.get()
-
-        # we don't expect demographics to have changed as these will have been
-        # loaded in from gloss
-        self.assertEqual(saved_demographics.first_name, "Indiana")
-
-        # we expect a new episode to have been created on the same patient
-        saved_episode = patient.episode_set.last()
-        self.assertNotEqual(episode.id, saved_episode.id)
-        self.assertEqual(
-            list(saved_episode.get_tag_names(None)),
-            ['antifungal']
-        )
-        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
-
-    @override_settings(GLOSS_ENABLED=True)
-    @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_only_found_in_gloss(self, gloss_api):
-        def side_effect(arg):
-            patient, _ = self.new_patient_and_episode_please()
-            demographics = patient.demographics_set.first()
-            demographics.consistency_token = "1231222"
-            demographics.first_name = "Sarah"
-            demographics.save()
-            return patient
-
-        gloss_api.patient_query.side_effect = side_effect
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        self.post_json(self.url, test_data)
-        saved_demographics = models.Patient.objects.get().demographics_set.get()
-
-        # if the patient isn't found, everything should just work
-        self.assertEqual(saved_demographics.first_name, "Sarah")
-
-        saved_episode = models.Episode.objects.get()
-        self.assertEqual(
-            list(saved_episode.get_tag_names(None)),
-            ['antifungal']
-        )
-        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
-
-    @override_settings(GLOSS_ENABLED=True)
-    @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_not_creating_a_patient(self, gloss_api):
-        patient, existing_episode = self.new_patient_and_episode_please()
-        url = AddPatientPathway().save_url(
-            patient=patient
-        )
-        demographics = patient.demographics_set.first()
-        demographics.hospital_number = "234"
-        gloss_api.patient_query.return_value = None
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        self.post_json(url, test_data)
-        new_episode = patient.episode_set.last()
-        self.assertEqual(
-            list(patient.episode_set.all()),
-            [existing_episode, new_episode]
-        )
-
-        self.assertEqual(
-            list(new_episode.get_tag_names(None)),
-            ['antifungal']
-        )
-        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
-
-    @override_settings(GLOSS_ENABLED=False)
     @patch("elcid.pathways.SaveTaggingMixin.save")
     @patch("elcid.pathways.datetime")
     def test_episode_start(self, datetime, parent_save):

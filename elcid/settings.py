@@ -174,6 +174,7 @@ INSTALLED_APPS = (
     'compressor',
     'opal.core.search',
     'lab',
+    'interhospital_api',
     'elcid',
     'django.contrib.admin',
     'djcelery',
@@ -303,19 +304,7 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.migrations', 'opal.tests',
                             'opal.wsgi')
 
-
-
-GLOSS_ENABLED = False
-
-if GLOSS_ENABLED:
-    GLOSS_URL_BASE = "http://0.0.0.0:6767"
-    GLOSS_USERNAME = "override_this"
-    GLOSS_PASSWORD = "and_override_this"
-    OPAL_SEARCH_BACKEND = "elcid.search.GlossQuery"
-
-
-EXTRACT_ASYNC = True
-
+EXTRACT_ASYNC = False
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -323,6 +312,18 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
+# lab test workings
+
+# show the lab tests in the episode list
+EPISODE_LIST_GRAPHS_ENABLED = True
+
+# show the results view in th patient detial (its always shown to superusers)
+RESULTS_VIEW = True
+
+# are we importing demographics from a central repo, ie should demographics be editable
+DEMOGRAPHICS_IMPORTED = False
+
 
 if 'test' not in sys.argv:
     try:
