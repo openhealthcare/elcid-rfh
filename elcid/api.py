@@ -556,10 +556,64 @@ class BloodCultureResultApi(viewsets.ViewSet):
             culture_order=culture_order
         ))
 
+
+
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
 
-# gloss_router.register('glossapi', GlossEndpointApi)
+
+class ReleventLabTestApi(LoginRequiredViewset):
+    base_name = 'relevent_lab_test_api'
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        test_data = emodels.HL7Result.get_relevant_tests(patient)
+        relevant_tests = {
+            "C REACTIVE PROTEIN": ["C Reactive Protein"],
+            "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
+            "LIVER PROFILE": ["ALT", "AST", "Alkaline Phosphatase"],
+            "CLOTTING SCREEN": ["INR"]
+        }
+
+        result = []
+        units = None
+        reference_range = None
+        for relevant_test, relevant_observations in relevant_tests.items():
+            for relevant_observation in relevant_observations:
+                grouped = [t for t in test_data if t.extras['profile_description'] == relevant_test]
+                timeseries = []
+                for group in grouped:
+                    for observation in group.extras["observations"]:
+                        if observation["test_name"] == relevant_observation:
+                            units = observation["units"]
+                            reference_range = observation["reference_range"]
+                            obs_result = observation["observation_value"].split("~")[0]
+
+                            # occasionally the result we get back doesn't fit into a nice numerical
+                            # form, ignore these...
+                            try:
+                                float(obs_result)
+                                timeseries.append((
+                                    obs_result,
+                                    group.datetime_ordered.date(),
+                                ))
+                            except ValueError:
+                                timeseries.append((None, group.datetime_ordered.date(),))
+                                pass
+
+                result.append({
+                    'name': relevant_observation,
+                    'values': timeseries,
+                    'unit': units,
+                    'range': reference_range
+                })
+
+        return json_response(result)
+
+
+gloss_router = OPALRouter()
+gloss_router.register('relevent_lab_test_api', ReleventLabTestApi)
+
 
 lab_test_router = OPALRouter()
 lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)

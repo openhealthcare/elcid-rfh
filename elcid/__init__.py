@@ -33,7 +33,6 @@ class Application(application.OpalApplication):
         'js/elcid/services/lab_test_summary_loader.js',
         'js/elcid/services/lab_test_json_dump.js',
         'js/elcid/services/observation_detail.js',
-        'js/elcid/directives.js',
         'js/elcid/services/episode_added_comparator.js',
     ]
 
