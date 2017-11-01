@@ -35,5 +35,5 @@ Fabric==1.14.0
 # Open Health Care packages on PyPi
 opal-observations==0.3.0
 -e git+https://github.com/openhealthcare/opal.git@search-seprate-with-9#egg=opal
--e git+https://github.com/openhealthcare/opal-lab.git@v0.2.1#egg=opal_lab
+-e git+https://github.com/openhealthcare/opal-lab.git@v0.3.0#egg=opal_lab
 -e git+https://github.com/openhealthcare/opal-pathway.git@v0.4#egg=opal_pathway

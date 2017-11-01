@@ -93,7 +93,7 @@ class BloodCultureResultApi(viewsets.ViewSet):
         lab_tests = patient.labtest_set.filter(
             lab_test_type__in=self.BLOOD_CULTURES
         )
-        lab_tests = lab_tests.order_by("date_ordered")
+        lab_tests = lab_tests.order_by("datetime_ordered")
         cultures = defaultdict(lambda: defaultdict(dict))
         culture_order = set()
 
@@ -102,12 +102,14 @@ class BloodCultureResultApi(viewsets.ViewSet):
             # if lab number is None or "", group it together
             if not lab_number:
                 lab_number = ""
-            if lab_test.date_ordered:
+            if lab_test.datetime_ordered:
                 date_ordered = self.translate_date_to_string(
-                    lab_test.date_ordered
+                    lab_test.datetime_ordered.date()
                 )
 
-                culture_order.add((lab_test.date_ordered, lab_number,))
+                culture_order.add((
+                    lab_test.datetime_ordered.date(), lab_number,
+                ))
             else:
                 date_ordered = ""
                 culture_order.add(("", lab_number,))

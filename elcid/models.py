@@ -163,6 +163,12 @@ class HL7Result(lmodels.ReadOnlyLabTest):
     def get_api_name(cls):
         return "hl7_result"
 
+    def to_dict(self, user):
+        return {
+            "lab_test_type": self.get_display_name(),
+            "id": self.id
+        }
+
     def update_from_dict(self, data, *args, **kwargs):
         if "id" not in data:
             if "external_identifier" not in data:
@@ -555,6 +561,13 @@ class BloodCultureMixin(object):
 
     def update_from_dict(self, data, *args, **kwargs):
         result = data.get("result", None)
+        if "date_ordered" in data:
+            date_ordered = data.pop("date_ordered")
+            if isinstance(date_ordered, str):
+                date_ordered = date_ordered.strip()
+                data["datetime_ordered"] = datetime.combine(
+                    date_ordered, datetime.min.time()
+                )
 
         if result:
             result = result.get("result", None)

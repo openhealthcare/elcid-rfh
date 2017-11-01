@@ -128,12 +128,12 @@ def update_tests(update_dict):
             result['status'] = lmodels.LabTest.COMPLETE
         else:
             result['status'] = lmodels.LabTest.PENDING
-        result['date_ordered'] = result.pop('request_datetime', None)
+        result['datetime_ordered'] = result.pop('request_datetime', None)
         result['lab_test_type'] = eModels.HL7Result.get_display_name()
 
         # TODO, change date ordered to datetime ordered
-        if result['date_ordered']:
-            result['date_ordered'] = result['date_ordered'][:10]
+        if result['datetime_ordered']:
+            result['datetime_ordered'] = result['datetime_ordered']
 
         result['extras'] = dict(
             observation_datetime=result.pop('observation_datetime', None),

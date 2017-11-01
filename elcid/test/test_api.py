@@ -148,7 +148,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         patient, _ = self.new_patient_and_episode_please()
 
         gram_stain = emodels.GramStain.objects.create(
-            date_ordered=some_date,
+            datetime_ordered=some_date,
             patient=patient,
         )
 
@@ -164,7 +164,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
 
         some_other_date = datetime.date(2017, 1, 2)
         quick_fish = emodels.QuickFISH.objects.create(
-            date_ordered=some_other_date,
+            datetime_ordered=some_other_date,
             patient=patient,
         )
 
@@ -229,7 +229,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         patient, _ = self.new_patient_and_episode_please()
 
         gram_stain = emodels.GramStain.objects.create(
-            date_ordered=some_date,
+            datetime_ordered=some_date,
             patient=patient,
         )
 
@@ -245,7 +245,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
 
         some_other_date = datetime.date(2017, 1, 1)
         quick_fish = emodels.QuickFISH.objects.create(
-            date_ordered=some_other_date,
+            datetime_ordered=some_other_date,
             patient=patient,
         )
 
