@@ -232,9 +232,9 @@ class LabTestResultsView(LoginRequiredViewset):
         # so what I want to return is all observations to lab test desplay
         # name with the lab test properties on the observation
 
-        three_months_ago = datetime.date.today() - datetime.timedelta(3*30)
+        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
         lab_tests = lmodels.LabTest.objects.filter(patient=patient)
-        lab_tests = lab_tests.filter(datetime_ordered__gte=three_months_ago)
+        lab_tests = lab_tests.filter(datetime_ordered__gte=six_months_ago)
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
 
         serialised_tests = []
@@ -306,7 +306,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
             serialised_tests = sorted(serialised_tests, key=itemgetter("lab_test_type"))
 
-            all_tags = _LAB_TEST_TAGS.keys()
+        all_tags = _LAB_TEST_TAGS.keys()
 
         return json_response(
             dict(
