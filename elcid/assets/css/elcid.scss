@@ -112,6 +112,8 @@ a.list-group-item {
   }
 }
 
+
+
 .patient-row{
   .label-warning{
     margin-top: 5px;
@@ -182,4 +184,49 @@ a.list-group-item {
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit{
   display: inline-block;
+}
+
+.lab-tests{
+  $too-high: #E02F03;
+  $too-low: #03C3EA;
+
+  hr {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .lab-test-row{
+    padding-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-bottom: 10px;
+
+    &.selectable:hover{
+      background-color: #f5f5f5;
+      cursor: pointer;
+    }
+  }
+
+  .observation-graph-pane{
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .c3-region.too-high{
+    fill: fade-out($too-high, 0.5);
+  }
+
+  .c3-region.too-low{
+    fill: fade-out($too-low, 0.5);
+  }
+
+  .too-high{
+    color: $too-high;
+  }
+
+  .too-low{
+    color: $too-low;
+  }
 }

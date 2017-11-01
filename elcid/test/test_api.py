@@ -1,9 +1,19 @@
 import json
+import copy
+import datetime
 import datetime
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
 from elcid.api import BloodCultureResultApi
 from elcid import models as emodels
+from django.test import override_settings
+from django.utils import timezone
+from mock import MagicMock, patch
+from opal.core.test import OpalTestCase
+from rest_framework.reverse import reverse
+from elcid import api
+from lab import models as lmodels
+from opal import models as omodels
 
 
 class BloodCultureResultApiTestCase(OpalTestCase):
@@ -25,6 +35,10 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         self.assertEqual(
             result, expected
         )
+        request.data = json.dumps(expected_dict)
+        endpoint = api.GlossEndpointApi()
+        endpoint.create(request)
+        bulk_create.assert_called_once_with(expected_dict)
 
     def test_sort_by_date_ordered_and_lab_number_by_lab_number(self):
         some_keys = [
@@ -127,7 +141,31 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             kwargs=dict(pk=1),
             request=request
         )
-        some_date = datetime.date(2017, 1, 1)
+
+    @override_settings(GLOSS_ENABLED=True)
+    def test_retrieve(self, patient_query):
+        patient, _ = self.new_patient_and_episode_please()
+        patient_query.return_value = patient
+        self.assertEqual(omodels.PatientRecordAccess.objects.count(), 0)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(patient_query.called)
+        self.assertEqual(omodels.PatientRecordAccess.objects.count(), 1)
+        serialised_patient = json.loads(response.content)
+        self.assertEqual(serialised_patient["id"], patient.id)
+
+    @override_settings(GLOSS_ENABLED=True)
+    def test_retrieve_not_found_in_gloss(self, patient_query):
+        patient, _ = self.new_patient_and_episode_please()
+        patient_query.return_value = None
+        response = self.client.get(self.url)
+        self.assertTrue(patient_query.called)
+        self.assertEqual(response.status_code, 200)
+        serialised_patient = json.loads(response.content)
+        self.assertEqual(serialised_patient["id"], patient.id)
+
+    @override_settings(GLOSS_ENABLED=True)
+    def test_retrieve_updates_patient_from_gloss(self, patient_query):
         patient, _ = self.new_patient_and_episode_please()
 
         gram_stain = emodels.GramStain.objects.create(

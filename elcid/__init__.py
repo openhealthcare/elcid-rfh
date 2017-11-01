@@ -27,10 +27,13 @@ class Application(application.OpalApplication):
         # used in the blood culture forms
         'js/elcid/services/blood_culture_helper.js',
 
-        'js/elcid/services/blood_culture_record.js',
-
-        # used to load in the blood cultures
         'js/elcid/services/blood_culture_loader.js',
+        'js/elcid/services/blood_culture_record.js',
+        'js/elcid/services/lab_test_results.js',
+        'js/elcid/services/lab_test_summary_loader.js',
+        'js/elcid/services/lab_test_json_dump.js',
+        'js/elcid/services/observation_detail.js',
+        'js/elcid/directives.js',
         'js/elcid/services/episode_added_comparator.js',
     ]
 

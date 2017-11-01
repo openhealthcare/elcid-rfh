@@ -208,8 +208,9 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
+            'level': 'INFO',
+            # 'filters': ['require_debug_false'],
+            'filters': [],
             'class': 'logging.StreamHandler'
         },
         'mail_admins': {
@@ -245,6 +246,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'elcid.time_logger': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        }
     }
 }
 
@@ -304,7 +310,19 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.migrations', 'opal.tests',
                             'opal.wsgi')
 
-EXTRACT_ASYNC = False
+
+
+GLOSS_ENABLED = False
+
+# the below are only if GLOSS ENALBED is set to True
+GLOSS_URL_BASE = "http://0.0.0.0:6767"
+GLOSS_USERNAME = "override_this"
+GLOSS_PASSWORD = "and_override_this"
+OPAL_SEARCH_BACKEND = "elcid.search.GlossQuery"
+
+
+EXTRACT_ASYNC = True
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
