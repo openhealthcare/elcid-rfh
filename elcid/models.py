@@ -209,8 +209,8 @@ class HL7Result(lmodels.ReadOnlyLabTest):
         six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
         qs = HL7Result.objects.filter(
             patient=patient,
-            date_ordered__gt=six_months_ago
-        ).order_by("date_ordered")
+            datetime_ordered__gt=six_months_ago
+        ).order_by("datetime_ordered")
         return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
 
 

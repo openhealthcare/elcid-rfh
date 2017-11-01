@@ -46,10 +46,10 @@ class ReleventLabTestApi(LoginRequiredViewset):
                                 float(obs_result)
                                 timeseries.append((
                                     obs_result,
-                                    group.date_ordered,
+                                    group.datetime_ordered.date(),
                                 ))
                             except ValueError:
-                                timeseries.append((None, group.date_ordered,))
+                                timeseries.append((None, group.datetime_ordered.date(),))
                                 pass
 
                 result.append({
