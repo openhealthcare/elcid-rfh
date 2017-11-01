@@ -32,7 +32,6 @@ directives.directive("investigationSparkLines", function () {
       investigationSparkLines: "=",
     },
     link: function (scope, element, attrs) {
-      debugger;
       var graphParams = {
         bindto: element[0],
         data: {
