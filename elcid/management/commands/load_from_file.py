@@ -1,13 +1,10 @@
-import json, os
+import json
 from elcid import gloss_api
 
-from django.contrib.auth.models import User
 
 from django.core.management.base import BaseCommand
 
 from opal.models import Patient
-
-from lab.models import LabTest
 
 
 class Command(BaseCommand):
@@ -21,7 +18,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        data = json.loads(open(options['filename'], 'r').read())
+        with open(options['filename'], 'r') as f:
+            data = json.load(f)
         patient = Patient.objects.get(id=options['patient'])
         data["hospital_number"] = patient.demographics_set.get().hospital_number
 

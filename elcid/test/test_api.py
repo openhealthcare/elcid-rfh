@@ -1,19 +1,9 @@
 import json
-import copy
-import datetime
 import datetime
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
 from elcid.api import BloodCultureResultApi
 from elcid import models as emodels
-from django.test import override_settings
-from django.utils import timezone
-from mock import MagicMock, patch
-from opal.core.test import OpalTestCase
-from rest_framework.reverse import reverse
-from elcid import api
-from lab import models as lmodels
-from opal import models as omodels
 
 
 class BloodCultureResultApiTestCase(OpalTestCase):
@@ -35,10 +25,6 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         self.assertEqual(
             result, expected
         )
-        request.data = json.dumps(expected_dict)
-        endpoint = api.GlossEndpointApi()
-        endpoint.create(request)
-        bulk_create.assert_called_once_with(expected_dict)
 
     def test_sort_by_date_ordered_and_lab_number_by_lab_number(self):
         some_keys = [
@@ -132,110 +118,6 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         some_date = ""
         self.assertEqual(
             self.api.translate_date_to_string(some_date), ""
-        )
-
-    def test_retrieve(self):
-        request = self.rf.get("/")
-        url = reverse(
-            "blood_culture_results-detail",
-            kwargs=dict(pk=1),
-            request=request
-        )
-
-    @override_settings(GLOSS_ENABLED=True)
-    def test_retrieve(self, patient_query):
-        patient, _ = self.new_patient_and_episode_please()
-        patient_query.return_value = patient
-        self.assertEqual(omodels.PatientRecordAccess.objects.count(), 0)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(patient_query.called)
-        self.assertEqual(omodels.PatientRecordAccess.objects.count(), 1)
-        serialised_patient = json.loads(response.content)
-        self.assertEqual(serialised_patient["id"], patient.id)
-
-    @override_settings(GLOSS_ENABLED=True)
-    def test_retrieve_not_found_in_gloss(self, patient_query):
-        patient, _ = self.new_patient_and_episode_please()
-        patient_query.return_value = None
-        response = self.client.get(self.url)
-        self.assertTrue(patient_query.called)
-        self.assertEqual(response.status_code, 200)
-        serialised_patient = json.loads(response.content)
-        self.assertEqual(serialised_patient["id"], patient.id)
-
-    @override_settings(GLOSS_ENABLED=True)
-    def test_retrieve_updates_patient_from_gloss(self, patient_query):
-        patient, _ = self.new_patient_and_episode_please()
-
-        gram_stain = emodels.GramStain.objects.create(
-            datetime_ordered=some_date,
-            patient=patient,
-        )
-
-        gram_stain.extras = dict(
-            lab_number="212",
-            aerobic=False,
-            isolate=1
-        )
-        gram_stain.save()
-        gram_stain.result.result = "Yeast"
-        gram_stain.result.lab_test_id = gram_stain.id
-        gram_stain.result.save()
-
-        some_other_date = datetime.date(2017, 1, 2)
-        quick_fish = emodels.QuickFISH.objects.create(
-            datetime_ordered=some_other_date,
-            patient=patient,
-        )
-
-        quick_fish.extras = dict(
-            lab_number="212",
-            aerobic=True,
-            isolate=2
-        )
-        quick_fish.save()
-        quick_fish.result.result = "C. albicans"
-        quick_fish.result.lab_test_id = quick_fish.id
-        quick_fish.result.save()
-        result = self.client.get(url)
-        self.assertEqual(result.status_code, 200)
-        contents = json.loads(result.content)
-
-        found_culture_order = contents["culture_order"]
-        self.assertEqual(
-            found_culture_order,
-            [
-                ["02/01/2017", "212"],
-                ["01/01/2017", "212"]
-            ]
-        )
-        self.assertEqual(
-            len(contents["cultures"]["02/01/2017"]["212"]["aerobic"]),
-            1
-        )
-        found_fish = contents["cultures"]["02/01/2017"]["212"]["aerobic"]['2'][0]
-
-        self.assertEqual(
-            found_fish["id"],
-            quick_fish.id
-        )
-
-        self.assertEqual(
-            found_fish["lab_test_type"],
-            quick_fish.get_display_name()
-        )
-
-        found_gram = contents["cultures"]["01/01/2017"]["212"]["anaerobic"]['1'][0]
-
-        self.assertEqual(
-            found_gram["id"],
-            gram_stain.id
-        )
-
-        self.assertEqual(
-            found_gram["lab_test_type"],
-            gram_stain.get_display_name()
         )
 
     def test_retrieve_with_falsy_lab_number(self):

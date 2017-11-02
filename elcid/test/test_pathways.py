@@ -119,11 +119,9 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
-    @patch("elcid.pathways.SaveTaggingMixin.save")
     @patch("elcid.pathways.datetime")
-    def test_episode_start(self, datetime, parent_save):
+    def test_episode_start(self, datetime):
         patient, episode = self.new_patient_and_episode_please()
-        parent_save.return_value = (patient, episode,)
         datetime.date.today.return_value = date(2016, 5, 1)
         url = AddPatientPathway().save_url()
         test_data = dict(
@@ -138,23 +136,3 @@ class TestAddPatientPathway(OpalTestCase):
             list(new_episode.get_tag_names(None)),
             ['antifungal']
         )
-        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
-
-    @override_settings(GLOSS_ENABLED=False)
-    @patch("elcid.pathways.SaveTaggingMixin.save")
-    @patch("elcid.pathways.datetime")
-    def test_episode_date_of_admission(self, datetime, parent_save):
-        patient, episode = self.new_patient_and_episode_please()
-        parent_save.return_value = (patient, episode,)
-        datetime.date.today.return_value = date(2016, 5, 1)
-        url = AddPatientPathway().save_url()
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        self.post_json(url, test_data)
-        patient = parent_save.call_args[1].get("patient")
-        self.assertIsNotNone(patient)
-        episode = parent_save.call_args[1].get("episode")
-        self.assertIsNotNone(episode)
-        self.assertEqual(episode.date_of_admission, date(2016, 5, 1))

@@ -169,12 +169,6 @@ class HL7Result(lmodels.ReadOnlyLabTest):
     def get_api_name(cls):
         return "hl7_result"
 
-    def to_dict(self, user):
-        return {
-            "lab_test_type": self.get_display_name(),
-            "id": self.id
-        }
-
     def update_from_dict(self, data, *args, **kwargs):
         if "id" not in data:
             if 'patient_id' in data:

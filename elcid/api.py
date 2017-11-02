@@ -201,6 +201,8 @@ class LabTestResultsView(LoginRequiredViewset):
         for lab_test in lab_tests:
             as_dict = lab_test.to_dict(None)
             observations = as_dict.get("observations", [])
+            if "extras" not in as_dict:
+                import ipdb; ipdb.set_trace()
             lab_test_type = as_dict["extras"].get(
                 "profile_description", lab_test.lab_test_type
             )
