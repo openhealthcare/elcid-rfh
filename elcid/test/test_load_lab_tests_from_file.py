@@ -1,15 +1,15 @@
 from opal.core.test import OpalTestCase
 import mock
-from elcid.management.commands import load_from_file as loader
+from elcid.management.commands import load_lab_tests_from_file as loader
 
 
 class LoadLabTestsFromFileTestCase(OpalTestCase):
 
     @mock.patch(
-        'elcid.management.commands.load_from_file.json'
+        'elcid.management.commands.load_lab_tests_from_file.json'
     )
     @mock.patch(
-        'elcid.management.commands.load_from_file.gloss_api.bulk_create_from_gloss_response'
+        'elcid.management.commands.load_lab_tests_from_file.gloss_api.bulk_create_from_gloss_response'
     )
     def test_load_lab_tests(self, bulk_create, json):
         m = mock.mock_open()
@@ -19,7 +19,7 @@ class LoadLabTestsFromFileTestCase(OpalTestCase):
             hospital_number="123"
         )
         with mock.patch(
-            'elcid.management.commands.load_from_file.open',
+            'elcid.management.commands.load_lab_tests_from_file.open',
             m,
             create=True
         ):
