@@ -1,5 +1,7 @@
 {% load panels %}
 {% load forms %}
-<div ng-controller="ResultView as resultView" class="col-md-12 lab-tests">
-  <pre ng-bind-html="resultView.pprintedJson"></pre>
+<div ng-if="view === 'json_dump_view'">
+  <div ng-controller="LabTestJsonDumpView as labTestJsonDumpView" class="col-md-12 lab-tests">
+    <pre ng-bind-html="labTestJsonDumpView.pprintedJson"></pre>
+  </div>
 </div>

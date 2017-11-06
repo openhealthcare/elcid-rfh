@@ -18,6 +18,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/welcome.js',
         'js/elcid/controllers/procedure_form.js',
         'js/elcid/controllers/clinical_advice_form.js',
+        'js/elcid/controllers/lab_test_json_dump_view.js',
         'js/elcid/controllers/result_view.js',
         'js/elcid/controllers/rfh_find_patient.js',
         'js/elcid/controllers/bloodculture_pathway_form.js',

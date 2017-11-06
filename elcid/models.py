@@ -164,12 +164,28 @@ class Location(EpisodeSubrecord):
 class HL7Result(lmodels.ReadOnlyLabTest):
     class Meta:
         verbose_name = "HL7 Result"
+        permissions = (("can_see_lab_tests", "Can See Lab Tests"),)
 
     @classmethod
     def get_api_name(cls):
         return "hl7_result"
 
+    def to_dict(self, user):
+        return {
+            "lab_test_type": self.__class__.get_display_name(),
+            "id": self.id
+        }
+
+    def dict_for_view(self, user):
+        return super(HL7Result, self).to_dict(user)
+
     def update_from_dict(self, data, *args, **kwargs):
+        populated = (
+            i for i in data.keys() if i != "lab_test_type" and not i != "id"
+        )
+        if not any(populated):
+            return
+
         if "id" not in data:
             if 'patient_id' in data:
                 self.patient = omodels.Patient.objects.get(id=data['patient_id'])
@@ -187,7 +203,7 @@ class HL7Result(lmodels.ReadOnlyLabTest):
                 if existing:
                     data["id"] = existing.id
 
-        super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+            super(HL7Result, self).update_from_dict(data, *args, **kwargs)
 
     @classmethod
     def get_relevant_tests(self, patient):

@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller('ResultView', function(
-  $scope, LabTestResults, ObservationDetail, LabTestJsonDump
+  $scope, LabTestResults, ObservationDetail, ngProgressLite
 ){
       "use strict";
       var vm = this;
@@ -95,34 +95,9 @@ angular.module('opal.controllers').controller('ResultView', function(
         return 1;
       }
 
-      function syntaxHighlight(json) {
-          if (typeof json != 'string') {
-               json = JSON.stringify(json, undefined, 2);
-          }
-          json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-              var cls = 'number';
-              if (/^"/.test(match)) {
-                  if (/:$/.test(match)) {
-                      cls = 'key';
-                  } else {
-                      cls = 'string';
-                  }
-              } else if (/true|false/.test(match)) {
-                  cls = 'boolean';
-              } else if (/null/.test(match)) {
-                  cls = 'null';
-              }
-              return '<span class="' + cls + '">' + match + '</span>';
-          });
-      }
-      this.getJsonDump = function(patient){
-        LabTestJsonDump.load(patient.id).then(function(result){
-          vm.pprintedJson = syntaxHighlight(result);
-        });
-      };
-
       this.getLabTests = function(patient){
+        ngProgressLite.set(0);
+        ngProgressLite.start();
         return LabTestResults.load(patient.id).then(function(result){
           vm.originalLabTests = result.tests;
           var tags = result.tags;
@@ -130,6 +105,7 @@ angular.module('opal.controllers').controller('ResultView', function(
           vm.currentTag = "ALL";
           vm.tags = result.tags;
           vm.labTests = angular.copy(vm.originalLabTests)
+          ngProgressLite.done();
         });
       };
 
@@ -149,11 +125,11 @@ angular.module('opal.controllers').controller('ResultView', function(
 
         // _.each(vm.originalLabTests, function())
         ObservationDetail.load($scope.patient.id, labTest.api_name, apiName).then(function(detail){
+          debugger;
           vm.observationDetail[labTest.lab_test_type][observationName] = detail.observations;
         });
       };
 
       this.labTests = [];
       this.getLabTests($scope.patient);
-      this.getJsonDump($scope.patient);
 });

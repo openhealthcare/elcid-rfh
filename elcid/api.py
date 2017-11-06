@@ -1,12 +1,9 @@
-import json
 import datetime
 from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import Http404
-
-
 
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
@@ -126,7 +123,9 @@ class LabTestObservationDetail(LoginRequiredViewset):
     def retrieve(self, request, patient):
         found_observations = []
         observation_slug = request.query_params["observation"]
-        for lab_test in patient.labtest_set.all():
+        for lab_test in patient.labtest_set.filter(
+            lab_test_type=emodels.HL7Result.get_display_name()
+        ):
             lab_test_type = lab_test.extras.get(
                 "profile_description", lab_test.lab_test_type
             )
@@ -153,11 +152,11 @@ class LabTestJsonDumpView(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
-        lab_tests = lmodels.LabTest.objects.filter(patient=patient)
+        lab_tests = emodels.HL7Result.objects.filter(patient=patient)
         lab_tests = sorted(lab_tests, key=lambda x: x.extras.get("profile_description"))
         return json_response(
             dict(
-                tests=[i.to_dict(None) for i in lab_tests]
+                tests=[i.dict_for_view(None) for i in lab_tests]
             )
         )
 
@@ -199,10 +198,8 @@ class LabTestResultsView(LoginRequiredViewset):
         # defined or its what is in the profile description
         # if its an HL7 jobby
         for lab_test in lab_tests:
-            as_dict = lab_test.to_dict(None)
+            as_dict = lab_test.dict_for_view(None)
             observations = as_dict.get("observations", [])
-            if "extras" not in as_dict:
-                import ipdb; ipdb.set_trace()
             lab_test_type = as_dict["extras"].get(
                 "profile_description", lab_test.lab_test_type
             )
@@ -235,7 +232,7 @@ class LabTestResultsView(LoginRequiredViewset):
         # name with the lab test properties on the observation
 
         six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
-        lab_tests = lmodels.LabTest.objects.filter(patient=patient)
+        lab_tests = emodels.HL7Result.objects.filter(patient=patient)
         lab_tests = lab_tests.filter(datetime_ordered__gte=six_months_ago)
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
 
@@ -281,15 +278,6 @@ class LabTestResultsView(LoginRequiredViewset):
                         reference_range=observation["reference_range"],
                         api_name=slugify(observation["test_name"])
                     )
-
-            # timeseries[test_name] = by_observations[test_name].values()
-            # timeseries[test_name] = sorted(
-            #     timeseries[test_name], key=lambda x: x["datetime_ordered"]
-            # )
-            # timeseries[test_name].reverse()
-            # timeseries[test_name] = [
-            #     i["observation_value"] for i in timeseries[test_name]
-            # ]
 
             serialised_lab_teset = dict(
                 long_form=long_form,
