@@ -1,6 +1,6 @@
-def update_person(hospital_number):
-    pass
+from django.conf import settings
+from django.utils.module_loading import import_string
 
 
-def get_patient_details(hospital_number):
-    pass
+def get_api():
+    return import_string(settings.INTRAHOSPTIAL_API)

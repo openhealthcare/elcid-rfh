@@ -180,6 +180,11 @@ INSTALLED_APPS = (
     'djcelery',
 )
 
+# The intrahospital api is what we use to connect to the rest of the hospital
+INTRAHOSPTIAL_API = (
+    'intrahospital_api.dev.api.MockApi'
+)
+
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (

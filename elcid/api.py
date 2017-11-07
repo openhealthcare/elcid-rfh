@@ -346,38 +346,10 @@ class LabTestSummaryApi(LoginRequiredViewset):
             "CLOTTING SCREEN": ["INR"]
         }
 
-        result = []
-        units = None
-        reference_range = None
-        for relevant_test, relevant_observations in relevant_tests.items():
-            for relevant_observation in relevant_observations:
-                grouped = [t for t in test_data if t.extras['profile_description'] == relevant_test]
-                timeseries = []
-                for group in grouped:
-                    for observation in group.extras["observations"]:
-                        if observation["test_name"] == relevant_observation:
-                            units = observation["units"]
-                            reference_range = observation["reference_range"]
-                            obs_result = observation["observation_value"].split("~")[0]
-
-                            # occasionally the result we get back doesn't fit into a nice numerical
-                            # form, ignore these...
-                            try:
-                                float(obs_result)
-                                timeseries.append((
-                                    obs_result,
-                                    group.datetime_ordered.date(),
-                                ))
-                            except ValueError:
-                                timeseries.append((None, group.datetime_ordered.date(),))
-                                pass
-
-                result.append({
-                    'name': relevant_observation,
-                    'values': timeseries,
-                    'unit': units,
-                    'range': reference_range
-                })
+        for test in test_data:
+            test_name = test.extras.get("profile_description")
+            if test_name in relevant_tests:
+                relevent_observations = relevant_tests[test_name]
 
                 for observation in test.extras["observations"]:
                     observation_name = observation["test_name"]
@@ -395,12 +367,6 @@ class LabTestSummaryApi(LoginRequiredViewset):
         return dt.strftime(
             settings.DATETIME_INPUT_FORMATS[0]
         )
-
-    def refresh_gloss(self, patient):
-        if settings.GLOSS_ENABLED:
-            gloss_api.patient_query(
-                patient.demographics_set.first().hospital_number
-            )
 
     @timing
     def serialise_lab_tests(self, patient):
@@ -435,7 +401,6 @@ class LabTestSummaryApi(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
-        self.refresh_gloss(patient)
         result = self.serialise_lab_tests(patient)
         return json_response(result)
 
@@ -599,10 +564,6 @@ class ReleventLabTestApi(LoginRequiredViewset):
                 })
 
         return json_response(result)
-
-
-gloss_router = OPALRouter()
-gloss_router.register('relevent_lab_test_api', ReleventLabTestApi)
 
 
 lab_test_router = OPALRouter()
