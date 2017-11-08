@@ -39,109 +39,11 @@
           </div>
           </form>
       </div>
-      <div class="row">
-        <div class="col-md-8 col-md-push-2">
-          <div ng-repeat="row in rows" class="panel panel-default content-offset patient-row">
-            <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id + '/' + row.id ]]">
-              <div class="panel-heading">
-                <div class="row">
-                  <div class="col-sm-12">
-                    <h3><i class="fa fa-user"></i>
-                      [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
-                      <small>
-                        [[ row.demographics[0].date_of_birth|shortDate ]]
-                        <span ng-show="row.location[0].ward">
-                          &nbsp; {% icon models.Location.get_icon %} [[ row.location[0].ward ]]
-                        </span>
-                        <span class="pull-right" ng-repeat="episode in [row]" ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length">
-                          {% include "partials/historical_bacteraemia.html" %}
-                        </span>
-                      </small>
-                    </h3>
-                  </div>
-                </div>
-              </div>
-              <div uib-collapse="isCardCollapsed" class="panel-body">
-                <div class="row">
-                  <div class="col-md-6">
-                    <h4><strong>
-                        {% icon models.PrimaryDiagnosis.get_icon %} Primary Diagnosis
-                    </strong></h4>
-                    <p ng-repeat="item in row.primary_diagnosis">
-                      {% include models.PrimaryDiagnosis.get_display_template %}
-                    </p>
-                  </div>
-                  <div class="col-md-6">
-                    <h4><strong>
-                        {% icon models.Antimicrobial.get_icon %} Antimicrobials
-                    </strong></h4>
-                    <p ng-repeat="item in row.antimicrobial">
-                      {% include models.Antimicrobial.get_display_template %}
-                    </p>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <h4><strong>
-                        {% icon models.Diagnosis.get_icon %} Diagnosis
-                    </strong></h4>
-                    <p ng-repeat="item in row.diagnosis">
-                      {% include models.Diagnosis.get_display_template %}
-                    </p>
-                  </div>
-                  <div class="col-md-6">
-                    {% if EPISODE_LIST_GRAPHS_ENABLED %}
-                      <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
-                      <div populate-lab-tests="row">
-                        <table class="col-md-12 table">
-                          <thead>
-                            <tr>
-                              <th></th>
-                              <th class="col-md-2"></th>
-                              <th class="text-center" ng-repeat="date in data.recent_dates">
-                                [[ date | shortDate ]]
-                              </th>
-                              <th class="text-center">
-                                3 month trend
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr class="row" ng-repeat="item in data.obs_values">
-                              <td class="text-center col-md-2">
-                                [[ item.name ]]
-                              <td class="text-center" ng-repeat="date in data.recent_dates">
-                                [[ item.latest_results[date] ]]
-                              </td>
-                              <td class="text-center">
-                                <div spark-line="item.graph_values"></div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </a>
-            <div class="panel-footer">
-              <div class="row">
-                <div class="text-left col-sm-6">
-                  <span ng-repeat="otherTag in row.getTags() | filter:'!_client' | filter:'!' + currentTag">
-                    <a ng-show="metadata.tags[otherTag]" class="btn btn-default pointer" href="/#/list/[[ otherTag ]]">[[ metadata.tags[otherTag].display_name ]]</a>
-                  </span>
-                </div>
-                <div class="text-right col-sm-6">
-                  <button class="btn btn-primary" pathway-episode="row" open-pathway="remove" pathway-callback="removeFromList(row.id)">
-                    {% icon 'fa-sign-out' %} Remove
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {% if permissions.view_lab_tests_in_list %}
+        {% include 'partials/card_with_results.html' %}
+      {% else %}
+        {% include 'partials/card_without_results.html' %}
+      {% endif %}
 
       <div class="empty-list" ng-hide="num_episodes > 0">
         <p class="lead text-center">

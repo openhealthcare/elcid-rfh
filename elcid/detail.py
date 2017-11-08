@@ -1,4 +1,5 @@
 from opal.core import detail
+from intrahospital_api import constants
 
 
 class Result(detail.PatientDetailView):
@@ -8,9 +9,9 @@ class Result(detail.PatientDetailView):
 
     @classmethod
     def visible_to(klass, user):
-        if user.is_superuser:
-            return True
-        return False
+        return user.profile.roles.filter(
+            name=constants.VIEW_LAB_TESTS_IN_DETAIL
+        ).exists()
 
 
 class JsonDumpView(detail.PatientDetailView):
@@ -20,6 +21,6 @@ class JsonDumpView(detail.PatientDetailView):
 
     @classmethod
     def visible_to(klass, user):
-        if user.is_superuser:
-            return True
-        return False
+        return user.profile.roles.filter(
+            name=constants.VIEW_LAB_TEST_JSON_IN_DETAIL
+        ).exists()

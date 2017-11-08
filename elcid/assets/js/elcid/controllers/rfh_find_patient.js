@@ -1,18 +1,15 @@
 angular.module('opal.controllers').controller('RfhFindPatientCtrl',
-  function(scope, Episode, step, episode, $window) {
+  function(scope, Episode, step, episode, DemographicsSearch, $window) {
     "use strict";
 
     scope.lookup_hospital_number = function() {
-        Episode.findByHospitalNumber(
-            scope.demographics.hospital_number,
-            {
-                newPatient:    scope.new_patient,
-                newForPatient: scope.new_for_patient,
-                error        : function(){
-                    // this shouldn't happen, but we should probably handle it better
-                    $window.alert('ERROR: More than one patient found with hospital number');
-                }
-            });
+      DemographicsSearch.find(
+        scope.demographics.hospital_number,
+        {
+            patient_not_found:    scope.new_patient,
+            patient_found_in_elcid: scope.new_for_patient,
+            patient_found_in_hospital: scope.new_for_patient
+        });
     };
 
     this.initialise = function(scope){

@@ -9,8 +9,8 @@ from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
+from intrahospital_api import get_api
 from elcid import models as emodels
-from lab import models as lmodels
 from elcid.utils import timing
 
 
@@ -512,9 +512,40 @@ class BloodCultureResultApi(viewsets.ViewSet):
         ))
 
 
+class DemographicsSearch(LoginRequiredViewset):
+    base_name = 'demographics_search'
+    PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
+    PATIENT_FOUND_IN_HOSPITAL = "patient_found_in_hospital"
+    PATIENT_NOT_FOUND = "patient_not_found"
+
+    def retrieve(self, request, *args, **kwargs):
+        hospital_number = kwargs["pk"]
+        demographics = emodels.Demographics.objects.filter(
+            hospital_number=hospital_number
+        ).last()
+
+        # the patient is in elcid
+        if demographics:
+            return json_response(dict(
+                patient=demographics.patient.to_dict(request.user),
+                status=self.PATIENT_FOUND_IN_ELCID
+            ))
+        else:
+            api = get_api()
+            demographics = api.demographics(hospital_number)
+
+            if demographics:
+                return json_response(dict(
+                    patient=dict(demographics=[demographics]),
+                    status=self.PATIENT_FOUND_IN_HOSPITAL
+                ))
+            else:
+                return json_response(dict(status=self.PATIENT_NOT_FOUND))
+
 
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
+elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 
 
 class ReleventLabTestApi(LoginRequiredViewset):

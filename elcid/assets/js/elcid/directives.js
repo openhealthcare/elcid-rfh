@@ -25,17 +25,14 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
 });
 
 
-directives.directive("investigationSparkLines", function () {
+directives.directive("sparkLine", function () {
   "use strict";
   return {
     restrict: 'A',
     scope: {
-      data: "=investigationSparkLines",
+      data: "=sparkLine",
     },
     link: function (scope, element, attrs) {
-      if(scope.data && scope.data.length){
-        debugger;
-      }
       var data = angular.copy(scope.data);
       data.unshift("values");
       var graphParams = {

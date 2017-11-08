@@ -144,7 +144,7 @@ TEMPLATE_DIRS = (
     os.path.join(PROJECT_PATH, 'templates'),
 )
 
-TEMPLATE_CONTEXT_PROCESSORS= (
+TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
@@ -155,6 +155,7 @@ TEMPLATE_CONTEXT_PROCESSORS= (
     'django.contrib.messages.context_processors.messages',
     'opal.context_processors.settings',
     'opal.context_processors.models',
+    'elcid.context_processors.permissions',
     'lab.context_processors.lab_tests',
 )
 
@@ -181,9 +182,21 @@ INSTALLED_APPS = (
 )
 
 # The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPTIAL_API = (
-    'intrahospital_api.dev.api.MockApi'
+INTRAHOSPTIAL_API = 'intrahospital_api.dev.api.DevApi'
+
+# if the intrahospital api is prod, we need
+# an ip address, a database, a username and a password for
+# the hospital db
+HOSPTIAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
 )
+
+# this is the switch used in the card list to show results or not
+CARD_LIST_RESULTS = True
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
