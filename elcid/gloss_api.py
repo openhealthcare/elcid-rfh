@@ -167,7 +167,6 @@ def bulk_create_from_gloss_response(request_data):
     logging.info("running a bulk update with")
     logging.info(update_dict)
 
-
     patient_query = omodels.Patient.objects.filter(
         demographics__hospital_number=hospital_number
     )

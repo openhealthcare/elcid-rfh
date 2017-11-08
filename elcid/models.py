@@ -182,7 +182,7 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
     def update_from_dict(self, data, *args, **kwargs):
         populated = (
-            i for i in data.keys() if i != "lab_test_type" and not i != "id"
+            i for i in data.keys() if i != "lab_test_type" and i != "id"
         )
         if not any(populated):
             return
@@ -203,7 +203,6 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
                 if existing:
                     data["id"] = existing.id
-
             super(HL7Result, self).update_from_dict(data, *args, **kwargs)
 
     @classmethod

@@ -80,27 +80,12 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
-
-            if patient:
-                # the patient already exists
-
-                # refreshes the saved patient
-                gloss_api.patient_query(hospital_number)
-                episode = patient.create_episode()
-            else:
-                # the patient doesn't exist
-                patient = gloss_api.patient_query(hospital_number)
-
-                if patient:
-                    # nuke whatever is passed in in demographics as this will
-                    # have been updated by gloss
-                    data.pop("demographics")
-                    episode = patient.episode_set.get()
-
-            gloss_api.subscribe(hospital_number)
-
-        if not patient:
             patient = omodels.Patient.objects.create()
+            results = api.results(hospital_number)
+            for result in results:
+                result["patient_id"] = patient.id
+                hl7_result = models.HL7Result()
+                hl7_result.update_from_dict(result, user)
 
         if not episode:
             episode = patient.create_episode()
