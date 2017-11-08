@@ -39,5 +39,9 @@ class DevApi(api.BaseApi):
             first_name=first_name,
             surname=random.choice(LAST_NAMES),
             title=title,
-            hospital_number=hospital_number
+            hospital_number=hospital_number,
+            external_system="DEV_API"
         )
+
+    def get_results(self, hospital_number):
+        pass

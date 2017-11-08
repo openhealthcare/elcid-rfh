@@ -1,4 +1,5 @@
 import datetime
+from intrahospital_api import get_api
 from elcid import models
 from opal import models as omodels
 from lab import models as lmodels
@@ -74,7 +75,9 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             we expect the patient to have already been updated by gloss
         """
-        if settings.GLOSS_ENABLED:
+        if not patient:
+            api = get_api()
+
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
 
