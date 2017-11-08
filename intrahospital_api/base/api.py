@@ -1,15 +1,16 @@
-from opal.models import Patient
-
-
 class BaseApi(object):
-    def demographics(self):
-        raise NotImplemented('Please implement a demographics search')
+    def demographics(self, hospital_number):
+        raise NotImplemented('Please implement a demographics query')
 
-    def update_patient(self, patient):
+    def results(self, hospital_number):
+        raise NotImplemented('Please implement a results query')
+
+    def raw_data(self, hospital_number):
         raise NotImplemented(
-            'Please implement a way to update a single patient'
+            "Please a method that get's all raw data about a patient"
         )
 
-    def update_patients(self):
-        for patient in Patient.objects.all():
-            self.update_patient(patient)
+    def cooked_data(self, hospital_number):
+        raise NotImplemented(
+            "Please a method that get's all cooked data about a patient"
+        )
