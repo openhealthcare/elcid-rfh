@@ -203,8 +203,9 @@ class ProdApi(api.BaseApi):
         """ not all data, I lied. Only the last year's
         """
         self.check_hospital_number(hospital_number)
+        db_date = to_db_date(datetime.date.today() - datetime.timedelta(365))
         rows = self.execute_query(ALL_DATA_QUERY.format(
-            view=self.view, hospital_number=hospital_number
+            view=self.view, hospital_number=hospital_number, since=db_date
         ))
         return rows
 
