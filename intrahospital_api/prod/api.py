@@ -143,11 +143,11 @@ class Row(object):
 
 class ProdApi(api.BaseApi):
     def __init__(self):
-        self.ip_address = settings.HOSPTIAL_DB["ip_address"]
-        self.database = settings.HOSPTIAL_DB["database"]
-        self.username = settings.HOSPTIAL_DB["username"]
-        self.password = settings.HOSPTIAL_DB["password"]
-        self.view = settings.HOSPTIAL_DB["view"]
+        self.ip_address = settings.HOSPITAL_DB["ip_address"]
+        self.database = settings.HOSPITAL_DB["database"]
+        self.username = settings.HOSPITAL_DB["username"]
+        self.password = settings.HOSPITAL_DB["password"]
+        self.view = settings.HOSPITAL_DB["view"]
         if not all([
             self.ip_address,
             self.database,

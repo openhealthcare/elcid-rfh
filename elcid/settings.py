@@ -182,12 +182,12 @@ INSTALLED_APPS = (
 )
 
 # The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPTIAL_API = 'intrahospital_api.dev.api.DevApi'
+INTRAHOSPITAL_API = 'intrahospital_api.dev.api.DevApi'
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
 # the hospital db
-HOSPTIAL_DB = dict(
+HOSPITAL_DB = dict(
     ip_address=None,
     database=None,
     username=None,

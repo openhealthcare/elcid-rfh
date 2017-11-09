@@ -3,4 +3,4 @@ from django.utils.module_loading import import_string
 
 
 def get_api():
-    return import_string(settings.INTRAHOSPTIAL_API)()
+    return import_string(settings.INTRAHOSPITAL_API)()
