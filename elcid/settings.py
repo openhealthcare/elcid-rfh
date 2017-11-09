@@ -195,6 +195,7 @@ HOSPTIAL_DB = dict(
     view=None
 )
 
+
 # search with external demographics when adding a patient
 ADD_PATIENT_DEMOGRAPHICS = True
 
@@ -351,17 +352,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
-
-# lab test workings
-
-# show the lab tests in the episode list
-EPISODE_LIST_GRAPHS_ENABLED = True
-
-# show the results view in th patient detial (its always shown to superusers)
-RESULTS_VIEW = True
-
-# are we importing demographics from a central repo, ie should demographics be editable
-DEMOGRAPHICS_IMPORTED = False
 
 
 if 'test' not in sys.argv:
