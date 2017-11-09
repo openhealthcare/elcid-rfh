@@ -42,6 +42,10 @@ class Command(BaseCommand):
             external_demographics_json = api.demographics(
                 demographics.hospital_number
             )
+            if not external_demographics_json:
+                print "unable to find {}".format(demographics.hospital_number)
+                continue
+
             external_demographics = patient.externaldemographics_set.get()
             external_demographics_json.pop('external_system')
 

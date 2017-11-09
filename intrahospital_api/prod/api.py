@@ -194,10 +194,13 @@ class ProdApi(api.BaseApi):
 
     def demographics(self, hospital_number):
         self.check_hospital_number(hospital_number)
-        row = self.execute_query(DEMOGRAPHICS_QUERY.format(
+        rows = self.execute_query(DEMOGRAPHICS_QUERY.format(
             view=self.view, hospital_number=hospital_number
-        ))[0]
-        return Row(row).get_demographics_dict()
+        ))
+        if not len(rows):
+            return
+
+        return Row(rows[0]).get_demographics_dict()
 
     def raw_data(self, hospital_number):
         """ not all data, I lied. Only the last year's
