@@ -5,7 +5,6 @@ from opal import models as omodels
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
-from elcid import gloss_api
 
 
 from opal.core.pathway.pathways import (
@@ -76,16 +75,18 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             we expect the patient to have already been updated by gloss
         """
         if not patient:
-            api = get_api()
 
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
             patient = omodels.Patient.objects.create()
-            results = api.results(hospital_number)
-            for result in results:
-                result["patient_id"] = patient.id
-                hl7_result = models.HL7Result()
-                hl7_result.update_from_dict(result, user)
+
+            if settings.ADD_PATIENT_LAB_TESTS:
+                api = get_api()
+                results = api.results(hospital_number)
+                for result in results:
+                    result["patient_id"] = patient.id
+                    hl7_result = models.HL7Result()
+                    hl7_result.update_from_dict(result, user)
 
         if not episode:
             episode = patient.create_episode()

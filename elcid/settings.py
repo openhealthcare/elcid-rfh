@@ -195,8 +195,11 @@ HOSPTIAL_DB = dict(
     view=None
 )
 
-# this is the switch used in the card list to show results or not
-CARD_LIST_RESULTS = True
+# search with external demographics when adding a patient
+ADD_PATIENT_DEMOGRAPHICS = True
+
+# after we've added a patient, should we load in the labtests?
+ADD_PATIENT_LAB_TESTS = False
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)

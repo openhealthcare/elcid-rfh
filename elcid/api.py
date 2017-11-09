@@ -530,8 +530,11 @@ class DemographicsSearch(LoginRequiredViewset):
                 status=self.PATIENT_FOUND_IN_ELCID
             ))
         else:
-            api = get_api()
-            demographics = api.demographics(hospital_number)
+            demographics = None
+
+            if settings.ADD_PATIENT_DEMOGRAPHICS:
+                api = get_api()
+                demographics = api.demographics(hospital_number)
 
             if demographics:
                 return json_response(dict(

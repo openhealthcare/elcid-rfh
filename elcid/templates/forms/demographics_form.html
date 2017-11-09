@@ -21,15 +21,13 @@
 </div>
 <div ng-hide="editing.demographics.external_system">
   {% input "autofocus" field="Demographics.hospital_number" %}
-  {% input field="Demographics.nhs_number" %}
+  {% input field="Demographics.nhs_number" label="NHS Number" %}
   {% select field="Demographics.title" %}
   {% input field="Demographics.first_name" %}
   {% input field="Demographics.surname" %}
   {% date_of_birth_field %}
-  {% input field="Demographics.post_code" %}
   {% select field="Demographics.sex" %}
   {% select field="Demographics.marital_status" %}
   {% select field="Demographics.ethnicity" %}
-  {% input field="Demographics.gp_practice_code" %}
   {% input field="Demographics.birth_place" %}
 </div>

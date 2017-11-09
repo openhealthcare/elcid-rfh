@@ -69,15 +69,6 @@ class Demographics(PatientSubrecord, ExternallySourcedModel):
     class Meta:
         verbose_name_plural = "Demographics"
 
-    @classmethod
-    def get_form_template(cls, patient_list=None, episode_type=None):
-        if settings.DEMOGRAPHICS_IMPORTED:
-            return super(Demographics, cls).get_form_template(
-                patient_list=None, episode_type=None
-            )
-        else:
-            return "forms/demographics_form_manual.html"
-
 
 class ContactDetails(PatientSubrecord):
     _is_singleton = True
