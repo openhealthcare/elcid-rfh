@@ -200,7 +200,7 @@ HOSPITAL_DB = dict(
 ADD_PATIENT_DEMOGRAPHICS = True
 
 # after we've added a patient, should we load in the labtests?
-ADD_PATIENT_LAB_TESTS = False
+ADD_PATIENT_LAB_TESTS = True
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)

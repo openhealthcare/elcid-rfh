@@ -5,7 +5,7 @@ from intrahospital_api.base import api
 from lab import models as lmodels
 from django.conf import settings
 
-DEMOGRAPHICS_QUERY = "SELECT top(1) FROM {view} WHERE Patient_Number = \
+DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 '{hospital_number}' ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
