@@ -94,7 +94,7 @@ class Row(object):
     def get_demographics_dict(self):
         result = {}
         for field in self.DEMOGRAPHICS_FIELDS:
-            result[field] = self.getattr("get_{}".format(field))
+            result[field] = getattr(self, "get_{}".format(field))()
 
         return result
 
@@ -128,7 +128,7 @@ class Row(object):
     def get_results_dict(self):
         result = {}
         for field in self.RESULT_FIELDS:
-            result[field] = self.getattr("get_{}".format(field))
+            result[field] = getattr(self, "get_{}".format(field))()
 
         return result
 
@@ -136,7 +136,7 @@ class Row(object):
         result = {}
         fields = self.DEMOGRAPHICS_FIELDS + self.RESULT_FIELDS
         for field in fields:
-            result[field] = self.getattr("get_{}".format(field))
+            result[field] = getattr(self, "get_{}".format(field))()
 
         return result
 
@@ -188,8 +188,8 @@ class ProdApi(api.BaseApi):
         return result
 
     def check_hospital_number(self, hospital_number):
-        valid = re.match('^[\w- ]+$', str)
-        if valid is not None:
+        valid = re.match('^[\w-]+$', hospital_number)
+        if valid is None:
             raise ValueError('unable to process {}'.format(hospital_number))
 
     def demographics(self, hospital_number):
@@ -197,27 +197,7 @@ class ProdApi(api.BaseApi):
         row = self.execute_query(DEMOGRAPHICS_QUERY.format(
             view=self.view, hospital_number=hospital_number
         ))[0]
-        return self.cast_row_to_demographics_fields(row)
-
-    def cast_row_to_demographics_fields(self, row):
-        sex_abbreviation = self.get_or_fallback(row, "CRS_SEX", "SEX")
-
-        if sex_abbreviation == "M":
-            sex = "Male"
-        else:
-            sex = "Female"
-
-        dob = self.get_or_fallback(row, "CRS_DOB", "date_of_birth")
-        if dob:
-            dob = dob.date()
-
-        return dict(
-            surname=self.get_or_fallback(row, "CRS_Surname", "Surname"),
-            first_name=self.get_or_fallback(row, "CRS_Forename1", "Firstname"),
-            sex=sex,
-            title=self.get_or_fallback(row, "CRS_Title", "title"),
-            date_of_birth=dob
-        )
+        return Row(row).get_demographics_dict()
 
     def raw_data(self, hospital_number):
         """ not all data, I lied. Only the last year's
