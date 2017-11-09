@@ -10,3 +10,9 @@ class IntraHospitalApiPlugin(plugins.OpalPlugin):
     Main entrypoint to expose this plugin to our OPAL application.
     """
     urls = urlpatterns
+
+    javascripts = {
+        'opal.controllers': [
+            'js/intrahospital_api/controllers/reconcile_patient.js'
+        ]
+    }

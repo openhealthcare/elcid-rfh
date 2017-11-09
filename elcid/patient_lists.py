@@ -1,66 +1,155 @@
+from collections import defaultdict
+
 from opal.utils import AbstractBase
 from opal.core.patient_lists import TaggedPatientList
-from collections import defaultdict
-from opal.core.subrecords import patient_subrecords
-from lab.models import LabTest
-from opal.models import Episode
+from elcid import models
+from opal import models as omodels
+from opal.core.subrecords import patient_subrecords, episode_subrecords
+
+PATIENT_LIST_SUBRECORDS = [
+    models.PrimaryDiagnosis,
+    models.Demographics,
+    models.Antimicrobial,
+    models.Diagnosis,
+    models.Location,
+    omodels.Tagging
+]
 
 
-class RfhPatientList(TaggedPatientList, AbstractBase):
-    comparator_service = "EpisodeAddedComparator"
+def serialise_subrecords(ids, user, subrecords_to_serialise):
+    """
+        serialises subrecrods to a dict of
+        episode_id/patient_id = [serialised_subrecord]
+    """
+    if not subrecords_to_serialise:
+        return {}
 
-    def serialise_without_tests(self, user, episodes):
-        """
-        Return a set of serialised EPISODES.
+    result = defaultdict(lambda: defaultdict(list))
+    if issubclass(subrecords_to_serialise[0], omodels.PatientSubrecord):
+        qs_args = dict(patient__in=ids)
+        key = "patient_id"
+    else:
+        qs_args = dict(episode__in=ids)
+        key = "episode_id"
 
-        If HISTORIC_TAGS is Truthy, return deleted tags as well.
-        If EPISODE_HISTORY is Truthy return historic episodes as well.
-        """
-        patient_ids = [e.patient_id for e in episodes]
-        patient_subs = defaultdict(lambda: defaultdict(list))
+    for model in subrecords_to_serialise:
+        name = model.get_api_name()
+        subrecords = model.objects.filter(**qs_args)
 
-        episode_subs = Episode.objects.serialised_episode_subrecords(
-            episodes, user
-        )
-        for model in patient_subrecords():
-            if model == LabTest:
-                continue
-            name = model.get_api_name()
-            subrecords = model.objects.filter(patient__in=patient_ids)
+        for related in model._meta.many_to_many:
+            subrecords = subrecords.prefetch_related(related.attname)
 
-            for sub in subrecords:
-                patient_subs[sub.patient_id][name].append(sub.to_dict(user))
+        for sub in subrecords:
+            result[getattr(sub, key)][name].append(sub.to_dict(user))
+    return result
 
-        # We do this here because it's an order of magnitude quicker than
-        # hitting episode.tagging_dict() for each episode in a loop.
-        taggings = defaultdict(dict)
-        from opal.models import Tagging
-        qs = Tagging.objects.filter(episode__in=episodes)
-        qs = qs.filter(archived=False)
+
+def serialised_episode_subrecords(episodes, user, subrecords=None):
+    """
+        serialises episode subrecords.
+
+        takes in subrecords, a list of models of which only those
+        related models will be serialised.
+
+        It will filter those subrecords for EpisodeSubrecords and serialises
+        those.
+    """
+
+    if not subrecords:
+        e_subrecords = episode_subrecords()
+    else:
+        e_subrecords = [i for i in episode_subrecords() if i in subrecords]
+
+    return serialise_subrecords(
+        episodes, user, e_subrecords
+    )
+
+
+def serialised_patient_subrecords(episodes, user, subrecords=None):
+    """
+        serialises patient subrecords.
+
+        takes in subrecords, a list of models of which only those
+        related models will be serialised.
+
+        It will filter those subrecords for PatientSubrecords and serialises
+        those.
+    """
+    patient_ids = [i.patient_id for i in episodes]
+    if not subrecords:
+        p_subrecords = patient_subrecords()
+    else:
+        p_subrecords = [i for i in patient_subrecords() if i in subrecords]
+
+    return serialise_subrecords(
+        patient_ids, user, p_subrecords
+    )
+
+
+def serialised_tagging(episodes, user, historic_tags=False, subrecords=None):
+    """
+        Checks if we want to serialise the tagging model and if so
+        returns the serialised tagging model, (with history if requested)
+    """
+    taggings = defaultdict(dict)
+    if subrecords is None or omodels.Tagging in subrecords:
+        qs = omodels.Tagging.objects.filter(episode__in=episodes)
+
+        if not historic_tags:
+            qs = qs.filter(archived=False)
 
         for tag in qs:
             if tag.value == 'mine' and tag.user != user:
                 continue
             taggings[tag.episode_id][tag.value] = True
 
-        serialised = []
+    return taggings
 
-        for e in episodes:
-            d = e.to_dict(user, shallow=True)
 
+def serialised(
+    episodes, user, subrecords=None, historic_tags=False, episode_history=False
+):
+    """
+    Return a set of serialised EPISODES.
+
+    If HISTORIC_TAGS is Truthy, return deleted tags as well.
+    """
+    patient_subs = serialised_patient_subrecords(
+        episodes, user, subrecords=subrecords
+    )
+    episode_subs = serialised_episode_subrecords(
+        episodes, user, subrecords=subrecords
+    )
+    taggings = serialised_tagging(
+        episodes, user, subrecords=subrecords, historic_tags=historic_tags
+    )
+
+    serialised = []
+
+    for e in episodes:
+        d = e.to_dict(user, shallow=True)
+
+        if e.id in episode_subs:
             for key, value in list(episode_subs[e.id].items()):
                 d[key] = value
+
+        if e.patient_id in patient_subs:
             for key, value in list(patient_subs[e.patient_id].items()):
                 d[key] = value
 
-            d['tagging'] = [taggings[e.id]]
-            d['tagging'][0]['id'] = e.id
-            serialised.append(d)
+        if taggings:
+            d[omodels.Tagging.get_api_name()] = [taggings[e.id]]
+            d[omodels.Tagging.get_api_name()][0]['id'] = e.id
+        serialised.append(d)
+    return serialised
 
-        return serialised
+
+class RfhPatientList(TaggedPatientList, AbstractBase):
+    comparator_service = "EpisodeAddedComparator"
 
     def to_dict(self, user):
-        return self.serialise_without_tests(user, self.get_queryset(user=user))
+        qs = super(RfhPatientList, self).get_queryset()
+        return serialised(qs, user, subrecords=PATIENT_LIST_SUBRECORDS)
 
 
 class Hepatology(RfhPatientList):

@@ -6,6 +6,7 @@ from opal.core.fields import ForeignKeyOrFreeText
 
 class ExternalDemographics(PatientSubrecord):
     _is_singleton = True
+    _icon = "fa fa-handshake-o"
 
     hospital_number = models.CharField(max_length=255, blank=True)
     nhs_number = models.CharField(max_length=255, blank=True, null=True)

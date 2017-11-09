@@ -27,7 +27,7 @@ def add(apps, schema_editor):
 
 def remove(apps, schema_editor):
     Role = apps.get_model("opal", "Role")
-    Role.objects.filter(role__name__in=constants.INTRAHOSPITAL_ROLES).delete()
+    Role.objects.filter(name__in=constants.INTRAHOSPITAL_ROLES).delete()
 
 
 class Migration(migrations.Migration):
