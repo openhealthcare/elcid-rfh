@@ -16,7 +16,7 @@ def to_db_date(some_date):
     """
         converts a date to a date str for the database
     """
-    dt = datetime.combine(some_date, datetime.min.time())
+    dt = datetime.datetime.combine(some_date, datetime.datetime.min.time())
     return dt.strftime('%Y-%m-%d')
 
 
@@ -211,7 +211,7 @@ class ProdApi(api.BaseApi):
 
     def cooked_data(self, hospital_number):
         raw_data = self.raw_data(hospital_number)
-        return (self.cook_data(row) for row in raw_data)
+        return (Row(row).get_all_fields() for row in raw_data)
 
     def results(self, hospital_number):
         return {}

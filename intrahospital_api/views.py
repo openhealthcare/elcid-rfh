@@ -56,5 +56,5 @@ class IntrahospitalCookedView(StaffRequiredMixin, PivottedData):
         ctx = super(IntrahospitalCookedView, self).get_context_data(
             *args, **kwargs
         )
-        ctx["title"] = "Raw Data"
+        ctx["title"] = "Cooked Data"
         return ctx
