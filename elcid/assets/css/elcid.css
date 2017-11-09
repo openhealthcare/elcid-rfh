@@ -153,4 +153,6 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .lab-tests .too-low {
   color: #03C3EA; }
 
-/*# sourceMappingURL=elcid.css.map */
+.no-results {
+  font-weight: 600;
+  color: #cbc9c8; }

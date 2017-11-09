@@ -9,10 +9,10 @@ $bg: #EEE;
 
 $red  : #f76c51;
 $blue : #5fa2dd;
-$bluelight: #a0c7ea;
+$blue-light: #a0c7ea;
 $green: #9cc96b;
 $obsidian: #343637;
-$obsidianlight: #cbc9c8;
+$obsidian-light: #cbc9c8;
 $navbar-height: 77px;
 $small-text-color: $secondary-background;
 
@@ -67,7 +67,7 @@ h5{
 .navbar-nav li:hover a,
 .navbar-nav li.active a,
 .navbar-nav li.active{
-	background: $obsidianlight;
+	background: $obsidian-light;
 }
 
 .panel-primary .panel-default .panel-heading,
@@ -229,4 +229,9 @@ a.list-group-item {
   .too-low{
     color: $too-low;
   }
+}
+
+.no-results{
+  font-weight: 600;
+  color: $obsidian-light;
 }
