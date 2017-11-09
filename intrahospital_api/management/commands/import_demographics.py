@@ -34,7 +34,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         api = get_api()
-        user = User.objects.get(username="super")
+        user = User.objects.get(username="ohc")
         patients = Patient.objects.filter(demographics__external_system=None)
         patients = patients.filter(externaldemographics__hospital_number='')
         for patient in patients:
@@ -49,12 +49,13 @@ class Command(BaseCommand):
             external_demographics = patient.externaldemographics_set.get()
             external_demographics_json.pop('external_system')
 
-            db = datetime.datetime.combine(
-                external_demographics_json["date_of_birth"],
-                datetime.datetime.min.time()
-            ).strftime(settings.DATE_INPUT_FORMATS[0])
+            if external_demographics_json["date_of_birth"]:
+                db = datetime.datetime.combine(
+                    external_demographics_json["date_of_birth"],
+                    datetime.datetime.min.time()
+                ).strftime(settings.DATE_INPUT_FORMATS[0])
 
-            external_demographics_json["date_of_birth"] = db
+                external_demographics_json["date_of_birth"] = db
             external_demographics.update_from_dict(
                 external_demographics_json, user
             )
