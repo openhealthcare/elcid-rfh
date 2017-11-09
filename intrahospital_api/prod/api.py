@@ -95,7 +95,7 @@ class Row(object):
         result = {}
         for field in self.DEMOGRAPHICS_FIELDS:
             result[field] = getattr(self, "get_{}".format(field))()
-
+        result["external_system"] = "RFH Demographics"
         return result
 
     # Results Fields

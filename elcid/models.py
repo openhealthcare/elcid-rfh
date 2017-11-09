@@ -2,23 +2,17 @@
 elCID implementation specific models!
 """
 import datetime
-from django.core.urlresolvers import reverse
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
-from django.db.models.signals import post_save
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
 from lab import models as lmodels
 
-from jsonfield import JSONField
 
 import opal.models as omodels
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel
+    EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
 )
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
