@@ -36,7 +36,6 @@ class Command(BaseCommand):
         api = get_api()
         user = User.objects.get(username="ohc")
         patients = Patient.objects.filter(demographics__external_system=None)
-        patients = patients.filter(externaldemographics__hospital_number='')
         for patient in patients:
             demographics = patient.demographics_set.get()
             external_demographics_json = api.demographics(
