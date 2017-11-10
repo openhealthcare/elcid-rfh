@@ -17,3 +17,4 @@ class ExternalDemographics(PatientSubrecord):
     date_of_birth = models.DateField(null=True, blank=True)
     reconciled = models.BooleanField(default=False)
     sex = ForeignKeyOrFreeText(omodels.Gender)
+    ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
