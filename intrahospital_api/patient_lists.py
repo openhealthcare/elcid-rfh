@@ -15,7 +15,11 @@ class ReconcileDemographics(patient_lists.PatientList):
     @property
     def queryset(self):
         patients = Patient.objects.filter(demographics__external_system=None)
-        return Episode.objects.filter(patient__in=patients)
+        episodes_id = []
+        for patient in patients:
+            episode = patient.episode_set.last()
+            episodes_id.append(episode.id)
+        return Episode.objects.filter(id__in=episodes_id)
 
     def to_dict(self, user):
         qs = super(ReconcileDemographics, self).get_queryset()

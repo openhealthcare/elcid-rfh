@@ -6,6 +6,7 @@ angular.module('opal.controllers').controller('ReconcilePatientCtrl',
       var external_demographics = angular.copy(scope.editing.external_demographics);
       delete external_demographics.consistency_token;
       delete external_demographics.reconciled;
+      delete external_demographics.id;
       _.extend(
         scope.editing.demographics, external_demographics
       );
