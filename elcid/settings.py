@@ -210,6 +210,7 @@ if 'test' in sys.argv:
     MIGRATION_MODULES = {
         'opal': 'opal.nomigrations',
         'elcid': 'elcid.nomigrations',
+        'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'walkin': 'walkin.nomigrations',
         'research': 'research.nomigrations',

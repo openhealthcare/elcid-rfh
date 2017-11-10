@@ -11,6 +11,27 @@ DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
 '{hospital_number}' AND last_updated > '{since}' ORDER BY last_updated DESC;"
 
+ETHNICITY_MAPPING = {
+    "99": "Other - Not Known",
+    "A": "White - British",
+    "B": "White - Irish",
+    "C": "White - Any Other White Background",
+    "D": "Mixed - White and Black Caribbean",
+    "E": "Mixed - White and Black African",
+    "F": "Mixed - White and Asian",
+    "G": "Mixed - Any Other Mixed Background",
+    "H": "Asian or Asian British - Indian",
+    "J": "Asian or Asian British - Pakistani",
+    "K": "Asian or Asian British - Bangladeshi",
+    "L": "Asian - Any Other Asian Background",
+    "M": "Black or Black British - Caribbean",
+    "N": "Black or Black British - African",
+    "P": "Black - Any Other Black Background",
+    "R": "Other - Chinese",
+    "S": "Other - Any Other Ethnic Group",
+    "Z": "Other - Not Stated",
+}
+
 
 def to_db_date(some_date):
     """
@@ -28,6 +49,7 @@ class Row(object):
         'first_name',
         'date_of_birth',
         'sex',
+        'ethnicity',
         'title',
         'date_of_birth',
         'hospital_number',
@@ -67,7 +89,9 @@ class Row(object):
         return self.db_row.get('Patient_Number', "CRS_NHS_Number")
 
     def get_nhs_number(self):
-        return self.db_row.get('Patient_Number')
+        return self.get_or_fallback(
+            self.db_row, "CRS_NHS_Number", "Patient_ID_External"
+        )
 
     def get_surname(self):
         return self.get_or_fallback(self.db_row, "CRS_Surname", "Surname")
@@ -82,6 +106,9 @@ class Row(object):
             return "Male"
         else:
             return "Female"
+
+    def get_ethnicity(self):
+        return ETHNICITY_MAPPING.get(self.db_row.get("CRS_Ethnic_Group"))
 
     def get_date_of_birth(self):
         dob = self.get_or_fallback(self.db_row, "CRS_DOB", "date_of_birth")
