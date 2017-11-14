@@ -11,14 +11,6 @@
          ng-click="episode.recordEditor.editItem('inpatient_admission', 0)"></i></h3>
     </div>
     <div class="panel-body">
-      <div class="row" ng-show="inpatientAdmission.datetime_of_admission">
-        <div class="col-md-4">
-          <b>Admitted</b>
-        </div>
-        <div class="col-md-8">
-          [[ inpatientAdmission.datetime_of_admission | shortDate ]]
-        </div>
-      </div>
       <div class="row">
         <div class="col-md-4">
           <b>Hospital</b>
@@ -56,14 +48,6 @@
     </h3>
   </div>
  <div class="panel-body">
-   <div class="row" ng-show="episode.start">
-     <div class="col-md-4">
-       <b>Admitted</b>
-     </div>
-     <div class="col-md-8">
-       [[ episode.start | shortDate ]]
-     </div>
-   </div>
    <div class="row">
      <div class="col-md-4">
        <b>Hospital</b>
