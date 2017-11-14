@@ -43,12 +43,9 @@
                             <span ng-show="episode.active">Current </span>
                             <span ng-show="episode.category_name === 'inpatient'">Inpatient Admission</span>
                             <span ng-show="episode.category_name !== 'inpatient'">[[ episode.category_name | title ]] Episode</span>
-                            <span ng-show="episode.date_of_admission">
-                                [[ episode.date_of_admission | shortDate ]]
-                                <span ng-show="episode.date_of_admission"> - [[ episode.discharge_date | shortDate ]]</span>
-                            </span>
-                            <span ng-show="!episode.date_of_admission">
-                                [[ episode.date_of_episode | shortDate ]]
+                            <span ng-show="episode.start">
+                                [[ episode.start | shortDate ]]
+                                <span ng-show="episode.start"> - [[ episode.end | shortDate ]]</span>
                             </span>
                         </a>
                     </div>

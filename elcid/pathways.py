@@ -1,3 +1,4 @@
+import datetime
 from elcid import models
 from lab import models as lmodels
 from django.db import transaction
@@ -5,10 +6,9 @@ from django.conf import settings
 from elcid import gloss_api
 
 
-from pathway.pathways import (
+from opal.core.pathway.pathways import (
     RedirectsToPatientMixin,
     Step,
-    MultiModelStep,
     PagePathway,
     WizardPathway,
 )
@@ -96,9 +96,14 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             gloss_api.subscribe(hospital_number)
 
-        return super(AddPatientPathway, self).save(
+        patient, episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
+
+        episode.start = datetime.date.today()
+        episode.save()
+
+        return patient, episode
 
 
 class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
@@ -142,7 +147,7 @@ class BloodCulturePathway(PagePathway):
     slug = "blood_culture"
 
     steps = (
-        MultiModelStep(
+        Step(
             template="pathway/blood_culture.html",
             display_name="Blood Culture",
             icon="fa fa-crosshairs",

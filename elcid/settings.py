@@ -168,6 +168,7 @@ INSTALLED_APPS = (
     'axes',
     'reversion',
     'opal',
+    'opal.core.pathway',
     'rest_framework',
     'rest_framework.authtoken',
     'compressor',
@@ -175,7 +176,6 @@ INSTALLED_APPS = (
     'lab',
     'elcid',
     'django.contrib.admin',
-    'pathway',
     'djcelery',
 )
 
@@ -292,7 +292,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.2.7.1'
+VERSION_NUMBER = '0.2.8'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
