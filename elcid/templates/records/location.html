@@ -6,12 +6,6 @@
 </span>
 <span ng-hide="item.hospital=='UCH'">[[item.hospital]] </span>
 [[item.ward]] [[item.bed]]<br />
-<span ng-show="row.start">
-  Admitted: [[row.start | shortDate]]
-</span>
-<span ng-show="row.end">
-  Discharged [[row.end | shortDate]]
-</span>
 
 <a ng-show="currentTag == 'mine' && !profile.readonly" class="screen-only" href="#" ng-click="removeFromMine($parent.$index, $event)">
   Remove from mine
