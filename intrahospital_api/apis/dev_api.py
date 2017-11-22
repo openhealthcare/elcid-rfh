@@ -1,5 +1,5 @@
 from django.conf import settings
-from intrahospital_api.base import api
+from intrahospital_api.apis import base_api
 from datetime import date, timedelta, datetime
 from elcid import models as emodels
 from lab import models as lmodels
@@ -180,7 +180,7 @@ TEST_BASES = {
 }
 
 
-class DevApi(api.BaseApi):
+class DevApi(base_api.BaseApi):
     def get_date_of_birth(self):
         return date.today() - timedelta(random.randint(1, 365 * 70))
 
@@ -252,6 +252,11 @@ class DevApi(api.BaseApi):
         datetime_ordered,
         result_status=lmodels.LabTest.COMPLETE
     ):
+        """
+            creates the dict of a lab test
+            that can be updated to the HL7 lab test
+            type
+        """
         external_identifier = self.get_external_identifier()
         datetime_ordered_str = datetime_ordered.strftime(
             settings.DATETIME_INPUT_FORMATS[0]

@@ -182,7 +182,7 @@ INSTALLED_APPS = (
 )
 
 # The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPITAL_API = 'intrahospital_api.dev.api.DevApi'
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
@@ -270,6 +270,11 @@ LOGGING = {
             'propagate': True,
         },
         'elcid.time_logger': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'intrahospital_api': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,

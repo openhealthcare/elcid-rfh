@@ -1,9 +1,11 @@
 import datetime
+import logging
 import pytds
 import re
-from intrahospital_api.base import api
+from intrahospital_api.apis import base_api
 from lab import models as lmodels
 from django.conf import settings
+
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 '{hospital_number}' ORDER BY last_updated DESC;"
@@ -69,7 +71,7 @@ class Row(object):
     def __init__(self, db_row):
         self.db_row = db_row
 
-    def get_or_fallback(self, row, primary_field, secondary_field):
+    def get_or_fallback(self, primary_field, secondary_field):
         """ look at one field, if its empty, use a different field
         """
         # we use Cerner information if it exists, otherwise
@@ -77,30 +79,30 @@ class Row(object):
         # these are combined in the same table
         # so we fall back to a different
         # field name in the same row
-        result = row.get(primary_field)
+        result = self.db_row.get(primary_field)
 
         if not result:
-            result = row.get(secondary_field, "")
+            result = self.db_row.get(secondary_field, "")
 
         return result
 
     # Demographics Fields
     def get_hospital_number(self):
-        return self.db_row.get('Patient_Number', "CRS_NHS_Number")
+        return self.db_row.get('Patient_Number')
 
     def get_nhs_number(self):
         return self.get_or_fallback(
-            self.db_row, "CRS_NHS_Number", "Patient_ID_External"
+            "CRS_NHS_Number", "Patient_ID_External"
         )
 
     def get_surname(self):
-        return self.get_or_fallback(self.db_row, "CRS_Surname", "Surname")
+        return self.get_or_fallback("CRS_Surname", "Surname")
 
     def get_first_name(self):
-        return self.get_or_fallback(self.db_row, "CRS_Forename1", "Firstname")
+        return self.get_or_fallback("CRS_Forename1", "Firstname")
 
     def get_sex(self):
-        sex_abbreviation = self.get_or_fallback(self.db_row, "CRS_SEX", "SEX")
+        sex_abbreviation = self.get_or_fallback("CRS_SEX", "SEX")
 
         if sex_abbreviation == "M":
             return "Male"
@@ -111,12 +113,12 @@ class Row(object):
         return ETHNICITY_MAPPING.get(self.db_row.get("CRS_Ethnic_Group"))
 
     def get_date_of_birth(self):
-        dob = self.get_or_fallback(self.db_row, "CRS_DOB", "date_of_birth")
+        dob = self.get_or_fallback("CRS_DOB", "date_of_birth")
         if dob:
             return dob.date()
 
     def get_title(self):
-        return self.get_or_fallback(self.db_row, "CRS_Title", "title")
+        return self.get_or_fallback("CRS_Title", "title")
 
     def get_demographics_dict(self):
         result = {}
@@ -168,13 +170,13 @@ class Row(object):
         return result
 
 
-class ProdApi(api.BaseApi):
+class ProdApi(base_api.BaseApi):
     def __init__(self):
-        self.ip_address = settings.HOSPITAL_DB["ip_address"]
-        self.database = settings.HOSPITAL_DB["database"]
-        self.username = settings.HOSPITAL_DB["username"]
-        self.password = settings.HOSPITAL_DB["password"]
-        self.view = settings.HOSPITAL_DB["view"]
+        self.ip_address = settings.HOSPITAL_DB.get("ip_address")
+        self.database = settings.HOSPITAL_DB.get("database")
+        self.username = settings.HOSPITAL_DB.get("username")
+        self.password = settings.HOSPITAL_DB.get("password")
+        self.view = settings.HOSPITAL_DB.get("view")
         if not all([
             self.ip_address,
             self.database,
@@ -199,28 +201,24 @@ class ProdApi(api.BaseApi):
                 result = cur.fetchall()
         return result
 
-    def get_or_fallback(self, row, primary_field, secondary_field):
-        """ look at one field, if its empty, use a different field
-        """
-        # we use Cerner information if it exists, otherwise
-        # we fall back to winpath demograhpics
-        # these are combined in the same table
-        # so we fall back to a different
-        # field name in the same row
-        result = row.get(primary_field)
-
-        if not result:
-            result = row.get(secondary_field, "")
-
-        return result
-
     def check_hospital_number(self, hospital_number):
+        """ hospital numbers hould be alpha numeric or -
+            nothing else
+        """
         valid = re.match('^[\w-]+$', hospital_number)
         if valid is None:
-            raise ValueError('unable to process {}'.format(hospital_number))
+            err = "flawed hosital number {} passed to the intrahospital api"
+            err = err.format(hospital_number)
+            logger = logging.getLogger('intrahospital_api')
+            logger.error(err)
+            raise ValueError(err)
 
     def demographics(self, hospital_number):
-        self.check_hospital_number(hospital_number)
+        hospital_number = hospital_number.strip()
+        try:
+            self.check_hospital_number(hospital_number)
+        except ValueError:
+            return
         rows = self.execute_query(DEMOGRAPHICS_QUERY.format(
             view=self.view, hospital_number=hospital_number
         ))
@@ -244,4 +242,7 @@ class ProdApi(api.BaseApi):
         return (Row(row).get_all_fields() for row in raw_data)
 
     def results(self, hospital_number):
+        """
+            will be implemented in a later release
+        """
         return {}

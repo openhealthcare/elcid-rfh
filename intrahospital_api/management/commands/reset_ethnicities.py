@@ -6,7 +6,7 @@ from opal.core import application
 from opal.management.commands.load_lookup_lists import LOOKUPLIST_LOCATION
 
 from elcid.models import Demographics
-from intrahospital_api.prod.api import ETHNICITY_MAPPING
+from intrahospital_api.apis.prod_api import ETHNICITY_MAPPING
 
 
 class Command(BaseCommand):
