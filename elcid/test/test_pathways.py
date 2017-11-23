@@ -1,7 +1,5 @@
 from datetime import date
-from django.test import override_settings
 from mock import patch
-from elcid import gloss_api
 
 from opal import models
 from opal.core.test import OpalTestCase

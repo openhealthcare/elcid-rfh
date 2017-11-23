@@ -11,7 +11,7 @@ class StaffRequiredMixin(object):
         return super(StaffRequiredMixin, self).dispatch(*args, **kwargs)
 
 
-class PivottedData(TemplateView):
+class PivottedData(StaffRequiredMixin, TemplateView):
     template_name = "intrahospital_api/table_view.html"
     api_method = ""
 
@@ -38,7 +38,7 @@ class PivottedData(TemplateView):
         return ctx
 
 
-class IntrahospitalRawView(StaffRequiredMixin, PivottedData):
+class IntrahospitalRawView(PivottedData):
     api_method = "raw_data"
 
     def get_context_data(self, *args, **kwargs):
@@ -49,7 +49,7 @@ class IntrahospitalRawView(StaffRequiredMixin, PivottedData):
         return ctx
 
 
-class IntrahospitalCookedView(StaffRequiredMixin, PivottedData):
+class IntrahospitalCookedView(PivottedData):
     api_method = "cooked_data"
 
     def get_context_data(self, *args, **kwargs):
