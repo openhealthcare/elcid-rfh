@@ -29,7 +29,8 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
   ]
 
   var find = function(hospitalNumber, findPatientOptions){
-    _.keys(findPatientOptions, function(key){
+    var callBackNames = _.keys(findPatientOptions);
+    _.each(callBackNames, function(key){
       if(expectedCallbacks.indexOf(key) === -1){
         throw "unknown call back";
       }

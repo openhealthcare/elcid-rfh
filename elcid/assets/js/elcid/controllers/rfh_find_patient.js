@@ -1,13 +1,16 @@
 angular.module('opal.controllers').controller('RfhFindPatientCtrl',
-  function(scope, Episode, step, episode, DemographicsSearch, $window) {
+  function(scope, step, episode, DemographicsSearch, $window) {
     "use strict";
 
     scope.lookup_hospital_number = function() {
       DemographicsSearch.find(
         scope.demographics.hospital_number,
         {
+            // we can't find the patient on either elicd or the hospital demographcis
             patient_not_found:    scope.new_patient,
+            // the patient has been entered into elcid before
             patient_found_in_elcid: scope.new_for_patient,
+            // the patient exists on the intrahospital api, but not in elcid
             patient_found_in_hospital: scope.new_for_patient
         });
     };
