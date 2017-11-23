@@ -105,22 +105,6 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
                 {'consistency_token': '87654321'}, self.user
             )
 
-    @override_settings(DEMOGRAPHICS_IMPORTED=True)
-    @patch("opal.models.Subrecord.get_form_template")
-    def test_get_demographics_form_with_external_system(
-        self, form_template_mock
-    ):
-        form_template_mock.return_value = "some_template.html"
-        form_template = emodels.Demographics.get_form_template()
-        self.assertEqual(form_template, "some_template.html")
-
-    @override_settings(DEMOGRAPHICS_IMPORTED=False)
-    def test_get_demographics_form_without_external_system(self):
-        form_template = emodels.Demographics.get_form_template()
-        self.assertEqual(
-            form_template, "forms/demographics_form_manual.html"
-        )
-
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 

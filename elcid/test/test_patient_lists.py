@@ -30,7 +30,7 @@ class AbstractPatientListTestCase(OpalTestCase):
         demographics.surname = "Flintstone"
         demographics.save()
         gram_stain = models.GramStain.objects.create(
-            date_ordered=datetime.date.today(),
+            datetime_ordered=datetime.datetime.now(),
             patient=patient,
         )
 
