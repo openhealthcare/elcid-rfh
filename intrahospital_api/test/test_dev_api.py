@@ -22,6 +22,7 @@ class DevApiTestCase(OpalTestCase):
             "first_name",
             "surname",
             "title",
+            "nhs_number",
             "hospital_number",
             "external_system"
         ]
@@ -79,6 +80,7 @@ class DevApiTestCase(OpalTestCase):
             'observation_value',
             'sex',
             'hospital_number',
+            'nhs_number',
             'date_of_birth',
             'test_name',
             'units',
@@ -86,7 +88,7 @@ class DevApiTestCase(OpalTestCase):
             'reference_range'
         ]
         self.assertEqual(
-            expected_fields, cooked_data[0].keys()
+            set(expected_fields), set(cooked_data[0].keys())
         )
 
     def test_raw_data(self):

@@ -15,6 +15,5 @@ class ExternalDemographics(PatientSubrecord):
     middle_name = models.CharField(max_length=255, blank=True, null=True)
     title = ForeignKeyOrFreeText(omodels.Title)
     date_of_birth = models.DateField(null=True, blank=True)
-    reconciled = models.BooleanField(default=False)
     sex = ForeignKeyOrFreeText(omodels.Gender)
     ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)

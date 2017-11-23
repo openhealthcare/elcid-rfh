@@ -204,6 +204,7 @@ class DevApi(base_api.BaseApi):
             surname=random.choice(LAST_NAMES),
             title=title,
             hospital_number=hospital_number,
+            nhs_number=self.get_external_identifier(),
             external_system="DEV_API"
         )
 

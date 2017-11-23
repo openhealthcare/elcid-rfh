@@ -9,6 +9,7 @@ omit =
     intrahospital_api/test/*
     elcid/wsgi*
     elcid/settings.py
+    elcid/local_settings.py
     elcid/templates/acceptance/*
 
 

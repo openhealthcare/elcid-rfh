@@ -2,6 +2,7 @@ from django.db import transaction
 from django.core.management.base import BaseCommand
 from elcid.models import Demographics
 from intrahospital_api.models import ExternalDemographics
+from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
 class Command(BaseCommand):
@@ -15,9 +16,12 @@ class Command(BaseCommand):
 
         # we can't do an update because of fk ft
         for demographic in demographics:
-            demographic.external_system = "RFH Database"
+            demographic.external_system = EXTERNAL_SYSTEM
             demographic.sex = external_demographics.sex
             demographic.title = external_demographics.title
+            demographic.ethnicity = external_demographics.ethnicity
+            demographic.nhs_number = external_demographics.nhs_number
+            demographic.middle_name = external_demographics.middle_name
             demographic.save()
 
     @transaction.atomic
