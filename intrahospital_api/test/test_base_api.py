@@ -1,6 +1,6 @@
 from opal.core.test import OpalTestCase
 
-from intrahospital_api.base_api import BaseApi
+from intrahospital_api.apis.base_api import BaseApi
 
 
 class BaseApiTestCase(OpalTestCase):

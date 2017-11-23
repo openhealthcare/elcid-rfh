@@ -1,5 +1,4 @@
 from opal.models import Patient
-from intrahospital_api.prod
 
 
 class Match(object):
