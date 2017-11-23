@@ -1,9 +1,11 @@
 import json
+import mock
 import datetime
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
 from elcid.api import BloodCultureResultApi
 from elcid import models as emodels
+from django.test import override_settings
 
 
 class BloodCultureResultApiTestCase(OpalTestCase):
@@ -170,4 +172,65 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             [i["id"] for i in results],
             [gram_stain.id, quick_fish.id]
 
+        )
+
+
+class DemographicsSearchTestCase(OpalTestCase):
+    def setUp(self):
+        super(DemographicsSearchTestCase, self).setUp()
+        request = self.rf.get("/")
+        self.url = reverse(
+            "demographics_search-detail",
+            kwargs=dict(pk=1),
+            request=request
+        )
+        # initialise the property
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+
+    @override_settings(ADD_PATIENT_DEMOGRAPHICS=False)
+    def test_without_demographics_add_patient_not_found(self):
+        response = json.loads(self.client.get(self.url).content)
+        self.assertEqual(
+            response["status"], "patient_not_found"
+        )
+
+    @override_settings(ADD_PATIENT_DEMOGRAPHICS=True)
+    @mock.patch("elcid.api.get_api")
+    def test_with_demographics_add_patient_not_found(self, get_api):
+        get_api().demographics.return_value = None
+        response = json.loads(self.client.get(self.url).content)
+        self.assertEqual(
+            response["status"], "patient_not_found"
+        )
+
+    @override_settings(ADD_PATIENT_DEMOGRAPHICS=True)
+    @mock.patch("elcid.api.get_api")
+    def test_with_demographics_add_patient_found_in_hospital(self, get_api):
+        get_api().demographics.return_value = dict(first_name="Wilma")
+        response = json.loads(self.client.get(self.url).content)
+        self.assertEqual(
+            response["status"], "patient_found_in_hospital"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
+    def test_patient_found(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Wilma",
+            hospital_number="1"
+        )
+        response = json.loads(self.client.get(self.url).content)
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
