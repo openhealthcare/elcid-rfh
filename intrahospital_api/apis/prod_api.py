@@ -219,9 +219,14 @@ class ProdApi(base_api.BaseApi):
             self.check_hospital_number(hospital_number)
         except ValueError:
             return
-        rows = self.execute_query(DEMOGRAPHICS_QUERY.format(
-            view=self.view, hospital_number=hospital_number
-        ))
+        try:
+            rows = self.execute_query(DEMOGRAPHICS_QUERY.format(
+                view=self.view, hospital_number=hospital_number
+            ))
+        except:
+            logger = logging.getLogger('error_emailer')
+            logger.error("unable to get demographics")
+            return
         if not len(rows):
             return
 

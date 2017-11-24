@@ -419,3 +419,41 @@ class ProdApiTestcase(OpalTestCase):
             raw_data.return_value = [copy.copy(FAKE_ROW_DATA)]
             rows = api.cooked_data("123")
         self.assertEqual(len(list(rows)), 1)
+
+    def test_demographics_success(self):
+        api = self.get_api()
+        with mock.patch.object(api, "execute_query") as execute_query:
+            execute_query.return_value = [FAKE_ROW_DATA]
+            result = api.demographics("123")
+
+        self.assertEqual(
+            result["first_name"], "TEST"
+        )
+
+    def test_empty_demographics(self):
+        api = self.get_api()
+        with mock.patch.object(api, "execute_query") as execute_query:
+            execute_query.return_value = []
+            result = api.demographics("123")
+
+        self.assertIsNone(result)
+
+    def test_demographics_hospital_number_fail(self):
+        api = self.get_api()
+        with mock.patch.object(api, "execute_query") as execute_query:
+            execute_query.return_value = []
+            result = api.demographics("A1' 23")
+
+        self.assertIsNone(result)
+
+    @mock.patch('intrahospital_api.apis.prod_api.logging')
+    def test_demographics_api_fail(self, logging):
+        api = self.get_api()
+        with mock.patch.object(api, "execute_query") as execute_query:
+            execute_query.side_effect = ValueError('Boom')
+            result = api.demographics("123")
+        self.assertIsNone(result)
+        logging.getLogger.assert_called_once_with("error_emailer")
+        logging.getLogger.return_value.error.assert_called_once_with(
+            "unable to get demographics"
+        )
