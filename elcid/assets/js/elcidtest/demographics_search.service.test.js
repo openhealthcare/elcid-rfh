@@ -1,10 +1,18 @@
 describe("DemographicsSearch", function(){
   "use strict";
 
-  var DemographicsSearch, $rootScope, $httpBackend, $window;
+  var DemographicsSearch, $rootScope, $httpBackend, $window, ngProgressLite;
 
   beforeEach(function(){
-    module('opal.services');
+    module('opal.services', function($provide){
+      ngProgressLite = jasmine.createSpyObj([
+        "set", "start", "done"
+      ])
+      $provide.service('ngProgressLite', function(){
+        return ngProgressLite
+      });
+
+    });
     inject(function($injector){
       DemographicsSearch  = $injector.get('DemographicsSearch');
       $rootScope = $injector.get('$rootScope');
@@ -46,6 +54,27 @@ describe("DemographicsSearch", function(){
     $rootScope.$apply();
     $httpBackend.flush();
     expect(called_result).toBe("some_patient");
+  });
+
+  it('should call done on the ng progress lite', function(){
+    var called_result = false;
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
+      {status: "patient_found_in_elcid", patient: "some_patient"}
+    );
+
+    DemographicsSearch.find(
+    "52",
+    {
+      patient_found_in_elcid: function(some_result){
+        called_result = some_result;
+      }
+    });
+
+    $rootScope.$apply();
+    $httpBackend.flush();
+    expect(ngProgressLite.set).toHaveBeenCalledWith(0);
+    expect(ngProgressLite.start).toHaveBeenCalled();
+    expect(ngProgressLite.done).toHaveBeenCalled();
   });
 
   it('should call patient found in hosptial', function(){
