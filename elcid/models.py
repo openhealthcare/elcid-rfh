@@ -150,19 +150,26 @@ class Location(EpisodeSubrecord):
 class HL7Result(lmodels.ReadOnlyLabTest):
     class Meta:
         verbose_name = "HL7 Result"
-        permissions = (("can_see_lab_tests", "Can See Lab Tests"),)
 
     @classmethod
     def get_api_name(cls):
         return "hl7_result"
 
     def to_dict(self, user):
+        """
+            we don't serialise a subrecord during episode
+            serialisation
+        """
         return {
             "lab_test_type": self.__class__.get_display_name(),
             "id": self.id
         }
 
     def dict_for_view(self, user):
+        """
+            we serialise the usual way but not via the episode
+            serialisation
+        """
         return super(HL7Result, self).to_dict(user)
 
     def update_from_dict(self, data, *args, **kwargs):

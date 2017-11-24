@@ -232,8 +232,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'INFO',
-            # 'filters': ['require_debug_false'],
-            'filters': [],
+            'filters': ['require_debug_false'],
             'class': 'logging.StreamHandler'
         },
         'mail_admins': {
