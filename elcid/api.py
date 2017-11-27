@@ -157,3 +157,4 @@ class DemographicsSearch(LoginRequiredViewset):
 
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
+elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
