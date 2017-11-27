@@ -1,44 +1,16 @@
-import json
 import datetime
 from django.conf import settings
 from collections import defaultdict
 
+from intrahospital_api import get_api
 from rest_framework import viewsets
-from rest_framework.response import Response
-from elcid import gloss_api
 from opal.core.api import OPALRouter
-from opal.core.api import PatientViewSet, patient_from_pk
-from opal import models
+from opal.core.api import LoginRequiredViewset, patient_from_pk
 from opal.core.views import json_response
 from elcid import models as emodels
 
-
 AEROBIC = "aerobic"
 ANAEROBIC = "anaerobic"
-
-
-class GlossEndpointApi(viewsets.ViewSet):
-    base_name = 'glossapi'
-
-    def create(self, request):
-        request_data = json.loads(request.data)
-        gloss_api.bulk_create_from_gloss_response(request_data)
-        return Response("ok")
-
-
-def gloss_api_query_monkey_patch(fn):
-    """
-    Decorator that passes an episode or returns a 404 from pk kwarg.
-    """
-    def query_api_first(self, request, pk=None):
-        if settings.GLOSS_ENABLED:
-            patient = models.Patient.objects.get(pk=pk)
-            hospital_number = patient.demographics_set.get().hospital_number
-            gloss_api.patient_query(hospital_number)
-        return fn(self, request, pk=pk)
-    return query_api_first
-
-PatientViewSet.retrieve = gloss_api_query_monkey_patch(PatientViewSet.retrieve)
 
 
 class BloodCultureResultApi(viewsets.ViewSet):
@@ -93,7 +65,7 @@ class BloodCultureResultApi(viewsets.ViewSet):
         lab_tests = patient.labtest_set.filter(
             lab_test_type__in=self.BLOOD_CULTURES
         )
-        lab_tests = lab_tests.order_by("datetime_ordered")
+        lab_tests = lab_tests.order_by("date_ordered")
         cultures = defaultdict(lambda: defaultdict(dict))
         culture_order = set()
 
@@ -102,13 +74,13 @@ class BloodCultureResultApi(viewsets.ViewSet):
             # if lab number is None or "", group it together
             if not lab_number:
                 lab_number = ""
-            if lab_test.datetime_ordered:
+            if lab_test.date_ordered:
                 date_ordered = self.translate_date_to_string(
-                    lab_test.datetime_ordered.date()
+                    lab_test.date_ordered.date()
                 )
 
                 culture_order.add((
-                    lab_test.datetime_ordered.date(), lab_number,
+                    lab_test.date_ordered.date(), lab_number,
                 ))
             else:
                 date_ordered = ""
@@ -147,9 +119,41 @@ class BloodCultureResultApi(viewsets.ViewSet):
             culture_order=culture_order
         ))
 
+
+class DemographicsSearch(LoginRequiredViewset):
+    base_name = 'demographics_search'
+    PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
+    PATIENT_FOUND_IN_HOSPITAL = "patient_found_in_hospital"
+    PATIENT_NOT_FOUND = "patient_not_found"
+
+    def retrieve(self, request, *args, **kwargs):
+        hospital_number = kwargs["pk"]
+        demographics = emodels.Demographics.objects.filter(
+            hospital_number=hospital_number
+        ).last()
+
+        # the patient is in elcid
+        if demographics:
+            return json_response(dict(
+                patient=demographics.patient.to_dict(request.user),
+                status=self.PATIENT_FOUND_IN_ELCID
+            ))
+        else:
+            demographics = None
+
+            if settings.ADD_PATIENT_DEMOGRAPHICS:
+                api = get_api()
+                demographics = api.demographics(hospital_number)
+
+            if demographics:
+                return json_response(dict(
+                    patient=dict(demographics=[demographics]),
+                    status=self.PATIENT_FOUND_IN_HOSPITAL
+                ))
+            else:
+                return json_response(dict(status=self.PATIENT_NOT_FOUND))
+
+
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
-
-
-gloss_router = OPALRouter()
-gloss_router.register('glossapi', GlossEndpointApi)
+elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)

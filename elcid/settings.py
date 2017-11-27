@@ -144,7 +144,7 @@ TEMPLATE_DIRS = (
     os.path.join(PROJECT_PATH, 'templates'),
 )
 
-TEMPLATE_CONTEXT_PROCESSORS= (
+TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
@@ -155,6 +155,7 @@ TEMPLATE_CONTEXT_PROCESSORS= (
     'django.contrib.messages.context_processors.messages',
     'opal.context_processors.settings',
     'opal.context_processors.models',
+    'elcid.context_processors.permissions',
     'lab.context_processors.lab_tests',
 )
 
@@ -174,10 +175,29 @@ INSTALLED_APPS = (
     'compressor',
     'opal.core.search',
     'lab',
+    'intrahospital_api',
     'elcid',
     'django.contrib.admin',
     'djcelery',
 )
+
+# The intrahospital api is what we use to connect to the rest of the hospital
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+
+# if the intrahospital api is prod, we need
+# an ip address, a database, a username and a password for
+# the hospital db
+HOSPITAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
+
+
+# search with external demographics when adding a patient
+ADD_PATIENT_DEMOGRAPHICS = True
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
@@ -187,6 +207,7 @@ if 'test' in sys.argv:
     MIGRATION_MODULES = {
         'opal': 'opal.nomigrations',
         'elcid': 'elcid.nomigrations',
+        'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'walkin': 'walkin.nomigrations',
         'research': 'research.nomigrations',
@@ -207,7 +228,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'ERROR',
+            'level': 'INFO',
             'filters': ['require_debug_false'],
             'class': 'logging.StreamHandler'
         },
@@ -244,6 +265,16 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'elcid.time_logger': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'intrahospital_api': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        }
     }
 }
 
@@ -292,7 +323,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.2.8.2'
+VERSION_NUMBER = '0.2.9'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -304,16 +335,6 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.wsgi')
 
 
-
-GLOSS_ENABLED = False
-
-if GLOSS_ENABLED:
-    GLOSS_URL_BASE = "http://0.0.0.0:6767"
-    GLOSS_USERNAME = "override_this"
-    GLOSS_PASSWORD = "and_override_this"
-    OPAL_SEARCH_BACKEND = "elcid.search.GlossQuery"
-
-
 EXTRACT_ASYNC = True
 
 
@@ -323,6 +344,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
 
 if 'test' not in sys.argv:
     try:

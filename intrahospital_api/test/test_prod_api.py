@@ -374,13 +374,14 @@ class ProdApiTestcase(OpalTestCase):
         api.check_hospital_number("12342343")
         api.check_hospital_number("ascc12342343")
         api.check_hospital_number("ascc12-342343")
+        api.check_hospital_number("asd asd")
 
     def test_check_hospital_number_fail(self):
         api = self.get_api()
         bad_numbers = [
             "'asd'",
             "\"zxcc\"",
-            "asd asd"
+            "asd-- asd"
         ]
         for bad_number in bad_numbers:
             with mock.patch('intrahospital_api.apis.prod_api.logging') as l:
