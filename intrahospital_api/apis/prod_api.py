@@ -202,11 +202,14 @@ class ProdApi(base_api.BaseApi):
         return result
 
     def check_hospital_number(self, hospital_number):
-        """ hospital numbers hould be alpha numeric or -
+        """ hospital numbers hould be alpha numeric, space or -
             nothing else
         """
-        valid = re.match('^[\w-]+$', hospital_number)
-        if valid is None:
+
+        valid = re.match('^[\w\-\s]+$', hospital_number)
+
+        # -- is an sql comment, lets remove those
+        if valid is None or "--" in hospital_number:
             err = "flawed hosital number {} passed to the intrahospital api"
             err = err.format(hospital_number)
             logger = logging.getLogger('intrahospital_api')
