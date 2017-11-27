@@ -68,7 +68,10 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             if the patient already exists, create a new episode.
 
-            set the start date on the episode
+            if the patient doesn't exist and we're gloss enabled query gloss.
+
+            if the patient isn't in gloss, or gloss is down, just create a
+            new patient/episode
         """
         patient, episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
