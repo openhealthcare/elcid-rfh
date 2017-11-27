@@ -189,12 +189,8 @@ if 'test' in sys.argv:
         'opal': 'opal.nomigrations',
         'elcid': 'elcid.nomigrations',
         'guidelines': 'guidelines.nomigrations',
-        'walkin': 'walkin.nomigrations',
-        'research': 'research.nomigrations',
-        'opat': 'opat.nomigrations',
-        'microhaem': 'microhaem.nomigrations',
-        'iframeapi': 'iframeapi.nomigrations',
         'lab': 'lab.nomigrations',
+        'intrahospital_api': 'intrahospital_api.nomigrations'
     }
 
 
