@@ -1,9 +1,10 @@
 import datetime
+from intrahospital_api import get_api
 from elcid import models
+from opal import models as omodels
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
-from elcid import gloss_api
 
 
 from opal.core.pathway.pathways import (
@@ -71,39 +72,31 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             if the patient doesn't exist and we're gloss enabled query gloss.
 
-            if the patient isn't in gloss, or gloss is down, just create a
-            new patient/episode
+            we expect the patient to have already been updated by gloss
         """
-        if settings.GLOSS_ENABLED:
+        if not patient:
+
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
+            patient = omodels.Patient.objects.create()
 
-            if patient:
-                # the patient already exists
+            if settings.ADD_PATIENT_LAB_TESTS:
+                api = get_api()
+                results = api.results(hospital_number)
+                for result in results:
+                    result["patient_id"] = patient.id
+                    hl7_result = models.HL7Result()
+                    hl7_result.update_from_dict(result, user)
 
-                # refreshes the saved patient
-                gloss_api.patient_query(hospital_number)
-                episode = patient.create_episode()
-            else:
-                # the patient doesn't exist
-                patient = gloss_api.patient_query(hospital_number)
-
-                if patient:
-                    # nuke whatever is passed in in demographics as this will
-                    # have been updated by gloss
-                    data.pop("demographics")
-                    episode = patient.episode_set.get()
-
-            gloss_api.subscribe(hospital_number)
-
-        patient, episode = super(AddPatientPathway, self).save(
-            data, user=user, patient=patient, episode=episode
-        )
+        if not episode:
+            episode = patient.create_episode()
 
         episode.start = datetime.date.today()
         episode.save()
 
-        return patient, episode
+        return super(AddPatientPathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
 
 
 class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):

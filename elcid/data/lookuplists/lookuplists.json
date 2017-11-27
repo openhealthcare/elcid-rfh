@@ -526,71 +526,75 @@
   "ethnicity": [
     {
       "synonyms": [],
-      "name": "African"
+      "name": "Asian or Asian British - Indian"
     },
     {
       "synonyms": [],
-      "name": "Any other Asian background"
+      "name": "Asian or Asian British - Pakistani"
     },
     {
       "synonyms": [],
-      "name": "Any other Black background"
+      "name": "Asian or Asian British - Bangladeshi"
     },
     {
       "synonyms": [],
-      "name": "Any other White background"
+      "name": "Asian - Any Other Asian Background"
     },
     {
       "synonyms": [],
-      "name": "Any other ethnic group"
+      "name": "Black or Black British - African"
     },
     {
       "synonyms": [],
-      "name": "Any other mixed background"
+      "name": "Black or Black British - Caribbean"
     },
     {
       "synonyms": [],
-      "name": "Bangladeshi"
+      "name": "Black - Any Other Black Background"
     },
     {
       "synonyms": [],
-      "name": "British"
+      "name": "Mixed - White and Black African"
     },
     {
       "synonyms": [],
-      "name": "Caribbean"
+      "name": "Mixed - White and Black Caribbean"
     },
     {
       "synonyms": [],
-      "name": "Chinese"
+      "name": "Mixed - Mixed - White and Asian"
     },
     {
       "synonyms": [],
-      "name": "Indian"
+      "name": "Mixed - Any Other Mixed Background"
     },
     {
       "synonyms": [],
-      "name": "Irish"
+      "name": "White - British"
     },
     {
       "synonyms": [],
-      "name": "Not stated"
+      "name": "White - Irish"
     },
     {
       "synonyms": [],
-      "name": "Pakistani"
+      "name": "White - Any Other White Background"
     },
     {
       "synonyms": [],
-      "name": "White and Asian"
+      "name": "Other - Chinese"
     },
     {
       "synonyms": [],
-      "name": "White and Black African"
+      "name": "Other - Any Other Ethnic Group"
     },
     {
       "synonyms": [],
-      "name": "White and Black Caribbean"
+      "name": "Other - Not Stated"
+    },
+    {
+      "synonyms": [],
+      "name": "Other - Not Known"
     }
   ],
   "line_site": [

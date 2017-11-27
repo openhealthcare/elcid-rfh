@@ -1,13 +1,13 @@
 describe('RfhFindPatientCtrl', function() {
   "use strict";
-  var scope, Episode, $controller, controller, $window;
+  var scope, DemographicsSearch, $controller, controller, $window;
 
   beforeEach(function(){
     module('opal.controllers');
     inject(function($injector){
       var $rootScope = $injector.get('$rootScope');
       scope = $rootScope.$new();
-      Episode = $injector.get('Episode');
+      DemographicsSearch = $injector.get('DemographicsSearch');
       $controller = $injector.get('$controller');
     });
 
@@ -18,7 +18,7 @@ describe('RfhFindPatientCtrl', function() {
     };
     controller = $controller('RfhFindPatientCtrl', {
       scope: scope,
-      Episode: Episode,
+      DemographicsSearch: DemographicsSearch,
       step: {},
       episode: {},
       $window: $window
@@ -41,26 +41,16 @@ describe('RfhFindPatientCtrl', function() {
   });
 
   it("should look up hospital numbers", function(){
-    spyOn(Episode, "findByHospitalNumber");
+    spyOn(DemographicsSearch, "find");
     scope.demographics.hospital_number = "12";
     scope.lookup_hospital_number();
-    var allCallArgs = Episode.findByHospitalNumber.calls.all();
+    var allCallArgs = DemographicsSearch.find.calls.all();
     expect(allCallArgs.length).toBe(1);
     var callArgs = allCallArgs[0].args;
     expect(callArgs[0]).toBe("12");
-    expect(callArgs[1].newPatient).toEqual(scope.new_patient);
-    expect(callArgs[1].newForPatient).toEqual(scope.new_for_patient);
-  });
-
-  it("should throw an error if the hospital number isn't found", function(){
-    spyOn(Episode, "findByHospitalNumber");
-    scope.demographics.hospital_number = "12";
-    scope.lookup_hospital_number();
-    var allCallArgs = Episode.findByHospitalNumber.calls.all();
-    expect(allCallArgs.length).toBe(1);
-    var callArgs = allCallArgs[0].args;
-    expect(callArgs[1].error());
-    expect($window.alert).toHaveBeenCalledWith('ERROR: More than one patient found with hospital number');
+    expect(callArgs[1].patient_not_found).toEqual(scope.new_patient);
+    expect(callArgs[1].patient_found_in_elcid).toEqual(scope.new_for_patient);
+    expect(callArgs[1].patient_found_in_hospital).toEqual(scope.new_for_patient);
   });
 
   it('should only show next if state is has_demographics or editing_demographics', function(){

@@ -2,22 +2,17 @@
 elCID implementation specific models!
 """
 import datetime
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
-from django.db.models.signals import post_save
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
 from lab import models as lmodels
 
-from jsonfield import JSONField
 
 import opal.models as omodels
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, Episode, ExternallySourcedModel
+    EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
 )
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
@@ -68,32 +63,29 @@ class Demographics(PatientSubrecord, ExternallySourcedModel):
     class Meta:
         verbose_name_plural = "Demographics"
 
-    @classmethod
-    def get_form_template(cls, patient_list=None, episode_type=None):
-        if settings.GLOSS_ENABLED:
-            return super(Demographics, cls).get_form_template(patient_list=None, episode_type=None)
-        else:
-            return "forms/demographics_form_pre_gloss.html"
-
 
 class ContactDetails(PatientSubrecord):
     _is_singleton = True
     _advanced_searchable = False
     _icon = 'fa fa-phone'
 
-    address_line1 = models.CharField("Address line 1", max_length = 45,
-                                     blank=True, null=True)
-    address_line2 = models.CharField("Address line 2", max_length = 45,
-                                     blank=True, null=True)
-    city = models.CharField(
-        max_length = 50, blank=True, null=True
+    address_line1 = models.CharField(
+        "Address line 1", max_length=45, blank=True, null=True
     )
-    county        = models.CharField("County", max_length = 40,
-                                     blank=True, null=True)
-    post_code     = models.CharField("Post Code", max_length = 10,
-                                     blank=True, null=True)
-    tel1          = models.CharField(blank=True, null=True, max_length=50)
-    tel2          = models.CharField(blank=True, null=True, max_length=50)
+    address_line2 = models.CharField(
+        "Address line 2", max_length=45, blank=True, null=True
+    )
+    city = models.CharField(
+        max_length=50, blank=True, null=True
+    )
+    county = models.CharField(
+        "County", max_length=40, blank=True, null=True
+    )
+    post_code = models.CharField(
+        "Post Code", max_length=10, blank=True, null=True
+    )
+    tel1 = models.CharField(blank=True, null=True, max_length=50)
+    tel2 = models.CharField(blank=True, null=True, max_length=50)
 
     class Meta:
         verbose_name_plural = "Contact details"
@@ -164,13 +156,33 @@ class HL7Result(lmodels.ReadOnlyLabTest):
         return "hl7_result"
 
     def to_dict(self, user):
+        """
+            we don't serialise a subrecord during episode
+            serialisation
+        """
         return {
-            "lab_test_type": self.get_display_name(),
+            "lab_test_type": self.__class__.get_display_name(),
             "id": self.id
         }
 
+    def dict_for_view(self, user):
+        """
+            we serialise the usual way but not via the episode
+            serialisation
+        """
+        return super(HL7Result, self).to_dict(user)
+
     def update_from_dict(self, data, *args, **kwargs):
+        populated = (
+            i for i in data.keys() if i != "lab_test_type" and i != "id"
+        )
+        if not any(populated):
+            return
+
         if "id" not in data:
+            if 'patient_id' in data:
+                self.patient = omodels.Patient.objects.get(id=data['patient_id'])
+
             if "external_identifier" not in data:
                 raise ValueError(
                     "an external identifier is required in {}".format(data)
@@ -183,8 +195,25 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
                 if existing:
                     data["id"] = existing.id
+            super(HL7Result, self).update_from_dict(data, *args, **kwargs)
 
-        super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+    @classmethod
+    def get_relevant_tests(self, patient):
+        relevent_tests = [
+            "C REACTIVE PROTEIN",
+            "FULL BLOOD COUNT",
+            "UREA AND ELECTROLYTES",
+            "LIVER FUNCTION",
+            "LIVER PROFILE",
+            "GENTAMICIN LEVEL",
+            "CLOTTING SCREEN"
+        ]
+        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
+        qs = HL7Result.objects.filter(
+            patient=patient,
+            datetime_ordered__gt=six_months_ago
+        ).order_by("datetime_ordered")
+        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
 
 
 class InfectionSource(lookuplists.LookupList):
@@ -262,7 +291,9 @@ class PrimaryDiagnosis(EpisodeSubrecord):
         verbose_name_plural = "Primary diagnoses"
 
 
-class Consultant(lookuplists.LookupList): pass
+class Consultant(lookuplists.LookupList):
+    pass
+
 
 class ConsultantAtDischarge(EpisodeSubrecord):
     _title = 'Consultant At Discharge'

@@ -1,26 +1,11 @@
 import json
+import mock
 import datetime
-from django.test import override_settings
-from mock import MagicMock, patch
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
-from elcid.api import GlossEndpointApi, BloodCultureResultApi
-from opal import models
+from elcid.api import BloodCultureResultApi
 from elcid import models as emodels
-
-
-class TestEndPoint(OpalTestCase):
-    @patch("elcid.api.gloss_api.bulk_create_from_gloss_response")
-    def test_create(self, bulk_create):
-        request = MagicMock()
-        expected_dict = dict(
-            messages=[],
-            hospital_number="1"
-        )
-        request.data = json.dumps(expected_dict)
-        endpoint = GlossEndpointApi()
-        endpoint.create(request)
-        bulk_create.assert_called_once_with(expected_dict)
+from django.test import override_settings
 
 
 class BloodCultureResultApiTestCase(OpalTestCase):
@@ -137,86 +122,6 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             self.api.translate_date_to_string(some_date), ""
         )
 
-    def test_retrieve(self):
-        request = self.rf.get("/")
-        url = reverse(
-            "blood_culture_results-detail",
-            kwargs=dict(pk=1),
-            request=request
-        )
-        some_date = datetime.date(2017, 1, 1)
-        patient, _ = self.new_patient_and_episode_please()
-
-        gram_stain = emodels.GramStain.objects.create(
-            datetime_ordered=some_date,
-            patient=patient,
-        )
-
-        gram_stain.extras = dict(
-            lab_number="212",
-            aerobic=False,
-            isolate=1
-        )
-        gram_stain.save()
-        gram_stain.result.result = "Yeast"
-        gram_stain.result.lab_test_id = gram_stain.id
-        gram_stain.result.save()
-
-        some_other_date = datetime.date(2017, 1, 2)
-        quick_fish = emodels.QuickFISH.objects.create(
-            datetime_ordered=some_other_date,
-            patient=patient,
-        )
-
-        quick_fish.extras = dict(
-            lab_number="212",
-            aerobic=True,
-            isolate=2
-        )
-        quick_fish.save()
-        quick_fish.result.result = "C. albicans"
-        quick_fish.result.lab_test_id = quick_fish.id
-        quick_fish.result.save()
-        result = self.client.get(url)
-        self.assertEqual(result.status_code, 200)
-        contents = json.loads(result.content)
-
-        found_culture_order = contents["culture_order"]
-        self.assertEqual(
-            found_culture_order,
-            [
-                ["02/01/2017", "212"],
-                ["01/01/2017", "212"]
-            ]
-        )
-        self.assertEqual(
-            len(contents["cultures"]["02/01/2017"]["212"]["aerobic"]),
-            1
-        )
-        found_fish = contents["cultures"]["02/01/2017"]["212"]["aerobic"]['2'][0]
-
-        self.assertEqual(
-            found_fish["id"],
-            quick_fish.id
-        )
-
-        self.assertEqual(
-            found_fish["lab_test_type"],
-            quick_fish.get_display_name()
-        )
-
-        found_gram = contents["cultures"]["01/01/2017"]["212"]["anaerobic"]['1'][0]
-
-        self.assertEqual(
-            found_gram["id"],
-            gram_stain.id
-        )
-
-        self.assertEqual(
-            found_gram["lab_test_type"],
-            gram_stain.get_display_name()
-        )
-
     def test_retrieve_with_falsy_lab_number(self):
         # if lab number is None or "" we should group them together
         request = self.rf.get("/")
@@ -270,71 +175,62 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         )
 
 
-@patch('elcid.api.gloss_api.patient_query')
-class GlossApiQueryMonkeyPatchTestCase(OpalTestCase):
+class DemographicsSearchTestCase(OpalTestCase):
     def setUp(self):
-        self.assertTrue(
-            self.client.login(
-                username=self.user.username, password=self.PASSWORD
-            )
-        )
+        super(DemographicsSearchTestCase, self).setUp()
         request = self.rf.get("/")
         self.url = reverse(
-            "patient-detail",
+            "demographics_search-detail",
             kwargs=dict(pk=1),
             request=request
         )
-
-    @override_settings(GLOSS_ENABLED=True)
-    def test_retrieve(self, patient_query):
-        patient, _ = self.new_patient_and_episode_please()
-        patient_query.return_value = patient
-        self.assertEqual(models.PatientRecordAccess.objects.count(), 0)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(patient_query.called)
-        self.assertEqual(models.PatientRecordAccess.objects.count(), 1)
-        serialised_patient = json.loads(response.content)
-        self.assertEqual(serialised_patient["id"], patient.id)
-
-    @override_settings(GLOSS_ENABLED=True)
-    def test_retrieve_not_found_in_gloss(self, patient_query):
-        patient, _ = self.new_patient_and_episode_please()
-        patient_query.return_value = None
-        response = self.client.get(self.url)
-        self.assertTrue(patient_query.called)
-        self.assertEqual(response.status_code, 200)
-        serialised_patient = json.loads(response.content)
-        self.assertEqual(serialised_patient["id"], patient.id)
-
-    @override_settings(GLOSS_ENABLED=True)
-    def test_retrieve_updates_patient_from_gloss(self, patient_query):
-        patient, _ = self.new_patient_and_episode_please()
-
-        def update_patient(hospital_number):
-            demographics = patient.demographics_set.first()
-            demographics.first_name = "Indiana"
-            demographics.save()
-
-        patient_query.side_effect = update_patient
-        response = self.client.get(self.url)
-        self.assertTrue(patient_query.called)
-        self.assertEqual(response.status_code, 200)
-        serialised_patient = json.loads(response.content)
-        self.assertEqual(
-            serialised_patient["demographics"][0]["first_name"],
-            "Indiana"
+        # initialise the property
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
         )
 
-    @override_settings(GLOSS_ENABLED=False)
-    def test_dont_retrieve_if_gloss_is_disabled(self, patient_query):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(first_name="Indiana")
-        response = self.client.get(self.url)
-        self.assertFalse(patient_query.called)
-        self.assertEqual(response.status_code, 200)
-        serialised_patient = json.loads(response.content)
+    @override_settings(ADD_PATIENT_DEMOGRAPHICS=False)
+    def test_without_demographics_add_patient_not_found(self):
+        response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
-            serialised_patient["demographics"][0]["first_name"],
-            "Indiana"
+            response["status"], "patient_not_found"
+        )
+
+    @override_settings(ADD_PATIENT_DEMOGRAPHICS=True)
+    @mock.patch("elcid.api.get_api")
+    def test_with_demographics_add_patient_not_found(self, get_api):
+        get_api().demographics.return_value = None
+        response = json.loads(self.client.get(self.url).content)
+        self.assertEqual(
+            response["status"], "patient_not_found"
+        )
+
+    @override_settings(ADD_PATIENT_DEMOGRAPHICS=True)
+    @mock.patch("elcid.api.get_api")
+    def test_with_demographics_add_patient_found_in_hospital(self, get_api):
+        get_api().demographics.return_value = dict(first_name="Wilma")
+        response = json.loads(self.client.get(self.url).content)
+        self.assertEqual(
+            response["status"], "patient_found_in_hospital"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
+    def test_patient_found(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Wilma",
+            hospital_number="1"
+        )
+        response = json.loads(self.client.get(self.url).content)
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
