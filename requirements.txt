@@ -32,6 +32,9 @@ sqlparse==0.1.16
 static3==0.6.1
 Fabric==1.14.0
 
+# intrahospital_api
+python-tds==1.8.2
+
 # Open Health Care packages on PyPi
 opal-observations==0.3.0
 opal==0.9.0rc5
