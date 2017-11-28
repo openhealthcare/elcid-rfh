@@ -101,21 +101,9 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
 
     def test_update_from_dict_with_incorrect_consistency_token(self):
         with self.assertRaises(exceptions.ConsistencyError):
-            self.demographics.update_from_dict({'consistency_token': '87654321'}, self.user)
-
-    @override_settings(GLOSS_ENABLED=True)
-    @patch("opal.models.Subrecord.get_form_template")
-    def test_get_demographics_form_with_gloss(self, form_template_mock):
-        form_template_mock.return_value = "some_template.html"
-        form_template = emodels.Demographics.get_form_template()
-        self.assertEqual(form_template, "some_template.html")
-
-    @override_settings(GLOSS_ENABLED=False)
-    def test_get_demographics_form_without_gloss(self):
-        form_template = emodels.Demographics.get_form_template()
-        self.assertEqual(
-            form_template, "forms/demographics_form_pre_gloss.html"
-        )
+            self.demographics.update_from_dict(
+                {'consistency_token': '87654321'}, self.user
+            )
 
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
