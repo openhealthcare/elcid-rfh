@@ -3,7 +3,6 @@ from elcid import models
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
-from elcid import gloss_api
 
 
 from opal.core.pathway.pathways import (
@@ -69,33 +68,8 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             if the patient already exists, create a new episode.
 
-            if the patient doesn't exist and we're gloss enabled query gloss.
-
-            if the patient isn't in gloss, or gloss is down, just create a
-            new patient/episode
+            set the start date on the episode
         """
-        if settings.GLOSS_ENABLED:
-            demographics = data.get("demographics")
-            hospital_number = demographics[0]["hospital_number"]
-
-            if patient:
-                # the patient already exists
-
-                # refreshes the saved patient
-                gloss_api.patient_query(hospital_number)
-                episode = patient.create_episode()
-            else:
-                # the patient doesn't exist
-                patient = gloss_api.patient_query(hospital_number)
-
-                if patient:
-                    # nuke whatever is passed in in demographics as this will
-                    # have been updated by gloss
-                    data.pop("demographics")
-                    episode = patient.episode_set.get()
-
-            gloss_api.subscribe(hospital_number)
-
         patient, episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
