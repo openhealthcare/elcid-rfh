@@ -117,11 +117,9 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
-    @patch("elcid.pathways.SaveTaggingMixin.save")
     @patch("elcid.pathways.datetime")
-    def test_episode_start(self, datetime, parent_save):
+    def test_episode_start(self, datetime):
         patient, episode = self.new_patient_and_episode_please()
-        parent_save.return_value = (patient, episode,)
         datetime.date.today.return_value = date(2016, 5, 1)
         url = AddPatientPathway().save_url()
         test_data = dict(
@@ -129,7 +127,10 @@ class TestAddPatientPathway(OpalTestCase):
             tagging=[{u'antifungal': True}]
         )
         self.post_json(url, test_data)
-        self.assertEqual(episode.start, date(2016, 5, 1))
+        new_episode = models.Episode.objects.last()
+        self.assertEqual(new_episode.start, date(2016, 5, 1))
 
-        # make sure we've saved it
-        self.assertEqual(models.Episode.objects.last().start, date(2016, 5, 1))
+        self.assertEqual(
+            list(new_episode.get_tag_names(None)),
+            ['antifungal']
+        )

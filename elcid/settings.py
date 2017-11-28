@@ -177,6 +177,7 @@ INSTALLED_APPS = (
     'elcid',
     'django.contrib.admin',
     'djcelery',
+    'intrahospital_api',
 )
 
 if 'test' in sys.argv:
@@ -188,12 +189,8 @@ if 'test' in sys.argv:
         'opal': 'opal.nomigrations',
         'elcid': 'elcid.nomigrations',
         'guidelines': 'guidelines.nomigrations',
-        'walkin': 'walkin.nomigrations',
-        'research': 'research.nomigrations',
-        'opat': 'opat.nomigrations',
-        'microhaem': 'microhaem.nomigrations',
-        'iframeapi': 'iframeapi.nomigrations',
         'lab': 'lab.nomigrations',
+        'intrahospital_api': 'intrahospital_api.nomigrations'
     }
 
 
@@ -244,6 +241,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'intrahospital_api': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        }
     }
 }
 
@@ -292,7 +294,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.2.8.2'
+VERSION_NUMBER = '0.2.9'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -302,6 +304,25 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'elcid.local_settings',
                             'opal.migrations', 'opal.tests',
                             'opal.wsgi')
+
+
+
+# The intrahospital api is what we use to connect to the rest of the hospital
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+
+# search with external demographics when adding a patient
+ADD_PATIENT_DEMOGRAPHICS = True
+
+# if the intrahospital api is prod, we need
+# an ip address, a database, a username and a password for
+# the hospital db
+HOSPITAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
 
 
 EXTRACT_ASYNC = True
