@@ -152,20 +152,8 @@ class SerialisedTestCase(AbstractPatientListTestCase):
 
         self.assertNotIn(models.Location.get_api_name(), serialised[0])
 
-    def test_serialised_historic_tags_true(self):
-        _, episode = self.new_patient_and_episode_please()
-        episode.set_tag_names(['something'], self.user)
-        episode.set_tag_names(['else'], self.user)
-        episodes = Episode.objects.all()
-        serialised = patient_lists.serialised(
-            episodes, self.user, subrecords=[Tagging], historic_tags=True
-        )
-        self.assertEqual(
-            serialised[0]["tagging"],
-            [{"id": 1, "something": True, "else": True}]
-        )
 
-    def test_serialised_historic_tags_default(self):
+    def test_serialised_no_historic_tags(self):
         _, episode = self.new_patient_and_episode_please()
         episode.set_tag_names(['something'], self.user)
         episode.set_tag_names(['else'], self.user)

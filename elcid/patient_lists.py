@@ -57,7 +57,7 @@ def serialised_episode_subrecords(episodes, user, subrecords=None):
 
     if not subrecords:
         e_subrecords = episode_subrecords()
-    else:
+    else:  # Get only episode subrecords
         e_subrecords = [i for i in episode_subrecords() if i in subrecords]
 
     return serialise_subrecords(
@@ -78,7 +78,7 @@ def serialised_patient_subrecords(episodes, user, subrecords=None):
     patient_ids = [i.patient_id for i in episodes]
     if not subrecords:
         p_subrecords = patient_subrecords()
-    else:
+    else: #  Get only the patient subrecords
         p_subrecords = [i for i in patient_subrecords() if i in subrecords]
 
     return serialise_subrecords(
@@ -86,17 +86,16 @@ def serialised_patient_subrecords(episodes, user, subrecords=None):
     )
 
 
-def serialised_tagging(episodes, user, historic_tags=False, subrecords=None):
+def serialised_tagging(episodes, user, subrecords=None):
     """
         Checks if we want to serialise the tagging model and if so
         returns the serialised tagging model, (with history if requested)
     """
     taggings = defaultdict(dict)
     if subrecords is None or omodels.Tagging in subrecords:
-        qs = omodels.Tagging.objects.filter(episode__in=episodes)
-
-        if not historic_tags:
-            qs = qs.filter(archived=False)
+        qs = omodels.Tagging.objects.filter(
+            episode__in=episodes, archived=False
+        )
 
         for tag in qs:
             if tag.value == 'mine' and tag.user != user:
@@ -106,13 +105,9 @@ def serialised_tagging(episodes, user, historic_tags=False, subrecords=None):
     return taggings
 
 
-def serialised(
-    episodes, user, subrecords=None, historic_tags=False, episode_history=False
-):
+def serialised(episodes, user, subrecords=None):
     """
     Return a set of serialised EPISODES.
-
-    If HISTORIC_TAGS is Truthy, return deleted tags as well.
     """
     patient_subs = serialised_patient_subrecords(
         episodes, user, subrecords=subrecords
@@ -121,7 +116,7 @@ def serialised(
         episodes, user, subrecords=subrecords
     )
     taggings = serialised_tagging(
-        episodes, user, subrecords=subrecords, historic_tags=historic_tags
+        episodes, user, subrecords=subrecords
     )
 
     serialised = []
