@@ -11,7 +11,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
             // the patient has been entered into elcid before
             patient_found_in_elcid: scope.new_for_patient,
             // the patient exists on the intrahospital api, but not in elcid
-            patient_found_in_hospital: scope.new_for_patient
+            patient_found_upstream: scope.new_for_patient
         });
     };
 

@@ -80,13 +80,13 @@ describe("DemographicsSearch", function(){
   it('should call patient found in hosptial', function(){
     var called_result = false;
     $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
-      {status: "patient_found_in_hospital", patient: "some_patient"}
+      {status: "patient_found_upstream", patient: "some_patient"}
     );
 
     DemographicsSearch.find(
     "52",
     {
-      patient_found_in_hospital: function(some_result){
+      patient_found_upstream: function(some_result){
         called_result = some_result;
       }
     });
@@ -99,13 +99,13 @@ describe("DemographicsSearch", function(){
   it('should call patient not found', function(){
     var called_result = false;
     $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
-      {status: "patient_found_in_hospital"}
+      {status: "patient_found_upstream"}
     );
 
     DemographicsSearch.find(
     "52",
     {
-      patient_found_in_hospital: function(some_result){
+      patient_found_upstream: function(some_result){
         called_result = undefined;
       }
     });

@@ -50,7 +50,7 @@ describe('RfhFindPatientCtrl', function() {
     expect(callArgs[0]).toBe("12");
     expect(callArgs[1].patient_not_found).toEqual(scope.new_patient);
     expect(callArgs[1].patient_found_in_elcid).toEqual(scope.new_for_patient);
-    expect(callArgs[1].patient_found_in_hospital).toEqual(scope.new_for_patient);
+    expect(callArgs[1].patient_found_upstream).toEqual(scope.new_for_patient);
   });
 
   it('should only show next if state is has_demographics or editing_demographics', function(){

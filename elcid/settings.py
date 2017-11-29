@@ -311,7 +311,7 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
 INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
 # search with external demographics when adding a patient
-ADD_PATIENT_DEMOGRAPHICS = True
+USE_UPSTREAM_DEMOGRAPHICS = True
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
@@ -325,7 +325,7 @@ HOSPITAL_DB = dict(
 )
 
 
-EXTRACT_ASYNC = True
+EXTRACT_ASYNC = False
 
 
 REST_FRAMEWORK = {

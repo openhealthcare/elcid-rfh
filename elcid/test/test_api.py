@@ -193,14 +193,14 @@ class DemographicsSearchTestCase(OpalTestCase):
             )
         )
 
-    @override_settings(ADD_PATIENT_DEMOGRAPHICS=False)
+    @override_settings(USE_UPSTREAM_DEMOGRAPHICS=False)
     def test_without_demographics_add_patient_not_found(self):
         response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
             response["status"], "patient_not_found"
         )
 
-    @override_settings(ADD_PATIENT_DEMOGRAPHICS=True)
+    @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
     @mock.patch("elcid.api.get_api")
     def test_with_demographics_add_patient_not_found(self, get_api):
         get_api().demographics.return_value = None
@@ -209,13 +209,13 @@ class DemographicsSearchTestCase(OpalTestCase):
             response["status"], "patient_not_found"
         )
 
-    @override_settings(ADD_PATIENT_DEMOGRAPHICS=True)
+    @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
     @mock.patch("elcid.api.get_api")
-    def test_with_demographics_add_patient_found_in_hospital(self, get_api):
+    def test_with_demographics_add_patient_found_upstream(self, get_api):
         get_api().demographics.return_value = dict(first_name="Wilma")
         response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
-            response["status"], "patient_found_in_hospital"
+            response["status"], "patient_found_upstream"
         )
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
