@@ -450,7 +450,20 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.side_effect = ValueError('Boom')
             result = api.demographics("123")
         self.assertIsNone(result)
-        logging.getLogger.assert_called_once_with("error_emailer")
-        logging.getLogger.return_value.error.assert_called_once_with(
+        self.assertEqual(
+            logging.getLogger.call_args_list[0][0][0],
+            "error_emailer"
+        )
+        self.assertEqual(
+            logging.getLogger.return_value.error.call_args_list[0][0][0],
             "unable to get demographics"
+        )
+
+        self.assertEqual(
+            logging.getLogger.call_args_list[1][0][0],
+            "intrahospital_api"
+        )
+        self.assertIn(
+            "Boom",
+            logging.getLogger.return_value.error.call_args_list[1][0][0],
         )

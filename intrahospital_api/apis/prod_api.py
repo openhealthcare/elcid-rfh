@@ -1,5 +1,6 @@
 import datetime
 import logging
+import traceback
 import pytds
 from intrahospital_api.apis import base_api
 from lab import models as lmodels
@@ -218,6 +219,8 @@ class ProdApi(base_api.BaseApi):
         except:
             logger = logging.getLogger('error_emailer')
             logger.error("unable to get demographics")
+            logger = logging.getLogger('intrahospital_api')
+            logger.error(traceback.format_exc())
             return
         if not len(rows):
             return
