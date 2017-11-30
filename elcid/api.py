@@ -140,19 +140,16 @@ class DemographicsSearch(LoginRequiredViewset):
                 status=self.PATIENT_FOUND_IN_ELCID
             ))
         else:
-            demographics = None
-
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
                 api = get_api()
                 demographics = api.demographics(hospital_number)
 
-            if demographics:
-                return json_response(dict(
-                    patient=dict(demographics=[demographics]),
-                    status=self.PATIENT_FOUND_UPSTREAM
-                ))
-            else:
-                return json_response(dict(status=self.PATIENT_NOT_FOUND))
+                if demographics:
+                    return json_response(dict(
+                        patient=dict(demographics=[demographics]),
+                        status=self.PATIENT_FOUND_UPSTREAM
+                    ))
+        return json_response(dict(status=self.PATIENT_NOT_FOUND))
 
 
 elcid_router = OPALRouter()
