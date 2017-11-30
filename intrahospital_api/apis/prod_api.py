@@ -1,7 +1,6 @@
 import datetime
 import logging
 import pytds
-import re
 from intrahospital_api.apis import base_api
 from lab import models as lmodels
 from django.conf import settings
