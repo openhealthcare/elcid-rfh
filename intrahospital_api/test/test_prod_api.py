@@ -399,9 +399,15 @@ class ProdApiTestcase(OpalTestCase):
 
         # make sure we query by the correct db date
         expected_query = "SELECT * FROM some_view WHERE Patient_Number = \
-'@hospital_number' AND last_updated > '@since' ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(
+                hospital_number="12312222",
+                since="2016-10-01"
+            )
         )
 
     def test_cooked_data(self):
@@ -422,9 +428,12 @@ class ProdApiTestcase(OpalTestCase):
         )
 
         expected_query = "SELECT top(1) * FROM some_view WHERE Patient_Number \
-= '@hospital_number' ORDER BY last_updated DESC;"
+= @hospital_number ORDER BY last_updated DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(hospital_number="123")
         )
 
     def test_empty_demographics(self):

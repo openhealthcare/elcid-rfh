@@ -8,10 +8,10 @@ from django.conf import settings
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
-'@hospital_number' ORDER BY last_updated DESC;"
+@hospital_number ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
-'@hospital_number' AND last_updated > '@since' ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
 
 ETHNICITY_MAPPING = {
     "99": "Other - Not Known",
@@ -214,7 +214,7 @@ class ProdApi(base_api.BaseApi):
         try:
             rows = self.execute_query(
                 self.demographics_query,
-                params=dict(hospital_number="hospital_number")
+                params=dict(hospital_number=hospital_number)
             )
         except:
             logger = logging.getLogger('error_emailer')
@@ -233,7 +233,7 @@ class ProdApi(base_api.BaseApi):
         db_date = to_db_date(datetime.date.today() - datetime.timedelta(365))
         rows = self.execute_query(
             self.all_data_query,
-            dict(hospital_number=hospital_number, since=db_date)
+            params=dict(hospital_number=hospital_number, since=db_date)
         )
 
         return rows
