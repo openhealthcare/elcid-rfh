@@ -1,12 +1,15 @@
 [run]
 source =
        elcid
+       intrahospital_api
 
 omit =
     */migrations/*
     elcid/test/*
+    intrahospital_api/test/*
     elcid/wsgi*
     elcid/settings.py
+    elcid/local_settings.py
     elcid/templates/acceptance/*
 
 

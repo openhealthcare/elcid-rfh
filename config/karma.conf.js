@@ -6,12 +6,14 @@ module.exports = function(config){
     __dirname + '/../elcid/assets/js/elcid/*',
     __dirname + '/../elcid/assets/js/elcid/controllers/*',
     __dirname + '/../elcid/assets/js/elcid/services/*',
-    __dirname + '/../elcid/assets/js/elcid/services/records/*'
+    __dirname + '/../elcid/assets/js/elcid/services/records/*',
+    __dirname + '/../intrahospital_api/static/js/intrahospital_api/controllers/*',
   ];
   var includedFiles = [
     'opal/app.js',
     __dirname + '/../elcid/assets/js/elcid/**/*.js',
     __dirname + '/../elcid/assets/js/elcidtest/*.js',
+    __dirname + '/../intrahospital_api/static/js/intrahospital_api/*.js',
   ];
 
   var defaultConfig = karmaDefaults(includedFiles, baseDir, coverageFiles);
