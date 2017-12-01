@@ -8,10 +8,10 @@ from django.conf import settings
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
-'@hospital_number' ORDER BY last_updated DESC;"
+@hospital_number ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
-'@hospital_number' AND last_updated > '@since' ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
 
 ETHNICITY_MAPPING = {
     "99": "Other - Not Known",
