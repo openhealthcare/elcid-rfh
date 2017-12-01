@@ -403,6 +403,12 @@ class ProdApiTestcase(OpalTestCase):
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
         )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(
+                hospital_number="12312222",
+                since="2016-10-01"
+            )
+        )
 
     def test_cooked_data(self):
         api = self.get_api()
@@ -425,6 +431,9 @@ class ProdApiTestcase(OpalTestCase):
 = @hospital_number ORDER BY last_updated DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(hospital_number="123")
         )
 
     def test_empty_demographics(self):

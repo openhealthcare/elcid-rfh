@@ -233,7 +233,7 @@ class ProdApi(base_api.BaseApi):
         db_date = to_db_date(datetime.date.today() - datetime.timedelta(365))
         rows = self.execute_query(
             self.all_data_query,
-            dict(hospital_number=hospital_number, since=db_date)
+            params=dict(hospital_number=hospital_number, since=db_date)
         )
 
         return rows
