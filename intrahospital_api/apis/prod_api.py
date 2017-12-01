@@ -214,7 +214,7 @@ class ProdApi(base_api.BaseApi):
         try:
             rows = self.execute_query(
                 self.demographics_query,
-                params=dict(hospital_number="hospital_number")
+                params=dict(hospital_number=hospital_number)
             )
         except:
             logger = logging.getLogger('error_emailer')
