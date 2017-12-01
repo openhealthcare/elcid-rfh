@@ -1,7 +1,0 @@
-{% extends 'base_templates/form_modal_base.html' %}
-{% block modal_save %}
-{# we only show the save if its an editable modal #}
-<span ng-hide="editing.demographics.external_system">
-  {{ block.super }}
-</span>
-{% endblock %}
