@@ -33,6 +33,22 @@ class DevApiTestCase(OpalTestCase):
         for field in expected_fields:
             self.assertTrue(bool(demographics[field]))
 
+    @mock.patch("intrahospital_api.apis.dev_api.random.choice")
+    def test_demographics_male(self, choice):
+        choice.side_effect = lambda x: x[0]
+        demographics = self.api.demographics('some')
+        self.assertEqual(demographics["sex"], "Male")
+        self.assertIn(demographics["first_name"], dev_api.MALE_FIRST_NAMES)
+        self.assertEqual(demographics["title"], "Dr")
+
+    @mock.patch("intrahospital_api.apis.dev_api.random.choice")
+    def test_demographics_female(self, choice):
+        choice.side_effect = lambda x: x[1]
+        demographics = self.api.demographics('some')
+        self.assertEqual(demographics["sex"], "Female")
+        self.assertIn(demographics["first_name"], dev_api.FEMALE_FIRST_NAMES)
+        self.assertEqual(demographics["title"], "Ms")
+
     def test_results(self):
         with mock.patch.object(self.api, "create_lab_test"):
             self.api.results("123434223")
