@@ -357,7 +357,25 @@ class ProdApiTestcase(OpalTestCase):
             )
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
-    def test_execute_query(self, pytds):
+    def test_execute_query_with_params(self, pytds):
+        api = self.get_api()
+        conn = pytds.connect().__enter__()
+        cursor = conn.cursor().__enter__()
+        cursor.fetchall.return_value = ["some_results"]
+        result = api.execute_query(
+            "some query", dict(hospital_number="1231222222")
+        )
+        self.assertEqual(
+            result, ["some_results"]
+        )
+        cursor.execute.assert_called_once_with(
+            "some query",
+            dict(hospital_number="1231222222")
+        )
+        self.assertTrue(cursor.fetchall.called)
+
+    @mock.patch('intrahospital_api.apis.prod_api.pytds')
+    def test_execute_query_without_params(self, pytds):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
@@ -366,36 +384,8 @@ class ProdApiTestcase(OpalTestCase):
         self.assertEqual(
             result, ["some_results"]
         )
-        cursor.execute.assert_called_once_with("some query")
+        cursor.execute.assert_called_once_with("some query", None)
         self.assertTrue(cursor.fetchall.called)
-
-    def test_check_hosptial_number_success(self):
-        api = self.get_api()
-        api.check_hospital_number("12342343")
-        api.check_hospital_number("ascc12342343")
-        api.check_hospital_number("ascc12-342343")
-        api.check_hospital_number("asd asd")
-
-    def test_check_hospital_number_fail(self):
-        api = self.get_api()
-        bad_numbers = [
-            "'asd'",
-            "\"zxcc\"",
-            "asd-- asd"
-        ]
-        for bad_number in bad_numbers:
-            with mock.patch('intrahospital_api.apis.prod_api.logging') as l:
-                logger = l.getLogger()
-                err = "flawed hosital number {} passed to the intrahospital api"
-                err = err.format(bad_number)
-
-                with self.assertRaises(ValueError) as ve:
-                    api.check_hospital_number(bad_number)
-                self.assertEqual(
-                    str(ve.exception),
-                    err
-                )
-                logger.error.assert_called_once_with(err)
 
     @mock.patch("intrahospital_api.apis.prod_api.datetime.date")
     def test_raw_data(self, dt):
@@ -409,9 +399,15 @@ class ProdApiTestcase(OpalTestCase):
 
         # make sure we query by the correct db date
         expected_query = "SELECT * FROM some_view WHERE Patient_Number = \
-'12312222' AND last_updated > '2016-10-01' ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(
+                hospital_number="12312222",
+                since="2016-10-01"
+            )
         )
 
     def test_cooked_data(self):
@@ -429,6 +425,15 @@ class ProdApiTestcase(OpalTestCase):
 
         self.assertEqual(
             result["first_name"], "TEST"
+        )
+
+        expected_query = "SELECT top(1) * FROM some_view WHERE Patient_Number \
+= @hospital_number ORDER BY last_updated DESC;"
+        self.assertEqual(
+            execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(hospital_number="123")
         )
 
     def test_empty_demographics(self):
@@ -454,7 +459,20 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.side_effect = ValueError('Boom')
             result = api.demographics("123")
         self.assertIsNone(result)
-        logging.getLogger.assert_called_once_with("error_emailer")
-        logging.getLogger.return_value.error.assert_called_once_with(
+        self.assertEqual(
+            logging.getLogger.call_args_list[0][0][0],
+            "error_emailer"
+        )
+        self.assertEqual(
+            logging.getLogger.return_value.error.call_args_list[0][0][0],
             "unable to get demographics"
+        )
+
+        self.assertEqual(
+            logging.getLogger.call_args_list[1][0][0],
+            "intrahospital_api"
+        )
+        self.assertIn(
+            "Boom",
+            logging.getLogger.return_value.error.call_args_list[1][0][0],
         )

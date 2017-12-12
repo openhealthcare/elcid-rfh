@@ -550,7 +550,7 @@ class RestartTestCase(FabfileTestCase):
         print_function.assert_called_once_with("Restarting supervisord")
         first_call = local.call_args_list[0][0][0]
         self.assertEqual(
-            first_call, 'pkill super; pkill gunic; pkill gloss_flask'
+            first_call, 'pkill super; pkill gunic; pkill'
         )
         second_call = local.call_args_list[1][0][0]
         expected_second_call = "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin\

@@ -1,12 +1,32 @@
-<span ng-show="item.category === 'Followup'">
-  Discharged with Follow up<br />
-</span>
-<span ng-hide="item.category === 'Followup'">
-  [[row.category.charAt(0).toUpperCase() + row.category.substring(1)]]<br />
-</span>
-<span ng-hide="item.hospital=='UCH'">[[item.hospital]] </span>
-[[item.ward]] [[item.bed]]<br />
-
-<a ng-show="currentTag == 'mine' && !profile.readonly" class="screen-only" href="#" ng-click="removeFromMine($parent.$index, $event)">
-  Remove from mine
-</a>
+<div class="row">
+  <div class="col-md-4">
+    <b>Hospital</b>
+  </div>
+  <div class="col-md-8">
+    [[item.hospital]]
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    <b>Ward</b>
+  </div>
+  <div class="col-md-8">
+    [[item.ward]]
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    <b>Bed</b>
+  </div>
+  <div class="col-md-8">
+    [[item.bed]]
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    <b>Provenance</b>
+  </div>
+  <div class="col-md-8">
+    [[item.provenance]]
+  </div>
+</div>

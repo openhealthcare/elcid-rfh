@@ -14,17 +14,14 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
 
   // patient is not found in elcid but is found
   // in the hospital (Yay!)
-  var PATIENT_FOUND_IN_HOSPITAL = "patient_found_in_hospital";
+  var PATIENT_FOUND_UPSTREAM = "patient_found_upstream";
 
   // patient is not found
   var PATIENT_NOT_FOUND = "patient_not_found";
 
-  // fail (Boo!)
-  var error = "error"
-
-  var expectedCallbacks = [
+  var expectedStatuses = [
     PATIENT_FOUND_IN_ELCID,
-    PATIENT_FOUND_IN_HOSPITAL,
+    PATIENT_FOUND_UPSTREAM,
     PATIENT_NOT_FOUND,
   ]
 
@@ -33,7 +30,7 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
     ngProgressLite.start();
     var callBackNames = _.keys(findPatientOptions);
     _.each(callBackNames, function(key){
-      if(expectedCallbacks.indexOf(key) === -1){
+      if(expectedStatuses.indexOf(key) === -1){
         throw "unknown call back";
       }
     });
@@ -43,8 +40,8 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
       if(response.data.status == PATIENT_FOUND_IN_ELCID){
         findPatientOptions[PATIENT_FOUND_IN_ELCID](response.data.patient);
       }
-      else if(response.data.status == PATIENT_FOUND_IN_HOSPITAL){
-        findPatientOptions[PATIENT_FOUND_IN_HOSPITAL](response.data.patient);
+      else if(response.data.status == PATIENT_FOUND_UPSTREAM){
+        findPatientOptions[PATIENT_FOUND_UPSTREAM](response.data.patient);
       }
       else if(response.data.status == PATIENT_NOT_FOUND){
         findPatientOptions[PATIENT_NOT_FOUND](response.data.patient);

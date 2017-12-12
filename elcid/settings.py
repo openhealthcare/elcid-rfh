@@ -212,12 +212,8 @@ if 'test' in sys.argv:
         'elcid': 'elcid.nomigrations',
         'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
-        'walkin': 'walkin.nomigrations',
-        'research': 'research.nomigrations',
-        'opat': 'opat.nomigrations',
-        'microhaem': 'microhaem.nomigrations',
-        'iframeapi': 'iframeapi.nomigrations',
         'lab': 'lab.nomigrations',
+        'intrahospital_api': 'intrahospital_api.nomigrations'
     }
 
 
@@ -339,16 +335,25 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
 
 
 
-GLOSS_ENABLED = False
+# The intrahospital api is what we use to connect to the rest of the hospital
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
-# the below are only if GLOSS ENALBED is set to True
-GLOSS_URL_BASE = "http://0.0.0.0:6767"
-GLOSS_USERNAME = "override_this"
-GLOSS_PASSWORD = "and_override_this"
-OPAL_SEARCH_BACKEND = "elcid.search.GlossQuery"
+# search with external demographics when adding a patient
+USE_UPSTREAM_DEMOGRAPHICS = True
+
+# if the intrahospital api is prod, we need
+# an ip address, a database, a username and a password for
+# the hospital db
+HOSPITAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
 
 
-EXTRACT_ASYNC = True
+EXTRACT_ASYNC = False
 
 
 REST_FRAMEWORK = {

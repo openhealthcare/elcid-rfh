@@ -4,12 +4,13 @@ from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import Http404
+from intrahospital_api import get_api
+
 
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
-from intrahospital_api import get_api
 from elcid import models as emodels
 from elcid.utils import timing
 
@@ -514,7 +515,7 @@ class BloodCultureResultApi(viewsets.ViewSet):
 class DemographicsSearch(LoginRequiredViewset):
     base_name = 'demographics_search'
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
-    PATIENT_FOUND_IN_HOSPITAL = "patient_found_in_hospital"
+    PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
     PATIENT_NOT_FOUND = "patient_not_found"
 
     def retrieve(self, request, *args, **kwargs):
@@ -530,19 +531,17 @@ class DemographicsSearch(LoginRequiredViewset):
                 status=self.PATIENT_FOUND_IN_ELCID
             ))
         else:
-            demographics = None
-
-            if settings.ADD_PATIENT_DEMOGRAPHICS:
+            if settings.USE_UPSTREAM_DEMOGRAPHICS:
                 api = get_api()
                 demographics = api.demographics(hospital_number)
 
-            if demographics:
-                return json_response(dict(
-                    patient=dict(demographics=[demographics]),
-                    status=self.PATIENT_FOUND_IN_HOSPITAL
-                ))
-            else:
-                return json_response(dict(status=self.PATIENT_NOT_FOUND))
+                if demographics:
+                    return json_response(dict(
+                        patient=dict(demographics=[demographics]),
+                        status=self.PATIENT_FOUND_UPSTREAM
+                    ))
+        return json_response(dict(status=self.PATIENT_NOT_FOUND))
+
 
 
 elcid_router = OPALRouter()

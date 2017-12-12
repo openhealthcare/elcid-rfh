@@ -42,6 +42,8 @@ describe('ReconcilePatientCtrl', function(){
   });
 
   it('should put external system on demographics', function(){
-      expect(scope.editing.demographics.external_system).toBe("RFH Database");
+      editing = {demographics: {}};
+      scope.preSave(editing);
+      expect(editing.demographics.external_system).toBe("RFH Database");
   });
 });
