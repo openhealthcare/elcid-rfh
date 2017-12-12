@@ -31,30 +31,9 @@ def get_for_lookup_list(model, values):
     )
 
 
-class Demographics(PatientSubrecord, ExternallySourcedModel):
+class Demographics(omodels.Demographics, ExternallySourcedModel):
     _is_singleton = True
     _icon = 'fa fa-user'
-
-    hospital_number = models.CharField(max_length=255, blank=True)
-    nhs_number = models.CharField(max_length=255, blank=True, null=True)
-
-    surname = models.CharField(max_length=255, blank=True)
-    first_name = models.CharField(max_length=255, blank=True)
-    middle_name = models.CharField(max_length=255, blank=True, null=True)
-    title = ForeignKeyOrFreeText(omodels.Title)
-    date_of_birth = models.DateField(null=True, blank=True)
-    marital_status = ForeignKeyOrFreeText(omodels.MaritalStatus)
-    religion = models.CharField(max_length=255, blank=True, null=True)
-    date_of_death = models.DateField(null=True, blank=True)
-    post_code = models.CharField(max_length=20, blank=True, null=True)
-    gp_practice_code = models.CharField(max_length=20, blank=True, null=True)
-    birth_place = ForeignKeyOrFreeText(omodels.Destination)
-    ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
-    death_indicator = models.BooleanField(default=False)
-
-    # not strictly correct, but it will be updated when opal core models
-    # are updated
-    sex = ForeignKeyOrFreeText(omodels.Gender)
 
     def set_death_indicator(self, value, *args, **kwargs):
         if not value:
