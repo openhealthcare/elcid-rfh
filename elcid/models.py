@@ -48,41 +48,6 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
         verbose_name_plural = "Demographics"
 
 
-class ContactDetails(PatientSubrecord):
-    _is_singleton = True
-    _advanced_searchable = False
-    _icon = 'fa fa-phone'
-
-    address_line1 = models.CharField("Address line 1", max_length = 45,
-                                     blank=True, null=True)
-    address_line2 = models.CharField("Address line 2", max_length = 45,
-                                     blank=True, null=True)
-    city = models.CharField(
-        max_length = 50, blank=True, null=True
-    )
-    county        = models.CharField("County", max_length = 40,
-                                     blank=True, null=True)
-    post_code     = models.CharField("Post Code", max_length = 10,
-                                     blank=True, null=True)
-    tel1          = models.CharField(blank=True, null=True, max_length=50)
-    tel2          = models.CharField(blank=True, null=True, max_length=50)
-
-    class Meta:
-        verbose_name_plural = "Contact details"
-
-
-class Carers(PatientSubrecord):
-    _is_singleton = True
-    _advanced_searchable = False
-    _icon = 'fa fa-users'
-
-    gp    = models.TextField(blank=True, null=True)
-    nurse = models.TextField(blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = "Carers"
-
-
 class DuplicatePatient(PatientSubrecord):
     _no_admin = True
     _icon = 'fa fa-clone'
