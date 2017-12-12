@@ -152,35 +152,6 @@ class Procedure(EpisodeSubrecord):
     surgical_procedure = ForeignKeyOrFreeText(SurgicalProcedure)
 
 
-class PresentingComplaint(EpisodeSubrecord):
-    _title = 'Presenting Complaint'
-    _icon = 'fa fa-stethoscope'
-
-    symptom = ForeignKeyOrFreeText(omodels.Symptom)
-    symptoms = models.ManyToManyField(omodels.Symptom, related_name="presenting_complaints")
-    duration = models.CharField(max_length=255, blank=True, null=True)
-    details = models.TextField(blank=True, null=True)
-
-    def set_symptom(self, *args, **kwargs):
-        # ignore symptom for the time being
-        pass
-
-    def to_dict(self, user):
-        field_names = self.__class__._get_fieldnames_to_serialize()
-        result = {
-            i: getattr(self, i) for i in field_names if not i == "symptoms"
-        }
-        result["symptoms"] = list(self.symptoms.values_list("name", flat=True))
-        return result
-
-    @classmethod
-    def _get_fieldnames_to_serialize(cls):
-        field_names = super(PresentingComplaint, cls)._get_fieldnames_to_serialize()
-        removed_fields = {u'symptom_fk_id', 'symptom_ft', 'symptom'}
-        field_names = [i for i in field_names if i not in removed_fields]
-        return field_names
-
-
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
 
 
