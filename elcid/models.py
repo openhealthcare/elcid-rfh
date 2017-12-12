@@ -172,23 +172,6 @@ class PrimaryDiagnosis(EpisodeSubrecord):
 
 class Consultant(lookuplists.LookupList): pass
 
-class ConsultantAtDischarge(EpisodeSubrecord):
-    _title = 'Consultant At Discharge'
-    _is_singleton = True
-    consultant = ForeignKeyOrFreeText(Consultant)
-
-
-class SecondaryDiagnosis(EpisodeSubrecord):
-    """
-    This is a confirmed diagnosis at discharge time.
-    """
-    _title = 'Secondary Diagnosis'
-    condition   = ForeignKeyOrFreeText(omodels.Condition)
-    co_primary = models.NullBooleanField(default=False)
-
-    class Meta:
-        verbose_name_plural = "Secondary diagnoses"
-
 
 class Diagnosis(EpisodeSubrecord):
     """
