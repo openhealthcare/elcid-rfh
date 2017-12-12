@@ -3,12 +3,12 @@
 {% checkbox field="Line.button_hole" %}
 {% checkbox field="Line.fistula" %}
 {% checkbox field="Line.graft" %}
-{% radio field="Line.tunnelled_or_temp" lookuplist="['Tunnelled', 'Temporary']" %}
-{% input field="Line.site" %}
-{% datetimepicker field="Line.insertion_datetime" %}
+{% radio label="Tunnelled or Temporary" field="Line.tunnelled_or_temp" lookuplist="['Tunnelled', 'Temporary']" %}
+{% input label="Insertion Site" field="Line.site" %}
+{% datetimepicker date_label="Date of Insertion" time_label="Time of Insertion" field="Line.insertion_datetime" %}
 {% input field="Line.inserted_by" %}
 {% input field="Line.external_length" show="editing.line.line_type != 'Peripheral cannula'" unit="cm" %}
-{% datetimepicker field="Line.removal_datetime" %}
+{% datetimepicker date_label="Date of Removal" time_label="Time of Removal" field="Line.removal_datetime" %}
 {% select field="Line.complications" other=True %}
 {% select field="Line.removal_reason" %}
 {% textarea label="Further Information" field="Line.special_instructions" %}
