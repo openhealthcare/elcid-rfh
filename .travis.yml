@@ -21,3 +21,5 @@ after_success:
   - coveralls --merge=coverage/coverage.json
 notifications:
   slack: ohcuk:6spaME3CB7f2PGrMAcklYWqp
+addons:
+  postgresql: "9.3.14"
