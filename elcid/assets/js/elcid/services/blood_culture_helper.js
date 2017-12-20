@@ -143,10 +143,10 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
     };
   };
 
-  var BloodCulture = function(source, date_ordered, lab_number, lab_tests){
+  var BloodCulture = function(source, datetime_ordered, lab_number, lab_tests){
     var self = this;
     this.source = source;
-    this.date_ordered = date_ordered;
+    this.datetime_ordered = datetime_ordered;
     this.lab_number = lab_number;
     this.isolates = groupLabTestsToIsolates(lab_tests || []);
     this.nextIsolateNumber = null;
@@ -181,7 +181,7 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
         _.each(isolate.lab_tests, function(labTest){
           labTest.extras.source = self.source;
           labTest.extras.lab_number = self.lab_number;
-          labTest.date_ordered = self.date_ordered;
+          labTest.datetime_ordered = self.datetime_ordered;
           labTests.push(labTest);
         });
       });
@@ -207,7 +207,7 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
 
       return [
         lab_test.extras.source,
-        lab_test.date_ordered,
+        lab_test.datetime_ordered,
         lab_test.extras.lab_number
       ];
     });
@@ -215,7 +215,7 @@ angular.module('opal.services').service('BloodCultureHelper', function(){
     return _.map(grouped, function(group){
       return new BloodCulture(
         group[0].extras.source,
-        group[0].date_ordered,
+        group[0].datetime_ordered,
         group[0].extras.lab_number,
         group
       );
