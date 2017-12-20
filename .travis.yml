@@ -2,8 +2,9 @@ language: python
 python:
   - "2.7"
 addons:
-  postgresql: "9.4"  
+  postgresql: "9.4"
 install:
+  - pg_config
   - pip install --upgrade pip
   - pip install -r requirements.txt
   - pip install coveralls
