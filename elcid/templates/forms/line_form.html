@@ -1,16 +1,15 @@
 {% load forms %}
-{% select label="Line Type" model="editing.line.line_type" lookuplist="line_type_list" %}
-{% checkbox label="Button Hole" model="editing.line.button_hole" %}
-{% checkbox label="Fistula" model="editing.line.fistula" %}
-{% checkbox label="Graft" model="editing.line.graft" %}
 
-{% radio label="" model="editing.line.tunnelled_or_temp" lookuplist="['Tunnelled', 'Temporary']" %}
-
-{% input label="Site" model="editing.line.site" lookuplist="line_site_list" %}
-{% datetimepicker field="Line.insertion_datetime" %}
-{% input label="Inserted By" model="editing.line.inserted_by" %}
-{% input label="External Length When Inserted" model="editing.line.external_length" show="editing.line.line_type != 'Peripheral cannula'" unit="cm" %}
-{% datetimepicker field="Line.removal_datetime" %}
-{% select label="Complications" model="editing.line.complications" lookuplist="line_complication_list" other=True %}
-{% select label="Removal Reason" model="editing.line.removal_reason" lookuplist="line_removal_reason_list" %}
-{% textarea label="Further Information" field="Line.special_instructions" %}
+{% select  field="Line.line_type" %}
+{% checkbox  field="Line.button_hole" %}
+{% checkbox  field="Line.fistula" %}
+{% checkbox  field="Line.graft" %}
+{% radio  label="Tunnelled or Temporary" field="Line.tunnelled_or_temp" lookuplist="['Tunnelled', 'Temporary']" %}
+{% input  label="Insertion Site" field="Line.site" %}
+{% datetimepicker  date_label="Date of Insertion" time_label="Time of Insertion" field="Line.insertion_datetime" %}
+{% input  field="Line.inserted_by" %}
+{% input  field="Line.external_length" show="editing.line.line_type != 'Peripheral cannula'" unit="cm" %}
+{% datetimepicker  date_label="Date of Removal" time_label="Time of Removal" field="Line.removal_datetime" %}
+{% select  field="Line.complications" other=True %}
+{% select  field="Line.removal_reason" %}
+{% textarea  label="Further Information" field="Line.special_instructions" %}
