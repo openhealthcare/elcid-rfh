@@ -26,30 +26,9 @@ def get_for_lookup_list(model, values):
     )
 
 
-class Demographics(PatientSubrecord, ExternallySourcedModel):
+class Demographics(omodels.Demographics, ExternallySourcedModel):
     _is_singleton = True
     _icon = 'fa fa-user'
-
-    hospital_number = models.CharField(max_length=255, blank=True)
-    nhs_number = models.CharField(max_length=255, blank=True, null=True)
-
-    surname = models.CharField(max_length=255, blank=True)
-    first_name = models.CharField(max_length=255, blank=True)
-    middle_name = models.CharField(max_length=255, blank=True, null=True)
-    title = ForeignKeyOrFreeText(omodels.Title)
-    date_of_birth = models.DateField(null=True, blank=True)
-    marital_status = ForeignKeyOrFreeText(omodels.MaritalStatus)
-    religion = models.CharField(max_length=255, blank=True, null=True)
-    date_of_death = models.DateField(null=True, blank=True)
-    post_code = models.CharField(max_length=20, blank=True, null=True)
-    gp_practice_code = models.CharField(max_length=20, blank=True, null=True)
-    birth_place = ForeignKeyOrFreeText(omodels.Destination)
-    ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
-    death_indicator = models.BooleanField(default=False)
-
-    # not strictly correct, but it will be updated when opal core models
-    # are updated
-    sex = ForeignKeyOrFreeText(omodels.Gender)
 
     def set_death_indicator(self, value, *args, **kwargs):
         if not value:
@@ -62,45 +41,6 @@ class Demographics(PatientSubrecord, ExternallySourcedModel):
 
     class Meta:
         verbose_name_plural = "Demographics"
-
-
-class ContactDetails(PatientSubrecord):
-    _is_singleton = True
-    _advanced_searchable = False
-    _icon = 'fa fa-phone'
-
-    address_line1 = models.CharField(
-        "Address line 1", max_length=45, blank=True, null=True
-    )
-    address_line2 = models.CharField(
-        "Address line 2", max_length=45, blank=True, null=True
-    )
-    city = models.CharField(
-        max_length=50, blank=True, null=True
-    )
-    county = models.CharField(
-        "County", max_length=40, blank=True, null=True
-    )
-    post_code = models.CharField(
-        "Post Code", max_length=10, blank=True, null=True
-    )
-    tel1 = models.CharField(blank=True, null=True, max_length=50)
-    tel2 = models.CharField(blank=True, null=True, max_length=50)
-
-    class Meta:
-        verbose_name_plural = "Contact details"
-
-
-class Carers(PatientSubrecord):
-    _is_singleton = True
-    _advanced_searchable = False
-    _icon = 'fa fa-users'
-
-    gp    = models.TextField(blank=True, null=True)
-    nurse = models.TextField(blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = "Carers"
 
 
 class DuplicatePatient(PatientSubrecord):
@@ -244,35 +184,6 @@ class Procedure(EpisodeSubrecord):
     surgical_procedure = ForeignKeyOrFreeText(SurgicalProcedure)
 
 
-class PresentingComplaint(EpisodeSubrecord):
-    _title = 'Presenting Complaint'
-    _icon = 'fa fa-stethoscope'
-
-    symptom = ForeignKeyOrFreeText(omodels.Symptom)
-    symptoms = models.ManyToManyField(omodels.Symptom, related_name="presenting_complaints")
-    duration = models.CharField(max_length=255, blank=True, null=True)
-    details = models.TextField(blank=True, null=True)
-
-    def set_symptom(self, *args, **kwargs):
-        # ignore symptom for the time being
-        pass
-
-    def to_dict(self, user):
-        field_names = self.__class__._get_fieldnames_to_serialize()
-        result = {
-            i: getattr(self, i) for i in field_names if not i == "symptoms"
-        }
-        result["symptoms"] = list(self.symptoms.values_list("name", flat=True))
-        return result
-
-    @classmethod
-    def _get_fieldnames_to_serialize(cls):
-        field_names = super(PresentingComplaint, cls)._get_fieldnames_to_serialize()
-        removed_fields = {u'symptom_fk_id', 'symptom_ft', 'symptom'}
-        field_names = [i for i in field_names if i not in removed_fields]
-        return field_names
-
-
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
 
 
@@ -294,23 +205,6 @@ class PrimaryDiagnosis(EpisodeSubrecord):
 class Consultant(lookuplists.LookupList):
     pass
 
-
-class ConsultantAtDischarge(EpisodeSubrecord):
-    _title = 'Consultant At Discharge'
-    _is_singleton = True
-    consultant = ForeignKeyOrFreeText(Consultant)
-
-
-class SecondaryDiagnosis(EpisodeSubrecord):
-    """
-    This is a confirmed diagnosis at discharge time.
-    """
-    _title = 'Secondary Diagnosis'
-    condition   = ForeignKeyOrFreeText(omodels.Condition)
-    co_primary = models.NullBooleanField(default=False)
-
-    class Meta:
-        verbose_name_plural = "Secondary diagnoses"
 
 
 class Diagnosis(EpisodeSubrecord):
@@ -335,41 +229,6 @@ class Diagnosis(EpisodeSubrecord):
 
     class Meta:
         verbose_name_plural = "Diagnoses"
-
-
-class PastMedicalHistory(EpisodeSubrecord):
-    _title = 'PMH'
-    _sort = 'year'
-    _icon = 'fa fa-history'
-
-    condition = ForeignKeyOrFreeText(omodels.Condition)
-    year      = models.CharField(max_length=200, blank=True)
-    details   = models.CharField(max_length=255, blank=True)
-
-    class Meta:
-        verbose_name_plural = "Past medical histories"
-
-
-class GeneralNote(EpisodeSubrecord):
-    _title = 'General Notes'
-    _sort  = 'date'
-    _icon = 'fa fa-info-circle'
-
-    date    = models.DateField(null=True, blank=True)
-    comment = models.TextField()
-
-
-class Travel(EpisodeSubrecord):
-    _icon = 'fa fa-plane'
-
-    destination         = ForeignKeyOrFreeText(omodels.Destination)
-    dates               = models.CharField(max_length=255, blank=True)
-    reason_for_travel   = ForeignKeyOrFreeText(omodels.Travel_reason)
-    did_not_travel      = models.NullBooleanField(default=False)
-    specific_exposures  = models.CharField(max_length=255, blank=True)
-    malaria_prophylaxis = models.NullBooleanField(default=False)
-    malaria_drug        = ForeignKeyOrFreeText(omodels.Antimicrobial)
-    malaria_compliance  = models.CharField(max_length=200, blank=True, null=True)
 
 
 class Iv_stop(lookuplists.LookupList):
@@ -399,31 +258,6 @@ class Antimicrobial(EpisodeSubrecord):
     comments      = models.TextField(blank=True, null=True)
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
     no_antimicrobials = models.NullBooleanField(default=False)
-
-
-class Allergies(PatientSubrecord, ExternallySourcedModel):
-    _icon = 'fa fa-warning'
-
-    drug        = ForeignKeyOrFreeText(omodels.Antimicrobial)
-    provisional = models.NullBooleanField()
-    details     = models.CharField(max_length=255, blank=True)
-
-    # previously called drug this is the name of the problematic substance
-    allergy_description = models.CharField(max_length=255, blank=True)
-    allergy_type_description = models.CharField(max_length=255, blank=True)
-    certainty_id = models.CharField(max_length=255, blank=True)
-    certainty_description = models.CharField(max_length=255, blank=True)
-    allergy_reference_name = models.CharField(max_length=255, blank=True)
-    allergen_reference_system = models.CharField(max_length=255, blank=True)
-    allergen_reference = models.CharField(max_length=255, blank=True)
-    status_id = models.CharField(max_length=255, blank=True)
-    status_description = models.CharField(max_length=255, blank=True)
-    diagnosis_datetime = models.DateTimeField(null=True, blank=True)
-    allergy_start_datetime = models.DateTimeField(null=True, blank=True)
-    no_allergies = models.BooleanField(default=False)
-
-    class Meta:
-        verbose_name_plural = "Allergies"
 
 
 class RenalFunction(lookuplists.LookupList):
@@ -461,75 +295,6 @@ class MicrobiologyInput(EpisodeSubrecord):
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
 
-class Todo(EpisodeSubrecord):
-    _title = 'To Do'
-    _icon = 'fa fa-th-list'
-
-    details = models.TextField(blank=True)
-
-class Hiv_no(lookuplists.LookupList):
-    class Meta:
-        verbose_name = "HIV refusal reason"
-
-
-class MicrobiologyTest(EpisodeSubrecord):
-    _title = 'Investigations'
-    _sort = 'date_ordered'
-    _icon = 'fa fa-crosshairs'
-    _modal = 'lg'
-
-    test                  = models.CharField(max_length=255)
-    alert_investigation   = models.BooleanField(default=False)
-    date_ordered          = models.DateField(null=True, blank=True)
-    details               = models.CharField(max_length=255, blank=True)
-    microscopy            = models.CharField(max_length=255, blank=True)
-    organism              = models.CharField(max_length=255, blank=True)
-    sensitive_antibiotics = models.CharField(max_length=255, blank=True)
-    resistant_antibiotics = models.CharField(max_length=255, blank=True)
-    result                = models.CharField(max_length=255, blank=True)
-    igm                   = models.CharField(max_length=20, blank=True)
-    igg                   = models.CharField(max_length=20, blank=True)
-    vca_igm               = models.CharField(max_length=20, blank=True)
-    vca_igg               = models.CharField(max_length=20, blank=True)
-    ebna_igg              = models.CharField(max_length=20, blank=True)
-    hbsag                 = models.CharField(max_length=20, blank=True)
-    anti_hbs              = models.CharField(max_length=20, blank=True)
-    anti_hbcore_igm       = models.CharField(max_length=20, blank=True)
-    anti_hbcore_igg       = models.CharField(max_length=20, blank=True)
-    rpr                   = models.CharField(max_length=20, blank=True)
-    tppa                  = models.CharField(max_length=20, blank=True)
-    viral_load            = models.CharField(max_length=20, blank=True)
-    parasitaemia          = models.CharField(max_length=20, blank=True)
-    hsv                   = models.CharField(max_length=20, blank=True)
-    vzv                   = models.CharField(max_length=20, blank=True)
-    syphilis              = models.CharField(max_length=20, blank=True)
-    c_difficile_antigen   = models.CharField(max_length=20, blank=True)
-    c_difficile_toxin     = models.CharField(max_length=20, blank=True)
-    species               = models.CharField(max_length=20, blank=True)
-    hsv_1                 = models.CharField(max_length=20, blank=True)
-    hsv_2                 = models.CharField(max_length=20, blank=True)
-    enterovirus           = models.CharField(max_length=20, blank=True)
-    cmv                   = models.CharField(max_length=20, blank=True)
-    ebv                   = models.CharField(max_length=20, blank=True)
-    influenza_a           = models.CharField(max_length=20, blank=True)
-    influenza_b           = models.CharField(max_length=20, blank=True)
-    parainfluenza         = models.CharField(max_length=20, blank=True)
-    metapneumovirus       = models.CharField(max_length=20, blank=True)
-    rsv                   = models.CharField(max_length=20, blank=True)
-    adenovirus            = models.CharField(max_length=20, blank=True)
-    norovirus             = models.CharField(max_length=20, blank=True)
-    rotavirus             = models.CharField(max_length=20, blank=True)
-    giardia               = models.CharField(max_length=20, blank=True)
-    entamoeba_histolytica = models.CharField(max_length=20, blank=True)
-    cryptosporidium       = models.CharField(max_length=20, blank=True)
-    hiv_declined          = ForeignKeyOrFreeText(Hiv_no)
-    spotted_fever_igm     = models.CharField(max_length=20, blank=True)
-    spotted_fever_igg     = models.CharField(max_length=20, blank=True)
-    typhus_group_igm      = models.CharField(max_length=20, blank=True)
-    typhus_group_igg      = models.CharField(max_length=20, blank=True)
-    scrub_typhus_igm      = models.CharField(max_length=20, blank=True)
-    scrub_typhus_igg      = models.CharField(max_length=20, blank=True)
-
 
 class Line(EpisodeSubrecord):
     _sort = 'insertion_datetime'
@@ -548,17 +313,6 @@ class Line(EpisodeSubrecord):
     tunnelled_or_temp = models.CharField(max_length=200, blank=True, null=True)
     fistula = models.NullBooleanField(blank=True, null=True)
     graft = models.NullBooleanField(blank=True, null=True)
-
-
-class Appointment(EpisodeSubrecord):
-    _title = 'Upcoming Appointments'
-    _sort = 'date'
-    _icon = 'fa fa-calendar'
-    _advanced_searchable = False
-
-    appointment_type = models.CharField(max_length=200, blank=True, null=True)
-    appointment_with = models.CharField(max_length=200, blank=True, null=True)
-    date = models.DateField(blank=True, null=True)
 
 
 class BloodCultureSource(lookuplists.LookupList):
