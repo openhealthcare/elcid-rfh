@@ -144,7 +144,7 @@ TEMPLATE_DIRS = (
     os.path.join(PROJECT_PATH, 'templates'),
 )
 
-TEMPLATE_CONTEXT_PROCESSORS= (
+TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
@@ -155,6 +155,7 @@ TEMPLATE_CONTEXT_PROCESSORS= (
     'django.contrib.messages.context_processors.messages',
     'opal.context_processors.settings',
     'opal.context_processors.models',
+    'elcid.context_processors.permissions',
     'lab.context_processors.lab_tests',
 )
 
@@ -174,11 +175,32 @@ INSTALLED_APPS = (
     'compressor',
     'opal.core.search',
     'lab',
+    'intrahospital_api',
     'elcid',
     'django.contrib.admin',
     'djcelery',
-    'intrahospital_api',
 )
+
+# The intrahospital api is what we use to connect to the rest of the hospital
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+
+# if the intrahospital api is prod, we need
+# an ip address, a database, a username and a password for
+# the hospital db
+HOSPITAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
+
+
+# search with external demographics when adding a patient
+ADD_PATIENT_DEMOGRAPHICS = True
+
+# after we've added a patient, should we load in the labtests?
+ADD_PATIENT_LAB_TESTS = True
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
@@ -188,6 +210,7 @@ if 'test' in sys.argv:
     MIGRATION_MODULES = {
         'opal': 'opal.nomigrations',
         'elcid': 'elcid.nomigrations',
+        'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'lab': 'lab.nomigrations',
         'intrahospital_api': 'intrahospital_api.nomigrations'
@@ -204,7 +227,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'ERROR',
+            'level': 'INFO',
             'filters': ['require_debug_false'],
             'class': 'logging.StreamHandler'
         },
@@ -239,6 +262,11 @@ LOGGING = {
         'error_emailer': {
             'handlers': ['standard_error_emailer'],
             'level': 'ERROR',
+            'propagate': True,
+        },
+        'elcid.time_logger': {
+            'handlers': ['console'],
+            'level': 'INFO',
             'propagate': True,
         },
         'intrahospital_api': {
@@ -334,6 +362,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
 
 if 'test' not in sys.argv:
     try:

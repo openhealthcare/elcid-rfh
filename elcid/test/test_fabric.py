@@ -884,7 +884,7 @@ class DeployTestCase(FabfileTestCase):
 
         second_call = run_management_command.call_args_list[1][0]
         self.assertEqual(
-            second_call[0], "migrate"
+            second_call[0], "migrate --noinput"
         )
 
         self.assertEqual(
@@ -990,7 +990,7 @@ class DeployTestCase(FabfileTestCase):
 
         second_call = run_management_command.call_args_list[1][0]
         self.assertEqual(
-            second_call[0], "migrate"
+            second_call[0], "migrate --noinput"
         )
 
         self.assertEqual(
