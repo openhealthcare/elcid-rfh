@@ -4,7 +4,7 @@ from mock import patch
 from opal import models
 from opal.core.test import OpalTestCase
 from elcid.pathways import (
-    AddPatientPathway, CernerDemoPathway, BloodCulturePathway
+    AddPatientPathway, CernerDemoPathway, BloodCulturePathway, AddTbPatientPathway
 )
 
 class TestBloodCulturePathway(OpalTestCase):
