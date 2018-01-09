@@ -2,7 +2,7 @@
 Plugin definition for the TB Opal plugin
 """
 from opal.core import plugins
-
+from opal.core import menus
 from apps.tb.urls import urlpatterns
 
 
@@ -19,6 +19,14 @@ class TbPlugin(plugins.OpalPlugin):
             # 'js/tb/services/larry.js',
         ]
     }
+    menuitems = [
+            menus.MenuItem(
+            href='/pathway/#/add_tb_patient',
+            display='Add TB Patient',
+            icon='fa fa-coffee',
+            activepattern='/pathway/#/add_tb_patient'
+        )
+    ]
 
     def list_schemas(self):
         """

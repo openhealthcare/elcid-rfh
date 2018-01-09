@@ -6,6 +6,7 @@ from opal.core.test import OpalTestCase
 from elcid.pathways import (
     AddPatientPathway, CernerDemoPathway, BloodCulturePathway
 )
+from apps.tb.pathways import AddTbPatientPathway
 
 
 class TestBloodCulturePathway(OpalTestCase):
@@ -134,3 +135,29 @@ class TestAddPatientPathway(OpalTestCase):
             list(new_episode.get_tag_names(None)),
             ['antifungal']
         )
+
+
+class TestAddTbPatientPathway(OpalTestCase):
+    def setUp(self):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        self.url = AddTbPatientPathway().save_url()
+
+    def test_saves_tag_and_episode(self):
+        test_data = dict(
+            demographics=[dict(hospital_number="234", nhs_number="12312")],
+            tagging=[{u'tb': True}],
+            episode=["TB"]
+        )
+        response = self.post_json(self.url, test_data)
+        self.assertEqual(response.status_code, 200)
+        patient = models.Patient.objects.get()
+        episode = patient.episode_set.get()
+        self.assertEqual(
+            list(episode.get_tag_names(None)),
+            ["tb"]
+        )
+        self.assertEqual(episode.category_name, "TB")

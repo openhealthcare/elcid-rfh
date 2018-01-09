@@ -148,3 +148,29 @@ class BloodCulturePathway(PagePathway):
             model=lmodels.LabTest
         ),
     )
+
+
+class AddTbPatientPathway(AddPatientPathway):
+    display_name = "Add TB Patient"
+    slug = 'add_tb_patient'
+
+    steps = (
+        Step(
+            template="pathway/rfh_find_patient_form.html",
+            step_controller="RfhFindPatientCtrl",
+            display_name="Find patient",
+            icon="fa fa-user"
+        ),
+    )
+
+    @transaction.atomic
+    def save(self, data, user, patient=None, episode=None):
+        patient, episode = super(AddTbPatientPathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
+
+        episode.set_tag_names(["tb"], user)
+        episode.category_name = "TB"
+        episode.save()
+
+        return patient, episode
