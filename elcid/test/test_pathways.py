@@ -6,8 +6,6 @@ from opal.core.test import OpalTestCase
 from elcid.pathways import (
     AddPatientPathway, CernerDemoPathway, BloodCulturePathway
 )
-from apps.tb.pathways import AddTbPatientPathway
-
 
 class TestBloodCulturePathway(OpalTestCase):
     def test_delete_others(self):
