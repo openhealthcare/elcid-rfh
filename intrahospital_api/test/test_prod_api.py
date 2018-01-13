@@ -476,3 +476,5 @@ class ProdApiTestcase(OpalTestCase):
             "Boom",
             logging.getLogger.return_value.error.call_args_list[1][0][0],
         )
+
+    def test_get_

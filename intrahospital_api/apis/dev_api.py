@@ -258,7 +258,7 @@ class DevApi(base_api.BaseApi):
             that can be updated to the HL7 lab test
             type
         """
-        external_identifier = self.get_external_identifier()
+        lab_number = self.get_external_identifier()
         datetime_ordered_str = datetime_ordered.strftime(
             settings.DATETIME_INPUT_FORMATS[0]
         )
@@ -270,7 +270,7 @@ class DevApi(base_api.BaseApi):
                 profile_description=lab_test_type,
                 last_edited=datetime_ordered_str,
             ),
-            external_identifier=external_identifier,
+            lab_number=lab_number,
             datetime_ordered=datetime_ordered_str,
             lab_test_type=emodels.HL7Result.get_display_name(),
             status=result_status,
@@ -305,5 +305,49 @@ class DevApi(base_api.BaseApi):
 
         return rows
 
-    def raw_data(self, hospital_number):
+    def create_observation_dict(
+        self, test_base_observation_name, test_base_observation_value
+    ):
+        return dict(
+            observation_name=test_base_observation_name,
+            observation_number=self.get_external_identifier(),
+            reference_range=test_base_observation_value["reference_range"],
+            units=test_base_observation_value["units"],
+            observation_datetime=datetime.now() - timedelta(1),
+            last_updated=datetime.now() - timedelta(minutes=20)
+        )
+
+    def results_for_hospital_number(self, hospital_number, **filter_kwargs):
+        """ We expect a return of something like
+            {
+                status: "Sucess",
+                test_code: "AN12".
+                test_name: "Anti-CV2 (CRMP-5) antibodies",
+                request_datetime: "18 Jul 2015, 4:15 p.m.",
+                lab_number: "ANTI NEURONAL AB REFERRAL",
+                observations: [{
+                    "observation_number": "12312",
+                    "reference_range": "3.5 - 11",
+                    "units": "g",
+                    "observation_datetime": "18 Jul 2015, 4:18 p.m."
+                    "last_updated": "18 Jul 2019, 4:18 p.m."
+                }]
+            }
+        """
+        result = []
+        for i, v in TEST_BASES.items():
+            result.append(dict(
+                status=lmodels.LabTest.COMPLETE,
+                test_code=i.lower().replace(" ", "_"),
+                test_name=i,
+                request_datetime=datetime.now(),
+                lab_number=self.get_external_identifier(),
+                observations=[
+                    self.create_observation_dict(o, y) for o, y in v.items()
+                ]
+            ))
+
+        return result
+
+    def raw_data(self, hospital_number, **filter_kwargs):
         return [RAW_DATA]
