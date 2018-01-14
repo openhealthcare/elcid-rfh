@@ -41,7 +41,8 @@ COMMON_TRANSLATIONS = dict(
     external_identifier="Result_ID",
     lab_test_name="OBR_exam_code_Text",
     observation_name="OBX_exam_code_Text",
-    observation_number="OBX_id"
+    observation_number="OBX_id",
+    datetime_received="Reported_date"
 )
 
 
@@ -87,7 +88,8 @@ class Row(object):
         'status',
         'test_code',
         'test_name',
-        'request_datetime',
+        'datetime_ordered',
+        'datetime_received',
         'external_identifier',
     ]
 
@@ -173,6 +175,9 @@ class Row(object):
         else:
             return lmodels.LabTest.PENDING
 
+    def get_datetime_received(self):
+        return self.db_row.get(COMMON_TRANSLATIONS['datetime_received'])
+
     def get_test_code(self):
         return self.db_row.get('OBX_exam_code_ID')
 
@@ -182,7 +187,7 @@ class Row(object):
     def get_external_identifier(self):
         return self.db_row.get(COMMON_TRANSLATIONS['external_identifier'])
 
-    def get_request_datetime(self):
+    def get_datetime_ordered(self):
         return self.db_row.get("Request_Date")
 
     # fields of the individual observations within the lab test

@@ -88,6 +88,10 @@ class Location(EpisodeSubrecord):
 
 
 class HL7Result(lmodels.ReadOnlyLabTest):
+    # these fields we will save as extras when we
+    # update from dict
+    convert_to_extras = ['test_code', 'test_name']
+
     class Meta:
         verbose_name = "HL7 Result"
 
@@ -135,6 +139,12 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
                 if existing:
                     data["id"] = existing.id
+            for i in self.convert_to_extras:
+                if i in data:
+                    if "extras" not in data:
+                        data["extras"] = {}
+                    data["extras"][i] = data.pop(i)
+
             super(HL7Result, self).update_from_dict(data, *args, **kwargs)
 
     @classmethod
