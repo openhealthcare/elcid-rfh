@@ -59,13 +59,26 @@ def generate_time_series(observations):
     return timeseries
 
 
-def get_observation_value(observation):
-    obs_result = observation["observation_value"].split("~")[0]
+def extract_observation_value(observation_value):
+    """
+        if an observation is numeric, return it as a float
+        if its >12 return >12
+        else return None
+    """
+    obs_result = observation_value.split("~")[0]
     try:
         # we return None if its not numeric
         return float(obs_result)
     except ValueError:
-        return None
+        try:
+            float(obs_result.strip("<").strip(">").strip())
+            return obs_result
+        except ValueError:
+            return None
+
+
+def get_observation_value(observation):
+    return extract_observation_value(observation["observation_value"])
 
 
 def clean_ref_range(ref_range):
@@ -128,7 +141,7 @@ class LabTestObservationDetail(LoginRequiredViewset):
             lab_test_type=emodels.HL7Result.get_display_name()
         ):
             lab_test_type = lab_test.extras.get(
-                "profile_description", lab_test.lab_test_type
+                "test_name", lab_test.lab_test_type
             )
             if slugify(lab_test_type) == request.query_params["labtest"]:
                 existing_observations = lab_test.extras.get("observations", [])
@@ -187,10 +200,9 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return []
 
-    def to_datetime_str(self, some_date):
-        return some_date.strftime(
-            settings.DATETIME_INPUT_FORMATS[0]
-        )
+    def to_date_str(self, some_date):
+        if some_date:
+            return some_date[:10]
 
     def aggregate_observations_by_lab_test(self, lab_tests):
         by_test = defaultdict(list)
@@ -202,10 +214,14 @@ class LabTestResultsView(LoginRequiredViewset):
             as_dict = lab_test.dict_for_view(None)
             observations = as_dict.get("observations", [])
             lab_test_type = as_dict["extras"].get(
-                "profile_description", lab_test.lab_test_type
+                "test_name", lab_test.lab_test_type
             )
 
             for observation in observations:
+                obs_result = extract_observation_value(observation["observation_value"])
+                if obs_result:
+                    observation["observation_value"] = obs_result
+
                 observation["reference_range"] = observation["reference_range"].replace("]", "").replace("[", "")
                 if not len(observation["reference_range"].replace("-", "").strip()):
                     observation["reference_range"] = None
@@ -225,7 +241,17 @@ class LabTestResultsView(LoginRequiredViewset):
 
                 observation["datetime_ordered"] = lab_test.datetime_ordered
                 by_test[lab_test_type].append(observation)
+
         return by_test
+
+    def is_empty_value(self, observation_value):
+        """ we don't care about empty strings or
+            ' - '
+        """
+        if isinstance(observation_value, str):
+            return not observation_value.strip().strip("-").strip()
+        else:
+            return observation_value is None
 
     @patient_from_pk
     def retrieve(self, request, patient):
@@ -244,7 +270,7 @@ class LabTestResultsView(LoginRequiredViewset):
         # aren't populated
         for lab_test_type, observations in by_test.items():
             observations = sorted(observations, key=lambda x: x["datetime_ordered"])
-            observations = sorted(observations, key=lambda x: x["test_name"])
+            observations = sorted(observations, key=lambda x: x["observation_name"])
 
             # observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
@@ -253,33 +279,44 @@ class LabTestResultsView(LoginRequiredViewset):
             observation_metadata = {}
 
             observation_date_range = {
-                self.to_datetime_str(observation["datetime_ordered"]) for observation in observations
+                self.to_date_str(observation["observation_datetime"]) for observation in observations
             }
             observation_date_range = sorted(list(observation_date_range))
             long_form = False
 
             for observation in observations:
-                test_name = observation["test_name"]
+                test_name = observation["observation_name"]
+
+                if test_name.strip() == "Haem Lab Comment":
+                    # skip these for the time being, we may not even
+                    # have to bring them in
+                    continue
 
                 # arbitrary but fine for prototyping, should we show it in a
                 # table
-                if len(observation["observation_value"]) > 10:
-                    long_form = True
+                if isinstance(observation["observation_value"], (str, unicode,)):
+                    if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
+                        long_form = True
 
                 if test_name not in by_observations:
                     obs_for_test_name = {
-                        self.to_datetime_str(i["datetime_ordered"]): i for i in observations if i["test_name"] == test_name
+                        self.to_date_str(i["observation_datetime"]): i for i in observations if i["observation_name"] == test_name
                     }
+                    # if its all None's for a certain observation name lets skip it
+                    # ie if WBC is all None, lets not waste the users' screen space
+                    # sometimes they just have '-' so lets skip these too
+                    if not all(i for i in obs_for_test_name.values() if self.is_empty_value(i)):
+                        continue
                     by_observations[test_name] = obs_for_test_name
 
                 if test_name not in observation_metadata:
                     observation_metadata[test_name] = dict(
                         units=observation["units"],
                         reference_range=observation["reference_range"],
-                        api_name=slugify(observation["test_name"])
+                        api_name=slugify(observation["observation_name"])
                     )
 
-            serialised_lab_teset = dict(
+            serialised_lab_test = dict(
                 long_form=long_form,
                 timeseries=timeseries,
                 api_name=slugify(lab_test_type),
@@ -292,7 +329,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 observation_names=sorted(by_observations.keys()),
                 tags=LAB_TEST_TAGS.get(lab_test_type, [])
             )
-            serialised_tests.append(serialised_lab_teset)
+            serialised_tests.append(serialised_lab_test)
 
             serialised_tests = sorted(serialised_tests, key=itemgetter("lab_test_type"))
 
