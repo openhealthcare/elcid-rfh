@@ -17,6 +17,11 @@ urlpatterns = [
         name="cooked_view"
     ),
     url(
+        r'^intrahospital_api/cooked/results/(?P<hospital_number>[0-9A-Za-z_\-]+)/json$',
+        views.results_as_json,
+        name="cooked_json_view"
+    ),
+    url(
         r'^intrahospital_api/raw/patient/(?P<hospital_number>[0-9A-Za-z_\-]+)$',
         views.IntrahospitalRawView.as_view(),
         name="raw_view"

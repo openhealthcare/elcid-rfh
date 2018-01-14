@@ -38,7 +38,7 @@ ETHNICITY_MAPPING = {
 
 COMMON_TRANSLATIONS = dict(
     hospital_number="Patient_Number",
-    lab_number="Result_ID",
+    external_identifier="Result_ID",
     lab_test_name="OBR_exam_code_Text",
     observation_name="OBX_exam_code_Text",
     observation_number="OBX_id"
@@ -88,7 +88,7 @@ class Row(object):
         'test_code',
         'test_name',
         'request_datetime',
-        'lab_number',
+        'external_identifier',
     ]
 
     OBSERVATION_FIELDS = [
@@ -179,8 +179,8 @@ class Row(object):
     def get_test_name(self):
         return self.db_row.get(COMMON_TRANSLATIONS['lab_test_name'])
 
-    def get_lab_number(self):
-        return self.db_row.get(COMMON_TRANSLATIONS['lab_number'])
+    def get_external_identifier(self):
+        return self.db_row.get(COMMON_TRANSLATIONS['external_identifier'])
 
     def get_request_datetime(self):
         return self.db_row.get("Request_Date")
@@ -322,7 +322,7 @@ class ProdApi(base_api.BaseApi):
 
         for row in rows:
             lab_test_dict = row.get_lab_test_dict()
-            lab_number = lab_test_dict["lab_number"]
+            lab_number = lab_test_dict["external_identifier"]
             lab_number_to_lab_test[lab_number] = lab_test_dict
             lab_number_to_observations[lab_number].append(
                 row.get_observation_dict()

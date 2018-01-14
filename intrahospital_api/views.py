@@ -3,6 +3,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from intrahospital_api import get_api
 from collections import defaultdict
+from opal.core.views import json_response
 
 
 class StaffRequiredMixin(object):
@@ -110,3 +111,12 @@ class IntrahospitalCookedResultsView(StaffRequiredMixin, TemplateView):
         )
         ctx["title"] = "Cooked Results Data"
         return ctx
+
+
+@staff_member_required
+def results_as_json(request, *args, **kwargs):
+    api = get_api()
+    results = api.results_for_hospital_number(
+        kwargs["hospital_number"], **request.GET
+    )
+    return json_response(results)

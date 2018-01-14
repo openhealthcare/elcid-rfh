@@ -258,7 +258,7 @@ class DevApi(base_api.BaseApi):
             that can be updated to the HL7 lab test
             type
         """
-        lab_number = self.get_external_identifier()
+        external_identifier = self.get_external_identifier()
         datetime_ordered_str = datetime_ordered.strftime(
             settings.DATETIME_INPUT_FORMATS[0]
         )
@@ -270,7 +270,7 @@ class DevApi(base_api.BaseApi):
                 profile_description=lab_test_type,
                 last_edited=datetime_ordered_str,
             ),
-            lab_number=lab_number,
+            external_identifier=external_identifier,
             datetime_ordered=datetime_ordered_str,
             lab_test_type=emodels.HL7Result.get_display_name(),
             status=result_status,
@@ -324,7 +324,7 @@ class DevApi(base_api.BaseApi):
                 test_code: "AN12".
                 test_name: "Anti-CV2 (CRMP-5) antibodies",
                 request_datetime: "18 Jul 2015, 4:15 p.m.",
-                lab_number: "ANTI NEURONAL AB REFERRAL",
+                external_identifier: "ANTI NEURONAL AB REFERRAL",
                 observations: [{
                     "observation_number": "12312",
                     "reference_range": "3.5 - 11",
@@ -341,7 +341,7 @@ class DevApi(base_api.BaseApi):
                 test_code=i.lower().replace(" ", "_"),
                 test_name=i,
                 request_datetime=datetime.now(),
-                lab_number=self.get_external_identifier(),
+                external_identifier=self.get_external_identifier(),
                 observations=[
                     self.create_observation_dict(o, y) for o, y in v.items()
                 ]
