@@ -376,11 +376,11 @@ class LabTestSummaryApi(LoginRequiredViewset):
                     units=observations[0]["units"],
                     reference_range=get_reference_range(observations[0]),
                     latest_results={
-                        datetime_to_str(i["datetime_ordered"]): get_observation_value(i) for i in observations if get_observation_value(i)
+                        to_date_str(datetime_to_str(i["datetime_ordered"])): get_observation_value(i) for i in observations if get_observation_value(i)
                     }
                 ))
                 all_dates = all_dates.union(
-                    i["datetime_ordered"] for i in observations if get_observation_value(i)
+                    i["datetime_ordered"].date() for i in observations if get_observation_value(i)
                 )
 
         recent_dates = sorted(list(all_dates))
