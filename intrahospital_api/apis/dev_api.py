@@ -290,13 +290,13 @@ class DevApi(base_api.BaseApi):
         """
         result = []
         for i, v in TEST_BASES.items():
-            for date_delta in range(10):
-                base_datetime = datetime.now() - timedelta(date_delta)
+            for date_t in range(10):
+                base_datetime = datetime.now() - timedelta(date_t)
                 result.append(dict(
                     status=lmodels.LabTest.COMPLETE,
                     test_code=i.lower().replace(" ", "_"),
                     test_name=i,
-                    datetime_ordered=datetime.now().strftime(
+                    datetime_ordered=base_datetime.strftime(
                         '%d/%m/%Y %H:%M:%S'
                     ),
                     external_identifier=self.get_external_identifier(),

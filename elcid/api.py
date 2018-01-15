@@ -1,6 +1,6 @@
 import datetime
 from operator import itemgetter
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import Http404
@@ -83,6 +83,50 @@ def clean_ref_range(ref_range):
     return ref_range.replace("]", "").replace("[", "").strip()
 
 
+def to_date_str(some_date):
+    if some_date:
+        return some_date[:10]
+
+
+def to_date(some_date_str):
+    if some_date_str:
+        return datetime.datetime.strptime(
+            some_date_str, settings.DATE_INPUT_FORMATS[0]
+        ).date()
+
+
+def datetime_to_str(dt):
+    return dt.strftime(
+        settings.DATETIME_INPUT_FORMATS[0]
+    )
+
+
+def str_to_datetime(some_date_str):
+    if some_date_str:
+        return datetime.datetime.strptime(
+            some_date_str, settings.DATETIME_INPUT_FORMATS[0]
+        )
+
+
+def observations_by_date(observations):
+    """ takes in a bunch of observations, assumes that
+        they are like they are in the model, that
+    """
+    by_date_str = {}
+
+    date_keys = [o['observation_datetime'] for o in observations]
+    date_keys = sorted(date_keys)
+    date_keys.reverse()
+    date_keys = [to_date_str(d) for d in date_keys]
+
+    for observation in observations:
+        by_date_str[
+            to_date_str(observation['observation_datetime'])
+        ] = observation
+
+    return [by_date_str[date_key] for date_key in date_keys]
+
+
 def get_reference_range(observation):
     ref_range = clean_ref_range(observation["reference_range"])
     if not len(ref_range.replace("-", "").strip()):
@@ -95,68 +139,6 @@ def get_reference_range(observation):
 
 AEROBIC = "aerobic"
 ANAEROBIC = "anaerobic"
-
-
-class ObservationCollection(object):
-    def clean_ref_range(self, obv):
-        ref_range = obv["reference_range"]
-        return ref_range.replace("]", "").replace("[", "")
-
-    def get_reference_range(self, observation):
-        observation["reference_range"] = observation["reference_range"]
-        ref_range = self.clean_ref_range(observation)
-        if not len(ref_range.replace("-", "").strip()):
-            return None
-        range_min_max = observation["reference_range"].split("-")
-        if len(range_min_max) > 2:
-            return None
-        return {"min": range_min_max[0], "max": range_min_max[1]}
-
-    def __init__(self, observations):
-        obv = observations[0]
-        self.observations = observations
-        self.test_name = obv["test_name"]
-        self.units = obv["units"]
-        self.reference_range = self.get_reference_range(obv)
-
-    def to_dict(self):
-        return {
-            "observations": self.observations,
-            "test_name": self.test_name,
-            "units": self.units,
-            "reference_range": self.reference_range
-        }
-
-
-class LabTestObservationDetail(LoginRequiredViewset):
-    base_name = "lab_test_observation_detail"
-
-    @patient_from_pk
-    def retrieve(self, request, patient):
-        found_observations = []
-        observation_slug = request.query_params["observation"]
-        for lab_test in patient.labtest_set.filter(
-            lab_test_type=emodels.UpstreamLabTest.get_display_name()
-        ):
-            lab_test_type = lab_test.extras.get(
-                "test_name", lab_test.lab_test_type
-            )
-            if slugify(lab_test_type) == request.query_params["labtest"]:
-                existing_observations = lab_test.extras.get("observations", [])
-
-                for existing_observation in existing_observations:
-                    sluged_test_name = slugify(
-                        existing_observation.get("test_name", None)
-                    )
-                    if sluged_test_name == observation_slug:
-                        if lab_test.datetime_ordered:
-                            existing_observation["datetime_ordered"] = lab_test.datetime_ordered
-                            found_observations.append(existing_observation)
-
-        if not found_observations:
-            raise Http404
-        collection = ObservationCollection(found_observations)
-        return json_response(collection.to_dict())
 
 
 class LabTestJsonDumpView(LoginRequiredViewset):
@@ -179,28 +161,6 @@ class LabTestResultsView(LoginRequiredViewset):
         date.
     """
     base_name = 'lab_test_results_view'
-
-    def generate_time_series(self, observations):
-        timeseries = []
-        for observation in observations:
-            obs_result = observation["observation_value"].split("~")[0]
-            try:
-                # we can fail if the result is not numeric
-                timeseries.append(
-                    float(obs_result),
-                )
-            except ValueError:
-                timeseries.append((
-                    None,
-                ))
-        if len([t for t in timeseries if not t == 'values' and t]) > 3:
-            return timeseries
-        else:
-            return []
-
-    def to_date_str(self, some_date):
-        if some_date:
-            return some_date[:10]
 
     def aggregate_observations_by_lab_test(self, lab_tests):
         by_test = defaultdict(list)
@@ -275,11 +235,14 @@ class LabTestResultsView(LoginRequiredViewset):
             timeseries = {}
 
             observation_metadata = {}
-
             observation_date_range = {
-                self.to_date_str(observation["observation_datetime"]) for observation in observations
+                to_date_str(observation["observation_datetime"]) for observation in observations
             }
-            observation_date_range = sorted(list(observation_date_range))
+            observation_date_range = sorted(
+                list(observation_date_range),
+                key=lambda x: to_date(x)
+            )
+            observation_date_range.reverse()
             long_form = False
 
             for observation in observations:
@@ -298,7 +261,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
                 if test_name not in by_observations:
                     obs_for_test_name = {
-                        self.to_date_str(i["observation_datetime"]): i for i in observations if i["observation_name"] == test_name
+                        to_date_str(i["observation_datetime"]): i for i in observations if i["observation_name"] == test_name
                     }
                     # if its all None's for a certain observation name lets skip it
                     # ie if WBC is all None, lets not waste the users' screen space
@@ -394,14 +357,9 @@ class LabTestSummaryApi(LoginRequiredViewset):
 
         for test, obs_collection in result.items():
             for obs_name, obs in obs_collection.items():
-                result[test][obs_name] = sorted(obs, key=lambda x: x["datetime_ordered"])
+                result[test][obs_name] = observations_by_date(obs)
 
         return result
-
-    def datetime_to_str(self, dt):
-        return dt.strftime(
-            settings.DATETIME_INPUT_FORMATS[0]
-        )
 
     @timing
     def serialise_lab_tests(self, patient):
@@ -418,14 +376,16 @@ class LabTestSummaryApi(LoginRequiredViewset):
                     units=observations[0]["units"],
                     reference_range=get_reference_range(observations[0]),
                     latest_results={
-                        self.datetime_to_str(i["datetime_ordered"]): get_observation_value(i) for i in observations if get_observation_value(i)
+                        datetime_to_str(i["datetime_ordered"]): get_observation_value(i) for i in observations if get_observation_value(i)
                     }
                 ))
                 all_dates = all_dates.union(
                     i["datetime_ordered"] for i in observations if get_observation_value(i)
                 )
 
-        recent_dates = sorted(list(all_dates))[-3:]
+        recent_dates = sorted(list(all_dates))
+        recent_dates.reverse()
+        recent_dates = recent_dates[:3]
         obs_values = sorted(serialised_obvs, key=self.sort_observations)
         result = dict(
             obs_values=obs_values,
@@ -578,7 +538,6 @@ class DemographicsSearch(LoginRequiredViewset):
         return json_response(dict(status=self.PATIENT_NOT_FOUND))
 
 
-
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
@@ -586,7 +545,4 @@ elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 lab_test_router = OPALRouter()
 lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)
 lab_test_router.register('lab_test_results_view', LabTestResultsView)
-lab_test_router.register(
-    'lab_test_observation_detail', LabTestObservationDetail
-)
 lab_test_router.register('lab_test_json_dump_view', LabTestJsonDumpView)
