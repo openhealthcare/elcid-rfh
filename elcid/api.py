@@ -44,13 +44,13 @@ for tag, profile_descriptions in _LAB_TEST_TAGS.items():
 
 
 def refresh_lab_tests(patient, user):
-    emodels.HL7Result.objects.filter(patient=patient).delete()
+    emodels.UpstreamLabTest.objects.filter(patient=patient).delete()
     api = get_api()
     hospital_number = patient.demographics_set.first().hospital_number
     results = api.results_for_hospital_number(hospital_number)
     for result in results:
         result["patient_id"] = patient.id
-        hl7_result = emodels.HL7Result()
+        hl7_result = emodels.UpstreamLabTest()
         hl7_result.update_from_dict(result, user)
 
 
@@ -149,7 +149,7 @@ class LabTestObservationDetail(LoginRequiredViewset):
         found_observations = []
         observation_slug = request.query_params["observation"]
         for lab_test in patient.labtest_set.filter(
-            lab_test_type=emodels.HL7Result.get_display_name()
+            lab_test_type=emodels.UpstreamLabTest.get_display_name()
         ):
             lab_test_type = lab_test.extras.get(
                 "test_name", lab_test.lab_test_type
@@ -177,7 +177,7 @@ class LabTestJsonDumpView(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
-        lab_tests = emodels.HL7Result.objects.filter(patient=patient)
+        lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
         lab_tests = sorted(lab_tests, key=lambda x: x.extras.get("profile_description"))
         return json_response(
             dict(
@@ -270,7 +270,7 @@ class LabTestResultsView(LoginRequiredViewset):
         # name with the lab test properties on the observation
 
         six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
-        lab_tests = emodels.HL7Result.objects.filter(patient=patient)
+        lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
         lab_tests = lab_tests.filter(datetime_ordered__gte=six_months_ago)
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
         serialised_tests = []
@@ -385,7 +385,7 @@ class LabTestSummaryApi(LoginRequiredViewset):
             adds the lab test datetime ordered to the observation dict
             sorts the observations by datetime ordered
         """
-        test_data = emodels.HL7Result.get_relevant_tests(patient)
+        test_data = emodels.UpstreamLabTest.get_relevant_tests(patient)
         result = defaultdict(lambda: defaultdict(list))
         relevant_tests = {
             "C REACTIVE PROTEIN": ["C Reactive Protein"],

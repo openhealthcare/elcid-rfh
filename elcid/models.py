@@ -87,17 +87,17 @@ class Location(EpisodeSubrecord):
             return 'demographics'
 
 
-class HL7Result(lmodels.ReadOnlyLabTest):
+class UpstreamLabTest(lmodels.ReadOnlyLabTest):
     # these fields we will save as extras when we
     # update from dict
     convert_to_extras = ['test_code', 'test_name']
 
     class Meta:
-        verbose_name = "HL7 Result"
+        verbose_name = "Upstream Lab Test"
 
     @classmethod
     def get_api_name(cls):
-        return "hl7_result"
+        return "upstream_lab_test"
 
     def to_dict(self, user):
         """
@@ -114,7 +114,7 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             we serialise the usual way but not via the episode
             serialisation
         """
-        return super(HL7Result, self).to_dict(user)
+        return super(UpstreamLabTest, self).to_dict(user)
 
     def update_from_dict(self, data, *args, **kwargs):
         populated = (
@@ -145,7 +145,7 @@ class HL7Result(lmodels.ReadOnlyLabTest):
                         data["extras"] = {}
                     data["extras"][i] = data.pop(i)
 
-            super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+            super(UpstreamLabTest, self).update_from_dict(data, *args, **kwargs)
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -159,7 +159,7 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             "CLOTTING SCREEN"
         ]
         six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
-        qs = HL7Result.objects.filter(
+        qs = UpstreamLabTest.objects.filter(
             patient=patient,
             datetime_ordered__gt=six_months_ago
         ).order_by("datetime_ordered")
