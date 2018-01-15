@@ -175,7 +175,7 @@ class UpstreamLabTest(lmodels.ReadOnlyLabTest):
             patient=patient,
             datetime_ordered__gt=six_months_ago
         ).order_by("datetime_ordered")
-        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
+        return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
 
 class InfectionSource(lookuplists.LookupList):

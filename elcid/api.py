@@ -36,9 +36,9 @@ _LAB_TEST_TAGS = {
 
 LAB_TEST_TAGS = defaultdict(list)
 
-for tag, profile_descriptions in _LAB_TEST_TAGS.items():
-    for profile_description in profile_descriptions:
-        LAB_TEST_TAGS[profile_description].append(tag)
+for tag, test_names in _LAB_TEST_TAGS.items():
+    for test_name in test_names:
+        LAB_TEST_TAGS[test_name].append(tag)
 
 
 def generate_time_series(observations):
@@ -165,7 +165,7 @@ class LabTestJsonDumpView(LoginRequiredViewset):
     @patient_from_pk
     def retrieve(self, request, patient):
         lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
-        lab_tests = sorted(lab_tests, key=lambda x: x.extras.get("profile_description"))
+        lab_tests = sorted(lab_tests, key=lambda x: x.extras.get("test_name"))
         return json_response(
             dict(
                 tests=[i.dict_for_view(None) for i in lab_tests]
@@ -382,12 +382,12 @@ class LabTestSummaryApi(LoginRequiredViewset):
         }
 
         for test in test_data:
-            test_name = test.extras.get("profile_description")
+            test_name = test.extras.get("test_name")
             if test_name in relevant_tests:
                 relevent_observations = relevant_tests[test_name]
 
                 for observation in test.extras["observations"]:
-                    observation_name = observation["test_name"]
+                    observation_name = observation["observation_name"]
                     if observation_name in relevent_observations:
                         observation["datetime_ordered"] = test.datetime_ordered
                         result[test_name][observation_name].append(observation)

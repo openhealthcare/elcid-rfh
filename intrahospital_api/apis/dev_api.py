@@ -247,8 +247,14 @@ class DevApi(base_api.BaseApi):
         return rows
 
     def create_observation_dict(
-        self, test_base_observation_name, test_base_observation_value
+        self,
+        test_base_observation_name,
+        test_base_observation_value,
+        base_datetime=None
     ):
+        if base_datetime is None:
+            base_datetime = datetime.now()
+
         return dict(
             observation_name=test_base_observation_name,
             observation_number=self.get_external_identifier(),
@@ -257,10 +263,10 @@ class DevApi(base_api.BaseApi):
             observation_value=str(self.get_observation_value(
                 test_base_observation_value["reference_range"]
             )),
-            observation_datetime=(datetime.now() - timedelta(1)).strftime(
+            observation_datetime=(base_datetime - timedelta(1)).strftime(
                 '%d/%m/%Y %H:%M:%S'
             ),
-            last_updated=(datetime.now() - timedelta(minutes=20)).strftime(
+            last_updated=(base_datetime - timedelta(minutes=20)).strftime(
                 '%d/%m/%Y %H:%M:%S'
             )
         )
@@ -284,18 +290,20 @@ class DevApi(base_api.BaseApi):
         """
         result = []
         for i, v in TEST_BASES.items():
-            result.append(dict(
-                status=lmodels.LabTest.COMPLETE,
-                test_code=i.lower().replace(" ", "_"),
-                test_name=i,
-                datetime_ordered=datetime.now().strftime(
-                    '%d/%m/%Y %H:%M:%S'
-                ),
-                external_identifier=self.get_external_identifier(),
-                observations=[
-                    self.create_observation_dict(o, y) for o, y in v.items()
-                ]
-            ))
+            for date_delta in range(10):
+                base_datetime = datetime.now() - timedelta(date_delta)
+                result.append(dict(
+                    status=lmodels.LabTest.COMPLETE,
+                    test_code=i.lower().replace(" ", "_"),
+                    test_name=i,
+                    datetime_ordered=datetime.now().strftime(
+                        '%d/%m/%Y %H:%M:%S'
+                    ),
+                    external_identifier=self.get_external_identifier(),
+                    observations=[
+                        self.create_observation_dict(o, y, base_datetime=base_datetime) for o, y in v.items()
+                    ]
+                ))
 
         return result
 
