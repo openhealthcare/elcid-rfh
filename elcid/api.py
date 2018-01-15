@@ -5,8 +5,6 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.http import Http404
 from intrahospital_api import get_api
-
-
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
@@ -41,17 +39,6 @@ LAB_TEST_TAGS = defaultdict(list)
 for tag, profile_descriptions in _LAB_TEST_TAGS.items():
     for profile_description in profile_descriptions:
         LAB_TEST_TAGS[profile_description].append(tag)
-
-
-def refresh_lab_tests(patient, user):
-    emodels.UpstreamLabTest.objects.filter(patient=patient).delete()
-    api = get_api()
-    hospital_number = patient.demographics_set.first().hospital_number
-    results = api.results_for_hospital_number(hospital_number)
-    for result in results:
-        result["patient_id"] = patient.id
-        hl7_result = emodels.UpstreamLabTest()
-        hl7_result.update_from_dict(result, user)
 
 
 def generate_time_series(observations):

@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from intrahospital_api import get_api
 from lab import models as lmodels
 
 
@@ -98,6 +99,17 @@ class UpstreamLabTest(lmodels.ReadOnlyLabTest):
     @classmethod
     def get_api_name(cls):
         return "upstream_lab_test"
+
+    @classmethod
+    def refresh_lab_tests(cls, patient, user):
+        cls.objects.filter(patient=patient).delete()
+        api = get_api()
+        hospital_number = patient.demographics_set.first().hospital_number
+        results = api.results_for_hospital_number(hospital_number)
+        for result in results:
+            result["patient_id"] = patient.id
+            hl7_result = cls()
+            hl7_result.update_from_dict(result, user)
 
     def to_dict(self, user):
         """

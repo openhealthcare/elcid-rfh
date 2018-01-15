@@ -3,8 +3,8 @@ Admin for elcid fields
 """
 from django.contrib import admin
 from reversion import models as rmodels
-from elcid import api
 from opal import models as omodels
+from elcid import models as emodels
 from opal.admin import PatientAdmin as OldPatientAdmin
 
 
@@ -13,7 +13,7 @@ class PatientAdmin(OldPatientAdmin):
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
-            api.refresh_lab_tests(patient, request.user)
+            emodels.UpstreamLabTest.refresh_lab_tests(patient, request.user)
     refresh_lab_tests.short_description = "Load in lab tests from upstream"
 
 
