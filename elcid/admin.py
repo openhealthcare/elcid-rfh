@@ -8,8 +8,55 @@ from elcid import models as emodels
 from opal.admin import PatientAdmin as OldPatientAdmin
 
 
+class TaggingListFilter(admin.SimpleListFilter):
+    title = 'team'
+    parameter_name = 'team'
+
+    def lookups(self, request, model_admin):
+        tags = omodels.Tagging.objects.values_list(
+            'value', flat=True
+        ).distinct()
+        result = []
+        for i in tags:
+            current_name = "{} - current".format(i)
+            old_name = "{} - previously".format(i)
+            result.append((current_name.replace(" ", ""), current_name,))
+            result.append((old_name.replace(" ", ""), old_name,))
+
+        return result
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        # Compare the requested value (either '80s' or '90s')
+        # to decide how to filter the queryset.
+        value = self.value()
+        if value:
+            if value.endswith("-current"):
+                value = value.replace("-current", "")
+                tagging_qs = omodels.Tagging.objects.filter(
+                    value=value, archived=False
+                )
+                return omodels.Patient.objects.filter(
+                    episode__tagging__in=tagging_qs
+                )
+            else:
+                value = value.replace("-previously", "")
+                tagging_qs = omodels.Tagging.objects.filter(
+                    value=value, archived=True
+                )
+                return omodels.Patient.objects.filter(
+                    episode__tagging__in=tagging_qs
+                )
+        return omodels.Patient.objects.all()
+
+
 class PatientAdmin(OldPatientAdmin):
     actions = ["refresh_lab_tests"]
+    list_filter = (TaggingListFilter,)
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
