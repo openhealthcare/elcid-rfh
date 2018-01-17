@@ -82,7 +82,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             if settings.ADD_PATIENT_LAB_TESTS:
                 api = get_api()
-                results = api.results(hospital_number)
+                results = api.results_for_hospital_number(hospital_number)
                 for result in results:
                     result["patient_id"] = patient.id
                     hl7_result = models.UpstreamLabTest()
