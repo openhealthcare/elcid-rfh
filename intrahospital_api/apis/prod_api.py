@@ -220,7 +220,9 @@ class Row(object):
         return self.db_row.get("Result_Units")
 
     def get_observation_datetime(self):
-        return to_datetime_str(self.db_row.get("Date_of_the_Observation"))
+        dt = self.db_row.get("Date_of_the_Observation")
+        dt = dt or self.db_row.get("Event_Date")
+        return to_datetime_str(dt)
 
     def get_reference_range(self):
         return self.db_row.get("Result_Range")
