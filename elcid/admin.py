@@ -59,7 +59,7 @@ class TaggingListFilter(admin.SimpleListFilter):
 class PatientAdmin(OldPatientAdmin):
     actions = ["refresh_lab_tests"]
     list_filter = (TaggingListFilter,)
-    list_display = ('__str__', 'patient_detail_link')
+    list_display = ('__str__', 'patient_detail_link', 'upstream_lab_results')
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
