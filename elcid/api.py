@@ -358,7 +358,6 @@ class LabTestSummaryApi(LoginRequiredViewset):
         for test, obs_collection in result.items():
             for obs_name, obs in obs_collection.items():
                 result[test][obs_name] = observations_by_date(obs)
-
         return result
 
     @timing
