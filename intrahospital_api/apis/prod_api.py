@@ -2,6 +2,8 @@ import datetime
 import logging
 import traceback
 import pytds
+from functools import wraps
+from collections import defaultdict
 from intrahospital_api.apis import base_api
 from lab import models as lmodels
 from django.conf import settings
@@ -34,6 +36,30 @@ ETHNICITY_MAPPING = {
     "Z": "Other - Not Stated",
 }
 
+COMMON_TRANSLATIONS = dict(
+    hospital_number="Patient_Number",
+    external_identifier="Result_ID",
+    lab_test_name="OBR_exam_code_Text",
+    observation_name="OBX_exam_code_Text",
+    observation_number="OBX_id",
+    datetime_received="Reported_date"
+)
+
+
+def error_handler(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        try:
+            result = f(*args, **kw)
+        except:
+            logger = logging.getLogger('error_emailer')
+            logger.error("{} threw an error".format(f.__name__))
+            logger = logging.getLogger('intrahospital_api')
+            logger.error(traceback.format_exc())
+            return
+        return result
+    return wrap
+
 
 def to_db_date(some_date):
     """
@@ -58,15 +84,26 @@ class Row(object):
         'nhs_number'
     ]
 
-    RESULT_FIELDS = [
-        'reference_range',
+    LAB_TEST_FIELDS = [
         'status',
         'test_code',
         'test_name',
+        'datetime_ordered',
+        'datetime_received',
+        'external_identifier',
+    ]
+
+    OBSERVATION_FIELDS = [
+        'observation_number',
+        'observation_name',
+        'reference_range',
         'observation_value',
         'units',
-        'external_identifier'
+        'observation_datetime',
+        'last_updated',
     ]
+
+    RESULT_FIELDS = LAB_TEST_FIELDS + OBSERVATION_FIELDS
 
     def __init__(self, db_row):
         self.db_row = db_row
@@ -88,7 +125,7 @@ class Row(object):
 
     # Demographics Fields
     def get_hospital_number(self):
-        return self.db_row.get('Patient_Number')
+        return self.db_row.get(COMMON_TRANSLATIONS['hospital_number'])
 
     def get_nhs_number(self):
         return self.get_or_fallback(
@@ -128,9 +165,8 @@ class Row(object):
         return result
 
     # Results Fields
-    def get_reference_range(self):
-        return self.db_row.get("Result_Range")
 
+    # fields of the Lab Test
     def get_status(self):
         status_abbr = self.db_row.get("OBX_Status")
 
@@ -139,11 +175,27 @@ class Row(object):
         else:
             return lmodels.LabTest.PENDING
 
+    def get_datetime_received(self):
+        return self.db_row.get(COMMON_TRANSLATIONS['datetime_received'])
+
     def get_test_code(self):
         return self.db_row.get('OBX_exam_code_ID')
 
     def get_test_name(self):
-        return self.db_row.get('OBX_exam_code_Text')
+        return self.db_row.get(COMMON_TRANSLATIONS['lab_test_name'])
+
+    def get_external_identifier(self):
+        return self.db_row.get(COMMON_TRANSLATIONS['external_identifier'])
+
+    def get_datetime_ordered(self):
+        return self.db_row.get("Request_Date")
+
+    # fields of the individual observations within the lab test
+    def get_observation_number(self):
+        return self.db_row.get(COMMON_TRANSLATIONS['observation_number'])
+
+    def get_observation_name(self):
+        return self.db_row.get(COMMON_TRANSLATIONS['observation_name'])
 
     def get_observation_value(self):
         return self.db_row.get('Result_Value')
@@ -151,8 +203,14 @@ class Row(object):
     def get_units(self):
         return self.db_row.get("Result_Units")
 
-    def get_external_identifier(self):
-        return self.db_row.get("OBX_id")
+    def get_observation_datetime(self):
+        return self.db_row.get("Date_of_the_Observation")
+
+    def get_reference_range(self):
+        return self.db_row.get("Result_Range")
+
+    def get_last_updated(self):
+        return self.db_row.get("last_updated")
 
     def get_results_dict(self):
         result = {}
@@ -161,12 +219,23 @@ class Row(object):
 
         return result
 
+    def get_lab_test_dict(self):
+        result = {}
+        for field in self.LAB_TEST_FIELDS:
+            result[field] = getattr(self, "get_{}".format(field))()
+        return result
+
+    def get_observation_dict(self):
+        result = {}
+        for field in self.OBSERVATION_FIELDS:
+            result[field] = getattr(self, "get_{}".format(field))()
+        return result
+
     def get_all_fields(self):
         result = {}
         fields = self.DEMOGRAPHICS_FIELDS + self.RESULT_FIELDS
         for field in fields:
             result[field] = getattr(self, "get_{}".format(field))()
-
         return result
 
 
@@ -227,7 +296,7 @@ class ProdApi(base_api.BaseApi):
 
         return Row(rows[0]).get_demographics_dict()
 
-    def raw_data(self, hospital_number):
+    def raw_data(self, hospital_number, **filter_kwargs):
         """ not all data, I lied. Only the last year's
         """
         db_date = to_db_date(datetime.date.today() - datetime.timedelta(365))
@@ -236,14 +305,58 @@ class ProdApi(base_api.BaseApi):
             params=dict(hospital_number=hospital_number, since=db_date)
         )
 
-        return rows
+        if not filter_kwargs:
+            return rows
+
+        result = []
+
+        for row in rows:
+            for k, v in filter_kwargs.items():
+                if row[k] == v:
+                    result.append(row)
+
+        return result
 
     def cooked_data(self, hospital_number):
         raw_data = self.raw_data(hospital_number)
         return (Row(row).get_all_fields() for row in raw_data)
 
-    def results(self, hospital_number):
+    def cast_rows_to_lab_test(self, rows):
+        lab_number_to_observations = defaultdict(list)
+        lab_number_to_lab_test = dict()
+
+        for row in rows:
+            lab_test_dict = row.get_lab_test_dict()
+            lab_number = lab_test_dict["external_identifier"]
+            lab_number_to_lab_test[lab_number] = lab_test_dict
+            lab_number_to_observations[lab_number].append(
+                row.get_observation_dict()
+            )
+        result = []
+
+        for external_id, lab_test in lab_number_to_lab_test.items():
+            lab_test = lab_number_to_lab_test[external_id]
+            lab_test["observations"] = lab_number_to_observations[external_id]
+            result.append(lab_test)
+        return result
+
+    def translate_filter_kwargs(self, some_filters):
+        if set(some_filters.keys()) - set(COMMON_TRANSLATIONS.keys()):
+            raise ValueError("You can only filter by {}".format(
+                COMMON_TRANSLATIONS.keys())
+            )
+        return {COMMON_TRANSLATIONS[k]: v for k, v in some_filters}
+
+    def results_for_hospital_number(self, hospital_number, **filter_kwargs):
         """
-            will be implemented in a later release
+            returns all the results for a particular person
+
+            aggregated into labtest: observations([])
         """
-        return {}
+        raw_filter_kwargs = self.translate_filter_kwargs(filter_kwargs)
+
+        raw_rows = self.raw_data(
+            hospital_number, **raw_filter_kwargs
+        )
+        rows = (Row(raw_row) for raw_row in raw_rows)
+        return self.cast_rows_to_lab_test(rows)

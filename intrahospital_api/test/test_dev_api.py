@@ -73,7 +73,7 @@ class DevApiTestCase(OpalTestCase):
             dt
         )
         self.assertEqual(
-            lab_test["lab_test_type"], emodels.HL7Result.get_display_name()
+            lab_test["lab_test_type"], emodels.UpstreamLabTest.get_display_name()
         )
         self.assertEqual(
             lab_test["status"], lmodels.LabTest.COMPLETE

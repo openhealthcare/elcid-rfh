@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from intrahospital_api import get_api
 from lab import models as lmodels
 
 
@@ -87,13 +88,28 @@ class Location(EpisodeSubrecord):
             return 'demographics'
 
 
-class HL7Result(lmodels.ReadOnlyLabTest):
+class UpstreamLabTest(lmodels.ReadOnlyLabTest):
+    # these fields we will save as extras when we
+    # update from dict
+    convert_to_extras = ['test_code', 'test_name']
+
     class Meta:
-        verbose_name = "HL7 Result"
+        verbose_name = "Upstream Lab Test"
 
     @classmethod
     def get_api_name(cls):
-        return "hl7_result"
+        return "upstream_lab_test"
+
+    @classmethod
+    def refresh_lab_tests(cls, patient, user):
+        cls.objects.filter(patient=patient).delete()
+        api = get_api()
+        hospital_number = patient.demographics_set.first().hospital_number
+        results = api.results_for_hospital_number(hospital_number)
+        for result in results:
+            result["patient_id"] = patient.id
+            hl7_result = cls()
+            hl7_result.update_from_dict(result, user)
 
     def to_dict(self, user):
         """
@@ -110,7 +126,7 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             we serialise the usual way but not via the episode
             serialisation
         """
-        return super(HL7Result, self).to_dict(user)
+        return super(UpstreamLabTest, self).to_dict(user)
 
     def update_from_dict(self, data, *args, **kwargs):
         populated = (
@@ -135,7 +151,13 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
                 if existing:
                     data["id"] = existing.id
-            super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+            for i in self.convert_to_extras:
+                if i in data:
+                    if "extras" not in data:
+                        data["extras"] = {}
+                    data["extras"][i] = data.pop(i)
+
+            super(UpstreamLabTest, self).update_from_dict(data, *args, **kwargs)
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -149,11 +171,11 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             "CLOTTING SCREEN"
         ]
         six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
-        qs = HL7Result.objects.filter(
+        qs = UpstreamLabTest.objects.filter(
             patient=patient,
             datetime_ordered__gt=six_months_ago
         ).order_by("datetime_ordered")
-        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
+        return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
 
 class InfectionSource(lookuplists.LookupList):

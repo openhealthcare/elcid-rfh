@@ -279,7 +279,7 @@ class RowTestCase(OpalTestCase):
         )
 
     def test_get_test_name(self):
-        row = self.get_row(OBX_exam_code_Text="Blood Cultures")
+        row = self.get_row(OBR_exam_code_Text="Blood Cultures")
         self.assertEqual(
             row.get_test_name(), "Blood Cultures"
         )

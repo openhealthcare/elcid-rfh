@@ -3,28 +3,27 @@ Admin for elcid fields
 """
 from django.contrib import admin
 from reversion import models as rmodels
+from opal import models as omodels
+from elcid import models as emodels
+from opal.admin import PatientAdmin as OldPatientAdmin
 
 
-class NotMergedFilter(admin.SimpleListFilter):
-    # Human-readable title which will be displayed in the
-    # right admin sidebar just above the filter options.
-    title = 'review status'
-
-    # Parameter for the filter that will be used in the URL query.
-    parameter_name = 'decade'
+class TaggingListFilter(admin.SimpleListFilter):
+    title = 'team'
+    parameter_name = 'team'
 
     def lookups(self, request, model_admin):
-        """
-        Returns a list of tuples. The first element in each
-        tuple is the coded value for the option that will
-        appear in the URL query. The second element is the
-        human-readable name for the option that will appear
-        in the right sidebar.
-        """
-        return (
-            ('not_merged', 'not merged'),
-            ('not_reviewed', 'not reviewed'),
-        )
+        tags = omodels.Tagging.objects.values_list(
+            'value', flat=True
+        ).distinct()
+        result = []
+        for i in tags:
+            current_name = "{} - current".format(i)
+            old_name = "{} - previously".format(i)
+            result.append((current_name.replace(" ", ""), current_name,))
+            result.append((old_name.replace(" ", ""), old_name,))
+
+        return result
 
     def queryset(self, request, queryset):
         """
@@ -34,15 +33,38 @@ class NotMergedFilter(admin.SimpleListFilter):
         """
         # Compare the requested value (either '80s' or '90s')
         # to decide how to filter the queryset.
-        if self.value() == 'not_merged':
-            return queryset.exclude(merged=True)
-        if self.value() == 'not_reviewed':
-            return queryset.exclude(reviewed=True)
+        value = self.value()
+        if value:
+            if value.endswith("-current"):
+                value = value.replace("-current", "")
+                tagging_qs = omodels.Tagging.objects.filter(
+                    value=value, archived=False
+                )
+                return omodels.Patient.objects.filter(
+                    episode__tagging__in=tagging_qs
+                )
+            else:
+                value = value.replace("-previously", "")
+                tagging_qs = omodels.Tagging.objects.filter(
+                    value=value, archived=True
+                )
+                return omodels.Patient.objects.filter(
+                    episode__tagging__in=tagging_qs
+                )
+        return omodels.Patient.objects.all()
 
 
-class DuplicatePatientAdmin(admin.ModelAdmin):
-    list_filter = (NotMergedFilter,)
+class PatientAdmin(OldPatientAdmin):
+    actions = ["refresh_lab_tests"]
+    list_filter = (TaggingListFilter,)
+
+    def refresh_lab_tests(self, request, queryset):
+        for patient in queryset:
+            emodels.UpstreamLabTest.refresh_lab_tests(patient, request.user)
+    refresh_lab_tests.short_description = "Load in lab tests from upstream"
 
 
 admin.site.register(rmodels.Version, admin.ModelAdmin)
 admin.site.register(rmodels.Revision, admin.ModelAdmin)
+admin.site.unregister(omodels.Patient)
+admin.site.register(omodels.Patient, PatientAdmin)

@@ -85,7 +85,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
                 results = api.results(hospital_number)
                 for result in results:
                     result["patient_id"] = patient.id
-                    hl7_result = models.HL7Result()
+                    hl7_result = models.UpstreamLabTest()
                     hl7_result.update_from_dict(result, user)
 
         if not episode:
