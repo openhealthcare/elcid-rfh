@@ -69,6 +69,22 @@ def to_db_date(some_date):
     return dt.strftime('%Y-%m-%d')
 
 
+def to_date_str(some_date):
+    """ we return something that is 'updatedable by dict'
+        so we need to convert all dates into strings
+    """
+    if some_date:
+        return some_date.strftime("%d/%m/%Y")
+
+
+def to_datetime_str(some_datetime):
+    """ we return something that is 'updatedable by dict'
+        so we need to convert all datetimes into strings
+    """
+    if some_datetime:
+        return some_datetime.strftime('%d/%m/%Y %H:%M:%S')
+
+
 class Row(object):
     """ a simple wrapper to get us the fields we actually want out of a row
     """
@@ -152,7 +168,7 @@ class Row(object):
     def get_date_of_birth(self):
         dob = self.get_or_fallback("CRS_DOB", "date_of_birth")
         if dob:
-            return dob.date()
+            return to_date_str(dob.date())
 
     def get_title(self):
         return self.get_or_fallback("CRS_Title", "title")
@@ -176,7 +192,7 @@ class Row(object):
             return lmodels.LabTest.PENDING
 
     def get_datetime_received(self):
-        return self.db_row.get(COMMON_TRANSLATIONS['datetime_received'])
+        return to_datetime_str(self.db_row.get(COMMON_TRANSLATIONS['datetime_received']))
 
     def get_test_code(self):
         return self.db_row.get('OBX_exam_code_ID')
@@ -188,7 +204,7 @@ class Row(object):
         return self.db_row.get(COMMON_TRANSLATIONS['external_identifier'])
 
     def get_datetime_ordered(self):
-        return self.db_row.get("Request_Date")
+        return to_datetime_str(self.db_row.get("Request_Date"))
 
     # fields of the individual observations within the lab test
     def get_observation_number(self):
@@ -204,13 +220,13 @@ class Row(object):
         return self.db_row.get("Result_Units")
 
     def get_observation_datetime(self):
-        return self.db_row.get("Date_of_the_Observation")
+        return to_datetime_str(self.db_row.get("Date_of_the_Observation"))
 
     def get_reference_range(self):
         return self.db_row.get("Result_Range")
 
     def get_last_updated(self):
-        return self.db_row.get("last_updated")
+        return to_datetime_str(self.db_row.get("last_updated"))
 
     def get_results_dict(self):
         result = {}
