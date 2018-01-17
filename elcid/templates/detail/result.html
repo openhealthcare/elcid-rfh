@@ -1,6 +1,7 @@
 {% load panels %}
 {% load forms %}
 <div ng-if="view === 'test_results'">
+  {% debug %}
   <div ng-controller="ResultView as resultView" class="col-md-12 lab-tests">
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -17,7 +18,7 @@
           <div class="content-offset-below">
             <div class="row">
               <div class="col-md-6">
-                <h5>[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|shortDate ]]</span></h5>
+                <h5>[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|shortDate ]]</span> {{ request.user }}hello{% if request.user.is_superuser %}<a href="/intrahospital_api/[[ patient.demographics[0].hospital_number ]]?external_identifier=[[ labTest.external_identifier ]]">hello{% icon "fa fa-code-fork" %}</a>{% endif %}</h5>
               </div>
             </div>
             <div ng-show="labTest.observations.length">
