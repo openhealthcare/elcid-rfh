@@ -34,7 +34,10 @@
                         [[ observation_name ]]
                       </div>
                       <div class="col-md-9">
-                        <p ng-repeat="par_obs in labTest.by_observations[observation_name][obsDate].observation_value.split('~') track by $index">
+                        <p ng-show="parseFloat(labTest.by_observations[observation_name][obsDate].observation_value)">
+                          [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
+                        </p>
+                        <p ng-hide="parseFloat(labTest.by_observations[observation_name][obsDate].observation_value)" ng-repeat="par_obs in labTest.by_observations[observation_name][obsDate].observation_value.split('~') track by $index">
                           [[ par_obs ]]
                         </p>
                       </div>

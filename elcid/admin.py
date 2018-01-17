@@ -3,9 +3,11 @@ Admin for elcid fields
 """
 from django.contrib import admin
 from reversion import models as rmodels
+from django.utils.html import format_html
 from opal import models as omodels
 from elcid import models as emodels
 from opal.admin import PatientAdmin as OldPatientAdmin
+from django.core.urlresolvers import reverse
 
 
 class TaggingListFilter(admin.SimpleListFilter):
@@ -57,10 +59,19 @@ class TaggingListFilter(admin.SimpleListFilter):
 class PatientAdmin(OldPatientAdmin):
     actions = ["refresh_lab_tests"]
     list_filter = (TaggingListFilter,)
+    list_display = ('__str__', 'patient_detail_link')
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
             emodels.UpstreamLabTest.refresh_lab_tests(patient, request.user)
+
+    def upstream_lab_results(self, obj):
+        hospital_number = obj.demographics_set.first().hospital_number
+        url = reverse(
+            'raw_results', kwargs=dict(hospital_number=hospital_number)
+        )
+        return format_html("<a href='{url}'>{url}</a>", url=url)
+
     refresh_lab_tests.short_description = "Load in lab tests from upstream"
 
 
