@@ -73,7 +73,14 @@ def to_date_str(some_date):
     """ we return something that is 'updatedable by dict'
         so we need to convert all dates into strings
     """
-    return some_date.strftime("'%d/%m/%Y")
+    return some_date.strftime("%d/%m/%Y")
+
+
+def to_datetime_str(some_date):
+    """ we return something that is 'updatedable by dict'
+        so we need to convert all datetimes into strings
+    """
+    return some_date.strftime('%d/%m/%Y %H:%M:%S')
 
 
 class Row(object):
@@ -183,7 +190,7 @@ class Row(object):
             return lmodels.LabTest.PENDING
 
     def get_datetime_received(self):
-        return to_date_str(self.db_row.get(COMMON_TRANSLATIONS['datetime_received']))
+        return to_datetime_str(self.db_row.get(COMMON_TRANSLATIONS['datetime_received']))
 
     def get_test_code(self):
         return self.db_row.get('OBX_exam_code_ID')
@@ -195,7 +202,7 @@ class Row(object):
         return self.db_row.get(COMMON_TRANSLATIONS['external_identifier'])
 
     def get_datetime_ordered(self):
-        return to_date_str(self.db_row.get("Request_Date"))
+        return to_datetime_str(self.db_row.get("Request_Date"))
 
     # fields of the individual observations within the lab test
     def get_observation_number(self):
@@ -211,13 +218,13 @@ class Row(object):
         return self.db_row.get("Result_Units")
 
     def get_observation_datetime(self):
-        return to_date_str(self.db_row.get("Date_of_the_Observation"))
+        return to_datetime_str(self.db_row.get("Date_of_the_Observation"))
 
     def get_reference_range(self):
         return self.db_row.get("Result_Range")
 
     def get_last_updated(self):
-        return to_date_str(self.db_row.get("last_updated"))
+        return to_datetime_str(self.db_row.get("last_updated"))
 
     def get_results_dict(self):
         result = {}
