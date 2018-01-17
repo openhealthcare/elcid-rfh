@@ -73,14 +73,16 @@ def to_date_str(some_date):
     """ we return something that is 'updatedable by dict'
         so we need to convert all dates into strings
     """
-    return some_date.strftime("%d/%m/%Y")
+    if some_date:
+        return some_date.strftime("%d/%m/%Y")
 
 
-def to_datetime_str(some_date):
+def to_datetime_str(some_datetime):
     """ we return something that is 'updatedable by dict'
         so we need to convert all datetimes into strings
     """
-    return some_date.strftime('%d/%m/%Y %H:%M:%S')
+    if some_datetime:
+        return some_datetime.strftime('%d/%m/%Y %H:%M:%S')
 
 
 class Row(object):
