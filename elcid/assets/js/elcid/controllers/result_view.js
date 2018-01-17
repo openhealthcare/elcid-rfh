@@ -8,6 +8,25 @@ angular.module('opal.controllers').controller('ResultView', function(
       // lab tests before filtering
       this.originalLabTests = [];
       this.observationDetail = {};
+      this.parseFloat = parseFloat;
+
+      this.splitObservation = function(observation){
+        return observation.observation_value.split('~');
+      }
+
+      this.isNumber = _.isNumber;
+
+      this.isPopulated = function(observation){
+        if(_.isUndefined(observation)){
+          return false;
+        }
+
+        if(_.isNumber(observation.observation_value)){
+          return true;
+        }
+
+        return observation.observation_value.replace('-', '').trim().length;
+      }
 
 
       this.shownObservations = {};
