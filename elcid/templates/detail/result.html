@@ -29,7 +29,7 @@
                     </span>
                   </div>
                   <div class="col-sm-9">
-                    <div class="row content-offset-below-10" ng-show="labTest.by_observations[observation_name][obsDate].observation_value.replace('-', '').trim().length" ng-repeat="observation_name in labTest.observation_names">
+                    <div class="row content-offset-below-10" ng-show="parseFloat(labTest.by_observations[observation_name][obsDate].observation_value) || labTest.by_observations[observation_name][obsDate].observation_value.replace('-', '').trim().length" ng-repeat="observation_name in labTest.observation_names">
                       <div class="col-md-3">
                         [[ observation_name ]]
                       </div>

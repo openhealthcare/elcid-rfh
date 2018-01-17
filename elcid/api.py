@@ -204,10 +204,10 @@ class LabTestResultsView(LoginRequiredViewset):
 
     def is_empty_value(self, observation_value):
         """ we don't care about empty strings or
-            ' - '
+            ' - ' or ' # '
         """
         if isinstance(observation_value, str):
-            return not observation_value.strip().strip("-").strip()
+            return not observation_value.strip().strip("-").strip("#").strip()
         else:
             return observation_value is None
 
@@ -276,6 +276,7 @@ class LabTestResultsView(LoginRequiredViewset):
                         reference_range=observation["reference_range"],
                         api_name=slugify(observation["observation_name"])
                     )
+
 
             serialised_lab_test = dict(
                 long_form=long_form,
