@@ -186,7 +186,6 @@ class Procedure(EpisodeSubrecord):
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
 
-
 class PrimaryDiagnosis(EpisodeSubrecord):
     """
     This is the confirmed primary diagnosisa
@@ -204,8 +203,6 @@ class PrimaryDiagnosis(EpisodeSubrecord):
 
 class Consultant(lookuplists.LookupList):
     pass
-
-
 
 class Diagnosis(EpisodeSubrecord):
     """

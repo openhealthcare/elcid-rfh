@@ -1,5 +1,3 @@
-# currently this is a duplicate of the inpatient detail
-
 {% load panels %}
 <div class="col-md-6">
   {% record_panel models.Location %}
@@ -8,7 +6,6 @@
   {% record_panel models.PrimaryDiagnosis %}
 
   {% record_panel models.Diagnosis %}
-  {% record_panel models.Infection %}
   {% record_panel models.Procedure %}
   <div class="visible-print">
     {% record_panel models.MicrobiologyInput %}

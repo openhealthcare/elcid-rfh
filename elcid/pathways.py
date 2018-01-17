@@ -5,6 +5,7 @@ from opal import models as omodels
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
+from apps.tb.patient_lists import TbPatientList
 
 
 from opal.core.pathway.pathways import (
@@ -169,7 +170,7 @@ class AddTbPatientPathway(AddPatientPathway):
             data, user=user, patient=patient, episode=episode
         )
 
-        episode.set_tag_names(["tb"], user)
+        episode.set_tag_names([TbPatientList.tag], user)
         episode.category_name = "TB"
         episode.save()
 
