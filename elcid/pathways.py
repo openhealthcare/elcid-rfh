@@ -5,8 +5,6 @@ from opal import models as omodels
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
-from apps.tb.patient_lists import TbPatientList
-
 
 from opal.core.pathway.pathways import (
     RedirectsToPatientMixin,
@@ -149,29 +147,3 @@ class BloodCulturePathway(PagePathway):
             model=lmodels.LabTest
         ),
     )
-
-
-class AddTbPatientPathway(AddPatientPathway):
-    display_name = "Add TB Patient"
-    slug = 'add_tb_patient'
-
-    steps = (
-        Step(
-            template="pathway/rfh_find_patient_form.html",
-            step_controller="RfhFindPatientCtrl",
-            display_name="Find patient",
-            icon="fa fa-user"
-        ),
-    )
-
-    @transaction.atomic
-    def save(self, data, user, patient=None, episode=None):
-        patient, episode = super(AddTbPatientPathway, self).save(
-            data, user=user, patient=patient, episode=episode
-        )
-
-        episode.set_tag_names([TbPatientList.tag], user)
-        episode.category_name = "TB"
-        episode.save()
-
-        return patient, episode

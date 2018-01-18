@@ -17,3 +17,5 @@ opal.sqlite.*
 **/.sass-cache/*
 *#
 .project
+.dir-locals.el
+node_modules

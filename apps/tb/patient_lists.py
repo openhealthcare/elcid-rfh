@@ -11,8 +11,11 @@ class TbPatientList(patient_lists.TaggedPatientList):
     slug = "tb_patient_list"
     tag = "tb_tag"
 
-    queryset = Episode.objects.all
-
     schema = [
-        models.Demographics,
+        patient_lists.Column(
+            title="Demographics",
+            icon="fa fa-user",
+            template_path="columns/tb_demographics.html",
+        ),
+        models.Antimicrobial
     ]
