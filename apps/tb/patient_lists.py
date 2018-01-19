@@ -17,5 +17,15 @@ class TbPatientList(patient_lists.TaggedPatientList):
             icon="fa fa-user",
             template_path="columns/tb_demographics.html",
         ),
-        models.Antimicrobial
+        patient_lists.Column(
+            title="Status",
+            icon="fa fa-user",
+            template_path="columns/tb_stage.html"
+        ),
+        models.Antimicrobial,
+        patient_lists.Column(
+            icon="fa fa-warning",
+            title="Risk factors",
+            template_path="columns/tb_risks.html"
+        )
     ]

@@ -46,7 +46,7 @@
                 <div class="row lab-test-row content-offset-below-10">
                   <div class="col-sm-3">
                   </div>
-                  <div class="col-sm-1">
+                  <div class="col-sm-2">
                     Range
                   </div>
                   <div ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
@@ -61,7 +61,7 @@
                         ([[ labTest.observation_metadata[observation_name].units ]])
                       </span>
                     </div>
-                    <div class="text-muted col-sm-1">
+                    <div class="text-muted col-sm-2">
                       [[ labTest.observation_metadata[observation_name].reference_range.min ]]
                       -
                       [[ labTest.observation_metadata[observation_name].reference_range.max ]]
