@@ -15,6 +15,9 @@ DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
 
+ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
+@hospital_number AND last_updated > @since and Result_ID = @ORDER BY last_updated DESC;"
+
 ETHNICITY_MAPPING = {
     "99": "Other - Not Known",
     "A": "White - British",
@@ -192,7 +195,7 @@ class Row(object):
             return lmodels.LabTest.PENDING
 
     def get_datetime_received(self):
-        return to_datetime_str(self.db_row.get(COMMON_TRANSLATIONS['datetime_received']))
+        return to_datetime_str(self.db_row.get("Reported_date"))
 
     def get_test_code(self):
         return self.db_row.get('OBX_exam_code_ID')
@@ -296,6 +299,10 @@ class ProdApi(base_api.BaseApi):
     def all_data_query(self):
         return ALL_DATA_QUERY.format(view=self.view)
 
+    @property
+    def all_data_query_for_lab_number(self):
+        return ALL_DATA_QUERY_WITH_LAB_NUMBER.format(view=self.view)
+
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
         try:
@@ -314,26 +321,26 @@ class ProdApi(base_api.BaseApi):
 
         return Row(rows[0]).get_demographics_dict()
 
-    def raw_data(self, hospital_number, **filter_kwargs):
+    def raw_data(self, hospital_number, lab_number=None):
         """ not all data, I lied. Only the last year's
         """
         db_date = to_db_date(datetime.date.today() - datetime.timedelta(365))
-        rows = self.execute_query(
-            self.all_data_query,
-            params=dict(hospital_number=hospital_number, since=db_date)
-        )
 
-        if not filter_kwargs:
-            return rows
-
-        result = []
-
-        for row in rows:
-            for k, v in filter_kwargs.items():
-                if row[k] == v:
-                    result.append(row)
-
-        return result
+        if lab_number:
+            rows = self.execute_query(
+                self.all_data_query_for_lab_number,
+                params=dict(
+                    hospital_number=hospital_number,
+                    since=db_date,
+                    lab_number=lab_number
+                )
+            )
+        else:
+            rows = self.execute_query(
+                self.all_data_query,
+                params=dict(hospital_number=hospital_number, since=db_date)
+            )
+        return rows
 
     def cooked_data(self, hospital_number):
         raw_data = self.raw_data(hospital_number)

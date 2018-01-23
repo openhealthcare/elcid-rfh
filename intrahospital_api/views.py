@@ -75,8 +75,13 @@ class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
             *args, **kwargs
         )
         api = get_api()
+        filter_args = {}
+
+        if "lab_number" in self.kwargs:
+            filter_args = dict(lab_number=self.kwargs["lab_number"])
+
         results = api.raw_data(
-            kwargs["hospital_number"], **self.request.GET
+            kwargs["hospital_number"], **filter_args
         )
         results = sorted(
             results, key=lambda x: x["OBX_exam_code_Text"]
