@@ -77,7 +77,7 @@ class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
         api = get_api()
 
         results = api.raw_data(
-            kwargs["hospital_number"], **self.kwargs
+            **self.kwargs
         )
         results = sorted(
             results, key=lambda x: x["OBX_exam_code_Text"]
