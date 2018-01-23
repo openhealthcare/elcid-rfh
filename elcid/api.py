@@ -277,7 +277,6 @@ class LabTestResultsView(LoginRequiredViewset):
                         api_name=slugify(observation["observation_name"])
                     )
 
-
             serialised_lab_test = dict(
                 long_form=long_form,
                 timeseries=timeseries,
