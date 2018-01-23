@@ -16,7 +16,7 @@ ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and Result_ID = @ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since and Result_ID = @lab_number ORDER BY last_updated DESC;"
 
 ETHNICITY_MAPPING = {
     "99": "Other - Not Known",
