@@ -551,6 +551,17 @@ class PositiveBloodCultureHistory(PatientSubrecord):
         return None
 
 
+def refresh_upstream_lab_tests(patient, user):
+    hospital_number = patient.demographics_set.first().hospital_number
+    patient.labtest_set.filter(
+        lab_test_type__in=[
+            UpstreamBloodCulture.get_display_name(),
+            UpstreamLabTest.get_display_name()
+        ]
+    ).delete()
+    load_in_lab_tests(patient, hospital_number, user)
+
+
 def load_in_lab_tests(
     patient, hospital_number, user
 ):
