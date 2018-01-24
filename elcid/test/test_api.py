@@ -3,9 +3,107 @@ import mock
 import datetime
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
-from elcid.api import BloodCultureResultApi
+from elcid.api import (
+    BloodCultureResultApi, UpstreamBloodCultureApi
+)
 from elcid import models as emodels
 from django.test import override_settings
+
+
+class UpstreamBloodCultureApiTestCase(OpalTestCase):
+    def setUp(self):
+        self.api = UpstreamBloodCultureApi()
+
+    def test_format_sensitivities_and_resistances_sensitivities(self):
+        some_str = "~ Teicoplanin S~ Vancomycin S"
+        expected = dict(
+            sensitive=["Teicoplanin", "Vancomycin"],
+            resistant=[]
+        )
+        self.assertEqual(
+            self.api.format_sensitivities_and_resistances(some_str),
+            expected
+        )
+
+    def test_format_sensitivities_and_resistances_sensitivity(self):
+        some_str = "~ Colistin (Polymixin) S~~"
+        expected = dict(
+            sensitive=["Colistin (Polymixin)"],
+            resistant=[]
+        )
+        self.assertEqual(
+            self.api.format_sensitivities_and_resistances(some_str),
+            expected
+        )
+
+    def test_format_blood_culture_anaerobic(self):
+        some_str = "1) After less than 24 hours Acinetobacter baumannii~ \
+Isolated from aerobic bottle~2) After less than 24 hours \
+Staphylococcus epidermidis~~ 2)~ Teicoplanin S~ Vancomycin S~~"
+        expected = {
+            "Aerobic": {
+                "text": [
+                    "After less than 24 hours Acinetobacter baumannii",
+                    "Isolated from aerobic bottle"
+                ],
+                "sensitive": [],
+                "resistant": []
+            },
+            "Anaerobic": {
+                "text": [
+                    "After less than 24 hours Staphylococcus epidermidis"
+                ],
+                "sensitive": ["Teicoplanin", "Vancomycin"],
+                "resistant": []
+            }
+        }
+        self.assertEqual(
+            self.api.format_blood_culture(some_str),
+            expected
+        )
+
+    def test_format_blood_culture_aerobic(self):
+        some_str = "1) After less than 24 hours Escherichia coli~ Aerobic + \
+anaerobic bottles~~ 1)~ Amoxicillin S~ Gentamicin S~ Temocillin S~~"
+        expected = {
+            "Aerobic": {
+                "text": [
+                    "After less than 24 hours Escherichia coli",
+                    "Aerobic + anaerobic bottles"
+                ],
+                "sensitive": ["Amoxicillin", "Gentamicin", "Temocillin"],
+                "resistant": []
+            },
+            "Anaerobic": {
+                "text": [],
+                "sensitive": [],
+                "resistant": []
+            }
+        }
+        found = self.api.format_blood_culture(some_str)
+        self.assertEqual(found, expected)
+
+    def test_format_blood_culture_resistant(self):
+        some_str = "1) From aerobic bottle only Staphylococcus aureus~ after \
+less than 24 hours of incubation.~~ 1)~ Erythromycin S~ Flucloxacillin S~ \
+Penicillin R~~"
+        expected = {
+            "Aerobic": {
+                "text": [
+                    "From aerobic bottle only Staphylococcus aureus",
+                    "after less than 24 hours of incubation."
+                ],
+                "sensitive": ["Erythromycin", "Flucloxacillin"],
+                "resistant": ["Penicillin"]
+            },
+            "Anaerobic": {
+                "text": [],
+                "sensitive": [],
+                "resistant": []
+            }
+        }
+        found = self.api.format_blood_culture(some_str)
+        self.assertEqual(found, expected)
 
 
 class BloodCultureResultApiTestCase(OpalTestCase):

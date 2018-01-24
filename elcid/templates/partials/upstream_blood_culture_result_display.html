@@ -8,9 +8,44 @@
         <h5>
           [[ lab_test.datetime_ordered | shortDate ]]
           [[ lab_test.external_identifier ]]
-          [[ observation.observation_name ]]
+          <div ng-show="observation.aerobic">
+            Aerobic
+          </div>
+          <div ng-show="observation.anaerobic">
+            Anaerobic
+          </div>
         </h5>
-          [[ observation.observation_value ]]
+          <div>
+            <b>[[ observation.observation_name ]]:</b> [[ observation.observation_value ]]
+          </div>
+
+
+          <div ng-show="observation.aerobic && observation.blood_culture.Aerobic.text.length">
+            <b>Organism:</b>
+            <p ng-repeat="t in observation.blood_culture.Aerobic.text">
+              [[ t ]]
+            </p>
+          </div>
+          <div ng-show="observation.aerobic && observation.blood_culture.Aerobic.resistant.length">
+            <b>Resistant:</b> [[ observation.blood_culture.Aerobic.resistant.join(", ")]]
+          </div>
+          <div ng-show="observation.aerobic && observation.blood_culture.Aerobic.sensitive.length">
+            <b>Sensitivities:</b> [[ observation.blood_culture.Aerobic.sensitive.join(", ")]]
+          </div>
+
+
+          <div ng-show="observation.anaerobic && observation.blood_culture.Anaerobic.text.length">
+            <b>Organism:</b>
+            <p ng-repeat="t in observation.blood_culture.Anaerobic.text">
+              [[ t ]]
+            </p>
+          </div>
+          <div ng-show="observation.anaerobic && observation.blood_culture.Anaerobic.resistant.length">
+            <b>Resistant:</b> [[ observation.blood_culture.Anaerobic.resistant.join(", ")]]
+          </div>
+          <div ng-show="observation.anaerobic && observation.blood_culture.Anaerobic.sensitive.length">
+            <b>Sensitivities:</b> [[ observation.blood_culture.Anaerobic.sensitive.join(", ")]]
+          </div>
       </div>
     </li>
   </ul>

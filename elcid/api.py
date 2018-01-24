@@ -414,6 +414,88 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
     """
     base_name = "upstream_blood_culture_results"
 
+    def format_sensitivities_and_resistances(self, resistances_str):
+        """ takes in a string that looks like
+            ~ Teicoplanin S~ Vancomycin S
+
+            and returns {
+                sensitive: ["Teicoplanin", "Vancomycin"],
+                resistant: []
+            }
+        """
+        split_str = [i.strip() for i in resistances_str.split("~") if i.strip()]
+        sensitive = []
+        resistant = []
+        for i in split_str:
+            if i.endswith(" S"):
+                sensitive.append(i.rstrip(" S").strip())
+            elif i.endswith(" R"):
+                resistant.append(i.rstrip(" R").strip())
+            else:
+                raise ValueError('We cannot parse resistance {}'.format(i))
+        return dict(sensitive=sensitive, resistant=resistant)
+
+    def format_blood_culture(self, blood_culture_observation):
+        """ blood culture observations look something like...
+
+            1) After less than 24 hours Acinetobacter baumannii~
+            Isolated from aerobic bottle~2) After less than 24 hours
+            Staphylococcus epidermidis~~ 2)~ Teicoplanin S~ Vancomycin S~~
+
+            which we want broken down into
+
+            Aerobic: {
+                text: {[
+                    "After less than 24 hours Acinetobacter baumannii",
+                    "Isolated from aerobic bottle"
+                ]},
+            }
+            Anaerobic: {
+                text: ["After less than 24 hours Staphylococcus epidermidis"]
+                sensitive: ["Teicoplanin", "Vancomycin"],
+                resistant: []
+            }
+        """
+
+        split_by_aerobic = [
+            i for i in blood_culture_observation.split("1)") if i.strip()
+        ]
+        aerobic_resistances = ""
+        anaerobic_resistances = ""
+
+        if "2)" in split_by_aerobic[0]:
+            split_by_anaerobic = split_by_aerobic[0].split("2)")
+            aerobic_text = split_by_anaerobic[0]
+            anaerobic_text = split_by_anaerobic[1]
+
+            if len(split_by_anaerobic) == 3:
+                anaerobic_resistances = split_by_anaerobic[2]
+        elif len(split_by_aerobic) > 1:
+            aerobic_text = split_by_aerobic[0]
+            anaerobic_text = ""
+            split_by_anaerobic = split_by_aerobic[1].split("2)")
+            aerobic_resistances = split_by_anaerobic[0]
+            if len(split_by_anaerobic) > 1:
+                anaerobic_resistances = split_by_anaerobic[1]
+
+        aerobic_result = dict(
+            text=[i.strip() for i in aerobic_text.split("~") if i.strip()]
+        )
+        aerobic_result.update(self.format_sensitivities_and_resistances(
+            aerobic_resistances
+        ))
+
+        anaerobic_result = dict(
+            text=[i.strip() for i in anaerobic_text.split("~") if i.strip()]
+        )
+        anaerobic_result.update(self.format_sensitivities_and_resistances(
+            anaerobic_resistances
+        ))
+        return dict(
+            Aerobic=aerobic_result,
+            Anaerobic=anaerobic_result
+        )
+
     @patient_from_pk
     def retrieve(self, request, patient):
         lab_tests = patient.labtest_set.filter(
@@ -422,9 +504,29 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         lab_tests = [i.dict_for_view(request.user) for i in lab_tests]
         lab_tests = sorted(lab_tests, key=lambda x: x["external_identifier"])
         for lab_test in lab_tests:
+            observations = []
+            for observation in lab_test["observations"]:
+                if not observation["observation_name"] == "BLOOD CULTURE":
+                    for a in ["aerobic", "anaerobic"]:
+                        observation[a] = a in observation[
+                            "observation_name"
+                        ].lower()
+                observations.append(observation)
+
             lab_test["observations"] = sorted(
-                lab_test["observations"], key=lambda x: x["observation_name"]
+                observations, key=lambda x: x["observation_name"]
             )
+            blood_culture = [
+                i for i in lab_test["observations"] if i["observation_name" == "BLOOD CULTURE"]
+            ]
+            if len(blood_culture) > 1:
+                raise ValueError(
+                    'we thought there could only be one blood culture per lab_test'
+                )
+            if blood_culture:
+                lab_test["blood_culture"] = self.format_blood_culture(
+                    blood_culture
+                )
 
         return json_response(dict(
             lab_tests=lab_tests
