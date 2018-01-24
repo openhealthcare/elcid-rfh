@@ -178,6 +178,32 @@ class UpstreamLabTest(lmodels.ReadOnlyLabTest):
         return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
 
+class UpstreamBloodCulture(UpstreamLabTest):
+    """ Upstream blood cultures are funny beasts
+
+    Observation types that have previously existed
+    are...
+
+    	* Aerobic bottle culture
+        * Aerobic Bottle: Microscopy
+        * Anaerobic bottle culture
+        * Anaerobic Bottle: Microscopy
+
+        * Blood Culture
+        * Reference Lab. Comment
+        * Reference Lab. Name
+        * Comments
+
+    Of these Blood Culture needs some tweaking
+    """
+    class Meta:
+        verbose_name = "Upstream Blood Culture"
+
+    @classmethod
+    def get_api_name(cls):
+        return "upstream_blood_culture"
+
+
 class InfectionSource(lookuplists.LookupList):
     pass
 

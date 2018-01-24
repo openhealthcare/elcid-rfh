@@ -1,15 +1,16 @@
 import datetime
 from operator import itemgetter
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
-from django.http import Http404
+from django.db.models import Q
 from intrahospital_api import get_api
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
 from elcid import models as emodels
+from lab import models as lmodels
 from elcid.utils import timing
 
 
@@ -147,6 +148,10 @@ class LabTestJsonDumpView(LoginRequiredViewset):
     @patient_from_pk
     def retrieve(self, request, patient):
         lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
+        lab_tests = lmodels.LabTest.objects.filter(
+            Q(lab_test_type=emodels.UpstreamBloodCulture.get_display_name) |
+            Q(lab_test_type=emodels.UpstreamLabTest.get_display_name)
+        )
         lab_tests = sorted(lab_tests, key=lambda x: x.extras.get("test_name"))
         return json_response(
             dict(
@@ -399,6 +404,27 @@ class LabTestSummaryApi(LoginRequiredViewset):
         return json_response(result)
 
 
+class UpstreamBloodCultureApi(viewsets.ViewSet):
+    """
+        for every upstream blood culture, return them grouped by
+
+        datetimes_ordered as a date,
+        lab_number
+        lab_test_type
+    """
+    base_name = "upstream_blood_culture_results"
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        lab_tests = patient.labtest_set.filter(
+            lab_test_type=emodels.UpstreamBloodCulture.get_display_name()
+        ).order_by("-datetime_ordered")
+
+        return json_response(dict(
+            lab_tests=lab_tests
+        ))
+
+
 class BloodCultureResultApi(viewsets.ViewSet):
     base_name = 'blood_culture_results'
 
@@ -539,6 +565,9 @@ class DemographicsSearch(LoginRequiredViewset):
 
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
+elcid_router.register(
+    UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
+)
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 
 lab_test_router = OPALRouter()

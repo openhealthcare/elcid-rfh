@@ -85,7 +85,11 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
                 results = api.results_for_hospital_number(hospital_number)
                 for result in results:
                     result["patient_id"] = patient.id
-                    hl7_result = models.UpstreamLabTest()
+                    if result["test_name"] == "BLOOD CULTURE":
+                        hl7_result = models.UpstreamBloodCulture()
+                    else:
+                        hl7_result = models.UpstreamLabTest()
+
                     hl7_result.update_from_dict(result, user)
 
         if not episode:
