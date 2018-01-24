@@ -551,6 +551,25 @@ class PositiveBloodCultureHistory(PatientSubrecord):
         return None
 
 
+def load_in_lab_tests(
+    patient, hospital_number, user
+):
+    api = get_api()
+    results = api.results_for_hospital_number(hospital_number)
+    save_lab_tests(patient, results, user)
+
+
+def save_lab_tests(patient, results, user):
+    for result in results:
+        result["patient_id"] = patient.id
+        if result["test_name"] == "BLOOD CULTURE":
+            hl7_result = UpstreamBloodCulture()
+        else:
+            hl7_result = UpstreamLabTest()
+
+        hl7_result.update_from_dict(result, user)
+
+
 # method for updating
 @receiver(post_save, sender=omodels.Tagging)
 def record_positive_blood_culture(sender, instance, **kwargs):

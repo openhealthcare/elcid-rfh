@@ -410,7 +410,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
         datetimes_ordered as a date,
         lab_number
-        lab_test_type
+        observation name
     """
     base_name = "upstream_blood_culture_results"
 
@@ -419,6 +419,12 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         lab_tests = patient.labtest_set.filter(
             lab_test_type=emodels.UpstreamBloodCulture.get_display_name()
         ).order_by("-datetime_ordered")
+        lab_tests = [i.dict_for_view(request.user) for i in lab_tests]
+        lab_tests = sorted(lab_tests, key=lambda x: x["external_identifier"])
+        for lab_test in lab_tests:
+            lab_test["observations"] = sorted(
+                lab_test["observations"], key=lambda x: x["observation_name"]
+            )
 
         return json_response(dict(
             lab_tests=lab_tests

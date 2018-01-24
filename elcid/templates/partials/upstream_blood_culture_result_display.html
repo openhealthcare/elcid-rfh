@@ -1,3 +1,17 @@
 <div upstream-blood-culture-result-display class="panel panel-default">
-  hello
+  <div class="panel-heading"><h3>
+    <i class="fa fa-crosshairs"></i>Upstream Blood Cultures
+  </h3></div>
+  <ul class="list-group">
+    <li class="list-group-item" ng-repeat="lab_test in bc_results">
+      <div ng-repeat="observation in lab_test.observations">
+        <h5>
+          [[ lab_test.datetime_ordered | shortDate ]]
+          [[ lab_test.external_identifier ]]
+          [[ observation.observation_name ]]
+        </h5>
+          [[ observation.observation_value ]]
+      </div>
+    </li>
+  </ul>
 </div>

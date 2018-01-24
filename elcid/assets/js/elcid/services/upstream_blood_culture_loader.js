@@ -7,7 +7,7 @@ angular.module('opal.services').factory('UpstreamBloodCultureLoader', function($
       var deferred = $q.defer();
       var patientUrl = url + patientId + "/"
       $http.get(patientUrl).then(function(response) {
-          deferred.resolve(response.data);
+          deferred.resolve(response.data.lab_tests);
       }, function() {
         // handle error better
         $window.alert('Upstream Blood Culture Data could not be loaded');

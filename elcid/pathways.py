@@ -75,22 +75,14 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             we expect the patient to have already been updated by gloss
         """
         if not patient:
-
             demographics = data.get("demographics")
             hospital_number = demographics[0]["hospital_number"]
             patient = omodels.Patient.objects.create()
 
             if settings.ADD_PATIENT_LAB_TESTS:
-                api = get_api()
-                results = api.results_for_hospital_number(hospital_number)
-                for result in results:
-                    result["patient_id"] = patient.id
-                    if result["test_name"] == "BLOOD CULTURE":
-                        hl7_result = models.UpstreamBloodCulture()
-                    else:
-                        hl7_result = models.UpstreamLabTest()
-
-                    hl7_result.update_from_dict(result, user)
+                models.load_in_lab_tests(
+                    patient, hospital_number, user
+                )
 
         if not episode:
             episode = patient.create_episode()
