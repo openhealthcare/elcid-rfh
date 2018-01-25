@@ -169,7 +169,7 @@ describe("BloodCultureHelper", function(){
 
     it('should remove isolates', function(){
       var firstIsolate = bloodCultureHelper.bloodCultures[0].isolates[0]
-      bloodCultureHelper.bloodCultures[0].removeIsolate()(firstIsolate);
+      bloodCultureHelper.bloodCultures[0].removeIsolate(firstIsolate);
       expect(bloodCultureHelper.bloodCultures[0].isolates.length).toBe(1)
       expect(bloodCultureHelper.bloodCultures[0].isolates[0]).not.toEqual(firstIsolate);
     });
