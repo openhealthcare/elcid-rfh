@@ -507,17 +507,22 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
             observations = []
             for observation in lab_test["observations"]:
                 if not observation["observation_name"] == "BLOOD CULTURE":
-                    for a in ["aerobic", "anaerobic"]:
-                        observation[a] = a in observation[
-                            "observation_name"
-                        ].lower()
+                    ob_name = observation["observation_name"].lower()
+                    observation["aerobic"] = False
+                    observation["anaerobic"] = False
+
+                    if "aerobic" in ob_name and "anaerobic" not in ob_name:
+                        observation["aerobic"] = True
+
+                    if "anaerobic" in ob_name:
+                        observation["anaerobic"] = True
                 observations.append(observation)
 
             lab_test["observations"] = sorted(
                 observations, key=lambda x: x["observation_name"]
             )
             blood_culture = [
-                i for i in lab_test["observations"] if i["observation_name" == "BLOOD CULTURE"]
+                i for i in lab_test["observations"] if i["observation_name"] == "BLOOD CULTURE"
             ]
             if len(blood_culture) > 1:
                 raise ValueError(
@@ -527,6 +532,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
                 lab_test["blood_culture"] = self.format_blood_culture(
                     blood_culture
                 )
+            lab_tests.reverse()
 
         return json_response(dict(
             lab_tests=lab_tests
