@@ -462,6 +462,8 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         ]
         aerobic_resistances = ""
         anaerobic_resistances = ""
+        aerobic_text = ""
+        anaerobic_text = ""
 
         if "2)" in split_by_aerobic[0]:
             split_by_anaerobic = split_by_aerobic[0].split("2)")
@@ -530,7 +532,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
                 )
             if blood_culture:
                 lab_test["blood_culture"] = self.format_blood_culture(
-                    blood_culture
+                    blood_culture[0]["observation_value"]
                 )
             lab_tests.reverse()
 

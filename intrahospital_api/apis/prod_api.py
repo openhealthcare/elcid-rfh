@@ -200,7 +200,7 @@ class Row(object):
     def get_datetime_ordered(self):
         return to_datetime_str(
             self.db_row.get(
-                "Date_of_the_Observation", self.db_row.get("Request_Date")
+                "Observation_date", self.db_row.get("Request_Date")
             )
         )
 
@@ -218,7 +218,7 @@ class Row(object):
         return self.db_row.get("Result_Units")
 
     def get_observation_datetime(self):
-        dt = self.db_row.get("Date_of_the_Observation")
+        dt = self.db_row.get("Observation_date")
         dt = dt or self.db_row.get("Request_Date")
         return to_datetime_str(dt)
 
