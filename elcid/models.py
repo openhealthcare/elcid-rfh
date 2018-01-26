@@ -91,7 +91,7 @@ class Location(EpisodeSubrecord):
 class UpstreamLabTest(lmodels.ReadOnlyLabTest):
     # these fields we will save as extras when we
     # update from dict
-    convert_to_extras = ['test_code', 'test_name']
+    convert_to_extras = ['test_code', 'test_name', 'site', 'clinical_info']
 
     class Meta:
         verbose_name = "Upstream Lab Test"
@@ -198,7 +198,7 @@ class UpstreamBloodCulture(UpstreamLabTest):
     """
 
     convert_to_extras = [
-        'test_code', 'test_name', 'site', 'clinical_info',
+        'test_code', 'test_name'
     ]
 
     class Meta:
