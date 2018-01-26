@@ -105,7 +105,7 @@ class Row(object):
         'datetime_ordered',
         'external_identifier',
         'site',
-        'clinicial_info',
+        'clinical_info',
     ]
 
     OBSERVATION_FIELDS = [
