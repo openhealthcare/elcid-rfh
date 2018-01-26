@@ -5,9 +5,9 @@ from django.contrib import admin
 from reversion import models as rmodels
 from django.utils.html import format_html
 from opal import models as omodels
-from elcid import models as emodels
 from opal.admin import PatientAdmin as OldPatientAdmin
 from django.core.urlresolvers import reverse
+from intrahospital_api import loader
 
 
 class TaggingListFilter(admin.SimpleListFilter):
@@ -68,7 +68,7 @@ class PatientAdmin(OldPatientAdmin):
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
-            emodels.refresh_upstream_lab_tests(patient, request.user)
+            loader.load_patient(patient, request.user)
 
     def upstream_lab_results(self, obj):
         hospital_number = obj.demographics_set.first().hospital_number

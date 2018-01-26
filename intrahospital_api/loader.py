@@ -37,13 +37,21 @@ def load_patient(patient, user):
 
 @transaction.atomic
 def _load_patient(patient, user):
+    hospital_number = patient.demographics_set.first().hospital_number
+    patient.labtest_set.filter(
+        lab_test_type__in=[
+            emodels.UpstreamBloodCulture.get_display_name(),
+            emodels.UpstreamLabTest.get_display_name()
+        ]
+    ).delete()
+
     api = get_api()
     patient_results = api.results_for_hospital_number(
-        patient.demographics_set.first().hospital_number
+        hospital_number
     )
 
-    refresh_upstream_lab_tests(
-        patient_results, user
+    save_lab_tests(
+        patient, patient_results, user
     )
 
 
