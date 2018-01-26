@@ -5,39 +5,8 @@
   <ul class="list-group">
     <li class="list-group-item" ng-repeat="lab_test in bc_results">
       <h5>[[ lab_test.datetime_ordered | shortDate ]] [[ lab_test.external_identifier ]]</h5>
-      <div ng-show="observation.aerobic || observation.anaerobic" ng-repeat="observation in lab_test.observations">
+      <div ng-repeat="observation in lab_test.observations">
           <div>[[ observation.observation_name ]]: [[ observation.observation_value ]]</div>
-
-
-          <div ng-show="observation.aerobic && lab_test.blood_culture.Aerobic.text.length">
-            <span>Aerobic Organism:</span>
-            <span ng-repeat="t in lab_test.blood_culture.Aerobic.text">
-              [[ t ]]
-            </span>
-          </div>
-          <div ng-show="observation.aerobic && lab_test.blood_culture.Aerobic.resistant.length">
-            <div class="push-left-12">Resistant: [[ lab_test.blood_culture.Aerobic.resistant.join(", ")]]</div>
-          </div>
-          <div ng-show="observation.aerobic && lab_test.blood_culture.Aerobic.sensitive.length">
-            <div class="push-left-12">Sensitivities: [[ lab_test.blood_culture.Aerobic.sensitive.join(", ")]]</div>
-          </div>
-
-
-          <div ng-show="observation.anaerobic && lab_tests.blood_culture.Anaerobic.text.length">
-            <b>Anaerobic Organism:</b>
-            <p ng-repeat="t in lab_tests.blood_culture.Anaerobic.text">
-              [[ t ]]
-            </p>
-          </div>
-          <div ng-show="observation.anaerobic && lab_tests.blood_culture.Anaerobic.resistant.length">
-            <div class="push-left-12">Resistant: [[ lab_tests.blood_culture.Anaerobic.resistant.join(", ")]]</div>
-          </div>
-          <div ng-show="observation.anaerobic && lab_tests.blood_culture.Anaerobic.sensitive.length">
-            <div class="push-left-12">Sensitivities: [[ lab_tests.blood_culture.Anaerobic.sensitive.join(", ")]]</div>
-          </div>
-      </div>
-      <div ng-hide="observation.aerobic || observation.anaerobic" ng-repeat="observation in lab_test.observations">
-        <div>[[ observation.observation_name ]]: [[ observation.observation_value ]]</div>
       </div>
     </li>
   </ul>
