@@ -104,6 +104,8 @@ class Row(object):
         'test_name',
         'datetime_ordered',
         'external_identifier',
+        'site',
+        'clinicial_info',
     ]
 
     OBSERVATION_FIELDS = [
@@ -187,6 +189,15 @@ class Row(object):
             return lmodels.LabTest.COMPLETE
         else:
             return lmodels.LabTest.PENDING
+
+    def get_site(self):
+        site = self.db_row.get('Specimen_Site')
+        if "^" in site and "-" in site:
+            return site.split("^")[1].strip().split("-")[0].strip()
+        return site
+
+    def get_clinical_info(self):
+        return self.db_row.get('Relevant_Clinical_Info')
 
     def get_test_code(self):
         return self.db_row.get('OBX_exam_code_ID')

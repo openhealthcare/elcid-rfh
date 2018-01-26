@@ -4,10 +4,13 @@
   </h3></div>
   <ul class="list-group">
     <li class="list-group-item" ng-repeat="lab_test in bc_results">
-      <h5>[[ lab_test.datetime_ordered | shortDate ]] [[ lab_test.external_identifier ]]</h5>
+      <h5>[[ lab_test.datetime_ordered | shortDate ]] [[ lab_test.external_identifier ]] - [[ lab_test.site ]]</h5>
       <div ng-repeat="observation in lab_test.observations">
           <div>[[ observation.observation_name ]]: [[ observation.observation_value ]]</div>
       </div>
+      <p>
+        [[ lab_test.clinicial_info ]]
+      </p>
     </li>
   </ul>
 </div>
