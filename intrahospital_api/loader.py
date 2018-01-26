@@ -26,10 +26,11 @@ def load_patient(patient, user):
         state=models.PatientLoad.RUNNING
     )
     try:
-        _load_patient(patient, )
+        _load_patient(patient, user)
     except:
         patient_load.state = models.PatientLoad.FAILURE
         patient_load.save()
+        raise
     else:
         patient_load.delete()
 
@@ -41,7 +42,7 @@ def _load_patient(patient, user):
         patient.demographics.first().hospital_number
     )
 
-    emodels.refresh_upstream_lab_tests(
+    refresh_upstream_lab_tests(
         patient_results, user
     )
 
