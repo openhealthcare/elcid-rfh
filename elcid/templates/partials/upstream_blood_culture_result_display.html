@@ -3,13 +3,13 @@
     <i class="fa fa-crosshairs"></i>Upstream Blood Cultures
   </h3></div>
   <ul class="list-group">
-    <li class="list-group-item" ng-repeat="lab_test in bc_results">
-      <h5>[[ lab_test.datetime_ordered | shortDate ]] [[ lab_test.external_identifier ]] - [[ lab_test.site ]]</h5>
+    <li ng-class="{'text-muted': lab_test.no_growth}" class="list-group-item" ng-repeat="lab_test in bc_results">
+      <h5>[[ lab_test.datetime_ordered | shortDate ]] [[ lab_test.external_identifier ]] - [[ lab_test.extras.site ]]</h5>
       <div ng-repeat="observation in lab_test.observations">
           <div>[[ observation.observation_name ]]: [[ observation.observation_value ]]</div>
       </div>
       <p>
-        [[ lab_test.clinicial_info ]]
+        Clinical Info: [[ lab_test.extras.clinical_info ]]
       </p>
     </li>
   </ul>

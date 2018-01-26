@@ -414,6 +414,25 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
     """
     base_name = "upstream_blood_culture_results"
 
+    def no_growth_observations(self, observations):
+        """
+            We are looking for observations that looks like the below.
+            Its not necessarily 5 days, sometimes its e.g. 48 hours.
+            Otherwise they always look like the below.
+
+            Aerobic bottle culture: No growth after 5 days of incubation
+            Anaerobic bottle culture: No growth after 5 days of incubation
+
+            The are always of the type Aerobic bottle culture
+        """
+        obs_names = ["Aerobic bottle culture", "Anaerobic bottle culture"]
+
+        bottles = [
+            o for o in observations if o["observation_name"] in obs_names
+        ]
+
+        return len(bottles) == 2
+
     @patient_from_pk
     def retrieve(self, request, patient):
         """
@@ -425,6 +444,10 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         lab_tests = [i.dict_for_view(request.user) for i in lab_tests]
         for lab_test in lab_tests:
             observations = []
+            lab_test["no_growth"] = self.no_growth_observations(
+                lab_test["observations"]
+            )
+
             for observation in lab_test["observations"]:
                 ob_name = observation["observation_name"].lower()
 
