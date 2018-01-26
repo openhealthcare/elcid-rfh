@@ -196,6 +196,11 @@ class UpstreamBloodCulture(UpstreamLabTest):
 
     Of these Blood Culture needs some tweaking
     """
+
+    convert_to_extras = [
+        'test_code', 'test_name', 'site', 'clinical_info',
+    ]
+
     class Meta:
         verbose_name = "Upstream Blood Culture"
 
