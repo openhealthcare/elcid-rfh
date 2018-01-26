@@ -39,7 +39,7 @@ def load_patient(patient, user):
 def _load_patient(patient, user):
     api = get_api()
     patient_results = api.results_for_hospital_number(
-        patient.demographics.first().hospital_number
+        patient.demographics_set.first().hospital_number
     )
 
     refresh_upstream_lab_tests(
