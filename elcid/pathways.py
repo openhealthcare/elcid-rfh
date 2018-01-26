@@ -1,5 +1,5 @@
 import datetime
-from intrahospital_api import get_api
+from intrahospital_api import loader
 from elcid import models
 from opal import models as omodels
 from lab import models as lmodels
@@ -80,9 +80,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             patient = omodels.Patient.objects.create()
 
             if settings.ADD_PATIENT_LAB_TESTS:
-                models.load_in_lab_tests(
-                    patient, hospital_number, user
-                )
+                loader.load_in_lab_tests(patient, hospital_number, user)
 
         if not episode:
             episode = patient.create_episode()

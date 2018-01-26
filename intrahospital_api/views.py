@@ -1,7 +1,7 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
-from intrahospital_api import get_api
+from intrahospital_api.apis import get_api
 from collections import defaultdict
 from opal.core.views import json_response
 

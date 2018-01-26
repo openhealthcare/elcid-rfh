@@ -12,7 +12,7 @@ from django.conf import settings
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
-ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
+ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
@@ -20,6 +20,8 @@ ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since and OBR_exam_code_Text = @test_type ORDER BY last_updated DESC;"
+
+ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since"
 
 
 ETHNICITY_MAPPING = {
@@ -302,8 +304,12 @@ class ProdApi(base_api.BaseApi):
         return DEMOGRAPHICS_QUERY.format(view=self.view)
 
     @property
-    def all_data_query(self):
-        return ALL_DATA_QUERY.format(view=self.view)
+    def all_data_for_hospital_number_query(self):
+        return ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER.format(view=self.view)
+
+    @property
+    def all_data_since_query(self):
+        return ALL_DATA_SINCE.format(view=self.view)
 
     @property
     def all_data_query_for_lab_number(self):
@@ -356,7 +362,7 @@ class ProdApi(base_api.BaseApi):
             )
         else:
             return self.execute_query(
-                self.all_data_query,
+                self.all_data_for_hospital_number_query,
                 params=dict(hospital_number=hospital_number, since=db_date)
             )
 
