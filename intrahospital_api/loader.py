@@ -10,7 +10,7 @@ from intrahospital_api.apis import get_api
 def initial_load():
     user = User.objects.get(username=settings.API_USER)
     total = Patient.objects.count()
-    models.PatientLoad.objects.all().delete()
+    models.PatientLoad.objects.all().delete
     for iterator, patient in enumerate(Patient.objects.all()):
         print "running {}/{}".format(iterator, total)
         load_patient(patient, user)
@@ -34,6 +34,11 @@ def load_patient(patient, user):
         raise
     else:
         patient_load.delete()
+
+
+def async_load(patient, user):
+    from intrahospital_api import tasks
+    tasks.load.delay(user, patient)
 
 
 @transaction.atomic
