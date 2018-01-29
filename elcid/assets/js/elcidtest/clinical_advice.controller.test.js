@@ -137,11 +137,21 @@ describe('ClinicalAdviceFormTest', function() {
         var mi = {
           _client: "something",
           when: "something",
-          initials: "something"
+          initials: "something",
         }
         ctrl.watchMicroFields(mi);
         expect(ctrl.changed).toBe(false);
       });
+
+      it('should ignore changes that to angular vars', function(){
+        expect(ctrl.changed).toBe(false);
+        var mi = {
+          $$: "something"
+        }
+        ctrl.watchMicroFields(mi);
+        expect(ctrl.changed).toBe(false);
+      });
+
     });
 
 });

@@ -10,9 +10,9 @@ angular.module('opal.controllers').controller(
         this.changed = false;
 
         this.watchMicroFields = function(mi){
-          // apart from the keys when, _client, initials, are any of the fields not falsy, ie undeinfed
+          // apart from the keys when, _client, initials, are any of the fields not falsy, ie undefined
           self.changed = !!_.compact(_.filter(mi, function(val, key){
-            return !(key == 'when' || key == '_client' || key == "initials");
+            return !(key == 'when' || key == '_client' || key == "initials" || key.indexOf('$$') === 0);
           })).length;
         };
 

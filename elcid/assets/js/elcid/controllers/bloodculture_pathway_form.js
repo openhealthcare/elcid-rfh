@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller('BloodCulturePathwayFormCtrl',
-function( $modal, $q, ngProgressLite, scope, step, episode, BloodCultureHelper) {
+function($modal, $q, ngProgressLite, scope, step, episode, BloodCultureHelper) {
       "use strict";
 
       if(episode && episode.tagging.length){
