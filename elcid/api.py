@@ -458,6 +458,11 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
             lab_test["observations"] = sorted(
                 observations, key=lambda x: x["observation_name"]
             )
+            if lab_test["extras"]["clinical_info"]:
+                lab_test["extras"]["clinical_info"] = "{}{}".format(
+                    lab_test["extras"]["clinical_info"][0].upper(),
+                    lab_test["extras"]["clinical_info"][1:]
+                )
 
         return json_response(dict(
             lab_tests=lab_tests
