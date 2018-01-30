@@ -38,31 +38,33 @@ class AddTbPatientPathway(AddPatientPathway):
         return patient, episode
 
 
+class TBStep(Step):
+    base_template = "pathway/steps/step_base.html"
+
+
 class TBConsultationPathway(pathways.PagePathway):
     display_name = "Initial Assessment"
     slug = "initial_assessment"
 
     steps = [
-        pathways.Step(
+        TBStep(
             template="pathway/steps/demographics_panel.html",
             icon="fa fa-user",
             display_name="Demographics"
         ),
-        models.ReferralRoute,
-        tb_models.ContactDetails,
-        Step(
+        TBStep(model=models.ReferralRoute),
+        TBStep(model=tb_models.ContactDetails),
+        TBStep(
             model=models.SymptomComplex,
             template="pathway/steps/symptom_complex.html",
             step_controller="TbSymptomComplexCrtl",
             multiple=False,
-            help_text=""
         ),
-        Step(
+        TBStep(
             model=tb_models.TBHistory,
             template="pathway/steps/tb_history.html",
         ),
-
-        tb_models.SocialHistory,
+        TBStep(model=tb_models.SocialHistory),
         # Antimicrobials need to be added
     ]
 

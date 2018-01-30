@@ -1,0 +1,26 @@
+{% load forms %}
+
+<div ng-controller="PatientConsultationForm as patientConsultationForm" class="panel panel-default hidden-print">
+    <div class="panel-heading"><h3>
+        <i class="fa fa-comments"></i> {{ models.PatientConsultation.get_display_name }}
+    </div></h3>
+      <div class="panel-body">
+          <div class="row">
+            <div class="col-md-12">
+              <form class="form-horizontal">
+                <div ng-repeat="editing in [patientConsultationForm.editing]">
+                  {% include models.PatientConsultation.get_form_template %}
+                </div>
+              </form>
+            </div>
+        </div>
+      <div class="row">
+          <div class="col-md-12 text-right">
+              <button ng-disabled="!patientConsultationForm.changed" class="btn btn-primary" ng-click="patientConsultationForm.save('save')">
+              <i class="fa fa-save"></i>
+              Save
+              </button>
+          </div>
+      </div>
+     </div>
+ </div>

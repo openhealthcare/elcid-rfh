@@ -186,6 +186,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     observation["observation_value"] = obs_result
 
                 observation["reference_range"] = observation["reference_range"].replace("]", "").replace("[", "")
+
                 if not len(observation["reference_range"].replace("-", "").strip()):
                     observation["reference_range"] = None
                 else:
@@ -221,9 +222,10 @@ class LabTestResultsView(LoginRequiredViewset):
         # so what I want to return is all observations to lab test desplay
         # name with the lab test properties on the observation
 
-        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
+        a_year_ago = datetime.date.today() - datetime.timedelta(365)
         lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
-        lab_tests = lab_tests.filter(datetime_ordered__gte=six_months_ago)
+        lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
+        lab_tests = [l for l in lab_tests if l.extras]
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
         serialised_tests = []
 
@@ -232,8 +234,14 @@ class LabTestResultsView(LoginRequiredViewset):
         # them as part of a time series, ie adding in blanks if they
         # aren't populated
         for lab_test_type, observations in by_test.items():
+            if lab_test_type.strip().upper() in set([
+                'UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT'
+            ]):
+                continue
+
             observations = sorted(observations, key=lambda x: x["datetime_ordered"])
             observations = sorted(observations, key=lambda x: x["observation_name"])
+
 
             # observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
@@ -256,6 +264,9 @@ class LabTestResultsView(LoginRequiredViewset):
                 if test_name.strip() == "Haem Lab Comment":
                     # skip these for the time being, we may not even
                     # have to bring them in
+                    continue
+
+                if test_name.strip() == "Sample Comment":
                     continue
 
                 # arbitrary but fine for prototyping, should we show it in a
@@ -297,7 +308,16 @@ class LabTestResultsView(LoginRequiredViewset):
             )
             serialised_tests.append(serialised_lab_test)
 
-            serialised_tests = sorted(serialised_tests, key=itemgetter("lab_test_type"))
+            serialised_tests = sorted(
+                serialised_tests, key=itemgetter("lab_test_type")
+            )
+
+            # ordered by most recent observations first please
+            serialised_tests = sorted(
+                serialised_tests, key=lambda t: -to_date(
+                    t["observation_date_range"][0]
+                ).toordinal()
+            )
 
         all_tags = _LAB_TEST_TAGS.keys()
 

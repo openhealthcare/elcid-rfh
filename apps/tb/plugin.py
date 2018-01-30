@@ -16,6 +16,7 @@ class TbPlugin(plugins.OpalPlugin):
         'opal.controllers': [
             # 'js/tb/app.js',
             'js/tb/controllers/tb_symptom_complex.js',
+            'js/tb/controllers/patient_consultation.js',
             # 'js/tb/services/larry.js',
         ]
     }

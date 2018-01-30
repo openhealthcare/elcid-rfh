@@ -14,7 +14,16 @@
                 </h3>
               </div>
               <div class="panel-body">
-                <b>[[ episode.stage ]]</b>
+                <div class="row">
+                  <div class="col-md-6">
+                    <b>[[ episode.stage ]]:</b>
+                  </div>
+                  <div class="col-md-6">
+                    <span ng-repeat="item in episode.referral_route">
+                      {% include models.ReferralRoute.get_display_template %}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             {% include "panels/risk_factors.html" %}
@@ -41,8 +50,72 @@
         </div>
 
         <div class="row">
-          <div class="col-md-6 col-md-offset-3">
-            {% record_timeline models.PatientConsultation 'when' %}
+          <div class="col-md-6 col-md-push-3">
+            <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
+              <div class="panel-body">
+                <div class="patient-timeline-container">
+                  <div class="row">
+                    <div class="col-md-3 patient-timeline">
+                      <div class="patient-timeline-now">
+                        <div class="patient-timeline-now-text bg-secondary">
+                          Now
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <svg class="speech-bubble-timeline-container">
+                    <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
+                    <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
+                  </svg>
+                  <div ng-repeat="item in episode.patient_consultation | orderBy:orderByDate" class="row content-offset-20">
+
+                    <div class="col-md-3 patient-timeline">
+                      <div class="patient-timeline-speech-bubble">
+                        <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
+                      </div>
+                      <div ng-show="item.when">
+                        <div class="patient-timeline-date">
+                          [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-9">
+                      <div class="patient-timeline-discussion">
+                        <div class="row">
+                          <div class="col-sm-10 consultation-timeline-data-[[ $index ]]">
+                            <span ng-show="item.initials && item.initials.trim().length">
+                              <b>By: </b> [[item.initials]]
+                              <br />
+                            </span>
+                            <span ng-show="item.reason_for_interaction">
+                              <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
+                              <br />
+                            </span>
+                            <span ng-show="item.discussion">
+                              <b> Discussion: </b><div markdown="discussion"></div>
+                              <br />
+                            </span>
+                          </div>
+                          <div class="col-sm-2">
+                            <div class="row">
+                              <div class="col-md-12">
+                                <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(item, 'patient_consultation')"></i>
+                              </div>
+                            </div>
+                            <div class="row content-offset-10">
+                              <div class="col-md-12">
+                                <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".consultation-timeline-data-[[ $index ]]"></i>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% include "inline_forms/patient_consultation.html" %}
           </div>
         </div>
       </tab>

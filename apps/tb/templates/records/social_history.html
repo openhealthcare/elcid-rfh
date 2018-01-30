@@ -1,36 +1,79 @@
-<span ng-show="item.notes">
-    [[ item.notes ]]
-   <br />
-</span>
-<span ng-show="item.drinking">
-    [[ item.drinking ]]
-   <br />
-</span>
-<span ng-show="item.alcohol_dependent">
-     Alcohol Dependent
-   <br />
-</span>
-<span ng-show="item.smoking">
-    [[ item.smoking ]]
-   <br />
-</span>
-<span ng-show="item.occupation">
-    [[ item.occupation ]]
-   <br />
-</span>
-<span ng-show="item.homelessness">
-    [[ item.homelessness ]]
-   <br />
-</span>
-<span ng-show="item.intravenous_drug_use">
-    [[ item.intravenous_drug_use ]]
-   <br />
-</span>
-<span ng-show="item.incarceration">
-    [[ item.incarceration ]]
-   <br />
-</span>
-<span ng-show="item.arrival_in_the_uk">
-    [[ item.arrival_in_the_uk ]]
-   <br />
-</span>
+
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Alcohol
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.drinking ]]
+      <span ng-show="item.alcohol_dependent">
+        (dependent)
+      </span>
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Smoking
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.smoking ]]
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Intravenous Drug Use
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.intravenous_drug_use ]]
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Incarceration
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.incarceration ]]
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Homelessness
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.homelessness ]]
+    </p>
+  </div>
+</div>
+<div ng-show="item.occupation.length" class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Occupation
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.occupation ]]
+    </p>
+  </div>
+</div>
+
+<div class="row">
+  <div ng-show="item.arrival_in_the_uk" class="form-group">
+    <label class="control-label col-sm-4">
+      Arrival In The Uk
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.arrival_in_the_uk ]]
+    </p>
+  </div>
+</div>
