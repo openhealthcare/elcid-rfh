@@ -24,6 +24,24 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
   };
 });
 
+directives.directive("upstreamBloodCultureResultDisplay", function(UpstreamBloodCultureLoader){
+  return {
+    restrict: 'A',
+    scope: true,
+    link : function($scope, $element){
+      $scope.culture_order = [];
+      $scope.cultures = {}
+      $scope.loadBloodCultures = function(){
+        UpstreamBloodCultureLoader.load($scope.patient.id).then(function(bc_results){
+          $scope.bc_results = bc_results;
+        });
+      }
+
+      $scope.loadBloodCultures();
+    }
+  };
+});
+
 
 directives.directive("sparkLine", function () {
   "use strict";

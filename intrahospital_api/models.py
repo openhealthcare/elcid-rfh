@@ -17,3 +17,14 @@ class ExternalDemographics(PatientSubrecord):
     date_of_birth = models.DateField(null=True, blank=True)
     sex = ForeignKeyOrFreeText(omodels.Gender)
     ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
+
+
+class PatientLoad(PatientSubrecord):
+    RUNNING = "running"
+    FAILURE = "failure"
+
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )

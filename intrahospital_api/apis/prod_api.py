@@ -12,8 +12,17 @@ from django.conf import settings
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
-ALL_DATA_QUERY = "SELECT * FROM {view} WHERE Patient_Number = \
+ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
+
+ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
+@hospital_number AND last_updated > @since and Result_ID = @lab_number ORDER BY last_updated DESC;"
+
+ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
+@hospital_number AND last_updated > @since and OBR_exam_code_Text = @test_type ORDER BY last_updated DESC;"
+
+ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since"
+
 
 ETHNICITY_MAPPING = {
     "99": "Other - Not Known",
@@ -35,15 +44,6 @@ ETHNICITY_MAPPING = {
     "S": "Other - Any Other Ethnic Group",
     "Z": "Other - Not Stated",
 }
-
-COMMON_TRANSLATIONS = dict(
-    hospital_number="Patient_Number",
-    external_identifier="Result_ID",
-    lab_test_name="OBR_exam_code_Text",
-    observation_name="OBX_exam_code_Text",
-    observation_number="OBX_id",
-    datetime_received="Reported_date"
-)
 
 
 def error_handler(f):
@@ -105,8 +105,9 @@ class Row(object):
         'test_code',
         'test_name',
         'datetime_ordered',
-        'datetime_received',
         'external_identifier',
+        'site',
+        'clinical_info',
     ]
 
     OBSERVATION_FIELDS = [
@@ -141,7 +142,7 @@ class Row(object):
 
     # Demographics Fields
     def get_hospital_number(self):
-        return self.db_row.get(COMMON_TRANSLATIONS['hospital_number'])
+        return self.db_row.get("Patient_Number")
 
     def get_nhs_number(self):
         return self.get_or_fallback(
@@ -191,27 +192,37 @@ class Row(object):
         else:
             return lmodels.LabTest.PENDING
 
-    def get_datetime_received(self):
-        return to_datetime_str(self.db_row.get(COMMON_TRANSLATIONS['datetime_received']))
+    def get_site(self):
+        site = self.db_row.get('Specimen_Site')
+        if "^" in site and "-" in site:
+            return site.split("^")[1].strip().split("-")[0].strip()
+        return site
+
+    def get_clinical_info(self):
+        return self.db_row.get('Relevant_Clinical_Info')
 
     def get_test_code(self):
         return self.db_row.get('OBX_exam_code_ID')
 
     def get_test_name(self):
-        return self.db_row.get(COMMON_TRANSLATIONS['lab_test_name'])
+        return self.db_row.get("OBR_exam_code_Text")
 
     def get_external_identifier(self):
-        return self.db_row.get(COMMON_TRANSLATIONS['external_identifier'])
+        return self.db_row.get("Result_ID")
 
     def get_datetime_ordered(self):
-        return to_datetime_str(self.db_row.get("Request_Date"))
+        return to_datetime_str(
+            self.db_row.get(
+                "Observation_date", self.db_row.get("Request_Date")
+            )
+        )
 
     # fields of the individual observations within the lab test
     def get_observation_number(self):
-        return self.db_row.get(COMMON_TRANSLATIONS['observation_number'])
+        return self.db_row.get("OBX_id")
 
     def get_observation_name(self):
-        return self.db_row.get(COMMON_TRANSLATIONS['observation_name'])
+        return self.db_row.get("OBX_exam_code_Text")
 
     def get_observation_value(self):
         return self.db_row.get('Result_Value')
@@ -220,7 +231,9 @@ class Row(object):
         return self.db_row.get("Result_Units")
 
     def get_observation_datetime(self):
-        return to_datetime_str(self.db_row.get("Date_of_the_Observation"))
+        dt = self.db_row.get("Observation_date")
+        dt = dt or self.db_row.get("Request_Date")
+        return to_datetime_str(dt)
 
     def get_reference_range(self):
         return self.db_row.get("Result_Range")
@@ -291,8 +304,20 @@ class ProdApi(base_api.BaseApi):
         return DEMOGRAPHICS_QUERY.format(view=self.view)
 
     @property
-    def all_data_query(self):
-        return ALL_DATA_QUERY.format(view=self.view)
+    def all_data_for_hospital_number_query(self):
+        return ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER.format(view=self.view)
+
+    @property
+    def all_data_since_query(self):
+        return ALL_DATA_SINCE.format(view=self.view)
+
+    @property
+    def all_data_query_for_lab_number(self):
+        return ALL_DATA_QUERY_WITH_LAB_NUMBER.format(view=self.view)
+
+    @property
+    def all_data_query_for_lab_test_type(self):
+        return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(view=self.view)
 
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
@@ -312,26 +337,34 @@ class ProdApi(base_api.BaseApi):
 
         return Row(rows[0]).get_demographics_dict()
 
-    def raw_data(self, hospital_number, **filter_kwargs):
+    def raw_data(self, hospital_number, lab_number=None, test_type=None):
         """ not all data, I lied. Only the last year's
         """
         db_date = to_db_date(datetime.date.today() - datetime.timedelta(365))
-        rows = self.execute_query(
-            self.all_data_query,
-            params=dict(hospital_number=hospital_number, since=db_date)
-        )
 
-        if not filter_kwargs:
-            return rows
-
-        result = []
-
-        for row in rows:
-            for k, v in filter_kwargs.items():
-                if row[k] == v:
-                    result.append(row)
-
-        return result
+        if lab_number:
+            return self.execute_query(
+                self.all_data_query_for_lab_number,
+                params=dict(
+                    hospital_number=hospital_number,
+                    since=db_date,
+                    lab_number=lab_number
+                )
+            )
+        if test_type:
+            return self.execute_query(
+                self.all_data_query_for_lab_test_type,
+                params=dict(
+                    hospital_number=hospital_number,
+                    since=db_date,
+                    test_type=test_type
+                )
+            )
+        else:
+            return self.execute_query(
+                self.all_data_for_hospital_number_query,
+                params=dict(hospital_number=hospital_number, since=db_date)
+            )
 
     def cooked_data(self, hospital_number):
         raw_data = self.raw_data(hospital_number)
@@ -356,23 +389,13 @@ class ProdApi(base_api.BaseApi):
             result.append(lab_test)
         return result
 
-    def translate_filter_kwargs(self, some_filters):
-        if set(some_filters.keys()) - set(COMMON_TRANSLATIONS.keys()):
-            raise ValueError("You can only filter by {}".format(
-                COMMON_TRANSLATIONS.keys())
-            )
-        return {COMMON_TRANSLATIONS[k]: v for k, v in some_filters}
-
-    def results_for_hospital_number(self, hospital_number, **filter_kwargs):
+    def results_for_hospital_number(self, hospital_number):
         """
             returns all the results for a particular person
 
             aggregated into labtest: observations([])
         """
-        raw_filter_kwargs = self.translate_filter_kwargs(filter_kwargs)
 
-        raw_rows = self.raw_data(
-            hospital_number, **raw_filter_kwargs
-        )
+        raw_rows = self.raw_data(hospital_number)
         rows = (Row(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)

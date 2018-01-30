@@ -1,15 +1,16 @@
 import datetime
 from operator import itemgetter
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
-from django.http import Http404
-from intrahospital_api import get_api
+from django.db.models import Q
+from intrahospital_api import loader
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
 from elcid import models as emodels
+from lab import models as lmodels
 from elcid.utils import timing
 
 
@@ -147,6 +148,10 @@ class LabTestJsonDumpView(LoginRequiredViewset):
     @patient_from_pk
     def retrieve(self, request, patient):
         lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
+        lab_tests = lmodels.LabTest.objects.filter(
+            Q(lab_test_type=emodels.UpstreamBloodCulture.get_display_name) |
+            Q(lab_test_type=emodels.UpstreamLabTest.get_display_name)
+        )
         lab_tests = sorted(lab_tests, key=lambda x: x.extras.get("test_name"))
         return json_response(
             dict(
@@ -204,10 +209,10 @@ class LabTestResultsView(LoginRequiredViewset):
 
     def is_empty_value(self, observation_value):
         """ we don't care about empty strings or
-            ' - '
+            ' - ' or ' # '
         """
         if isinstance(observation_value, str):
-            return not observation_value.strip().strip("-").strip()
+            return not observation_value.strip().strip("-").strip("#").strip()
         else:
             return observation_value is None
 
@@ -399,6 +404,71 @@ class LabTestSummaryApi(LoginRequiredViewset):
         return json_response(result)
 
 
+class UpstreamBloodCultureApi(viewsets.ViewSet):
+    """
+        for every upstream blood culture, return them grouped by
+
+        datetimes_ordered as a date,
+        lab_number
+        observation name
+    """
+    base_name = "upstream_blood_culture_results"
+
+    def no_growth_observations(self, observations):
+        """
+            We are looking for observations that looks like the below.
+            Its not necessarily 5 days, sometimes its e.g. 48 hours.
+            Otherwise they always look like the below.
+
+            Aerobic bottle culture: No growth after 5 days of incubation
+            Anaerobic bottle culture: No growth after 5 days of incubation
+
+            The are always of the type Aerobic bottle culture
+        """
+        obs_names = ["Aerobic bottle culture", "Anaerobic bottle culture"]
+
+        bottles = [
+            o for o in observations if o["observation_name"] in obs_names
+        ]
+
+        return len(bottles) == 2
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        """
+            returns any observations with Aerobic or Anaerobic in their name
+        """
+        lab_tests = patient.labtest_set.filter(
+            lab_test_type=emodels.UpstreamBloodCulture.get_display_name()
+        ).order_by("external_identifier").order_by("-datetime_ordered")
+        lab_tests = [i.dict_for_view(request.user) for i in lab_tests]
+        for lab_test in lab_tests:
+            observations = []
+            lab_test["no_growth"] = self.no_growth_observations(
+                lab_test["observations"]
+            )
+
+            for observation in lab_test["observations"]:
+                ob_name = observation["observation_name"].lower()
+
+                if "aerobic" in ob_name:
+                    # we don't care about comments we just care abou
+                    observations.append(observation)
+
+            lab_test["observations"] = sorted(
+                observations, key=lambda x: x["observation_name"]
+            )
+            if lab_test["extras"]["clinical_info"]:
+                lab_test["extras"]["clinical_info"] = "{}{}".format(
+                    lab_test["extras"]["clinical_info"][0].upper(),
+                    lab_test["extras"]["clinical_info"][1:]
+                )
+
+        return json_response(dict(
+            lab_tests=lab_tests
+        ))
+
+
 class BloodCultureResultApi(viewsets.ViewSet):
     base_name = 'blood_culture_results'
 
@@ -526,8 +596,7 @@ class DemographicsSearch(LoginRequiredViewset):
             ))
         else:
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                api = get_api()
-                demographics = api.demographics(hospital_number)
+                demographics = loader.load_demographics()
 
                 if demographics:
                     return json_response(dict(
@@ -539,6 +608,9 @@ class DemographicsSearch(LoginRequiredViewset):
 
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
+elcid_router.register(
+    UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
+)
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 
 lab_test_router = OPALRouter()

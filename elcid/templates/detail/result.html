@@ -29,14 +29,19 @@
                     </span>
                   </div>
                   <div class="col-sm-9">
-                    <div class="row content-offset-below-10" ng-show="labTest.by_observations[observation_name][obsDate].observation_value.replace('-', '').trim().length" ng-repeat="observation_name in labTest.observation_names">
+                    <div class="row content-offset-below-10" ng-if="resultView.isPopulated(labTest.by_observations[observation_name][obsDate])" ng-repeat="observation_name in labTest.observation_names">
                       <div class="col-md-3">
                         [[ observation_name ]]
                       </div>
                       <div class="col-md-9">
-                        <p ng-repeat="par_obs in labTest.by_observations[observation_name][obsDate].observation_value.split('~') track by $index">
-                          [[ par_obs ]]
+                        <p ng-if="resultView.isNumber(labTest.by_observations[observation_name][obsDate].observation_value)">
+                          [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
                         </p>
+                        <span ng-if="!resultView.isNumber(labTest.by_observations[observation_name][obsDate].observation_value)">
+                          <p ng-repeat="par_obs in resultView.splitObservation(labTest.by_observations[observation_name][obsDate]) track by $index">
+                            [[ par_obs ]]
+                          </p>
+                        </span>
                       </div>
                     </div>
                   </div>

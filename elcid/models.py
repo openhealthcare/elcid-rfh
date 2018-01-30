@@ -6,7 +6,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from intrahospital_api import get_api
 from lab import models as lmodels
 import opal.models as omodels
 
@@ -89,7 +88,7 @@ class Location(EpisodeSubrecord):
 class UpstreamLabTest(lmodels.ReadOnlyLabTest):
     # these fields we will save as extras when we
     # update from dict
-    convert_to_extras = ['test_code', 'test_name']
+    convert_to_extras = ['test_code', 'test_name', 'site', 'clinical_info']
 
     class Meta:
         verbose_name = "Upstream Lab Test"
@@ -97,17 +96,6 @@ class UpstreamLabTest(lmodels.ReadOnlyLabTest):
     @classmethod
     def get_api_name(cls):
         return "upstream_lab_test"
-
-    @classmethod
-    def refresh_lab_tests(cls, patient, user):
-        cls.objects.filter(patient=patient).delete()
-        api = get_api()
-        hospital_number = patient.demographics_set.first().hospital_number
-        results = api.results_for_hospital_number(hospital_number)
-        for result in results:
-            result["patient_id"] = patient.id
-            hl7_result = cls()
-            hl7_result.update_from_dict(result, user)
 
     def to_dict(self, user):
         """
@@ -174,6 +162,33 @@ class UpstreamLabTest(lmodels.ReadOnlyLabTest):
             datetime_ordered__gt=six_months_ago
         ).order_by("datetime_ordered")
         return [i for i in qs if i.extras.get("test_name") in relevent_tests]
+
+
+class UpstreamBloodCulture(UpstreamLabTest):
+    """ Upstream blood cultures are funny beasts
+
+    Observation types that have previously existed
+    are...
+
+    	* Aerobic bottle culture
+        * Aerobic Bottle: Microscopy
+        * Anaerobic bottle culture
+        * Anaerobic Bottle: Microscopy
+
+        * Blood Culture
+        * Reference Lab. Comment
+        * Reference Lab. Name
+        * Comments
+
+    Of these Blood Culture needs some tweaking
+    """
+
+    class Meta:
+        verbose_name = "Upstream Blood Culture"
+
+    @classmethod
+    def get_api_name(cls):
+        return "upstream_blood_culture"
 
 
 class InfectionSource(lookuplists.LookupList):
