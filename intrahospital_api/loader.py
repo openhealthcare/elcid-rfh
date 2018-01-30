@@ -61,7 +61,7 @@ def load_in_lab_tests(
 ):
     api = get_api()
     results = api.results_for_hospital_number(hospital_number)
-    emodels.save_lab_tests(patient, results, user)
+    save_lab_tests(patient, results, user)
 
 
 def save_lab_tests(patient, results, user):
