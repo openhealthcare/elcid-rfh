@@ -5,10 +5,13 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-9">
             <h3>
               Lab Tests <i class="fa fa-flask"></i>
             </h3>
+          </div>
+          <div class="text-right col-md-3">
+            <input class="form-control" placeholder="Filter" ng-change="resultView.filter(resultView.filterString)" ng-model="resultView.filterString" />
           </div>
         </div>
       </div>

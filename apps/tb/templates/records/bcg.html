@@ -1,27 +1,29 @@
-<div class="row">
-  <div class="form-group">
-    <label class="control-label col-sm-4">
-      Date Of BCG
-    </label>
-    <p class="form-control-static col-sm-8">
-      [[ item.date_of_bcg | shortDate ]]
-    </p>
+<span ng-show="item.consistency_token">
+  <div class="row">
+    <div class="form-group">
+      <label class="control-label col-sm-4">
+        Date Of BCG
+      </label>
+      <p class="form-control-static col-sm-8">
+        [[ item.date_of_bcg | shortDate ]]
+      </p>
+    </div>
   </div>
-</div>
-<div class="row">
-  <div class="form-group">
-    <label class="control-label col-sm-4">
-      History Of Bcg
-    </label>
-    <p class="form-control-static col-sm-8">
-      [[ item.history_of_bcg ]] <br />
-      <span ng-show="item.red_book_documentation_of_bcg_seen">
-        Red Book of Documentation of BCG Seen
-        <br />
-      </span>
-      <span ng-show="item.bcg_scar">
-        BCG Scar seen
-      </span>
-    </p>
+  <div class="row">
+    <div class="form-group">
+      <label class="control-label col-sm-4">
+        History Of Bcg
+      </label>
+      <p class="form-control-static col-sm-8">
+        [[ item.history_of_bcg ]] <br />
+        <span ng-show="item.red_book_documentation_of_bcg_seen">
+          Red Book of Documentation of BCG Seen
+          <br />
+        </span>
+        <span ng-show="item.bcg_scar">
+          BCG Scar seen
+        </span>
+      </p>
+    </div>
   </div>
-</div>
+</span>

@@ -15,8 +15,12 @@
               </div>
               <div class="panel-body">
                 <div class="row">
-                  <div class="col-md-6">
+                  <div ng-show="episode.stage" class="col-md-6">
+
                     <b>[[ episode.stage ]]:</b>
+                  </div>
+                  <div ng-show="!episode.stage" class="col-md-6">
+                    New Contact
                   </div>
                   <div class="col-md-6">
                     <span ng-repeat="item in episode.referral_route">

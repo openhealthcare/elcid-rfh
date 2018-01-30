@@ -1,12 +1,20 @@
 angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
   function(step, scope, episode, recordLoader, $window) {
+
+    if(_.isArray(scope.editing.symptom_complex)){
+      if(!scope.editing.symptom_complex.length){
+        scope.editing.symptom_complex = {}
+      }
+      else{
+        scope.editing.symptom_complex = _.first(scope.editing.symptom_complex);
+      }
+    }
+
     if(!scope.editing.symptom_complex){
       scope.editing.symptom_complex = {};
     }
 
-     if(_.isArray(scope.editing.symptom_complex)){
-       scope.editing.symptom_complex = _.first(scope.editing.symptom_complex);
-     }
+
 
      if(!scope.editing.symptom_complex.symptoms){
        scope.editing.symptom_complex.symptoms = [];
