@@ -8,8 +8,6 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from intrahospital_api import get_api
 from lab import models as lmodels
-
-
 import opal.models as omodels
 
 from opal.models import (
@@ -501,7 +499,8 @@ class FinalDiagnosis(EpisodeSubrecord):
     hcai_related = models.BooleanField(verbose_name="HCAI related", default=False)
 
 
-class ImagingTypes(lookuplists.LookupList): pass
+class ImagingTypes(lookuplists.LookupList):
+    pass
 
 
 class Imaging(EpisodeSubrecord):
@@ -520,6 +519,18 @@ class PositiveBloodCultureHistory(PatientSubrecord):
     def _get_field_default(cls, name):
         # this should not be necessary...
         return None
+
+
+class ReferralRoute(omodels.ReferralRoute):
+    pass
+
+
+class SymptomComplex(omodels.SymptomComplex):
+    pass
+
+
+class PastMedicalHistory(omodels.PastMedicalHistory):
+    pass
 
 
 # method for updating

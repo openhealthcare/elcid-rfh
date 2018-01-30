@@ -13,14 +13,14 @@ class TbPlugin(plugins.OpalPlugin):
     urls = urlpatterns
     javascripts = {
         # Add your javascripts here!
-        'opal.tb': [
+        'opal.controllers': [
             # 'js/tb/app.js',
-            # 'js/tb/controllers/larry.js',
+            'js/tb/controllers/tb_symptom_complex.js',
             # 'js/tb/services/larry.js',
         ]
     }
     menuitems = [
-            menus.MenuItem(
+        menus.MenuItem(
             href='/pathway/#/add_tb_patient',
             display='Add TB Patient',
             icon='fa fa-coffee',

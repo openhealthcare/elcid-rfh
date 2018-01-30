@@ -1,4 +1,42 @@
 {
+  "referraltype": [
+    {
+      "synonyms": [],
+      "name": "Anti TNF treatment"
+    },
+    {
+      "synonyms": [],
+      "name": "BCG vaccination"
+    },
+    {
+      "synonyms": [],
+      "name": "New entrant screening"
+    },
+    {
+      "synonyms": [],
+      "name": "Positive test"
+    },
+    {
+      "synonyms": [],
+      "name": "Referred by GP"
+    },
+    {
+      "synonyms": [],
+      "name": "Self referral"
+    },
+    {
+      "synonyms": [],
+      "name": "Symptomatic"
+    },
+    {
+      "synonyms": [],
+      "name": "TB contact screening"
+    },
+    {
+      "synonyms": [],
+      "name": "Transferred"
+    }
+  ],
   "line_removal_reason": [
     {
       "synonyms": [],
@@ -1939,6 +1977,10 @@
     },
     {
       "synonyms": [],
+      "name": "Chills"
+    },
+    {
+      "synonyms": [],
       "name": "Collapse"
     },
     {
@@ -1955,7 +1997,11 @@
     },
     {
       "synonyms": [],
-      "name": "Cough"
+      "name": "Cough (Dry)"
+    },
+    {
+      "synonyms": [],
+      "name": "Cough (Productive)"
     },
     {
       "synonyms": [],
@@ -1978,6 +2024,10 @@
         "Difficulty Swallowing"
       ],
       "name": "Dysphagia"
+    },
+    {
+      "synonyms": [],
+      "name": "Dysponea"
     },
     {
       "synonyms": [
@@ -2008,6 +2058,10 @@
     {
       "synonyms": [],
       "name": "Erythema"
+    },
+    {
+      "synonyms": [],
+      "name": "Facial Pain"
     },
     {
       "synonyms": [],
@@ -2092,6 +2146,10 @@
     {
       "synonyms": [],
       "name": "Loin Pain"
+    },
+    {
+      "synonyms": [],
+      "name": "Loss of Appetite"
     },
     {
       "synonyms": [],
@@ -7211,7 +7269,6 @@
       "name": "X-Ray"
     }
   ],
-  "referraltype": [],
   "micro_test_hepititis_b_serology": [
     {
       "synonyms": [

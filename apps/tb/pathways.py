@@ -2,13 +2,14 @@
 Pathways for the TB service
 """
 from django.db import transaction
-from opal.core.pathway import pathways
+from opal.core.pathway import pathways, Step
 
-from elcid.models import Antimicrobial
+from elcid import models
 from elcid.pathways import AddPatientPathway
 
 from apps.tb.patient_lists import TbPatientList
-from apps.tb.models import SocialHistory, PatientConsultation
+from apps.tb import models as tb_models
+
 
 class AddTbPatientPathway(AddPatientPathway):
     display_name = "Add TB Patient"
@@ -42,18 +43,34 @@ class TBConsultationPathway(pathways.PagePathway):
     slug = "initial_assessment"
 
     steps = [
-        SocialHistory,
-#        Antimicrobial,
-        # What I want here is an always empty form which appends to the total patient
-        # consultations and does not delete others. I have no idea how to achieve that.
-#        pathways.Step(model=PatientConsultation, delete_others=False, multiple=False)
+        pathways.Step(
+            template="pathway/steps/demographics_panel.html",
+            icon="fa fa-user",
+            display_name="Demographics"
+        ),
+        models.ReferralRoute,
+        tb_models.ContactDetails,
+        Step(
+            model=models.SymptomComplex,
+            template="pathway/steps/symptom_complex.html",
+            step_controller="TbSymptomComplexCrtl",
+            multiple=False,
+            help_text=""
+        ),
+        Step(
+            model=tb_models.TBHistory,
+            template="pathway/steps/tb_history.html",
+        ),
+
+        tb_models.SocialHistory,
+        # Antimicrobials need to be added
     ]
 
+    @transaction.atomic
     def save(self, data, user, patient=None, episode=None):
         p, e = super(TBConsultationPathway, self).save(
             data, user, patient=patient, episode=episode
         )
-        if e.stage is None:
-            e.stage = "New Contact"
-        e.category.advance_stage()
+        e.set_stage(e.category.NEW_REFERRAL, user, None)
+
         return p, e

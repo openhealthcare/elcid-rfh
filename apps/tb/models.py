@@ -24,7 +24,44 @@ class SocialHistory(models.EpisodeSubrecord):
         verbose_name="Year of arrival"
     )
 
-class PatientConsultation(models.PatientConsultation): pass
+
+class PatientConsultation(models.PatientConsultation):
+    pass
+
+
+class ContactDetails(models.PatientSubrecord):
+    _is_singleton = True
+    _advanced_searchable = False
+    _icon = 'fa fa-phone'
+    _title = 'Contact Details'
+
+    telephone = fields.CharField(blank=True, null=True, max_length=50)
+    address = fields.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name_plural = "Contact details"
+
+
+class TBHistory(models.PatientSubrecord):
+    _icon = 'fa fa-clock-o'
+    _title = "History of TB"
+    _is_singleton = True
+    personal_history_of_tb = fields.TextField(blank=True, null=True, verbose_name="Personal History of TB")
+    date_of_previous_tb_infection = fields.CharField(max_length=255, blank=True, null=True, verbose_name="Date of Previous TB")
+    other_tb_contact = fields.TextField(blank=True, null=True, verbose_name="Other TB Contact")
+    date_of_other_tb_contact = fields.CharField(max_length=255, blank=True, null=True, verbose_name="Date of TB Contact")
+
+
+class BCG(models.PatientSubrecord):
+    _icon = 'fa fa-asterisk'
+    _title = "BCG"
+    _is_singleton = True
+    history_of_bcg = fields.CharField(max_length=255, blank=True, null=True, verbose_name="History Of BCG")
+    date_of_bcg = fields.DateField(blank=True, null=True, verbose_name="Date Of BCG")
+    bcg_scar = fields.BooleanField(default=False, verbose_name="BCG Scar")
+    red_book_documentation_of_bcg_seen = fields.BooleanField(default=False, verbose_name="Red Book Documentation of BCG Seen")
+
+
 
 
 # class TBHistory(models.PatientSubrecord):
