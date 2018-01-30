@@ -1,16 +1,41 @@
-<span ng-show="item.personal_history_of_tb">
-    [[ item.personal_history_of_tb ]]
-   <br />
-</span>
-<span ng-show="item.date_of_previous_tb_infection">
-    [[ item.date_of_previous_tb_infection ]]
-   <br />
-</span>
-<span ng-show="item.other_tb_contact">
-    [[ item.other_tb_contact ]]
-   <br />
-</span>
-<span ng-show="item.date_of_other_tb_contact">
-    [[ item.date_of_other_tb_contact ]]
-   <br />
-</span>
+<div ng-show="item.date_of_previous_tb_infection" class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Date Of Previous Tb Infection
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.date_of_previous_tb_infection ]]
+    </p>
+  </div>
+</div>
+<div ng-show="item.personal_history_of_tb" class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Personal History Of Tb
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.personal_history_of_tb ]]
+    </p>
+  </div>
+</div>
+<div ng-show="item.other_tb_contact.length" class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Other Tb Contact
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.other_tb_contact ]]
+    </p>
+  </div>
+</div>
+
+<div ng-show="item.date_of_other_tb_contact.length" class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Date Of Other Tb Contact
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.date_of_other_tb_contact ]]
+    </p>
+  </div>
+</div>
