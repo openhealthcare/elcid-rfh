@@ -1,46 +1,65 @@
 {% load panels %}
 {% load forms %}
-
 <div class="row">
-  <div class="col-md-6">
+  <div class="col-md-12">
+    <tabset justified="true">
+      <tab heading="Patient Overview">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="panel panel-active">
+              <div class="panel-heading">
+                <h3>
+                  {% icon "fa-user" %}
+                  Status
+                </h3>
+              </div>
+              <div class="panel-body">
+                <b>[[ episode.stage ]]</b>
+              </div>
+            </div>
+            {% include "panels/risk_factors.html" %}
 
-    <div class="panel panel-active">
-      <div class="panel-heading">
-        <h3>
-          {% icon "fa-user" %}
-          Status
-        </h3>
-      </div>
-      <div class="panel-body">
-        <b>[[ episode.stage ]]</b>
-      </div>
-    </div>
+          </div>
+          <div class="col-md-6">
+            <div class="panel panel-active">
+              <div class="panel-heading">
+                <h3>Forms</h3>
+              </div>
+              <div class="panel-body">
+                <center>
+                  <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]"
+                     class="btn btn-primary">
+                    Initial Assessment
+                  </a>
+                </center>
+              </div>
+            </div>
+            <div ng-show="episode.antimicrobial.length > 0">
+              {% record_panel models.Antimicrobial %}
+            </div>
+          </div>
+        </div>
 
-    {% include "panels/risk_factors.html" %}
-
-  </div>
-  <div class="col-md-6">
-    <div class="panel panel-active">
-      <div class="panel-heading">
-        <h3>Actions</h3>
-      </div>
-      <div class="panel-body">
-        <center>
-          <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]"
-             class="btn btn-primary">
-            Initial Assessment
-          </a>
-        </center>
-      </div>
-    </div>
-    <div ng-show="episode.antimicrobial.length > 0">
-      {% record_panel models.Antimicrobial %}
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-md-6 col-md-offset-3">
-    {% record_timeline models.PatientConsultation 'when' %}
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3">
+            {% record_timeline models.PatientConsultation 'when' %}
+          </div>
+        </div>
+      </tab>
+      <tab heading="Detailed History">
+        <div class="row">
+          <div class="col-md-8">
+            {% record_panel models.ContactDetails %}
+            {% record_panel models.ReferralRoute %}
+            {% record_panel models.PastMedicalHistory %}
+            {% record_panel models.SymptomComplex %}
+            {% record_panel models.SocialHistory %}
+            {% record_panel models.BCG %}
+            {% record_panel models.TBHistory %}
+            {% record_timeline models.PatientConsultation "when" %}
+          </div>
+        </div>
+      </tab>
+    </tabset>
   </div>
 </div>
