@@ -172,6 +172,8 @@ INSTALLED_APPS = (
     'djcelery',
 )
 
+#### API Settings
+
 # The intrahospital api is what we use to connect to the rest of the hospital
 INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
@@ -196,6 +198,10 @@ ADD_PATIENT_DEMOGRAPHICS = True
 
 # after we've added a patient, should we load in the labtests?
 ADD_PATIENT_LAB_TESTS = True
+
+#### END API Settings
+
+
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
