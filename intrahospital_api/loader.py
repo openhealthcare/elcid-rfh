@@ -27,7 +27,10 @@ def load_patient(patient, user):
         state=models.PatientLoad.RUNNING
     )
     try:
-        _load_patient(patient, user)
+        if settings.ASYNC_API:
+            async_load(patient, user)
+        else:
+            _load_patient(patient, user)
     except:
         patient_load.state = models.PatientLoad.FAILURE
         patient_load.save()
