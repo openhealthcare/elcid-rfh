@@ -68,7 +68,7 @@ class PatientAdmin(OldPatientAdmin):
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
-            loader.async_load(patient, request.user)
+            loader.load_patient(patient, request.user, async=False)
 
     def upstream_lab_results(self, obj):
         hospital_number = obj.demographics_set.first().hospital_number
@@ -85,7 +85,6 @@ class PatientAdmin(OldPatientAdmin):
             )
         )
         return format_html("<a href='{url}'>{url}</a>", url=url)
-
 
     refresh_lab_tests.short_description = "Load in lab tests from upstream"
 

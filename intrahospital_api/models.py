@@ -22,6 +22,7 @@ class ExternalDemographics(PatientSubrecord):
 class PatientLoad(PatientSubrecord):
     RUNNING = "running"
     FAILURE = "failure"
+    SUCCESS = "success"
 
     state = models.CharField(
         max_length=255,

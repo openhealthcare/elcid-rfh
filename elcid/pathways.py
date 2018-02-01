@@ -76,11 +76,10 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         """
         if not patient:
             demographics = data.get("demographics")
-            hospital_number = demographics[0]["hospital_number"]
             patient = omodels.Patient.objects.create()
 
             if settings.ADD_PATIENT_LAB_TESTS:
-                loader.load_in_lab_tests(patient, hospital_number, user)
+                loader.load_patient(patient, user)
 
         if not episode:
             episode = patient.create_episode()

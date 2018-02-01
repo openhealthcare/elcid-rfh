@@ -21,13 +21,14 @@ def load_demographics(hospital_number):
     return api.demographics(hospital_number)
 
 
-def load_patient(patient, user):
+def load_patient(patient, user, async=settings.ASYNC_API):
+    import ipdb; ipdb.set_trace()
     patient_load = models.PatientLoad.objects.create(
         patient=patient,
         state=models.PatientLoad.RUNNING
     )
     try:
-        if settings.ASYNC_API:
+        if async:
             async_load(patient, user)
         else:
             _load_patient(patient, user)
@@ -36,7 +37,8 @@ def load_patient(patient, user):
         patient_load.save()
         raise
     else:
-        patient_load.delete()
+        patient_load.state = models.PatientLoad.SUCCESS
+        patient_load.save()
 
 
 def async_load(patient, user):
