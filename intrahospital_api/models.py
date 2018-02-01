@@ -19,7 +19,7 @@ class ExternalDemographics(PatientSubrecord):
     ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
 
 
-class PatientLoad(PatientSubrecord):
+class InitialPatientLoad(PatientSubrecord):
     """ this model is the initial load of a patient
         future loads are done by the cron batch load
     """
