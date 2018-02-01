@@ -22,7 +22,6 @@ def load_demographics(hospital_number):
 
 
 def load_patient(patient, user, async=settings.ASYNC_API):
-    import ipdb; ipdb.set_trace()
     patient_load = models.PatientLoad.objects.create(
         patient=patient,
         state=models.PatientLoad.RUNNING

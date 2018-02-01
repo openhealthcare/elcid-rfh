@@ -20,6 +20,9 @@ class ExternalDemographics(PatientSubrecord):
 
 
 class PatientLoad(PatientSubrecord):
+    """ this model is the initial load of a patient
+        future loads are done by the cron batch load
+    """
     RUNNING = "running"
     FAILURE = "failure"
     SUCCESS = "success"
