@@ -360,7 +360,7 @@ def restart_supervisord(new_env):
     print("Restarting supervisord")
     # warn only in case nothing is running
     with settings(warn_only=True):
-        local("pkill super; pkill gunic; pkill")
+        local("pkill super; pkill gunic; pkill celery;")
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
     local("{0}/bin/supervisord -c {1}/etc/production.conf".format(
