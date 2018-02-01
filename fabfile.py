@@ -164,8 +164,8 @@ def pip_create_virtual_env(new_env):
 def pip_install_requirements(new_env, proxy):
     print("Installing requirements")
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
-    local("{0} install pip==9.0.1 --proxy {1}".format(pip, proxy))
-    local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
+    local("{0} install pip==9.0.1 --index-url https://pypi.python.org/simple/".format(pip))
+    local("{0} install -r requirements.txt".format(pip))
 
 
 def pip_set_project_directory(some_env):
