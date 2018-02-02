@@ -209,18 +209,17 @@ class RowTestCase(OpalTestCase):
 
     def test_get_date_of_birth(self):
         dt = datetime(2017, 10, 1)
-        expected = dt.date()
         row = self.get_row(
             CRS_DOB=dt
         )
-        self.assertEqual(row.get_date_of_birth(), expected)
+        self.assertEqual(row.get_date_of_birth(), "01/10/2017")
 
         row = self.get_row(
             CRS_DOB="",
             date_of_birth=dt
         )
 
-        self.assertEqual(row.get_date_of_birth(), expected)
+        self.assertEqual(row.get_date_of_birth(), "01/10/2017")
 
     def test_get_title(self):
         expected = "Ms"
@@ -246,7 +245,7 @@ class RowTestCase(OpalTestCase):
             'title': '',
             'sex': 'Female',
             'hospital_number': u'20552710',
-            'date_of_birth': date(1980, 10, 10),
+            'date_of_birth': '10/10/1980',
             'external_system': 'RFH Demographics',
             'ethnicity': 'Mixed - White and Black Caribbean'
         }
