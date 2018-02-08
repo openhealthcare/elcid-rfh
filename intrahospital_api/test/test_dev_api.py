@@ -66,25 +66,6 @@ class DevApiTestCase(OpalTestCase):
         self.assertTrue(bool(some_val))
         self.assertTrue(isinstance(some_val, float))
 
-    def test_create_lab_test(self):
-        dt = datetime.datetime(2017, 1, 1, 1, 1)
-        lab_test = self.api.create_lab_test(
-            "B12 AND FOLATE SCREEN",
-            dt
-        )
-        self.assertEqual(
-            lab_test["lab_test_type"], emodels.UpstreamLabTest.get_display_name()
-        )
-        self.assertEqual(
-            lab_test["status"], lmodels.LabTest.COMPLETE
-        )
-        self.assertEqual(
-            lab_test["datetime_ordered"], '01/01/2017 01:01:00'
-        )
-        self.assertEqual(
-            len(lab_test["observations"]), 2
-        )
-
     def test_cooked_data(self):
         cooked_data = self.api.cooked_data("q2343424")
         self.assertTrue(len(cooked_data) > 1)

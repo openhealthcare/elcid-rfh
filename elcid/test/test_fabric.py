@@ -922,6 +922,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_local_settings")
+    @mock.patch("fabfile.services_create_celery_conf")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
@@ -935,6 +936,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
+        services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
         postgres_load_database,
@@ -976,6 +978,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_local_settings.assert_called_once_with(self.prod_env, pv)
         services_create_gunicorn_conf.assert_called_once_with(self.prod_env)
         services_create_upstart_conf.assert_called_once_with(self.prod_env)
+        services_create_celery_conf.assert_called_once_with(self.prod_env)
         self.assertEqual(
             run_management_command.call_count, 4
         )

@@ -21,7 +21,10 @@ def load_demographics(hospital_number):
     return api.demographics(hospital_number)
 
 
-def load_patient(patient, user, async=settings.ASYNC_API):
+def load_patient(patient, user, async=False):
+    # if async api in settings is false we never
+    # try and do anything asyncy
+    async = async and settings.ASYNC_API
     patient_load = models.InitialPatientLoad.objects.create(
         patient=patient,
         state=models.InitialPatientLoad.RUNNING
