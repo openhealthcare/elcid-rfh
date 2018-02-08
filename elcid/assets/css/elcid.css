@@ -156,3 +156,12 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .no-results {
   font-weight: 600;
   color: #cbc9c8; }
+
+.checkbox {
+  font-size: 16px; }
+
+.form-control {
+  font-size: 18px;
+  height: 44px; }
+
+/*# sourceMappingURL=elcid.css.map */
