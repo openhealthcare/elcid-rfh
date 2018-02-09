@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "referraltype": [
     {
       "synonyms": [],
@@ -37,6 +38,8 @@
       "name": "Transferred"
     }
   ],
+=======
+>>>>>>> Stashed changes
   "line_removal_reason": [
     {
       "synonyms": [],
@@ -1827,6 +1830,64 @@
       "name": "Zimbabwe"
     }
   ],
+  "tbsite": [
+    {
+      "synonyms": [],
+      "name": "Abdominal"
+    },
+    {
+      "synonyms": [],
+      "name": "Bone/Joint: Other"
+    },
+    {
+      "synonyms": [],
+      "name": "CNS: Meningitis"
+    },
+    {
+      "synonyms": [],
+      "name": "CNS: Other"
+    },
+    {
+      "synonyms": [],
+      "name": "Cryptic Disseminated"
+    },
+    {
+      "synonyms": [],
+      "name": "Gastro/Peritoneal"
+    },
+    {
+      "synonyms": [],
+      "name": "Laryngeal"
+    },
+    {
+      "synonyms": [],
+      "name": "Lymph Node (extra thoracic)"
+    },
+    {
+      "synonyms": [],
+      "name": "Lymph Node (intra thoracic)"
+    },
+    {
+      "synonyms": [],
+      "name": "Miliary"
+    },
+    {
+      "synonyms": [],
+      "name": "Ocular"
+    },
+    {
+      "synonyms": [],
+      "name": "Pleural"
+    },
+    {
+      "synonyms": [],
+      "name": "Pulmonary"
+    },
+    {
+      "synonyms": [],
+      "name": "Renal Tract"
+    }
+  ],
   "travel_reason": [
     {
       "synonyms": [
@@ -1891,28 +1952,6 @@
     {
       "synonyms": [],
       "name": "Syphilis Serology"
-    }
-  ],
-  "hiv_no": [
-    {
-      "synonyms": [],
-      "name": "Already HIV positive"
-    },
-    {
-      "synonyms": [],
-      "name": "No Reason"
-    },
-    {
-      "synonyms": [],
-      "name": "Recent negative test"
-    },
-    {
-      "synonyms": [],
-      "name": "Test not offered"
-    },
-    {
-      "synonyms": [],
-      "name": "Patient Declined"
     }
   ],
   "drugroute": [],
@@ -1997,6 +2036,10 @@
     },
     {
       "synonyms": [],
+      "name": "Cough"
+    },
+    {
+      "synonyms": [],
       "name": "Cough (Dry)"
     },
     {
@@ -2026,14 +2069,14 @@
       "name": "Dysphagia"
     },
     {
-      "synonyms": [],
-      "name": "Dysponea"
-    },
-    {
       "synonyms": [
         "Slurred Speech"
       ],
       "name": "Dysphasia"
+    },
+    {
+      "synonyms": [],
+      "name": "Dysponea"
     },
     {
       "synonyms": [],
@@ -7267,6 +7310,50 @@
     {
       "synonyms": [],
       "name": "X-Ray"
+    }
+  ],
+  "referraltype": [
+    {
+      "synonyms": [],
+      "name": "A&E"
+    },
+    {
+      "synonyms": [],
+      "name": "MXU"
+    },
+    {
+      "synonyms": [],
+      "name": "Occupational Health"
+    },
+    {
+      "synonyms": [],
+      "name": "Port Health/HPA"
+    },
+    {
+      "synonyms": [],
+      "name": "Primary care (other)"
+    },
+    {
+      "synonyms": [],
+      "name": "Prixon screening"
+    },
+    {
+      "synonyms": [
+        "Primary care (GP)"
+      ],
+      "name": "Referred by GP"
+    },
+    {
+      "synonyms": [],
+      "name": "Secondary care"
+    },
+    {
+      "synonyms": [],
+      "name": "Self referral"
+    },
+    {
+      "synonyms": [],
+      "name": "TB Service"
     }
   ],
   "micro_test_hepititis_b_serology": [
