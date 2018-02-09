@@ -40,8 +40,10 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
 
     var tbValues = _.keys(scope.tbSymptomFields);
 
-    // we add plus 1 to round up odd numbers so
-    // the first column is larger
+    // we add plus 1 to round down
+    // so if for example we had 3 items
+    // the first item would have 2 in it and the
+    // the second 1, rather than the othe way round
     column1 = tbValues.slice(0, (tbValues.length + 1)/2);
     column2 = tbValues.slice((tbValues.length + 1)/2);
     scope.columns = [column1, column2];
