@@ -209,7 +209,8 @@ if 'test' in sys.argv:
         'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations'
+        'intrahospital_api': 'intrahospital_api.nomigrations',
+        'tb': 'apps.tb.nomigrations',
     }
 
 
