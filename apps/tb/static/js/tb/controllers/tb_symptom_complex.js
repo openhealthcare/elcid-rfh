@@ -19,25 +19,31 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
      if(!scope.editing.symptom_complex.symptoms){
        scope.editing.symptom_complex.symptoms = [];
      }
+     tBSymptoms = [
+       "Cough (Dry)",
+       "Cough (Productive)",
+       "Coughing up blood",
+       "Breathlessness",
+       "Fatigue",
+       "Fever",
+       "Loss of Appetite",
+       "Night Sweats",
+       "Weight Loss"
+     ]
 
-    scope.tbSymptomFields = {
-      "chills": "Chills",
-      "cough (dry)": "Cough (Dry)",
-      "cough (productive)": "Cough (Productive)",
-      "dysponea": "Dysponea",
-      "fatigue": "Fatigue",
-      "fever": "Fever",
-      "haemoptysis": "Haemoptysis",
-      "loss_of_appetite": "Loss of Appetite",
-      "night_sweats": "Night Sweats",
-      "weight_loss": "Weight Loss"
-    };
+    scope.tbSymptomFields = {};
+    _.map(tBSymptoms, function(tBSymptom){
+      scope.tbSymptomFields[tBSymptom] = tBSymptom;
+    });
+
     scope.tbSymptom = {};
 
     var tbValues = _.keys(scope.tbSymptomFields);
 
-    column1 = tbValues.slice(0, tbValues.length/2);
-    column2 = tbValues.slice(tbValues.length/2);
+    // we add plus 1 to round up odd numbers so
+    // the first column is larger
+    column1 = tbValues.slice(0, (tbValues.length + 1)/2);
+    column2 = tbValues.slice((tbValues.length + 1)/2);
     scope.columns = [column1, column2];
 
     scope.updateTbSymptoms = function(){
