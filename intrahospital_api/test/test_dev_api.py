@@ -19,6 +19,7 @@ class DevApiTestCase(OpalTestCase):
         expected_fields = [
             "sex",
             "date_of_birth",
+            "ethnicity",
             "first_name",
             "surname",
             "title",
@@ -49,14 +50,6 @@ class DevApiTestCase(OpalTestCase):
         self.assertIn(demographics["first_name"], dev_api.FEMALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Ms")
 
-    def test_results(self):
-        with mock.patch.object(self.api, "create_lab_test"):
-            self.api.results("123434223")
-            self.assertEqual(
-                self.api.create_lab_test.call_count,
-                len(dev_api.TEST_BASES) * 10
-            )
-
     def test_get_external_identifier(self):
         external_identifier = self.api.get_external_identifier()
         self.assertEqual(len(external_identifier), 9)
@@ -73,16 +66,19 @@ class DevApiTestCase(OpalTestCase):
             'first_name',
             'surname',
             'title',
-            'result_status',
             'observation_value',
             'sex',
             'hospital_number',
             'nhs_number',
             'date_of_birth',
-            'test_name',
             'units',
             'external_system',
-            'reference_range'
+            'reference_range',
+            'observation_number',
+            'last_updated',
+            'observation_datetime',
+            'observation_name',
+            'ethnicity',
         ]
         self.assertEqual(
             set(expected_fields), set(cooked_data[0].keys())

@@ -89,35 +89,35 @@ class Row(object):
     """ a simple wrapper to get us the fields we actually want out of a row
     """
     DEMOGRAPHICS_FIELDS = [
-        'surname',
-        'first_name',
         'date_of_birth',
-        'sex',
+        'date_of_birth',
         'ethnicity',
-        'title',
-        'date_of_birth',
+        'first_name',
         'hospital_number',
-        'nhs_number'
+        'nhs_number',
+        'sex',
+        'surname',
+        'title'
     ]
 
     LAB_TEST_FIELDS = [
-        'status',
-        'test_code',
-        'test_name',
+        'clinical_info',
         'datetime_ordered',
         'external_identifier',
         'site',
-        'clinical_info',
+        'status',
+        'test_code',
+        'test_name',
     ]
 
     OBSERVATION_FIELDS = [
-        'observation_number',
-        'observation_name',
-        'reference_range',
-        'observation_value',
-        'units',
-        'observation_datetime',
         'last_updated',
+        'observation_datetime',
+        'observation_name',
+        'observation_number',
+        'observation_value',
+        'reference_range',
+        'units',
     ]
 
     RESULT_FIELDS = LAB_TEST_FIELDS + OBSERVATION_FIELDS

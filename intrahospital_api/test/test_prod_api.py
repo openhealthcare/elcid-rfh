@@ -287,13 +287,20 @@ class RowTestCase(OpalTestCase):
         row = self.get_row()
         result = row.get_results_dict()
         expected = {
+            'clinical_info': u'testing',
+            'datetime_ordered': '18/07/2015 16:18:00',
+            'external_identifier': u'0013I245895',
+            'last_updated': '18/07/2015 17:00:02',
+            'observation_datetime': '18/07/2015 16:18:00',
+            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'observation_number': 20334311,
             'status': 'complete',
-            'external_identifier': 20334311,
             'observation_value': u'Negative',
             'test_code': u'AN12',
-            'test_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
             'units': u'',
-            'reference_range': u' -'
+            'reference_range': u' -',
+            'site': u'^&                              ^',
         }
         self.assertEqual(result, expected)
 
@@ -301,21 +308,28 @@ class RowTestCase(OpalTestCase):
         row = self.get_row()
         result = row.get_all_fields()
         expected = {
-            'status': 'complete',
-            'external_identifier': 20334311,
-            'observation_value': u'Negative',
-            'test_code': u'AN12',
-            'test_name': u'Anti-CV2 (CRMP-5) antibodies',
-            'units': u'',
-            'reference_range': u' -',
+            'external_identifier': u'0013I245895',
             'nhs_number': u'7060976728',
             'first_name': u'TEST',
             'surname': u'ZZZTEST',
             'title': '',
             'sex': 'Female',
             'hospital_number': u'20552710',
-            'date_of_birth': date(1980, 10, 10),
-            'ethnicity': 'Mixed - White and Black Caribbean'
+            'date_of_birth': '10/10/1980',
+            'ethnicity': 'Mixed - White and Black Caribbean',
+            'clinical_info': u'testing',
+            'datetime_ordered': '18/07/2015 16:18:00',
+            'last_updated': '18/07/2015 17:00:02',
+            'observation_datetime': '18/07/2015 16:18:00',
+            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'observation_number': 20334311,
+            'observation_value': u'Negative',
+            'reference_range': u' -',
+            'site': u'^&                              ^',
+            'status': 'complete',
+            'test_code': u'AN12',
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
+            'units': u''
         }
         self.assertEqual(result, expected)
 
