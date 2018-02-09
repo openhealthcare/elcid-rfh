@@ -10,10 +10,10 @@ from intrahospital_api.apis import get_api
 def initial_load():
     user = User.objects.get(username=settings.API_USER)
     total = Patient.objects.count()
-    models.PatientLoad.objects.all().delete()
+    models.InitialPatientLoad.objects.all().delete
     for iterator, patient in enumerate(Patient.objects.all()):
         print "running {}/{}".format(iterator, total)
-        load_patient(patient, user)
+        load_patient(patient, user, async=False)
 
 
 def load_demographics(hospital_number):
@@ -21,19 +21,31 @@ def load_demographics(hospital_number):
     return api.demographics(hospital_number)
 
 
-def load_patient(patient, user):
-    patient_load = models.PatientLoad.objects.create(
+def load_patient(patient, user, async=False):
+    # if async api in settings is false we never
+    # try and do anything asyncy
+    async = async and settings.ASYNC_API
+    patient_load = models.InitialPatientLoad.objects.create(
         patient=patient,
-        state=models.PatientLoad.RUNNING
+        state=models.InitialPatientLoad.RUNNING
     )
     try:
-        _load_patient(patient, user)
+        if async:
+            async_load(patient, user)
+        else:
+            _load_patient(patient, user)
     except:
-        patient_load.state = models.PatientLoad.FAILURE
+        patient_load.state = models.InitialPatientLoad.FAILURE
         patient_load.save()
         raise
     else:
-        patient_load.delete()
+        patient_load.state = models.InitialPatientLoad.SUCCESS
+        patient_load.save()
+
+
+def async_load(patient, user):
+    from intrahospital_api import tasks
+    tasks.load.delay(user, patient)
 
 
 @transaction.atomic
