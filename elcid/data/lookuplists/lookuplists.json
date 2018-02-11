@@ -2008,6 +2008,10 @@
       "name": "Cough (Productive)"
     },
     {
+      "synonyms": ["Haemoptysis"],
+      "name": "Coughing up blood"
+    },
+    {
       "synonyms": [],
       "name": "Deliberate self-harm"
     },
@@ -2028,10 +2032,6 @@
         "Difficulty Swallowing"
       ],
       "name": "Dysphagia"
-    },
-    {
-      "synonyms": [],
-      "name": "Dysponea"
     },
     {
       "synonyms": [
@@ -2098,10 +2098,6 @@
     {
       "synonyms": [],
       "name": "Haematuria"
-    },
-    {
-      "synonyms": [],
-      "name": "Haemoptysis"
     },
     {
       "synonyms": [],
@@ -2259,7 +2255,8 @@
     },
     {
       "synonyms": [
-        "Breathlessness"
+        "Breathlessness",
+        "Dyspnea"
       ],
       "name": "Shortness of Breath"
     },
