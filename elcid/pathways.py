@@ -1,7 +1,6 @@
 import datetime
 from intrahospital_api import loader
 from elcid import models
-from opal import models as omodels
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
@@ -73,23 +72,21 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
             we expect the patient to have already been updated by gloss
         """
-        if not patient:
-            demographics = data.get("demographics")
-            hospital_number = demographics[0]["hospital_number"]
-            patient = omodels.Patient.objects.create()
-
-            if settings.ADD_PATIENT_LAB_TESTS:
-                loader.load_in_lab_tests(patient, hospital_number, user)
-
-        if not episode:
-            episode = patient.create_episode()
-
-        episode.start = datetime.date.today()
-        episode.save()
-
-        return super(AddPatientPathway, self).save(
+        saved_patient, saved_episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
+
+        # there should always be a new episode
+        saved_episode.start = datetime.date.today()
+        saved_episode.save()
+
+        # if the patient its a new patient, bring
+        # in their lab tests
+        if not patient:
+            if settings.ADD_PATIENT_LAB_TESTS:
+                loader.load_patient(saved_patient, user)
+
+        return saved_patient, saved_episode
 
 
 class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):

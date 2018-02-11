@@ -449,7 +449,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
             Aerobic bottle culture: No growth after 5 days of incubation
             Anaerobic bottle culture: No growth after 5 days of incubation
 
-            The are always of the type Aerobic bottle culture
+            The are always of the type [Anaerobic/Aerobic] bottle culture
         """
         obs_names = ["Aerobic bottle culture", "Anaerobic bottle culture"]
 
