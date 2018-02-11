@@ -550,7 +550,7 @@ class RestartTestCase(FabfileTestCase):
         print_function.assert_called_once_with("Restarting supervisord")
         first_call = local.call_args_list[0][0][0]
         self.assertEqual(
-            first_call, 'pkill super; pkill gunic; pkill'
+            first_call, 'pkill super; pkill gunic; pkill celery;'
         )
         second_call = local.call_args_list[1][0][0]
         expected_second_call = "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin\
@@ -819,6 +819,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.postgres_load_database")
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
+    @mock.patch("fabfile.services_create_celery_conf")
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -833,6 +834,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
+        services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
         postgres_load_database,
@@ -922,6 +924,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_local_settings")
+    @mock.patch("fabfile.services_create_celery_conf")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
@@ -934,6 +937,7 @@ class DeployTestCase(FabfileTestCase):
         run_management_command,
         services_create_gunicorn_conf,
         services_create_upstart_conf,
+        services_create_celery_conf,
         services_create_local_settings,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -970,12 +974,17 @@ class DeployTestCase(FabfileTestCase):
         pip_install_requirements.assert_called_once_with(self.prod_env, "1.2.3")
 
         postgres_create_database.assert_called_once_with(self.prod_env)
-        postgres_load_database.assert_called_once_with("some_backup", self.prod_env)
+        postgres_load_database.assert_called_once_with(
+            "some_backup", self.prod_env
+        )
         services_symlink_nginx.assert_called_once_with(self.prod_env)
         services_symlink_upstart.assert_called_once_with(self.prod_env)
-        services_create_local_settings.assert_called_once_with(self.prod_env, pv)
+        services_create_local_settings.assert_called_once_with(
+            self.prod_env, pv
+        )
         services_create_gunicorn_conf.assert_called_once_with(self.prod_env)
         services_create_upstart_conf.assert_called_once_with(self.prod_env)
+        services_create_celery_conf.assert_called_once_with(self.prod_env)
         self.assertEqual(
             run_management_command.call_count, 4
         )

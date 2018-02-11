@@ -4,8 +4,12 @@ from mock import patch
 from opal import models
 from opal.core.test import OpalTestCase
 from elcid.pathways import (
-    AddPatientPathway, CernerDemoPathway, BloodCulturePathway, AddTbPatientPathway
+    AddPatientPathway,
+    CernerDemoPathway,
+    BloodCulturePathway
 )
+from apps.tb.pathways import AddTbPatientPathway
+
 
 class TestBloodCulturePathway(OpalTestCase):
     def test_delete_others(self):
@@ -100,6 +104,7 @@ class TestAddPatientPathway(OpalTestCase):
             ["antifungal"]
         )
 
+
     def test_saves_without_tags(self):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
@@ -148,7 +153,6 @@ class TestAddTbPatientPathway(OpalTestCase):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'tb': True}],
-            episode=["TB"]
         )
         response = self.post_json(self.url, test_data)
         self.assertEqual(response.status_code, 200)
@@ -156,6 +160,6 @@ class TestAddTbPatientPathway(OpalTestCase):
         episode = patient.episode_set.get()
         self.assertEqual(
             list(episode.get_tag_names(None)),
-            ["tb"]
+            ["tb_tag"]
         )
         self.assertEqual(episode.category_name, "TB")

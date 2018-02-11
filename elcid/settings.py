@@ -174,11 +174,14 @@ INSTALLED_APPS = (
     'apps.tb',
 )
 
+#### API Settings
+
 # The intrahospital api is what we use to connect to the rest of the hospital
 INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
 # when running the batch load, this user needs to be set
 API_USER = "needs to be set"
+ASYNC_API = True
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
@@ -198,6 +201,10 @@ ADD_PATIENT_DEMOGRAPHICS = True
 # after we've added a patient, should we load in the labtests?
 ADD_PATIENT_LAB_TESTS = True
 
+#### END API Settings
+
+
+
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
@@ -209,7 +216,8 @@ if 'test' in sys.argv:
         'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations'
+        'intrahospital_api': 'intrahospital_api.nomigrations',
+        'tb': 'apps.tb.nomigrations',
     }
 
 
