@@ -1,8 +1,5 @@
 {% load forms %}
-{% input field="Demographics.birth_place" change="birth_place_change()" %}
-<div ng-show="editing.demographics.birth_place.length && editing.demographics.birth_place !== 'United Kingdom'">
-  {% input field="SocialHistory.arrival_in_the_uk" %}
-</div>
+
 {% radio field="SocialHistory.drinking" lookuplist="['None', 'Occasional', 'Excess']" %}
 <span ng-show="editing.social_history.drinking == 'Excess'">
   {% checkbox field="SocialHistory.alcohol_dependent" %}
