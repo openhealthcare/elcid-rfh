@@ -62,7 +62,6 @@ class TBConsultationPathway(pathways.PagePathway):
         ),
         TBStep(
             model=tb_models.TBHistory,
-            template="pathway/steps/tb_history.html",
         ),
         TBStep(model=tb_models.SocialHistory),
         # Antimicrobials need to be added

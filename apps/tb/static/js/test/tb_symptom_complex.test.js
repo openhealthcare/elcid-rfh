@@ -33,10 +33,6 @@ describe('TbSymptomComplexCrtl', function(){
       });
     });
 
-    it('should fail', function(){
-      fail();
-    });
-
     it('should update the radio buttons according to the symptoms model changes', function(){
         var symptomField = 'chills'
         scope.tbSymptom[symptomField] = true;

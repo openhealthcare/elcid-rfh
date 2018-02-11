@@ -14,8 +14,6 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
       scope.editing.symptom_complex = {};
     }
 
-
-
      if(!scope.editing.symptom_complex.symptoms){
        scope.editing.symptom_complex.symptoms = [];
      }

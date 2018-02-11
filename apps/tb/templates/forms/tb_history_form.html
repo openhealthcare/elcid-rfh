@@ -1,5 +1,36 @@
 {% load forms %}
-{% textarea field="TBHistory.personal_history_of_tb" %}
-{% input field="TBHistory.date_of_previous_tb_infection" %}
-{% textarea field="TBHistory.other_tb_contact" %}
-{% input field="TBHistory.date_of_other_tb_contact" %}
+{% radio field="TBHistory.previous_tb_contact" %}
+<div ng-hide="editing.tb_history.previous_tb_contact === 'None'">
+  <div class="row content-offset-below-10">
+    <div class="col-md-12" ng-show="editing.tb_history.previous_tb_contact === 'Personal'">
+      <h5>How Long Ago Did You Have TB?
+    </div>
+    <div class="col-md-12" ng-show="editing.tb_history.previous_tb_contact === 'Other'">
+      <h5>How Long Ago Did You Have Contact With Somone Who Had TB?
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      {% input label="Years" field="TBHistory.how_long_ago_years" %}
+    </div>
+    <div class="col-md-4">
+      {% input label="Months" field="TBHistory.how_long_ago_months" %}
+    </div>
+    <div class="col-md-4">
+      {% input label="Days" field="TBHistory.how_long_ago_days" %}
+    </div>
+  </div>
+</div>
+
+
+<div ng-show="editing.tb_history.previous_tb_contact === 'Personal'">
+  {% input field="TBHistory.tb_type" %}
+  {% input field="TBHistory.country_treated" %}
+  <div ng-show="editing.tb_history.country_treated === 'United Kingdom'">
+    {% input field="TBHistory.treatment_centre" %}
+  </div>
+  {% input field="TBHistory.site_of_tb" %}
+</div>
+<div ng-show="editing.tb_history.previous_tb_contact === 'Other'">
+  {% textarea field="TBHistory.details" %}
+</div>

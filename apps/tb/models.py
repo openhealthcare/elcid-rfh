@@ -2,7 +2,10 @@
 Models for tb
 """
 from django.db import models as fields
+from opal.core.fields import ForeignKeyOrFreeText
+from opal.core import lookuplists
 from opal import models
+
 
 class SocialHistory(models.EpisodeSubrecord):
     _is_singleton = True
@@ -42,14 +45,63 @@ class ContactDetails(models.PatientSubrecord):
         verbose_name_plural = "Contact details"
 
 
+class TBSite(lookuplists.LookupList):
+    pass
+
+
+class TBTreatmentCentre(lookuplists.LookupList):
+    pass
+
+
 class TBHistory(models.PatientSubrecord):
+    """ Used if the person has clicked that they
+        have a personal history of TB in the
+        initial assessment form
+    """
     _icon = 'fa fa-clock-o'
     _title = "History of TB"
     _is_singleton = True
-    personal_history_of_tb = fields.TextField(blank=True, null=True, verbose_name="Personal History of TB")
-    date_of_previous_tb_infection = fields.CharField(max_length=255, blank=True, null=True, verbose_name="Date of Previous TB")
-    other_tb_contact = fields.TextField(blank=True, null=True, verbose_name="Other TB Contact")
-    date_of_other_tb_contact = fields.CharField(max_length=255, blank=True, null=True, verbose_name="Date of TB Contact")
+
+    TB_TYPES = (
+        ("Active", "Active",),
+        ("Latent", "Latent",),
+        ("Unknown", "Unknown",),
+    )
+
+    NONE = "None"
+
+    PREVIOUS_CONTACT = (
+        ("Personal", "Personal",),
+        ("Other", "Other",),
+        (NONE, NONE,),
+    )
+
+    _is_singleton = True
+    previous_tb_contact = fields.CharField(
+        blank=True,
+        choices=PREVIOUS_CONTACT,
+        default=NONE,
+        max_length=100
+    )
+    how_long_ago_years = fields.IntegerField(
+        blank=True, null=True
+    )
+    how_long_ago_months = fields.IntegerField(
+        blank=True, null=True
+    )
+    how_long_ago_days = fields.IntegerField(
+        blank=True, null=True
+    )
+    tb_type = fields.CharField(
+        blank=True,
+        null=True,
+        choices=TB_TYPES,
+        max_length=256
+    )
+    site_of_tb = ForeignKeyOrFreeText(TBSite)
+    country_treated = ForeignKeyOrFreeText(models.Destination)
+    treatment_centre = ForeignKeyOrFreeText(TBTreatmentCentre)
+    details = fields.TextField(default="")
 
 
 class BCG(models.PatientSubrecord):
