@@ -2,23 +2,23 @@
   "referraltype": [
     {
       "synonyms": [],
-      "name": "Anti TNF treatment"
+      "name": "Primary care (GP)"
     },
     {
       "synonyms": [],
-      "name": "BCG vaccination"
+      "name": "Primary care (other)"
     },
     {
       "synonyms": [],
-      "name": "New entrant screening"
+      "name": "Secondary care"
     },
     {
       "synonyms": [],
-      "name": "Positive test"
+      "name": "TB Service"
     },
     {
       "synonyms": [],
-      "name": "Referred by GP"
+      "name": "Occupational Health"
     },
     {
       "synonyms": [],
@@ -26,15 +26,19 @@
     },
     {
       "synonyms": [],
-      "name": "Symptomatic"
+      "name": "A&E"
     },
     {
       "synonyms": [],
-      "name": "TB contact screening"
+      "name": "MXU"
     },
     {
       "synonyms": [],
-      "name": "Transferred"
+      "name": "Prixon screening"
+    },
+    {
+      "synonyms": [],
+      "name": "Port Health/HPA"
     }
   ],
   "line_removal_reason": [
