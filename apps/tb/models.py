@@ -39,10 +39,22 @@ class ContactDetails(models.PatientSubrecord):
     _title = 'Contact Details'
 
     telephone = fields.CharField(blank=True, null=True, max_length=50)
+    email = fields.CharField(blank=True, null=True, max_length=255)
     address = fields.TextField(blank=True, null=True)
+    details = fields.TextField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "Contact details"
+
+
+class NextOfKin(models.PatientSubrecord):
+    _icon = 'fa fa-child'
+    _advanced_searchable = False
+    _title = 'Next Of Kin'
+
+    first_name = fields.CharField(blank=True, null=True, max_length=255)
+    surname = fields.CharField(blank=True, null=True, max_length=255)
+    details = fields.TextField(blank=True, null=True)
 
 
 class TBSite(lookuplists.LookupList):
@@ -69,10 +81,12 @@ class TBHistory(models.PatientSubrecord):
     )
 
     NONE = "None"
+    PREVIOUS_TB_DIAGNOSIS = "Previous TB Diagnosis"
+    PREVIOUS_TB_CONTACT = "Previous TB Contact"
 
     PREVIOUS_CONTACT = (
-        ("Personal", "Personal",),
-        ("Other", "Other",),
+        (PREVIOUS_TB_DIAGNOSIS, PREVIOUS_TB_DIAGNOSIS,),
+        (PREVIOUS_TB_CONTACT, PREVIOUS_TB_CONTACT,),
         (NONE, NONE,),
     )
 
@@ -92,6 +106,15 @@ class TBHistory(models.PatientSubrecord):
     how_long_ago_days = fields.IntegerField(
         blank=True, null=True
     )
+    how_long_treated_years = fields.IntegerField(
+        blank=True, null=True
+    )
+    how_long_treated_months = fields.IntegerField(
+        blank=True, null=True
+    )
+    how_long_treated_days = fields.IntegerField(
+        blank=True, null=True
+    )
     tb_type = fields.CharField(
         blank=True,
         null=True,
@@ -102,6 +125,14 @@ class TBHistory(models.PatientSubrecord):
     country_treated = ForeignKeyOrFreeText(models.Destination)
     treatment_centre = ForeignKeyOrFreeText(TBTreatmentCentre)
     details = fields.TextField(default="")
+
+
+class Travel(models.EpisodeSubrecord):
+    _icon = 'fa fa-plane'
+
+    destination = ForeignKeyOrFreeText(models.Destination)
+    dates = fields.CharField(max_length=255, blank=True)
+    reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
 
 
 class BCG(models.PatientSubrecord):

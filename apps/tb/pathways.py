@@ -54,6 +54,7 @@ class TBConsultationPathway(pathways.PagePathway):
         ),
         TBStep(model=models.ReferralRoute),
         TBStep(model=tb_models.ContactDetails),
+        TBStep(model=tb_models.NextOfKin),
         TBStep(
             model=models.SymptomComplex,
             template="pathway/steps/symptom_complex.html",
@@ -63,8 +64,12 @@ class TBConsultationPathway(pathways.PagePathway):
         TBStep(
             model=tb_models.TBHistory,
         ),
+        TBStep(
+            model=tb_models.BCG,
+        ),
         TBStep(model=tb_models.SocialHistory),
-        # Antimicrobials need to be added
+        TBStep(model=models.PastMedicalHistory),
+        TBStep(model=tb_models.Travel),
     ]
 
     @transaction.atomic

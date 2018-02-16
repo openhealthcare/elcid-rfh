@@ -26,6 +26,7 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
        "Fever",
        "Loss of Appetite",
        "Night Sweats",
+       "Swelling in the lymph node",
        "Weight Loss"
      ]
 
