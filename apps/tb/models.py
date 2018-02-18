@@ -7,20 +7,43 @@ from opal.core import lookuplists
 from opal import models
 
 
+class RecreationalDrug(lookuplists.LookupList):
+    pass
+
+
 class SocialHistory(models.EpisodeSubrecord):
     _is_singleton = True
     _title = 'Social History'
     _icon = 'fa fa-clock-o'
+    HOMELESSNESS_CHOICES = (
+        ("hostel", "hostel",),
+        ("sofa surfing", "sofa surfing",),
+        ("street", "street",),
+    )
 
-    notes                = fields.TextField(blank=True, null=True)
-    drinking             = fields.CharField(max_length=250, blank=True, null=True, verbose_name="Alcohol")
-    alcohol_dependent    = fields.NullBooleanField()
-    smoking              = fields.CharField(max_length=250, blank=True, null=True)
-    occupation           = fields.TextField(blank=True, null=True)
-    homelessness         = fields.TextField(blank=True, null=True)
-    intravenous_drug_use = fields.CharField(max_length=250, blank=True, null=True)
-    incarceration        = fields.CharField(max_length=250, blank=True, null=True)
-    arrival_in_the_uk    = fields.CharField(
+    notes = fields.TextField(blank=True, null=True)
+    drinking = fields.CharField(
+        max_length=250, blank=True, null=True, verbose_name="Alcohol"
+    )
+    alcohol_dependent = fields.NullBooleanField()
+    smoking = fields.CharField(max_length=250, blank=True, null=True)
+    occupation = fields.TextField(blank=True, null=True)
+    homelessness = fields.TextField(blank=True, null=True)
+    homelessness_type = fields.CharField(
+        blank=True,
+        null=True,
+        choices=HOMELESSNESS_CHOICES,
+        max_length=256
+    )
+    recreational_drug_use = fields.CharField(
+        max_length=250, blank=True, null=True
+    )
+    recreational_drug_type = ForeignKeyOrFreeText(RecreationalDrug)
+    receiving_treatment = fields.BooleanField(default=False)
+    prison_history = fields.CharField(
+        max_length=250, blank=True, null=True
+    )
+    arrival_in_the_uk = fields.CharField(
         max_length=250,
         blank=True,
         null=True,
@@ -38,9 +61,9 @@ class ContactDetails(models.PatientSubrecord):
     _icon = 'fa fa-phone'
     _title = 'Contact Details'
 
-    telephone = fields.CharField(blank=True, null=True, max_length=50)
-    email = fields.CharField(blank=True, null=True, max_length=255)
-    address = fields.TextField(blank=True, null=True)
+    # telephone = fields.CharField(blank=True, null=True, max_length=50)
+    # email = fields.CharField(blank=True, null=True, max_length=255)
+    # address = fields.TextField(blank=True, null=True)
     details = fields.TextField(blank=True, null=True)
 
     class Meta:
@@ -119,9 +142,12 @@ class TBHistory(models.PatientSubrecord):
         blank=True,
         null=True,
         choices=TB_TYPES,
-        max_length=256
+        max_length=256,
+        verbose_name="TB Type"
     )
-    site_of_tb = ForeignKeyOrFreeText(TBSite)
+    site_of_tb = ForeignKeyOrFreeText(
+        TBSite, verbose_name="Site of TB"
+    )
     country_treated = ForeignKeyOrFreeText(models.Destination)
     treatment_centre = ForeignKeyOrFreeText(TBTreatmentCentre)
     details = fields.TextField(default="")
@@ -139,7 +165,18 @@ class BCG(models.PatientSubrecord):
     _icon = 'fa fa-asterisk'
     _title = "BCG"
     _is_singleton = True
-    history_of_bcg = fields.CharField(max_length=255, blank=True, null=True, verbose_name="History Of BCG")
-    date_of_bcg = fields.DateField(blank=True, null=True, verbose_name="Date Of BCG")
+    BCG_PERIOD = (
+        ('neonatal', 'neonatal',),
+        ('school', 'school',),
+        ('other', 'other',)
+    )
+    bcg_type = fields.CharField(
+        max_length=255,
+        blank=True,
+        choices=BCG_PERIOD,
+        verbose_name="BCG Type"
+    )
     bcg_scar = fields.BooleanField(default=False, verbose_name="BCG Scar")
-    red_book_documentation_of_bcg_seen = fields.BooleanField(default=False, verbose_name="Red Book Documentation of BCG Seen")
+    red_book_documentation_of_bcg_seen = fields.BooleanField(
+        default=False, verbose_name="Red Book Documentation of BCG Seen"
+    )

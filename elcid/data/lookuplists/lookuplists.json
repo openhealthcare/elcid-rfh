@@ -4156,24 +4156,6 @@
       "name": "PITU"
     }
   ],
-  "antimicrobial_route": [
-    {
-      "synonyms": [
-        "Oral"
-      ],
-      "name": "PO"
-    },
-    {
-      "synonyms": [
-        "Intravenous"
-      ],
-      "name": "IV"
-    },
-    {
-      "synonyms": [],
-      "name": "Topical"
-    }
-  ],
   "condition": [
     {
       "synonyms": [
@@ -8466,6 +8448,61 @@
       "name": "Foreign Visitor",
       "synonyms": []
     }
+  ],
+  "antimicrobial_frequency": [
+    {
+      "synonyms": [],
+      "name": "Four times a day"
+    },
+    {
+      "synonyms": [],
+      "name": "Once a day"
+    },
+    {
+      "synonyms": [],
+      "name": "Six times a day"
+    },
+    {
+      "synonyms": [],
+      "name": "Three times a day"
+    },
+    {
+      "synonyms": [],
+      "name": "Twice a day"
+    },
+    {
+      "synonyms": [],
+      "name": "Five Times a Day"
+    },
+    {
+      "synonyms": [],
+      "name": "Once a week"
+    },
+    {
+      "synonyms": [],
+      "name": "Twice a week"
+    },
+    {
+      "synonyms": [],
+      "name": "Three times a week"
+    }
+  ],
+  "antimicrobial_route": [
+    {
+      "synonyms": [
+        "Oral"
+      ],
+      "name": "PO"
+    },
+    {
+      "synonyms": [
+        "Intravenous"
+      ],
+      "name": "IV"
+    },
+    {
+      "synonyms": [],
+      "name": "Topical"
+    }
   ]
-
 }

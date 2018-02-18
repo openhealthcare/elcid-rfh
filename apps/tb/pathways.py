@@ -68,6 +68,10 @@ class TBConsultationPathway(pathways.PagePathway):
             model=tb_models.BCG,
         ),
         TBStep(model=tb_models.SocialHistory),
+        TBStep(
+            model=models.Antimicrobial,
+            template="pathway/steps/drug_history.html"
+        ),
         TBStep(model=models.PastMedicalHistory),
         TBStep(model=tb_models.Travel),
     ]
