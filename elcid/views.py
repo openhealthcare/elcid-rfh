@@ -11,17 +11,53 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.generic import TemplateView, FormView, View
 
+import letter
+from letter.contrib.contact import EmailForm, EmailView
+
+
 from opal.core import application
 
 from elcid.forms import BulkCreateUsersForm
 
 app = application.get_app()
 u = unicode
+POSTIE = letter.DjangoPostman()
+
 
 def temp_password():
     num = random.randint(1, 100)
     word = random.choice(['womble', 'bananas', 'flabbergasted', 'kerfuffle'])
     return '{0}{1}'.format(num, word)
+
+
+class FeedbackForm(EmailForm):
+    """
+    Form for our feedback submissions.
+    """
+    email = forms.EmailField(required=False)
+
+    def body(self):
+        return u"Feedback-form from: {0}\n\n{1}".format(
+            u'{0} <{1}>'.format(
+                u(self.cleaned_data.get('name', '')),
+                u(self.cleaned_data.get('email', ''))),
+            u(self.cleaned_data.get('message', '')))
+
+    def subject(self):
+        return u'eLCID - Feedback Form'
+
+    def reply_to(self):
+        return u(self.cleaned_data.get('email', ''))
+
+
+class FeedbackView(EmailView):
+    template_name = 'feedback.html'
+    form_class    = FeedbackForm
+    success_url   = '/feedback/sent'
+
+
+class FeedbackSentView(TemplateView):
+    template_name = 'feedback_sent.html'
 
 
 class Error500View(View):
@@ -81,22 +117,3 @@ class BulkCreateUserView(FormView):
             u.save()
 
         return super(BulkCreateUserView, self).form_valid(form)
-
-
-class ElcidTemplateView(TemplateView):
-    def dispatch(self, *args, **kwargs):
-        self.name = kwargs['name']
-        return super(ElcidTemplateView, self).dispatch(*args, **kwargs)
-
-    def get_template_names(self, *args, **kwargs):
-        return ['elcid/modals/'+self.name]
-
-    def get_context_data(self, *args, **kwargs):
-        ctd = super(ElcidTemplateView, self).get_context_data(*args, **kwargs)
-
-        try:
-            ctd["model"] = apps.get_model(app_label='elcid', model_name=self.name)
-        except LookupError:
-            pass
-
-        return ctd
