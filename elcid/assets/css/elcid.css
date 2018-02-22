@@ -128,4 +128,31 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .no-touchevents .patient-timeline-discussion:hover i.edit {
   display: inline-block; }
 
-/*# sourceMappingURL=elcid.css.map */
+.lab-tests hr {
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-left: 10px;
+  margin-right: 10px; }
+.lab-tests .lab-test-row {
+  padding-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  padding-bottom: 10px; }
+  .lab-tests .lab-test-row.selectable:hover {
+    background-color: #f5f5f5;
+    cursor: pointer; }
+.lab-tests .observation-graph-pane {
+  padding-top: 10px;
+  padding-bottom: 10px; }
+.lab-tests .c3-region.too-high {
+  fill: rgba(224, 47, 3, 0.5); }
+.lab-tests .c3-region.too-low {
+  fill: rgba(3, 195, 234, 0.5); }
+.lab-tests .too-high {
+  color: #E02F03; }
+.lab-tests .too-low {
+  color: #03C3EA; }
+
+.no-results {
+  font-weight: 600;
+  color: #cbc9c8; }

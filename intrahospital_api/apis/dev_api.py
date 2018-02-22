@@ -134,7 +134,7 @@ TEST_BASES = {
         },
         "WBC": {
             "units": "g/l",
-            "reference_range": "110 - 150"
+            "reference_range": "3.5 - 11"
         },
         "Platelets": {
             "units": "10",

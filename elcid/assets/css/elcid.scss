@@ -9,10 +9,10 @@ $bg: #EEE;
 
 $red  : #f76c51;
 $blue : #5fa2dd;
-$bluelight: #a0c7ea;
+$blue-light: #a0c7ea;
 $green: #9cc96b;
 $obsidian: #343637;
-$obsidianlight: #cbc9c8;
+$obsidian-light: #cbc9c8;
 $navbar-height: 77px;
 $small-text-color: $secondary-background;
 
@@ -67,7 +67,7 @@ h5{
 .navbar-nav li:hover a,
 .navbar-nav li.active a,
 .navbar-nav li.active{
-	background: $obsidianlight;
+	background: $obsidian-light;
 }
 
 .panel-primary .panel-default .panel-heading,
@@ -111,6 +111,8 @@ a.list-group-item {
     background-color: $obsidian;
   }
 }
+
+
 
 .patient-row{
   .label-warning{
@@ -182,4 +184,54 @@ a.list-group-item {
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit{
   display: inline-block;
+}
+
+.lab-tests{
+  $too-high: #E02F03;
+  $too-low: #03C3EA;
+
+  hr {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .lab-test-row{
+    padding-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-bottom: 10px;
+
+    &.selectable:hover{
+      background-color: #f5f5f5;
+      cursor: pointer;
+    }
+  }
+
+  .observation-graph-pane{
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .c3-region.too-high{
+    fill: fade-out($too-high, 0.5);
+  }
+
+  .c3-region.too-low{
+    fill: fade-out($too-low, 0.5);
+  }
+
+  .too-high{
+    color: $too-high;
+  }
+
+  .too-low{
+    color: $too-low;
+  }
+}
+
+.no-results{
+  font-weight: 600;
+  color: $obsidian-light;
 }

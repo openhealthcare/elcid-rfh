@@ -31,7 +31,24 @@
         <p ng-repeat="item in row.diagnosis">
           {% include models.Diagnosis.get_display_template %}
         </p>
-
+      </div>
+      <div class="col-md-6">
+        <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
+        <div populate-lab-tests="row">
+          <table class="col-md-12">
+            <tr class="row" ng-repeat="item in data">
+              <td>
+                [[ item.name ]]
+              </td>
+              <td ng-show="(item.values.length - $index) < 4" ng-repeat="value in item.values">
+                [[ value[0] ]]
+              </td>
+              <td>
+                <div loaded="loaded" investigation-trend="item.graphValues"></div>
+              </td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
   </div>
