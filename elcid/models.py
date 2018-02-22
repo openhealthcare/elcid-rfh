@@ -124,8 +124,12 @@ class UpstreamLabTest(lmodels.ReadOnlyLabTest):
             return
 
         if "id" not in data:
+            # we never actuall expect updating from the client
+            # ie we never expect an id to be set we
             if 'patient_id' in data:
-                self.patient = omodels.Patient.objects.get(id=data['patient_id'])
+                self.patient = omodels.Patient.objects.get(
+                    id=data['patient_id']
+                )
 
             if "external_identifier" not in data:
                 raise ValueError(
@@ -146,6 +150,16 @@ class UpstreamLabTest(lmodels.ReadOnlyLabTest):
                     data["extras"][i] = data.pop(i)
 
             super(UpstreamLabTest, self).update_from_dict(data, *args, **kwargs)
+
+
+    def update_from_api_dict(self, data, user):
+        extras = self.extras
+        if "external_identifier" not in data:
+            raise ValueError(
+                "an external identifier is required in {}".format(data)
+            )
+        pass
+
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -279,7 +293,7 @@ class Drug_delivered(lookuplists.LookupList):
 
 
 class Antimicrobial(EpisodeSubrecord):
-    _title = 'Antimicrobials'
+    _title = 'Treatment'
     _sort = 'start_date'
     _icon = 'fa fa-flask'
     _modal = 'lg'

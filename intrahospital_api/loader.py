@@ -1,10 +1,13 @@
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
+from django.db.models import Q
 from django.contrib.auth.models import User
 from intrahospital_api import models
 from elcid import models as emodels
 from opal.models import Patient
 from intrahospital_api.apis import get_api
+from intrahospital_api.exceptions import BatchLoadError
 
 
 def initial_load():
@@ -48,6 +51,75 @@ def async_load(patient, user):
     tasks.load.delay(user, patient)
 
 
+def check_batch_load():
+    if models.BatchPatientLoad.objects.filter(
+        Q(stopped=None) | Q(state=models.BatchPatientLoad.RUNNING)
+    ):
+        raise BatchLoadError("Last load is still running")
+
+    twenty_mins_ago = timezone.now() - timedelta(minutes=20)
+    if models.BatchPatientLoad.objects.last().stop > twenty_mins_ago:
+        raise BatchLoadError("Last load has not run since {}".format(
+            models.BatchPatientLoad.objects.last().stop
+        ))
+
+
+def batch_load():
+    check_batch_load()
+    api = get_api()
+    last_update = models.BatchPatientLoad.objects.order_by(
+        "stopped"
+    ).last()
+    batch = models.BatchPatientLoad.objects.create(
+        start=timezone.now(),
+        state=models.BatchPatientLoad.RUNNING
+    )
+
+    try:
+        _batch_load()
+    except:
+        batch.stopped = timezone.now()
+        batch.status = models.BatchPatientLoad.FAILURE
+    else:
+        batch.stopped = timezone.now()
+        batch.status = models.BatchPatientLoad.SUCCESS
+
+
+@transaction.atomic
+def _batch_load():
+    api = get_api()
+    data_deltas = api.data_deltas()
+    for data_delta in data_deltas:
+        demographics = data_delta["demographics"]
+        # get the demographics for this patient
+        patient_demographics_set = emodels.Demographics.objects.filter(
+            hospital_number=demographics["hospital_number"]
+        )
+        # does a patient with these attributes exist
+        if not patient_demographics_set.filter(
+            **demographics
+        ).exists():
+            # if not, then we need to update
+            patient_demographics = patient_demographics_set.get()
+            patient_demographics.update_from_dict(
+                data_delta["demographics"]
+            )
+
+
+def update_tests(hospital_number, lab_tests):
+    """
+        takes in all lab tests, saves those
+        that need saving updates those that need
+        updating.
+
+
+    """
+    upstream_lab_tests = models.UpstreamLabTest.objects.filter(
+        patient__demographics__hospital_number=hospital_number
+    )
+    pass
+
+
 @transaction.atomic
 def _load_patient(patient, user):
     hospital_number = patient.demographics_set.first().hospital_number
@@ -63,7 +135,7 @@ def _load_patient(patient, user):
         hospital_number
     )
 
-    save_lab_tests(
+    dict(
         patient, patient_results, user
     )
 

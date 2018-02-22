@@ -19,10 +19,7 @@ class ExternalDemographics(PatientSubrecord):
     ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
 
 
-class InitialPatientLoad(PatientSubrecord):
-    """ this model is the initial load of a patient
-        future loads are done by the cron batch load
-    """
+class PatientLoad(models.Model):
     RUNNING = "running"
     FAILURE = "failure"
     SUCCESS = "success"
@@ -32,3 +29,26 @@ class InitialPatientLoad(PatientSubrecord):
         blank=True,
         null=True
     )
+
+    start = models.DateTimeField()
+    stop = models.DateTimeField(
+        blank=True, null=True
+    )
+    count = models.IntegerField(
+        blank=True, null=True
+    )
+
+    class Meta:
+        abstract = True
+
+
+class InitialPatientLoad(PatientLoad, PatientSubrecord):
+    """ this model is the initial load of a patient
+        future loads are done by the cron batch load
+    """
+    pass
+
+
+class BatchPatientLoad(PatientLoad):
+    class Meta:
+        ordering = ('start',)

@@ -2,11 +2,13 @@ import datetime
 import logging
 import traceback
 import pytds
+import itertools
 from functools import wraps
 from collections import defaultdict
 from intrahospital_api.apis import base_api
 from lab import models as lmodels
 from django.conf import settings
+from elcid.models import Demographics
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
@@ -21,7 +23,7 @@ ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since and OBR_exam_code_Text = @test_type ORDER BY last_updated DESC;"
 
-ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since"
+ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY Patient_Number, last_updated DESC;"
 
 
 ETHNICITY_MAPPING = {
@@ -59,14 +61,6 @@ def error_handler(f):
             return
         return result
     return wrap
-
-
-def to_db_date(some_date):
-    """
-        converts a date to a date str for the database
-    """
-    dt = datetime.datetime.combine(some_date, datetime.datetime.min.time())
-    return dt.strftime('%Y-%m-%d')
 
 
 def to_date_str(some_date):
@@ -129,7 +123,7 @@ class Row(object):
         """ look at one field, if its empty, use a different field
         """
         # we use Cerner information if it exists, otherwise
-        # we fall back to winpath demograhpics
+        # we fall back to winpath demographics
         # these are combined in the same table
         # so we fall back to a different
         # field name in the same row
@@ -322,10 +316,10 @@ class ProdApi(base_api.BaseApi):
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
         try:
-            rows = self.execute_query(
+            rows = list(self.execute_query(
                 self.demographics_query,
                 params=dict(hospital_number=hospital_number)
-            )
+            ))
         except:
             logger = logging.getLogger('error_emailer')
             logger.error("unable to get demographics")
@@ -340,7 +334,7 @@ class ProdApi(base_api.BaseApi):
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
         """ not all data, I lied. Only the last year's
         """
-        db_date = to_db_date(datetime.date.today() - datetime.timedelta(365))
+        db_date = datetime.date.today() - datetime.timedelta(365)
 
         if lab_number:
             return self.execute_query(
@@ -365,6 +359,38 @@ class ProdApi(base_api.BaseApi):
                 self.all_data_for_hospital_number_query,
                 params=dict(hospital_number=hospital_number, since=db_date)
             )
+
+    def data_deltas(self, some_datetime):
+        """ yields an iterator of dictionary
+
+            the dictionary contains
+
+            "demographics" : demographics, the first (ie the most recent)
+            demographics result in the set.
+
+            "lab_tests": all lab tests for the patient
+
+        """
+        all_rows = self.execute_query(
+            self.all_data_since_query,
+            params=dict(since=some_datetime)
+        )
+        all_rows = (Row(r) for r in all_rows)
+        hospital_number_to_rows = itertools.group_by(
+            all_rows, lambda x: x.get_hospital_number()
+        )
+        for hospital_number, rows in hospital_number_to_rows.items():
+            if Demographics.objects.filter(
+                hospital_number=hospital_number
+            ).exists():
+                demographics = rows[0].get_demographics_dict()
+                lab_tests = self.cast_rows_to_lab_test(rows)
+                yield (
+                    dict(
+                        demographics=demographics,
+                        lab_tests=lab_tests
+                    )
+                )
 
     def cooked_data(self, hospital_number):
         raw_data = self.raw_data(hospital_number)
