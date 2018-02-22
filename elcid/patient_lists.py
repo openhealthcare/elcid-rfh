@@ -282,3 +282,19 @@ class Bacteraemia(RfhPatientList):
     template_name = 'episode_list.html'
     schema = []
     order = -10
+
+
+class PCP(RfhPatientList):
+    display_name = 'PCP'
+    direct_add = True
+    tag = "pcp"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class R1(RfhPatientList):
+    display_name = 'R1'
+    direct_add = True
+    tag = "r1"
+    template_name = 'episode_list.html'
+    schema = []
