@@ -76,7 +76,7 @@ def initial_load():
     except:
         batch.stopped = timezone.now()
         batch.status = models.BatchPatientLoad.FAILURE
-        log_errors()
+        log_errors("initial_load")
     else:
         batch.stopped = timezone.now()
         batch.status = models.BatchPatientLoad.SUCCESS
@@ -84,7 +84,7 @@ def initial_load():
 
 def log_errors(name):
     logger = logging.getLogger('error_emailer')
-    logger.error("unable to get {}".format("demographics"))
+    logger.error("unable to run {}".format(name))
     logger = logging.getLogger('intrahospital_api')
     logger.error(traceback.format_exc())
 
@@ -93,7 +93,7 @@ def load_demographics(hospital_number):
     try:
         result = api.demographics(hospital_number)
     except:
-        log_errors()
+        log_errors("load_demographics")
 
     return result
 
@@ -117,20 +117,15 @@ def load_lab_tests_for_patient(patient, async=None):
         state=models.InitialPatientLoad.RUNNING,
         started=timezone.now()
     )
-    try:
-        if async:
-            async_load(patient)
-        else:
-            _load_lab_tests_for_patient(patient)
-    except:
-        patient_load.state = models.InitialPatientLoad.FAILURE
-        patient_load.save()
-        log_errors("batch load")
+    if async:
+        async_load(patient, patient_load)
+    else:
+        _load_lab_tests_for_patient(patient, patient_load)
 
 
-def async_load(patient):
+def async_load(patient, patient_load):
     from intrahospital_api import tasks
-    tasks.load.delay(patient)
+    tasks.load.delay(patient, patient_load)
 
 
 def good_to_go():
@@ -223,29 +218,10 @@ def update_external_demographics():
         external_demographics.update_from_dict(
             external_demographics_json, api.user
         )
-    except:
-        patient_load.state = models.InitialPatientLoad.FAILURE
-        patient_load.save()
-        log_errors("batch load")
-    else:
-        patient_load.state = models.InitialPatientLoad.SUCCESS
-        patient_load.save()
-
-
-def _batch_load():
-    try:
-        _batch_load_and_update()
-    except:
-        patient_load.state = models.InitialPatientLoad.FAILURE
-        patient_load.save()
-        log_errors("batch load")
-    else:
-        patient_load.state = models.InitialPatientLoad.SUCCESS
-        patient_load.save()
 
 
 @transaction.atomic
-def _batch_load_and_update():
+def _batch_load():
     last_successful_run = models.BatchPatientLoad.objects.filter(
         status=models.BatchPatientLoad.SUCCESS
     ).order_by("started").last()
@@ -313,17 +289,25 @@ def update_tests(patient, lab_tests):
 
 
 @transaction.atomic
-def _load_lab_tests_for_patient(patient):
-    hospital_number = patient.demographics_set.first().hospital_number
-    patient.labtest_set.filter(
-        lab_test_type__in=[
-            emodels.UpstreamBloodCulture.get_display_name(),
-            emodels.UpstreamLabTest.get_display_name()
-        ]
-    ).delete()
+def _load_lab_tests_for_patient(patient, patient_load):
+    try:
+        hospital_number = patient.demographics_set.first().hospital_number
+        patient.labtest_set.filter(
+            lab_test_type__in=[
+                emodels.UpstreamBloodCulture.get_display_name(),
+                emodels.UpstreamLabTest.get_display_name()
+            ]
+        ).delete()
 
-    results = api.results_for_hospital_number(hospital_number)
-    update_tests(patient, results)
+        results = api.results_for_hospital_number(hospital_number)
+        update_tests(patient, results)
+    except:
+        patient_load.stopped = timezone.now()
+        patient_load.status = models.BatchPatientLoad.FAILURE
+        log_errors("_load_lab_tests_for_patient")
+    else:
+        patient_load.stopped = timezone.now()
+        patient_load.status = models.BatchPatientLoad.SUCCESS
 
 
 def get_model_for_lab_test_type(lab_test):
