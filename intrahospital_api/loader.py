@@ -130,7 +130,7 @@ def good_to_go():
     ).last()
 
     if last_run_running:
-        time_ago = timezone.now() - last_run_running.started()
+        time_ago = timezone.now() - last_run_running.started
 
         # If a batch load is still running and started less that
         # 10 mins ago, the let it run and don't try and run a batch load.
