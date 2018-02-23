@@ -41,6 +41,8 @@
 """
 
 import datetime
+import logging
+import traceback
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
@@ -74,13 +76,26 @@ def initial_load():
     except:
         batch.stopped = timezone.now()
         batch.status = models.BatchPatientLoad.FAILURE
+        log_errors()
     else:
         batch.stopped = timezone.now()
         batch.status = models.BatchPatientLoad.SUCCESS
 
 
+def log_errors(name):
+    logger = logging.getLogger('error_emailer')
+    logger.error("unable to get {}".format("demographics"))
+    logger = logging.getLogger('intrahospital_api')
+    logger.error(traceback.format_exc())
+
+
 def load_demographics(hospital_number):
-    return api.demographics(hospital_number)
+    try:
+        result = api.demographics(hospital_number)
+    except:
+        log_errors()
+
+    return result
 
 
 def load_lab_tests_for_patient(patient, async=None):
@@ -110,10 +125,7 @@ def load_lab_tests_for_patient(patient, async=None):
     except:
         patient_load.state = models.InitialPatientLoad.FAILURE
         patient_load.save()
-        raise
-    else:
-        patient_load.state = models.InitialPatientLoad.SUCCESS
-        patient_load.save()
+        log_errors("batch load")
 
 
 def async_load(patient):
@@ -152,7 +164,7 @@ def good_to_go():
             models.BatchPatientLoad.objects.last().stopped
         ))
 
-    if models.BatchPatientLoad.object.filter(
+    if not models.BatchPatientLoad.object.filter(
         state=models.BatchPatientLoad.SUCCESS
     ).exists():
         err = "No previous run has completed, please run ./manage.py"
@@ -174,9 +186,12 @@ def batch_load():
     except:
         batch.stopped = timezone.now()
         batch.status = models.BatchPatientLoad.FAILURE
+        batch.save()
+        log_errors("batch load")
     else:
         batch.stopped = timezone.now()
         batch.status = models.BatchPatientLoad.SUCCESS
+        batch.save()
 
 
 @transaction.atomic
@@ -208,10 +223,29 @@ def update_external_demographics():
         external_demographics.update_from_dict(
             external_demographics_json, api.user
         )
+    except:
+        patient_load.state = models.InitialPatientLoad.FAILURE
+        patient_load.save()
+        log_errors("batch load")
+    else:
+        patient_load.state = models.InitialPatientLoad.SUCCESS
+        patient_load.save()
+
+
+def _batch_load():
+    try:
+        _batch_load_and_update()
+    except:
+        patient_load.state = models.InitialPatientLoad.FAILURE
+        patient_load.save()
+        log_errors("batch load")
+    else:
+        patient_load.state = models.InitialPatientLoad.SUCCESS
+        patient_load.save()
 
 
 @transaction.atomic
-def _batch_load():
+def _batch_load_and_update():
     last_successful_run = models.BatchPatientLoad.objects.filter(
         status=models.BatchPatientLoad.SUCCESS
     ).order_by("started").last()

@@ -1,9 +1,6 @@
 import datetime
-import logging
-import traceback
 import pytds
 import itertools
-from functools import wraps
 from collections import defaultdict
 from intrahospital_api.apis import base_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
@@ -47,21 +44,6 @@ ETHNICITY_MAPPING = {
     "S": "Other - Any Other Ethnic Group",
     "Z": "Other - Not Stated",
 }
-
-
-def error_handler(f):
-    @wraps(f)
-    def wrap(*args, **kw):
-        try:
-            result = f(*args, **kw)
-        except:
-            logger = logging.getLogger('error_emailer')
-            logger.error("{} threw an error".format(f.__name__))
-            logger = logging.getLogger('intrahospital_api')
-            logger.error(traceback.format_exc())
-            return
-        return result
-    return wrap
 
 
 def to_date_str(some_date):
@@ -312,17 +294,10 @@ class ProdApi(base_api.BaseApi):
 
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
-        try:
-            rows = list(self.execute_query(
-                self.demographics_query,
-                params=dict(hospital_number=hospital_number)
-            ))
-        except:
-            logger = logging.getLogger('error_emailer')
-            logger.error("unable to get demographics")
-            logger = logging.getLogger('intrahospital_api')
-            logger.error(traceback.format_exc())
-            return
+        rows = list(self.execute_query(
+            self.demographics_query,
+            params=dict(hospital_number=hospital_number)
+        ))
         if not len(rows):
             return
 

@@ -263,7 +263,7 @@ LOGGING = {
             'propagate': True,
         },
         'error_emailer': {
-            'handlers': ['standard_error_emailer'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': True,
         },
