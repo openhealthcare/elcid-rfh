@@ -593,6 +593,11 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     run_management_command("create_singletons", new_env)
     run_management_command("load_lookup_lists", new_env)
     run_management_command("deployment_load", new_env)
+    print(
+        "NOTE, this build loads in lab tests so new Lab Tests may have been \
+created"
+    )
+
     restart_supervisord(new_env)
     restart_nginx()
 
@@ -687,8 +692,4 @@ def deploy_prod(old_branch, old_database_name=None):
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
     new_status = run_management_command("status_report", new_env)
 
-    print(
-        "NOTE, this build loads in lab tests so new Lab Tests may have been \
-created"
-    )
     diff_status(new_status, old_status)

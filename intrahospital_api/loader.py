@@ -130,7 +130,7 @@ def good_to_go():
     ).last()
 
     if last_run_running:
-        time_ago = timezone.now() - last_run_running.start()
+        time_ago = timezone.now() - last_run_running.started()
 
         # If a batch load is still running and started less that
         # 10 mins ago, the let it run and don't try and run a batch load.
@@ -166,8 +166,8 @@ def batch_load():
     if not good_to_go():
         return
     batch = models.BatchPatientLoad.objects.create(
-        start=timezone.now(),
-        state=models.BatchPatientLoad.RUNNING
+        started=timezone.now(),
+        status=models.BatchPatientLoad.RUNNING
     )
     try:
         _batch_load()
