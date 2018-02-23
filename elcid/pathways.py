@@ -85,7 +85,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         # in their lab tests
         if not patient:
             if settings.ADD_PATIENT_LAB_TESTS:
-                loader.load_patient(saved_patient, user)
+                loader.load_lab_tests_for_patient(saved_patient)
 
         return saved_patient, saved_episode
 

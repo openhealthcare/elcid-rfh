@@ -6,6 +6,7 @@ import itertools
 from functools import wraps
 from collections import defaultdict
 from intrahospital_api.apis import base_api
+from intrahospital_api.constants import EXTERNAL_SYSTEM
 from lab import models as lmodels
 from django.conf import settings
 from elcid.models import Demographics
@@ -68,7 +69,7 @@ def to_date_str(some_date):
         so we need to convert all dates into strings
     """
     if some_date:
-        return some_date.strftime("%d/%m/%Y")
+        return some_date.strftime(settings.DATE_INPUT_FORMATS[0])
 
 
 def to_datetime_str(some_datetime):
@@ -76,7 +77,7 @@ def to_datetime_str(some_datetime):
         so we need to convert all datetimes into strings
     """
     if some_datetime:
-        return some_datetime.strftime('%d/%m/%Y %H:%M:%S')
+        return some_datetime.strftime(settings.DATETIME_INPUT_FORMATS[0])
 
 
 class Row(object):
@@ -172,12 +173,8 @@ class Row(object):
         result = {}
         for field in self.DEMOGRAPHICS_FIELDS:
             result[field] = getattr(self, "get_{}".format(field))()
-        result["external_system"] = "RFH Demographics"
         return result
 
-    # Results Fields
-
-    # fields of the Lab Test
     def get_status(self):
         status_abbr = self.db_row.get("OBX_Status")
 
@@ -329,7 +326,9 @@ class ProdApi(base_api.BaseApi):
         if not len(rows):
             return
 
-        return Row(rows[0]).get_demographics_dict()
+        demographics_dict = Row(rows[0]).get_demographics_dict()
+        demographics_dict["external_system"] = EXTERNAL_SYSTEM
+        return demographics_dict
 
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
         """ not all data, I lied. Only the last year's
@@ -412,6 +411,7 @@ class ProdApi(base_api.BaseApi):
         for external_id, lab_test in lab_number_to_lab_test.items():
             lab_test = lab_number_to_lab_test[external_id]
             lab_test["observations"] = lab_number_to_observations[external_id]
+            lab_test["external_system"] = EXTERNAL_SYSTEM
             result.append(lab_test)
         return result
 

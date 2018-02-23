@@ -30,8 +30,8 @@ class PatientLoad(models.Model):
         null=True
     )
 
-    start = models.DateTimeField()
-    stop = models.DateTimeField(
+    started = models.DateTimeField()
+    stopped = models.DateTimeField(
         blank=True, null=True
     )
     count = models.IntegerField(
@@ -51,4 +51,4 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
 
 class BatchPatientLoad(PatientLoad):
     class Meta:
-        ordering = ('start',)
+        ordering = ('started',)

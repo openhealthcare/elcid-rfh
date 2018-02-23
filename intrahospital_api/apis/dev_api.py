@@ -1,4 +1,5 @@
 from django.conf import settings
+from intrahospital_api import constants
 from intrahospital_api.apis import base_api
 from datetime import date, timedelta, datetime
 from elcid import models as emodels
@@ -200,7 +201,7 @@ class DevApi(base_api.BaseApi):
         return dict(
             date_of_birth=self.get_date_of_birth(),
             ethnicity="Other",
-            external_system="DEV_API",
+            external_system=constants.EXTERNAL_SYSTEM,
             first_name=first_name,
             hospital_number=hospital_number,
             nhs_number=self.get_external_identifier(),
@@ -314,6 +315,7 @@ class DevApi(base_api.BaseApi):
                         '%d/%m/%Y %H:%M:%S'
                     ),
                     external_identifier=self.get_external_identifier(),
+                    external_system=constants.EXTERNAL_SYSTEM,
                     status=lmodels.LabTest.COMPLETE,
                     site=u'^&                              ^',
                     test_code=i.lower().replace(" ", "_"),

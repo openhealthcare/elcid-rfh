@@ -4,7 +4,7 @@ from celery import shared_task
 
 
 @shared_task
-def load(user, patient):
+def load(patient):
     from intrahospital_api import loader
-    fname = loader._load_patient(patient, user)
+    fname = loader._load_lab_tests_for_patient(patient)
     return fname

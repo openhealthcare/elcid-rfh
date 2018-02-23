@@ -179,7 +179,9 @@ INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
 # when running the batch load, this user needs to be set
 API_USER = "needs to be set"
-ASYNC_API = True
+
+# this needs to be set to true on prod
+ASYNC_API = False
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for

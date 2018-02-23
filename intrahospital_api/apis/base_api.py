@@ -1,3 +1,7 @@
+from django.conf import settings
+from django.contrib.auth.models import User
+
+
 class BaseApi(object):
     def demographics(self, hospital_number):
         """ get me all demographics information for this patient
@@ -23,3 +27,7 @@ class BaseApi(object):
         raise NotImplementedError(
             "Please a method that get's all cooked data about a patient"
         )
+
+    @property
+    def user(self):
+        return User.objects.get(username=settings.API_USER)
