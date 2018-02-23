@@ -371,21 +371,36 @@ class ProdApi(base_api.BaseApi):
         return (Row(row).get_all_fields() for row in raw_data)
 
     def cast_rows_to_lab_test(self, rows):
-        lab_number_to_observations = defaultdict(list)
-        lab_number_to_lab_test = dict()
+        """ We cast multiple rows to lab tests.
+
+            A lab test number(external identifier) can have multiple lab test
+            types and multiple obsevartions.
+
+            So we split the rows (observations) up via lab number/lab test type
+
+        """
+        lab_number_type_to_observations = defaultdict(list)
+        lab_number_type_to_lab_test = dict()
 
         for row in rows:
             lab_test_dict = row.get_lab_test_dict()
             lab_number = lab_test_dict["external_identifier"]
-            lab_number_to_lab_test[lab_number] = lab_test_dict
-            lab_number_to_observations[lab_number].append(
+            lab_test_type = lab_test_dict["test_name"]
+            lab_number_type_to_lab_test[
+                (lab_number, lab_test_type,)
+            ] = lab_test_dict
+            lab_number_type_to_observations[
+                (lab_number, lab_test_type,)
+            ].append(
                 row.get_observation_dict()
             )
         result = []
 
-        for external_id, lab_test in lab_number_to_lab_test.items():
-            lab_test = lab_number_to_lab_test[external_id]
-            lab_test["observations"] = lab_number_to_observations[external_id]
+        for external_id_and_type, lab_test in lab_number_type_to_lab_test.items():
+            lab_test = lab_number_type_to_lab_test[external_id_and_type]
+            lab_test["observations"] = lab_number_type_to_observations[
+                external_id_and_type
+            ]
             lab_test["external_system"] = EXTERNAL_SYSTEM
             result.append(lab_test)
         return result

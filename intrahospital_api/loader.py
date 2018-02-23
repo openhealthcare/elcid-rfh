@@ -302,12 +302,14 @@ def _load_lab_tests_for_patient(patient, patient_load):
         results = api.results_for_hospital_number(hospital_number)
         update_tests(patient, results)
     except:
+        log_errors("_load_lab_tests_for_patient")
         patient_load.stopped = timezone.now()
         patient_load.status = models.BatchPatientLoad.FAILURE
-        log_errors("_load_lab_tests_for_patient")
+        patient_load.save()
     else:
         patient_load.stopped = timezone.now()
         patient_load.status = models.BatchPatientLoad.SUCCESS
+        patient_load.save()
 
 
 def get_model_for_lab_test_type(lab_test):
@@ -317,10 +319,22 @@ def get_model_for_lab_test_type(lab_test):
         mod = emodels.UpstreamLabTest
 
     external_identifier = lab_test["external_identifier"]
-    filtered = mod.objects.filter(external_identifier=external_identifier)
-    o = filtered.first()
+    lab_test_type = lab_test["test_name"]
+    filtered = mod.objects.filter(
+        external_identifier=external_identifier,
+    )
+    by_test_type = [
+        f for f in filtered if f.extras["test_name"] == lab_test_type
+    ]
 
-    if o:
-        return o
+    if len(by_test_type) > 1:
+        raise ValueError(
+            "multiple test types found for {} {}".format(
+                external_identifier, lab_test_type
+            )
+        )
+
+    if by_test_type:
+        return by_test_type[0]
     else:
         return mod()
