@@ -137,16 +137,16 @@ def good_to_go():
         #
         # Examples of when this might happen are when we've just done a
         # deployment.
-        if time_ago.minutes < 10:
+        if time_ago.seconds < 600:
             return False
         else:
             raise BatchLoadError(
                 "Last load is still running and has been for {} mins".format(
-                    time_ago.minutes
+                    time_ago.seconds/60
                 )
             )
 
-    twenty_mins_ago = timezone.now() - datetime.timedelta(minutes=20)
+    twenty_mins_ago = timezone.now() - datetime.timedelta(seconds=20 * 60)
     if models.BatchPatientLoad.objects.last().stopped > twenty_mins_ago:
         raise BatchLoadError("Last load has not run since {}".format(
             models.BatchPatientLoad.objects.last().stopped
