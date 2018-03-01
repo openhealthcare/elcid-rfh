@@ -89,6 +89,23 @@ def log_errors(name):
     logger.error(traceback.format_exc())
 
 
+def any_loads_running():
+    """
+        returns a boolean as to whether any loads are
+        running, for use by things that synch databases
+    """
+    patient_loading = models.InitialPatientLoad.objects.filter(
+        state=models.InitialPatientLoad.RUNNING
+    ).exists()
+
+    batch_loading = models.BatchPatientLoad.objects.filter(
+        state=models.BatchPatientLoad.RUNNING
+    ).exists()
+
+    return patient_loading or batch_loading
+
+
+
 def load_demographics(hospital_number):
     try:
         result = api.demographics(hospital_number)
@@ -132,9 +149,19 @@ def good_to_go():
     """ Are we good to run a batch load, returns True if we should.
         runs a lot of sanity checks.
     """
-    last_run_running = models.BatchPatientLoad.objects.filter(
+    current_running = models.BatchPatientLoad.objects.filter(
         Q(stopped=None) | Q(state=models.BatchPatientLoad.RUNNING)
-    ).last()
+    )
+
+    if current_running.count() > 1:
+        # we should never have multiple batches running at the same time
+        raise BatchLoadError(
+            "We appear to have {} concurrent batch loads".format(
+                current_running.count()
+            )
+        )
+
+    last_run_running = current_running.last()
 
     if last_run_running:
         time_ago = timezone.now() - last_run_running.started

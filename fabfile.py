@@ -43,6 +43,7 @@ from __future__ import print_function
 import datetime
 import json
 import copy
+import time
 from jinja2 import Environment, FileSystemLoader
 from fabric.api import local, env
 from fabric.operations import put
@@ -60,7 +61,7 @@ PROJECT_ROOT = "/usr/lib/{unix_user}".format(unix_user=UNIX_USER)
 PROJECT_DIRECTORY = "{project_root}/{release_name}"
 BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
 GIT_URL = "https://github.com/openhealthcare/elcid-rfh"
-LOG_DIR = "/usr/lib/ohc/log/"
+LOG_DIR = "/usr/lib/{}/log/".format(UNIX_USER)
 # the daily back up
 BACKUP_NAME = "{backup_dir}/back.{dt}.{db_name}.sql"
 REMOTE_BACKUP_NAME = "{backup_dir}/live/back.{dt}.{db_name}.sql"
@@ -138,6 +139,7 @@ def run_management_command(some_command, env):
         cmd = "{0}/bin/python manage.py {1}".format(
             env.virtual_env_path, some_command
         )
+        print(cmd)
         result = local(cmd, capture=True)
         print(result.stdout)
         print(result.stderr)
@@ -407,6 +409,23 @@ def cron_copy_backup(new_env):
     ))
 
 
+def cron_batch_test_script(new_env):
+    """ Creates a cron job that runs the batch test synch
+    """
+    template = jinja_env.get_template('etc/conf_templates/cron_copy.jinja2')
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        branch=new_env.branch,
+        unix_user=UNIX_USER
+    )
+    cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
 def send_error_email(error, some_env):
     print("Sending error email")
     run_management_command(
@@ -417,9 +436,7 @@ def send_error_email(error, some_env):
     )
 
 
-@task
-def copy_backup(branch_name):
-    current_env = Env(branch_name)
+def copy_backup(current_env):
     private_settings = get_private_settings()
     env.host_string = private_settings["host_string"]
     env.password = private_settings["remote_password"]
@@ -567,6 +584,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
     # create a database
     postgres_create_database(new_env)
+    create_pg_pass(new_env, private_settings)
 
     # load in a backup
     if backup_name:
@@ -593,11 +611,6 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     run_management_command("create_singletons", new_env)
     run_management_command("load_lookup_lists", new_env)
     run_management_command("deployment_load", new_env)
-    print(
-        "NOTE, this build loads in lab tests so new Lab Tests may have been \
-created"
-    )
-
     restart_supervisord(new_env)
     restart_nginx()
 
@@ -665,6 +678,55 @@ def roll_back_prod(branch_name):
     cron_copy_backup(roll_to_env)
 
 
+def create_pg_pass(branch, additional_settings):
+    pg_pass = "~/pgpass.conf"
+
+    print("Creating pg pass")
+    template = jinja_env.get_template(
+        'etc/conf_templates/pgpass.conf.jinja2'
+    )
+    output = template.render(
+        branch=branch,
+        db_user=DB_USER,
+        db_password=additional_settings["db_password"]
+    )
+
+    local("rm -f {}".format(pg_pass))
+
+    with open(pg_pass, 'w') as f:
+        f.write(output)
+
+
+@task
+def dump_and_copy(branch_name):
+    env = Env(branch_name)
+    dump_database(env, env.database_name, env.backup_name)
+    copy_backup(env)
+
+
+def dump_database(env, db_name, backup_name):
+    load_running = json.loads(
+        run_management_command("batch_load_running", env)["status"]
+    )
+    while load_running:
+        print("=" * 20)
+        print(
+            "One or more loads are currently running, sleeping for 3 secs"
+        )
+        print("=" * 20)
+        time.sleep(3)
+        load_running = json.loads(
+            run_management_command("batch_load_running", env)["status"]
+        )
+    pg = "pg_dump {db_name} > {bu_name} 2>> /usr/lib/ohc/log/cron.log"
+    local(
+        pg.format(
+            db_name=env.database_name,
+            bu_name=backup_name
+        )
+    )
+
+
 @task
 def deploy_prod(old_branch, old_database_name=None):
     """
@@ -679,12 +741,12 @@ def deploy_prod(old_branch, old_database_name=None):
     new_env = Env(new_branch)
 
     validate_private_settings()
-    dump_str = "sudo -u postgres pg_dump {0} -U postgres > {1}"
+
     if old_database_name is None:
         dbname = old_env.database_name
     else:
         dbname = old_database_name
-    local(dump_str.format(dbname, old_env.release_backup_name))
+    dump_database(old_env, dbname, old_env.release_backup_name)
 
     cron_write_backup(new_env)
     cron_copy_backup(new_env)
