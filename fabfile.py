@@ -49,7 +49,8 @@ from fabric.api import local, env
 from fabric.operations import put
 from fabric.context_managers import lcd, settings
 from fabric.decorators import task
-import os.path
+import os
+import stat
 
 env.hosts = ['127.0.0.1']
 UNIX_USER = "ohc"
@@ -678,7 +679,7 @@ def roll_back_prod(branch_name):
 
 
 def create_pg_pass(env, additional_settings):
-    pg_pass = os.path.join(os.environ["HOME"], ".pgpass.conf")
+    pg_pass = os.path.join(os.environ["HOME"], ".pgpass")
 
     print("Creating pg pass")
     template = jinja_env.get_template(
@@ -690,10 +691,10 @@ def create_pg_pass(env, additional_settings):
         db_password=additional_settings["db_password"]
     )
 
-    local("rm -f {}".format(pg_pass))
-
     with open(pg_pass, 'w') as f:
         f.write(output)
+
+    os.chmod(pg_pass, stat.S_IRWXU)
 
 
 @task
