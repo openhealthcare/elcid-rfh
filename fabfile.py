@@ -678,7 +678,7 @@ def roll_back_prod(branch_name):
     cron_copy_backup(roll_to_env)
 
 
-def create_pg_pass(branch, additional_settings):
+def create_pg_pass(env, additional_settings):
     pg_pass = "~/pgpass.conf"
 
     print("Creating pg pass")
@@ -686,7 +686,7 @@ def create_pg_pass(branch, additional_settings):
         'etc/conf_templates/pgpass.conf.jinja2'
     )
     output = template.render(
-        branch=branch,
+        db_name=env.database_name,
         db_user=DB_USER,
         db_password=additional_settings["db_password"]
     )
