@@ -12,7 +12,16 @@
           </div>
         </div>
       </div>
-      <ul class="list-group">
+      <div ng-show="resultView.patientLoadStatus.isLoading()">
+        <h2 class="text-center no-results">Lab Tests Loading Please Wait</h2>
+      </div>
+      <div ng-show="resultView.patientLoadStatus.isAbsent()">
+        <h2 class="text-center no-results">Unable To Get Lab Tests For This Patient</h2>
+      </div>
+      <div ng-show="resultView.patientLoadStatus.isFailed()">
+        <h2 class="text-center no-results">Failed To Load Lab Tests For This Patient</h2>
+      </div>
+      <ul ng-show="resultView.patientLoadStatus.isLoaded()" class="list-group">
         <li class="list-group-item " ng-repeat="labTest in resultView.labTests">
           <div class="content-offset-below">
             <div class="row">

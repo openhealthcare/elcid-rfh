@@ -1,7 +1,17 @@
 {% load panels %}
+{% load forms %}
 <div class="col-md-6">
   {% record_panel models.Location %}
   {% teams_panel %}
+  <div class="panel panel-default">
+    <div class="panel-heading"><h3>
+      {% icon 'fa fa-crosshairs' %} Trends
+    </h3></div>
+    <div class="panel-body">
+      {% include "partials/lab_test_sparklines.html" with target="patient" %}
+    </div>
+  </div>
+
 
   {% record_panel models.PrimaryDiagnosis %}
 

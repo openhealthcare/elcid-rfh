@@ -5,6 +5,8 @@ angular.module('opal.controllers').controller('ResultView', function(
       var vm = this;
       // lab tests after filtering
       this.labTests = [];
+      this.patientLoadStatus = new InitialPatientTestLoadStatus($scope.patient);
+      this.patientLoadStatus.load();
       // lab tests before filtering
       this.originalLabTests = [];
       this.observationDetail = {};
@@ -144,11 +146,14 @@ angular.module('opal.controllers').controller('ResultView', function(
 
         // _.each(vm.originalLabTests, function())
         ObservationDetail.load($scope.patient.id, labTest.api_name, apiName).then(function(detail){
-          debugger;
           vm.observationDetail[labTest.lab_test_type][observationName] = detail.observations;
         });
       };
 
       this.labTests = [];
-      this.getLabTests($scope.patient);
+      if(!this.patientLoadStatus.isAbsent()){
+        this.patientLoadStatus.promise.then(function(){
+          vm.getLabTests($scope.patient);
+        });
+      }
 });

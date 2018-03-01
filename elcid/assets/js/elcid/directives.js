@@ -24,21 +24,29 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
   };
 });
 
-directives.directive("upstreamBloodCultureResultDisplay", function(UpstreamBloodCultureLoader){
+directives.directive("upstreamBloodCultureResultDisplay", function(
+  UpstreamBloodCultureLoader, InitialPatientTestLoadStatus
+){
   return {
     restrict: 'A',
     scope: true,
-    link : function($scope, $element){
-      $scope.culture_order = [];
-      $scope.cultures = {}
-      $scope.loadBloodCultures = function(){
+    link : function(scope, $element){
+      scope.culture_order = [];
+      scope.cultures = {}
+      scope.patientLoadStatus = new InitialPatientTestLoadStatus(scope.patient);
+      scope.patientLoadStatus.load();
 
-        UpstreamBloodCultureLoader.load($scope.patient.id).then(function(bc_results){
-          $scope.bc_results = bc_results;
+      scope.loadBloodCultures = function(){
+        UpstreamBloodCultureLoader.load(scope.patient.id).then(function(bc_results){
+          scope.bc_results = bc_results;
         });
       }
 
-      $scope.loadBloodCultures();
+      if(!scope.patientLoadStatus.isAbsent()){
+        scope.patientLoadStatus.promise.then(function(){
+          scope.loadBloodCultures();
+        });
+      }
     }
   };
 });
@@ -91,17 +99,18 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
     restrict: 'A',
     scope: true,
     link: function(scope){
-
-      var patientId = scope.row.demographics[0].patient_id;
-      scope.testLoadState = "loading";
-      scope.patientLoadStatus = new InitialPatientTestLoadStatus(scope.row);
+      // TODO: this is wrong, well maybe not wrong, but not right
+      var episode = scope.row || scope.episode;
+      var patientId = episode.demographics[0].patient_id;
+      scope.patientLoadStatus = new InitialPatientTestLoadStatus(
+          episode
+      );
       scope.patientLoadStatus.load();
 
       if(!scope.patientLoadStatus.isAbsent()){
         scope.patientLoadStatus.promise.then(function(){
             // success
             LabTestSummaryLoader.load(patientId).then(function(result){
-              scope.testLoadState = "loaded";
               scope.data = result;
             });
         });

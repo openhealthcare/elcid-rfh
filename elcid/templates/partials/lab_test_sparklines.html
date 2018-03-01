@@ -1,6 +1,6 @@
 {% load forms %}
-<h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
-<div populate-lab-tests="row">
+{% comment %}Expects either an episode or a patient{% endcomment %}
+<div populate-lab-tests="{{ target }}">
   <div ng-show="patientLoadStatus.isLoading()">
     <h2 class="text-center no-results">Lab Tests Loading Please Wait</h2>
   </div>

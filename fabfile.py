@@ -598,6 +598,9 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     # symlink the celery conf
     services_create_celery_conf(new_env)
 
+    # for the moment write cron lab tests on both prod and test
+    cron_lab_tests(new_env)
+
     # django setup
     run_management_command("collectstatic --noinput", new_env)
     run_management_command("migrate --noinput", new_env)
@@ -668,6 +671,7 @@ def roll_back_prod(branch_name):
     _roll_back(branch_name)
     create_pg_pass(roll_to_env, get_private_settings())
     cron_backup(roll_to_env)
+    cron_lab_tests(roll_to_env)
 
 
 def create_pg_pass(env, additional_settings):

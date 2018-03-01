@@ -42,6 +42,7 @@ angular.module('opal.services').service('InitialPatientTestLoadStatus', function
           }
         },
         function(error){
+          // TODO: we need to catch a 404 as this would just mean absent
           self.state = FAILURE;
           self.deferred.reject(FAILURE);
         }
