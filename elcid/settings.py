@@ -170,7 +170,6 @@ INSTALLED_APPS = (
     'elcid',
     'django.contrib.admin',
     'djcelery',
-    'opal.tests',
 )
 
 #### API Settings
