@@ -359,11 +359,14 @@ def services_create_upstart_conf(new_env):
         f.write(output)
 
 
+def kill_running_processes():
+    with settings(warn_only=True):
+        local("sudo pkill super; pkill gunic; pkill celery;")
+
+
 def restart_supervisord(new_env):
     print("Restarting supervisord")
     # warn only in case nothing is running
-    with settings(warn_only=True):
-        local("sudo pkill super; pkill gunic; pkill celery;")
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
     local("{0}/bin/supervisord -c {1}/etc/production.conf".format(
@@ -564,6 +567,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     # the private settings
     private_settings = get_private_settings()
     env.host_string = private_settings["host_string"]
+
+    kill_running_processes()
 
     # Setup environment
     pip_create_virtual_env(new_env)
