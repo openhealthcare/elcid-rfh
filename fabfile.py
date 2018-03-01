@@ -363,7 +363,7 @@ def restart_supervisord(new_env):
     print("Restarting supervisord")
     # warn only in case nothing is running
     with settings(warn_only=True):
-        local("pkill super; pkill gunic; pkill celery;")
+        local("sudo pkill super; pkill gunic; pkill celery;")
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
     local("{0}/bin/supervisord -c {1}/etc/production.conf".format(
@@ -396,23 +396,6 @@ def cron_copy_backup(new_env):
     """ Creates a cron job that copies a file to a remote server
     """
     print("Writing cron copy")
-    template = jinja_env.get_template('etc/conf_templates/cron_copy.jinja2')
-    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
-    output = template.render(
-        fabric_file=fabfile,
-        virtualenv=new_env.virtual_env_path,
-        branch=new_env.branch,
-        unix_user=UNIX_USER
-    )
-    cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
-    local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
-    ))
-
-
-def cron_batch_test_script(new_env):
-    """ Creates a cron job that runs the batch test synch
-    """
     template = jinja_env.get_template('etc/conf_templates/cron_copy.jinja2')
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(

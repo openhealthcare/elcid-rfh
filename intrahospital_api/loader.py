@@ -105,7 +105,6 @@ def any_loads_running():
     return patient_loading or batch_loading
 
 
-
 def load_demographics(hospital_number):
     try:
         result = api.demographics(hospital_number)

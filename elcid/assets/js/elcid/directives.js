@@ -84,13 +84,25 @@ directives.directive("sparkLine", function () {
 });
 
 
-directives.directive("populateLabTests", function(LabTestSummaryLoader){
+directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader){
   "use strict";
   return {
     restrict: 'A',
     scope: true,
     link: function(scope){
       var patientId = scope.row.demographics[0].patient_id;
+      scope.testLoadState = "loading";
+      InitialPatientTestLoadStatus.load(row).then(
+        function(){
+          // success
+
+        },
+        function(){
+          // for whatever reason we've failed load in tests, sozzo
+
+        }
+      )
+
       LabTestSummaryLoader.load(patientId).then(function(result){
         scope.data = result;
       });
