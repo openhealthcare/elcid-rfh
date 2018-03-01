@@ -679,7 +679,7 @@ def roll_back_prod(branch_name):
 
 
 def create_pg_pass(env, additional_settings):
-    pg_pass = "~/pgpass.conf"
+    pg_pass = os.path.join(os.environ["HOME"], ".pgpass.conf")
 
     print("Creating pg pass")
     template = jinja_env.get_template(
