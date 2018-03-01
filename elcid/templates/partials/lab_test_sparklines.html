@@ -1,0 +1,44 @@
+{% load forms %}
+<h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
+<div populate-lab-tests="row">
+  <div ng-show="testLoadState === 'loading'">
+    <h2 class="text-center no-results">Lab Tests Loading Please Wait</h2>
+  </div>
+  <div ng-show="testLoadState === 'absent'">
+    <h2 class="text-center no-results">Unable To Get Lab Tests For This Patient</h2>
+  </div>
+  <div ng-show="testLoadState === 'failed'">
+    <h2 class="text-center no-results">Failed To Load Lab Tests For This Patient</h2>
+  </div>
+  <div ng-show="testLoadState === 'loaded'">
+    <div ng-hide="data.obs_values.length">
+      <h2 class="text-center no-results">No Results Found</h2>
+    </div>
+    <table ng-show="data.obs_values.length" class="col-md-12 table">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="col-md-2"></th>
+          <th class="text-center" ng-repeat="date in data.recent_dates">
+            [[ date | shortDate ]]
+          </th>
+          <th class="text-center">
+            3 month trend
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row" ng-repeat="item in data.obs_values">
+          <td class="text-center col-md-2">
+            [[ item.name ]]
+          <td class="text-center" ng-repeat="date in data.recent_dates">
+            [[ item.latest_results[date] ]]
+          </td>
+          <td class="text-center">
+            <div spark-line="item.graph_values"></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

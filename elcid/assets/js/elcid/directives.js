@@ -32,6 +32,7 @@ directives.directive("upstreamBloodCultureResultDisplay", function(UpstreamBlood
       $scope.culture_order = [];
       $scope.cultures = {}
       $scope.loadBloodCultures = function(){
+
         UpstreamBloodCultureLoader.load($scope.patient.id).then(function(bc_results){
           $scope.bc_results = bc_results;
         });
@@ -92,20 +93,27 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
     link: function(scope){
       var patientId = scope.row.demographics[0].patient_id;
       scope.testLoadState = "loading";
-      InitialPatientTestLoadStatus.load(row).then(
-        function(){
-          // success
+      var prom = InitialPatientTestLoadStatus.load(scope.row)
 
-        },
-        function(){
-          // for whatever reason we've failed load in tests, sozzo
-
-        }
-      )
-
-      LabTestSummaryLoader.load(patientId).then(function(result){
-        scope.data = result;
-      });
+      if(!prom){
+        // this patient has not been reconciled, no lab tests to load
+        scope.testLoadState = "absent";
+      }
+      else{
+        prom.then(
+          function(x){
+            // success
+            LabTestSummaryLoader.load(patientId).then(function(result){
+              scope.testLoadState = "loaded";
+              scope.data = result;
+            });
+          },
+          function(x){
+            // for whatever reason we've failed load in tests, sozzo
+            scope.testLoadState = "failed";
+          }
+        )
+      }
     }
   };
 });

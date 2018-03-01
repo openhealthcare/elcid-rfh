@@ -8,18 +8,23 @@ angular.module('opal.services').service('InitialPatientTestLoadStatus', function
   * the promise is successful when its successful
   * the promise fails, when it, erm fails...
   */
-  var url = ""
   var SUCCESS = "success";
   var FAILURE = "failure";
   var RUNNING = "running";
 
-  var getFromUrl(someId){
+  var getFromUrl = function(someId, deferred){
     $http.get("/api/v0.1/initial_patient_load/" + lastTestLoad.id + "/").then(
       function(initialPatientLoad){
+        debugger;
         if(initialPatientLoad.state===SUCCESS){
           deferred.resolve(SUCCESS);
         }
-        else if()
+        else if(initialPatientLoad.state!==RUNNING){
+          $timeout(function() { getFromUrl(someId); }, 0, false);
+        }
+        else{
+          deferred.reject(FAILURE);
+        }
       },
       function(error){
         deferred.reject(FAILURE);
@@ -31,27 +36,18 @@ angular.module('opal.services').service('InitialPatientTestLoadStatus', function
     load: function(episode){
       // can actually be passed a patient or an episode
       var deferred = $q.defer();
-
-      if(!episode.intial_patient_test_load.length){
+      if(!episode.initial_patient_load.length){
         // the patient has no test load
         return null;
       }
-      var lastTestLoad = episode.intial_patient_test_load;
+      var lastTestLoad = episode.initial_patient_load;
 
-      if(!_.last(lastTestLoad).state === SUCCESS){
+      if(_.last(lastTestLoad).state === SUCCESS){
         deferred.resolve(SUCCESS);
       }
       else{
-        $http.get("/api/v0.1/initial_patient_load/" + lastTestLoad.id + "/").then(
-          function(success){
-            deferred.resolve(SUCCESS);
-          },
-          function(error){
-            deferred.reject(FAILURE);
-          }
-        )
+        getFromUrl(lastTestLoad.id, deferred);
       }
-
       return deferred.promise;
     },
     SUCCESS: SUCCESS,

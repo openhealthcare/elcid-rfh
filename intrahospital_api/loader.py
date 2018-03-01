@@ -299,17 +299,6 @@ def update_tests(patient, lab_tests):
         updating.
     """
     for lab_test in lab_tests:
-        upstream_tests = emodels.UpstreamLabTest.objects.filter(
-            external_identifier=lab_test["external_identifier"]
-        )
-        upstream_count = upstream_tests.count()
-        if upstream_count > 1:
-            raise ValueError(
-                "We seem to have 2 lab tests for {}".format(
-                    lab_test["external_identifier"]
-                )
-            )
-
         lab_model = get_model_for_lab_test_type(lab_test)
         lab_model.update_from_api_dict(patient, lab_test, api.user)
 
@@ -330,11 +319,11 @@ def _load_lab_tests_for_patient(patient, patient_load):
     except:
         log_errors("_load_lab_tests_for_patient")
         patient_load.stopped = timezone.now()
-        patient_load.status = models.BatchPatientLoad.FAILURE
+        patient_load.state = models.BatchPatientLoad.FAILURE
         patient_load.save()
     else:
         patient_load.stopped = timezone.now()
-        patient_load.status = models.BatchPatientLoad.SUCCESS
+        patient_load.state = models.BatchPatientLoad.SUCCESS
         patient_load.save()
 
 
