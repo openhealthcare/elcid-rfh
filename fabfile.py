@@ -376,33 +376,37 @@ def restart_nginx():
     local('sudo service nginx restart')
 
 
-def cron_write_backup(new_env):
-    """ Creates a cron job that has a postgres user writing to a file
-    """
-    print("Writing cron backup")
-    template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
-    output = template.render(
-        database_name=new_env.database_name,
-        backup_dir=BACKUP_DIR
-    )
-
-    cron_file = "/etc/cron.d/{0}_backup".format(PROJECT_NAME)
-    local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
-    ))
-
-
-def cron_copy_backup(new_env):
+def cron_backup(new_env):
     """ Creates a cron job that copies a file to a remote server
     """
     print("Writing cron copy")
-    template = jinja_env.get_template('etc/conf_templates/cron_copy.jinja2')
+    template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(
         fabric_file=fabfile,
         virtualenv=new_env.virtual_env_path,
         branch=new_env.branch,
         unix_user=UNIX_USER
+    )
+    cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
+def cron_lab_tests(new_env):
+    """ Creates a cron job that copies a file to a remote server
+    """
+    print("Writing cron copy")
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_lab_tests.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
     )
     cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
@@ -657,8 +661,8 @@ def roll_back_prod(branch_name):
 
     roll_to_env = Env(branch_name)
     _roll_back(branch_name)
-    cron_write_backup(roll_to_env)
-    cron_copy_backup(roll_to_env)
+    create_pg_pass(roll_to_env, get_private_settings())
+    cron_backup(roll_to_env)
 
 
 def create_pg_pass(env, additional_settings):
@@ -731,8 +735,7 @@ def deploy_prod(old_branch, old_database_name=None):
         dbname = old_database_name
     dump_database(old_env, dbname, old_env.release_backup_name)
 
-    cron_write_backup(new_env)
-    cron_copy_backup(new_env)
+    cron_backup(new_env)
     old_status = run_management_command("status_report", old_env)
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
     new_status = run_management_command("status_report", new_env)
