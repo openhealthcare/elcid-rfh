@@ -1,16 +1,16 @@
 {% load forms %}
 <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
 <div populate-lab-tests="row">
-  <div ng-show="testLoadState === 'loading'">
+  <div ng-show="patientLoadStatus.isLoading()">
     <h2 class="text-center no-results">Lab Tests Loading Please Wait</h2>
   </div>
-  <div ng-show="testLoadState === 'absent'">
+  <div ng-show="patientLoadStatus.isAbsent()">
     <h2 class="text-center no-results">Unable To Get Lab Tests For This Patient</h2>
   </div>
-  <div ng-show="testLoadState === 'failed'">
+  <div ng-show="patientLoadStatus.isFailed()">
     <h2 class="text-center no-results">Failed To Load Lab Tests For This Patient</h2>
   </div>
-  <div ng-show="testLoadState === 'loaded'">
+  <div ng-show="patientLoadStatus.isLoaded()">
     <div ng-hide="data.obs_values.length">
       <h2 class="text-center no-results">No Results Found</h2>
     </div>

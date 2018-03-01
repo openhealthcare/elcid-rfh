@@ -91,28 +91,20 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
     restrict: 'A',
     scope: true,
     link: function(scope){
+
       var patientId = scope.row.demographics[0].patient_id;
       scope.testLoadState = "loading";
-      var prom = InitialPatientTestLoadStatus.load(scope.row)
+      scope.patientLoadStatus = new InitialPatientTestLoadStatus(scope.row);
+      scope.patientLoadStatus.load();
 
-      if(!prom){
-        // this patient has not been reconciled, no lab tests to load
-        scope.testLoadState = "absent";
-      }
-      else{
-        prom.then(
-          function(x){
+      if(!scope.patientLoadStatus.isAbsent()){
+        scope.patientLoadStatus.promise.then(function(){
             // success
             LabTestSummaryLoader.load(patientId).then(function(result){
               scope.testLoadState = "loaded";
               scope.data = result;
             });
-          },
-          function(x){
-            // for whatever reason we've failed load in tests, sozzo
-            scope.testLoadState = "failed";
-          }
-        )
+        });
       }
     }
   };

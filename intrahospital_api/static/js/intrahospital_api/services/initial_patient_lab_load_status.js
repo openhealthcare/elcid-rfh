@@ -11,48 +11,72 @@ angular.module('opal.services').service('InitialPatientTestLoadStatus', function
   var SUCCESS = "success";
   var FAILURE = "failure";
   var RUNNING = "running";
+  var ABSENT = "absent";
+  var LOADING = "loading";
 
-  var getFromUrl = function(someId, deferred){
-    $http.get("/api/v0.1/initial_patient_load/" + lastTestLoad.id + "/").then(
-      function(initialPatientLoad){
-        debugger;
-        if(initialPatientLoad.state===SUCCESS){
-          deferred.resolve(SUCCESS);
-        }
-        else if(initialPatientLoad.state!==RUNNING){
-          $timeout(function() { getFromUrl(someId); }, 0, false);
-        }
-        else{
-          deferred.reject(FAILURE);
-        }
-      },
-      function(error){
-        deferred.reject(FAILURE);
-      }
-    )
-  }
+  var InitialPatientTestLoadStatus = function(episode){
+    // can actually be passed a patient or an episode
+    this.episode = episode;
+    this.state = LOADING;
+    this.getFromUrl = function(){
+      var self = this;
+    }
+    this.deferred = $q.defer();
+  };
 
-  return {
-    load: function(episode){
-      // can actually be passed a patient or an episode
-      var deferred = $q.defer();
-      if(!episode.initial_patient_load.length){
+  InitialPatientTestLoadStatus.prototype = {
+    getFromUrl: function(someId){
+      var self = this;
+      $http.get("/api/v0.1/initial_patient_load/" + lastTestLoad.id + "/").then(
+        function(initialPatientLoad){
+          if(initialPatientLoad.state===SUCCESS){
+            self.state = SUCCESS;
+            self.deferred.resolve(SUCCESS);
+          }
+          else if(initialPatientLoad.state!==RUNNING){
+            $timeout(function() { self.getFromUrl(someId); }, 0, false);
+          }
+          else{
+            self.state = FAILURE;
+            self.deferred.reject(FAILURE);
+          }
+        },
+        function(error){
+          self.state = FAILURE;
+          self.deferred.reject(FAILURE);
+        }
+      )
+    },
+    isAbsent: function(){
+      return this.state === ABSENT;
+    },
+    isLoading: function(){
+      return this.state === LOADING;
+    },
+    isLoaded: function(){
+      return this.state === SUCCESS;
+    },
+    isFailed: function(){
+      return this.state === FAILURE;
+    },
+    load: function(){
+      if(!this.episode.initial_patient_load.length){
         // the patient has no test load
+        this.state = ABSENT;
         return null;
       }
-      var lastTestLoad = episode.initial_patient_load;
+      var lastTestLoad = this.episode.initial_patient_load;
 
       if(_.last(lastTestLoad).state === SUCCESS){
-        deferred.resolve(SUCCESS);
+        this.state = SUCCESS;
+        this.deferred.resolve(SUCCESS);
       }
       else{
-        getFromUrl(lastTestLoad.id, deferred);
+        this.getFromUrl(lastTestLoad.id);
       }
-      return deferred.promise;
-    },
-    SUCCESS: SUCCESS,
-    FAILURE: FAILURE,
-    RUNNING: RUNNING
-  }
+      this.promise = this.deferred.promise;
+    }
+  };
 
+  return InitialPatientTestLoadStatus;
 });

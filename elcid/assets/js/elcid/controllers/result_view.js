@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller('ResultView', function(
-  $scope, LabTestResults, ObservationDetail, ngProgressLite
+  $scope, LabTestResults, ObservationDetail, ngProgressLite, InitialPatientTestLoadStatus
 ){
       "use strict";
       var vm = this;

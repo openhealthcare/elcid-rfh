@@ -391,7 +391,7 @@ def cron_backup(new_env):
         branch=new_env.branch,
         unix_user=UNIX_USER
     )
-    cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
+    cron_file = "/etc/cron.d/{0}_backup".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
         output, cron_file
     ))
@@ -411,7 +411,7 @@ def cron_lab_tests(new_env):
         unix_user=UNIX_USER,
         project_dir=new_env.project_directory
     )
-    cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
+    cron_file = "/etc/cron.d/{0}_batch_test_load".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
         output, cron_file
     ))
