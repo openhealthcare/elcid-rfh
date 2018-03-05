@@ -70,16 +70,17 @@ def initial_load():
         )
         total = patients.count()
         models.InitialPatientLoad.objects.all().delete()
+        models.BatchPatientLoad.objects.all().delete()
         for iterator, patient in enumerate(patients.all()):
             print "running {}/{}".format(iterator, total)
             load_lab_tests_for_patient(patient, async=False)
     except:
         batch.stopped = timezone.now()
-        batch.status = models.BatchPatientLoad.FAILURE
+        batch.state = models.BatchPatientLoad.FAILURE
         log_errors("initial_load")
     else:
         batch.stopped = timezone.now()
-        batch.status = models.BatchPatientLoad.SUCCESS
+        batch.state = models.BatchPatientLoad.SUCCESS
 
 
 def log_errors(name):
@@ -200,18 +201,18 @@ def batch_load():
         return
     batch = models.BatchPatientLoad.objects.create(
         started=timezone.now(),
-        status=models.BatchPatientLoad.RUNNING
+        state=models.BatchPatientLoad.RUNNING
     )
     try:
         _batch_load()
     except:
         batch.stopped = timezone.now()
-        batch.status = models.BatchPatientLoad.FAILURE
+        batch.state = models.BatchPatientLoad.FAILURE
         batch.save()
         log_errors("batch load")
     else:
         batch.stopped = timezone.now()
-        batch.status = models.BatchPatientLoad.SUCCESS
+        batch.state = models.BatchPatientLoad.SUCCESS
         batch.save()
 
 

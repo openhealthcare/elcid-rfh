@@ -1,4 +1,4 @@
-angular.module('opal.services').service('InitialPatientTestLoadStatus', function($q, $http){
+angular.module('opal.services').service('InitialPatientTestLoadStatus', function($q, $http, $timeout){
   "use strict";
   /*
   * returns a promise or null.
@@ -18,23 +18,21 @@ angular.module('opal.services').service('InitialPatientTestLoadStatus', function
     // can actually be passed a patient or an episode
     this.episode = episode;
     this.state = LOADING;
-    this.getFromUrl = function(){
-      var self = this;
-    }
     this.deferred = $q.defer();
   };
 
   InitialPatientTestLoadStatus.prototype = {
     getFromUrl: function(someId){
       var self = this;
-      $http.get("/api/v0.1/initial_patient_load/" + lastTestLoad.id + "/").then(
-        function(initialPatientLoad){
+      $http.get("/api/v0.1/initial_patient_load/" + someId + "/").then(
+        function(response){
+          var initialPatientLoad = response.data;
           if(initialPatientLoad.state===SUCCESS){
             self.state = SUCCESS;
             self.deferred.resolve(SUCCESS);
           }
           else if(initialPatientLoad.state === RUNNING){
-            $timeout(function() { self.getFromUrl(someId); }, 0, false);
+            $timeout(function() { self.getFromUrl(someId); }, 1500, false);
           }
           else{
             self.state = FAILURE;
@@ -66,9 +64,9 @@ angular.module('opal.services').service('InitialPatientTestLoadStatus', function
         this.state = ABSENT;
         return null;
       }
-      var lastTestLoad = this.episode.initial_patient_load;
+      var lastTestLoad = _.last(this.episode.initial_patient_load);
 
-      if(_.last(lastTestLoad).state === SUCCESS){
+      if(lastTestLoad.state === SUCCESS){
         this.state = SUCCESS;
         this.deferred.resolve(SUCCESS);
       }

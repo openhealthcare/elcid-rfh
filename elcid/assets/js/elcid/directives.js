@@ -102,10 +102,14 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
       // TODO: this is wrong, well maybe not wrong, but not right
       var episode = scope.row || scope.episode;
       var patientId = episode.demographics[0].patient_id;
-      scope.patientLoadStatus = new InitialPatientTestLoadStatus(
+      var patientLoadStatus = new InitialPatientTestLoadStatus(
           episode
       );
-      scope.patientLoadStatus.load();
+
+      // make sure we are using the correct
+      // js object scope(ie this)
+      patientLoadStatus.load();
+      scope.patientLoadStatus = patientLoadStatus;
 
       if(!scope.patientLoadStatus.isAbsent()){
         scope.patientLoadStatus.promise.then(function(){
