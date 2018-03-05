@@ -58,10 +58,8 @@ api = get_api()
 
 
 def initial_load():
-    batch = models.BatchPatientLoad.objects.create(
-        started=timezone.now(),
-        state=models.BatchPatientLoad.RUNNING
-    )
+    batch = models.BatchPatientLoad()
+    batch.start()
     try:
         update_external_demographics()
         # only run for reconciled patients
@@ -75,12 +73,10 @@ def initial_load():
             print "running {}/{}".format(iterator, total)
             load_lab_tests_for_patient(patient, async=False)
     except:
-        batch.stopped = timezone.now()
-        batch.state = models.BatchPatientLoad.FAILURE
+        batch.failed()
         log_errors("initial_load")
     else:
-        batch.stopped = timezone.now()
-        batch.state = models.BatchPatientLoad.SUCCESS
+        batch.complete()
 
 
 def log_errors(name):
@@ -107,9 +103,17 @@ def any_loads_running():
 
 
 def load_demographics(hospital_number):
+    started = timezone.now()
     try:
         result = api.demographics(hospital_number)
+        stopped = timezone.now()
+        print "demographics load complete in {}".format(
+            (stopped - started).seconds
+        )
     except:
+        print "demographics load failed in {}".format(
+            (stopped - started).seconds
+        )
         log_errors("load_demographics")
 
     return result
@@ -129,11 +133,10 @@ def load_lab_tests_for_patient(patient, async=None):
     if async is None:
         async = settings.ASYNC_API
 
-    patient_load = models.InitialPatientLoad.objects.create(
+    patient_load = models.InitialPatientLoad(
         patient=patient,
-        state=models.InitialPatientLoad.RUNNING,
-        started=timezone.now()
     )
+    patient_load.start()
     if async:
         async_load(patient, patient_load)
     else:
@@ -181,12 +184,12 @@ def good_to_go():
             )
 
     twenty_mins_ago = timezone.now() - datetime.timedelta(seconds=20 * 60)
-    if models.BatchPatientLoad.objects.last().stopped > twenty_mins_ago:
+    if models.BatchPatientLoad.objects.last().stopped < twenty_mins_ago:
         raise BatchLoadError("Last load has not run since {}".format(
             models.BatchPatientLoad.objects.last().stopped
         ))
 
-    if not models.BatchPatientLoad.object.filter(
+    if not models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.SUCCESS
     ).exists():
         err = "No previous run has completed, please run ./manage.py"
@@ -199,21 +202,15 @@ def good_to_go():
 def batch_load():
     if not good_to_go():
         return
-    batch = models.BatchPatientLoad.objects.create(
-        started=timezone.now(),
-        state=models.BatchPatientLoad.RUNNING
-    )
+    batch = models.BatchPatientLoad()
+    batch.start()
     try:
         _batch_load()
     except:
-        batch.stopped = timezone.now()
-        batch.state = models.BatchPatientLoad.FAILURE
-        batch.save()
+        batch.failed()
         log_errors("batch load")
     else:
-        batch.stopped = timezone.now()
-        batch.state = models.BatchPatientLoad.SUCCESS
-        batch.save()
+        batch.complete()
 
 
 @transaction.atomic
@@ -318,14 +315,10 @@ def _load_lab_tests_for_patient(patient, patient_load):
         results = api.results_for_hospital_number(hospital_number)
         update_tests(patient, results)
     except:
+        patient_load.failed()
         log_errors("_load_lab_tests_for_patient")
-        patient_load.stopped = timezone.now()
-        patient_load.state = models.BatchPatientLoad.FAILURE
-        patient_load.save()
     else:
-        patient_load.stopped = timezone.now()
-        patient_load.state = models.BatchPatientLoad.SUCCESS
-        patient_load.save()
+        patient_load.complete()
 
 
 def get_model_for_lab_test_type(lab_test):

@@ -1307,7 +1307,6 @@ class DeployProdTestCase(FabfileTestCase):
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile.validate_private_settings")
     @mock.patch("fabfile.local")
-    @mock.patch("fabfile.write_cron_lab_tests")
     @mock.patch("fabfile.write_cron_backup")
     @mock.patch("fabfile.dump_database")
     @mock.patch("fabfile.run_management_command")
@@ -1320,7 +1319,6 @@ class DeployProdTestCase(FabfileTestCase):
         run_management_command,
         dump_database,
         write_cron_backup,
-        write_cron_lab_tests,
         local,
         validate_private_settings,
         env_constructor,
@@ -1348,7 +1346,6 @@ class DeployProdTestCase(FabfileTestCase):
         )
 
         write_cron_backup.assert_called_once_with(new_env)
-        write_cron_lab_tests.assert_called_once_with(new_env)
         _deploy.assert_called_once_with(
             "new_branch",
             '/usr/lib/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql',

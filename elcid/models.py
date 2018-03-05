@@ -183,10 +183,11 @@ class UpstreamLabTest(lmodels.LabTest):
                 "duplicate obs numbers found in {}".format(obs)
             )
 
+        if "extras" not in data:
+            data["extras"] = {}
+
         for i in self.convert_to_extras:
             if i in data:
-                if "extras" not in data:
-                    data["extras"] = {}
                 data["extras"][i] = data.pop(i)
 
         to_keep = []

@@ -7,14 +7,6 @@ from intrahospital_api.apis import prod_api
 from lab import models as lmodels
 
 
-class UtilsTestCase(OpalTestCase):
-    def test_to_db_date(self):
-        some_date = date(2017, 1, 10)
-        self.assertEqual(
-            prod_api.to_db_date(some_date),
-            "2017-01-10"
-        )
-
 FAKE_ROW_DATA = {
     u'Abnormal_Flag': u'',
     u'Accession_number': u'73151060487',
@@ -246,7 +238,6 @@ class RowTestCase(OpalTestCase):
             'sex': 'Female',
             'hospital_number': u'20552710',
             'date_of_birth': '10/10/1980',
-            'external_system': 'RFH Demographics',
             'ethnicity': 'Mixed - White and Black Caribbean'
         }
         self.assertEqual(
@@ -419,7 +410,7 @@ class ProdApiTestcase(OpalTestCase):
         self.assertEqual(
             execute_query.call_args[1]["params"], dict(
                 hospital_number="12312222",
-                since="2016-10-01"
+                since=date(2016, 10, 1)
             )
         )
 
@@ -464,28 +455,3 @@ class ProdApiTestcase(OpalTestCase):
             result = api.demographics("A1' 23")
 
         self.assertIsNone(result)
-
-    @mock.patch('intrahospital_api.apis.prod_api.logging')
-    def test_demographics_api_fail(self, logging):
-        api = self.get_api()
-        with mock.patch.object(api, "execute_query") as execute_query:
-            execute_query.side_effect = ValueError('Boom')
-            result = api.demographics("123")
-        self.assertIsNone(result)
-        self.assertEqual(
-            logging.getLogger.call_args_list[0][0][0],
-            "error_emailer"
-        )
-        self.assertEqual(
-            logging.getLogger.return_value.error.call_args_list[0][0][0],
-            "unable to get demographics"
-        )
-
-        self.assertEqual(
-            logging.getLogger.call_args_list[1][0][0],
-            "intrahospital_api"
-        )
-        self.assertIn(
-            "Boom",
-            logging.getLogger.return_value.error.call_args_list[1][0][0],
-        )

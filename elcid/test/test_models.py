@@ -298,7 +298,7 @@ class RfhObservationMixinTestCase(OpalTestCase):
 
 
 class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
-    def test_update_from_dict_repeated(self):
+    def test_update_from_api_dict_repeated(self):
         emodels.UpstreamLabTest.objects.create(
             patient=self.patient,
             external_identifier="1",
@@ -309,21 +309,25 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
             status=emodels.UpstreamLabTest.COMPLETE
         )
         hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
-        hl7_result.update_from_dict(update_dict, self. user)
+        hl7_result.update_from_api_dict(self.patient, update_dict, self.user)
 
         found_hl7_result = emodels.UpstreamLabTest.objects.get()
-        self.assertEqual(found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE)
+        self.assertEqual(
+            found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
+        )
 
-    def test_update_from_dict_first_time(self):
+    def test_update_from_api_dict_first_time(self):
         update_dict = dict(
             external_identifier="1",
             status=emodels.UpstreamLabTest.COMPLETE
         )
         hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
-        hl7_result.update_from_dict(update_dict, self. user)
+        hl7_result.update_from_api_dict(self.patient, update_dict, self.user)
 
         found_hl7_result = emodels.UpstreamLabTest.objects.get()
-        self.assertEqual(found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE)
+        self.assertEqual(
+            found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
+        )
 
     def test_error_raised_if_external_identifier_not_in_dict(self):
         update_dict = dict(
@@ -332,7 +336,9 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
 
         with self.assertRaises(ValueError) as e:
-            hl7_result.update_from_dict(update_dict, self. user)
+            hl7_result.update_from_api_dict(
+                self.patient, update_dict, self.user
+            )
 
         self.assertEqual(
             str(e.exception),

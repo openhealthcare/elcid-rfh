@@ -28,7 +28,7 @@ class DevApiTestCase(OpalTestCase):
             "external_system"
         ]
         self.assertEqual(
-            demographics["external_system"], "DEV_API"
+            demographics["external_system"], "RFH Database"
         )
         self.assertFalse(set(demographics.keys()) - set(expected_fields))
         for field in expected_fields:

@@ -597,7 +597,6 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
     # symlink the celery conf
     services_create_celery_conf(new_env)
-
     # for the moment write cron lab tests on both prod and test
     write_cron_lab_tests(new_env)
 
