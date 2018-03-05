@@ -105,14 +105,12 @@ def any_loads_running():
     return patient_loading or batch_loading
 
 
+@timing
 def load_demographics(hospital_number):
     started = timezone.now()
     try:
         result = api.demographics(hospital_number)
         stopped = timezone.now()
-        logger.info("demographics load complete in {}".format(
-            (stopped - started).seconds
-        ))
     except:
         stopped = timezone.now()
         logger.info("demographics load failed in {}".format(

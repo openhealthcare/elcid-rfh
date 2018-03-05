@@ -1,11 +1,8 @@
 from django.db import models
 from django.utils import timezone
-import logging
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
-
-logger = logging.getLogger('intrahospital_api')
 
 
 class ExternalDemographics(PatientSubrecord):
@@ -50,10 +47,6 @@ class PatientLoad(models.Model):
         self.started = timezone.now()
         self.state = self.RUNNING
         self.save()
-        logger.info("{} started at {}".format(
-            self.verbose_name,
-            self.started
-        ))
 
     @property
     def duration(self):
@@ -67,32 +60,15 @@ class PatientLoad(models.Model):
         self.stopped = timezone.now()
         self.state = self.SUCCESS
         self.save()
-        logger.info("{} successful at {}".format(
-            self.verbose_name,
-            self.stopped
-        ))
-        logger.info("{} {} succeeded in {}".format(
-            self.verbose_name,
-            self.id,
-            self.duration.seconds
-        ))
 
     def failed(self):
         self.stopped = timezone.now()
         self.state = self.FAILURE
         self.save()
-        logger.info("{} failed at {}".format(
-            self.verbose_name,
-            self.stopped
-        ))
-        logger.info("{} {} failed in {}".format(
-            self.verbose_name,
-            self.id,
-            self.duration.seconds
-        ))
 
     class Meta:
         abstract = True
+        ordering = ('started',)
 
 
 class InitialPatientLoad(PatientLoad, PatientSubrecord):
@@ -103,5 +79,7 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
 
 
 class BatchPatientLoad(PatientLoad):
-    class Meta:
-        ordering = ('started',)
+    """ This is the batch load of all reconciled patients
+        every 5 mins
+    """
+    pass
