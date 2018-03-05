@@ -58,6 +58,8 @@ api = get_api()
 
 
 def initial_load():
+    models.InitialPatientLoad.objects.all().delete()
+    models.BatchPatientLoad.objects.all().delete()
     batch = models.BatchPatientLoad()
     batch.start()
     try:
@@ -67,8 +69,7 @@ def initial_load():
             demographics__external_system=EXTERNAL_SYSTEM
         )
         total = patients.count()
-        models.InitialPatientLoad.objects.all().delete()
-        models.BatchPatientLoad.objects.all().delete()
+
         for iterator, patient in enumerate(patients.all()):
             logging.info("running {}/{}".format(iterator, total))
             load_lab_tests_for_patient(patient, async=False)
