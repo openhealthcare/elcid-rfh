@@ -379,10 +379,10 @@ def restart_nginx():
     local('sudo service nginx restart')
 
 
-def cron_backup(new_env):
+def write_cron_backup(new_env):
     """ Creates a cron job that copies a file to a remote server
     """
-    print("Writing cron copy")
+    print("Writing cron {}_backup".format(PROJECT_NAME))
     template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(
@@ -397,10 +397,10 @@ def cron_backup(new_env):
     ))
 
 
-def cron_lab_tests(new_env):
+def write_cron_lab_tests(new_env):
     """ Creates a cron job that copies a file to a remote server
     """
-    print("Writing cron copy")
+    print("Writing cron {}_batch_test_load".format(PROJECT_NAME))
     template = jinja_env.get_template(
         'etc/conf_templates/cron_lab_tests.jinja2'
     )
@@ -599,7 +599,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     services_create_celery_conf(new_env)
 
     # for the moment write cron lab tests on both prod and test
-    cron_lab_tests(new_env)
+    write_cron_lab_tests(new_env)
 
     # django setup
     run_management_command("collectstatic --noinput", new_env)
@@ -670,8 +670,8 @@ def roll_back_prod(branch_name):
     roll_to_env = Env(branch_name)
     _roll_back(branch_name)
     create_pg_pass(roll_to_env, get_private_settings())
-    cron_backup(roll_to_env)
-    cron_lab_tests(roll_to_env)
+    write_cron_backup(roll_to_env)
+    write_cron_lab_tests(roll_to_env)
 
 
 def create_pg_pass(env, additional_settings):
@@ -742,9 +742,10 @@ def deploy_prod(old_branch, old_database_name=None):
         dbname = old_env.database_name
     else:
         dbname = old_database_name
+
     dump_database(old_env, dbname, old_env.release_backup_name)
 
-    cron_backup(new_env)
+    write_cron_backup(new_env)
     old_status = run_management_command("status_report", old_env)
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
     new_status = run_management_command("status_report", new_env)
