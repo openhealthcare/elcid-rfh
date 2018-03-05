@@ -70,7 +70,7 @@ def initial_load():
         models.InitialPatientLoad.objects.all().delete()
         models.BatchPatientLoad.objects.all().delete()
         for iterator, patient in enumerate(patients.all()):
-            print "running {}/{}".format(iterator, total)
+            logging.info("running {}/{}".format(iterator, total))
             load_lab_tests_for_patient(patient, async=False)
     except:
         batch.failed()
