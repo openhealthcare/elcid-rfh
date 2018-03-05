@@ -2,6 +2,7 @@
 elCID implementation specific models!
 """
 import datetime
+import logging
 from django.db.models.signals import post_save
 from django.utils import timezone
 from django.dispatch import receiver
@@ -9,6 +10,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from lab import models as lmodels
 
+logger = logging.getLogger('elcid.time_logger')
 
 
 import opal.models as omodels
@@ -207,7 +209,7 @@ class UpstreamLabTest(lmodels.LabTest):
         data["extras"]["observations"] = to_keep + data.pop("observations", [])
         result = super(UpstreamLabTest, self).update_from_dict(data, user)
         stopped = timezone.now()
-        logging.info("update from external_api for {} {} {} complete in {}".format(
+        logger.info("update from external_api for {} {} {} complete in {}".format(
             str(self),
             self.external_identifier,
             self.extras["test_name"],

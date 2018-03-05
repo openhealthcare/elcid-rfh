@@ -4,6 +4,7 @@ import itertools
 from collections import defaultdict
 from intrahospital_api.apis import base_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
+from elcid.utils import timing
 from lab import models as lmodels
 from django.conf import settings
 from elcid.models import Demographics
@@ -292,6 +293,7 @@ class ProdApi(base_api.BaseApi):
     def all_data_query_for_lab_test_type(self):
         return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(view=self.view)
 
+    @timing
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
         rows = list(self.execute_query(
@@ -334,6 +336,7 @@ class ProdApi(base_api.BaseApi):
                 params=dict(hospital_number=hospital_number, since=db_date)
             )
 
+    @timing
     def data_deltas(self, some_datetime):
         """ yields an iterator of dictionary
 
@@ -405,6 +408,7 @@ class ProdApi(base_api.BaseApi):
             result.append(lab_test)
         return result
 
+    @timing
     def results_for_hospital_number(self, hospital_number):
         """
             returns all the results for a particular person

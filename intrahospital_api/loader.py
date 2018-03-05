@@ -49,6 +49,7 @@ from django.db.models import Q
 from django.conf import settings
 from intrahospital_api import models
 from elcid import models as emodels
+from elcid.utils import timing
 from opal.models import Patient
 from intrahospital_api.apis import get_api
 from intrahospital_api.exceptions import BatchLoadError
@@ -58,6 +59,7 @@ api = get_api()
 logger = logging.getLogger('intrahospital_api')
 
 
+@timing
 def initial_load():
     models.InitialPatientLoad.objects.all().delete()
     models.BatchPatientLoad.objects.all().delete()
@@ -247,6 +249,7 @@ def update_external_demographics():
 
 
 @transaction.atomic
+@timing
 def _batch_load():
     last_successful_run = models.BatchPatientLoad.objects.filter(
         status=models.BatchPatientLoad.SUCCESS
@@ -255,7 +258,11 @@ def _batch_load():
     update_external_demographics()
 
     data_deltas = api.data_deltas(last_successful_run)
+    update_from_batch(data_deltas)
 
+
+@timing
+def update_from_batch(data_deltas):
     # only look at patients that have been reconciled
     demographics_set = emodels.Demographics.objects.filter(
         external_system=EXTERNAL_SYSTEM
@@ -292,6 +299,7 @@ def _batch_load():
             )
 
 
+@timing
 def update_tests(patient, lab_tests):
     """
         takes in all lab tests, saves those
