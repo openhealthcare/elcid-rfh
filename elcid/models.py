@@ -3,10 +3,12 @@ elCID implementation specific models!
 """
 import datetime
 from django.db.models.signals import post_save
+from django.utils import timezone
 from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from lab import models as lmodels
+import logging
 
 
 import opal.models as omodels
@@ -150,6 +152,8 @@ class UpstreamLabTest(lmodels.LabTest):
         """
         # Well this is complicated...
 
+        started = timezone.now()
+
         # we never expect it to be updated using an id
         if "id" in data:
             raise ValueError(
@@ -201,7 +205,16 @@ class UpstreamLabTest(lmodels.LabTest):
                     to_keep.append(old_obs)
 
         data["extras"]["observations"] = to_keep + data.pop("observations", [])
-        super(UpstreamLabTest, self).update_from_dict(data, user)
+        result = super(UpstreamLabTest, self).update_from_dict(data, user)
+        stopped = timezone.now()
+        logging.info("update from external_api for {} {} {} complete in {}".format(
+            str(self),
+            self.external_identifier,
+            self.extras["test_name"],
+            (stopped - started).seconds
+        ))
+
+        return result
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -297,7 +310,6 @@ class PrimaryDiagnosis(EpisodeSubrecord):
 
 class Consultant(lookuplists.LookupList):
     pass
-
 
 
 class Diagnosis(EpisodeSubrecord):

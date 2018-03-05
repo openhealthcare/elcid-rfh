@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+import logging
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
@@ -47,10 +48,10 @@ class PatientLoad(models.Model):
         self.started = timezone.now()
         self.state = self.RUNNING
         self.save()
-        print "{} started at {}".format(
+        logging.info("{} started at {}".format(
             self.verbose_name,
             self.started
-        )
+        ))
 
     @property
     def duration(self):
@@ -64,29 +65,29 @@ class PatientLoad(models.Model):
         self.stopped = timezone.now()
         self.state = self.SUCCESS
         self.save()
-        print "{} successful at {}".format(
+        logging.info("{} successful at {}".format(
             self.verbose_name,
             self.stopped
-        )
-        print "{} {} succeeded in {}".format(
+        ))
+        logging.info("{} {} succeeded in {}".format(
             self.verbose_name,
             self.id,
             self.duration.seconds
-        )
+        ))
 
     def failed(self):
         self.stopped = timezone.now()
         self.state = self.FAILURE
         self.save()
-        print "{} failed at {}".format(
+        logging.info("{} failed at {}".format(
             self.verbose_name,
             self.stopped
-        )
-        print "{} {} failed in {}".format(
+        ))
+        logging.info("{} {} failed in {}".format(
             self.verbose_name,
             self.id,
             self.duration.seconds
-        )
+        ))
 
     class Meta:
         abstract = True

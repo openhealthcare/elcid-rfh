@@ -107,13 +107,14 @@ def load_demographics(hospital_number):
     try:
         result = api.demographics(hospital_number)
         stopped = timezone.now()
-        print "demographics load complete in {}".format(
+        logging.info("demographics load complete in {}".format(
             (stopped - started).seconds
-        )
+        ))
     except:
-        print "demographics load failed in {}".format(
+        stopped = timezone.now()
+        logging.info("demographics load failed in {}".format(
             (stopped - started).seconds
-        )
+        ))
         log_errors("load_demographics")
 
     return result
