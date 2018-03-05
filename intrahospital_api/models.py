@@ -5,6 +5,8 @@ import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
 
+logger = logging.getLogger('intrahospital_api')
+
 
 class ExternalDemographics(PatientSubrecord):
     _is_singleton = True
@@ -48,7 +50,7 @@ class PatientLoad(models.Model):
         self.started = timezone.now()
         self.state = self.RUNNING
         self.save()
-        logging.info("{} started at {}".format(
+        logger.info("{} started at {}".format(
             self.verbose_name,
             self.started
         ))
@@ -65,11 +67,11 @@ class PatientLoad(models.Model):
         self.stopped = timezone.now()
         self.state = self.SUCCESS
         self.save()
-        logging.info("{} successful at {}".format(
+        logger.info("{} successful at {}".format(
             self.verbose_name,
             self.stopped
         ))
-        logging.info("{} {} succeeded in {}".format(
+        logger.info("{} {} succeeded in {}".format(
             self.verbose_name,
             self.id,
             self.duration.seconds
@@ -79,11 +81,11 @@ class PatientLoad(models.Model):
         self.stopped = timezone.now()
         self.state = self.FAILURE
         self.save()
-        logging.info("{} failed at {}".format(
+        logger.info("{} failed at {}".format(
             self.verbose_name,
             self.stopped
         ))
-        logging.info("{} {} failed in {}".format(
+        logger.info("{} {} failed in {}".format(
             self.verbose_name,
             self.id,
             self.duration.seconds

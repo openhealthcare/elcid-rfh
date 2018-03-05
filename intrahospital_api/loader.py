@@ -55,6 +55,7 @@ from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 api = get_api()
+logger = logging.getLogger('intrahospital_api')
 
 
 def initial_load():
@@ -71,7 +72,7 @@ def initial_load():
         total = patients.count()
 
         for iterator, patient in enumerate(patients.all()):
-            logging.info("running {}/{}".format(iterator, total))
+            logger.info("running {}/{}".format(iterator, total))
             load_lab_tests_for_patient(patient, async=False)
     except:
         batch.failed()
@@ -81,9 +82,8 @@ def initial_load():
 
 
 def log_errors(name):
-    logger = logging.getLogger('error_emailer')
-    logger.error("unable to run {}".format(name))
-    logger = logging.getLogger('intrahospital_api')
+    email_logger = logging.getLogger('error_emailer')
+    email_logger.error("unable to run {}".format(name))
     logger.error(traceback.format_exc())
 
 
@@ -108,12 +108,12 @@ def load_demographics(hospital_number):
     try:
         result = api.demographics(hospital_number)
         stopped = timezone.now()
-        logging.info("demographics load complete in {}".format(
+        logger.info("demographics load complete in {}".format(
             (stopped - started).seconds
         ))
     except:
         stopped = timezone.now()
-        logging.info("demographics load failed in {}".format(
+        logger.info("demographics load failed in {}".format(
             (stopped - started).seconds
         ))
         log_errors("load_demographics")

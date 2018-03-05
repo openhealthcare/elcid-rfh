@@ -239,19 +239,8 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'opal.core.log.ConfidentialEmailer'
         },
-        'standard_error_emailer': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True
-        }
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
@@ -263,7 +252,7 @@ LOGGING = {
             'propagate': True,
         },
         'error_emailer': {
-            'handlers': ['standard_error_emailer'],
+            'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },
@@ -275,6 +264,11 @@ LOGGING = {
         'intrahospital_api': {
             'handlers': ['console'],
             'level': 'INFO',
+            'propagate': True,
+        },
+        'intrahospital_api': {
+            'handlers': ['console'],
+            'level': 'ERROR',
             'propagate': True,
         }
     }

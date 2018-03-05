@@ -8,7 +8,7 @@ from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from lab import models as lmodels
-import logging
+
 
 
 import opal.models as omodels
