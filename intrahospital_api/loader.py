@@ -250,7 +250,7 @@ def update_external_demographics():
 @timing
 def _batch_load():
     last_successful_run = models.BatchPatientLoad.objects.filter(
-        status=models.BatchPatientLoad.SUCCESS
+        state=models.BatchPatientLoad.SUCCESS
     ).order_by("started").last()
     # update the non reconciled
     update_external_demographics()
