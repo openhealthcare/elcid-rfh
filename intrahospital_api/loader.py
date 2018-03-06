@@ -268,7 +268,7 @@ def update_from_batch(data_deltas):
 
     # ignore patients that have not had an existing patient load
     demographics_set = demographics_set.filter(
-        patient__initialpatientload__status=models.InitialPatientLoad.SUCCESS
+        patient__initialpatientload__state=models.InitialPatientLoad.SUCCESS
     )
     for data_delta in data_deltas:
         demographics = data_delta["demographics"]
