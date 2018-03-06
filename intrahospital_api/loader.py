@@ -202,8 +202,8 @@ def good_to_go():
 
 
 def batch_load():
-    if not good_to_go():
-        return
+    # validate that we can run without exception
+    good_to_go()
     batch = models.BatchPatientLoad()
     batch.start()
     try:

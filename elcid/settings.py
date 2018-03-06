@@ -259,7 +259,7 @@ LOGGING = {
         'elcid.time_logger': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
         'intrahospital_api': {
             'handlers': ['console'],
