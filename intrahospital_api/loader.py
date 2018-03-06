@@ -184,11 +184,17 @@ def good_to_go():
             )
             return False
         else:
-            raise BatchLoadError(
-                "Last load is still running and has been for {} mins".format(
-                    time_ago.seconds/60
+            if models.BatchPatientLoad.objects.all().count() == 1:
+                # we expect the inital batch patient load to take ages
+                # as its the first and runs the initial load
+                # so cut it some slack
+                return False
+            else:
+                raise BatchLoadError(
+                    "Last load is still running and has been for {} mins".format(
+                        time_ago.seconds/60
+                    )
                 )
-            )
 
     one_hour_ago = timezone.now() - datetime.timedelta(seconds=60 * 60)
     if models.BatchPatientLoad.objects.last().stopped < one_hour_ago:
@@ -196,14 +202,6 @@ def good_to_go():
             models.BatchPatientLoad.objects.last().stopped
         ))
 
-    if not models.BatchPatientLoad.objects.filter(
-        state=models.BatchPatientLoad.SUCCESS
-    ).exists():
-        err = "No previous run has completed, please run ./manage.py"
-        err += "initial_load before you run a batch load"
-        raise BatchLoadError("err {}".format(
-            models.BatchPatientLoad.objects.last().stopped
-        ))
     return True
 
 

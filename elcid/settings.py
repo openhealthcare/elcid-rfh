@@ -256,11 +256,6 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'elcid.time_logger': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
         'intrahospital_api': {
             'handlers': ['console'],
             'level': 'INFO',
@@ -273,6 +268,13 @@ LOGGING = {
         }
     }
 }
+
+if 'test' not in sys.argv:
+    LOGGING['loggers']['elcid.time_logger'] = {
+        'handlers': ['console'],
+        'level': 'INFO',
+        'propagate': False,
+    }
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
