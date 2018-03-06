@@ -154,6 +154,12 @@ def good_to_go():
     """ Are we good to run a batch load, returns True if we should.
         runs a lot of sanity checks.
     """
+    if not models.BatchPatientLoad.objects.all().exists():
+        # an inital load is required via ./manage.py initial_test_load
+        raise BatchLoadError(
+            "We don't appear to have had an initial load run!"
+        )
+
     current_running = models.BatchPatientLoad.objects.filter(
         Q(stopped=None) | Q(state=models.BatchPatientLoad.RUNNING)
     )
