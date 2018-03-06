@@ -177,6 +177,11 @@ def good_to_go():
         # Examples of when this might happen are when we've just done a
         # deployment.
         if time_ago.seconds < 600:
+            logger.info(
+                "batch still running after {} seconds, skipping".format(
+                    time_ago.seconds
+                )
+            )
             return False
         else:
             raise BatchLoadError(
@@ -185,8 +190,8 @@ def good_to_go():
                 )
             )
 
-    twenty_mins_ago = timezone.now() - datetime.timedelta(seconds=20 * 60)
-    if models.BatchPatientLoad.objects.last().stopped < twenty_mins_ago:
+    one_hour_ago = timezone.now() - datetime.timedelta(seconds=60 * 60)
+    if models.BatchPatientLoad.objects.last().stopped < one_hour_ago:
         raise BatchLoadError("Last load has not run since {}".format(
             models.BatchPatientLoad.objects.last().stopped
         ))
@@ -199,11 +204,19 @@ def good_to_go():
         raise BatchLoadError("err {}".format(
             models.BatchPatientLoad.objects.last().stopped
         ))
+    return True
 
 
 def batch_load():
     # validate that we can run without exception
-    good_to_go()
+    try:
+        all_set = good_to_go()
+    except:
+        log_errors("batch load")
+
+    if not all_set:
+        return
+
     batch = models.BatchPatientLoad()
     batch.start()
     try:

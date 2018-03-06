@@ -202,7 +202,12 @@ class UpstreamLabTest(lmodels.LabTest):
                     to_keep.append(old_obs)
 
         data["extras"]["observations"] = to_keep + data.pop("observations", [])
-        result = super(UpstreamLabTest, self).update_from_dict(data, user)
+
+        # we force the update from dict as we will be updating without
+        # a consistency token in the data
+        result = super(UpstreamLabTest, self).update_from_dict(
+            data, user, force=True
+        )
 
         return result
 
