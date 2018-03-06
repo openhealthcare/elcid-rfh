@@ -255,7 +255,7 @@ def _batch_load():
     # update the non reconciled
     update_external_demographics()
 
-    data_deltas = api.data_deltas(last_successful_run)
+    data_deltas = api.data_deltas(last_successful_run.started)
     update_from_batch(data_deltas)
 
 

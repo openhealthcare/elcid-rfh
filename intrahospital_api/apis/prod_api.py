@@ -353,14 +353,14 @@ class ProdApi(base_api.BaseApi):
             params=dict(since=some_datetime)
         )
         all_rows = (Row(r) for r in all_rows)
-        hospital_number_to_rows = itertools.group_by(
+        hospital_number_to_rows = itertools.groupby(
             all_rows, lambda x: x.get_hospital_number()
         )
-        for hospital_number, rows in hospital_number_to_rows.items():
+        for hospital_number, rows in hospital_number_to_rows:
             if Demographics.objects.filter(
                 hospital_number=hospital_number
             ).exists():
-                demographics = rows[0].get_demographics_dict()
+                demographics = list(rows)[0].get_demographics_dict()
                 lab_tests = self.cast_rows_to_lab_test(rows)
                 yield (
                     dict(
