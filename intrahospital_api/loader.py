@@ -208,6 +208,8 @@ def good_to_go():
 
 
 def batch_load():
+    all_set = None
+
     # validate that we can run without exception
     try:
         all_set = good_to_go()
