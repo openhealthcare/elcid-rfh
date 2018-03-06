@@ -28,6 +28,14 @@ class BaseApi(object):
             "Please a method that get's all cooked data about a patient"
         )
 
+    def data_deltas(self, some_datetime):
+        """ All data (ie demographics/upstream lab tests) about a patient
+            since the datetime
+        """
+        raise NotImplementedError(
+            "Please a method that gets the data that has changed for a patient"
+        )
+
     @property
     def user(self):
         return User.objects.get(username=settings.API_USER)

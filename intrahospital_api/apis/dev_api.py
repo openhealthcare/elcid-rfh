@@ -1,8 +1,6 @@
-from django.conf import settings
 from intrahospital_api import constants
 from intrahospital_api.apis import base_api
 from datetime import date, timedelta, datetime
-from elcid import models as emodels
 from lab import models as lmodels
 import random
 
@@ -331,3 +329,6 @@ class DevApi(base_api.BaseApi):
 
     def raw_data(self, hospital_number, **filter_kwargs):
         return [RAW_DATA]
+
+    def data_deltas(self, some_datetime):
+        return []

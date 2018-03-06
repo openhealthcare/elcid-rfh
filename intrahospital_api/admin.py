@@ -8,6 +8,7 @@ from opal import models as omodels
 from opal.admin import PatientAdmin as OldPatientAdmin
 from django.core.urlresolvers import reverse
 from intrahospital_api import loader
+from intrahospital_api import models as imodels
 
 
 class TaggingListFilter(admin.SimpleListFilter):
@@ -44,7 +45,7 @@ class TaggingListFilter(admin.SimpleListFilter):
                 )
                 return omodels.Patient.objects.filter(
                     episode__tagging__in=tagging_qs
-                )
+                ).distinct()
             else:
                 value = value.replace("-previously", "")
                 tagging_qs = omodels.Tagging.objects.filter(
@@ -52,7 +53,7 @@ class TaggingListFilter(admin.SimpleListFilter):
                 )
                 return omodels.Patient.objects.filter(
                     episode__tagging__in=tagging_qs
-                )
+                ).distinct()
         return omodels.Patient.objects.all()
 
 
@@ -93,3 +94,4 @@ admin.site.register(rmodels.Version, admin.ModelAdmin)
 admin.site.register(rmodels.Revision, admin.ModelAdmin)
 admin.site.unregister(omodels.Patient)
 admin.site.register(omodels.Patient, PatientAdmin)
+admin.site.register(imodels.BatchPatientLoad)
