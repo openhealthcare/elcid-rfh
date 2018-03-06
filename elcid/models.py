@@ -147,10 +147,6 @@ class UpstreamLabTest(lmodels.LabTest):
             They are keyed with observation number in the observations array
             ie in data["observations"][0]["observation_number"]
         """
-        # Well this is complicated...
-
-        started = timezone.now()
-
         # we never expect it to be updated using an id
         if "id" in data:
             raise ValueError(

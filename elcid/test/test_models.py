@@ -308,7 +308,10 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
             external_identifier="1",
             status=emodels.UpstreamLabTest.COMPLETE
         )
-        hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
+        hl7_result = emodels.UpstreamLabTest.objects.get(
+            patient_id=self.patient.id,
+            external_identifier="1"
+        )
         hl7_result.update_from_api_dict(self.patient, update_dict, self.user)
 
         found_hl7_result = emodels.UpstreamLabTest.objects.get()
@@ -342,8 +345,18 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
 
         self.assertEqual(
             str(e.exception),
-            "an external identifier is required in {'status': 'complete'}"
+            "To create an upstream lab test and external id is required"
         )
+
+    def test_update_from_dict(self):
+        # Nothing should happen
+        update_dict = dict(
+            status=emodels.UpstreamLabTest.COMPLETE
+        )
+        hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
+        hl7_result.update_from_dict(update_dict, self.user)
+        # validate that is hasn't been saved
+        self.assertIsNone(hl7_result.id)
 
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):

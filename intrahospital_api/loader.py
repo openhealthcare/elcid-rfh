@@ -51,7 +51,7 @@ from intrahospital_api import models
 from elcid import models as emodels
 from elcid.utils import timing
 from opal.models import Patient
-from intrahospital_api.apis import get_api
+from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
@@ -241,7 +241,8 @@ def update_external_demographics():
         demographics__external_system=EXTERNAL_SYSTEM
     )
     patients = patients.filter(
-        externaldemographics__hospital_number=None
+        Q(externaldemographics__hospital_number=None) |
+        Q(externaldemographics__hospital_number="")
     )
     for patient in patients:
         demographics = patient.demographics_set.get()
