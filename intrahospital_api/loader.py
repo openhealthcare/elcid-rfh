@@ -86,7 +86,7 @@ def _initial_load():
     total = patients.count()
 
     for iterator, patient in enumerate(patients.all()):
-        logger.info("running {}/{}".format(iterator, total))
+        logger.info("running {}/{}".format(iterator+1, total))
         load_lab_tests_for_patient(patient, async=False)
 
 

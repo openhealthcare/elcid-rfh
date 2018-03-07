@@ -2,7 +2,9 @@ import mock
 import datetime
 from django.contrib.auth.models import User
 from django.test import override_settings
+from django.utils import timezone
 from opal.core.test import OpalTestCase
+from elcid import models as emodels
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
 from intrahospital_api.constants import EXTERNAL_SYSTEM
@@ -163,9 +165,11 @@ class InitialLoadTestCase(LoaderTestCase):
     def test_deletes_existing(self, log_errors, _initial_load):
         patient, _ = self.new_patient_and_episode_please()
         imodels.InitialPatientLoad.objects.create(
-            patient=patient
+            patient=patient, started=timezone.now()
         )
-        previous_load = imodels.BatchPatientLoad.objects.create()
+        previous_load = imodels.BatchPatientLoad.objects.create(
+            started=timezone.now()
+        )
         loader.initial_load()
         self.assertNotEqual(
             previous_load.id, imodels.BatchPatientLoad.objects.first().id
@@ -174,3 +178,76 @@ class InitialLoadTestCase(LoaderTestCase):
         self.assertFalse(
             imodels.InitialPatientLoad.objects.exists()
         )
+
+
+class _InitialLoadTestCase(LoaderTestCase):
+    def setUp(self, *args, **kwargs):
+        super(_InitialLoadTestCase, self).setUp(*args, **kwargs)
+
+        # the first two patients should be updated, but not the last
+        self.patient_1, _ = self.new_patient_and_episode_please()
+        self.patient_2, _ = self.new_patient_and_episode_please()
+        self.patient_3, _ = self.new_patient_and_episode_please()
+        emodels.Demographics.objects.filter(
+            patient__in=[self.patient_1, self.patient_2]
+        ).update(external_system=EXTERNAL_SYSTEM)
+
+    @mock.patch(
+        "intrahospital_api.loader.update_external_demographics",
+    )
+    @mock.patch(
+        "intrahospital_api.loader.load_lab_tests_for_patient",
+    )
+    def test_flow(self, load_lab_tests_for_patient, external_demographics):
+        with mock.patch.object(loader.logger, "info") as info:
+            loader._initial_load()
+            external_demographics.assert_called_once_with()
+            call_args_list = load_lab_tests_for_patient.call_args_list
+            self.assertEqual(
+                call_args_list[0][0], (self.patient_1,)
+            )
+            self.assertEqual(
+                call_args_list[0][1], dict(async=False)
+            )
+            self.assertEqual(
+                call_args_list[1][0], (self.patient_2,)
+            )
+            self.assertEqual(
+                call_args_list[1][1], dict(async=False)
+            )
+            call_args_list = info.call_args_list
+            self.assertEqual(
+                call_args_list[0][0], ("running 1/2",)
+            )
+            self.assertEqual(
+                call_args_list[1][0], ("running 2/2",)
+            )
+
+    def test_intergration(self):
+        with mock.patch.object(loader.logger, "info"):
+            loader._initial_load()
+
+            self.assertIsNotNone(
+                self.patient_1.demographics_set.first().hospital_number
+            )
+
+            self.assertIsNotNone(
+                self.patient_2.demographics_set.first().hospital_number
+            )
+
+            self.assertEqual(
+                imodels.InitialPatientLoad.objects.first().patient.id,
+                self.patient_1.id
+            )
+            self.assertEqual(
+                imodels.InitialPatientLoad.objects.last().patient.id,
+                self.patient_2.id
+            )
+
+            upstream_patients = emodels.UpstreamLabTest.objects.values_list(
+                "patient_id", flat=True
+            ).distinct()
+            self.assertEqual(
+                set([self.patient_1.id, self.patient_2.id]),
+                set(upstream_patients)
+            )

@@ -181,7 +181,11 @@ TEST_BASES = {
 
 class DevApi(base_api.BaseApi):
     def get_date_of_birth(self):
-        return date.today() - timedelta(random.randint(1, 365 * 70))
+        some_date = date.today() - timedelta(random.randint(1, 365 * 70))
+        some_dt = datetime.combine(
+            some_date, datetime.min.time()
+        )
+        return some_dt.strftime('%d/%m/%Y')
 
     def demographics(self, hospital_number):
         # will always be found unless you prefix it with 'x'
