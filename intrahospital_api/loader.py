@@ -279,6 +279,21 @@ def _batch_load():
     update_from_batch(data_deltas)
 
 
+def have_demographics_changed(
+    upstream_demographics, our_demographics_model
+):
+        """ checks to see i the demographics have changed
+            if they haven't, don't bother updating
+
+            only compares keys that are coming from the
+            upstream dict
+        """
+        as_dict = our_demographics_model.to_dict(api.user)
+        relevent_keys = set(upstream_demographics.keys())
+        our_dict = {i: v for i, v in as_dict.items() if i in relevent_keys}
+        return not upstream_demographics == our_dict
+
+
 @timing
 def update_from_batch(data_deltas):
     # only look at patients that have been reconciled
@@ -300,10 +315,9 @@ def update_from_batch(data_deltas):
             # move on, nothing to see here.
             continue
 
-        # our patients demographics have changed.
-        if not patient_demographics_set.filter(
-            **demographics
-        ).exists():
+        if have_demographics_changed(
+            api, demographics, patient_demographics.first()
+        ):
             # get the demographics for this patient
             patient_demographics = patient_demographics_set.get()
             patient_demographics.update_from_dict(

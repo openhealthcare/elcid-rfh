@@ -85,3 +85,54 @@ class ImportDemographicsTestCase(OpalTestCase):
 
         loader.update_external_demographics()
         self.assertFalse(d.called)
+
+
+@override_settings(API_USER="ohc")
+class HaveDemographicsTestCase(OpalTestCase):
+    def setUp(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="James",
+            surname="Watson",
+            sex_ft="Male",
+            religion="Christian"
+        )
+        self.demographics = patient.demographics_set.first()
+        User.objects.create(username="ohc", password="fake_password")
+
+    def test_demographics_have_not_changed(self):
+        update_dict = dict(
+            first_name="James",
+            surname="Watson",
+            sex="Male"
+        )
+        self.assertFalse(
+            loader.have_demographics_changed(
+                update_dict, self.demographics
+            )
+        )
+
+    def test_need_to_update_demographics_fk_or_ft(self):
+        update_dict = dict(
+            first_name="James",
+            surname="Watson",
+            sex="not disclosed"
+        )
+        self.assertTrue(
+            loader.have_demographics_changed(
+                update_dict, self.demographics
+            )
+        )
+
+    def test_need_to_update_demographics_str(self):
+        update_dict = dict(
+            first_name="Jamey",
+            surname="Watson",
+            sex="Male"
+        )
+
+        self.assertTrue(
+            loader.have_demographics_changed(
+                update_dict, self.demographics
+            )
+        )
