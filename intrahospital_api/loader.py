@@ -314,14 +314,13 @@ def update_from_batch(data_deltas):
             # this patient is not in our reconcile list,
             # move on, nothing to see here.
             continue
+        patient_demographics = patient_demographics_set.get()
 
         if have_demographics_changed(
-            api, demographics, patient_demographics.first()
+            api, demographics, patient_demographics
         ):
-            # get the demographics for this patient
-            patient_demographics = patient_demographics_set.get()
             patient_demographics.update_from_dict(
-                data_delta["demographics"], api.user
+                demographics, api.user
             )
             patient = patient_demographics.patient
             update_tests(
