@@ -59,28 +59,35 @@ api = get_api()
 logger = logging.getLogger('intrahospital_api')
 
 
+@transaction.atomic
 @timing
 def initial_load():
     models.InitialPatientLoad.objects.all().delete()
     models.BatchPatientLoad.objects.all().delete()
     batch = models.BatchPatientLoad()
     batch.start()
-    try:
-        update_external_demographics()
-        # only run for reconciled patients
-        patients = Patient.objects.filter(
-            demographics__external_system=EXTERNAL_SYSTEM
-        )
-        total = patients.count()
 
-        for iterator, patient in enumerate(patients.all()):
-            logger.info("running {}/{}".format(iterator, total))
-            load_lab_tests_for_patient(patient, async=False)
+    try:
+        _initial_load()
     except:
         batch.failed()
         log_errors("initial_load")
     else:
         batch.complete()
+
+
+@transaction.atomic
+def _initial_load():
+    update_external_demographics()
+    # only run for reconciled patients
+    patients = Patient.objects.filter(
+        demographics__external_system=EXTERNAL_SYSTEM
+    )
+    total = patients.count()
+
+    for iterator, patient in enumerate(patients.all()):
+        logger.info("running {}/{}".format(iterator, total))
+        load_lab_tests_for_patient(patient, async=False)
 
 
 def log_errors(name):
@@ -110,7 +117,6 @@ def load_demographics(hospital_number):
     started = timezone.now()
     try:
         result = api.demographics(hospital_number)
-        stopped = timezone.now()
     except:
         stopped = timezone.now()
         logger.info("demographics load failed in {}".format(
@@ -317,7 +323,7 @@ def update_from_batch(data_deltas):
         patient_demographics = patient_demographics_set.get()
 
         if have_demographics_changed(
-            api, demographics, patient_demographics
+            demographics, patient_demographics
         ):
             patient_demographics.update_from_dict(
                 demographics, api.user

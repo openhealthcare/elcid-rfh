@@ -9,10 +9,13 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
 @override_settings(API_USER="ohc")
-class ImportDemographicsTestCase(OpalTestCase):
+class LoaderTestCase(OpalTestCase):
     def setUp(self):
+        super(LoaderTestCase, self).setUp()
         User.objects.create(username="ohc", password="fake_password")
 
+
+class ImportDemographicsTestCase(LoaderTestCase):
     def test_handle_patient_found(self):
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
@@ -87,9 +90,8 @@ class ImportDemographicsTestCase(OpalTestCase):
         self.assertFalse(d.called)
 
 
-@override_settings(API_USER="ohc")
-class HaveDemographicsTestCase(OpalTestCase):
-    def setUp(self):
+class HaveDemographicsTestCase(LoaderTestCase):
+    def setUp(self, *args, **kwargs):
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             first_name="James",
@@ -98,7 +100,7 @@ class HaveDemographicsTestCase(OpalTestCase):
             religion="Christian"
         )
         self.demographics = patient.demographics_set.first()
-        User.objects.create(username="ohc", password="fake_password")
+        super(HaveDemographicsTestCase, self).setUp(*args, **kwargs)
 
     def test_demographics_have_not_changed(self):
         update_dict = dict(
@@ -135,4 +137,40 @@ class HaveDemographicsTestCase(OpalTestCase):
             loader.have_demographics_changed(
                 update_dict, self.demographics
             )
+        )
+
+
+@mock.patch("intrahospital_api.loader._initial_load")
+@mock.patch("intrahospital_api.loader.log_errors")
+class InitialLoadTestCase(LoaderTestCase):
+    def test_successful_load(self, log_errors, _initial_load):
+        loader.initial_load()
+        _initial_load.assert_called_once_with()
+        self.assertFalse(log_errors.called)
+        batch_load = imodels.BatchPatientLoad.objects.get()
+        self.assertEqual(batch_load.state, batch_load.SUCCESS)
+        self.assertTrue(batch_load.started < batch_load.stopped)
+
+    def test_failed_load(self, log_errors, _initial_load):
+        _initial_load.side_effect = ValueError("Boom")
+        loader.initial_load()
+        _initial_load.assert_called_once_with()
+        log_errors.assert_called_once_with("initial_load")
+        batch_load = imodels.BatchPatientLoad.objects.get()
+        self.assertEqual(batch_load.state, batch_load.FAILURE)
+        self.assertTrue(batch_load.started < batch_load.stopped)
+
+    def test_deletes_existing(self, log_errors, _initial_load):
+        patient, _ = self.new_patient_and_episode_please()
+        imodels.InitialPatientLoad.objects.create(
+            patient=patient
+        )
+        previous_load = imodels.BatchPatientLoad.objects.create()
+        loader.initial_load()
+        self.assertNotEqual(
+            previous_load.id, imodels.BatchPatientLoad.objects.first().id
+        )
+
+        self.assertFalse(
+            imodels.InitialPatientLoad.objects.exists()
         )
