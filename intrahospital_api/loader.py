@@ -333,7 +333,6 @@ def update_from_batch(data_deltas):
             update_tests(
                 patient,
                 data_delta["lab_tests"],
-                api.user
             )
 
 
