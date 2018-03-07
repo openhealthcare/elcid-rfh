@@ -261,11 +261,6 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'intrahospital_api': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': True,
-        }
     }
 }
 

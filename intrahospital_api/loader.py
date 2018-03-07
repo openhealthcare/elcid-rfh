@@ -217,17 +217,18 @@ def good_to_go():
     return True
 
 
-def batch_load():
+def batch_load(force=False):
     all_set = None
 
     # validate that we can run without exception
-    try:
-        all_set = good_to_go()
-    except:
-        log_errors("batch load")
+    if not force:
+        try:
+            all_set = good_to_go()
+        except:
+            log_errors("batch load")
 
-    if not all_set:
-        return
+        if not all_set:
+            return
 
     batch = models.BatchPatientLoad()
     batch.start()
@@ -268,7 +269,7 @@ def update_external_demographics():
         external_demographics = patient.externaldemographics_set.get()
         external_demographics_json.pop('external_system')
         external_demographics.update_from_dict(
-            external_demographics_json, api.user
+            external_demographics_json, api.user, force=True
         )
 
 

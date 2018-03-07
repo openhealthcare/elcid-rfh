@@ -2,8 +2,7 @@ import mock
 import datetime
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import dev_api
-from elcid import models as emodels
-from lab import models as lmodels
+from opal import models as omodels
 
 
 class DevApiTestCase(OpalTestCase):
@@ -11,7 +10,8 @@ class DevApiTestCase(OpalTestCase):
         self.api = dev_api.DevApi()
 
     def test_get_date_of_birth(self):
-        dob = self.api.get_date_of_birth()
+        dob_str = self.api.get_date_of_birth()
+        dob = omodels.deserialize_date(dob_str)
         self.assertTrue(dob > datetime.date(1900, 1, 1))
 
     def test_demographics(self):
