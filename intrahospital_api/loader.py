@@ -12,7 +12,7 @@
     We have 7 entry points.
 
     load_demographics(hospital_number)
-    returns the demographcis for that hospital number
+    returns the demographics for that hospital number
     without saving.
 
     load_lab_tests_for_patient(patient, async=False):
@@ -123,6 +123,7 @@ def load_demographics(hospital_number):
             (stopped - started).seconds
         ))
         log_errors("load_demographics")
+        return
 
     return result
 
@@ -200,6 +201,10 @@ def good_to_go():
                 # we expect the inital batch patient load to take ages
                 # as its the first and runs the initial load
                 # so cut it some slack
+                logger.info(
+                    "batch still running after {} seconds, but its the first \
+load".format(time_ago.seconds)
+                )
                 return False
             else:
                 raise BatchLoadError(
