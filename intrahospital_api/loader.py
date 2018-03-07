@@ -327,7 +327,7 @@ def update_from_batch(data_deltas):
             demographics, patient_demographics
         ):
             patient_demographics.update_from_dict(
-                demographics, api.user
+                demographics, api.user, force=True
             )
             patient = patient_demographics.patient
             update_tests(
