@@ -50,7 +50,7 @@ from django.conf import settings
 from intrahospital_api import models
 from elcid import models as emodels
 from elcid.utils import timing
-from opal.models import Patient
+from opal.models import Patient, deserialize_date
 from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
@@ -59,7 +59,6 @@ api = get_api()
 logger = logging.getLogger('intrahospital_api')
 
 
-@transaction.atomic
 @timing
 def initial_load():
     models.InitialPatientLoad.objects.all().delete()
@@ -76,9 +75,8 @@ def initial_load():
         batch.complete()
 
 
-@transaction.atomic
 def _initial_load():
-    update_external_demographics()
+    reconcile_demographics()
     # only run for reconciled patients
     patients = Patient.objects.filter(
         demographics__external_system=EXTERNAL_SYSTEM
@@ -246,46 +244,86 @@ def batch_load(force=False):
         batch.complete()
 
 
-@transaction.atomic
-def update_external_demographics():
-    """
-        If the patient has not been loaded in from upstream,
-        check to see if they have demographics upstream and populate
-        the external demographics accordingly.
+def update_demographics(external_demographics_dict):
+    dob = external_demographics_dict["date_of_birth"]
+    if dob:
+        dob = deserialize_date(dob)
+    demographics = emodels.Demographics.objects.filter(
+        first_name__iexact=external_demographics_dict["first_name"],
+        surname__iexact=external_demographics_dict["surname"],
+        date_of_birth=dob,
+        hospital_number=external_demographics_dict["hospital_number"]
+    )
 
-        This will then put them on the reconciliation patient list
+    # we can't do an update because of fk ft
+    for demographic in demographics:
+        demographic.external_system = EXTERNAL_SYSTEM
+        demographic.sex = external_demographics_dict.get("sex")
+        demographic.title = external_demographics_dict.get("title")
+        demographic.ethnicity = external_demographics_dict.get("ethnicity")
+        demographic.nhs_number = external_demographics_dict.get("nhs_number")
+        demographic.middle_name = external_demographics_dict.get("middle_name")
+        demographic.save()
+        return True
+    return False
+
+
+def update_external_demographics(
+    external_demographics,
+    external_demographics_dict
+):
+    external_demographics_dict.pop('external_system')
+    external_demographics.update_from_dict(
+        external_demographics_dict, api.user, force=True
+    )
+
+
+@transaction.atomic
+def update_patient_demographics(patient):
+    """ for a patient,
+    """
+    demographics = patient.demographics_set.get()
+    external_demographics_dict = api.demographics(
+        demographics.hospital_number
+    )
+    if not external_demographics_dict:
+        logger.info("unable to find {}".format(
+            demographics.hospital_number
+        ))
+        return
+    if not update_demographics(external_demographics_dict):
+        external_demographics = patient.externaldemographics_set.get()
+        update_external_demographics(
+            external_demographics, external_demographics_dict
+        )
+
+
+def reconcile_demographics():
+    """
+        Look at all patients who have not been reconciled with the upstream
+        demographics, ie there demographics external system is not
+        EXTERNAL_SYSTEM.
+
+        Take a look upstream, can we reconcile them by getting a match
+        on a few different criteria.
+
+        If not stick them on the reconcile list.
     """
     patients = Patient.objects.exclude(
         demographics__external_system=EXTERNAL_SYSTEM
     )
-    patients = patients.filter(
-        Q(externaldemographics__hospital_number=None) |
-        Q(externaldemographics__hospital_number="")
-    )
+
     for patient in patients:
-        demographics = patient.demographics_set.get()
-        external_demographics_json = api.demographics(
-            demographics.hospital_number
-        )
-        if not external_demographics_json:
-            print "unable to find {}".format(demographics.hospital_number)
-            continue
-
-        external_demographics = patient.externaldemographics_set.get()
-        external_demographics_json.pop('external_system')
-        external_demographics.update_from_dict(
-            external_demographics_json, api.user, force=True
-        )
+        update_patient_demographics(patient)
 
 
-@transaction.atomic
 @timing
 def _batch_load():
     last_successful_run = models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.SUCCESS
     ).order_by("started").last()
     # update the non reconciled
-    update_external_demographics()
+    reconcile_demographics()
 
     data_deltas = api.data_deltas(last_successful_run.started)
     update_from_batch(data_deltas)
@@ -318,27 +356,33 @@ def update_from_batch(data_deltas):
         patient__initialpatientload__state=models.InitialPatientLoad.SUCCESS
     )
     for data_delta in data_deltas:
-        demographics = data_delta["demographics"]
-        patient_demographics_set = demographics_set.filter(
-            hospital_number=demographics["hospital_number"]
-        )
-        if not patient_demographics_set.exists():
-            # this patient is not in our reconcile list,
-            # move on, nothing to see here.
-            continue
-        patient_demographics = patient_demographics_set.get()
+        update_patient_from_batch(demographics_set, data_delta)
 
-        if have_demographics_changed(
-            demographics, patient_demographics
-        ):
-            patient_demographics.update_from_dict(
-                demographics, api.user, force=True
-            )
-            patient = patient_demographics.patient
-            update_tests(
-                patient,
-                data_delta["lab_tests"],
-            )
+
+@transaction.atomic
+def update_patient_from_batch(demographics_set, data_delta):
+    demographics = data_delta["demographics"]
+    patient_demographics_set = demographics_set.filter(
+        hospital_number=demographics["hospital_number"]
+    )
+    if not patient_demographics_set.exists():
+        # this patient is not in our reconcile list,
+        # move on, nothing to see here.
+        return
+    patient_demographics = patient_demographics_set.get()
+
+    if have_demographics_changed(
+        demographics, patient_demographics
+    ):
+        patient_demographics.update_from_dict(
+            demographics, api.user, force=True
+        )
+        patient = patient_demographics.patient
+        update_tests(
+            patient,
+            data_delta["lab_tests"],
+        )
+
 
 
 @timing

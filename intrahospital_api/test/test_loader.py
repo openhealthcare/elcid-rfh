@@ -37,7 +37,7 @@ class ImportDemographicsTestCase(LoaderTestCase):
                 ethnicity="White Irish",
                 external_system=EXTERNAL_SYSTEM,
             )
-            loader.update_external_demographics()
+            loader.reconcile_demographics()
         external_demographics = imodels.ExternalDemographics.objects.get()
         self.assertEqual(external_demographics.date_of_birth, None)
         self.assertEqual(external_demographics.hospital_number, "100")
@@ -58,7 +58,7 @@ class ImportDemographicsTestCase(LoaderTestCase):
         )
         with mock.patch.object(loader.api, "demographics") as d:
             d.return_value = None
-            loader.update_external_demographics()
+            loader.reconcile_demographics()
 
         external_demographics = imodels.ExternalDemographics.objects.get()
         self.assertEqual(external_demographics.first_name, '')
@@ -71,9 +71,12 @@ class ImportDemographicsTestCase(LoaderTestCase):
         with mock.patch.object(loader.api, "demographics") as d:
             d.return_value = dict(
                 external_system="Test",
-                date_of_birth="27/10/2000"
+                date_of_birth="27/10/2000",
+                first_name="Jane",
+                surname="Doe",
+                hospital_number="123"
             )
-            loader.update_external_demographics()
+            loader.reconcile_demographics()
         external_demographics = imodels.ExternalDemographics.objects.get()
         self.assertEqual(
             external_demographics.date_of_birth,
@@ -87,9 +90,8 @@ class ImportDemographicsTestCase(LoaderTestCase):
             external_system=EXTERNAL_SYSTEM
         )
         with mock.patch.object(loader.api, "demographics") as d:
-            loader.update_external_demographics()
+            loader.reconcile_demographics()
 
-        loader.update_external_demographics()
         self.assertFalse(d.called)
 
 
@@ -194,15 +196,15 @@ class _InitialLoadTestCase(LoaderTestCase):
         ).update(external_system=EXTERNAL_SYSTEM)
 
     @mock.patch(
-        "intrahospital_api.loader.update_external_demographics",
+        "intrahospital_api.loader.reconcile_demographics",
     )
     @mock.patch(
         "intrahospital_api.loader.load_lab_tests_for_patient",
     )
-    def test_flow(self, load_lab_tests_for_patient, external_demographics):
+    def test_flow(self, load_lab_tests_for_patient, reconcile_demographics):
         with mock.patch.object(loader.logger, "info") as info:
             loader._initial_load()
-            external_demographics.assert_called_once_with()
+            reconcile_demographics.assert_called_once_with()
             call_args_list = load_lab_tests_for_patient.call_args_list
             self.assertEqual(
                 call_args_list[0][0], (self.patient_1,)
@@ -511,7 +513,7 @@ class GoodToGoTestCase(LoaderTestCase):
 @mock.patch("intrahospital_api.loader.log_errors")
 @mock.patch("intrahospital_api.loader._batch_load")
 @mock.patch("intrahospital_api.loader.good_to_go")
-class BatchLoadTestCase(OpalTestCase):
+class BatchLoadTestCase(LoaderTestCase):
     def test_with_force(self, good_to_go, _batch_load, log_errors):
         loader.batch_load(force=True)
         good_to_go.return_value = True
@@ -550,3 +552,76 @@ class BatchLoadTestCase(OpalTestCase):
         self.assertTrue(good_to_go.called)
         self.assertTrue(_batch_load.called)
         log_errors.assert_called_once_with("batch load")
+
+
+@mock.patch.object(loader.logger, 'info')
+@mock.patch.object(loader.api, 'demographics')
+class ReconcileDemographicsTestCase(LoaderTestCase):
+    def setUp(self, *args, **kwargs):
+        super(ReconcileDemographicsTestCase, self).setUp(*args, **kwargs)
+
+        # this is the patient that will be covered
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient.demographics_set.update(
+            external_system="blah",
+            hospital_number="123",
+            updated=None
+        )
+        # we should not see this patient as they have an exernal system on
+        # their demographics
+        patient_2, _ = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(
+            external_system=EXTERNAL_SYSTEM,
+            hospital_number="234",
+        )
+
+    def test_reconcile_demographics(self, demographics, info):
+        demographics.return_value = dict(
+            first_name="Jane",
+            surname="Doe",
+            date_of_birth="12/10/2000",
+            external_system=EXTERNAL_SYSTEM,
+            hospital_number="123"
+        )
+        loader.reconcile_demographics()
+        demographics.assert_called_once_with("123")
+        self.assertFalse(info.called)
+        self.assertEqual(
+            self.patient.externaldemographics_set.first().first_name,
+            "Jane"
+        )
+        self.assertIsNotNone(
+            self.patient.externaldemographics_set.first().updated
+        )
+
+    def test_with_external_demographics_when_none(self, demographics, info):
+        demographics.return_value = None
+        loader.reconcile_demographics()
+        self.assertIsNone(
+            self.patient.externaldemographics_set.first().updated
+        )
+        info.assert_called_once_with("unable to find 123")
+
+
+@mock.patch.object(loader.api, "data_deltas")
+@mock.patch('intrahospital_api.loader.reconcile_demographics')
+@mock.patch('intrahospital_api.loader.update_from_batch')
+class _BatchLoadTestCase(OpalTestCase):
+    def test_batch_load(
+        self, update_from_batch, reconcile_demographics, data_deltas
+    ):
+        now = timezone.now()
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.SUCCESS,
+            started=now
+        )
+        data_deltas.return_value = "something"
+        loader._batch_load()
+        reconcile_demographics.assert_called_once_with()
+        data_deltas.assert_called_once_with(now)
+        update_from_batch.assert_called_once_with("something")
+
+
+class UpdateFromBatchTestCase(OpalTestCase):
+    def test_update_from_batch(self):
+        pass
