@@ -87,13 +87,17 @@ class Location(EpisodeSubrecord):
             return 'demographics'
 
 
-class HL7Result(lmodels.ReadOnlyLabTest):
+class UpstreamLabTest(lmodels.ReadOnlyLabTest):
+    # these fields we will save as extras when we
+    # update from dict
+    convert_to_extras = ['test_code', 'test_name', 'site', 'clinical_info']
+
     class Meta:
-        verbose_name = "HL7 Result"
+        verbose_name = "Upstream Lab Test"
 
     @classmethod
     def get_api_name(cls):
-        return "hl7_result"
+        return "upstream_lab_test"
 
     def to_dict(self, user):
         """
@@ -110,7 +114,7 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             we serialise the usual way but not via the episode
             serialisation
         """
-        return super(HL7Result, self).to_dict(user)
+        return super(UpstreamLabTest, self).to_dict(user)
 
     def update_from_dict(self, data, *args, **kwargs):
         populated = (
@@ -135,7 +139,13 @@ class HL7Result(lmodels.ReadOnlyLabTest):
 
                 if existing:
                     data["id"] = existing.id
-            super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+            for i in self.convert_to_extras:
+                if i in data:
+                    if "extras" not in data:
+                        data["extras"] = {}
+                    data["extras"][i] = data.pop(i)
+
+            super(UpstreamLabTest, self).update_from_dict(data, *args, **kwargs)
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -149,11 +159,38 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             "CLOTTING SCREEN"
         ]
         six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
-        qs = HL7Result.objects.filter(
+        qs = UpstreamLabTest.objects.filter(
             patient=patient,
             datetime_ordered__gt=six_months_ago
         ).order_by("datetime_ordered")
-        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
+        return [i for i in qs if i.extras.get("test_name") in relevent_tests]
+
+
+class UpstreamBloodCulture(UpstreamLabTest):
+    """ Upstream blood cultures are funny beasts
+
+    Observation types that have previously existed
+    are...
+
+    	* Aerobic bottle culture
+        * Aerobic Bottle: Microscopy
+        * Anaerobic bottle culture
+        * Anaerobic Bottle: Microscopy
+
+        * Blood Culture
+        * Reference Lab. Comment
+        * Reference Lab. Name
+        * Comments
+
+    Of these Blood Culture needs some tweaking
+    """
+
+    class Meta:
+        verbose_name = "Upstream Blood Culture"
+
+    @classmethod
+    def get_api_name(cls):
+        return "upstream_blood_culture"
 
 
 class InfectionSource(lookuplists.LookupList):

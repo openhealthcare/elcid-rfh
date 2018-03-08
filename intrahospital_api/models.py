@@ -17,3 +17,18 @@ class ExternalDemographics(PatientSubrecord):
     date_of_birth = models.DateField(null=True, blank=True)
     sex = ForeignKeyOrFreeText(omodels.Gender)
     ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
+
+
+class InitialPatientLoad(PatientSubrecord):
+    """ this model is the initial load of a patient
+        future loads are done by the cron batch load
+    """
+    RUNNING = "running"
+    FAILURE = "failure"
+    SUCCESS = "success"
+
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )

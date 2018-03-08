@@ -2,6 +2,9 @@
 {% block content %}
   <div style="overflow-x: scroll" class="container">
     <h1>{{ title }}</h1>
-    {% include "intrahospital_api/partials/pivot_table.html" %}
+    {% for lab_number, row_data in lab_results.items %}
+      <h3>{{ lab_number }}</h3>
+      {% include "intrahospital_api/partials/pivot_table.html" %}
+    {% endfor %}
   </div>
 {% endblock content %}

@@ -22,7 +22,7 @@
 # we then need to build the form part of it.
 import datetime
 from django.db import transaction
-from intrahospital_api import get_api
+from intrahospital_api.apis import get_api
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.conf import settings

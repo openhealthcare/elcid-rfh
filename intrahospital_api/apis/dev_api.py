@@ -198,32 +198,16 @@ class DevApi(base_api.BaseApi):
             title = random.choice(["Dr", "Ms", "Mrs", "Not Specified"])
 
         return dict(
-            sex=sex,
             date_of_birth=self.get_date_of_birth(),
+            ethnicity="Other",
+            external_system="DEV_API",
             first_name=first_name,
-            surname=random.choice(LAST_NAMES),
-            title=title,
             hospital_number=hospital_number,
             nhs_number=self.get_external_identifier(),
-            external_system="DEV_API"
+            sex=sex,
+            surname=random.choice(LAST_NAMES),
+            title=title
         )
-
-    def results(self, hospital_number):
-        """
-            creates random mock lab tests, all tests created will be for the
-            last 10 days... just because (this could be more realistic...)
-        """
-        now = datetime.now()
-        result = []
-        for i in range(10):
-            old_news = now - timedelta(i)
-            for lab_test_type in TEST_BASES.keys():
-                result.append(
-                    self.create_lab_test(
-                        lab_test_type, old_news
-                    )
-                )
-        return result
 
     def get_external_identifier(self):
         random_str = str(random.randint(0, 100000000))
@@ -247,52 +231,10 @@ class DevApi(base_api.BaseApi):
         else:
             return random_result - deviation
 
-    def create_lab_test(
-        self,
-        lab_test_type,
-        datetime_ordered,
-        result_status=lmodels.LabTest.COMPLETE
-    ):
-        """
-            creates the dict of a lab test
-            that can be updated to the HL7 lab test
-            type
-        """
-        external_identifier = self.get_external_identifier()
-        datetime_ordered_str = datetime_ordered.strftime(
-            settings.DATETIME_INPUT_FORMATS[0]
-        )
-
-        observations = TEST_BASES.get(lab_test_type)
-        result = dict(
-            extras=dict(
-                observation_datetime=datetime_ordered_str,
-                profile_description=lab_test_type,
-                last_edited=datetime_ordered_str,
-            ),
-            external_identifier=external_identifier,
-            datetime_ordered=datetime_ordered_str,
-            lab_test_type=emodels.HL7Result.get_display_name(),
-            status=result_status,
-            observations=[]
-        )
-        for test_name, fields in observations.items():
-            reference_range = fields["reference_range"]
-            result["observations"].append(dict(
-                test_name=test_name,
-                result_status="Final",
-                observation_value=str(
-                    self.get_observation_value(reference_range)
-                ),
-                reference_range=reference_range,
-                units=fields["units"]
-            ))
-        return result
-
     def cooked_data(self, hospital_number):
         rows = []
         demographics = self.demographics(hospital_number)
-        results = self.results(hospital_number)
+        results = self.results_for_hospital_number(hospital_number)
         for result in results:
             for obs in result["observations"]:
                 row = {}
@@ -305,5 +247,85 @@ class DevApi(base_api.BaseApi):
 
         return rows
 
-    def raw_data(self, hospital_number):
+    def create_observation_dict(
+        self,
+        test_base_observation_name,
+        test_base_observation_value,
+        base_datetime=None
+    ):
+        """
+        should return something like...
+        {
+            "last_updated": "18 Jul 2019, 4:18 p.m.",
+            "observation_datetime": "18 Jul 2015, 4:18 p.m."
+            "observation_name": "Aerobic bottle culture",
+            "observation_number": "12312",
+            "reference_range": "3.5 - 11",
+            "units": "g"
+        }
+
+        """
+        if base_datetime is None:
+            base_datetime = datetime.now()
+
+        return dict(
+            last_updated=(base_datetime - timedelta(minutes=20)).strftime(
+                '%d/%m/%Y %H:%M:%S'
+            ),
+            observation_datetime=(base_datetime - timedelta(1)).strftime(
+                '%d/%m/%Y %H:%M:%S'
+            ),
+            observation_name=test_base_observation_name,
+            observation_number=self.get_external_identifier(),
+            observation_value=str(self.get_observation_value(
+                test_base_observation_value["reference_range"]
+            )),
+            reference_range=test_base_observation_value["reference_range"],
+            units=test_base_observation_value["units"],
+        )
+
+    def results_for_hospital_number(self, hospital_number, **filter_kwargs):
+        """ We expect a return of something like
+            {
+                clinical_info:  u'testing',
+                datetime_ordered: "18 Jul 2015, 4:15 p.m.",
+                external_identifier: "ANTI NEURONAL AB REFERRAL",
+                site: u'^&                              ^',
+                status: "Sucess",
+                test_code: "AN12"
+                test_name: "Anti-CV2 (CRMP-5) antibodies",
+                observations: [{
+                    "last_updated": "18 Jul 2019, 4:18 p.m.",
+                    "observation_datetime": "18 Jul 2015, 4:18 p.m."
+                    "observation_name": "Aerobic bottle culture",
+                    "observation_number": "12312",
+                    "reference_range": "3.5 - 11",
+                    "units": "g"
+                }]
+            }
+        """
+        result = []
+        for i, v in TEST_BASES.items():
+            for date_t in range(10):
+                base_datetime = datetime.now() - timedelta(date_t)
+                result.append(dict(
+                    clinical_info=u'testing',
+                    datetime_ordered=base_datetime.strftime(
+                        '%d/%m/%Y %H:%M:%S'
+                    ),
+                    external_identifier=self.get_external_identifier(),
+                    status=lmodels.LabTest.COMPLETE,
+                    site=u'^&                              ^',
+                    test_code=i.lower().replace(" ", "_"),
+                    test_name=i,
+                    observations=[
+                        self.create_observation_dict(
+                            o, y, base_datetime=base_datetime
+                        ) for o, y in v.items()
+                    ]
+                ))
+
+        return result
+
+    def raw_data(self, hospital_number, **filter_kwargs):
         return [RAW_DATA]

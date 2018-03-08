@@ -1,0 +1,19 @@
+<table class="table table-striped">
+  <tbody>
+    {% for row in row_data %}
+      <tr>
+        {% for cell in row %}
+          {% if forloop.first %}
+            <th class="text-left">
+              {{ cell }}
+            </th>
+          {% else %}
+            <td class="text-left">
+              {{ cell }}
+            </td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
