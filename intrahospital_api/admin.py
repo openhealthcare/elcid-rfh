@@ -69,7 +69,7 @@ class PatientAdmin(OldPatientAdmin):
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
-            loader.load_lab_tests_for_patient(patient, async=False)
+            loader.load_patient(patient, async=False)
 
     def upstream_lab_results(self, obj):
         hospital_number = obj.demographics_set.first().hospital_number

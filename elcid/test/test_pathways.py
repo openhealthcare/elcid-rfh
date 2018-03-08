@@ -1,7 +1,7 @@
 from datetime import date
 from mock import patch
 from django.test import override_settings
-from intrahospital_api.apis.dev_api import DevApi
+from django.contrib.auth.models import User
 
 from opal import models
 from opal.core.test import OpalTestCase
@@ -12,10 +12,13 @@ from elcid.pathways import (
 
 @override_settings(
     ASYNC_API=False,
-    INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
+    INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi',
+    API_USER="ohc"
 )
 class PathwayTestCase(OpalTestCase):
-    pass
+    def setUp(self):
+        super(PathwayTestCase, self).setUp()
+        User.objects.create(username="ohc", password="fake_password")
 
 
 class TestBloodCulturePathway(PathwayTestCase):
@@ -86,6 +89,7 @@ class TestCernerDemoPathway(PathwayTestCase):
 
 class TestAddPatientPathway(PathwayTestCase):
     def setUp(self):
+        super(TestAddPatientPathway, self).setUp()
         self.assertTrue(
             self.client.login(
                 username=self.user.username, password=self.PASSWORD

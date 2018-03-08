@@ -23,5 +23,5 @@ class ReconcilePatientPathway(PagePathway):
         patient, episode = super(ReconcilePatientPathway, self).save(
             *args, **kwargs
         )
-        loader.load_lab_tests_for_patient(patient)
+        loader.load_patient(patient)
         return patient, episode

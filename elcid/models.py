@@ -9,6 +9,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from lab import models as lmodels
 import opal.models as omodels
+from elcid.utils import timing
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
@@ -129,6 +130,7 @@ class UpstreamLabTest(lmodels.LabTest):
         """
         pass
 
+    @timing
     def update_from_api_dict(self, patient, data, user):
         """
             This is the updateFromDict of the the UpstreamLabTest

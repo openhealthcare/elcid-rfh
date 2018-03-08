@@ -158,7 +158,8 @@ class InitialLoadTestCase(LoaderTestCase):
 
     def test_failed_load(self, log_errors, _initial_load):
         _initial_load.side_effect = ValueError("Boom")
-        loader.initial_load()
+        with self.assertRaises(ValueError):
+            loader.initial_load()
         _initial_load.assert_called_once_with()
         log_errors.assert_called_once_with("initial_load")
         batch_load = imodels.BatchPatientLoad.objects.get()
@@ -199,13 +200,13 @@ class _InitialLoadTestCase(LoaderTestCase):
         "intrahospital_api.loader.reconcile_demographics",
     )
     @mock.patch(
-        "intrahospital_api.loader.load_lab_tests_for_patient",
+        "intrahospital_api.loader.load_patient",
     )
-    def test_flow(self, load_lab_tests_for_patient, reconcile_demographics):
+    def test_flow(self, load_patient, reconcile_demographics):
         with mock.patch.object(loader.logger, "info") as info:
             loader._initial_load()
             reconcile_demographics.assert_called_once_with()
-            call_args_list = load_lab_tests_for_patient.call_args_list
+            call_args_list = load_patient.call_args_list
             self.assertEqual(
                 call_args_list[0][0], (self.patient_1,)
             )
@@ -336,49 +337,49 @@ class LoadDemographicsTestCase(LoaderTestCase):
         self.assertTrue(isinstance(result, dict))
 
 
-@mock.patch('intrahospital_api.loader.async_load')
-@mock.patch('intrahospital_api.loader._load_lab_tests_for_patient')
+@mock.patch('intrahospital_api.loader.async_task')
+@mock.patch('intrahospital_api.loader._load_patient')
 class LoadLabTestsForPatientTestCase(LoaderTestCase):
     def setUp(self, *args, **kwargs):
         super(LoadLabTestsForPatientTestCase, self).setUp(*args, **kwargs)
         self.patient, _ = self.new_patient_and_episode_please()
 
     @override_settings(ASYNC_API=True)
-    def test_load_lab_tests_for_patient_arg_override_settings_True(
+    def test_load_patient_arg_override_settings_True(
         self, load_lab_tests, async
     ):
-        loader.load_lab_tests_for_patient(self.patient, async=False)
+        loader.load_patient(self.patient, async=False)
         self.assertTrue(load_lab_tests.called)
         self.assertFalse(async.called)
 
     @override_settings(ASYNC_API=False)
-    def test_load_lab_tests_for_patient_arg_override_settings_False(
+    def test_load_patient_arg_override_settings_False(
         self, load_lab_tests, async
     ):
-        loader.load_lab_tests_for_patient(self.patient, async=True)
+        loader.load_patient(self.patient, async=True)
         self.assertFalse(load_lab_tests.called)
         self.assertTrue(async.called)
 
     @override_settings(ASYNC_API=True)
-    def test_load_lab_tests_for_patient_arg_override_settings_None_True(
+    def test_load_patient_arg_override_settings_None_True(
         self, load_lab_tests, async
     ):
-        loader.load_lab_tests_for_patient(self.patient)
+        loader.load_patient(self.patient)
         self.assertFalse(load_lab_tests.called)
         self.assertTrue(async.called)
 
     @override_settings(ASYNC_API=False)
-    def test_load_lab_tests_for_patient_arg_override_settings_None_False(
+    def test_load_patient_arg_override_settings_None_False(
         self, load_lab_tests, async
     ):
-        loader.load_lab_tests_for_patient(self.patient)
+        loader.load_patient(self.patient)
         self.assertTrue(load_lab_tests.called)
         self.assertFalse(async.called)
 
-    def test_load_lab_tests_for_patient_async(
+    def test_load_patient_async(
         self, load_lab_tests, async
     ):
-        loader.load_lab_tests_for_patient(self.patient, async=True)
+        loader.load_patient(self.patient, async=True)
         self.assertFalse(load_lab_tests.called)
         self.assertTrue(async.called)
         call_args_list = async.call_args_list
@@ -390,10 +391,10 @@ class LoadLabTestsForPatientTestCase(LoaderTestCase):
         self.assertIsNone(patient_load.stopped)
         self.assertIsNotNone(patient_load.started)
 
-    def test_load_lab_tests_for_patient_async_false(
+    def test_load_patient_async_false(
         self, load_lab_tests, async
     ):
-        loader.load_lab_tests_for_patient(self.patient, async=False)
+        loader.load_patient(self.patient, async=False)
         self.assertFalse(async.called)
         self.assertTrue(load_lab_tests.called)
         call_args_list = load_lab_tests.call_args_list
@@ -407,14 +408,14 @@ class LoadLabTestsForPatientTestCase(LoaderTestCase):
 
 
 @mock.patch('intrahospital_api.tasks.load.delay')
-class AsyncLoadTestCase(LoaderTestCase):
-    def test_async_load(self, delay):
+class AsyncTaskTestCase(LoaderTestCase):
+    def test_async_task(self, delay):
         patient, _ = self.new_patient_and_episode_please()
         patient_load = imodels.InitialPatientLoad.objects.create(
             patient=patient,
             started=timezone.now()
         )
-        loader.async_load(patient, patient_load)
+        loader.async_task(patient, patient_load)
         delay.assert_called_once_with(patient, patient_load)
 
 

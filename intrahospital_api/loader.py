@@ -9,23 +9,18 @@
     This handles our internals and relationship
     between elcid.
 
-    We have 7 entry points.
+    we have 5 entry points
 
-    load_demographics(hospital_number)
-    returns the demographics for that hospital number
-    without saving.
-
-    load_lab_tests_for_patient(patient, async=False):
+    initial_load()
     nukes all existing lab tests and replaces them.
 
     this is run in the inital load below. When we add a patient for the
     first time, when we add a patient who has demographics or when we've
     reconciled a patient.
 
-    initial_load()
-    iterates over all patiens and runs load_lab_tests_for_patient.
-
     batch_load()
+    Tries to reconcile all unreconciled demographics
+
     runs the batch load for all patients that are reconciled.
     currently not being loaded in.
 
@@ -34,10 +29,13 @@
     Loads everything since the start of the previous
     successful load so that we paper over any cracks.
 
-    update_external_demographics()
-    for all demographics that have not been sourced from
-    upstream, load in their latest information for
-    the reconcile list. Used by a management command
+    load_patient()
+    is what is run when we run it from the admin, or
+    after a patient has been reconciled from teh reconciliation pathway.
+    It loads in data for a single specific patient.
+
+    any_loads_running()
+    returns true if any, ie initial or batch, loads are running
 """
 
 import datetime
@@ -71,6 +69,7 @@ def initial_load():
     except:
         batch.failed()
         log_errors("initial_load")
+        raise
     else:
         batch.complete()
 
@@ -85,7 +84,7 @@ def _initial_load():
 
     for iterator, patient in enumerate(patients.all()):
         logger.info("running {}/{}".format(iterator+1, total))
-        load_lab_tests_for_patient(patient, async=False)
+        load_patient(patient, async=False)
 
 
 def log_errors(name):
@@ -126,7 +125,7 @@ def load_demographics(hospital_number):
     return result
 
 
-def load_lab_tests_for_patient(patient, async=None):
+def load_patient(patient, async=None):
     """
         Load all the things for a patient.
 
@@ -145,12 +144,12 @@ def load_lab_tests_for_patient(patient, async=None):
     )
     patient_load.start()
     if async:
-        async_load(patient, patient_load)
+        async_task(patient, patient_load)
     else:
-        _load_lab_tests_for_patient(patient, patient_load)
+        _load_patient(patient, patient_load)
 
 
-def async_load(patient, patient_load):
+def async_task(patient, patient_load):
     from intrahospital_api import tasks
     tasks.load.delay(patient, patient_load)
 
@@ -298,6 +297,18 @@ def update_patient_demographics(patient):
         )
 
 
+@timing
+def _batch_load():
+    last_successful_run = models.BatchPatientLoad.objects.filter(
+        state=models.BatchPatientLoad.SUCCESS
+    ).order_by("started").last()
+    # update the non reconciled
+    reconcile_demographics()
+
+    data_deltas = api.data_deltas(last_successful_run.started)
+    update_from_batch(data_deltas)
+
+
 def reconcile_demographics():
     """
         Look at all patients who have not been reconciled with the upstream
@@ -315,18 +326,6 @@ def reconcile_demographics():
 
     for patient in patients:
         update_patient_demographics(patient)
-
-
-@timing
-def _batch_load():
-    last_successful_run = models.BatchPatientLoad.objects.filter(
-        state=models.BatchPatientLoad.SUCCESS
-    ).order_by("started").last()
-    # update the non reconciled
-    reconcile_demographics()
-
-    data_deltas = api.data_deltas(last_successful_run.started)
-    update_from_batch(data_deltas)
 
 
 def have_demographics_changed(
@@ -384,7 +383,6 @@ def update_patient_from_batch(demographics_set, data_delta):
         )
 
 
-
 @timing
 def update_tests(patient, lab_tests):
     """
@@ -397,8 +395,16 @@ def update_tests(patient, lab_tests):
         lab_model.update_from_api_dict(patient, lab_test, api.user)
 
 
+def async_load_patient(patient, patient_load):
+    try:
+        _load_patient(patient, patient_load)
+    except:
+        log_errors("_load_patient")
+        raise
+
+
 @transaction.atomic
-def _load_lab_tests_for_patient(patient, patient_load):
+def _load_patient(patient, patient_load):
     try:
         hospital_number = patient.demographics_set.first().hospital_number
         patient.labtest_set.filter(
@@ -410,9 +416,10 @@ def _load_lab_tests_for_patient(patient, patient_load):
 
         results = api.results_for_hospital_number(hospital_number)
         update_tests(patient, results)
+        update_patient_demographics(patient)
     except:
         patient_load.failed()
-        log_errors("_load_lab_tests_for_patient")
+        raise
     else:
         patient_load.complete()
 
