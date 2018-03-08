@@ -298,3 +298,11 @@ class R1(RfhPatientList):
     tag = "r1"
     template_name = 'episode_list.html'
     schema = []
+
+
+class LiverTransplantation(RfhPatientList):
+    display_name = 'Liver Transplantation'
+    direct_add = True
+    tag = "liver_transplantation"
+    template_name = 'episode_list.html'
+    schema = []
