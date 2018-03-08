@@ -47,11 +47,13 @@ from django.db.models import Q
 from django.conf import settings
 from intrahospital_api import models
 from elcid import models as emodels
+from opal.models import Patient
 from elcid.utils import timing
-from opal.models import Patient, deserialize_date
 from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
+from intrahospital_api import update_demographics
+from intrahospital_api import update_lab_tests
 
 api = get_api()
 logger = logging.getLogger('intrahospital_api')
@@ -75,7 +77,7 @@ def initial_load():
 
 
 def _initial_load():
-    reconcile_demographics()
+    update_demographics.reconcile_all_demographics()
     # only run for reconciled patients
     patients = Patient.objects.filter(
         demographics__external_system=EXTERNAL_SYSTEM
@@ -243,104 +245,37 @@ def batch_load(force=False):
         batch.complete()
 
 
-def update_demographics(external_demographics_dict):
-    dob = external_demographics_dict["date_of_birth"]
-    if dob:
-        dob = deserialize_date(dob)
-    demographics = emodels.Demographics.objects.filter(
-        first_name__iexact=external_demographics_dict["first_name"],
-        surname__iexact=external_demographics_dict["surname"],
-        date_of_birth=dob,
-        hospital_number=external_demographics_dict["hospital_number"]
-    )
-
-    # we can't do an update because of fk ft
-    for demographic in demographics:
-        demographic.external_system = EXTERNAL_SYSTEM
-        demographic.sex = external_demographics_dict.get("sex")
-        demographic.title = external_demographics_dict.get("title")
-        demographic.ethnicity = external_demographics_dict.get("ethnicity")
-        demographic.nhs_number = external_demographics_dict.get("nhs_number")
-        demographic.middle_name = external_demographics_dict.get("middle_name")
-        demographic.save()
-        return True
-    return False
-
-
-def update_external_demographics(
-    external_demographics,
-    external_demographics_dict
-):
-    external_demographics_dict.pop('external_system')
-    external_demographics.update_from_dict(
-        external_demographics_dict, api.user, force=True
-    )
-
-
-@transaction.atomic
-def update_patient_demographics(patient):
-    """ for a patient,
-    """
-    demographics = patient.demographics_set.get()
-    external_demographics_dict = api.demographics(
-        demographics.hospital_number
-    )
-    if not external_demographics_dict:
-        logger.info("unable to find {}".format(
-            demographics.hospital_number
-        ))
-        return
-    if not update_demographics(external_demographics_dict):
-        external_demographics = patient.externaldemographics_set.get()
-        update_external_demographics(
-            external_demographics, external_demographics_dict
-        )
-
-
 @timing
 def _batch_load():
     last_successful_run = models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.SUCCESS
     ).order_by("started").last()
     # update the non reconciled
-    reconcile_demographics()
+    update_demographics.reconcile_all_demographics()
 
     data_deltas = api.data_deltas(last_successful_run.started)
     update_from_batch(data_deltas)
 
 
-def reconcile_demographics():
-    """
-        Look at all patients who have not been reconciled with the upstream
-        demographics, ie there demographics external system is not
-        EXTERNAL_SYSTEM.
-
-        Take a look upstream, can we reconcile them by getting a match
-        on a few different criteria.
-
-        If not stick them on the reconcile list.
-    """
-    patients = Patient.objects.exclude(
-        demographics__external_system=EXTERNAL_SYSTEM
+@transaction.atomic
+def update_patient_from_batch(demographics_set, data_delta):
+    upstream_demographics = data_delta["demographics"]
+    patient_demographics_set = demographics_set.filter(
+        hospital_number=upstream_demographics["hospital_number"]
     )
+    if not patient_demographics_set.exists():
+        # this patient is not in our reconcile list,
+        # move on, nothing to see here.
+        return
 
-    for patient in patients:
-        update_patient_demographics(patient)
-
-
-def have_demographics_changed(
-    upstream_demographics, our_demographics_model
-):
-        """ checks to see i the demographics have changed
-            if they haven't, don't bother updating
-
-            only compares keys that are coming from the
-            upstream dict
-        """
-        as_dict = our_demographics_model.to_dict(api.user)
-        relevent_keys = set(upstream_demographics.keys())
-        our_dict = {i: v for i, v in as_dict.items() if i in relevent_keys}
-        return not upstream_demographics == our_dict
+    patient = patient_demographics_set.first().patient
+    update_demographics.update_patient_demographics(
+        patient, upstream_demographics
+    )
+    update_lab_tests.update_tests(
+        patient,
+        data_delta["lab_tests"],
+    )
 
 
 @timing
@@ -356,43 +291,6 @@ def update_from_batch(data_deltas):
     )
     for data_delta in data_deltas:
         update_patient_from_batch(demographics_set, data_delta)
-
-
-@transaction.atomic
-def update_patient_from_batch(demographics_set, data_delta):
-    demographics = data_delta["demographics"]
-    patient_demographics_set = demographics_set.filter(
-        hospital_number=demographics["hospital_number"]
-    )
-    if not patient_demographics_set.exists():
-        # this patient is not in our reconcile list,
-        # move on, nothing to see here.
-        return
-    patient_demographics = patient_demographics_set.get()
-
-    if have_demographics_changed(
-        demographics, patient_demographics
-    ):
-        patient_demographics.update_from_dict(
-            demographics, api.user, force=True
-        )
-        patient = patient_demographics.patient
-        update_tests(
-            patient,
-            data_delta["lab_tests"],
-        )
-
-
-@timing
-def update_tests(patient, lab_tests):
-    """
-        takes in all lab tests, saves those
-        that need saving updates those that need
-        updating.
-    """
-    for lab_test in lab_tests:
-        lab_model = get_model_for_lab_test_type(lab_test)
-        lab_model.update_from_api_dict(patient, lab_test, api.user)
 
 
 def async_load_patient(patient, patient_load):
@@ -415,38 +313,10 @@ def _load_patient(patient, patient_load):
         ).delete()
 
         results = api.results_for_hospital_number(hospital_number)
-        update_tests(patient, results)
-        update_patient_demographics(patient)
+        update_lab_tests.update_tests(patient, results)
+        update_demographics.update_patient_demographics(patient)
     except:
         patient_load.failed()
         raise
     else:
         patient_load.complete()
-
-
-def get_model_for_lab_test_type(lab_test):
-    if lab_test["test_name"] == "BLOOD CULTURE":
-        mod = emodels.UpstreamBloodCulture
-    else:
-        mod = emodels.UpstreamLabTest
-
-    external_identifier = lab_test["external_identifier"]
-    lab_test_type = lab_test["test_name"]
-    filtered = mod.objects.filter(
-        external_identifier=external_identifier,
-    )
-    by_test_type = [
-        f for f in filtered if f.extras["test_name"] == lab_test_type
-    ]
-
-    if len(by_test_type) > 1:
-        raise ValueError(
-            "multiple test types found for {} {}".format(
-                external_identifier, lab_test_type
-            )
-        )
-
-    if by_test_type:
-        return by_test_type[0]
-    else:
-        return mod()

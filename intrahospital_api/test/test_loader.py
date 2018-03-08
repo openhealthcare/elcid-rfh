@@ -12,142 +12,15 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
 @override_settings(API_USER="ohc")
-class LoaderTestCase(OpalTestCase):
+class ApiTestCase(OpalTestCase):
     def setUp(self):
-        super(LoaderTestCase, self).setUp()
+        super(ApiTestCase, self).setUp()
         User.objects.create(username="ohc", password="fake_password")
-
-
-class ImportDemographicsTestCase(LoaderTestCase):
-    def test_handle_patient_found(self):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            hospital_number="100"
-        )
-        with mock.patch.object(loader.api, "demographics") as d:
-            d.return_value = dict(
-                date_of_birth=None,
-                hospital_number="100",
-                nhs_number="234",
-                surname="Flintstone",
-                first_name="Wilma",
-                middle_name="somewhere",
-                title="Ms",
-                sex="Female",
-                ethnicity="White Irish",
-                external_system=EXTERNAL_SYSTEM,
-            )
-            loader.reconcile_demographics()
-        external_demographics = imodels.ExternalDemographics.objects.get()
-        self.assertEqual(external_demographics.date_of_birth, None)
-        self.assertEqual(external_demographics.hospital_number, "100")
-        self.assertEqual(external_demographics.nhs_number, "234")
-        self.assertEqual(external_demographics.surname, "Flintstone")
-        self.assertEqual(external_demographics.first_name, "Wilma")
-        self.assertEqual(external_demographics.middle_name, "somewhere")
-        self.assertEqual(external_demographics.title, "Ms")
-        self.assertEqual(external_demographics.sex, "Female")
-        self.assertEqual(external_demographics.ethnicity, "White Irish")
-        d.assert_called_once_with("100")
-
-    def test_handle_patient_not_found(self):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            hospital_number="100",
-            external_system=EXTERNAL_SYSTEM,
-        )
-        with mock.patch.object(loader.api, "demographics") as d:
-            d.return_value = None
-            loader.reconcile_demographics()
-
-        external_demographics = imodels.ExternalDemographics.objects.get()
-        self.assertEqual(external_demographics.first_name, '')
-
-    def test_handle_date_of_birth(self):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            external_system="test",
-        )
-        with mock.patch.object(loader.api, "demographics") as d:
-            d.return_value = dict(
-                external_system="Test",
-                date_of_birth="27/10/2000",
-                first_name="Jane",
-                surname="Doe",
-                hospital_number="123"
-            )
-            loader.reconcile_demographics()
-        external_demographics = imodels.ExternalDemographics.objects.get()
-        self.assertEqual(
-            external_demographics.date_of_birth,
-            datetime.date(2000, 10, 27)
-        )
-
-    def test_ignore_external_system_patients(self):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            hospital_number="100",
-            external_system=EXTERNAL_SYSTEM
-        )
-        with mock.patch.object(loader.api, "demographics") as d:
-            loader.reconcile_demographics()
-
-        self.assertFalse(d.called)
-
-
-class HaveDemographicsTestCase(LoaderTestCase):
-    def setUp(self, *args, **kwargs):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            first_name="James",
-            surname="Watson",
-            sex_ft="Male",
-            religion="Christian"
-        )
-        self.demographics = patient.demographics_set.first()
-        super(HaveDemographicsTestCase, self).setUp(*args, **kwargs)
-
-    def test_demographics_have_not_changed(self):
-        update_dict = dict(
-            first_name="James",
-            surname="Watson",
-            sex="Male"
-        )
-        self.assertFalse(
-            loader.have_demographics_changed(
-                update_dict, self.demographics
-            )
-        )
-
-    def test_need_to_update_demographics_fk_or_ft(self):
-        update_dict = dict(
-            first_name="James",
-            surname="Watson",
-            sex="not disclosed"
-        )
-        self.assertTrue(
-            loader.have_demographics_changed(
-                update_dict, self.demographics
-            )
-        )
-
-    def test_need_to_update_demographics_str(self):
-        update_dict = dict(
-            first_name="Jamey",
-            surname="Watson",
-            sex="Male"
-        )
-
-        self.assertTrue(
-            loader.have_demographics_changed(
-                update_dict, self.demographics
-            )
-        )
 
 
 @mock.patch("intrahospital_api.loader._initial_load")
 @mock.patch("intrahospital_api.loader.log_errors")
-class InitialLoadTestCase(LoaderTestCase):
+class InitialLoadTestCase(ApiTestCase):
     def test_successful_load(self, log_errors, _initial_load):
         loader.initial_load()
         _initial_load.assert_called_once_with()
@@ -184,7 +57,7 @@ class InitialLoadTestCase(LoaderTestCase):
         )
 
 
-class _InitialLoadTestCase(LoaderTestCase):
+class _InitialLoadTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(_InitialLoadTestCase, self).setUp(*args, **kwargs)
 
@@ -197,15 +70,15 @@ class _InitialLoadTestCase(LoaderTestCase):
         ).update(external_system=EXTERNAL_SYSTEM)
 
     @mock.patch(
-        "intrahospital_api.loader.reconcile_demographics",
+        "intrahospital_api.loader.update_demographics.reconcile_all_demographics",
     )
     @mock.patch(
         "intrahospital_api.loader.load_patient",
     )
-    def test_flow(self, load_patient, reconcile_demographics):
+    def test_flow(self, load_patient, reconcile_all_demographics):
         with mock.patch.object(loader.logger, "info") as info:
             loader._initial_load()
-            reconcile_demographics.assert_called_once_with()
+            reconcile_all_demographics.assert_called_once_with()
             call_args_list = load_patient.call_args_list
             self.assertEqual(
                 call_args_list[0][0], (self.patient_1,)
@@ -260,7 +133,7 @@ class _InitialLoadTestCase(LoaderTestCase):
             )
 
 
-class LogErrorsTestCase(LoaderTestCase):
+class LogErrorsTestCase(ApiTestCase):
     @mock.patch(
         "intrahospital_api.loader.logging.getLogger",
     )
@@ -274,7 +147,7 @@ class LogErrorsTestCase(LoaderTestCase):
         self.assertTrue(err.called)
 
 
-class AnyLoadsRunningTestCase(LoaderTestCase):
+class AnyLoadsRunningTestCase(ApiTestCase):
     def setUp(self):
         super(AnyLoadsRunningTestCase, self).setUp()
         self.patient, _ = self.new_patient_and_episode_please()
@@ -310,7 +183,7 @@ class AnyLoadsRunningTestCase(LoaderTestCase):
         self.assertFalse(loader.any_loads_running())
 
 
-class LoadDemographicsTestCase(LoaderTestCase):
+class LoadDemographicsTestCase(ApiTestCase):
 
     @mock.patch.object(loader.api, 'demographics')
     def test_success(self, demographics):
@@ -339,7 +212,7 @@ class LoadDemographicsTestCase(LoaderTestCase):
 
 @mock.patch('intrahospital_api.loader.async_task')
 @mock.patch('intrahospital_api.loader._load_patient')
-class LoadLabTestsForPatientTestCase(LoaderTestCase):
+class LoadLabTestsForPatientTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(LoadLabTestsForPatientTestCase, self).setUp(*args, **kwargs)
         self.patient, _ = self.new_patient_and_episode_please()
@@ -408,7 +281,7 @@ class LoadLabTestsForPatientTestCase(LoaderTestCase):
 
 
 @mock.patch('intrahospital_api.tasks.load.delay')
-class AsyncTaskTestCase(LoaderTestCase):
+class AsyncTaskTestCase(ApiTestCase):
     def test_async_task(self, delay):
         patient, _ = self.new_patient_and_episode_please()
         patient_load = imodels.InitialPatientLoad.objects.create(
@@ -419,7 +292,7 @@ class AsyncTaskTestCase(LoaderTestCase):
         delay.assert_called_once_with(patient, patient_load)
 
 
-class GoodToGoTestCase(LoaderTestCase):
+class GoodToGoTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         self.patient, _ = self.new_patient_and_episode_please()
         super(GoodToGoTestCase, self).setUp(*args, **kwargs)
@@ -514,7 +387,7 @@ class GoodToGoTestCase(LoaderTestCase):
 @mock.patch("intrahospital_api.loader.log_errors")
 @mock.patch("intrahospital_api.loader._batch_load")
 @mock.patch("intrahospital_api.loader.good_to_go")
-class BatchLoadTestCase(LoaderTestCase):
+class BatchLoadTestCase(ApiTestCase):
     def test_with_force(self, good_to_go, _batch_load, log_errors):
         loader.batch_load(force=True)
         good_to_go.return_value = True
@@ -555,61 +428,12 @@ class BatchLoadTestCase(LoaderTestCase):
         log_errors.assert_called_once_with("batch load")
 
 
-@mock.patch.object(loader.logger, 'info')
-@mock.patch.object(loader.api, 'demographics')
-class ReconcileDemographicsTestCase(LoaderTestCase):
-    def setUp(self, *args, **kwargs):
-        super(ReconcileDemographicsTestCase, self).setUp(*args, **kwargs)
-
-        # this is the patient that will be covered
-        self.patient, _ = self.new_patient_and_episode_please()
-        self.patient.demographics_set.update(
-            external_system="blah",
-            hospital_number="123",
-            updated=None
-        )
-        # we should not see this patient as they have an exernal system on
-        # their demographics
-        patient_2, _ = self.new_patient_and_episode_please()
-        patient_2.demographics_set.update(
-            external_system=EXTERNAL_SYSTEM,
-            hospital_number="234",
-        )
-
-    def test_reconcile_demographics(self, demographics, info):
-        demographics.return_value = dict(
-            first_name="Jane",
-            surname="Doe",
-            date_of_birth="12/10/2000",
-            external_system=EXTERNAL_SYSTEM,
-            hospital_number="123"
-        )
-        loader.reconcile_demographics()
-        demographics.assert_called_once_with("123")
-        self.assertFalse(info.called)
-        self.assertEqual(
-            self.patient.externaldemographics_set.first().first_name,
-            "Jane"
-        )
-        self.assertIsNotNone(
-            self.patient.externaldemographics_set.first().updated
-        )
-
-    def test_with_external_demographics_when_none(self, demographics, info):
-        demographics.return_value = None
-        loader.reconcile_demographics()
-        self.assertIsNone(
-            self.patient.externaldemographics_set.first().updated
-        )
-        info.assert_called_once_with("unable to find 123")
-
-
 @mock.patch.object(loader.api, "data_deltas")
-@mock.patch('intrahospital_api.loader.reconcile_demographics')
+@mock.patch('intrahospital_api.loader.update_demographics.reconcile_all_demographics')
 @mock.patch('intrahospital_api.loader.update_from_batch')
-class _BatchLoadTestCase(OpalTestCase):
+class _BatchLoadTestCase(ApiTestCase):
     def test_batch_load(
-        self, update_from_batch, reconcile_demographics, data_deltas
+        self, update_from_batch, reconcile_all_demographics, data_deltas
     ):
         now = timezone.now()
         imodels.BatchPatientLoad.objects.create(
@@ -618,11 +442,113 @@ class _BatchLoadTestCase(OpalTestCase):
         )
         data_deltas.return_value = "something"
         loader._batch_load()
-        reconcile_demographics.assert_called_once_with()
+        reconcile_all_demographics.assert_called_once_with()
         data_deltas.assert_called_once_with(now)
         update_from_batch.assert_called_once_with("something")
 
 
-class UpdateFromBatchTestCase(OpalTestCase):
-    def test_update_from_batch(self):
-        pass
+@mock.patch('intrahospital_api.loader.update_patient_from_batch')
+class UpdateFromBatchTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        super(UpdateFromBatchTestCase, self).setUp(*args, **kwargs)
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.demographics = self.patient.demographics_set.first()
+        self.demographics.external_system = EXTERNAL_SYSTEM
+        self.demographics.save()
+        self.initial_load = imodels.InitialPatientLoad.objects.create(
+            patient=self.patient,
+            started=timezone.now(),
+            stopped=timezone.now(),
+            state=imodels.InitialPatientLoad.SUCCESS
+        )
+        self.data_delta = dict(some="data")
+        self.data_deltas = [self.data_delta]
+
+    def test_update_from_batch_ignore_non_reconciled(
+        self, update_patient_from_batch
+    ):
+        self.demographics.external_system = "asdfasfd"
+        self.demographics.save()
+        loader.update_from_batch(self.data_deltas)
+        call_args = update_patient_from_batch.call_args
+        self.assertEqual(
+            list(call_args[0][0]), list()
+        )
+        self.assertEqual(
+            call_args[0][1], self.data_delta
+        )
+
+    def test_update_from_batch_ignore_failed_loads(
+        self, update_patient_from_batch
+    ):
+        self.initial_load.state = imodels.InitialPatientLoad.FAILURE
+        self.initial_load.save()
+        loader.update_from_batch(self.data_deltas)
+        call_args = update_patient_from_batch.call_args
+        self.assertEqual(
+            list(call_args[0][0]), list()
+        )
+        self.assertEqual(
+            call_args[0][1], self.data_delta
+        )
+
+    def test_update_from_batch_pass_through(
+        self, update_patient_from_batch
+    ):
+        loader.update_from_batch(self.data_deltas)
+        call_args = update_patient_from_batch.call_args
+        self.assertEqual(
+            list(call_args[0][0]), [self.demographics]
+        )
+        self.assertEqual(
+            call_args[0][1], self.data_delta
+        )
+
+
+class UpdatePatientFromBatchTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        super(UpdatePatientFromBatchTestCase, self).setUp(*args, **kwargs)
+        self.patient, _ = self.new_patient_and_episode_please()
+        demographics = self.patient.demographics_set.first()
+        demographics.hospital_number = "123"
+        demographics.save()
+        emodels.UpstreamLabTest.objects.create(
+            patient=self.patient,
+            external_identifier="234",
+            extras=dict(
+                observations=[{
+                    "observation_number": "345",
+                    "result": "Pending"
+                }],
+                test_name="some_test"
+            )
+        )
+        self.data_deltas = {
+            "demographics": {
+                "hospital_number": "123",
+                "first_name": "Jane"
+            },
+            "lab_tests": [{
+                "external_identifier": "234",
+                "test_name": "some_test",
+                "observations": [{
+                    "observation_number": "345",
+                    "result": "Positive"
+                }]
+            }]
+        }
+
+    def test_update_patient_from_batch_intergration(self):
+        loader.update_patient_from_batch(
+            emodels.Demographics.objects.all(),
+            self.data_deltas
+        )
+        self.assertEqual(
+            self.patient.demographics_set.first().first_name, "Jane"
+        )
+        observation = self.patient.labtest_set.first().extras[
+            "observations"
+        ][0]
+        self.assertEqual(
+            observation["result"], "Positive"
+        )
