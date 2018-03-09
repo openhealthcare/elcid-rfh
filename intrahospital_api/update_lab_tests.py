@@ -13,11 +13,11 @@ def update_tests(patient, lab_tests):
         updating.
     """
     for lab_test in lab_tests:
-        lab_model = get_model_for_lab_test_type(lab_test)
+        lab_model = get_model_for_lab_test_type(patient, lab_test)
         lab_model.update_from_api_dict(patient, lab_test, api.user)
 
 
-def get_model_for_lab_test_type(lab_test):
+def get_model_for_lab_test_type(patient, lab_test):
     if lab_test["test_name"] == "BLOOD CULTURE":
         mod = emodels.UpstreamBloodCulture
     else:
@@ -27,6 +27,7 @@ def get_model_for_lab_test_type(lab_test):
     lab_test_type = lab_test["test_name"]
     filtered = mod.objects.filter(
         external_identifier=external_identifier,
+        patient=patient
     )
     by_test_type = [
         f for f in filtered if f.extras["test_name"] == lab_test_type

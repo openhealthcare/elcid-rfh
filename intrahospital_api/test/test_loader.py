@@ -103,7 +103,7 @@ class _InitialLoadTestCase(ApiTestCase):
     @override_settings(
         INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
     )
-    def test_intergration(self):
+    def test_integration(self):
         with mock.patch.object(loader.logger, "info"):
             loader._initial_load()
 
@@ -205,7 +205,7 @@ class LoadDemographicsTestCase(ApiTestCase):
     @override_settings(
         INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
     )
-    def test_intergration(self):
+    def test_integration(self):
         result = loader.load_demographics("some_number")
         self.assertTrue(isinstance(result, dict))
 
@@ -428,10 +428,10 @@ class BatchLoadTestCase(ApiTestCase):
         log_errors.assert_called_once_with("batch load")
 
 
-@mock.patch.object(loader.api, "data_deltas")
-@mock.patch('intrahospital_api.loader.update_demographics.reconcile_all_demographics')
-@mock.patch('intrahospital_api.loader.update_from_batch')
 class _BatchLoadTestCase(ApiTestCase):
+    @mock.patch.object(loader.api, "data_deltas")
+    @mock.patch('intrahospital_api.loader.update_demographics.reconcile_all_demographics')
+    @mock.patch('intrahospital_api.loader.update_from_batch')
     def test_batch_load(
         self, update_from_batch, reconcile_all_demographics, data_deltas
     ):
@@ -538,7 +538,7 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
             }]
         }
 
-    def test_update_patient_from_batch_intergration(self):
+    def test_update_patient_from_batch_integration(self):
         loader.update_patient_from_batch(
             emodels.Demographics.objects.all(),
             self.data_deltas
