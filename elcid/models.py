@@ -130,7 +130,6 @@ class UpstreamLabTest(lmodels.LabTest):
         """
         pass
 
-    @timing
     def update_from_api_dict(self, patient, data, user):
         """
             This is the updateFromDict of the the UpstreamLabTest
