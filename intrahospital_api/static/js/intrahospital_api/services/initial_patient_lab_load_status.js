@@ -32,7 +32,7 @@ angular.module('opal.services').service('InitialPatientTestLoadStatus', function
             self.deferred.resolve(SUCCESS);
           }
           else if(initialPatientLoad.state === RUNNING){
-            $timeout(function() { self.getFromUrl(someId); }, 1500, false);
+            $timeout(function() { self.getFromUrl(someId); }, 3000, false);
           }
           else{
             self.state = FAILURE;

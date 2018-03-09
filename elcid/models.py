@@ -3,13 +3,11 @@ elCID implementation specific models!
 """
 import datetime
 from django.db.models.signals import post_save
-from django.utils import timezone
 from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from lab import models as lmodels
 import opal.models as omodels
-from elcid.utils import timing
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
