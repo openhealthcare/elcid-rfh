@@ -1,15 +1,19 @@
 {% load forms %}
-{% input field="Demographics.birth_place" change="birth_place_change()" %}
-<div ng-show="editing.demographics.birth_place.length && editing.demographics.birth_place !== 'United Kingdom'">
-  {% input field="SocialHistory.arrival_in_the_uk" %}
-</div>
+
 {% radio field="SocialHistory.drinking" lookuplist="['None', 'Occasional', 'Excess']" %}
 <span ng-show="editing.social_history.drinking == 'Excess'">
   {% checkbox field="SocialHistory.alcohol_dependent" %}
 </span>
 {% radio field="SocialHistory.smoking" lookuplist="['Never', 'Current', 'Past']" %}
-{% radio field="SocialHistory.intravenous_drug_use" lookuplist="['Never', 'Current', 'Past']" %}
-{% radio field="SocialHistory.incarceration" lookuplist="['Never', 'Current', 'Past']" %}
+{% radio field="SocialHistory.recreational_drug_use" lookuplist="['Never', 'Current', 'Past']" %}
+<span ng-show="editing.social_history.recreational_drug_use.length && editing.social_history.recreational_drug_use !== 'Never'">
+  {% input field="SocialHistory.recreational_drug_type" %}
+  {% checkbox field="SocialHistory.receiving_treatment" %}
+</span>
+{% radio field="SocialHistory.prison_history" lookuplist="['Never', 'Current', 'Past']" %}
 {% radio field="SocialHistory.homelessness" lookuplist="['Never', 'Current', 'Past']" %}
-{% textarea  field="SocialHistory.occupation"  %}
+<span ng-show="editing.social_history.homelessness.length && editing.social_history.homelessness !== 'Never'">
+  {% radio field="SocialHistory.homelessness_type" %}
+</span>
+
 {% textarea  field="SocialHistory.notes"  %}

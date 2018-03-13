@@ -46,6 +46,8 @@ class RemovePatientPathway(SaveTaggingMixin, PagePathway):
 class AddPatientPathway(SaveTaggingMixin, WizardPathway):
     display_name = "Add Patient"
     slug = 'add_patient'
+    finish_button_text = "Add Patient"
+    finish_button_icon = "fa fa-plus"
 
     steps = (
         Step(

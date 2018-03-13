@@ -27,10 +27,17 @@
   <div class="row">
     <div class="form-group">
       <label class="control-label col-sm-4">
-        Intravenous Drug Use
+        Recreational Drug Use
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.intravenous_drug_use ]]
+        [[ item.recreational_drug_use ]]
+        <span ng-show="item.recreational_drug_type">
+          ([[ item.recreational_drug_type ]])
+        </span>
+        <br />
+        <span ng-show="item.receiving_treatment">
+          Receiving treatement
+        </span>
       </p>
     </div>
   </div>
@@ -38,10 +45,10 @@
   <div class="row">
     <div class="form-group">
       <label class="control-label col-sm-4">
-        Incarceration
+        Prison History
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.incarceration ]]
+        [[ item.prison_history ]]
       </p>
     </div>
   </div>
@@ -53,6 +60,9 @@
       </label>
       <p class="form-control-static col-sm-8">
         [[ item.homelessness ]]
+        <span ng-show="item.homelessness_type.length">
+          ([[ item.homelessness_type ]])
+        </span>
       </p>
     </div>
   </div>

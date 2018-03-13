@@ -1,41 +1,34 @@
-<div ng-show="item.date_of_previous_tb_infection" class="row">
-  <div class="form-group">
-    <label class="control-label col-sm-4">
-      Date Of Previous Tb Infection
-    </label>
-    <p class="form-control-static col-sm-8">
-      [[ item.date_of_previous_tb_infection ]]
-    </p>
-  </div>
-</div>
-<div ng-show="item.personal_history_of_tb" class="row">
-  <div class="form-group">
-    <label class="control-label col-sm-4">
-      Personal History Of Tb
-    </label>
-    <p class="form-control-static col-sm-8">
-      [[ item.personal_history_of_tb ]]
-    </p>
-  </div>
-</div>
-<div ng-show="item.other_tb_contact.length" class="row">
-  <div class="form-group">
-    <label class="control-label col-sm-4">
-      Other Tb Contact
-    </label>
-    <p class="form-control-static col-sm-8">
-      [[ item.other_tb_contact ]]
-    </p>
-  </div>
-</div>
-
-<div ng-show="item.date_of_other_tb_contact.length" class="row">
-  <div class="form-group">
-    <label class="control-label col-sm-4">
-      Date Of Other Tb Contact
-    </label>
-    <p class="form-control-static col-sm-8">
-      [[ item.date_of_other_tb_contact ]]
-    </p>
-  </div>
-</div>
+<span ng-hide="item.previous_tb_contact === 'None'">
+  <span ng-show="item.previous_tb_contact === 'Personal'">
+    Previously had TB
+    <br />
+    <span ng-show="item.tb_type || item.site_of_tb">
+        <span ng-show="item.tb_type">Type: [[ item.tb_type ]]</span>
+        <span ng-show="item.tb_type || item.site_of_tb"> - </span>
+        <span ng-show="item.site_of_tb">Site: [[ item.site_of_tb ]]</span>
+       <br />
+    </span>
+    <span ng-show="item.country_treated.length && item.country_treated !== 'United Kingdom'">
+        In: [[ item.country_treated ]]
+       <br />
+    </span>
+    <span ng-show="item.country_treated === 'United Kingdom'">
+        In: The UK <span ng-show="item.treatment_centre">([[ item.treatment_centre ]])</span>
+       <br />
+    </span>
+   </span>
+   <span ng-show="item.previous_tb_contact !== 'Other'">
+     Previously knew someone with TB
+     <br />
+     <span ng-show="item.details">
+         [[ item.details ]]
+        <br />
+     </span>
+    </span>
+   <span ng-show="item.how_long_ago_years">[[ item.how_long_ago_years ]] years </span>
+   <span ng-show="item.how_long_ago_months">[[ item.how_long_ago_months ]] months </span>
+   <span ng-show="item.how_long_ago_days">[[ item.how_long_ago_days ]] days </span>
+   <span ng-show="item.how_long_ago_years || item.how_long_ago_months || item.how_long_ago_days">
+     ago
+   </span>
+</span>

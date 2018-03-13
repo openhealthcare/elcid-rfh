@@ -33,22 +33,19 @@ describe('TbSymptomComplexCrtl', function(){
       });
     });
 
-    it('should fail', function(){
-      fail();
-    });
-
     it('should update the radio buttons according to the symptoms model changes', function(){
-        var symptomField = 'chills'
+        var symptomField = 'Fever'
         scope.tbSymptom[symptomField] = true;
         scope.updateSymptoms(symptomField);
-        expect(_.contains(scope.editing.symptom_complex.symptoms, "Chills")).toBe(true);
+        console.error(scope.editing.symptom_complex.symptoms);
+        expect(_.contains(scope.editing.symptom_complex.symptoms, "Fever")).toBe(true);
     });
 
     it('should update the model based on radio button changes', function(){
-        var symptomField = "Chills";
+        var symptomField = "Fever";
         scope.editing.symptom_complex.symptoms.push(symptomField);
         scope.updateTbSymptoms()
-        expect(scope.tbSymptom["chills"]).toBe(true);
+        expect(scope.tbSymptom["Fever"]).toBe(true);
     });
 
   });

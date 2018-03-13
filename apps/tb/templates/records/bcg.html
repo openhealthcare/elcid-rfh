@@ -2,20 +2,16 @@
   <div class="row">
     <div class="form-group">
       <label class="control-label col-sm-4">
-        Date Of BCG
+        Type of BCG
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.date_of_bcg | shortDate ]]
+        [[ item.bcg_type ]]
       </p>
     </div>
   </div>
   <div class="row">
     <div class="form-group">
-      <label class="control-label col-sm-4">
-        History Of Bcg
-      </label>
       <p class="form-control-static col-sm-8">
-        [[ item.history_of_bcg ]] <br />
         <span ng-show="item.red_book_documentation_of_bcg_seen">
           Red Book of Documentation of BCG Seen
           <br />
