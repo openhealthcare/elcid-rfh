@@ -53,7 +53,9 @@
     {% input field="TBHistory.treatment_centre" %}
   </div>
   {% radio field="TBHistory.tb_type" %}
-  {% input field="TBHistory.site_of_tb" %}
+  <div ng-show="editing.tb_history.tb_type === 'Active' || editing.tb_history.tb_type === 'Unknown'">
+    {% input field="TBHistory.site_of_tb" %}
+  </div>
 </div>
 <div ng-show="editing.tb_history.previous_tb_contact === '{{ models.TBHistory.PREVIOUS_TB_CONTACT }}'">
   {% textarea field="TBHistory.details" %}

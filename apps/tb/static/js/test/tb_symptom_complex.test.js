@@ -18,7 +18,7 @@ describe('TbSymptomComplexCrtl', function(){
           scope: scope,
           episode: {
               newItem: function(){
-                  return {
+                    return {
                       makeCopy: function(){}
                   }
               }

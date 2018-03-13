@@ -153,11 +153,17 @@ class TBHistory(models.PatientSubrecord):
     details = fields.TextField(default="")
 
 
+class Allergies(models.Allergies):
+    pass
+
+
 class Travel(models.EpisodeSubrecord):
     _icon = 'fa fa-plane'
+    _title = "Travel History"
 
-    destination = ForeignKeyOrFreeText(models.Destination)
-    dates = fields.CharField(max_length=255, blank=True)
+    country = ForeignKeyOrFreeText(models.Destination)
+    years = fields.CharField(max_length=255, blank=True)
+    duration = fields.CharField(max_length=255, blank=True)
     reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
 
 
@@ -168,15 +174,17 @@ class BCG(models.PatientSubrecord):
     BCG_PERIOD = (
         ('neonatal', 'neonatal',),
         ('school', 'school',),
-        ('other', 'other',)
+        ('adult', 'adult',),
+        ('unsure', 'unsure',),
+        ('none', 'none',)
     )
     bcg_type = fields.CharField(
         max_length=255,
         blank=True,
         choices=BCG_PERIOD,
-        verbose_name="BCG Type"
+        verbose_name="BCG"
     )
-    bcg_scar = fields.BooleanField(default=False, verbose_name="BCG Scar")
+    bcg_scar = fields.BooleanField(default=False, verbose_name="BCG Scar Seen")
     red_book_documentation_of_bcg_seen = fields.BooleanField(
-        default=False, verbose_name="Red Book Documentation of BCG Seen"
+        default=False, verbose_name="Red Book Documentation Of BCG Given"
     )

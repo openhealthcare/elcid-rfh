@@ -2,10 +2,11 @@
 Pathways for the TB service
 """
 from django.db import transaction
-from opal.core.pathway import pathways, Step
+from opal.core.pathway import pathways, HelpTextStep
 
 from elcid import models
 from elcid.pathways import AddPatientPathway
+
 
 from apps.tb.patient_lists import TbPatientList
 from apps.tb import models as tb_models
@@ -38,8 +39,14 @@ class AddTbPatientPathway(AddPatientPathway):
         return patient, episode
 
 
-class TBStep(Step):
-    base_template = "pathway/steps/step_base.html"
+class TbStep(HelpTextStep):
+    def get_help_text_template(self):
+        entered = self.other_args.get("help_text_template", "").strip()
+
+        if not entered and self.model:
+            return "pathway/steps/help_text/{}.html".format(
+                self.model.get_api_name()
+            )
 
 
 class TBConsultationPathway(pathways.PagePathway):
@@ -47,33 +54,37 @@ class TBConsultationPathway(pathways.PagePathway):
     slug = "initial_assessment"
 
     steps = [
-        TBStep(
+        TbStep(
             template="pathway/steps/demographics_panel.html",
             icon="fa fa-user",
-            display_name="Demographics"
+            display_name="Demographics",
+            model=models.Demographics
         ),
-        TBStep(model=models.ReferralRoute),
-        TBStep(model=tb_models.ContactDetails),
-        TBStep(model=tb_models.NextOfKin),
-        TBStep(
+        TbStep(model=models.ReferralRoute),
+        TbStep(
+            model=tb_models.ContactDetails
+        ),
+        HelpTextStep(model=tb_models.NextOfKin),
+        HelpTextStep(
             model=models.SymptomComplex,
             template="pathway/steps/symptom_complex.html",
             step_controller="TbSymptomComplexCrtl",
             multiple=False,
         ),
-        TBStep(
+        HelpTextStep(
             model=tb_models.TBHistory,
         ),
-        TBStep(
+        HelpTextStep(
             model=tb_models.BCG,
         ),
-        TBStep(model=tb_models.SocialHistory),
-        TBStep(
+        HelpTextStep(model=tb_models.SocialHistory),
+        HelpTextStep(
             model=models.Antimicrobial,
             template="pathway/steps/drug_history.html"
         ),
-        TBStep(model=models.PastMedicalHistory),
-        TBStep(model=tb_models.Travel),
+        HelpTextStep(model=tb_models.Allergies),
+        HelpTextStep(model=models.PastMedicalHistory),
+        HelpTextStep(model=tb_models.Travel),
     ]
 
     @transaction.atomic
