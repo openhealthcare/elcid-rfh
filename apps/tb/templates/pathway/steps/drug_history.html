@@ -1,5 +1,5 @@
 {% load forms %}
-<div save-multiple-wrapper="editing.treatment">
+<div save-multiple-wrapper="editing.antimicrobial">
   <div class="row text-center">
     <div class="col-md-3">
       <b>Drug</b>
@@ -16,18 +16,18 @@
   </div>
   <div class="row form-horizontal content-offset-20" ng-repeat="editing in model.subrecords">
     <div class="col-md-3">
-      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.treatment.drug" autocomplete="off"
+      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.antimicrobial.drug" autocomplete="off"
              uib-typeahead="i for i in antimicrobial_list | filter:$viewValue | limitTo:8" name="treatment_drug" ng-maxlength="255">
     </div>
     <div class="col-md-2">
-      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.treatment.dose" autocomplete="off" name="treatment_dose" ng-maxlength="255">
+      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.antimicrobial.dose" autocomplete="off" name="treatment_dose" ng-maxlength="255">
     </div>
     <div class="col-md-3">
-      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.treatment.route" autocomplete="off"
+      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.antimicrobial.route" autocomplete="off"
              uib-typeahead="i for i in antimicrobial_route_list | filter:$viewValue | limitTo:8" name="treatment_route" ng-maxlength="255">
     </div>
     <div class="col-md-3">
-      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.treatment.frequency" autocomplete="off"
+      <input class="form-control ng-pristine ng-valid ng-valid-maxlength ng-touched" type="text" ng-model="editing.antimicrobial.frequency" autocomplete="off"
              uib-typeahead="i for i in antimicrobial_frequency_list | filter:$viewValue | limitTo:8" name="treatment_frequency" ng-maxlength="255">
     </div>
     <div class="col-md-1">
