@@ -17,7 +17,7 @@
                 <div class="row">
                   <div ng-show="episode.stage" class="col-md-6">
 
-                    <b>[[ episode.stage ]]:</b>
+                    <b>[[ episode.stage ]]</b>
                   </div>
                   <div ng-show="!episode.stage" class="col-md-6">
                     New Contact
@@ -46,9 +46,6 @@
                   </a>
                 </center>
               </div>
-            </div>
-            <div ng-show="episode.antimicrobial.length > 0">
-              {% record_panel models.Antimicrobial %}
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
 Pathways for the TB service
 """
 from django.db import transaction
-from opal.core.pathway import pathways, HelpTextStep
+from opal.core.pathway import pathways, HelpTextStep, Step
 
 from elcid import models
 from elcid.pathways import AddPatientPathway
@@ -49,9 +49,15 @@ class TbStep(HelpTextStep):
             )
 
 
+class NewSubrecordStep(HelpTextStep):
+    step_controller = "NewSubrecordStepCtrl"
+    multiple = False
+
+
 class TBConsultationPathway(pathways.PagePathway):
     display_name = "Initial Assessment"
     slug = "initial_assessment"
+    template = "pathway/consultation_base.html"
 
     steps = [
         TbStep(
@@ -61,8 +67,9 @@ class TBConsultationPathway(pathways.PagePathway):
             model=models.Demographics
         ),
         TbStep(model=models.ReferralRoute),
-        TbStep(
-            model=tb_models.ContactDetails
+        HelpTextStep(
+            model=tb_models.ContactDetails,
+            help_text="This will be pulled in from Cerner"
         ),
         HelpTextStep(model=tb_models.NextOfKin),
         HelpTextStep(
@@ -85,6 +92,10 @@ class TBConsultationPathway(pathways.PagePathway):
         HelpTextStep(model=tb_models.Allergies),
         HelpTextStep(model=models.PastMedicalHistory),
         HelpTextStep(model=tb_models.Travel),
+        NewSubrecordStep(
+            model=tb_models.PatientConsultation,
+            multiple=False
+        ),
     ]
 
     @transaction.atomic

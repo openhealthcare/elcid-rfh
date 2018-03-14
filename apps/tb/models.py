@@ -16,9 +16,9 @@ class SocialHistory(models.EpisodeSubrecord):
     _title = 'Social History'
     _icon = 'fa fa-clock-o'
     HOMELESSNESS_CHOICES = (
-        ("hostel", "hostel",),
-        ("sofa surfing", "sofa surfing",),
-        ("street", "street",),
+        ("Hostel", "Hostel",),
+        ("Sofa surfing", "Sofa surfing",),
+        ("Street", "Street",),
     )
 
     notes = fields.TextField(blank=True, null=True)
@@ -172,11 +172,11 @@ class BCG(models.PatientSubrecord):
     _title = "BCG"
     _is_singleton = True
     BCG_PERIOD = (
-        ('neonatal', 'neonatal',),
-        ('school', 'school',),
-        ('adult', 'adult',),
-        ('unsure', 'unsure',),
-        ('none', 'none',)
+        ('Neonatal', 'Neonatal',),
+        ('School', 'School',),
+        ('Adult', 'Adult',),
+        ('Unsure', 'Unsure',),
+        ('None', 'None',)
     )
     bcg_type = fields.CharField(
         max_length=255,
