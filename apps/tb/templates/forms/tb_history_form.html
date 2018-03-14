@@ -57,6 +57,4 @@
     {% input field="TBHistory.site_of_tb" %}
   </div>
 </div>
-<div ng-show="editing.tb_history.previous_tb_contact === '{{ models.TBHistory.PREVIOUS_TB_CONTACT }}'">
-  {% textarea field="TBHistory.details" %}
-</div>
+{% textarea field="TBHistory.details" %}

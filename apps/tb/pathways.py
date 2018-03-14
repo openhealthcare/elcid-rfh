@@ -71,7 +71,7 @@ class TBConsultationPathway(pathways.PagePathway):
             step_controller="TbSymptomComplexCrtl",
             multiple=False,
         ),
-        HelpTextStep(
+        TbStep(
             model=tb_models.TBHistory,
         ),
         HelpTextStep(

@@ -162,7 +162,7 @@ class Travel(models.EpisodeSubrecord):
     _title = "Travel History"
 
     country = ForeignKeyOrFreeText(models.Destination)
-    years = fields.CharField(max_length=255, blank=True)
+    when = fields.CharField(max_length=255, blank=True)
     duration = fields.CharField(max_length=255, blank=True)
     reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
 
