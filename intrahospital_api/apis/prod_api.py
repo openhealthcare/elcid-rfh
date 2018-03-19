@@ -1,13 +1,17 @@
 import datetime
+import logging
 import pytds
 import itertools
 from collections import defaultdict
+from pytds.tds_base import OperationalError
 from intrahospital_api.apis import base_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 from lab import models as lmodels
 from django.conf import settings
 from elcid.models import Demographics
+
+logger = logging.getLogger('intrahospital_api')
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
@@ -337,6 +341,13 @@ class ProdApi(base_api.BaseApi):
             )
 
     @timing
+    def data_delta_query(self, since):
+        all_rows = self.execute_query(
+            self.all_data_since_query,
+            params=dict(since=since)
+        )
+        all_rows = (Row(r) for r in all_rows)
+
     def data_deltas(self, some_datetime):
         """ yields an iterator of dictionary
 
@@ -348,11 +359,8 @@ class ProdApi(base_api.BaseApi):
             "lab_tests": all lab tests for the patient
 
         """
-        all_rows = self.execute_query(
-            self.all_data_since_query,
-            params=dict(since=some_datetime)
-        )
-        all_rows = (Row(r) for r in all_rows)
+        all_rows = self.data_delta_query(some_datetime)
+
         hospital_number_to_rows = itertools.groupby(
             all_rows, lambda x: x.get_hospital_number()
         )

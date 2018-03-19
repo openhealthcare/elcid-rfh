@@ -228,11 +228,22 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugFalse'
         }
     },
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(levelname)s %(message)s'
+        }
+    },
     'handlers': {
         'console': {
             'level': 'INFO',
             'filters': [],
             'class': 'logging.StreamHandler',
+        },
+        'console_detailed': {
+            'level': 'INFO',
+            'filters': [],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',
@@ -266,7 +277,7 @@ LOGGING = {
 
 if 'test' not in sys.argv:
     LOGGING['loggers']['elcid.time_logger'] = {
-        'handlers': ['console'],
+        'handlers': ['console_detailed'],
         'level': 'INFO',
         'propagate': False,
     }
