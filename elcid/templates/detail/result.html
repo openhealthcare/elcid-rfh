@@ -91,7 +91,7 @@
                       -
                       [[ labTest.observation_metadata[observation_name].reference_range.max ]]
                     </div>
-                    <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-high': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
+                    <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
                       [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
                     </div>
                   </div>
