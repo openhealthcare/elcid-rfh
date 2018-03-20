@@ -1,6 +1,7 @@
 import mock
 import copy
 from django.test import override_settings
+from pytds.tds import OperationalError
 from datetime import datetime, date
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import prod_api
@@ -95,6 +96,57 @@ FAKE_ROW_DATA = {
     u'last_updated': datetime(2015, 7, 18, 17, 0, 2, 240000),
     u'visible': u'Y'
 }
+
+
+class DbRetry(OpalTestCase):
+    @mock.patch("intrahospital_api.apis.prod_api.time")
+    def test_retrys(self, time):
+        m = mock.MagicMock(
+            side_effect=[OperationalError('boom'), "response"]
+        )
+        m.__name__ = "some_mock"
+
+        with mock.patch.object(prod_api.logger, "info") as info:
+            response = prod_api.db_retry(m)()
+
+        self.assertEqual(
+            response, "response"
+        )
+        time.sleep.assert_called_once_with(30)
+        info.assert_called_once_with(
+            'some_mock: failed with boom, retrying in 30s'
+        )
+
+    @mock.patch("intrahospital_api.apis.prod_api.time")
+    def tests_works_as_normal(self, time):
+        m = mock.MagicMock()
+        m.return_value = "response"
+        m.__name__ = "some_mock"
+
+        with mock.patch.object(prod_api.logger, "info") as info:
+            response = prod_api.db_retry(m)()
+
+        self.assertEqual(
+            response, "response"
+        )
+        self.assertFalse(time.sleep.called)
+        self.assertFalse(info.called)
+
+    @mock.patch("intrahospital_api.apis.prod_api.time")
+    def tests_reraises(self, time):
+        m = mock.MagicMock(
+            side_effect=OperationalError('boom')
+        )
+        m.__name__ = "some_mock"
+
+        with mock.patch.object(prod_api.logger, "info") as info:
+            with self.assertRaises(OperationalError):
+                prod_api.db_retry(m)()
+
+        time.sleep.assert_called_once_with(30)
+        info.assert_called_once_with(
+            'some_mock: failed with boom, retrying in 30s'
+        )
 
 
 class RowTestCase(OpalTestCase):

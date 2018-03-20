@@ -245,15 +245,54 @@ def batch_load(force=False):
         batch.complete()
 
 
-@timing
-def _batch_load():
+def get_batch_start_time():
+    """
+        we need to paper over the cracks.
+
+        usually this just means get me everything since the start
+        of the last successful batch run.
+
+        ie batch A starts at 10:00 and finishes at 10:03
+        batch B will get all data since 10:00 so that nothing is lost
+
+        however...
+        the batches exclude initial patient loads, but usually that's ok
+        but we have extra cracks to paper over...
+
+        a patient load starts during the batch A load, at 9:58. It finishes
+        the db load from the upstream db at 9:59 but is still saving the data
+        to our db at 10:00
+
+        it is excluded from the batch A, so batch B goes and starts its run
+        from 9:59 accordingly.
+
+    """
     last_successful_run = models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.SUCCESS
     ).order_by("started").last()
+
+    long_patient_load = models.InitialPatientLoad.objects.filter(
+        state=models.InitialPatientLoad.SUCCESS
+    ).filter(
+        started__lt=last_successful_run.started
+    ).filter(
+        stopped__gt=last_successful_run.started
+    ).order_by("started").first()
+
+    if long_patient_load:
+        return long_patient_load.started
+    else:
+        return last_successful_run.started
+
+
+@timing
+def _batch_load():
+    started = get_batch_start_time()
+
     # update the non reconciled
     update_demographics.reconcile_all_demographics()
 
-    data_deltas = api.data_deltas(last_successful_run.started)
+    data_deltas = api.data_deltas(started)
     update_from_batch(data_deltas)
 
 

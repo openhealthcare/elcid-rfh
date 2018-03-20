@@ -133,6 +133,45 @@ class _InitialLoadTestCase(ApiTestCase):
             )
 
 
+class GetBatchStartTime(ApiTestCase):
+    def test_batch_load_first(self):
+        now = timezone.now()
+        batch_start = now - datetime.timedelta(minutes=1)
+        imodels.BatchPatientLoad.objects.create(
+            started=batch_start,
+            stopped=now,
+            state=imodels.BatchPatientLoad.SUCCESS
+        )
+        self.assertEqual(
+            loader.get_batch_start_time(),
+            batch_start
+        )
+
+    def test_initial_patient_load_first(self):
+        now = timezone.now()
+        batch_start = now - datetime.timedelta(minutes=2)
+        initial_patient_load_start = now - datetime.timedelta(minutes=3)
+        initial_patient_load_stop = now - datetime.timedelta(minutes=1)
+        patient, _ = self.new_patient_and_episode_please()
+
+        imodels.BatchPatientLoad.objects.create(
+            started=batch_start,
+            stopped=now,
+            state=imodels.BatchPatientLoad.SUCCESS
+        )
+
+        imodels.InitialPatientLoad.objects.create(
+            started=initial_patient_load_start,
+            stopped=initial_patient_load_stop,
+            state=imodels.InitialPatientLoad.SUCCESS,
+            patient=patient
+        )
+        self.assertEqual(
+            loader.get_batch_start_time(),
+            initial_patient_load_start
+        )
+
+
 class LogErrorsTestCase(ApiTestCase):
     @mock.patch(
         "intrahospital_api.loader.logging.getLogger",

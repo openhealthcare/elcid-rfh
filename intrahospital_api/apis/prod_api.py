@@ -1,15 +1,20 @@
 import datetime
 import logging
+from functools import wraps
 import pytds
 import itertools
+import time
 from collections import defaultdict
-from pytds.tds_base import OperationalError
+from pytds.tds import OperationalError
 from intrahospital_api.apis import base_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 from lab import models as lmodels
 from django.conf import settings
 from elcid.models import Demographics
+
+# if we fail in a query, the amount of seconds we wait before retrying
+RETRY_DELAY = 30
 
 logger = logging.getLogger('intrahospital_api')
 
@@ -65,6 +70,25 @@ def to_datetime_str(some_datetime):
     """
     if some_datetime:
         return some_datetime.strftime(settings.DATETIME_INPUT_FORMATS[0])
+
+
+def db_retry(f):
+    """ We are reading a database that is also receiving intermittent writes.
+        When these writes are coming the DB locks.
+        Lets put in a retry after 30 seconds
+    """
+    @wraps(f)
+    def wrap(*args, **kw):
+        try:
+            result = f(*args, **kw)
+        except OperationalError as o:
+            logger.info('{}: failed with {}, retrying in {}s'.format(
+                f.__name__, str(o), RETRY_DELAY
+            ))
+            time.sleep(RETRY_DELAY)
+            result = f(*args, **kw)
+        return result
+    return wrap
 
 
 class Row(object):
@@ -298,6 +322,7 @@ class ProdApi(base_api.BaseApi):
         return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(view=self.view)
 
     @timing
+    @db_retry
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
         rows = list(self.execute_query(
@@ -341,6 +366,7 @@ class ProdApi(base_api.BaseApi):
             )
 
     @timing
+    @db_retry
     def data_delta_query(self, since):
         all_rows = self.execute_query(
             self.all_data_since_query,
@@ -360,7 +386,6 @@ class ProdApi(base_api.BaseApi):
 
         """
         all_rows = self.data_delta_query(some_datetime)
-
         hospital_number_to_rows = itertools.groupby(
             all_rows, lambda x: x.get_hospital_number()
         )
