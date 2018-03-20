@@ -1,4 +1,10 @@
 {% load forms %}
 {% datepicker field="ReferralRoute.date_of_referral" %}
-{% select field="ReferralRoute.referral_type" %}
-{% select field="ReferralRoute.referral_reason" %}
+<div class="row">
+  <div class="col-md-6">
+    {% radio field="ReferralRoute.referral_type" vertical=1 %}
+  </div>
+  <div class="col-md-6">
+    {% radio field="ReferralRoute.referral_reason" vertical=1 %}
+  </div>
+</div>

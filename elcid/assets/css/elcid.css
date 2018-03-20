@@ -15,6 +15,13 @@ body {
   color: white;
   border-color: #0091C9; }
 
+.radio-vertical.radio input[type="radio"] {
+  opacity: 1;
+  z-index: 0;
+  margin-top: 2px; }
+.radio-vertical.radio label::before {
+  content: none; }
+
 h5 {
   font-weight: 600;
   text-transform: capitalize;

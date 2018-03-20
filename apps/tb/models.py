@@ -188,3 +188,31 @@ class BCG(models.PatientSubrecord):
     red_book_documentation_of_bcg_seen = fields.BooleanField(
         default=False, verbose_name="Red Book Documentation Of BCG Given"
     )
+
+
+class MantouxTest(models.PatientSubrecord):
+    MANTOUX_SITES = (
+        ("Left Lower Arm", "Left Lower Arm",),
+        ("Right Lower Arm", "Right Lower Arm",),
+    )
+    batch_number = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    expiry_date = fields.DateField()
+    induration = fields.IntegerField(verbose_name="Induration (mm)")
+    site = fields.CharField(
+        max_length=256, blank=True, default="", choices=MANTOUX_SITES
+    )
+
+    class Meta:
+        abstract = True
+
+
+class MantouxTestOne(MantouxTest):
+    class Meta:
+        verbose_name = "Mantoux(1)"
+
+
+class MantouxTestTwo(MantouxTest):
+    class Meta:
+        verbose_name = "Mantoux(2)"

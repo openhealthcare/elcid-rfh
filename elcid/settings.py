@@ -167,6 +167,7 @@ INSTALLED_APPS = (
     'compressor',
     'opal.core.search',
     'lab',
+    'obs',
     'intrahospital_api',
     'elcid',
     'django.contrib.admin',

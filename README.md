@@ -15,6 +15,9 @@ Status](https://travis-ci.org/openhealthcare/elcid-rfh.png)](https://travis-ci.o
 
 http://elcid.openhealthcare.org.uk
 
+When running the server locally, we are using sass. So installl sass and run
+<!-- sass --watch csv_schema/static/css/styles.scss:csv_schema/static/css/styles.css -->
+
 
 ##Open source
 

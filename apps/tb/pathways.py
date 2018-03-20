@@ -7,6 +7,7 @@ from opal.core.pathway import pathways, HelpTextStep, Step
 from elcid import models
 from elcid.pathways import AddPatientPathway
 
+from obs import models as obs_models
 
 from apps.tb.patient_lists import TbPatientList
 from apps.tb import models as tb_models
@@ -71,7 +72,10 @@ class TBConsultationPathway(pathways.PagePathway):
             model=tb_models.ContactDetails,
             help_text="This will be pulled in from Cerner"
         ),
-        HelpTextStep(model=tb_models.NextOfKin),
+        HelpTextStep(
+            model=tb_models.NextOfKin,
+            help_text="This will be pulled in from Cerner"
+        ),
         HelpTextStep(
             model=models.SymptomComplex,
             template="pathway/steps/symptom_complex.html",
@@ -92,6 +96,18 @@ class TBConsultationPathway(pathways.PagePathway):
         HelpTextStep(model=tb_models.Allergies),
         HelpTextStep(model=models.PastMedicalHistory),
         HelpTextStep(model=tb_models.Travel),
+        NewSubrecordStep(
+            model=obs_models.Observation,
+            multiple=False
+        ),
+        NewSubrecordStep(
+            model=tb_models.MantouxTestOne,
+            multiple=False
+        ),
+        NewSubrecordStep(
+            model=tb_models.MantouxTestTwo,
+            multiple=False
+        ),
         NewSubrecordStep(
             model=tb_models.PatientConsultation,
             multiple=False
