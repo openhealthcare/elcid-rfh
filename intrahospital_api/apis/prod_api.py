@@ -372,7 +372,7 @@ class ProdApi(base_api.BaseApi):
             self.all_data_since_query,
             params=dict(since=since)
         )
-        all_rows = (Row(r) for r in all_rows)
+        return (Row(r) for r in all_rows)
 
     def data_deltas(self, some_datetime):
         """ yields an iterator of dictionary
