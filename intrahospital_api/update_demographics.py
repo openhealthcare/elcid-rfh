@@ -6,7 +6,7 @@ from django.db import transaction
 from opal.models import Patient, deserialize_date
 from intrahospital_api import get_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-
+from elcid.utils import timing
 
 api = get_api()
 logger = logging.getLogger('intrahospital_api')
@@ -22,6 +22,7 @@ def update_external_demographics(
     )
 
 
+@timing
 def reconcile_all_demographics():
     """
         Look at all patients who have not been reconciled with the upstream

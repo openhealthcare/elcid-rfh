@@ -5,7 +5,6 @@ from intrahospital_api import get_api
 api = get_api()
 
 
-@timing
 def update_tests(patient, lab_tests):
     """
         takes in all lab tests, saves those
