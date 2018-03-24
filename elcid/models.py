@@ -206,29 +206,11 @@ class Consultant(lookuplists.LookupList):
     pass
 
 
-
-class Diagnosis(EpisodeSubrecord):
+class Diagnosis(omodels.Diagnosis):
     """
     This is a working-diagnosis list, will often contain things that are
     not technically diagnoses, but is for historical reasons, called diagnosis.
     """
-    _title = 'Diagnosis / Issues'
-    _sort = 'date_of_diagnosis'
-    _icon = 'fa fa-stethoscope'
-
-    condition         = ForeignKeyOrFreeText(omodels.Condition)
-    provisional       = models.NullBooleanField()
-    details           = models.CharField(max_length=255, blank=True)
-    date_of_diagnosis = models.DateField(blank=True, null=True)
-
-    def __unicode__(self):
-        return u'Diagnosis of {0} - {1}'.format(
-            self.condition,
-            self.date_of_diagnosis
-            )
-
-    class Meta:
-        verbose_name_plural = "Diagnoses"
 
 
 class Iv_stop(lookuplists.LookupList):
