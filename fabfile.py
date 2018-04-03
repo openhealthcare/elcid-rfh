@@ -711,9 +711,9 @@ def dump_database(env, db_name, backup_name):
         print("=" * 20)
         time.sleep(3)
         load_running = json.loads(
-            run_management_command("batch_load_running", env)["status"]
-        )
-    pg = "pg_dump {db_name} -u {db_user} > {bu_name} 2 >> /usr/lib/ohc/log/cron.log"
+            run_management_command("batch_load_running", env)
+        )["status"]
+    pg = "pg_dump {db_name} -U {db_user} > {bu_name} 2 >> /usr/lib/ohc/log/cron.log"
     local(
         pg.format(
             db_name=env.database_name,
