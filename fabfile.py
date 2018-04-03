@@ -701,8 +701,8 @@ def dump_and_copy(branch_name):
 
 def dump_database(env, db_name, backup_name):
     load_running = json.loads(
-        run_management_command("batch_load_running", env)["status"]
-    )
+        run_management_command("batch_load_running", env)
+    )["status"]
     while load_running:
         print("=" * 20)
         print(
