@@ -10,7 +10,7 @@ angular.module('opal.services').factory('LabTestSummaryLoader', function($q, $ht
       $http({ cache: true, url: patientUrl, method: 'GET'}).then(function(response) {
           deferred.resolve(response.data);
       }, function() {
-        $window.alert('Lab test summary could not be loaded');
+          console.error("unable to load in the lab_test_summary_api");
       });
       return deferred.promise;
     };
