@@ -72,7 +72,8 @@ RELEASE_BACKUP_NAME = "{backup_dir}/release.{dt}.{db_name}.sql"
 
 MODULE_NAME = "elcid"
 PROJECT_NAME = MODULE_NAME
-CRON_COMMENT = "{} back up".format(MODULE_NAME)
+CRON_TEST_LOAD = "/etc/cron.d/{0}_batch_test_load".format(PROJECT_NAME)
+
 DB_COMMAND_PREFIX = "sudo -u postgres psql --command"
 TEMPLATE_DIR = os.path.abspath(os.path.dirname(__file__))
 PRIVATE_SETTINGS = "{project_root}/private_settings.json".format(
@@ -411,9 +412,8 @@ def write_cron_lab_tests(new_env):
         unix_user=UNIX_USER,
         project_dir=new_env.project_directory
     )
-    cron_file = "/etc/cron.d/{0}_batch_test_load".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
+        output, CRON_TEST_LOAD
     ))
 
 
@@ -700,19 +700,22 @@ def dump_and_copy(branch_name):
 
 
 def dump_database(env, db_name, backup_name):
-    load_running = json.loads(
-        run_management_command("batch_load_running", env)
-    )["status"]
-    while load_running:
-        print("=" * 20)
-        print(
-            "One or more loads are currently running, sleeping for 3 secs"
-        )
-        print("=" * 20)
-        time.sleep(3)
+    # we only care about whether a batch is running if the cron job
+    # exists
+    if os.path.exists(CRON_TEST_LOAD):
         load_running = json.loads(
             run_management_command("batch_load_running", env)
         )["status"]
+        while load_running:
+            print("=" * 20)
+            print(
+                "One or more loads are currently running, sleeping for 3 secs"
+            )
+            print("=" * 20)
+            time.sleep(3)
+            load_running = json.loads(
+                run_management_command("batch_load_running", env)
+            )["status"]
     pg = "pg_dump {db_name} -U {db_user} > {bu_name}"
     local(
         pg.format(
