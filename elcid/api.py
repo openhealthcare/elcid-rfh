@@ -421,7 +421,6 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
                 ob_name = observation["observation_name"].lower()
 
                 if "aerobic" in ob_name:
-                    # we don't care about comments we just care abou
                     observations.append(observation)
 
             lab_test["observations"] = sorted(
