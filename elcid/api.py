@@ -12,6 +12,7 @@ from opal.core.views import json_response
 from elcid import models as emodels
 from lab import models as lmodels
 from elcid.utils import timing
+from opal import models as omodels
 
 
 _LAB_TEST_TAGS = {
@@ -89,24 +90,10 @@ def to_date_str(some_date):
         return some_date[:10]
 
 
-def to_date(some_date_str):
-    if some_date_str:
-        return datetime.datetime.strptime(
-            some_date_str, settings.DATE_INPUT_FORMATS[0]
-        ).date()
-
-
 def datetime_to_str(dt):
     return dt.strftime(
         settings.DATETIME_INPUT_FORMATS[0]
     )
-
-
-def str_to_datetime(some_date_str):
-    if some_date_str:
-        return datetime.datetime.strptime(
-            some_date_str, settings.DATETIME_INPUT_FORMATS[0]
-        )
 
 
 def observations_by_date(observations):
@@ -140,24 +127,6 @@ def get_reference_range(observation):
 
 AEROBIC = "aerobic"
 ANAEROBIC = "anaerobic"
-
-
-class LabTestJsonDumpView(LoginRequiredViewset):
-    base_name = 'lab_test_json_dump_view'
-
-    @patient_from_pk
-    def retrieve(self, request, patient):
-        lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
-        lab_tests = lmodels.LabTest.objects.filter(
-            Q(lab_test_type=emodels.UpstreamBloodCulture.get_display_name) |
-            Q(lab_test_type=emodels.UpstreamLabTest.get_display_name)
-        )
-        lab_tests = sorted(lab_tests, key=lambda x: x.extras.get("test_name"))
-        return json_response(
-            dict(
-                tests=[i.dict_for_view(None) for i in lab_tests]
-            )
-        )
 
 
 class LabTestResultsView(LoginRequiredViewset):
@@ -245,7 +214,7 @@ class LabTestResultsView(LoginRequiredViewset):
             }
             observation_date_range = sorted(
                 list(observation_date_range),
-                key=lambda x: to_date(x)
+                key=lambda x: omodels.deserialize_date(x)
             )
             observation_date_range.reverse()
             long_form = False
@@ -616,4 +585,3 @@ elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 lab_test_router = OPALRouter()
 lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)
 lab_test_router.register('lab_test_results_view', LabTestResultsView)
-lab_test_router.register('lab_test_json_dump_view', LabTestJsonDumpView)
