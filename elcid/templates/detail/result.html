@@ -26,7 +26,7 @@
           <div class="content-offset-below">
             <div class="row">
               <div class="col-md-6">
-                <h5>[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|shortDate ]]</span> {% if request.user.is_superuser %}<a href="/intrahospital_api/[[ patient.demographics[0].hospital_number ]]?external_identifier=[[ labTest.external_identifier ]]">hello{% icon "fa fa-code-fork" %}</a>{% endif %}</h5>
+                <h5>[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|shortDate ]]</span> {% if request.user.is_superuser %}<a href="/intrahospital_api/raw/results/[[ patient.demographics[0].hospital_number ]]/test/[[ labTest.lab_test_type ]]">{% icon "fa fa-code-fork" %}</a>{% endif %}</h5>
               </div>
             </div>
             <div ng-show="labTest.observations.length">
