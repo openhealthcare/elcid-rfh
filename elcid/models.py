@@ -337,7 +337,7 @@ class Drug_delivered(lookuplists.LookupList):
 
 
 class Antimicrobial(EpisodeSubrecord):
-    _title = 'Treatment'
+    _title = 'Antimicrobials'
     _sort = 'start_date'
     _icon = 'fa fa-flask'
     _modal = 'lg'
