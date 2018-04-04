@@ -7,8 +7,6 @@ from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from lab import models as lmodels
-
-
 import opal.models as omodels
 
 from opal.models import (
@@ -87,13 +85,23 @@ class Location(EpisodeSubrecord):
             return 'demographics'
 
 
-class HL7Result(lmodels.ReadOnlyLabTest):
+class UpstreamLabTest(lmodels.LabTest):
+    # these fields we will save as extras when we
+    # update from dict
+    convert_to_extras = ['test_code', 'test_name', 'site', 'clinical_info']
+
     class Meta:
-        verbose_name = "HL7 Result"
+        verbose_name = "Upstream Lab Test"
 
     @classmethod
     def get_api_name(cls):
-        return "hl7_result"
+        return "upstream_lab_test"
+
+    def set_extras(self, extras, *args, **kwargs):
+        self.extras = extras
+
+    def get_extras(self, *args, **kwargs):
+        return self.extras
 
     def to_dict(self, user):
         """
@@ -110,32 +118,93 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             we serialise the usual way but not via the episode
             serialisation
         """
-        return super(HL7Result, self).to_dict(user)
+        result = super(UpstreamLabTest, self).to_dict(user)
+        result["observations"] = result["extras"].pop("observations", {})
+        return result
 
     def update_from_dict(self, data, *args, **kwargs):
-        populated = (
-            i for i in data.keys() if i != "lab_test_type" and i != "id"
-        )
-        if not any(populated):
-            return
+        """
+            These tests are read only
+        """
+        pass
 
-        if "id" not in data:
-            if 'patient_id' in data:
-                self.patient = omodels.Patient.objects.get(id=data['patient_id'])
+    def update_from_api_dict(self, patient, data, user):
+        """
+            This is the updateFromDict of the the UpstreamLabTest
 
-            if "external_identifier" not in data:
-                raise ValueError(
-                    "an external identifier is required in {}".format(data)
+            Its a bit different from conventional updates from dicts
+
+            Firstly pretty much everything is stored in extras as
+            per your usual ReadOnlyLabTest.
+
+            Despite this we have json observations that we are
+            updating.
+
+            Observations are updated so we only ever expect a single
+            observation with an observation number. Add in a sanity check.
+
+            They are keyed with observation number in the observations array
+            ie in data["observations"][0]["observation_number"]
+        """
+        # we never expect it to be updated using an id
+        if "id" in data:
+            raise ValueError(
+                "We do not expect an id in {} but we received {}".format(
+                    UpstreamLabTest, data["id"]
                 )
-            if "external_identifier" in data and data["external_identifier"]:
-                existing = self.__class__.objects.filter(
-                    patient=self.patient,
-                    external_identifier=data["external_identifier"],
-                ).first()
+            )
 
-                if existing:
-                    data["id"] = existing.id
-            super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+        if "external_identifier" not in data and not self.id:
+            err = "To create an upstream lab test and external id is required"
+            raise ValueError(err)
+
+        # we never expect the patient to change
+        # check though
+        if self.patient_id and not self.patient == patient:
+            err = "{} used to have patient {} and we're trying to set it to {}"
+            raise ValueError(err.format(self, self.patient, patient))
+
+        self.patient = patient
+
+        obs = data.get("observations", [])
+        obs_numbers = set(i["observation_number"] for i in obs)
+
+        # we run updates based on obs numbers
+        # we are loading these in from a remote source
+        # when an obs is updated, the old one is deleted and a new row is added
+        # Make sure these have been properly
+        # cleaned.
+        if not len(obs) == len(obs_numbers):
+            raise ValueError(
+                "duplicate obs numbers found in {}".format(obs)
+            )
+
+        if "extras" not in data:
+            data["extras"] = {}
+
+        for i in self.convert_to_extras:
+            if i in data:
+                data["extras"][i] = data.pop(i)
+
+        to_keep = []
+
+        if self.extras:
+            # remove any observations that have been updated
+            existing_observations = self.extras.get("observations", [])
+
+            for old_obs in existing_observations:
+                if old_obs["observation_number"] not in obs_numbers:
+                    to_keep.append(old_obs)
+
+        data["extras"]["observations"] = to_keep + data.pop("observations", [])
+
+        # we force the update from dict as we will be updating without
+        # a consistency token in the data
+        result = super(UpstreamLabTest, self).update_from_dict(
+            data, user, force=True
+        )
+
+        return result
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -149,11 +218,38 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             "CLOTTING SCREEN"
         ]
         six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
-        qs = HL7Result.objects.filter(
+        qs = UpstreamLabTest.objects.filter(
             patient=patient,
             datetime_ordered__gt=six_months_ago
         ).order_by("datetime_ordered")
-        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
+        return [i for i in qs if i.extras.get("test_name") in relevent_tests]
+
+
+class UpstreamBloodCulture(UpstreamLabTest):
+    """ Upstream blood cultures are funny beasts
+
+    Observation types that have previously existed
+    are...
+
+    	* Aerobic bottle culture
+        * Aerobic Bottle: Microscopy
+        * Anaerobic bottle culture
+        * Anaerobic Bottle: Microscopy
+
+        * Blood Culture
+        * Reference Lab. Comment
+        * Reference Lab. Name
+        * Comments
+
+    Of these Blood Culture needs some tweaking
+    """
+
+    class Meta:
+        verbose_name = "Upstream Blood Culture"
+
+    @classmethod
+    def get_api_name(cls):
+        return "upstream_blood_culture"
 
 
 class InfectionSource(lookuplists.LookupList):
@@ -204,7 +300,6 @@ class PrimaryDiagnosis(EpisodeSubrecord):
 
 class Consultant(lookuplists.LookupList):
     pass
-
 
 
 class Diagnosis(EpisodeSubrecord):

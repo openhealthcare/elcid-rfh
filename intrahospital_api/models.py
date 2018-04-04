@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
@@ -17,3 +18,68 @@ class ExternalDemographics(PatientSubrecord):
     date_of_birth = models.DateField(null=True, blank=True)
     sex = ForeignKeyOrFreeText(omodels.Gender)
     ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
+
+
+class PatientLoad(models.Model):
+    RUNNING = "running"
+    FAILURE = "failure"
+    SUCCESS = "success"
+
+    state = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    started = models.DateTimeField()
+    stopped = models.DateTimeField(
+        blank=True, null=True
+    )
+    count = models.IntegerField(
+        blank=True, null=True
+    )
+
+    @property
+    def verbose_name(self):
+        return self.__class__._meta.verbose_name
+
+    def start(self):
+        self.started = timezone.now()
+        self.state = self.RUNNING
+        self.save()
+
+    @property
+    def duration(self):
+        if not self.stopped:
+            raise ValueError(
+                "%s has not finished yet" % self
+            )
+        return self.stopped - self.started
+
+    def complete(self):
+        self.stopped = timezone.now()
+        self.state = self.SUCCESS
+        self.save()
+
+    def failed(self):
+        self.stopped = timezone.now()
+        self.state = self.FAILURE
+        self.save()
+
+    class Meta:
+        abstract = True
+        ordering = ('started',)
+
+
+class InitialPatientLoad(PatientLoad, PatientSubrecord):
+    """ this model is the initial load of a patient
+        future loads are done by the cron batch load
+    """
+    pass
+
+
+class BatchPatientLoad(PatientLoad):
+    """ This is the batch load of all reconciled patients
+        every 5 mins
+    """
+    pass

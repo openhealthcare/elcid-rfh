@@ -33,6 +33,7 @@ class Application(application.OpalApplication):
         'js/elcid/services/blood_culture_helper.js',
 
         'js/elcid/services/blood_culture_loader.js',
+        'js/elcid/services/upstream_blood_culture_loader.js',
         'js/elcid/services/blood_culture_record.js',
         'js/elcid/services/lab_test_results.js',
         'js/elcid/services/demographics_search.js',

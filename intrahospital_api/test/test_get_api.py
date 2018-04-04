@@ -5,7 +5,7 @@ from intrahospital_api import get_api
 
 
 @override_settings(INTRAHOSPITAL_API="something")
-@mock.patch('intrahospital_api.import_string')
+@mock.patch('intrahospital_api.apis.import_string')
 class GetApiTestCase(OpalTestCase):
     def test_get_api(self, import_string):
         import_string().return_value = "some api"

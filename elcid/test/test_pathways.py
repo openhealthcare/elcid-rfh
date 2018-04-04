@@ -1,5 +1,7 @@
 from datetime import date
 from mock import patch
+from django.test import override_settings
+from django.contrib.auth.models import User
 
 from opal import models
 from opal.core.test import OpalTestCase
@@ -8,7 +10,18 @@ from elcid.pathways import (
 )
 
 
-class TestBloodCulturePathway(OpalTestCase):
+@override_settings(
+    ASYNC_API=False,
+    INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi',
+    API_USER="ohc"
+)
+class PathwayTestCase(OpalTestCase):
+    def setUp(self):
+        super(PathwayTestCase, self).setUp()
+        User.objects.create(username="ohc", password="fake_password")
+
+
+class TestBloodCulturePathway(PathwayTestCase):
     def test_delete_others(self):
         # in theory this should just work, but lets
         # double check the underlying api hasn't changed
@@ -40,7 +53,7 @@ class TestBloodCulturePathway(OpalTestCase):
         )
 
 
-class TestCernerDemoPathway(OpalTestCase):
+class TestCernerDemoPathway(PathwayTestCase):
     data = dict(
         demographics=[dict(hospital_number="234", nhs_number="12312")],
         procedure=[dict(date=date.today())],
@@ -74,8 +87,9 @@ class TestCernerDemoPathway(OpalTestCase):
         self.assertEqual(demographics.nhs_number, "12312")
 
 
-class TestAddPatientPathway(OpalTestCase):
+class TestAddPatientPathway(PathwayTestCase):
     def setUp(self):
+        super(TestAddPatientPathway, self).setUp()
         self.assertTrue(
             self.client.login(
                 username=self.user.username, password=self.PASSWORD
@@ -100,6 +114,7 @@ class TestAddPatientPathway(OpalTestCase):
             list(episode.get_tag_names(None)),
             ["antifungal"]
         )
+
 
     def test_saves_without_tags(self):
         test_data = dict(

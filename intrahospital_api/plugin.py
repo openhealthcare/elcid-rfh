@@ -14,5 +14,8 @@ class IntraHospitalApiPlugin(plugins.OpalPlugin):
     javascripts = {
         'opal.controllers': [
             'js/intrahospital_api/controllers/reconcile_patient.js'
+        ],
+        'opal.services': [
+            'js/intrahospital_api/services/initial_patient_lab_load_status.js'
         ]
     }

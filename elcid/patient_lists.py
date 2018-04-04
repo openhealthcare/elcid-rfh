@@ -5,6 +5,7 @@ from opal.core.patient_lists import TaggedPatientList
 from elcid import models
 from opal import models as omodels
 from opal.core.subrecords import patient_subrecords, episode_subrecords
+from intrahospital_api.models import InitialPatientLoad
 
 PATIENT_LIST_SUBRECORDS = [
     models.PrimaryDiagnosis,
@@ -12,7 +13,8 @@ PATIENT_LIST_SUBRECORDS = [
     models.Antimicrobial,
     models.Diagnosis,
     models.Location,
-    omodels.Tagging
+    omodels.Tagging,
+    InitialPatientLoad
 ]
 
 

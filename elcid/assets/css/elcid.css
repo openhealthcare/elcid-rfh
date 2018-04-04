@@ -139,8 +139,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   margin-right: 10px;
   padding-bottom: 10px; }
   .lab-tests .lab-test-row.selectable:hover {
-    background-color: #f5f5f5;
-    cursor: pointer; }
+    background-color: #f5f5f5; }
 .lab-tests .observation-graph-pane {
   padding-top: 10px;
   padding-bottom: 10px; }
