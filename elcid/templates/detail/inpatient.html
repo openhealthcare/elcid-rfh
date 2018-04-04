@@ -3,14 +3,16 @@
 <div class="col-md-6">
   {% record_panel models.Location %}
   {% teams_panel %}
-  <div class="panel panel-default">
-    <div class="panel-heading"><h3>
-      {% icon 'fa fa-crosshairs' %} Trends
-    </h3></div>
-    <div class="panel-body">
-      {% include "partials/lab_test_sparklines.html" with target="patient" %}
+  {% if permissions.view_lab_test_trends %}
+    <div class="panel panel-default">
+      <div class="panel-heading"><h3>
+        {% icon 'fa fa-crosshairs' %} Trends
+      </h3></div>
+      <div class="panel-body">
+        {% include "partials/lab_test_sparklines.html" with target="patient" %}
+      </div>
     </div>
-  </div>
+  {% endif %}
 
 
   {% record_panel models.PrimaryDiagnosis %}
@@ -26,7 +28,9 @@
   {% record_panel models.Antimicrobial %}
   {% record_panel models.Imaging %}
   {% include "partials/blood_culture_result_display.html" %}
-  {% include "partials/upstream_blood_culture_result_display.html" %}
+  {% if permissions.view_lab_test_trends %}
+    {% include "partials/upstream_blood_culture_result_display.html" %}
+    {% endif %}
   {% record_panel models.FinalDiagnosis %}
 </div>
 <div class="col-md-6">
