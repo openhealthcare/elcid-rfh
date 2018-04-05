@@ -3,6 +3,7 @@ Plugin definition for the pathway Opal plugin
 """
 from opal.core import plugins
 from intrahospital_api.urls import urlpatterns
+from intrahospital_api import api
 
 
 class IntraHospitalApiPlugin(plugins.OpalPlugin):
@@ -19,3 +20,4 @@ class IntraHospitalApiPlugin(plugins.OpalPlugin):
             'js/intrahospital_api/services/initial_patient_lab_load_status.js'
         ]
     }
+    apis = [("patient", api.PatientViewSet,)]
