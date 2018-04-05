@@ -90,8 +90,28 @@ class PatientAdmin(OldPatientAdmin):
     refresh_lab_tests.short_description = "Load in lab tests from upstream"
 
 
+class BatchPatientLoadAdmin(admin.ModelAdmin):
+    list_display = [
+        'started',
+        'stopped',
+        'duration',
+        'state',
+        'count',
+    ]
+
+
+class InitialPatientLoadAdmin(admin.ModelAdmin):
+    list_display = [
+        'started',
+        'stopped',
+        'duration',
+        'state',
+        'patient_id',
+    ]
+
+
 admin.site.register(rmodels.Version, admin.ModelAdmin)
 admin.site.register(rmodels.Revision, admin.ModelAdmin)
 admin.site.unregister(omodels.Patient)
 admin.site.register(omodels.Patient, PatientAdmin)
-admin.site.register(imodels.BatchPatientLoad)
+admin.site.register(imodels.BatchPatientLoad, BatchPatientLoadAdmin)

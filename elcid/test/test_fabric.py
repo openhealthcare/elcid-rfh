@@ -566,7 +566,7 @@ class CronTestCase(FabfileTestCase):
         self, print_function, local
     ):
         fabfile.write_cron_lab_tests(self.prod_env)
-        local.assert_called_once_with("echo '0/5 * * * * ohc \
+        local.assert_called_once_with("echo '*/5 * * * * ohc \
 /home/ohc/.virtualenvs/elcidrfh-some_branch/bin/python \
 /usr/lib/ohc/elcidrfh-some_branch/manage.py \
 batch_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \

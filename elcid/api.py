@@ -3,15 +3,13 @@ from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
-from django.db.models import Q
 from intrahospital_api import loader
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
 from elcid import models as emodels
-from lab import models as lmodels
-from elcid.utils import timing
+from elcid.utils import timing, datetime_to_str
 from opal import models as omodels
 
 
@@ -88,12 +86,6 @@ def clean_ref_range(ref_range):
 def to_date_str(some_date):
     if some_date:
         return some_date[:10]
-
-
-def datetime_to_str(dt):
-    return dt.strftime(
-        settings.DATETIME_INPUT_FORMATS[0]
-    )
 
 
 def observations_by_date(observations):
