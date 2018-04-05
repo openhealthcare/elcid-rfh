@@ -1,6 +1,7 @@
 import logging
 from functools import wraps
 from time import time
+from django.conf import settings
 
 logger = logging.getLogger('elcid.time_logger')
 
@@ -16,3 +17,9 @@ def timing(f):
         ))
         return result
     return wrap
+
+
+def datetime_to_str(dt):
+    return dt.strftime(
+        settings.DATETIME_INPUT_FORMATS[0]
+    )

@@ -117,11 +117,11 @@ class _InitialLoadTestCase(ApiTestCase):
 
             self.assertEqual(
                 imodels.InitialPatientLoad.objects.first().patient.id,
-                self.patient_1.id
+                self.patient_2.id
             )
             self.assertEqual(
                 imodels.InitialPatientLoad.objects.last().patient.id,
-                self.patient_2.id
+                self.patient_1.id
             )
 
             upstream_patients = emodels.UpstreamLabTest.objects.values_list(

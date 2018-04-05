@@ -178,7 +178,7 @@ def good_to_go():
             )
         )
 
-    last_run_running = current_running.last()
+    last_run_running = current_running.order_by("started").last()
 
     if last_run_running:
         time_ago = timezone.now() - last_run_running.started
