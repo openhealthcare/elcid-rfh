@@ -35,7 +35,8 @@ Fabric==1.14.0
 # intrahospital_api
 python-tds==1.8.2
 
-opal==0.10.1rc1
+
+-e git+https://github.com/openhealthcare/opal.git@379-page-loads-behind-proxy#egg=opal
 
 # Open Health Care packages on PyPi
 # opal-observations==0.3.0
