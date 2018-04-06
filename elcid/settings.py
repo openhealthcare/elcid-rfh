@@ -39,6 +39,7 @@ MANAGERS = ADMINS
 ALLOWED_HOSTS = [
     'localhost',
     'ec2-52-16-175-249.eu-west-1.compute.amazonaws.com',
+    'page-loads-379.herokuapp.com',
     '.openhealthcare.org.uk',
     ]
 
