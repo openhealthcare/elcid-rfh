@@ -42,4 +42,4 @@ python-tds==1.8.2
 # opal-observations==0.3.0
 
 # Open Health Care repositories on GitHub
--e git+https://github.com/openhealthcare/opal-lab.git@v0.4.0#egg=opal_lab
+-e git+https://github.com/openhealthcare/opal-lab.git@380-make-sure-upstream-lab-tests-are-not-serialised#egg=opal_lab
