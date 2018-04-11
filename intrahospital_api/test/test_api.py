@@ -4,6 +4,7 @@ from rest_framework.reverse import reverse
 from opal.core.test import OpalTestCase
 from elcid import models as emodels
 from intrahospital_api import api
+from intrahospital_api import constants
 
 
 class PatientToDict(OpalTestCase):
@@ -14,6 +15,11 @@ class PatientToDict(OpalTestCase):
         patient, episode = self.new_patient_and_episode_please()
         episode.set_tag_names(["something"], self.user)
         emodels.UpstreamLabTest.objects.create(
+            patient=patient,
+            external_system=constants.EXTERNAL_SYSTEM
+
+        )
+        emodels.QuickFISH.objects.create(
             patient=patient
         )
         emodels.Imaging.objects.create(episode=episode, site="elbow")
@@ -26,8 +32,15 @@ class PatientToDict(OpalTestCase):
         to_dicted["episodes"][episode.id].pop("lab_test")
         to_dicted["episodes"][episode.id].pop("episode_history")
         result = api.patient_to_dict(patient, self.user)
+        found_lab_tests = result.pop("lab_test")
+
         self.assertEqual(
             to_dicted, result
+        )
+        self.assertEqual(len(found_lab_tests), 1)
+        self.assertEqual(
+            found_lab_tests[0]["lab_test_type"],
+            emodels.QuickFISH.get_display_name()
         )
 
     @mock.patch("intrahospital_api.api.patient_to_dict")

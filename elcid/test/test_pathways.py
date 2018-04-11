@@ -2,12 +2,14 @@ from datetime import date
 from mock import patch
 from django.test import override_settings
 from django.contrib.auth.models import User
+from intrahospital_api import constants
 
 from opal import models
 from opal.core.test import OpalTestCase
 from elcid.pathways import (
     AddPatientPathway, CernerDemoPathway, BloodCulturePathway
 )
+from elcid import models as emodels
 
 
 @override_settings(
@@ -50,6 +52,66 @@ class TestBloodCulturePathway(PathwayTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertEqual(
             patient.labtest_set.get().lab_test_type, "QuickFISH"
+        )
+
+    def test_delete_others_ignores_upstream_tests(self):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        patient, episode = self.new_patient_and_episode_please()
+        patient.labtest_set.create(
+            lab_test_type='Gram Stain',
+        )
+        quick_fish = patient.labtest_set.create(
+            lab_test_type='QuickFISH',
+        )
+        upstream_lab_test = patient.labtest_set.create(
+            lab_test_type=emodels.UpstreamLabTest.get_display_name(),
+            external_system=constants.EXTERNAL_SYSTEM
+        )
+        upstream_blood_culture = patient.labtest_set.create(
+            lab_test_type=emodels.UpstreamBloodCulture.get_display_name(),
+            external_system=constants.EXTERNAL_SYSTEM
+        )
+
+        data = dict(
+            lab_test=[{
+                "id": quick_fish.id,
+                "lab_test_type": "QuickFISH",
+                "result": {"result": "CNS"}
+            }]
+        )
+
+        pathway = BloodCulturePathway()
+        url = pathway.save_url(patient=patient, episode=episode)
+        result = self.post_json(url, data)
+        self.assertEqual(result.status_code, 200)
+        expected_quick_fish = patient.labtest_set.first()
+        self.assertEqual(
+            expected_quick_fish.id, quick_fish.id
+        )
+        self.assertEqual(
+            expected_quick_fish.lab_test_type, quick_fish.lab_test_type
+        )
+
+        expected_upstream_lab_test = patient.labtest_set.all()[1]
+        self.assertEqual(
+            expected_upstream_lab_test.id, upstream_lab_test.id
+        )
+        self.assertEqual(
+            expected_upstream_lab_test.lab_test_type,
+            upstream_lab_test.lab_test_type
+        )
+
+        expected_upstream_blood_culture = patient.labtest_set.all()[2]
+        self.assertEqual(
+            expected_upstream_blood_culture.id, upstream_blood_culture.id
+        )
+        self.assertEqual(
+            expected_upstream_blood_culture.lab_test_type,
+            upstream_blood_culture.lab_test_type
         )
 
 
@@ -114,7 +176,6 @@ class TestAddPatientPathway(PathwayTestCase):
             list(episode.get_tag_names(None)),
             ["antifungal"]
         )
-
 
     def test_saves_without_tags(self):
         test_data = dict(
