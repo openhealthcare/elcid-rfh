@@ -10,7 +10,11 @@ from intrahospital_api import constants
 class PatientToDict(OpalTestCase):
     def test_patient_to_dict(self):
         """ patient_to_dict should be logically equivellent of
-            patient.to_dict() apart from lab tests
+            patient.to_dict() apart from lab tests.
+
+            Lab tests should exclude anything whith an external
+            system, which in practical terms means UpstreamLabTests
+            and UpstreamBloodCultures at present.
         """
         patient, episode = self.new_patient_and_episode_please()
         episode.set_tag_names(["something"], self.user)
@@ -32,15 +36,21 @@ class PatientToDict(OpalTestCase):
         to_dicted["episodes"][episode.id].pop("lab_test")
         to_dicted["episodes"][episode.id].pop("episode_history")
         result = api.patient_to_dict(patient, self.user)
-        found_lab_tests = result.pop("lab_test")
+        found_lab_tests_for_patient = result.pop("lab_test")
+        found_lab_tests_for_episode = result["episodes"][episode.id].pop(
+            "lab_test"
+        )
 
         self.assertEqual(
             to_dicted, result
         )
-        self.assertEqual(len(found_lab_tests), 1)
+        self.assertEqual(len(found_lab_tests_for_patient), 1)
         self.assertEqual(
-            found_lab_tests[0]["lab_test_type"],
+            found_lab_tests_for_patient[0]["lab_test_type"],
             emodels.QuickFISH.get_display_name()
+        )
+        self.assertEqual(
+            found_lab_tests_for_episode, found_lab_tests_for_patient
         )
 
     @mock.patch("intrahospital_api.api.patient_to_dict")
