@@ -37,8 +37,8 @@ def patient_to_dict(patient, user):
             ]
 
         for episode_dict in serialised_episodes:
-            if model.get_api_name() in episode_dict:
-                if episode_dict[model.get_api_name()]:
+            if model.get_api_name() in d:
+                if d[model.get_api_name()]:
                     episode_dict[model.get_api_name()] = d[
                         model.get_api_name()
                     ]
