@@ -1,5 +1,6 @@
 import datetime
 from intrahospital_api import loader
+from intrahospital_api import constants
 from elcid import models
 from lab import models as lmodels
 from django.db import transaction
@@ -93,10 +94,12 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         saved_episode.start = datetime.date.today()
         saved_episode.save()
 
-        # if the patient its a new patient, bring
-        # in their lab tests
-        if not patient:
-            if settings.ADD_PATIENT_LAB_TESTS:
+        # if the patient its a new patient and we have
+        # got their demographics from the upstream api service
+        # bring in their lab tests
+        if not patient and settings.ADD_PATIENT_LAB_TESTS:
+            demo_system = data["demographics"][0].get("external_system")
+            if demo_system == constants.EXTERNAL_SYSTEM:
                 loader.load_patient(saved_patient)
 
         return saved_patient, saved_episode

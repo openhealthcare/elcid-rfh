@@ -297,6 +297,39 @@ class TestAddPatientPathway(PathwayTestCase):
         )
         self.url = AddPatientPathway().save_url()
 
+    @patch("elcid.pathways.loader.load_patient")
+    @override_settings(ADD_PATIENT_LAB_TESTS=True)
+    def test_queries_loader_if_external_demographics(self, load_patient):
+        test_data = dict(
+            demographics=[dict(
+                hospital_number="234",
+                nhs_number="12312",
+                external_system=constants.EXTERNAL_SYSTEM
+            )],
+            tagging=[{u'antifungal': True}],
+        )
+        response = self.post_json(self.url, test_data)
+        self.assertEqual(response.status_code, 200)
+        load_patient.assert_called_once_with(
+            models.Patient.objects.get()
+        )
+
+    @patch("elcid.pathways.loader.load_patient")
+    @override_settings(ADD_PATIENT_LAB_TESTS=True)
+    def test_does_not_query_loader_if_local_demographics(
+        self, load_patient
+    ):
+        test_data = dict(
+            demographics=[dict(
+                hospital_number="234",
+                nhs_number="12312"
+            )],
+            tagging=[{u'antifungal': True}],
+        )
+        response = self.post_json(self.url, test_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(load_patient.called)
+
     def test_saves_tag(self):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
