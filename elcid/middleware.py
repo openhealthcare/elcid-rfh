@@ -28,7 +28,7 @@ class LoggingMiddleware(object):
                 response.status_code, req_time, extra_log
             )
             logger.info(msg)
-        except Exception, e:
+        except Exception as e:
             logger.error("LoggingMiddleware Error: %s" % e)
 
         return response
