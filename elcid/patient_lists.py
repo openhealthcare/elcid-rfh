@@ -4,6 +4,7 @@ from opal.utils import AbstractBase
 from opal.core.patient_lists import TaggedPatientList
 from elcid import models
 from opal import models as omodels
+from opal import managers
 from opal.core.subrecords import patient_subrecords, episode_subrecords
 from intrahospital_api.models import InitialPatientLoad
 
@@ -36,7 +37,7 @@ def serialise_subrecords(ids, user, subrecords_to_serialise):
 
     for model in subrecords_to_serialise:
         name = model.get_api_name()
-        subrecords = model.objects.filter(**qs_args)
+        subrecords = managers.prefetch(model.objects.filter(**qs_args))
 
         for related in model._meta.many_to_many:
             subrecords = subrecords.prefetch_related(related.attname)
