@@ -94,8 +94,8 @@ def serialised_tagging(episodes, user, subrecords=None):
         Checks if we want to serialise the tagging model and if so
         returns the serialised tagging model, (with history if requested)
     """
-    taggings = defaultdict(dict)
     if subrecords is None or omodels.Tagging in subrecords:
+        taggings = {e.id: dict(id=e.id) for e in episodes}
         qs = omodels.Tagging.objects.filter(
             episode__in=episodes, archived=False
         )
@@ -105,7 +105,7 @@ def serialised_tagging(episodes, user, subrecords=None):
                 continue
             taggings[tag.episode_id][tag.value] = True
 
-    return taggings
+        return taggings
 
 
 def serialised(episodes, user, subrecords=None):
@@ -136,8 +136,9 @@ def serialised(episodes, user, subrecords=None):
                 d[key] = value
 
         if taggings:
-            d[omodels.Tagging.get_api_name()] = [taggings[e.id]]
-            d[omodels.Tagging.get_api_name()][0]['id'] = e.id
+            tagging_dict = taggings[e.id]
+            d[omodels.Tagging.get_api_name()] = [tagging_dict]
+
         serialised.append(d)
     return serialised
 

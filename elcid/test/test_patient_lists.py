@@ -152,7 +152,6 @@ class SerialisedTestCase(AbstractPatientListTestCase):
 
         self.assertNotIn(models.Location.get_api_name(), serialised[0])
 
-
     def test_serialised_no_historic_tags(self):
         _, episode = self.new_patient_and_episode_please()
         episode.set_tag_names(['something'], self.user)
@@ -208,4 +207,30 @@ class SerialisedTestCase(AbstractPatientListTestCase):
         self.assertNotIn(Tagging.get_api_name(), s)
         self.assertEqual(
             s[models.Diagnosis.get_api_name()][0]["condition"], "fever"
+        )
+
+    def test_tagging_set_when_empty(self):
+        """ we should always serialize tagging, even if its empty
+        """
+        self.create_episode()
+        result = patient_lists.serialised(
+            Episode.objects.all(), self.user, subrecords=[
+                models.Demographics, Tagging
+            ]
+        )
+        self.assertEqual(result[0]["tagging"][0], dict(id=1))
+
+    def test_tagging_set_when_populated(self):
+        """ we should always serialize tagging, even if its empty
+        """
+        episode = self.create_episode()
+        episode.set_tag_names(['something'], self.user)
+        result = patient_lists.serialised(
+            Episode.objects.all(), self.user, subrecords=[
+                models.Demographics, Tagging
+            ]
+        )
+        self.assertEqual(
+            result[0]["tagging"][0],
+            dict(id=1, something=True)
         )
