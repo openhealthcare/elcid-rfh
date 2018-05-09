@@ -3,6 +3,7 @@ from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
+from django.http import HttpResponseBadRequest
 from django.db.models import Q
 from intrahospital_api import loader
 from rest_framework import viewsets
@@ -550,8 +551,10 @@ class DemographicsSearch(LoginRequiredViewset):
     PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
     PATIENT_NOT_FOUND = "patient_not_found"
 
-    def retrieve(self, request, *args, **kwargs):
-        hospital_number = kwargs["pk"]
+    def list(self, request, *args, **kwargs):
+        hospital_number = request.query_params.get("hospital_number")
+        if not hospital_number:
+            return HttpResponseBadRequest("Please pass in a hospital number")
         demographics = emodels.Demographics.objects.filter(
             hospital_number=hospital_number
         ).last()

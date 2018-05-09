@@ -200,11 +200,11 @@ class DemographicsSearchTestCase(OpalTestCase):
     def setUp(self):
         super(DemographicsSearchTestCase, self).setUp()
         request = self.rf.get("/")
-        self.url = reverse(
-            "demographics_search-detail",
-            kwargs=dict(pk=1),
+        self.raw_url = reverse(
+            "demographics_search-list",
             request=request
         )
+        self.url = "{}?hospital_number=1".format(self.raw_url)
         # initialise the property
         self.user
         self.assertTrue(
@@ -214,12 +214,29 @@ class DemographicsSearchTestCase(OpalTestCase):
             )
         )
 
+    def get_url(self, hospital_number):
+        return "{}?hospital_number={}".format(
+            self.raw_url, hospital_number
+        )
+
+    def get_patient(self, name, hospital_number):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name=name,
+            hospital_number=hospital_number
+        )
+        return patient
+
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=False)
     def test_without_demographics_add_patient_not_found(self):
         response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
             response["status"], "patient_not_found"
         )
+
+    @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
+    def test_without_hospital_number(self):
+        self.assertEqual(self.client.get(self.raw_url).status_code, 400)
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
     @mock.patch("elcid.api.loader.load_demographics")
@@ -247,15 +264,47 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
     def test_patient_found(self):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            first_name="Wilma",
-            hospital_number="1"
-        )
+        self.get_patient("Wilma", "1")
         response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
         )
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
+    def test_patient_found_with_full_stop(self):
+        self.get_patient("Dot", "123.123")
+        response = json.loads(
+            self.client.get(self.get_url("123.123")).content
+        )
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Dot"
+        )
+
+    def test_patient_found_with_forward_slash(self):
+        self.get_patient("Dot", "123/123")
+        response = json.loads(
+            self.client.get(self.get_url("123%2F123")).content
+        )
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Dot"
+        )
+
+    def test_patient_found_with_hash(self):
+        self.get_patient("Dot", "123#123")
+        response = json.loads(
+            self.client.get(self.get_url("123%23123")).content
+        )
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Dot"
         )
