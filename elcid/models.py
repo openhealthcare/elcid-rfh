@@ -37,6 +37,10 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
         'middle_name', 'post_code',
     )
 
+    @classmethod
+    def get_modal_footer_template(cls):
+        return "partials/demographics_footer.html"
+
     class Meta:
         verbose_name_plural = "Demographics"
 
@@ -257,7 +261,7 @@ class InfectionSource(lookuplists.LookupList):
 
 
 class Infection(EpisodeSubrecord):
-    _title = 'Infection related issues'
+    _title = 'Infection Related Issues'
     _icon = 'fa fa-eyedropper'
     # this needs to be fixed
     source = ForeignKeyOrFreeText(InfectionSource)
