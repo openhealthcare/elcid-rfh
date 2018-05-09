@@ -34,7 +34,7 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
         throw "unknown call back";
       }
     });
-    var patientUrl = url + hospitalNumber
+    var patientUrl = url + encodeURIComponent(hospitalNumber)
     $http.get(patientUrl).then(function(response) {
       ngProgressLite.done();
       if(response.data.status == PATIENT_FOUND_IN_ELCID){

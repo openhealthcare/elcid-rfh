@@ -56,6 +56,45 @@ describe("DemographicsSearch", function(){
     expect(called_result).toBe("some_patient");
   });
 
+  it('should encode get params like hash', function(){
+    var called_result = false;
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=%2352').respond(
+      {status: "patient_found_in_elcid", patient: "some_patient"}
+    );
+
+    DemographicsSearch.find(
+    "#52",
+    {
+      patient_found_in_elcid: function(some_result){
+        called_result = some_result;
+      }
+    });
+
+    $rootScope.$apply();
+    $httpBackend.flush();
+    expect(called_result).toBe("some_patient");
+  });
+
+  it('should encode get params like slash', function(){
+    var called_result = false;
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=%2F52').respond(
+      {status: "patient_found_in_elcid", patient: "some_patient"}
+    );
+
+    DemographicsSearch.find(
+    "/52",
+    {
+      patient_found_in_elcid: function(some_result){
+        called_result = some_result;
+      }
+    });
+
+    $rootScope.$apply();
+    $httpBackend.flush();
+    expect(called_result).toBe("some_patient");
+  });
+
+
   it('should call done on the ng progress lite', function(){
     var called_result = false;
     $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=52').respond(
