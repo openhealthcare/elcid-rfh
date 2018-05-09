@@ -200,11 +200,11 @@ class DemographicsSearchTestCase(OpalTestCase):
     def setUp(self):
         super(DemographicsSearchTestCase, self).setUp()
         request = self.rf.get("/")
-        self.url = reverse(
-            "demographics_search-detail",
-            kwargs=dict(pk=1),
+        self.raw_url = reverse(
+            "demographics_search-list",
             request=request
         )
+        self.url = "{}?hospital_number=1".format(self.raw_url)
         # initialise the property
         self.user
         self.assertTrue(
@@ -220,6 +220,10 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["status"], "patient_not_found"
         )
+
+    @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
+    def test_without_hospital_number(self):
+        self.assertEqual(self.client.get(self.raw_url).status_code, 400)
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
     @mock.patch("elcid.api.loader.load_demographics")

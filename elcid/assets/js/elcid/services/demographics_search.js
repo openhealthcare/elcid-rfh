@@ -5,7 +5,7 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
   * pathway.
   */
 
-  var url = '/elcid/v0.1/demographics_search/';
+  var url = '/elcid/v0.1/demographics_search/?hospital_number=';
 
   // we have four call backs that we are expecting
 
@@ -34,7 +34,7 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
         throw "unknown call back";
       }
     });
-    var patientUrl = url + hospitalNumber + "/"
+    var patientUrl = url + hospitalNumber
     $http.get(patientUrl).then(function(response) {
       ngProgressLite.done();
       if(response.data.status == PATIENT_FOUND_IN_ELCID){

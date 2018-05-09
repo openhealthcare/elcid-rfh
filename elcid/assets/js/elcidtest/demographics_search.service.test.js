@@ -39,7 +39,7 @@ describe("DemographicsSearch", function(){
 
   it('should call find patient found in elcid', function(){
     var called_result = false;
-    $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=52').respond(
       {status: "patient_found_in_elcid", patient: "some_patient"}
     );
 
@@ -58,7 +58,7 @@ describe("DemographicsSearch", function(){
 
   it('should call done on the ng progress lite', function(){
     var called_result = false;
-    $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=52').respond(
       {status: "patient_found_in_elcid", patient: "some_patient"}
     );
 
@@ -79,7 +79,7 @@ describe("DemographicsSearch", function(){
 
   it('should call patient found in hosptial', function(){
     var called_result = false;
-    $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=52').respond(
       {status: "patient_found_upstream", patient: "some_patient"}
     );
 
@@ -98,7 +98,7 @@ describe("DemographicsSearch", function(){
 
   it('should call patient not found', function(){
     var called_result = false;
-    $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=52').respond(
       {status: "patient_found_upstream"}
     );
 
@@ -118,7 +118,7 @@ describe("DemographicsSearch", function(){
   it('should raise an alert if an unknown status is returned', function(){
     spyOn($window, "alert");
     var called_result = false;
-    $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=52').respond(
       {status: "blah blah"}
     );
 
@@ -134,7 +134,7 @@ describe("DemographicsSearch", function(){
   it('should blow up if the search errors', function(){
     spyOn($window, "alert");
     var called_result = false;
-    $httpBackend.expectGET('/elcid/v0.1/demographics_search/52/').respond(
+    $httpBackend.expectGET('/elcid/v0.1/demographics_search/?hospital_number=52').respond(
       500, "NO"
     );
 
