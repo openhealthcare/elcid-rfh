@@ -234,3 +234,12 @@ a.list-group-item {
   font-weight: 600;
   color: $obsidian-light;
 }
+
+
+.trends-panel{
+  min-height: 395px;
+
+  .no-results{
+    padding-top: 120px;
+  }
+}
