@@ -38,6 +38,7 @@ MANAGERS = ADMINS
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
     'localhost',
+    '127.0.0.1',
     'ec2-52-16-175-249.eu-west-1.compute.amazonaws.com',
     '.openhealthcare.org.uk',
     ]
