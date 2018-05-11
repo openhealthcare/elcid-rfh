@@ -152,6 +152,9 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .lab-tests .too-low {
   color: #E02F03; }
 
+.overflow-x-scroll {
+  overflow-x: scroll; }
+
 .no-results {
   font-weight: 600;
   color: #cbc9c8; }
