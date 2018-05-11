@@ -11,12 +11,13 @@ class TbEpisode(episodes.EpisodeCategory):
     # contact has been referred either through contact screening
     # or a direct referral
     NEW_REFERRAL = "New Referral"
+    ACTIVE_TB_TREATMENT = "Active TB Treatment"
+    LATENT_TB_TREATMENT = "Latent TB Treatment"
+    NTM_TREATMENT = "NTM Treatment"
 
     # patient has gone through the initial assessment and tests
     # have probably been sent off
     UNDER_INVESTIGATION = "Under Investigation"
-
-    TB_TREATMENT = "TB Treatment"
 
     # patient has been discharged
     DISCHARGED = "Discharged"
@@ -24,7 +25,9 @@ class TbEpisode(episodes.EpisodeCategory):
     stages = [
         NEW_CONTACT,
         NEW_REFERRAL,
+        ACTIVE_TB_TREATMENT,
+        LATENT_TB_TREATMENT,
+        NTM_TREATMENT,
         UNDER_INVESTIGATION,
-        TB_TREATMENT,
         DISCHARGED
     ]

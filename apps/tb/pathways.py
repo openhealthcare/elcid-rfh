@@ -62,7 +62,7 @@ class TBConsultationPathway(pathways.PagePathway):
 
     steps = [
         TbStep(
-            template="pathway/steps/demographics_panel.html",
+            template="pathway/steps/demographics_birth_place.html",
             icon="fa fa-user",
             display_name="Demographics",
             model=models.Demographics
@@ -122,3 +122,33 @@ class TBConsultationPathway(pathways.PagePathway):
         e.set_stage(e.category.NEW_REFERRAL, user, None)
 
         return p, e
+
+
+class ActiveTBTreatmentPathway(pathways.PagePathway):
+    display_name = "Active TB Treatment"
+    slug = "activate_tb_treatment"
+    template = "pathway/consultation_base.html"
+
+    steps = [
+        TbStep(
+            template="pathway/steps/demographics_panel.html",
+            icon="fa fa-user",
+            display_name="Demographics",
+            model=models.Demographics
+        ),
+        TbStep(
+            model=models.Diagnosis,
+            template="pathway/steps/tb_diagnosis.html",
+            step_controller="TBDiagnosis",
+        ),
+    ]
+
+    @transaction.atomic
+    def save(self, data, user=None, **kwargs):
+        stage = data.pop('stage')[0]
+        patient, episode = super(ActiveTBTreatmentPathway, self).save(
+            data, user=user, **kwargs
+        )
+        episode.set_stage(stage, user, data)
+        episode.save()
+        return patient, episode

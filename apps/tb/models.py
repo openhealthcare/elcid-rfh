@@ -167,6 +167,16 @@ class Travel(models.EpisodeSubrecord):
     reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
 
 
+class TBLocation(models.EpisodeSubrecord):
+    _is_singleton = True
+    sites = fields.ManyToManyField(TBSite, blank=True)
+
+    def to_dict(self, user):
+        result = super(TBLocation, self).to_dict(user)
+        result["sites"] = list(self.sites.values_list("name", flat=True))
+        return result
+
+
 class BCG(models.PatientSubrecord):
     _icon = 'fa fa-asterisk'
     _title = "BCG"
