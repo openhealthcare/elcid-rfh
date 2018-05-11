@@ -1,4 +1,4 @@
-from elcid.patient_lists import serialised
+from elcid.episode_serialization import serialize
 from elcid.models import Demographics
 from intrahospital_api.models import ExternalDemographics
 from intrahospital_api import constants
@@ -24,7 +24,7 @@ class ReconcileDemographics(patient_lists.PatientList):
 
     def to_dict(self, user):
         qs = super(ReconcileDemographics, self).get_queryset()
-        return serialised(
+        return serialize(
             qs, user, subrecords=[Demographics, ExternalDemographics]
         )
 

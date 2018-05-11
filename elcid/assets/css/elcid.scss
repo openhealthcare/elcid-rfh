@@ -216,7 +216,7 @@ a.list-group-item {
   .c3-region.too-high{
     fill: fade-out($too-high, 0.5);
   }
-
+  
   .c3-region.too-low{
     fill: fade-out($too-low, 0.5);
   }
@@ -230,7 +230,20 @@ a.list-group-item {
   }
 }
 
+.overflow-x-scroll{
+  overflow-x: scroll;
+}
+
 .no-results{
   font-weight: 600;
   color: $obsidian-light;
+}
+
+
+.trends-panel{
+  min-height: 395px;
+
+  .no-results{
+    padding-top: 120px;
+  }
 }

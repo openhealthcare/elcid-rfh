@@ -95,6 +95,12 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
                 {'consistency_token': '87654321'}, self.user
             )
 
+    def test_get_modal_footer_template(self):
+        temp = emodels.Demographics.get_modal_footer_template()
+        self.assertEqual(
+            temp, "partials/demographics_footer.html"
+        )
+
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 

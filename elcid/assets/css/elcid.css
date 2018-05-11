@@ -152,8 +152,16 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .lab-tests .too-low {
   color: #E02F03; }
 
+.overflow-x-scroll {
+  overflow-x: scroll; }
+
 .no-results {
   font-weight: 600;
   color: #cbc9c8; }
+
+.trends-panel {
+  min-height: 395px; }
+  .trends-panel .no-results {
+    padding-top: 120px; }
 
 /*# sourceMappingURL=elcid.css.map */

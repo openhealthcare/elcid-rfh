@@ -5,7 +5,7 @@ from opal.core.views import json_response
 from opal import models as omodels
 from opal.core import subrecords
 from lab import models as lmodels
-from elcid.patient_lists import serialised
+from elcid.episode_serialization import serialize
 
 
 def patient_to_dict(patient, user):
@@ -15,23 +15,37 @@ def patient_to_dict(patient, user):
     ]
     subs.append(omodels.Tagging)
 
-    serialised_episodes = serialised(
+    serialised_episodes = serialize(
         patient.episode_set.all(), user, subs
     )
-    episode_id_to_episode = {i["id"]: i for i in serialised_episodes}
     d = {
         'id': patient.id,
-        'episodes': episode_id_to_episode,
-        'active_episode_id': active_episode.id if active_episode else None,
+        'active_episode_id': active_episode.id if active_episode else None
     }
-
     for model in subrecords.patient_subrecords():
         if model == lmodels.LabTest:
-            continue
-        subs = model.objects.filter(patient_id=patient.id)
-        d[model.get_api_name()] = [
-            subrecord.to_dict(user) for subrecord in subs
-        ]
+            subs = model.objects.filter(patient_id=patient.id).filter(
+                external_system=None
+            )
+            d[model.get_api_name()] = [
+                subrecord.to_dict(user) for subrecord in subs
+            ]
+        else:
+            subs = model.objects.filter(patient_id=patient.id)
+            d[model.get_api_name()] = [
+                subrecord.to_dict(user) for subrecord in subs
+            ]
+
+        for episode_dict in serialised_episodes:
+            if model.get_api_name() in d:
+                if d[model.get_api_name()]:
+                    episode_dict[model.get_api_name()] = d[
+                        model.get_api_name()
+                    ]
+
+    episode_id_to_episode = {i["id"]: i for i in serialised_episodes}
+    d["episodes"] = episode_id_to_episode
+
     return d
 
 

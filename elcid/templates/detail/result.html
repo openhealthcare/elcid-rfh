@@ -13,20 +13,20 @@
         </div>
       </div>
       <div ng-show="resultView.patientLoadStatus.isLoading()">
-        <h2 class="text-center no-results">Lab Tests Loading Please Wait</h2>
+        <h2 class="text-center no-results">Lab tests loading please wait</h2>
       </div>
       <div ng-show="resultView.patientLoadStatus.isAbsent()">
-        <h2 class="text-center no-results">Unable To Get Lab Tests For This Patient</h2>
+        <h2 class="text-center no-results">Unable to get lab tests for this patient</h2>
       </div>
       <div ng-show="resultView.patientLoadStatus.isFailed()">
-        <h2 class="text-center no-results">Failed To Load Lab Tests For This Patient</h2>
+        <h2 class="text-center no-results">Failed to load lab tests for this patient</h2>
       </div>
       <ul ng-show="resultView.patientLoadStatus.isLoaded()" class="list-group">
         <li class="list-group-item " ng-repeat="labTest in resultView.labTests">
           <div class="content-offset-below">
             <div class="row">
               <div class="col-md-6">
-                <h5>[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|shortDate ]]</span> {% if request.user.is_superuser %}<a href="/intrahospital_api/raw/results/[[ patient.demographics[0].hospital_number ]]/test/[[ labTest.lab_test_type ]]">{% icon "fa fa-code-fork" %}</a>{% endif %}</h5>
+                <h5 class="inline">[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|shortDate ]]</span></h5> {% if request.user.is_superuser %}<a class="text-muted" href="/intrahospital_api/raw/results/[[ patient.demographics[0].hospital_number ]]/test/[[ labTest.lab_test_type ]]">&nbsp;view upstream {% icon "fa fa-code-fork" %}</a>{% endif %}
               </div>
             </div>
             <div ng-show="labTest.observations.length">

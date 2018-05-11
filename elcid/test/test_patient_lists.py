@@ -7,10 +7,9 @@ from rest_framework.reverse import reverse as drf_reverse
 
 from opal.core.patient_lists import PatientList
 from opal.core.test import OpalTestCase
-from opal.models import Patient, Tagging, Episode
+from opal.models import Patient
 
 from elcid import models
-from elcid import patient_lists
 
 
 class AbstractPatientListTestCase(OpalTestCase):
@@ -127,85 +126,3 @@ class TestPatientList(AbstractPatientListTestCase):
     def test_patient_list_episode_comparators(self):
         pls = PatientList.list()
         self.assertTrue(all(i.comparator_service for i in pls))
-
-
-class SerialisedTestCase(AbstractPatientListTestCase):
-    def test_serialised_only_serialises_relevent_subrecords(self):
-        subrecords = [
-            models.PrimaryDiagnosis,
-            models.Demographics,
-            models.Antimicrobial,
-            models.Diagnosis,
-            Tagging
-        ]
-        episode = self.create_episode()
-        episode.set_tag_names(['something'], self.user)
-        episodes = Episode.objects.all()
-        serialised = patient_lists.serialised(
-            episodes, self.user, subrecords=subrecords
-        )
-
-        expected_keys = (i.get_api_name() for i in subrecords)
-
-        for expected_key in expected_keys:
-            self.assertIn(expected_key, serialised[0])
-
-        self.assertNotIn(models.Location.get_api_name(), serialised[0])
-
-
-    def test_serialised_no_historic_tags(self):
-        _, episode = self.new_patient_and_episode_please()
-        episode.set_tag_names(['something'], self.user)
-        episode.set_tag_names(['else'], self.user)
-        episodes = Episode.objects.all()
-        serialised = patient_lists.serialised(
-            episodes, self.user, subrecords=[Tagging]
-        )
-        self.assertEqual(
-            serialised[0]["tagging"],
-            [{"id": 1, "else": True}]
-        )
-
-    def test_patient_subrecords(self):
-        episode = self.create_episode()
-        episode.set_tag_names(['something'], self.user)
-        episodes = Episode.objects.all()
-
-        serialised = patient_lists.serialised_patient_subrecords(
-            episodes, self.user, subrecords=[
-                models.Demographics,
-                models.Diagnosis,
-                Tagging
-            ]
-        )
-
-        s = serialised.values()[0]
-
-        self.assertIn(models.Demographics.get_api_name(), s)
-        self.assertNotIn(Tagging.get_api_name(), s)
-        self.assertNotIn(models.Diagnosis.get_api_name(), s)
-        self.assertEqual(
-            s[models.Demographics.get_api_name()][0]["first_name"], "Wilma"
-        )
-
-    def test_episode_subrecords(self):
-        episode = self.create_episode()
-        episode.set_tag_names(['something'], self.user)
-        episodes = Episode.objects.all()
-
-        serialised = patient_lists.serialised_episode_subrecords(
-            episodes, self.user, subrecords=[
-                models.Demographics,
-                models.Diagnosis,
-                Tagging
-            ]
-        )
-
-        s = serialised.values()[0]
-
-        self.assertIn(models.Diagnosis.get_api_name(), s)
-        self.assertNotIn(models.Demographics.get_api_name(), s)
-        self.assertNotIn(Tagging.get_api_name(), s)
-        self.assertEqual(
-            s[models.Diagnosis.get_api_name()][0]["condition"], "fever"
-        )
