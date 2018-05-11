@@ -156,4 +156,9 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   font-weight: 600;
   color: #cbc9c8; }
 
+.trends-panel {
+  min-height: 395px; }
+  .trends-panel .no-results {
+    padding-top: 120px; }
+
 /*# sourceMappingURL=elcid.css.map */
