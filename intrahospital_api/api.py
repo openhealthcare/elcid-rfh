@@ -5,7 +5,7 @@ from opal.core.views import json_response
 from opal import models as omodels
 from opal.core import subrecords
 from lab import models as lmodels
-from elcid.patient_lists import serialised
+from elcid.episode_serialization import serialize
 
 
 def patient_to_dict(patient, user):
@@ -15,7 +15,7 @@ def patient_to_dict(patient, user):
     ]
     subs.append(omodels.Tagging)
 
-    serialised_episodes = serialised(
+    serialised_episodes = serialize(
         patient.episode_set.all(), user, subs
     )
     d = {
