@@ -216,7 +216,7 @@ a.list-group-item {
   .c3-region.too-high{
     fill: fade-out($too-high, 0.5);
   }
-
+  
   .c3-region.too-low{
     fill: fade-out($too-low, 0.5);
   }
@@ -228,6 +228,10 @@ a.list-group-item {
   .too-low{
     color: $too-low;
   }
+}
+
+.overflow-x-scroll{
+  overflow-x: scroll;
 }
 
 .no-results{

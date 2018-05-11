@@ -19,7 +19,7 @@
         <tr>
           <th></th>
           <th class="col-md-2"></th>
-          <th class="text-center" ng-repeat="date in data.recent_dates">
+          <th class="text-center hidden-xs" ng-repeat="date in data.recent_dates">
             [[ date | shortDate ]]
           </th>
           <th class="text-center">
@@ -31,7 +31,7 @@
         <tr class="row" ng-repeat="item in data.obs_values">
           <td class="text-center col-md-2">
             [[ item.name ]]
-          <td class="text-center" ng-repeat="date in data.recent_dates">
+          <td class="text-center hidden-xs" ng-repeat="date in data.recent_dates">
             [[ item.latest_results[date] ]]
           </td>
           <td class="text-center">
