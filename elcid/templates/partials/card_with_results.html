@@ -42,7 +42,7 @@
                 {% include models.Antimicrobial.get_display_template %}
               </p>
             </div>
-            <div class="col-md-7 overflow-x-scroll">
+            <div class="col-md-7 overflow-x-auto">
               <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
               {% include "partials/lab_test_sparklines.html" with target="row" %}
             </div>
