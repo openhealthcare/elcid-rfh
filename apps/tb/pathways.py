@@ -40,16 +40,6 @@ class AddTbPatientPathway(AddPatientPathway):
         return patient, episode
 
 
-class TbStep(HelpTextStep):
-    def get_help_text_template(self):
-        entered = self.other_args.get("help_text_template", "").strip()
-
-        if not entered and self.model:
-            return "pathway/steps/help_text/{}.html".format(
-                self.model.get_api_name()
-            )
-
-
 class NewSubrecordStep(HelpTextStep):
     step_controller = "NewSubrecordStepCtrl"
     multiple = False
@@ -61,13 +51,17 @@ class TBConsultationPathway(pathways.PagePathway):
     template = "pathway/consultation_base.html"
 
     steps = [
-        TbStep(
+        HelpTextStep(
             template="pathway/steps/demographics_birth_place.html",
             icon="fa fa-user",
             display_name="Demographics",
-            model=models.Demographics
+            model=models.Demographics,
+            help_text_template="pathway/steps/help_text/demographics.html"
         ),
-        TbStep(model=models.ReferralRoute),
+        HelpTextStep(
+            model=models.ReferralRoute,
+            help_text_template="pathway/steps/help_text/referral_route.html"
+        ),
         HelpTextStep(
             model=tb_models.ContactDetails,
             help_text="This will be pulled in from Cerner"
@@ -79,11 +73,13 @@ class TBConsultationPathway(pathways.PagePathway):
         HelpTextStep(
             model=models.SymptomComplex,
             template="pathway/steps/symptom_complex.html",
+            help_text_template="pathway/steps/help_text/symptom_complex.html",
             step_controller="TbSymptomComplexCrtl",
             multiple=False,
         ),
-        TbStep(
+        HelpTextStep(
             model=tb_models.TBHistory,
+            help_text_template="pathway/steps/help_text/tb_history.html"
         ),
         HelpTextStep(
             model=tb_models.BCG,
@@ -130,16 +126,27 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
     template = "pathway/consultation_base.html"
 
     steps = [
-        TbStep(
+        HelpTextStep(
             template="pathway/steps/demographics_panel.html",
             icon="fa fa-user",
             display_name="Demographics",
             model=models.Demographics
         ),
-        TbStep(
+        HelpTextStep(
             model=models.Diagnosis,
             template="pathway/steps/tb_diagnosis.html",
             step_controller="TBDiagnosis",
+            help_text_template="pathway/steps/help_text/diagnosis.html"
+        ),
+
+        HelpTextStep(
+            display_name="Treatment Plan",
+            icon="fa fa-medkit",
+            # base_template="pathway/steps/treatment_plan_base.html",
+            # we use the base template instead
+            template="pathway/steps/tb_treatment.html",
+            step_controller="TBTreatmentCtrl",
+            help_text_template="pathway/steps/help_text/tb_treatment.html",
         ),
     ]
 

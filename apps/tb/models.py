@@ -88,6 +88,11 @@ class TBTreatmentCentre(lookuplists.LookupList):
     pass
 
 
+class Treatment(models.Treatment):
+    _angular_service = 'TreatmentRecord'
+    planned_end_date = fields.DateField(blank=True, null=True)
+
+
 class TBHistory(models.PatientSubrecord):
     """ Used if the person has clicked that they
         have a personal history of TB in the
@@ -216,6 +221,14 @@ class MantouxTest(models.PatientSubrecord):
 
     class Meta:
         abstract = True
+
+
+class TBMeta(models.EpisodeSubrecord):
+    _is_singleton = True
+    _advanced_searchable = False
+
+    contact_tracing_done = fields.BooleanField(default=False)
+    directly_observed_therapy = fields.BooleanField(default=False)
 
 
 class MantouxTestOne(MantouxTest):
