@@ -264,7 +264,7 @@ LOGGING = {
             'propagate': True,
         },
         'error_emailer': {
-            'handlers': ['mail_admins'],
+            'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },

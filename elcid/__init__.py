@@ -31,6 +31,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/investigations.js',
         # used in the blood culture forms
         'js/elcid/services/blood_culture_helper.js',
+        'js/elcid/services/exception_handler.js',
 
         'js/elcid/services/blood_culture_loader.js',
         'js/elcid/services/upstream_blood_culture_loader.js',

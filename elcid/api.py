@@ -1,10 +1,12 @@
 import datetime
+import logging
 from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from django.db.models import Q
+from rest_framework.response import Response
 from intrahospital_api import loader
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
@@ -545,6 +547,21 @@ class BloodCultureResultApi(viewsets.ViewSet):
         ))
 
 
+class ErrorEmailer(LoginRequiredViewset):
+    base_name = 'error_emailer'
+
+    def create(self, request):
+        logger = logging.getLogger('error_emailer')
+        exception = request.data["exception"]
+
+        # cause is often not set
+        cause = request.data.get("cause")
+        logger.error(
+            "exception: {}, cause: {}".format(exception, cause)
+        )
+        return Response({}, status=201)
+
+
 class DemographicsSearch(LoginRequiredViewset):
     base_name = 'demographics_search'
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
@@ -583,6 +600,7 @@ elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
+elcid_router.register(ErrorEmailer.base_name, ErrorEmailer)
 
 lab_test_router = OPALRouter()
 lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)
