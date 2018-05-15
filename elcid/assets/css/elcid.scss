@@ -246,3 +246,8 @@ a.list-group-item {
   font-weight: 600;
   color: $obsidian-light;
 }
+
+.star i{
+  color: lighten(#006c96, 10%);
+  font-size: 24px;
+}

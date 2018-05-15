@@ -13,5 +13,10 @@
       </div>
     </div>
   </div>
-  {% include models.SymptomComplex.get_form_template %}
+  {% select autofocus field="SymptomComplex.symptoms" multiple=True tagging=False help_text="If a symptom isn't in the list, add it in the details box" %}
+  <div ng-show="editing.symptom_complex.symptoms.indexOf('Lymph node swelling') !== -1">
+    {% include models.LymphNodeSwellingSite.get_form_template %}
+  </div>
+  {% select field="SymptomComplex.duration" %}
+  {% textarea field="SymptomComplex.details" %}
 </div>

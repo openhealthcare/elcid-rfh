@@ -11,6 +11,7 @@ class TbEpisode(episodes.EpisodeCategory):
     # contact has been referred either through contact screening
     # or a direct referral
     NEW_REFERRAL = "New Referral"
+    ASSESSED = "Assessed"
     ACTIVE_TB_TREATMENT = "Active TB Treatment"
     LATENT_TB_TREATMENT = "Latent TB Treatment"
     NTM_TREATMENT = "NTM Treatment"
@@ -25,6 +26,7 @@ class TbEpisode(episodes.EpisodeCategory):
     stages = [
         NEW_CONTACT,
         NEW_REFERRAL,
+        ASSESSED,
         ACTIVE_TB_TREATMENT,
         LATENT_TB_TREATMENT,
         NTM_TREATMENT,

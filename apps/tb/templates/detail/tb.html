@@ -2,118 +2,76 @@
 {% load forms %}
 <div class="row">
   <div class="col-md-12">
-    <tabset justified="true">
-      <tab heading="Patient Overview">
-        <div class="row">
-          <div class="col-md-6">
-            <div class="panel panel-active">
-              <div class="panel-heading">
-                <h3>
-                  {% icon "fa-user" %}
-                  Status
-                </h3>
-              </div>
-              <div class="panel-body">
-                <div class="row">
-                  <div ng-show="episode.stage" class="col-md-6">
-
-                    <b>[[ episode.stage ]]</b>
-                  </div>
-                  <div ng-show="!episode.stage" class="col-md-6">
-                    New Contact
-                  </div>
-                  <div class="col-md-6">
-                    <span ng-repeat="item in episode.referral_route">
-                      {% include models.ReferralRoute.get_display_template %}
-                    </span>
+    <div class="row">
+      <div class="col-md-8">
+        <div ng-hide="episode.stage === 'New Referral'">
+          {% record_panel models.ReferralRoute %}
+          {% record_panel models.PastMedicalHistory %}
+          {% record_panel models.SymptomComplex %}
+          {% record_panel models.SocialHistory %}
+          {% record_panel models.BCG %}
+          {% record_panel models.TBHistory %}
+          {% record_panel models.Travel %}
+          {% record_panel models.Antimicrobial %}
+          {% record_panel models.Observation %}
+          {% record_panel models.MantouxTest %}
+          {% record_panel models.Treatment %}
+        </div>
+        {% include "inline_forms/patient_consultation.html" %}
+        <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
+          <div class="panel-body">
+            <div class="patient-timeline-container">
+              <div class="row">
+                <div class="col-md-3 patient-timeline">
+                  <div class="patient-timeline-now">
+                    <div class="patient-timeline-now-text bg-secondary">
+                      Now
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            {% include "panels/risk_factors.html" %}
+              <svg class="speech-bubble-timeline-container">
+                <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
+                <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
+              </svg>
+              <div ng-repeat="item in episode.patient_consultation | orderBy:orderByDate" class="row content-offset-20">
 
-          </div>
-          <div class="col-md-6">
-            <div class="panel panel-active">
-              <div class="panel-heading">
-                <h3>Forms</h3>
-              </div>
-              <div class="panel-body">
-                <center class="content-offset-below-10">
-                  <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]"
-                     class="btn btn-primary">
-                    Initial Assessment
-                  </a>
-                </center>
-                <center>
-                  <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]"
-                     class="btn btn-primary">
-                     Active TB Treatment
-                  </a>
-                </center>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-6 col-md-push-3">
-            <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
-              <div class="panel-body">
-                <div class="patient-timeline-container">
-                  <div class="row">
-                    <div class="col-md-3 patient-timeline">
-                      <div class="patient-timeline-now">
-                        <div class="patient-timeline-now-text bg-secondary">
-                          Now
-                        </div>
-                      </div>
+                <div class="col-md-3 patient-timeline">
+                  <div class="patient-timeline-speech-bubble">
+                    <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
+                  </div>
+                  <div ng-show="item.when">
+                    <div class="patient-timeline-date">
+                      [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
                     </div>
                   </div>
-                  <svg class="speech-bubble-timeline-container">
-                    <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
-                    <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
-                  </svg>
-                  <div ng-repeat="item in episode.patient_consultation | orderBy:orderByDate" class="row content-offset-20">
-
-                    <div class="col-md-3 patient-timeline">
-                      <div class="patient-timeline-speech-bubble">
-                        <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
+                </div>
+                <div class="col-md-9">
+                  <div class="patient-timeline-discussion">
+                    <div class="row">
+                      <div class="col-sm-10 consultation-timeline-data-[[ $index ]]">
+                        <span ng-show="item.initials && item.initials.trim().length">
+                          <b>By: </b> [[item.initials]]
+                          <br />
+                        </span>
+                        <span ng-show="item.reason_for_interaction">
+                          <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
+                          <br />
+                        </span>
+                        <span ng-show="item.discussion">
+                          <b> Discussion: </b><div markdown="discussion"></div>
+                          <br />
+                        </span>
                       </div>
-                      <div ng-show="item.when">
-                        <div class="patient-timeline-date">
-                          [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-9">
-                      <div class="patient-timeline-discussion">
+                      <div class="col-sm-2">
                         <div class="row">
-                          <div class="col-sm-10 consultation-timeline-data-[[ $index ]]">
-                            <span ng-show="item.initials && item.initials.trim().length">
-                              <b>By: </b> [[item.initials]]
-                              <br />
-                            </span>
-                            <span ng-show="item.reason_for_interaction">
-                              <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
-                              <br />
-                            </span>
-                            <span ng-show="item.discussion">
-                              <b> Discussion: </b><div markdown="discussion"></div>
-                              <br />
-                            </span>
+                          <div class="col-md-12">
+                            <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(item, 'patient_consultation')"></i>
                           </div>
-                          <div class="col-sm-2">
-                            <div class="row">
-                              <div class="col-md-12">
-                                <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(item, 'patient_consultation')"></i>
-                              </div>
-                            </div>
-                            <div class="row content-offset-10">
-                              <div class="col-md-12">
-                                <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".consultation-timeline-data-[[ $index ]]"></i>
-                              </div>
-                            </div>
+                        </div>
+                        <div class="row content-offset-10">
+                          <div class="col-md-12">
+                            <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".consultation-timeline-data-[[ $index ]]"></i>
                           </div>
                         </div>
                       </div>
@@ -122,30 +80,28 @@
                 </div>
               </div>
             </div>
-            {% include "inline_forms/patient_consultation.html" %}
           </div>
         </div>
-      </tab>
-      <tab heading="Detailed History">
-        <div class="row">
-          <div class="col-md-8">
-            {% record_panel models.ContactDetails %}
-            {% record_panel models.ReferralRoute %}
-            {% record_panel models.PastMedicalHistory %}
-            {% record_panel models.SymptomComplex %}
-            {% record_panel models.SocialHistory %}
-            {% record_panel models.BCG %}
-            {% record_panel models.TBHistory %}
-            {% record_panel models.Travel %}
-            {% record_panel models.Antimicrobial %}
-            {% record_panel models.Observation %}
-            {% record_panel models.MantouxTestOne %}
-            {% record_panel models.MantouxTestTwo %}
-            {% record_panel models.Treatment %}
-            {% record_timeline models.PatientConsultation "when" %}
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3>
+              Forms
+            </h3>
+          </div>
+          <div class="list-group">
+            <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
+              Initial Assessment
+              <div ng-show="episode.stage !== 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
+            </a>
+            <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
+              Active TB Treatment
+              <div ng-show="episode.stage == 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
+            </a>
           </div>
         </div>
-      </tab>
-    </tabset>
+      </div>
+    </div>
   </div>
 </div>

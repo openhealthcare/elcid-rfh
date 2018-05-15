@@ -20,6 +20,7 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/new_subrecord_step.js',
             'js/tb/controllers/tb_diagnosis.js',
             'js/tb/controllers/tb_treatment.js',
+            'js/tb/controllers/mantoux_test.js'
             # 'js/tb/services/larry.js',
         ],
         'opal.services': [

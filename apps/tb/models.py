@@ -88,6 +88,14 @@ class TBTreatmentCentre(lookuplists.LookupList):
     pass
 
 
+class LymphNodeSwellingSiteOptions(lookuplists.LookupList):
+    pass
+
+
+class LymphNodeSwellingSite(models.EpisodeSubrecord):
+    site = ForeignKeyOrFreeText(LymphNodeSwellingSiteOptions)
+
+
 class Treatment(models.Treatment):
     _angular_service = 'TreatmentRecord'
     planned_end_date = fields.DateField(blank=True, null=True)
@@ -213,14 +221,15 @@ class MantouxTest(models.PatientSubrecord):
     batch_number = fields.CharField(
         max_length=256, blank=True, default=""
     )
-    expiry_date = fields.DateField()
-    induration = fields.IntegerField(verbose_name="Induration (mm)")
+    expiry_date = fields.DateField(blank=True, null=True)
+    induration = fields.IntegerField(
+        verbose_name="Induration (mm)",
+        blank=True,
+        null=True
+    )
     site = fields.CharField(
         max_length=256, blank=True, default="", choices=MANTOUX_SITES
     )
-
-    class Meta:
-        abstract = True
 
 
 class TBMeta(models.EpisodeSubrecord):
@@ -229,13 +238,3 @@ class TBMeta(models.EpisodeSubrecord):
 
     contact_tracing_done = fields.BooleanField(default=False)
     directly_observed_therapy = fields.BooleanField(default=False)
-
-
-class MantouxTestOne(MantouxTest):
-    class Meta:
-        verbose_name = "Mantoux(1)"
-
-
-class MantouxTestTwo(MantouxTest):
-    class Meta:
-        verbose_name = "Mantoux(2)"

@@ -163,4 +163,8 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   font-weight: 600;
   color: #cbc9c8; }
 
+.star i {
+  color: #0091c9;
+  font-size: 24px; }
+
 /*# sourceMappingURL=elcid.css.map */

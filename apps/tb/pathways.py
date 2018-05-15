@@ -64,7 +64,7 @@ class TBConsultationPathway(pathways.PagePathway):
         ),
         HelpTextStep(
             model=tb_models.ContactDetails,
-            help_text="This will be pulled in from Cerner"
+            help_text_template="pathway/steps/help_text/contact_details.html"
         ),
         HelpTextStep(
             model=tb_models.NextOfKin,
@@ -97,12 +97,9 @@ class TBConsultationPathway(pathways.PagePathway):
             multiple=False
         ),
         NewSubrecordStep(
-            model=tb_models.MantouxTestOne,
-            multiple=False
-        ),
-        NewSubrecordStep(
-            model=tb_models.MantouxTestTwo,
-            multiple=False
+            model=tb_models.MantouxTest,
+            template="pathway/steps/mantoux_test.html",
+            step_controller="MantouxTestCrtl",
         ),
         NewSubrecordStep(
             model=tb_models.PatientConsultation,
