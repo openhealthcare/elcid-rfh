@@ -1,0 +1,19 @@
+_LAB_TEST_TAGS = {
+    "BIOCHEMISTRY": [
+        "BONE PROFILE",
+        "UREA AND ELECTROLYTES",
+        "LIVER PROFILE",
+        "IMMUNOGLOBULINS",
+        "C REACTIVE PROTEIN",
+        "RENAL",
+    ],
+    "HAEMATOLOGY": [
+        "FULL BLOOD COUNT", "HAEMATINICS", "HBA1C"
+    ],
+    "ENDOCRINOLOGY": [
+        "CORTISOL AT 9AM", "THYROID FUNCTION TESTS"
+    ],
+    "URINE": [
+        "OSMALITY", "PROTEIN ELECTROPHORESIS"
+    ],
+}
