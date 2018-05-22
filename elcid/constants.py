@@ -1468,7 +1468,7 @@ _LAB_TEST_TAGS = {
         "STD SCREEN - TV",
     ],
     "UNTAGGED": [
-    ]
+    ],
     # sample test results for these may aid in identification
     "AMBIGUOUS": [
         "COM3 TEST",
