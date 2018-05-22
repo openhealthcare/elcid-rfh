@@ -23,7 +23,7 @@ except ImportError:
         }
     }
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 AUTOCOMPLETE_SEARCH = True
 
