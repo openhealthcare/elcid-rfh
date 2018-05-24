@@ -27,6 +27,7 @@ class PatientLoad(models.Model):
     RUNNING = "running"
     FAILURE = "failure"
     SUCCESS = "success"
+    CANCELLED = "cancelled"
 
     state = models.CharField(
         max_length=255,

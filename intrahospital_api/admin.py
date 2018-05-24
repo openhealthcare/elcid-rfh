@@ -68,8 +68,7 @@ class PatientAdmin(OldPatientAdmin):
     )
 
     def refresh_lab_tests(self, request, queryset):
-        for patient in queryset:
-            loader.load_patient(patient, async=False)
+        loader.cancel_and_load(queryset)
 
     def upstream_lab_results(self, obj):
         hospital_number = obj.demographics_set.first().hospital_number
@@ -119,8 +118,7 @@ class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
         patients = omodels.Patient.objects.filter(
             id__in=queryset.values_list("patient_id", flat=True)
         )
-        for patient in patients:
-            loader.load_patient(patient, async=False)
+        loader.cancel_and_load(patients)
 
 
 admin.site.register(rmodels.Version, admin.ModelAdmin)

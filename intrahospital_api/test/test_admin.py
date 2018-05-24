@@ -91,6 +91,12 @@ raw/results/123</a>"
             r
         )
 
+    @mock.patch("intrahospital_api.loader.cancel_and_load")
+    def test_refresh_lab_tests(self, cancel_and_load):
+        patients = omodels.Patient.objects.all()
+        self.admin.refresh_lab_tests(mock.MagicMock(), patients)
+        cancel_and_load.assert_called_once_with(patients)
+
 
 class InitialPatientLoadTestCase(OpalTestCase):
     def setUp(self, *args, **kwargs):
@@ -123,8 +129,8 @@ class InitialPatientLoadTestCase(OpalTestCase):
             self.get_ipl()), "123 (Donald Duck)"
         )
 
-    @mock.patch("intrahospital_api.admin.loader.load_patient")
-    def test_refresh_lab_tests(self, load_patient):
+    @mock.patch("intrahospital_api.admin.loader.cancel_and_load")
+    def test_refresh_lab_tests(self, cancel_and_load):
         patient_2, _ = self.new_patient_and_episode_please()
         ipl_2 = imodels.InitialPatientLoad(
             patient=patient_2
@@ -133,7 +139,7 @@ class InitialPatientLoadTestCase(OpalTestCase):
         self.admin.refresh_lab_tests(
             mock.MagicMock(), imodels.InitialPatientLoad.objects.all()
         )
-        self.assertEqual(load_patient.call_args_list[0][0][0], self.patient)
-        self.assertEqual(load_patient.call_args_list[0][1]["async"], False)
-        self.assertEqual(load_patient.call_args_list[1][0][0], patient_2)
-        self.assertEqual(load_patient.call_args_list[1][1]["async"], False)
+        ids = cancel_and_load.call_args[0][0].values_list("id", flat=True)
+        self.assertEqual(
+            set(ids), set([self.patient.id, patient_2.id])
+        )

@@ -127,6 +127,16 @@ def load_demographics(hospital_number):
     return result
 
 
+def cancel_and_load(patients):
+    """
+    cancels an existing loads and kick off a new one asynchronously
+    """
+    ipls = models.InitialPatientLoad.objects.filter(patient__in=patients)
+    ipls.update(state=models.InitialPatientLoad.CANCELLED)
+    for patient in patients:
+        load_patient(patient, async=False)
+
+
 def load_patient(patient, async=None):
     """
         Load all the things for a patient.
