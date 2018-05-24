@@ -92,6 +92,20 @@ class PatientAdmin(OldPatientAdmin):
 
 class PatientLoadAdmin(admin.ModelAdmin):
     list_filter = ['state']
+    ordering = ('-started',)
+
+
+class BatchPatientLoadAdmin(PatientLoadAdmin):
+    list_display = ["__str__", "started", "stopped", "state"]
+
+
+class InitialPatientLoadAdmin(PatientLoadAdmin):
+    list_display = [
+        "__str__", "hospital_number", "started", "stopped", "state"
+    ]
+
+    def hospital_number(self, obj):
+        return obj.patient.demographics_set.first().hospital_number
 
 
 admin.site.register(rmodels.Version, admin.ModelAdmin)
@@ -99,5 +113,5 @@ admin.site.register(rmodels.Revision, admin.ModelAdmin)
 admin.site.unregister(omodels.Patient)
 admin.site.register(omodels.Patient, PatientAdmin)
 admin.site.unregister(imodels.InitialPatientLoad)
-admin.site.register(imodels.BatchPatientLoad, PatientLoadAdmin)
-admin.site.register(imodels.InitialPatientLoad, PatientLoadAdmin)
+admin.site.register(imodels.BatchPatientLoad, BatchPatientLoadAdmin)
+admin.site.register(imodels.InitialPatientLoad, InitialPatientLoadAdmin)

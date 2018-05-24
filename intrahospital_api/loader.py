@@ -90,9 +90,9 @@ def _initial_load():
 
 
 def log_errors(name):
-    email_logger = logging.getLogger('error_emailer')
-    email_logger.error("unable to run {}".format(name))
-    logger.error(traceback.format_exc())
+    logger.error("unable to run {} \n {}".format(
+        name, traceback.format_exc()
+    ))
 
 
 def any_loads_running():
@@ -156,6 +156,23 @@ def async_task(patient, patient_load):
     tasks.load.delay(patient, patient_load)
 
 
+def test_long_running_initial_loads():
+    """
+    Initial Patient Loads should take < 5 mins. If they take longer than
+    10 mins I would like an email please
+    """
+    ipls = models.InitialPatientLoad.objects.filter(
+        state=models.InitialPatientLoad.RUNNING
+    )
+    now = timezone.now()
+    for ipl in ipls:
+        diff = now - ipl.started
+        if diff.seconds > 600:
+            err_str = "Initial Patient Load {} has been running for {} seconds"
+            err_str = err_str.format(ipl.id, diff.seconds)
+            logger.error(err_str)
+
+
 def good_to_go():
     """ Are we good to run a batch load, returns True if we should.
         runs a lot of sanity checks.
@@ -164,7 +181,12 @@ def good_to_go():
         # an inital load is required via ./manage.py initial_test_load
         raise BatchLoadError(
             "We don't appear to have had an initial load run!"
+
         )
+
+    # give us an email if any initial patient loads have been running
+    # for a while
+    test_long_running_initial_loads()
 
     current_running = models.BatchPatientLoad.objects.filter(
         Q(stopped=None) | Q(state=models.BatchPatientLoad.RUNNING)

@@ -269,7 +269,7 @@ LOGGING = {
             'propagate': True,
         },
         'intrahospital_api': {
-            'handlers': ['console'],
+            'handlers': ['console', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
         },
