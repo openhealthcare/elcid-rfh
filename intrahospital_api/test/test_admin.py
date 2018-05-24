@@ -3,6 +3,7 @@ from django.contrib.admin.sites import AdminSite
 from opal.core.test import OpalTestCase
 from opal import models as omodels
 from intrahospital_api import admin
+from intrahospital_api import models as imodels
 
 
 class TaggingListFilterTestCase(OpalTestCase):
@@ -89,3 +90,50 @@ raw/results/123</a>"
             self.admin.upstream_blood_culture_results(self.patient),
             r
         )
+
+
+class InitialPatientLoadTestCase(OpalTestCase):
+    def setUp(self, *args, **kwargs):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.site = AdminSite()
+        self.admin = admin.InitialPatientLoadAdmin(
+            imodels.InitialPatientLoad, self.site
+        )
+        self.ipl = imodels.InitialPatientLoad(
+            patient=self.patient
+        )
+        self.ipl.start()
+
+    def get_ipl(self):
+        return imodels.InitialPatientLoad.objects.get(
+            patient=self.patient
+        )
+
+    def test_patient_details(self):
+        demographics_set = self.patient.demographics_set
+        self.assertEqual(self.admin.patient_details(self.get_ipl()), " ( )")
+        demographics_set.update(hospital_number="123")
+        self.assertEqual(self.admin.patient_details(self.get_ipl()), "123 ( )")
+        demographics_set.update(first_name="Donald")
+        self.assertEqual(self.admin.patient_details(
+            self.get_ipl()), "123 (Donald )"
+        )
+        demographics_set.update(surname="Duck")
+        self.assertEqual(self.admin.patient_details(
+            self.get_ipl()), "123 (Donald Duck)"
+        )
+
+    @mock.patch("intrahospital_api.admin.loader.load_patient")
+    def test_refresh_lab_tests(self, load_patient):
+        patient_2, _ = self.new_patient_and_episode_please()
+        ipl_2 = imodels.InitialPatientLoad(
+            patient=patient_2
+        )
+        ipl_2.start()
+        self.admin.refresh_lab_tests(
+            mock.MagicMock(), imodels.InitialPatientLoad.objects.all()
+        )
+        self.assertEqual(load_patient.call_args_list[0][0][0], self.patient)
+        self.assertEqual(load_patient.call_args_list[0][1]["async"], False)
+        self.assertEqual(load_patient.call_args_list[1][0][0], patient_2)
+        self.assertEqual(load_patient.call_args_list[1][1]["async"], False)

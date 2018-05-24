@@ -120,8 +120,7 @@ class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
             id__in=queryset.values_list("patient_id", flat=True)
         )
         for patient in patients:
-            patient.initialpatientload_set.first().delete()
-            loader.load_patient(patient, async=True)
+            loader.load_patient(patient, async=False)
 
 
 admin.site.register(rmodels.Version, admin.ModelAdmin)
