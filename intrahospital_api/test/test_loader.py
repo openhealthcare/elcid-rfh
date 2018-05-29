@@ -256,6 +256,17 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
         super(LoadLabTestsForPatientTestCase, self).setUp(*args, **kwargs)
         self.patient, _ = self.new_patient_and_episode_please()
 
+    def test_cancel_running_initial_patient_loads(
+        self, load_lab_tests, async
+    ):
+        ipl = imodels.InitialPatientLoad(patient=self.patient)
+        ipl.start()
+        loader.load_patient(self.patient, async=False)
+        self.assertTrue(
+            imodels.InitialPatientLoad.objects.get(id=ipl.id).state,
+            imodels.InitialPatientLoad.CANCELLED
+        )
+
     @override_settings(ASYNC_API=True)
     def test_load_patient_arg_override_settings_True(
         self, load_lab_tests, async

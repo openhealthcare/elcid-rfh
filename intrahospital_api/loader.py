@@ -140,6 +140,12 @@ def load_patient(patient, async=None):
     if async is None:
         async = settings.ASYNC_API
 
+    models.InitialPatientLoad.objects.filter(
+        state=models.InitialPatientLoad.RUNNING
+    ).update(
+        state=models.InitialPatientLoad.CANCELLED
+    )
+
     patient_load = models.InitialPatientLoad(
         patient=patient,
     )

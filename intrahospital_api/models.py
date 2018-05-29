@@ -25,11 +25,19 @@ class PatientLoad(models.Model):
     RUNNING = "running"
     FAILURE = "failure"
     SUCCESS = "success"
+    CANCELLED = "cancelled"
+    STATE_CHOICES = (
+        (RUNNING, RUNNING,),
+        (FAILURE, FAILURE,),
+        (SUCCESS, SUCCESS,),
+        (CANCELLED, CANCELLED,),
+    )
 
     state = models.CharField(
         max_length=255,
         blank=True,
-        null=True
+        null=True,
+        choices=STATE_CHOICES
     )
 
     started = models.DateTimeField()
