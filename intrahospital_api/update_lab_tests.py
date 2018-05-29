@@ -1,10 +1,12 @@
 from elcid import models as emodels
 from elcid.utils import timing
 from intrahospital_api import get_api
+import logging
 
 api = get_api()
 
 
+@timing
 def update_tests(patient, lab_tests):
     """
         takes in all lab tests, saves those
@@ -13,6 +15,9 @@ def update_tests(patient, lab_tests):
     """
     for lab_test in lab_tests:
         lab_model = get_model_for_lab_test_type(patient, lab_test)
+        logging.info("updating lab test {} for patient {}".format(
+            lab_test["external_identifier"], patient.id
+        ))
         lab_model.update_from_api_dict(patient, lab_test, api.user)
 
 

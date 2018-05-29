@@ -9,7 +9,6 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 
 api = get_api()
-logger = logging.getLogger('intrahospital_api')
 
 
 def update_external_demographics(
@@ -51,7 +50,7 @@ def reconcile_patient_demographics(patient):
         demographics.hospital_number
     )
     if not external_demographics_dict:
-        logger.info("unable to find {}".format(
+        logging.info("unable to find {}".format(
             demographics.hospital_number
         ))
         return

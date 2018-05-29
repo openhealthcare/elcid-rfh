@@ -56,7 +56,6 @@ from intrahospital_api import update_demographics
 from intrahospital_api import update_lab_tests
 
 api = get_api()
-logger = logging.getLogger('intrahospital_api')
 
 
 @timing
@@ -85,14 +84,14 @@ def _initial_load():
     total = patients.count()
 
     for iterator, patient in enumerate(patients.all()):
-        logger.info("running {}/{}".format(iterator+1, total))
+        logging.info("running {}/{}".format(iterator+1, total))
         load_patient(patient, async=False)
 
 
 def log_errors(name):
     email_logger = logging.getLogger('error_emailer')
     email_logger.error("unable to run {}".format(name))
-    logger.error(traceback.format_exc())
+    logging.error(traceback.format_exc())
 
 
 def any_loads_running():
@@ -118,7 +117,7 @@ def load_demographics(hospital_number):
         result = api.demographics(hospital_number)
     except:
         stopped = timezone.now()
-        logger.info("demographics load failed in {}".format(
+        logging.info("demographics load failed in {}".format(
             (stopped - started).seconds
         ))
         log_errors("load_demographics")
@@ -189,7 +188,7 @@ def good_to_go():
         # Examples of when this might happen are when we've just done a
         # deployment.
         if time_ago.seconds < 600:
-            logger.info(
+            logging.info(
                 "batch still running after {} seconds, skipping".format(
                     time_ago.seconds
                 )
@@ -200,7 +199,7 @@ def good_to_go():
                 # we expect the inital batch patient load to take ages
                 # as its the first and runs the initial load
                 # so cut it some slack
-                logger.info(
+                logging.info(
                     "batch still running after {} seconds, but its the first \
 load".format(time_ago.seconds)
                 )
@@ -332,7 +331,11 @@ def update_from_batch(data_deltas):
         update_patient_from_batch(demographics_set, data_delta)
 
 
-def async_load_patient(patient, patient_load):
+def async_load_patient(patient_id, patient_load_id):
+    patient = Patient.objects.get(id=patient_id)
+    patient_load = models.InitialPatientLoad.objects.get(
+        id=patient_load_id
+    )
     try:
         _load_patient(patient, patient_load)
     except:
