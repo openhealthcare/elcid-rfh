@@ -236,7 +236,7 @@ def batch_load(force=False):
     batch = models.BatchPatientLoad()
     batch.start()
     try:
-        _batch_load()
+        _batch_load(batch)
     except:
         batch.failed()
         log_errors("batch load")
@@ -285,7 +285,7 @@ def get_batch_start_time():
 
 
 @timing
-def _batch_load():
+def _batch_load(batch):
     started = get_batch_start_time()
 
     # update the non reconciled
@@ -293,6 +293,10 @@ def _batch_load():
 
     data_deltas = api.data_deltas(started)
     update_from_batch(data_deltas)
+    count = 0
+    for data_delta in data_deltas:
+        count += len(data_delta["lab_tests"])
+    batch.count = count
 
 
 @transaction.atomic
@@ -355,9 +359,14 @@ def _load_patient(patient, patient_load):
         ).delete()
 
         results = api.results_for_hospital_number(hospital_number)
+        patient_load.count = len(results)
         update_lab_tests.update_tests(patient, results)
-        update_demographics.update_patient_demographics(patient)
+        demographics = api.demographics(
+            patient.demographics_set.first().hospital_number
+        )
+        update_demographics.update_patient_demographics(patient, demographics)
     except:
+        logging.info(traceback.format_exc())
         patient_load.failed()
         raise
     else:

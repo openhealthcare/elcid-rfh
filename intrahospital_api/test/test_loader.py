@@ -469,21 +469,28 @@ class BatchLoadTestCase(ApiTestCase):
 
 class _BatchLoadTestCase(ApiTestCase):
     @mock.patch.object(loader.api, "data_deltas")
-    @mock.patch('intrahospital_api.loader.update_demographics.reconcile_all_demographics')
+    @mock.patch(
+        'intrahospital_api.loader.update_demographics.reconcile_all_demographics'
+    )
     @mock.patch('intrahospital_api.loader.update_from_batch')
     def test_batch_load(
         self, update_from_batch, reconcile_all_demographics, data_deltas
     ):
         now = timezone.now()
-        imodels.BatchPatientLoad.objects.create(
+        batch_load = imodels.BatchPatientLoad.objects.create(
             state=imodels.BatchPatientLoad.SUCCESS,
             started=now
         )
-        data_deltas.return_value = "something"
-        loader._batch_load()
+        data_deltas_dict = [dict(
+            demographcis=dict(hospital_number="1"),
+            lab_tests=[dict(external_identifier="123")]
+        )]
+        data_deltas.return_value = data_deltas_dict
+        loader._batch_load(batch_load)
         reconcile_all_demographics.assert_called_once_with()
         data_deltas.assert_called_once_with(now)
-        update_from_batch.assert_called_once_with("something")
+        update_from_batch.assert_called_once_with(data_deltas_dict)
+        self.assertEqual(batch_load.count, 1)
 
 
 @mock.patch('intrahospital_api.loader.update_patient_from_batch')
@@ -590,6 +597,65 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         ][0]
         self.assertEqual(
             observation["result"], "Positive"
+        )
+
+
+@mock.patch("intrahospital_api.loader.api")
+class _LoadPatientTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        super(_LoadPatientTestCase, self).setUp(*args, **kwargs)
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.ipl = imodels.InitialPatientLoad(patient=self.patient)
+        self.ipl.start()
+        self.demographics = {
+            "hospital_number": "123",
+            "first_name": "Jane"
+        }
+
+        self.lab_tests = [{
+            "external_identifier": "234",
+            "test_name": "some_test",
+            "observations": [{
+                "observation_number": "345",
+                "result": "Positive"
+            }]
+        }]
+
+    def test_success(self, api):
+        api.results_for_hospital_number.return_value = self.lab_tests
+        api.demographics.return_value = self.demographics
+        loader._load_patient(self.patient, self.ipl)
+        demographics = self.patient.demographics_set.first()
+        self.assertEqual(
+            demographics.first_name, "Jane"
+        )
+        self.assertEqual(
+            demographics.hospital_number, "123"
+        )
+        lab_test = self.patient.labtest_set.get()
+        self.assertEqual(
+            lab_test.external_identifier, "234"
+        )
+        self.assertEqual(self.ipl.state, self.ipl.SUCCESS)
+        self.assertTrue(bool(self.ipl.started))
+        self.assertTrue(bool(self.ipl.stopped))
+        self.assertEqual(
+            self.ipl.count, 1
+        )
+
+    @mock.patch("intrahospital_api.loader.update_demographics")
+    @mock.patch("intrahospital_api.loader.logging")
+    def test_fail(self, logging, update_demographics, api):
+        upd = update_demographics.update_patient_demographics
+        upd.side_effect = ValueError("Boom")
+        with self.assertRaises(ValueError):
+            loader._load_patient(self.patient, self.ipl)
+        self.assertTrue(logging.info.called)
+        self.assertEqual(self.ipl.state, self.ipl.FAILURE)
+        self.assertTrue(bool(self.ipl.started))
+        self.assertTrue(bool(self.ipl.stopped))
+        self.assertEqual(
+            self.ipl.count, 0
         )
 
 

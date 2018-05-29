@@ -173,7 +173,6 @@ class ReconcilePatientDemographicsTestCase(ApiTestCase):
         )
 
 
-@mock.patch.object(update_demographics.api, 'demographics')
 class UpdatePatientDemographicsTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(UpdatePatientDemographicsTestCase, self).setUp(*args, **kwargs)
@@ -184,15 +183,17 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         demographics.updated = None
         demographics.save()
 
-    def test_update_patient_demographics_have_changed(self, demographics):
-        demographics.return_value = dict(first_name="Janey")
-        update_demographics.update_patient_demographics(self.patient)
+    def test_update_patient_demographics_have_changed(self):
+        update_demographics.update_patient_demographics(
+            self.patient, dict(first_name="Janey")
+        )
         self.assertEqual(
             self.patient.demographics_set.first().first_name,
             "Janey"
         )
 
-    def test_update_patient_demographics_have_not_changed(self, demographics):
-        demographics.return_value = dict(first_name="Jane")
-        update_demographics.update_patient_demographics(self.patient)
+    def test_update_patient_demographics_have_not_changed(self):
+        update_demographics.update_patient_demographics(
+            self.patient, dict(first_name="Jane")
+        )
         self.assertIsNone(self.patient.demographics_set.first().updated)

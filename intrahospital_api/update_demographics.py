@@ -95,14 +95,9 @@ def have_demographics_changed(
         return not upstream_demographics == our_dict
 
 
-def update_patient_demographics(patient, upstream_demographics_dict=None):
+def update_patient_demographics(patient, upstream_demographics_dict):
     """ Updates a patient with the upstream demographics, if they have changed.
     """
-    if upstream_demographics_dict is None:
-        upstream_demographics_dict = api.demographics(
-            patient.demographics_set.first().hospital_number
-        )
-
     demographics = patient.demographics_set.get()
     if have_demographics_changed(
         upstream_demographics_dict, demographics

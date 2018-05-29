@@ -36,6 +36,7 @@ class PatientLoad(models.Model):
     stopped = models.DateTimeField(
         blank=True, null=True
     )
+
     count = models.IntegerField(
         blank=True, null=True
     )
