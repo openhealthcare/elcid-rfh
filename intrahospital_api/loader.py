@@ -161,6 +161,17 @@ def async_task(patient, patient_load):
     tasks.load.delay(patient, patient_load)
 
 
+def check_for_long_running_initial_patient_loads():
+    an_hour_ago = timezone.now() - datetime.timedelta(hours=1)
+    running_qs = models.InitialPatientLoad.objects.filter(
+        state=models.InitialPatientLoad.RUNNING
+    ).filter(
+        started__lte=an_hour_ago
+    )
+    if running_qs.exists():
+        log_errors("We have long running initial patient loads")
+
+
 def good_to_go():
     """ Are we good to run a batch load, returns True if we should.
         runs a lot of sanity checks.

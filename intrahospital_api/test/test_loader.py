@@ -435,6 +435,55 @@ class GoodToGoTestCase(ApiTestCase):
 
 
 @mock.patch("intrahospital_api.loader.log_errors")
+class CheckForLongRunningInitialPatientLoadsTestCase(ApiTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def create_ipl(self, state, started=None, stopped=None):
+        ipl = imodels.InitialPatientLoad(patient=self.patient)
+        ipl.state = state
+        ipl.started = started
+        ipl.stopped = stopped
+        ipl.save()
+
+    def test_long_running_ipl_found(self, log_errors):
+        four_hours_ago = timezone.now() - datetime.timedelta(hours=4)
+        self.create_ipl(
+            imodels.InitialPatientLoad.RUNNING,
+            started=four_hours_ago
+        )
+        loader.check_for_long_running_initial_patient_loads()
+        log_errors.assert_called_once_with(
+            "We have long running initial patient loads"
+        )
+
+    def test_no_ipls(self, log_errors):
+        loader.check_for_long_running_initial_patient_loads()
+        self.assertFalse(log_errors.called)
+
+    def test_recent_ipl_finished(self, log_errors):
+        recent_start = timezone.now() - datetime.timedelta(seconds=200)
+        recent_stop = timezone.now() - datetime.timedelta(seconds=100)
+        state = imodels.InitialPatientLoad.SUCCESS
+        self.create_ipl(
+            state,
+            started=recent_start,
+            stopped=recent_stop
+        )
+        loader.check_for_long_running_initial_patient_loads()
+        self.assertFalse(log_errors.called)
+
+    def test_long_running_ipl_cancelled(self, log_errors):
+        four_hours_ago = timezone.now() - datetime.timedelta(hours=4)
+        self.create_ipl(
+            imodels.InitialPatientLoad.CANCELLED,
+            started=four_hours_ago
+        )
+        loader.check_for_long_running_initial_patient_loads()
+        self.assertFalse(log_errors.called)
+
+
+@mock.patch("intrahospital_api.loader.log_errors")
 @mock.patch("intrahospital_api.loader._batch_load")
 @mock.patch("intrahospital_api.loader.good_to_go")
 class BatchLoadTestCase(ApiTestCase):
