@@ -69,7 +69,7 @@ def initial_load():
         _initial_load()
     except:
         batch.failed()
-        log_errors("initial_load")
+        logging.error("Unable to run initial_load")
         raise
     else:
         batch.complete()
@@ -86,12 +86,6 @@ def _initial_load():
     for iterator, patient in enumerate(patients.all()):
         logging.info("running {}/{}".format(iterator+1, total))
         load_patient(patient, async=False)
-
-
-def log_errors(name):
-    email_logger = logging.getLogger('error_emailer')
-    email_logger.error("unable to run {}".format(name))
-    logging.error(traceback.format_exc())
 
 
 def any_loads_running():
@@ -120,7 +114,7 @@ def load_demographics(hospital_number):
         logging.info("demographics load failed in {}".format(
             (stopped - started).seconds
         ))
-        log_errors("load_demographics")
+        logging.error("Unable to run load_demographics")
         return
 
     return result
@@ -169,7 +163,9 @@ def check_for_long_running_initial_patient_loads():
         started__lte=an_hour_ago
     )
     if running_qs.exists():
-        log_errors("We have long running initial patient loads")
+        logging.error(
+            "We have long running initial patient loads"
+        )
 
 
 def good_to_go():
@@ -245,7 +241,7 @@ def batch_load(force=False):
         try:
             all_set = good_to_go()
         except:
-            log_errors("batch load")
+            logging.error("Unable to run batch load")
 
         if not all_set:
             return
@@ -256,7 +252,7 @@ def batch_load(force=False):
         _batch_load(batch)
     except:
         batch.failed()
-        log_errors("batch load")
+        logging.error("Unable to run batch load")
     else:
         batch.complete()
 
@@ -360,7 +356,7 @@ def async_load_patient(patient_id, patient_load_id):
     try:
         _load_patient(patient, patient_load)
     except:
-        log_errors("_load_patient")
+        logging.error("Unable to run _load_patient")
         raise
 
 

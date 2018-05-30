@@ -19,27 +19,27 @@ class ApiTestCase(OpalTestCase):
 
 
 @mock.patch("intrahospital_api.loader._initial_load")
-@mock.patch("intrahospital_api.loader.log_errors")
+@mock.patch("intrahospital_api.loader.logging")
 class InitialLoadTestCase(ApiTestCase):
-    def test_successful_load(self, log_errors, _initial_load):
+    def test_successful_load(self, logging, _initial_load):
         loader.initial_load()
         _initial_load.assert_called_once_with()
-        self.assertFalse(log_errors.called)
+        self.assertFalse(logging.error.called)
         batch_load = imodels.BatchPatientLoad.objects.get()
         self.assertEqual(batch_load.state, batch_load.SUCCESS)
         self.assertTrue(batch_load.started < batch_load.stopped)
 
-    def test_failed_load(self, log_errors, _initial_load):
+    def test_failed_load(self, logging, _initial_load):
         _initial_load.side_effect = ValueError("Boom")
         with self.assertRaises(ValueError):
             loader.initial_load()
         _initial_load.assert_called_once_with()
-        log_errors.assert_called_once_with("initial_load")
+        logging.error.assert_called_once_with("Unable to run initial_load")
         batch_load = imodels.BatchPatientLoad.objects.get()
         self.assertEqual(batch_load.state, batch_load.FAILURE)
         self.assertTrue(batch_load.started < batch_load.stopped)
 
-    def test_deletes_existing(self, log_errors, _initial_load):
+    def test_deletes_existing(self, logging, _initial_load):
         patient, _ = self.new_patient_and_episode_please()
         imodels.InitialPatientLoad.objects.create(
             patient=patient, started=timezone.now()
@@ -172,20 +172,6 @@ class GetBatchStartTime(ApiTestCase):
         )
 
 
-class LogErrorsTestCase(ApiTestCase):
-    @mock.patch(
-        "intrahospital_api.loader.logging.getLogger",
-    )
-    @mock.patch("intrahospital_api.loader.logging.error")
-    def test_log_errors(self, err, getLogger):
-        loader.log_errors("blah")
-        getLogger.assert_called_once_with("error_emailer")
-        getLogger().error.assert_called_once_with(
-            "unable to run blah"
-        )
-        self.assertTrue(err.called)
-
-
 class AnyLoadsRunningTestCase(ApiTestCase):
     def setUp(self):
         super(AnyLoadsRunningTestCase, self).setUp()
@@ -232,14 +218,13 @@ class LoadDemographicsTestCase(ApiTestCase):
         self.assertEqual(result, "success")
 
     @mock.patch.object(loader.api, 'demographics')
-    @mock.patch('intrahospital_api.loader.logging.info')
-    @mock.patch('intrahospital_api.loader.log_errors')
-    def test_failed(self, log_err, info, demographics):
+    @mock.patch('intrahospital_api.loader.logging')
+    def test_failed(self, logging, demographics):
         demographics.side_effect = ValueError("Boom")
         demographics.return_value = "success"
         loader.load_demographics("some_hospital_number")
-        self.assertEqual(info.call_count, 1)
-        log_err.assert_called_once_with("load_demographics")
+        self.assertEqual(logging.info.call_count, 1)
+        logging.error.assert_called_once_with("Unable to run load_demographics")
 
     @override_settings(
         INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
@@ -434,7 +419,7 @@ class GoodToGoTestCase(ApiTestCase):
         )
 
 
-@mock.patch("intrahospital_api.loader.log_errors")
+@mock.patch("intrahospital_api.loader.logging")
 class CheckForLongRunningInitialPatientLoadsTestCase(ApiTestCase):
     def setUp(self):
         self.patient, _ = self.new_patient_and_episode_please()
@@ -446,22 +431,22 @@ class CheckForLongRunningInitialPatientLoadsTestCase(ApiTestCase):
         ipl.stopped = stopped
         ipl.save()
 
-    def test_long_running_ipl_found(self, log_errors):
+    def test_long_running_ipl_found(self, logging):
         four_hours_ago = timezone.now() - datetime.timedelta(hours=4)
         self.create_ipl(
             imodels.InitialPatientLoad.RUNNING,
             started=four_hours_ago
         )
         loader.check_for_long_running_initial_patient_loads()
-        log_errors.assert_called_once_with(
+        logging.error.assert_called_once_with(
             "We have long running initial patient loads"
         )
 
-    def test_no_ipls(self, log_errors):
+    def test_no_ipls(self, logging):
         loader.check_for_long_running_initial_patient_loads()
-        self.assertFalse(log_errors.called)
+        self.assertFalse(logging.error.called)
 
-    def test_recent_ipl_finished(self, log_errors):
+    def test_recent_ipl_finished(self, logging):
         recent_start = timezone.now() - datetime.timedelta(seconds=200)
         recent_stop = timezone.now() - datetime.timedelta(seconds=100)
         state = imodels.InitialPatientLoad.SUCCESS
@@ -471,23 +456,23 @@ class CheckForLongRunningInitialPatientLoadsTestCase(ApiTestCase):
             stopped=recent_stop
         )
         loader.check_for_long_running_initial_patient_loads()
-        self.assertFalse(log_errors.called)
+        self.assertFalse(logging.error.called)
 
-    def test_long_running_ipl_cancelled(self, log_errors):
+    def test_long_running_ipl_cancelled(self, logging):
         four_hours_ago = timezone.now() - datetime.timedelta(hours=4)
         self.create_ipl(
             imodels.InitialPatientLoad.CANCELLED,
             started=four_hours_ago
         )
         loader.check_for_long_running_initial_patient_loads()
-        self.assertFalse(log_errors.called)
+        self.assertFalse(logging.error.called)
 
 
-@mock.patch("intrahospital_api.loader.log_errors")
+@mock.patch("intrahospital_api.loader.logging")
 @mock.patch("intrahospital_api.loader._batch_load")
 @mock.patch("intrahospital_api.loader.good_to_go")
 class BatchLoadTestCase(ApiTestCase):
-    def test_with_force(self, good_to_go, _batch_load, log_errors):
+    def test_with_force(self, good_to_go, _batch_load, logging):
         loader.batch_load(force=True)
         good_to_go.return_value = True
         bpl = imodels.BatchPatientLoad.objects.first()
@@ -497,14 +482,16 @@ class BatchLoadTestCase(ApiTestCase):
         self.assertFalse(good_to_go.called)
         self.assertTrue(_batch_load.called)
 
-    def test_without_force_not_good_to_go(self, good_to_go, _batch_load, log_errors):
+    def test_without_force_not_good_to_go(
+        self, good_to_go, _batch_load, logging
+    ):
         good_to_go.return_value = False
         loader.batch_load()
         self.assertTrue(good_to_go.called)
         self.assertFalse(_batch_load.called)
         self.assertFalse(imodels.BatchPatientLoad.objects.exists())
 
-    def test_without_force_good_to_go(self, good_to_go, _batch_load, log_errors):
+    def test_without_force_good_to_go(self, good_to_go, _batch_load, logging):
         loader.batch_load()
         good_to_go.return_value = True
         bpl = imodels.BatchPatientLoad.objects.first()
@@ -514,7 +501,7 @@ class BatchLoadTestCase(ApiTestCase):
         self.assertTrue(good_to_go.called)
         self.assertTrue(_batch_load.called)
 
-    def test_with_error(self, good_to_go, _batch_load, log_errors):
+    def test_with_error(self, good_to_go, _batch_load, logging):
         _batch_load.side_effect = ValueError("Boom")
         loader.batch_load()
         good_to_go.return_value = True
@@ -524,7 +511,7 @@ class BatchLoadTestCase(ApiTestCase):
         self.assertEqual(bpl.state, imodels.BatchPatientLoad.FAILURE)
         self.assertTrue(good_to_go.called)
         self.assertTrue(_batch_load.called)
-        log_errors.assert_called_once_with("batch load")
+        logging.error.assert_called_once_with("Unable to run batch load")
 
 
 class _BatchLoadTestCase(ApiTestCase):
@@ -720,22 +707,22 @@ class _LoadPatientTestCase(ApiTestCase):
 
 
 @mock.patch("intrahospital_api.loader._load_patient")
-@mock.patch("intrahospital_api.loader.log_errors")
+@mock.patch("intrahospital_api.loader.logging")
 class AsyncLoadPatientTestCase(OpalTestCase):
     def setUp(self, *args, **kwargs):
         self.patient, _ = self.new_patient_and_episode_please()
         self.ipl = imodels.InitialPatientLoad(patient=self.patient)
         self.ipl.start()
 
-    def test_async_load_patient_success(self, log_errors, _load_patient):
+    def test_async_load_patient_success(self, logging, _load_patient):
         loader.async_load_patient(self.patient.id, self.ipl.id)
         _load_patient.assert_called_once_with(self.patient, self.ipl)
-        self.assertFalse(log_errors.called)
+        self.assertFalse(logging.error.called)
 
-    def test_async_load_patient_error(self, log_errors, _load_patient):
+    def test_async_load_patient_error(self, logging, _load_patient):
         _load_patient.side_effect = ValueError('Boom')
 
         with self.assertRaises(ValueError):
             loader.async_load_patient(self.patient.id, self.ipl.id)
         _load_patient.assert_called_once_with(self.patient, self.ipl)
-        log_errors.assert_called_once_with("_load_patient")
+        logging.error.assert_called_once_with("Unable to run _load_patient")
