@@ -101,7 +101,13 @@ class BatchPatientLoadAdmin(PatientLoadAdmin):
 
 class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
     list_display = [
-        "__str__", "patient_details", "started", "stopped", "duration", "state"
+        "__str__",
+        "patient_details",
+        "started",
+        "stopped",
+        "duration",
+        "state",
+        "count"
     ]
 
     actions = ["refresh_lab_tests"]

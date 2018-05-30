@@ -315,12 +315,27 @@ def _batch_load(batch):
 @transaction.atomic
 def update_patient_from_batch(demographics_set, data_delta):
     upstream_demographics = data_delta["demographics"]
-    patient_demographics_set = demographics_set.filter(
-        hospital_number=upstream_demographics["hospital_number"]
-    )
+    hospital_number = upstream_demographics["hospital_number"]
+    nhs_number = upstream_demographics["nhs_number"]
+    if hospital_number:
+        patient_demographics_set = demographics_set.filter(
+            hospital_number=hospital_number
+        )
+    elif nhs_number:
+        patient_demographics_set = demographics_set.filter(
+            nhs_number=nhs_number
+        )
+    else:
+        logging.info("Unable to find an identifer for {}".format(
+            data_delta
+        ))
+        return
     if not patient_demographics_set.exists():
         # this patient is not in our reconcile list,
         # move on, nothing to see here.
+        logging.info("Unable to find a patient demographics set for {}".format(
+            data_delta
+        ))
         return
 
     patient = patient_demographics_set.first().patient

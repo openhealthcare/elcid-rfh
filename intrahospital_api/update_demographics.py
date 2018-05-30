@@ -99,6 +99,8 @@ def update_patient_demographics(patient, upstream_demographics_dict):
     """ Updates a patient with the upstream demographics, if they have changed.
     """
     demographics = patient.demographics_set.get()
+    if upstream_demographics_dict.get("hospital_number", None) == "":
+        upstream_demographics_dict.pop("hospital_number")
     if have_demographics_changed(
         upstream_demographics_dict, demographics
     ):

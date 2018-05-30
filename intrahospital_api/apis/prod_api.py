@@ -2,7 +2,6 @@ import datetime
 import logging
 from functools import wraps
 import pytds
-import itertools
 import time
 from collections import defaultdict
 from pytds.tds import OperationalError
@@ -143,6 +142,20 @@ class Row(object):
             result = self.db_row.get(secondary_field, "")
 
         return result
+
+    def get_identifier(self):
+        """ for reasons unknown the upstream database often has the
+            hospital number missing, however we can use the NHS number
+            in these cases
+        """
+        hospital_number = self.get_hospital_number()
+        if hospital_number:
+            return ("hospital_number", hospital_number,)
+
+        nhs_number = self.get_nhs_number()
+
+        if nhs_number:
+            return ("nhs_number", nhs_number)
 
     # Demographics Fields
     def get_hospital_number(self):
@@ -384,13 +397,18 @@ class ProdApi(base_api.BaseApi):
 
         """
         all_rows = self.data_delta_query(some_datetime)
-        hospital_number_to_rows = itertools.groupby(
-            all_rows, lambda x: x.get_hospital_number()
-        )
-        for hospital_number, rows in hospital_number_to_rows:
-            if Demographics.objects.filter(
-                hospital_number=hospital_number
-            ).exists():
+        identifier_to_rows = defaultdict(list)
+
+        for row in all_rows:
+            identifier = row.get_identifier()
+            if identifier:
+                identifier_to_rows[identifier].append(row)
+
+        # because reasons, upstream sometimes have an nhs number
+        # but not a hospital number, we can work around this by
+        # allowsing both
+        for (i_type, i_value), rows in identifier_to_rows.items():
+            if Demographics.objects.filter(**{i_type: i_value}).exists():
                 demographics = list(rows)[0].get_demographics_dict()
                 lab_tests = self.cast_rows_to_lab_test(rows)
                 yield (

@@ -1,4 +1,5 @@
 import mock
+import copy
 import datetime
 from django.contrib.auth.models import User
 from django.test import override_settings
@@ -619,7 +620,8 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         self.data_deltas = {
             "demographics": {
                 "hospital_number": "123",
-                "first_name": "Jane"
+                "first_name": "Jane",
+                "nhs_number": "345"
             },
             "lab_tests": [{
                 "external_identifier": "234",
@@ -635,6 +637,24 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         loader.update_patient_from_batch(
             emodels.Demographics.objects.all(),
             self.data_deltas
+        )
+        self.assertEqual(
+            self.patient.demographics_set.first().first_name, "Jane"
+        )
+        observation = self.patient.labtest_set.first().extras[
+            "observations"
+        ][0]
+        self.assertEqual(
+            observation["result"], "Positive"
+        )
+
+    def test_update_patient_from_batch_integration_nhs_number(self):
+        self.patient.demographics_set.update(nhs_number="345")
+        data_deltas = copy.copy(self.data_deltas)
+        data_deltas["demographics"]["hospital_number"] = ""
+        loader.update_patient_from_batch(
+            emodels.Demographics.objects.all(),
+            data_deltas
         )
         self.assertEqual(
             self.patient.demographics_set.first().first_name, "Jane"
