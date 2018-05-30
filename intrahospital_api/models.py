@@ -61,9 +61,7 @@ class PatientLoad(models.Model):
     @property
     def duration(self):
         if not self.stopped:
-            raise ValueError(
-                "%s has not finished yet" % self
-            )
+            return
         return self.stopped - self.started
 
     def complete(self):
