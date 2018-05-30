@@ -98,53 +98,49 @@ FAKE_ROW_DATA = {
 }
 
 
+@mock.patch("intrahospital_api.apis.prod_api.time")
+@mock.patch("intrahospital_api.apis.prod_api.logging")
 class DbRetry(OpalTestCase):
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def test_retrys(self, time):
+    def test_retrys(self, logging, time):
         m = mock.MagicMock(
             side_effect=[OperationalError('boom'), "response"]
         )
         m.__name__ = "some_mock"
 
-        with mock.patch.object(prod_api.logger, "info") as info:
-            response = prod_api.db_retry(m)()
+        response = prod_api.db_retry(m)()
 
         self.assertEqual(
             response, "response"
         )
         time.sleep.assert_called_once_with(30)
-        info.assert_called_once_with(
+        logging.info.assert_called_once_with(
             'some_mock: failed with boom, retrying in 30s'
         )
 
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def tests_works_as_normal(self, time):
+    def tests_works_as_normal(self, logging, time):
         m = mock.MagicMock()
         m.return_value = "response"
         m.__name__ = "some_mock"
 
-        with mock.patch.object(prod_api.logger, "info") as info:
-            response = prod_api.db_retry(m)()
+        response = prod_api.db_retry(m)()
 
         self.assertEqual(
             response, "response"
         )
         self.assertFalse(time.sleep.called)
-        self.assertFalse(info.called)
+        self.assertFalse(logging.info.called)
 
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def tests_reraises(self, time):
+    def tests_reraises(self, logging, time):
         m = mock.MagicMock(
             side_effect=OperationalError('boom')
         )
         m.__name__ = "some_mock"
 
-        with mock.patch.object(prod_api.logger, "info") as info:
-            with self.assertRaises(OperationalError):
-                prod_api.db_retry(m)()
+        with self.assertRaises(OperationalError):
+            prod_api.db_retry(m)()
 
         time.sleep.assert_called_once_with(30)
-        info.assert_called_once_with(
+        logging.info.assert_called_once_with(
             'some_mock: failed with boom, retrying in 30s'
         )
 

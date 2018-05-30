@@ -16,8 +16,6 @@ from elcid.models import Demographics
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
 
-logger = logging.getLogger('intrahospital_api')
-
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
@@ -82,7 +80,7 @@ def db_retry(f):
         try:
             result = f(*args, **kw)
         except OperationalError as o:
-            logger.info('{}: failed with {}, retrying in {}s'.format(
+            logging.info('{}: failed with {}, retrying in {}s'.format(
                 f.__name__, str(o), RETRY_DELAY
             ))
             time.sleep(RETRY_DELAY)
