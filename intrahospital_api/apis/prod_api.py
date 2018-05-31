@@ -13,7 +13,7 @@ from django.conf import settings
 from elcid.models import Demographics
 
 # if we fail in a query, the amount of seconds we wait before retrying
-RETRY_DELAY = 30
+RETRY_DELAY = 90
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
@@ -72,7 +72,7 @@ def to_datetime_str(some_datetime):
 def db_retry(f):
     """ We are reading a database that is also receiving intermittent writes.
         When these writes are coming the DB locks.
-        Lets put in a retry after 30 seconds
+        Lets put in a retry after 90 seconds
     """
     @wraps(f)
     def wrap(*args, **kw):

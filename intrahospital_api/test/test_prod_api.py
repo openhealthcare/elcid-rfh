@@ -113,9 +113,9 @@ class DbRetry(OpalTestCase):
         self.assertEqual(
             response, "response"
         )
-        time.sleep.assert_called_once_with(30)
+        time.sleep.assert_called_once_with(90)
         logger.info.assert_called_once_with(
-            'some_mock: failed with boom, retrying in 30s'
+            'some_mock: failed with boom, retrying in 90s'
         )
 
     def tests_works_as_normal(self, logger, time):
@@ -140,9 +140,9 @@ class DbRetry(OpalTestCase):
         with self.assertRaises(OperationalError):
             prod_api.db_retry(m)()
 
-        time.sleep.assert_called_once_with(30)
+        time.sleep.assert_called_once_with(90)
         logger.info.assert_called_once_with(
-            'some_mock: failed with boom, retrying in 30s'
+            'some_mock: failed with boom, retrying in 90s'
         )
 
 
