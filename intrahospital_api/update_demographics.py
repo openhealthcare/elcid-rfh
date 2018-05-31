@@ -1,10 +1,10 @@
 """
     Handles updating demographics pulled in by the loader
 """
-import logging
 from django.db import transaction
 from opal.models import Patient, deserialize_date
 from intrahospital_api import get_api
+from intrahospital_api import logger
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 
@@ -50,7 +50,7 @@ def reconcile_patient_demographics(patient):
         demographics.hospital_number
     )
     if not external_demographics_dict:
-        logging.info("unable to find {}".format(
+        logger.info("unable to find {}".format(
             demographics.hospital_number
         ))
         return

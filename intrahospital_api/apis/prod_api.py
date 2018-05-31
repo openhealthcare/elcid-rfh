@@ -1,5 +1,4 @@
 import datetime
-import logging
 from functools import wraps
 import pytds
 import time
@@ -7,6 +6,7 @@ from collections import defaultdict
 from pytds.tds import OperationalError
 from intrahospital_api.apis import base_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
+from intrahospital_api import logger
 from elcid.utils import timing
 from lab import models as lmodels
 from django.conf import settings
@@ -79,7 +79,7 @@ def db_retry(f):
         try:
             result = f(*args, **kw)
         except OperationalError as o:
-            logging.info('{}: failed with {}, retrying in {}s'.format(
+            logger.info('{}: failed with {}, retrying in {}s'.format(
                 f.__name__, str(o), RETRY_DELAY
             ))
             time.sleep(RETRY_DELAY)

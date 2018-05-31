@@ -39,7 +39,6 @@
 """
 
 import datetime
-import logging
 import traceback
 from django.db import transaction
 from django.utils import timezone
@@ -54,6 +53,7 @@ from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api import update_demographics
 from intrahospital_api import update_lab_tests
+from intrahospital_api import logger
 
 api = get_api()
 
@@ -69,7 +69,7 @@ def initial_load():
         _initial_load()
     except:
         batch.failed()
-        logging.error("Unable to run initial_load")
+        logger.error("Unable to run initial_load")
         raise
     else:
         batch.complete()
@@ -84,7 +84,7 @@ def _initial_load():
     total = patients.count()
 
     for iterator, patient in enumerate(patients.all()):
-        logging.info("running {}/{}".format(iterator+1, total))
+        logger.info("running {}/{}".format(iterator+1, total))
         load_patient(patient, async=False)
 
 
@@ -111,10 +111,10 @@ def load_demographics(hospital_number):
         result = api.demographics(hospital_number)
     except:
         stopped = timezone.now()
-        logging.info("demographics load failed in {}".format(
+        logger.info("demographics load failed in {}".format(
             (stopped - started).seconds
         ))
-        logging.error("Unable to run load_demographics")
+        logger.error("Unable to run load_demographics")
         return
 
     return result
@@ -163,7 +163,7 @@ def check_for_long_running_initial_patient_loads():
         started__lte=an_hour_ago
     )
     if running_qs.exists():
-        logging.error(
+        logger.error(
             "We have long running initial patient loads"
         )
 
@@ -201,7 +201,7 @@ def good_to_go():
         # Examples of when this might happen are when we've just done a
         # deployment.
         if time_ago.seconds < 600:
-            logging.info(
+            logger.info(
                 "batch still running after {} seconds, skipping".format(
                     time_ago.seconds
                 )
@@ -212,7 +212,7 @@ def good_to_go():
                 # we expect the inital batch patient load to take ages
                 # as its the first and runs the initial load
                 # so cut it some slack
-                logging.info(
+                logger.info(
                     "batch still running after {} seconds, but its the first \
 load".format(time_ago.seconds)
                 )
@@ -241,7 +241,7 @@ def batch_load(force=False):
         try:
             all_set = good_to_go()
         except:
-            logging.error("Unable to run batch load")
+            logger.error("Unable to run batch load")
 
         if not all_set:
             return
@@ -252,7 +252,7 @@ def batch_load(force=False):
         _batch_load(batch)
     except:
         batch.failed()
-        logging.error("Unable to run batch load")
+        logger.error("Unable to run batch load")
     else:
         batch.complete()
 
@@ -326,14 +326,14 @@ def update_patient_from_batch(demographics_set, data_delta):
             nhs_number=nhs_number
         )
     else:
-        logging.info("Unable to find an identifer for {}".format(
+        logger.info("Unable to find an identifer for {}".format(
             data_delta
         ))
         return
     if not patient_demographics_set.exists():
         # this patient is not in our reconcile list,
         # move on, nothing to see here.
-        logging.info("Unable to find a patient demographics set for {}".format(
+        logger.info("Unable to find a patient demographics set for {}".format(
             data_delta
         ))
         return
@@ -371,7 +371,7 @@ def async_load_patient(patient_id, patient_load_id):
     try:
         _load_patient(patient, patient_load)
     except:
-        logging.error("Unable to run _load_patient")
+        logger.error("Unable to run _load_patient")
         raise
 
 
@@ -394,7 +394,7 @@ def _load_patient(patient, patient_load):
         )
         update_demographics.update_patient_demographics(patient, demographics)
     except:
-        logging.info(traceback.format_exc())
+        logger.info(traceback.format_exc())
         patient_load.failed()
         raise
     else:

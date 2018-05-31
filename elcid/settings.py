@@ -231,7 +231,7 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(levelname)s %(message)s'
+            'format': '%(asctime)s %(filename)s %(levelname)s %(message)s'
         }
     },
     'handlers': {
@@ -269,7 +269,7 @@ LOGGING = {
             'propagate': True,
         },
         'intrahospital_api': {
-            'handlers': ['console', 'mail_admins'],
+            'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
         },

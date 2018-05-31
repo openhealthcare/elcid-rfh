@@ -100,9 +100,9 @@ FAKE_ROW_DATA = {
 
 
 @mock.patch("intrahospital_api.apis.prod_api.time")
-@mock.patch("intrahospital_api.apis.prod_api.logging")
+@mock.patch("intrahospital_api.apis.prod_api.logger")
 class DbRetry(OpalTestCase):
-    def test_retrys(self, logging, time):
+    def test_retrys(self, logger, time):
         m = mock.MagicMock(
             side_effect=[OperationalError('boom'), "response"]
         )
@@ -114,11 +114,11 @@ class DbRetry(OpalTestCase):
             response, "response"
         )
         time.sleep.assert_called_once_with(30)
-        logging.info.assert_called_once_with(
+        logger.info.assert_called_once_with(
             'some_mock: failed with boom, retrying in 30s'
         )
 
-    def tests_works_as_normal(self, logging, time):
+    def tests_works_as_normal(self, logger, time):
         m = mock.MagicMock()
         m.return_value = "response"
         m.__name__ = "some_mock"
@@ -129,9 +129,9 @@ class DbRetry(OpalTestCase):
             response, "response"
         )
         self.assertFalse(time.sleep.called)
-        self.assertFalse(logging.info.called)
+        self.assertFalse(logger.info.called)
 
-    def tests_reraises(self, logging, time):
+    def tests_reraises(self, logger, time):
         m = mock.MagicMock(
             side_effect=OperationalError('boom')
         )
@@ -141,7 +141,7 @@ class DbRetry(OpalTestCase):
             prod_api.db_retry(m)()
 
         time.sleep.assert_called_once_with(30)
-        logging.info.assert_called_once_with(
+        logger.info.assert_called_once_with(
             'some_mock: failed with boom, retrying in 30s'
         )
 
