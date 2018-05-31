@@ -624,6 +624,7 @@ with {1}'
 def deploy_test(backup_name=None):
     new_branch = infer_current_branch()
     _deploy(new_branch, backup_name, remove_existing=True)
+    run_management_command("batch_load --force", Env(new_branch))
     new_status = run_management_command("status_report", Env(new_branch))
     print("=" * 20)
     print("new environment was")

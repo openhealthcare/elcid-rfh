@@ -1117,7 +1117,20 @@ class DeployTestTestCase(FabfileTestCase):
         deploy.assert_called_once_with(
             "new_branch", "some_backup", remove_existing=True
         )
-        env_constructor.assert_called_once_with("new_branch")
+        self.assertEqual(
+            env_constructor.call_args_list[0][0][0], "new_branch"
+        )
+        self.assertEqual(
+            run_management_command.call_args_list[0][0][0],
+            "batch_load --force"
+        )
+        self.assertEqual(
+            env_constructor.call_args_list[1][0][0], "new_branch"
+        )
+        self.assertEqual(
+            run_management_command.call_args_list[1][0][0],
+            "status_report"
+        )
 
         self.assertEqual(
             print_function.call_count, 4
