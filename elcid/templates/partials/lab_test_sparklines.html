@@ -2,7 +2,11 @@
 {% comment %}Expects either an episode or a patient{% endcomment %}
 <div class="trends-panel" populate-lab-tests="{{ target }}">
   <div ng-show="patientLoadStatus.isLoading()">
-    <h2 class="text-center no-results">Lab tests loading please wait</h2>
+    <h2 class="text-center no-results">
+      <i class="fa fa-spinner fa-spin"></i>
+      <br />
+      Loading please wait
+    </h2>
   </div>
   <div ng-show="patientLoadStatus.isAbsent()">
     <h2 class="text-center no-results">Unable to get lab tests for this patient</h2>
@@ -16,7 +20,11 @@
       we have not loaded them in yet
     {% endcomment %}
     <div ng-show="!data">
-      <h2 class="text-center no-results">Lab tests loading please wait</h2>
+      <h2 class="text-center no-results">
+        <i class="fa fa-spinner fa-spin"></i>
+        <br />
+        Loading please wait
+      </h2>
     </div>
     <div ng-show="data && !data.obs_values.length">
       <h2 class="text-center no-results">No results found</h2>

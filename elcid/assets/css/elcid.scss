@@ -242,8 +242,11 @@ a.list-group-item {
 
 .trends-panel{
   min-height: 395px;
+  position: relative;
 
   .no-results{
-    padding-top: 120px;
+    position: absolute;
+    width: 100%;
+    top: 120px;
   }
 }
