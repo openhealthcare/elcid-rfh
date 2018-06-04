@@ -536,7 +536,7 @@ class _BatchLoadTestCase(ApiTestCase):
             demographcis=dict(hospital_number="1"),
             lab_tests=[dict(external_identifier="123")]
         )]
-        data_deltas.return_value = data_deltas_dict
+        data_deltas.return_value = (i for i in data_deltas_dict)
         loader._batch_load(batch_load)
         reconcile_all_demographics.assert_called_once_with()
         data_deltas.assert_called_once_with(now)

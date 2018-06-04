@@ -312,8 +312,7 @@ def _batch_load(batch):
 
     # update the non reconciled
     update_demographics.reconcile_all_demographics()
-
-    data_deltas = api.data_deltas(started)
+    data_deltas = [i for i in api.data_deltas(started)]
     logger.info("loading in data delta")
     logger.info(json.dumps(data_deltas, indent=4))
     count = 0
