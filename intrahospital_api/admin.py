@@ -96,7 +96,14 @@ class PatientLoadAdmin(admin.ModelAdmin):
 
 
 class BatchPatientLoadAdmin(PatientLoadAdmin):
-    list_display = ["__str__", "started", "stopped", "duration", "state"]
+    list_display = [
+        "__str__",
+        "started",
+        "stopped",
+        "duration",
+        "state",
+        "count"
+    ]
 
 
 class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
