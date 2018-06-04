@@ -35,7 +35,9 @@ class InitialLoadTestCase(ApiTestCase):
         with self.assertRaises(ValueError):
             loader.initial_load()
         _initial_load.assert_called_once_with()
-        logger.error.assert_called_once_with("Unable to run initial_load")
+        self.assertTrue(logger.error.call_args[0][0].startswith(
+            "Unable to run initial_load"
+        ))
         batch_load = imodels.BatchPatientLoad.objects.get()
         self.assertEqual(batch_load.state, batch_load.FAILURE)
         self.assertTrue(batch_load.started < batch_load.stopped)
@@ -225,7 +227,6 @@ class LoadDemographicsTestCase(ApiTestCase):
         demographics.return_value = "success"
         loader.load_demographics("some_hospital_number")
         self.assertEqual(logger.info.call_count, 1)
-        logger.error.assert_called_once_with("Unable to run load_demographics")
 
     @override_settings(
         INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
@@ -512,7 +513,9 @@ class BatchLoadTestCase(ApiTestCase):
         self.assertEqual(bpl.state, imodels.BatchPatientLoad.FAILURE)
         self.assertTrue(good_to_go.called)
         self.assertTrue(_batch_load.called)
-        logger.error.assert_called_once_with("Unable to run batch load")
+        self.assertTrue(logger.error.call_args[0][0].startswith(
+            "Unable to run batch load"
+        ))
 
 
 class _BatchLoadTestCase(ApiTestCase):
@@ -745,4 +748,6 @@ class AsyncLoadPatientTestCase(OpalTestCase):
         with self.assertRaises(ValueError):
             loader.async_load_patient(self.patient.id, self.ipl.id)
         _load_patient.assert_called_once_with(self.patient, self.ipl)
-        logger.error.assert_called_once_with("Unable to run _load_patient")
+        self.assertTrue(logger.error.call_args[0][0].startswith(
+            "Unable to run _load_patient"
+        ))

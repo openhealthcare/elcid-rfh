@@ -70,7 +70,9 @@ def initial_load():
         _initial_load()
     except:
         batch.failed()
-        logger.error("Unable to run initial_load")
+        logger.error("Unable to run initial_load \n{}".format(
+            traceback.format_exc()
+        ))
         raise
     else:
         batch.complete()
@@ -115,7 +117,9 @@ def load_demographics(hospital_number):
         logger.info("demographics load failed in {}".format(
             (stopped - started).seconds
         ))
-        logger.error("Unable to run load_demographics")
+        logger.error("Unable to run load_demographics{}".format(
+            traceback.format_exc()
+        ))
         return
 
     return result
@@ -242,7 +246,9 @@ def batch_load(force=False):
         try:
             all_set = good_to_go()
         except:
-            logger.error("Unable to run batch load")
+            logger.error("Unable to run batch load \n{}".format(
+                traceback.format_exc()
+            ))
 
         if not all_set:
             return
@@ -253,7 +259,9 @@ def batch_load(force=False):
         _batch_load(batch)
     except:
         batch.failed()
-        logger.error("Unable to run batch load")
+        logger.error("Unable to run batch load \n{}".format(
+            traceback.format_exc()
+        ))
     else:
         batch.complete()
 
@@ -375,7 +383,9 @@ def async_load_patient(patient_id, patient_load_id):
     try:
         _load_patient(patient, patient_load)
     except:
-        logger.error("Unable to run _load_patient")
+        logger.error("Unable to run _load_patient \n{}".format(
+            traceback.format_exc()
+        ))
         raise
 
 
