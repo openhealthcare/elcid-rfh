@@ -40,6 +40,7 @@
 
 import datetime
 import traceback
+import json
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
@@ -305,11 +306,14 @@ def _batch_load(batch):
     update_demographics.reconcile_all_demographics()
 
     data_deltas = api.data_deltas(started)
-    update_from_batch(data_deltas)
+    logger.info("loading in data delta")
+    logger.info(json.dumps(data_deltas, indent=4))
     count = 0
     for data_delta in data_deltas:
         count += len(data_delta["lab_tests"])
     batch.count = count
+    logger.info("loaded {} tests".format(count))
+    update_from_batch(data_deltas)
 
 
 @transaction.atomic
