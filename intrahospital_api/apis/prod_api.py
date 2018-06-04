@@ -379,6 +379,9 @@ class ProdApi(base_api.BaseApi):
     @timing
     @db_retry
     def data_delta_query(self, since):
+        logger.info("Running data delta query since {}".format(
+            since
+        ))
         all_rows = self.execute_query(
             self.all_data_since_query,
             params=dict(since=since)
