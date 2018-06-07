@@ -30,6 +30,11 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
        "Weight Loss"
      ]
 
+    scope.$watch("editing.symptom_complex", function(){
+      scope.updateTbSymptoms();
+    }, true);
+
+
     scope.tbSymptomFields = {};
     _.map(tBSymptoms, function(tBSymptom){
       scope.tbSymptomFields[tBSymptom] = tBSymptom;
