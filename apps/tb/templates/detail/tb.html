@@ -4,7 +4,7 @@
   <div class="col-md-12">
     <div class="row">
       <div class="col-md-8">
-        <div ng-hide="episode.stage === 'New Referral'">
+        <div ng-show="episode.stage !== 'New Referral'">
           {% record_panel models.ReferralRoute %}
           {% record_panel models.PastMedicalHistory %}
           {% record_panel models.SymptomComplex %}
@@ -93,7 +93,7 @@
           <div class="list-group">
             <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
               Initial Assessment
-              <div ng-show="episode.stage !== 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
+              <div ng-show="episode.stage == 'New Referral'" class="pull-right star">{% icon "fa-certificate" %}</div>
             </a>
             <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
               Active TB Treatment

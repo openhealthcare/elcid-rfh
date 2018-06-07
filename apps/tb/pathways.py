@@ -112,7 +112,8 @@ class TBConsultationPathway(pathways.PagePathway):
         p, e = super(TBConsultationPathway, self).save(
             data, user, patient=patient, episode=episode
         )
-        e.set_stage(e.category.NEW_REFERRAL, user, None)
+        e.set_stage(e.category.ASSESSED, user, None)
+        e.save()
 
         return p, e
 
