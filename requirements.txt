@@ -39,5 +39,5 @@ python-tds==1.8.2
 # opal==0.9.0rc5
 
 # Open Health Care repositories on GitHub
--e git+https://github.com/openhealthcare/opal.git@v0.10.0#egg=opal
+-e git+https://github.com/openhealthcare/opal.git@radio_vertical_template_tags
 -e git+https://github.com/openhealthcare/opal-lab.git@v0.4.0#egg=opal_lab
