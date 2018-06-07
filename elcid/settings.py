@@ -41,7 +41,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'ec2-52-16-175-249.eu-west-1.compute.amazonaws.com',
     '.openhealthcare.org.uk',
-    'tb-demo-19-feb.herokuapp.com',
+    '.herokuapp.com'
     ]
 
 # Local time zone for this installation. Choices can be found here:
