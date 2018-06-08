@@ -20,7 +20,7 @@ angular.module('opal.controllers').controller('MantouxTestCrtl',
         },
         {
           mantoux_test: {
-            site: "Left Lower Arm",
+            site: "Right Lower Arm",
             _client: {id: _.uniqueId("mantoux_test") }
           }
         }
