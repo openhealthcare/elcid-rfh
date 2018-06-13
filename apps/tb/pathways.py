@@ -52,9 +52,7 @@ class TBConsultationPathway(pathways.PagePathway):
 
     steps = [
         HelpTextStep(
-            template="pathway/steps/demographics_birth_place.html",
-            icon="fa fa-user",
-            display_name="Demographics",
+            template="pathway/steps/demographics_record.html",
             model=models.Demographics,
             help_text_template="pathway/steps/help_text/demographics.html"
         ),
@@ -69,6 +67,19 @@ class TBConsultationPathway(pathways.PagePathway):
         HelpTextStep(
             model=tb_models.NextOfKin,
             help_text="This will be pulled in from Cerner"
+        ),
+        HelpTextStep(
+            model=tb_models.CommuninicationConsiderations,
+        ),
+        HelpTextStep(
+            template="pathway/steps/nationality.html",
+            model=tb_models.Nationality,
+        ),
+        HelpTextStep(
+            model=tb_models.AccessConsiderations,
+        ),
+        HelpTextStep(
+            model=tb_models.Employment,
         ),
         HelpTextStep(
             model=models.SymptomComplex,

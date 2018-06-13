@@ -2,13 +2,10 @@
   <div class="row">
     <div class="form-group">
       <label class="control-label col-sm-4">
-        Alcohol
+        Smoking
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.drinking ]]
-        <span ng-show="item.alcohol_dependent">
-          (dependent)
-        </span>
+        [[ item.smoking ]]
       </p>
     </div>
   </div>
@@ -16,10 +13,13 @@
   <div class="row">
     <div class="form-group">
       <label class="control-label col-sm-4">
-        Smoking
+        Alcohol
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.smoking ]]
+        [[ item.drinking ]]
+        <span ng-show="item.history_of_alocohol_dependence">
+          (history of alochol dependence)
+        </span>
       </p>
     </div>
   </div>
@@ -37,18 +37,21 @@
         <br />
         <span ng-show="item.receiving_treatment">
           Receiving treatement
+          <span ng-show="item.opiate_replacement_therapy">
+            (Receiving ORT)
+          </span>
         </span>
       </p>
     </div>
   </div>
 
-  <div class="row">
+  <div ng-show="item.drug_community_worker.length" class="row">
     <div class="form-group">
       <label class="control-label col-sm-4">
-        Prison History
+        Alcohol/Drug Community Worker
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.prison_history ]]
+        [[ item.drug_community_worker ]]
       </p>
     </div>
   </div>
@@ -66,24 +69,34 @@
       </p>
     </div>
   </div>
-  <div ng-show="item.occupation.length" class="row">
+
+  <div class="row">
     <div class="form-group">
       <label class="control-label col-sm-4">
-        Occupation
+        Prison History
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.occupation ]]
+        [[ item.prison_history ]]
+      </p>
+      <p ng-show="item.prison_history_details.length">
+        [[ item.prison_history_details ]]
+      </p>
+      <p ng-show="item.probation_officer.length">
+        Probation officer: [[ item.probation_officer ]]
       </p>
     </div>
   </div>
 
   <div class="row">
-    <div ng-show="item.arrival_in_the_uk" class="form-group">
+    <div class="form-group">
       <label class="control-label col-sm-4">
-        Arrival In The Uk
+        Mental health issues
       </label>
       <p class="form-control-static col-sm-8">
-        [[ item.arrival_in_the_uk ]]
+        [[ item.mental_health_issues ]]
+      </p>
+      <p ng-show="item.community_nurse.length">
+        CPN/CMHT: [[ item.community_nurse ]]
       </p>
     </div>
   </div>

@@ -15,39 +15,212 @@ class SocialHistory(models.EpisodeSubrecord):
     _is_singleton = True
     _title = 'Social History'
     _icon = 'fa fa-clock-o'
-    HOMELESSNESS_CHOICES = (
+    HOMELESSNESS_TYPE_CHOICES = (
         ("Hostel", "Hostel",),
         ("Sofa surfing", "Sofa surfing",),
         ("Street", "Street",),
+        ("Other", "Other",),
+    )
+
+    HOMELESSNESS_CHOICES = (
+        ('Never', 'Never',),
+        ('Current', 'Current',),
+        ('Past', 'Past'),
+    )
+
+    ALCOHOL_CHOICES = (
+        ("None", "None",),
+        ("Occasional", "Occasional",),
+        ("Excess", "Excess",),
+        ("Dependent", "Dependent",),
+    )
+
+    SMOKING_CHOICES = (
+        ("Never", "Never",),
+        ("Current", "Current",),
+        ("Past", "Past",),
+    )
+
+    RECREATIONAL_DRUG_USE = (
+        ("Never", "Never",),
+        ("Current", "Current",),
+        ("Dependent", "Dependent",),
+        ("Past", "Past",),
+    )
+
+    PRISON_CHOICES = (
+        ("Never", "Never",),
+        ("Current", "Current",),
+        ("Within the last 5 years", "Within the last 5 years",),
+        ("Over 5 years ago", "Over 5 years ago",),
     )
 
     notes = fields.TextField(blank=True, null=True)
-    drinking = fields.CharField(
-        max_length=250, blank=True, null=True, verbose_name="Alcohol"
+
+    smoking = fields.CharField(
+        max_length=250,
+        choices=SMOKING_CHOICES,
+        blank=True,
+        null=True
     )
-    alcohol_dependent = fields.NullBooleanField()
-    smoking = fields.CharField(max_length=250, blank=True, null=True)
-    occupation = fields.TextField(blank=True, null=True)
-    homelessness = fields.TextField(blank=True, null=True)
+
+    drinking = fields.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        verbose_name="Alcohol",
+        choices=ALCOHOL_CHOICES
+    )
+    history_of_alocohol_dependence = fields.BooleanField(
+        default=False
+    )
+    recreational_drug_use = fields.CharField(
+        max_length=250,
+        choices=RECREATIONAL_DRUG_USE,
+        blank=True,
+        null=True
+    )
+    opiate_replacement_therapy = fields.BooleanField(
+        default=False,
+        verbose_name="on opiate replacement therapy"
+    )
+    drug_community_worker = fields.CharField(
+        verbose_name="Drug/alcohol worker",
+        max_length=256,
+        blank=True,
+        null=True,
+    )
+
     homelessness_type = fields.CharField(
+        blank=True,
+        null=True,
+        choices=HOMELESSNESS_TYPE_CHOICES,
+        max_length=256
+    )
+
+    homelessness = fields.CharField(
         blank=True,
         null=True,
         choices=HOMELESSNESS_CHOICES,
         max_length=256
     )
-    recreational_drug_use = fields.CharField(
-        max_length=250, blank=True, null=True
+
+    housing_officer = fields.CharField(
+        max_length=256,
+        blank=True,
+        null=True
     )
+
     recreational_drug_type = ForeignKeyOrFreeText(RecreationalDrug)
     receiving_treatment = fields.BooleanField(default=False)
     prison_history = fields.CharField(
-        max_length=250, blank=True, null=True
+        max_length=250,
+        choices=PRISON_CHOICES,
+        blank=True,
+        null=True
     )
+    prison_history_details = fields.TextField(
+        default="", blank=True
+    )
+    probation_officer = fields.CharField(
+        max_length=256,
+        blank=True,
+        null=True
+    )
+
+    mental_health_issues = fields.BooleanField(
+        default=False
+    )
+
+    # if they patient has mental health issues
+    # store the Community pysiatric nurse (CPN) or
+    # the Community mental health team (CMHT)
+    community_nurse = fields.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        verbose_name="CPN/CMHT"
+    )
+
+
+class Nationality(models.PatientSubrecord):
+    _is_singleton = True
+
+    immigration_concerns = fields.BooleanField(default=False)
+    immigration_details = fields.TextField(blank=True)
+    immigration_support_officer = fields.TextField(blank=True)
+
     arrival_in_the_uk = fields.CharField(
         max_length=250,
         blank=True,
         null=True,
         verbose_name="Year of arrival in the UK"
+    )
+
+    class Meta:
+        verbose_name = "Nationality & Citizenship"
+        verbose_name_plural = "Nationality & Citizenship"
+
+
+class Employment(models.PatientSubrecord):
+    _is_singleton = True
+
+    FINANICAL_STATUS_CHOICES = (
+        ("Nil income", "Nil income"),
+        ("On benefits", "On benefits",),
+        ("Other(SS/NASS)", "Other(SS/NASS)",),
+        ("Employed", "Employed",),
+    )
+
+    occupation = fields.TextField(blank=True, null=True)
+    financial_status = fields.CharField(
+        max_length=256,
+        choices=FINANICAL_STATUS_CHOICES
+    )
+
+
+class CommuninicationConsiderations(models.PatientSubrecord):
+    _is_singleton = True
+
+    class Meta:
+        verbose_name = "Communication"
+        verbose_name_plural = "Communinication Considerations"
+
+    needs_an_interpreter = fields.BooleanField(
+        default=False
+    )
+    language = fields.CharField(
+        max_length=256, blank=True
+    )
+    sensory_impairment = fields.BooleanField(
+        default=False
+    )
+
+
+class AccessConsiderations(models.PatientSubrecord):
+    _is_singleton = True
+
+    ACCESS_ASSISTANCE = (
+        ("provision", "provision",),
+        ("finance", "finance",),
+    )
+
+    class Meta:
+        verbose_name = "Access & Transport"
+        verbose_name_plural = "Access Considerations"
+
+    mobility_problem = fields.BooleanField(
+        default=False
+    )
+
+    needs_help_with_transport = fields.BooleanField(
+        default=False
+    )
+    access_assistance = fields.CharField(
+        blank=True,
+        null=True,
+        choices=ACCESS_ASSISTANCE,
+        max_length=256
     )
 
 

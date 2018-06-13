@@ -1,0 +1,6 @@
+{% load forms %}
+{% checkbox field="AccessConsiderations.mobility_problem" %}
+{% checkbox field="AccessConsiderations.needs_help_with_transport" %}
+<div ng-show="editing.access_considerations.needs_help_with_transport">
+  {% radio field="AccessConsiderations.access_assistance" %}
+</div>

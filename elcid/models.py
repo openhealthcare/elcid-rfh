@@ -588,6 +588,13 @@ class PastMedicalHistory(omodels.PastMedicalHistory):
     pass
 
 
+class GP(omodels.PatientSubrecord):
+    name = models.CharField(
+        max_length=256
+    )
+    contact_details = models.TextField()
+
+
 # method for updating
 @receiver(post_save, sender=omodels.Tagging)
 def record_positive_blood_culture(sender, instance, **kwargs):

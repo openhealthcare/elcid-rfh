@@ -1,5 +1,4 @@
 {% load forms %}
-
 <div ng-repeat="item in [editing.demographics]">
   <div class="row">
     <div class="col-md-6">
@@ -40,13 +39,4 @@
       </div>
     </div>
   </div>
-  <div class="row content-offset-25">
-    <div class="col-md-12">
-      {% input field="Demographics.birth_place" change="birth_place_change()" %}
-      <div ng-show="editing.demographics.birth_place.length && editing.demographics.birth_place !== 'United Kingdom'">
-        {% input field="SocialHistory.arrival_in_the_uk" %}
-      </div>
-    </div>
-  </div>
-  {% textarea  field="SocialHistory.occupation"  %}
 </div>
