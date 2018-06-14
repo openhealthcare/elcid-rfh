@@ -328,7 +328,7 @@ class AsyncTaskTestCase(ApiTestCase):
             started=timezone.now()
         )
         loader.async_task(patient, patient_load)
-        delay.assert_called_once_with(patient, patient_load)
+        delay.assert_called_once_with(patient.id, patient_load.id)
 
 
 class GoodToGoTestCase(ApiTestCase):

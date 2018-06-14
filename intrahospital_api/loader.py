@@ -153,7 +153,7 @@ def load_patient(patient, async=None):
 
 def async_task(patient, patient_load):
     from intrahospital_api import tasks
-    tasks.load.delay(patient, patient_load)
+    tasks.load.delay(patient.id, patient_load.id)
 
 
 def good_to_go():
@@ -332,7 +332,9 @@ def update_from_batch(data_deltas):
         update_patient_from_batch(demographics_set, data_delta)
 
 
-def async_load_patient(patient, patient_load):
+def async_load_patient(patient_id, patient_load_id):
+    patient = Patient.objects.get(id=patient_id)
+    patient_load = models.InitialPatientLoad.objects.get(id=patient_load_id)
     try:
         _load_patient(patient, patient_load)
     except:
