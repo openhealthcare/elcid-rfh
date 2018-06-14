@@ -1300,6 +1300,99 @@ class DiffStatusTestCase(FabfileTestCase):
         )
 
 
+@mock.patch("fabfile.dump_database")
+@mock.patch("fabfile.copy_backup")
+@mock.patch("fabfile.send_error_email")
+class DumpAndCopyTestCase(FabfileTestCase):
+    def test_error_raised(
+        self, send_error_email, copy_backup, dump_database
+    ):
+        dump_database.side_effect = ValueError("break")
+        fabfile.dump_and_copy("some_env")
+        send_error_email.assert_called_once_with(
+            "database backup failed with 'break'"
+        )
+        self.assertFalse(copy_backup.called)
+
+    @mock.patch("fabfile.Env")
+    def test_error_not_raised(
+        self, Env, send_error_email, copy_backup, dump_database
+    ):
+        Env.return_value = self.prod_env
+        fabfile.dump_and_copy("some_env")
+        dump_database.assert_called_once_with(
+            self.prod_env.database_name, self.prod_env.backup_name
+        )
+        copy_backup.assert_called_once_with(self.prod_env)
+
+
+@mock.patch("fabfile.is_load_running")
+@mock.patch("fabfile.local")
+@mock.patch("fabfile.time")
+@mock.patch("fabfile.datetime")
+@mock.patch("fabfile.os")
+@mock.patch("fabfile.print", create=True)
+class DumpDatabaseTestCase(FabfileTestCase):
+    def test_status_found(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling test_status_found"
+        is_load_running.return_value = None
+        os.path.return_value = True
+        fabfile.dump_database("db_name", "backup_name")
+        self.assertEqual(is_load_running.call_count, 1)
+        self.assertFalse(time.sleep.called)
+        local.assert_called_once_with(
+            "pg_dump db_name -U ohc > backup_name"
+        )
+
+    def test_timed_out(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling test_timed_out"
+        is_load_running.return_value = True
+        os.path.return_value = True
+        first_call = datetime.datetime.now()
+        second_call = first_call + datetime.timedelta(seconds=3640)
+        dt.datetime.now.side_effect = [first_call, second_call]
+        with self.assertRaises(fabfile.FabException) as fe:
+            fabfile.dump_database("db_name", "backup_name")
+        self.assertEqual(
+            str(fe.exception),
+            "Database synch failed as it has been running for > an hour"
+        )
+
+    def test_fails_first_time_works_the_next(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling test_fails_first_time_works_the_next"
+        is_load_running.side_effect = [True, None]
+        os.path.return_value = True
+        fabfile.dump_database("db_name", "backup_name")
+
+        print_fun.assert_called_once_with(
+            "One or more loads are currently running, sleeping for 30 secs"
+        )
+        time.sleep.assert_called_once_with(30)
+
+        local.assert_called_once_with(
+            "pg_dump db_name -U ohc > backup_name"
+        )
+
+    def no_cron_job(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling no_cron_job"
+        os.path.return_value = False
+        fabfile.dump_database("db_name", "backup_name")
+        self.assertFalse(is_load_running.called)
+        self.assertFalse(time.called)
+        self.assertFalse(dt.called)
+        local.assert_called_once_with(
+            "pg_dump db_name -U ohc > backup_name"
+        )
+
+
 class DeployProdTestCase(FabfileTestCase):
     @mock.patch("fabfile.diff_status")
     @mock.patch("fabfile.infer_current_branch")
