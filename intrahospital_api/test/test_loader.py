@@ -320,15 +320,45 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
 
 
 @mock.patch('intrahospital_api.tasks.load.delay')
+@mock.patch('intrahospital_api.loader.transaction')
 class AsyncTaskTestCase(ApiTestCase):
-    def test_async_task(self, delay):
+    def test_async_task(self, transaction, delay):
         patient, _ = self.new_patient_and_episode_please()
         patient_load = imodels.InitialPatientLoad.objects.create(
             patient=patient,
             started=timezone.now()
         )
         loader.async_task(patient, patient_load)
+        call_args = transaction.on_commit.call_args
+        call_args[0][0]()
         delay.assert_called_once_with(patient.id, patient_load.id)
+
+
+@mock.patch('intrahospital_api.loader.log_errors')
+@mock.patch('intrahospital_api.loader._load_patient')
+class AsyncLoadPatientTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        # additional patient so that they have different ids
+        # so we can confirm ordering
+        patient, _ = self.new_patient_and_episode_please()
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient_load = imodels.InitialPatientLoad.objects.create(
+            patient=patient,
+            started=timezone.now()
+        )
+
+    def test_success(self, load_patient, log_errors):
+        loader.async_load_patient(self.patient.id, self.patient_load.id)
+        self.assertFalse(log_errors.called)
+        load_patient.assert_called_once_with(self.patient, self.patient_load)
+
+    def test_raise(self, load_patient, log_errors):
+        load_patient.side_effect = ValueError('Boom')
+        with self.assertRaises(ValueError) as ve:
+            loader.async_load_patient(self.patient.id, self.patient_load.id)
+
+        log_errors.assert_called_once_with("_load_patient")
+        self.assertEqual(str(ve.exception), "Boom")
 
 
 class GoodToGoTestCase(ApiTestCase):

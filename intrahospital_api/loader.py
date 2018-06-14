@@ -153,7 +153,11 @@ def load_patient(patient, async=None):
 
 def async_task(patient, patient_load):
     from intrahospital_api import tasks
-    tasks.load.delay(patient.id, patient_load.id)
+    # wait for all transactions to complete then launch the celery task
+    # http://celery.readthedocs.io/en/latest/userguide/tasks.html#database-transactions
+    transaction.on_commit(
+        lambda: tasks.load.delay(patient.id, patient_load.id)
+    )
 
 
 def good_to_go():
