@@ -41,4 +41,4 @@ opal==0.10.1
 # Open Health Care packages on PyPi
 # opal-observations==0.3.0
 
--e git+https://github.com/openhealthcare/opal-lab.git@v0.4.0#egg=opal_lab
+-e git+https://github.com/openhealthcare/opal-lab.git@v0.4.1#egg=opal_lab
