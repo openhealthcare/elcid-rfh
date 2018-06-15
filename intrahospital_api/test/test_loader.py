@@ -173,17 +173,10 @@ class GetBatchStartTime(ApiTestCase):
 
 
 class LogErrorsTestCase(ApiTestCase):
-    @mock.patch(
-        "intrahospital_api.loader.logging.getLogger",
-    )
     @mock.patch.object(loader.logger, "error")
-    def test_log_errors(self, err, getLogger):
+    def test_log_errors(self, err):
         loader.log_errors("blah")
-        getLogger.assert_called_once_with("error_emailer")
-        getLogger().error.assert_called_once_with(
-            "unable to run blah"
-        )
-        self.assertTrue(err.called)
+        err.assert_called_once_with('unable to run blah \n None\n')
 
 
 class AnyLoadsRunningTestCase(ApiTestCase):
@@ -344,6 +337,14 @@ class GoodToGoTestCase(ApiTestCase):
             "We don't appear to have had an initial load run!"
         )
 
+    @mock.patch("intrahospital_api.loader.test_long_running_initial_loads")
+    def test_success(self, test_long_running_initial_loads):
+        bpl = imodels.BatchPatientLoad()
+        bpl.start()
+        bpl.complete()
+        self.assertTrue(loader.good_to_go())
+        self.assertEqual(test_long_running_initial_loads.call_count, 1)
+
     def test_multiple_running(self):
         imodels.BatchPatientLoad.objects.create(
             state=imodels.BatchPatientLoad.RUNNING,
@@ -420,6 +421,52 @@ class GoodToGoTestCase(ApiTestCase):
             loader.good_to_go()
         self.assertTrue(
             str(ble.exception).startswith("Last load has not run since")
+        )
+
+
+@mock.patch("intrahospital_api.loader.logger.error")
+class TestLongRunningInitialLoadsTestCase(OpalTestCase):
+
+    def setUp(self, *args, **kwargs):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.three_hours_ago = timezone.now() - datetime.timedelta(
+            seconds=3 * 60 * 60
+        )
+        self.two_hours_ago = timezone.now() - datetime.timedelta(
+            seconds=2 * 60 * 60
+        )
+
+    def create_ipl(self, start_time=None):
+        ipl = imodels.InitialPatientLoad(patient=self.patient)
+        ipl.start()
+        if start_time:
+            ipl.started = start_time
+            ipl.save()
+        return ipl
+
+    def test_if_there_are_no_ipls(self, error_logger):
+        self.assertFalse(imodels.InitialPatientLoad.objects.exists())
+        loader.test_long_running_initial_loads()
+        self.assertFalse(error_logger.called)
+
+    def test_if_there_are_finished_ipls(self, error_logger):
+        ipl = self.create_ipl(self.three_hours_ago)
+        ipl.complete()
+        ipl.stopped = self.two_hours_ago
+        ipl.save()
+        loader.test_long_running_initial_loads()
+        self.assertFalse(error_logger.called)
+
+    def test_if_there_is_not_a_long_running_ipl(self, error_logger):
+        self.create_ipl()
+        loader.test_long_running_initial_loads()
+        self.assertFalse(error_logger.called)
+
+    def test_if_there_is_a_long_running_ipl(self, error_logger):
+        self.create_ipl(self.three_hours_ago)
+        loader.test_long_running_initial_loads()
+        error_logger.assert_called_once_with(
+            "Initial Patient Load 1 has been running for 10800 seconds"
         )
 
 

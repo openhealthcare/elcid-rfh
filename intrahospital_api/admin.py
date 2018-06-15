@@ -5,7 +5,7 @@ from django.contrib import admin
 from reversion import models as rmodels
 from django.utils.html import format_html
 from opal import models as omodels
-from opal.admin import PatientAdmin as OldPatientAdmin
+from opal.admin import PatientAdmin as OldPatientAdmin, PatientSubrecordAdmin
 from django.core.urlresolvers import reverse
 from intrahospital_api import loader
 from intrahospital_api import models as imodels
@@ -68,8 +68,7 @@ class PatientAdmin(OldPatientAdmin):
     )
 
     def refresh_lab_tests(self, request, queryset):
-        for patient in queryset:
-            loader.load_patient(patient, async=False)
+        loader.cancel_and_load(queryset)
 
     def upstream_lab_results(self, obj):
         hospital_number = obj.demographics_set.first().hospital_number
@@ -90,8 +89,42 @@ class PatientAdmin(OldPatientAdmin):
     refresh_lab_tests.short_description = "Load in lab tests from upstream"
 
 
+class PatientLoadAdmin(admin.ModelAdmin):
+    list_filter = ['state']
+    ordering = ('-started',)
+
+
+class BatchPatientLoadAdmin(PatientLoadAdmin):
+    list_display = ["__str__", "started", "stopped", "state"]
+
+
+class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
+    list_display = [
+        "__str__", "patient_details", "started", "stopped", "state"
+    ]
+
+    actions = ["refresh_lab_tests"]
+
+    def patient_details(self, obj):
+        demographics = obj.patient.demographics_set.first()
+
+        return "%s (%s %s)" % (
+            demographics.hospital_number,
+            demographics.first_name,
+            demographics.surname
+        )
+
+    def refresh_lab_tests(self, request, queryset):
+        patients = omodels.Patient.objects.filter(
+            id__in=queryset.values_list("patient_id", flat=True)
+        )
+        loader.cancel_and_load(patients)
+
+
 admin.site.register(rmodels.Version, admin.ModelAdmin)
 admin.site.register(rmodels.Revision, admin.ModelAdmin)
 admin.site.unregister(omodels.Patient)
 admin.site.register(omodels.Patient, PatientAdmin)
-admin.site.register(imodels.BatchPatientLoad)
+admin.site.unregister(imodels.InitialPatientLoad)
+admin.site.register(imodels.BatchPatientLoad, BatchPatientLoadAdmin)
+admin.site.register(imodels.InitialPatientLoad, InitialPatientLoadAdmin)

@@ -1,9 +1,11 @@
+import logging
 from django.db import models
 from django.utils import timezone
-from django.conf import settings
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
+
+logger = logging.getLogger('intrahospital_api')
 
 
 class ExternalDemographics(PatientSubrecord):
@@ -25,6 +27,7 @@ class PatientLoad(models.Model):
     RUNNING = "running"
     FAILURE = "failure"
     SUCCESS = "success"
+    CANCELLED = "cancelled"
 
     state = models.CharField(
         max_length=255,
@@ -61,11 +64,21 @@ class PatientLoad(models.Model):
         self.stopped = timezone.now()
         self.state = self.SUCCESS
         self.save()
+        logger.info(
+            "{} {} succeeded in {}".format(
+                self.__class__.__name__, self.id, self.duration
+            )
+        )
 
     def failed(self):
         self.stopped = timezone.now()
         self.state = self.FAILURE
         self.save()
+        logger.info(
+            "{} {} failed in {}".format(
+                self.__class__.__name__, self.id, self.duration
+            )
+        )
 
     class Meta:
         abstract = True
