@@ -97,18 +97,12 @@ def log_errors(name):
 
 def any_loads_running():
     """
-        returns a boolean as to whether any loads are
+        returns a boolean as to whether batch loads are
         running, for use by things that synch databases
     """
-    patient_loading = models.InitialPatientLoad.objects.filter(
-        state=models.InitialPatientLoad.RUNNING
-    ).exists()
-
-    batch_loading = models.BatchPatientLoad.objects.filter(
+    return models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.RUNNING
     ).exists()
-
-    return patient_loading or batch_loading
 
 
 @timing
