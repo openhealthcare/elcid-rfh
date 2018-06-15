@@ -82,6 +82,10 @@ PRIVATE_SETTINGS = "{project_root}/private_settings.json".format(
 jinja_env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 
 
+class FabException(Exception):
+    pass
+
+
 class Env(object):
     def __init__(self, branch, remove_existing=False):
         self.branch = branch
@@ -695,31 +699,41 @@ def create_pg_pass(env, additional_settings):
 @task
 def dump_and_copy(branch_name):
     env = Env(branch_name)
-    dump_database(env, env.database_name, env.backup_name)
-    copy_backup(env)
+    try:
+        dump_database(env.database_name, env.backup_name)
+        copy_backup(env)
+    except Exception as e:
+        send_error_email("database backup failed with '{}'".format(
+            str(e.message))
+        )
 
 
-def dump_database(env, db_name, backup_name):
+def is_load_running():
+    return json.loads(
+        run_management_command("batch_load_running", env)
+    )["status"]
+
+
+def dump_database(db_name, backup_name):
     # we only care about whether a batch is running if the cron job
     # exists
     if os.path.exists(CRON_TEST_LOAD):
-        load_running = json.loads(
-            run_management_command("batch_load_running", env)
-        )["status"]
-        while load_running:
-            print("=" * 20)
+        start = datetime.datetime.now()
+        while is_load_running():
+            if (datetime.datetime.now() - start).seconds > 3600:
+                raise FabException(
+                    "Database synch failed as it has been running for > \
+an hour"
+                )
             print(
-                "One or more loads are currently running, sleeping for 3 secs"
+                "One or more loads are currently running, sleeping for 30 secs"
             )
-            print("=" * 20)
-            time.sleep(3)
-            load_running = json.loads(
-                run_management_command("batch_load_running", env)
-            )["status"]
+            time.sleep(30)
+
     pg = "pg_dump {db_name} -U {db_user} > {bu_name}"
     local(
         pg.format(
-            db_name=env.database_name,
+            db_name=db_name,
             db_user=DB_USER,
             bu_name=backup_name
         )
