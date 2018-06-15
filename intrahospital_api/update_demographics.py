@@ -3,7 +3,8 @@
 """
 import logging
 from django.db import transaction
-from opal.models import Patient, deserialize_date
+from opal.models import Patient
+from opal.core.serialization import deserialize_date
 from intrahospital_api import get_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
