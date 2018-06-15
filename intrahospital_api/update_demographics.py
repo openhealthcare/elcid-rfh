@@ -1,15 +1,14 @@
 """
     Handles updating demographics pulled in by the loader
 """
-import logging
 from django.db import transaction
 from opal.models import Patient, deserialize_date
 from intrahospital_api import get_api
+from intrahospital_api import logger
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 
 api = get_api()
-logger = logging.getLogger('intrahospital_api')
 
 
 def update_external_demographics(
@@ -96,15 +95,12 @@ def have_demographics_changed(
         return not upstream_demographics == our_dict
 
 
-def update_patient_demographics(patient, upstream_demographics_dict=None):
+def update_patient_demographics(patient, upstream_demographics_dict):
     """ Updates a patient with the upstream demographics, if they have changed.
     """
-    if upstream_demographics_dict is None:
-        upstream_demographics_dict = api.demographics(
-            patient.demographics_set.first().hospital_number
-        )
-
     demographics = patient.demographics_set.get()
+    if upstream_demographics_dict.get("hospital_number", None) == "":
+        upstream_demographics_dict.pop("hospital_number")
     if have_demographics_changed(
         upstream_demographics_dict, demographics
     ):

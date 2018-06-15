@@ -1,5 +1,6 @@
 import mock
 import copy
+from django.utils import timezone
 from django.test import override_settings
 from pytds.tds import OperationalError
 from datetime import datetime, date
@@ -98,54 +99,50 @@ FAKE_ROW_DATA = {
 }
 
 
+@mock.patch("intrahospital_api.apis.prod_api.time")
+@mock.patch("intrahospital_api.apis.prod_api.logger")
 class DbRetry(OpalTestCase):
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def test_retrys(self, time):
+    def test_retrys(self, logger, time):
         m = mock.MagicMock(
             side_effect=[OperationalError('boom'), "response"]
         )
         m.__name__ = "some_mock"
 
-        with mock.patch.object(prod_api.logger, "info") as info:
-            response = prod_api.db_retry(m)()
+        response = prod_api.db_retry(m)()
 
         self.assertEqual(
             response, "response"
         )
-        time.sleep.assert_called_once_with(30)
-        info.assert_called_once_with(
-            'some_mock: failed with boom, retrying in 30s'
+        time.sleep.assert_called_once_with(90)
+        logger.info.assert_called_once_with(
+            'some_mock: failed with boom, retrying in 90s'
         )
 
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def tests_works_as_normal(self, time):
+    def tests_works_as_normal(self, logger, time):
         m = mock.MagicMock()
         m.return_value = "response"
         m.__name__ = "some_mock"
 
-        with mock.patch.object(prod_api.logger, "info") as info:
-            response = prod_api.db_retry(m)()
+        response = prod_api.db_retry(m)()
 
         self.assertEqual(
             response, "response"
         )
         self.assertFalse(time.sleep.called)
-        self.assertFalse(info.called)
+        self.assertFalse(logger.info.called)
 
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def tests_reraises(self, time):
+    def tests_reraises(self, logger, time):
         m = mock.MagicMock(
             side_effect=OperationalError('boom')
         )
         m.__name__ = "some_mock"
 
-        with mock.patch.object(prod_api.logger, "info") as info:
-            with self.assertRaises(OperationalError):
-                prod_api.db_retry(m)()
+        with self.assertRaises(OperationalError):
+            prod_api.db_retry(m)()
 
-        time.sleep.assert_called_once_with(30)
-        info.assert_called_once_with(
-            'some_mock: failed with boom, retrying in 30s'
+        time.sleep.assert_called_once_with(90)
+        logger.info.assert_called_once_with(
+            'some_mock: failed with boom, retrying in 90s'
         )
 
 
@@ -162,6 +159,24 @@ class RowTestCase(OpalTestCase):
             row.get_or_fallback("Department", "CRS_Deparment"),
             "something"
         )
+
+    def test_get_identifier_hospital_number(self):
+        row = self.get_row()
+        self.assertEqual(
+            row.get_identifier(), ("hospital_number", '20552710',)
+        )
+
+    def test_get_identifier_nhs_number(self):
+        row = self.get_row(Patient_Number="")
+        self.assertEqual(
+            row.get_identifier(), ("nhs_number", '7060976728',)
+        )
+
+    def test_get_identifier_none(self):
+        row = self.get_row(
+            Patient_Number="", Patient_ID_External=""
+        )
+        self.assertIsNone(row.get_identifier())
 
     def test_get_or_fall_back_hit_second(self):
         row = self.get_row(
@@ -411,6 +426,61 @@ class ProdApiTestcase(OpalTestCase):
             self.assertEqual(
                 getattr(api, k), v
             )
+
+    def test_data_hospital_number_deltas_not_found(self):
+        raw_data = copy.copy(FAKE_ROW_DATA)
+        row = prod_api.Row(raw_data)
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="something else"
+        )
+        with mock.patch.object(api, "data_delta_query") as data_delta_query:
+            data_delta_query.return_value = [row]
+            result = list(api.data_deltas(timezone.now()))
+
+        self.assertEqual(result, [])
+
+    def test_data_hospital_number_deltas_found(self):
+        raw_data = copy.copy(FAKE_ROW_DATA)
+        row = prod_api.Row(raw_data)
+        hospital_number = row.get_hospital_number()
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number=hospital_number
+        )
+        with mock.patch.object(api, "data_delta_query") as data_delta_query:
+            data_delta_query.return_value = [row]
+            result = list(api.data_deltas(timezone.now()))
+
+        self.assertEqual(
+            result[0]["demographics"]["hospital_number"], hospital_number
+        )
+        self.assertEqual(
+            len(result), 1
+        )
+
+    def test_data_hospital_number_deltas_found_with_nhs_number(self):
+        raw_data = copy.copy(FAKE_ROW_DATA)
+        raw_data["Patient_Number"] = ""
+        row = prod_api.Row(raw_data)
+        nhs_number = row.get_nhs_number()
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            nhs_number=nhs_number
+        )
+        with mock.patch.object(api, "data_delta_query") as data_delta_query:
+            data_delta_query.return_value = [row]
+            result = list(api.data_deltas(timezone.now()))
+
+        self.assertEqual(
+            result[0]["demographics"]["nhs_number"], nhs_number
+        )
+        self.assertEqual(
+            len(result), 1
+        )
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
     def test_execute_query_with_params(self, pytds):

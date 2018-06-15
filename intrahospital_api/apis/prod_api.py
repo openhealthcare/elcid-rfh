@@ -1,22 +1,19 @@
 import datetime
-import logging
 from functools import wraps
 import pytds
-import itertools
 import time
 from collections import defaultdict
 from pytds.tds import OperationalError
 from intrahospital_api.apis import base_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
+from intrahospital_api import logger
 from elcid.utils import timing
 from lab import models as lmodels
 from django.conf import settings
 from elcid.models import Demographics
 
 # if we fail in a query, the amount of seconds we wait before retrying
-RETRY_DELAY = 30
-
-logger = logging.getLogger('intrahospital_api')
+RETRY_DELAY = 90
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
@@ -75,7 +72,7 @@ def to_datetime_str(some_datetime):
 def db_retry(f):
     """ We are reading a database that is also receiving intermittent writes.
         When these writes are coming the DB locks.
-        Lets put in a retry after 30 seconds
+        Lets put in a retry after 90 seconds
     """
     @wraps(f)
     def wrap(*args, **kw):
@@ -145,6 +142,20 @@ class Row(object):
             result = self.db_row.get(secondary_field, "")
 
         return result
+
+    def get_identifier(self):
+        """ for reasons unknown the upstream database often has the
+            hospital number missing, however we can use the NHS number
+            in these cases
+        """
+        hospital_number = self.get_hospital_number()
+        if hospital_number:
+            return ("hospital_number", hospital_number,)
+
+        nhs_number = self.get_nhs_number()
+
+        if nhs_number:
+            return ("nhs_number", nhs_number)
 
     # Demographics Fields
     def get_hospital_number(self):
@@ -368,6 +379,9 @@ class ProdApi(base_api.BaseApi):
     @timing
     @db_retry
     def data_delta_query(self, since):
+        logger.info("Running data delta query since {}".format(
+            since
+        ))
         all_rows = self.execute_query(
             self.all_data_since_query,
             params=dict(since=since)
@@ -386,13 +400,18 @@ class ProdApi(base_api.BaseApi):
 
         """
         all_rows = self.data_delta_query(some_datetime)
-        hospital_number_to_rows = itertools.groupby(
-            all_rows, lambda x: x.get_hospital_number()
-        )
-        for hospital_number, rows in hospital_number_to_rows:
-            if Demographics.objects.filter(
-                hospital_number=hospital_number
-            ).exists():
+        identifier_to_rows = defaultdict(list)
+
+        for row in all_rows:
+            identifier = row.get_identifier()
+            if identifier:
+                identifier_to_rows[identifier].append(row)
+
+        # because reasons, upstream sometimes have an nhs number
+        # but not a hospital number, we can work around this by
+        # allowsing both
+        for (i_type, i_value), rows in identifier_to_rows.items():
+            if Demographics.objects.filter(**{i_type: i_value}).exists():
                 demographics = list(rows)[0].get_demographics_dict()
                 lab_tests = self.cast_rows_to_lab_test(rows)
                 yield (

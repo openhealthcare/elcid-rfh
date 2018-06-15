@@ -3,6 +3,7 @@ from django.contrib.admin.sites import AdminSite
 from opal.core.test import OpalTestCase
 from opal import models as omodels
 from intrahospital_api import admin
+from intrahospital_api import models as imodels
 
 
 class TaggingListFilterTestCase(OpalTestCase):
@@ -88,4 +89,48 @@ raw/results/123</a>"
         self.assertEqual(
             self.admin.upstream_blood_culture_results(self.patient),
             r
+        )
+
+
+class InitialPatientLoadAdminTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient.demographics_set.update(
+            hospital_number="123",
+            first_name="Hermione",
+            surname="Granger"
+        )
+
+        self.ipl = imodels.InitialPatientLoad(patient=self.patient)
+        self.ipl.start()
+
+        # this patient has no initial patient load
+        self.new_patient_and_episode_please()
+
+        self.site = AdminSite()
+        self.admin = admin.InitialPatientLoadAdmin(
+            imodels.InitialPatientLoad, self.site
+        )
+
+    @mock.patch("intrahospital_api.admin.loader")
+    def test_refresh_lab_tests(self, loader):
+        request = mock.MagicMock()
+        queryset = imodels.InitialPatientLoad.objects.all()
+        self.admin.refresh_lab_tests(request, queryset)
+        loader.load_patient.assert_called_once_with(self.patient)
+
+    def test_patient_details_display(self):
+        self.assertEqual(
+            self.admin.patient_details(self.ipl),
+            "123 (Hermione Granger)"
+        )
+        self.patient.demographics_set.update(
+            hospital_number="",
+            first_name="",
+            surname=""
+        )
+        # we don't really mind this, we just don't want it to error
+        self.assertEqual(
+            self.admin.patient_details(self.ipl),
+            " ( )"
         )

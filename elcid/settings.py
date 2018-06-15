@@ -46,7 +46,7 @@ ALLOWED_HOSTS = [
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/London'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -231,7 +231,7 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(levelname)s %(message)s'
+            'format': '%(asctime)s %(filename)s %(levelname)s %(message)s'
         }
     },
     'handlers': {
@@ -269,7 +269,7 @@ LOGGING = {
             'propagate': True,
         },
         'intrahospital_api': {
-            'handlers': ['console'],
+            'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
         },

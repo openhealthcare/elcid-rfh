@@ -82,7 +82,7 @@ class ReconcileDemographicsTestCase(ApiTestCase):
         reconcile_patient_demographics.assert_called_once_with(self.patient)
 
 
-@mock.patch.object(update_demographics.logger, 'info')
+@mock.patch('intrahospital_api.update_demographics.logger')
 @mock.patch.object(update_demographics.api, 'demographics')
 class ReconcilePatientDemographicsTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
@@ -117,7 +117,7 @@ class ReconcilePatientDemographicsTestCase(ApiTestCase):
             self.patient.externaldemographics_set.first().updated
         )
 
-    def test_reconcilable_patient_demographics(self, demographics, info):
+    def test_reconcilable_patient_demographics(self, demographics, logger):
         demographics.return_value = dict(
             first_name="Jane",
             surname="Doe",
@@ -134,7 +134,7 @@ class ReconcilePatientDemographicsTestCase(ApiTestCase):
         demographics.date_of_birth = None
         demographics.save()
         update_demographics.reconcile_patient_demographics(patient)
-        self.assertFalse(info.called)
+        self.assertFalse(logger.info.called)
         self.assertEqual(
             patient.demographics_set.first().first_name,
             "Jane"
@@ -145,15 +145,15 @@ class ReconcilePatientDemographicsTestCase(ApiTestCase):
             "Male"
         )
 
-    def test_with_external_demographics_when_none(self, demographics, info):
+    def test_with_external_demographics_when_none(self, demographics, logger):
         demographics.return_value = None
         update_demographics.reconcile_patient_demographics(self.patient)
         self.assertIsNone(
             self.patient.externaldemographics_set.first().updated
         )
-        info.assert_called_once_with("unable to find 123")
+        logger.info.assert_called_once_with("unable to find 123")
 
-    def test_handle_date_of_birth(self, demographics, info):
+    def test_handle_date_of_birth(self, demographics, logger):
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             external_system="test",
@@ -173,7 +173,6 @@ class ReconcilePatientDemographicsTestCase(ApiTestCase):
         )
 
 
-@mock.patch.object(update_demographics.api, 'demographics')
 class UpdatePatientDemographicsTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(UpdatePatientDemographicsTestCase, self).setUp(*args, **kwargs)
@@ -184,15 +183,17 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         demographics.updated = None
         demographics.save()
 
-    def test_update_patient_demographics_have_changed(self, demographics):
-        demographics.return_value = dict(first_name="Janey")
-        update_demographics.update_patient_demographics(self.patient)
+    def test_update_patient_demographics_have_changed(self):
+        update_demographics.update_patient_demographics(
+            self.patient, dict(first_name="Janey")
+        )
         self.assertEqual(
             self.patient.demographics_set.first().first_name,
             "Janey"
         )
 
-    def test_update_patient_demographics_have_not_changed(self, demographics):
-        demographics.return_value = dict(first_name="Jane")
-        update_demographics.update_patient_demographics(self.patient)
+    def test_update_patient_demographics_have_not_changed(self):
+        update_demographics.update_patient_demographics(
+            self.patient, dict(first_name="Jane")
+        )
         self.assertIsNone(self.patient.demographics_set.first().updated)

@@ -566,7 +566,7 @@ class CronTestCase(FabfileTestCase):
         self, print_function, local
     ):
         fabfile.write_cron_lab_tests(self.prod_env)
-        local.assert_called_once_with("echo '0/5 * * * * ohc \
+        local.assert_called_once_with("echo '*/15 * * * * ohc \
 /home/ohc/.virtualenvs/elcidrfh-some_branch/bin/python \
 /usr/lib/ohc/elcidrfh-some_branch/manage.py \
 batch_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \
@@ -1117,7 +1117,20 @@ class DeployTestTestCase(FabfileTestCase):
         deploy.assert_called_once_with(
             "new_branch", "some_backup", remove_existing=True
         )
-        env_constructor.assert_called_once_with("new_branch")
+        self.assertEqual(
+            env_constructor.call_args_list[0][0][0], "new_branch"
+        )
+        self.assertEqual(
+            run_management_command.call_args_list[0][0][0],
+            "batch_load --force"
+        )
+        self.assertEqual(
+            env_constructor.call_args_list[1][0][0], "new_branch"
+        )
+        self.assertEqual(
+            run_management_command.call_args_list[1][0][0],
+            "status_report"
+        )
 
         self.assertEqual(
             print_function.call_count, 4

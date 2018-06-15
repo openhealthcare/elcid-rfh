@@ -25,17 +25,26 @@ class PatientLoad(models.Model):
     RUNNING = "running"
     FAILURE = "failure"
     SUCCESS = "success"
+    CANCELLED = "cancelled"
+    STATE_CHOICES = (
+        (RUNNING, RUNNING,),
+        (FAILURE, FAILURE,),
+        (SUCCESS, SUCCESS,),
+        (CANCELLED, CANCELLED,),
+    )
 
     state = models.CharField(
         max_length=255,
         blank=True,
-        null=True
+        null=True,
+        choices=STATE_CHOICES
     )
 
     started = models.DateTimeField()
     stopped = models.DateTimeField(
         blank=True, null=True
     )
+
     count = models.IntegerField(
         blank=True, null=True
     )
@@ -52,9 +61,7 @@ class PatientLoad(models.Model):
     @property
     def duration(self):
         if not self.stopped:
-            raise ValueError(
-                "%s has not finished yet" % self
-            )
+            return
         return self.stopped - self.started
 
     def complete(self):
