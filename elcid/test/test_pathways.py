@@ -104,7 +104,6 @@ class TestAddPatientPathway(OpalTestCase):
             ["antifungal"]
         )
 
-
     def test_saves_without_tags(self):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],

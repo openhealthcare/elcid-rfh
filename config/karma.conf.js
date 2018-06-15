@@ -15,7 +15,7 @@ module.exports = function(config){
     __dirname + '/../elcid/assets/js/elcid/**/*.js',
     __dirname + '/../elcid/assets/js/elcidtest/*.js',
     __dirname + '/../intrahospital_api/static/js/intrahospital_api/*.js',
-    __dirname + '/../apps/tb/static/js/tb/controllers/*',
+    __dirname + '/../apps/tb/static/js/tb/**/*',
     __dirname + '/../apps/tb/static/js/test/**/*',
   ];
 

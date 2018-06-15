@@ -15,6 +15,7 @@ class TbPlugin(plugins.OpalPlugin):
         # Add your javascripts here!
         'opal.controllers': [
             # 'js/tb/app.js',
+            'js/tb/filters.js',
             'js/tb/controllers/tb_symptom_complex.js',
             'js/tb/controllers/patient_consultation.js',
             'js/tb/controllers/new_subrecord_step.js',

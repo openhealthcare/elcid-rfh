@@ -143,6 +143,13 @@ class SocialHistory(models.EpisodeSubrecord):
     )
 
 
+class Pregnancy(models.PatientSubrecord):
+    _is_singleton = True
+
+    pregnant = fields.BooleanField(default=False)
+    breast_feeding = fields.BooleanField(default=False)
+
+
 class Nationality(models.PatientSubrecord):
     _is_singleton = True
 

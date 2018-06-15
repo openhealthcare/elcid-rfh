@@ -45,6 +45,14 @@ class NewSubrecordStep(HelpTextStep):
     multiple = False
 
 
+class ConditionalHelpStep(HelpTextStep):
+    base_template = "pathway/steps/base_templates/conditional_help_step.html"
+
+    def __init__(self, *args, **kwargs):
+        self.condition = kwargs.pop("condition")
+        super(ConditionalHelpStep, self).__init__(*args, **kwargs)
+
+
 class TBConsultationPathway(pathways.PagePathway):
     display_name = "Initial Assessment"
     slug = "initial_assessment"
@@ -73,6 +81,7 @@ class TBConsultationPathway(pathways.PagePathway):
         ),
         HelpTextStep(
             template="pathway/steps/nationality.html",
+            help_text_template="pathway/steps/help_text/nationality.html",
             model=tb_models.Nationality,
         ),
         HelpTextStep(
@@ -98,10 +107,18 @@ class TBConsultationPathway(pathways.PagePathway):
         HelpTextStep(model=tb_models.SocialHistory),
         HelpTextStep(
             model=models.Antimicrobial,
-            template="pathway/steps/drug_history.html"
+            template="pathway/steps/drug_history.html",
+            help_text="Please enter prescribed and non-prescribed medication"
         ),
         HelpTextStep(model=tb_models.Allergies),
-        HelpTextStep(model=models.PastMedicalHistory),
+        ConditionalHelpStep(
+            model=tb_models.Pregnancy,
+            condition="editing.demographics.sex !== 'Male'"
+        ),
+        HelpTextStep(
+            model=models.PastMedicalHistory,
+            display_name="Medical and psychological history"
+        ),
         HelpTextStep(model=tb_models.Travel),
         NewSubrecordStep(
             model=obs_models.Observation,

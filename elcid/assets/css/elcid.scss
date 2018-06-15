@@ -251,3 +251,9 @@ a.list-group-item {
   color: lighten(#006c96, 10%);
   font-size: 24px;
 }
+
+.field-text{
+  // used in forms so that we can put straight text
+  // where we would put a form field
+  padding-top: 8px;
+}

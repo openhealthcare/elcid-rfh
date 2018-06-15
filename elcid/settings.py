@@ -168,12 +168,12 @@ INSTALLED_APPS = (
     'compressor',
     'opal.core.search',
     'lab',
-    'obs',
     'intrahospital_api',
     'elcid',
     'django.contrib.admin',
     'djcelery',
     'apps.tb',
+    'obs',
 )
 
 #### API Settings
@@ -206,7 +206,6 @@ ADD_PATIENT_LAB_TESTS = True
 #### END API Settings
 
 
-
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
@@ -220,6 +219,7 @@ if 'test' in sys.argv:
         'lab': 'lab.nomigrations',
         'intrahospital_api': 'intrahospital_api.nomigrations',
         'tb': 'apps.tb.nomigrations',
+        'obs': 'obs.nomigrations',
     }
 
 
