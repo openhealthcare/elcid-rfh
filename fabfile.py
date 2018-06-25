@@ -700,7 +700,7 @@ def create_pg_pass(env, additional_settings):
 def dump_and_copy(branch_name):
     env = Env(branch_name)
     try:
-        dump_database(env.database_name, env.backup_name)
+        dump_database(env, env.database_name, env.backup_name)
         copy_backup(env)
     except Exception as e:
         send_error_email("database backup failed with '{}'".format(
@@ -708,18 +708,18 @@ def dump_and_copy(branch_name):
         )
 
 
-def is_load_running():
+def is_load_running(env):
     return json.loads(
         run_management_command("batch_load_running", env)
     )["status"]
 
 
-def dump_database(db_name, backup_name):
+def dump_database(env, db_name, backup_name):
     # we only care about whether a batch is running if the cron job
     # exists
     if os.path.exists(CRON_TEST_LOAD):
         start = datetime.datetime.now()
-        while is_load_running():
+        while is_load_running(env):
             if (datetime.datetime.now() - start).seconds > 3600:
                 raise FabException(
                     "Database synch failed as it has been running for > \
@@ -760,7 +760,7 @@ def deploy_prod(old_branch, old_database_name=None):
     else:
         dbname = old_database_name
 
-    dump_database(dbname, old_env.release_backup_name)
+    dump_database(env, dbname, old_env.release_backup_name)
 
     write_cron_backup(new_env)
     old_status = run_management_command("status_report", old_env)
