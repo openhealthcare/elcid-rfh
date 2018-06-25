@@ -10,6 +10,7 @@ from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
+from opal.core import serialization
 from elcid import models as emodels
 from lab import models as lmodels
 from elcid.utils import timing
@@ -215,7 +216,7 @@ class LabTestResultsView(LoginRequiredViewset):
             }
             observation_date_range = sorted(
                 list(observation_date_range),
-                key=lambda x: omodels.deserialize_date(x)
+                key=lambda x: serialization.deserialize_date(x)
             )
             observation_date_range.reverse()
             long_form = False
