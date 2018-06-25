@@ -760,7 +760,7 @@ def deploy_prod(old_branch, old_database_name=None):
     else:
         dbname = old_database_name
 
-    dump_database(old_env, dbname, old_env.release_backup_name)
+    dump_database(dbname, old_env.release_backup_name)
 
     write_cron_backup(new_env)
     old_status = run_management_command("status_report", old_env)

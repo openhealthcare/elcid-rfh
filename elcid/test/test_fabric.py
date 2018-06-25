@@ -1433,7 +1433,6 @@ class DeployProdTestCase(FabfileTestCase):
         validate_private_settings.assert_called_once_with()
 
         dump_database.assert_called_once_with(
-            old_env,
             'elcidrfh_old_env',
             "/usr/lib/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql"
         )
