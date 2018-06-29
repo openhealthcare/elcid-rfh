@@ -113,6 +113,60 @@ class SerialisedTestCase(OpalTestCase):
             s[models.Diagnosis.get_api_name()][0]["condition"], "fever"
         )
 
+    def test_episode_patient_combinations(self):
+        episode = self.create_episode()
+        second_episode = episode.patient.create_episode()
+        antimicrobial_1 = second_episode.antimicrobial_set.create()
+        antimicrobial_1.drug = "Paracetomol"
+        antimicrobial_1.save()
+        second_patient, third_episode = self.new_patient_and_episode_please()
+        second_patient.demographics_set.update(first_name="Victoria")
+        antimicrobial_2 = third_episode.antimicrobial_set.create()
+        antimicrobial_2.drug = "Abacavir"
+        antimicrobial_2.save()
+
+
+        # these are not used and therefore should not be
+        # included
+        self.new_patient_and_episode_please()
+
+        serialized = episode_serialization.serialize(
+            Episode.objects.filter(id__in=[
+                episode.id, second_episode.id, third_episode.id
+            ]),
+            self.user,
+            subrecords=[models.Antimicrobial, models.Demographics]
+        )
+        self.assertEqual(
+            serialized[0]["demographics"][0]["first_name"], "Wilma"
+        )
+        self.assertEqual(
+            serialized[0]["antimicrobial"][0]["drug"], "Aspirin"
+        )
+        self.assertEqual(
+            serialized[0]["id"], episode.id
+        )
+
+        self.assertEqual(
+            serialized[1]["demographics"][0]["first_name"], "Wilma"
+        )
+        self.assertEqual(
+            serialized[1]["antimicrobial"][0]["drug"], "Paracetomol"
+        )
+        self.assertEqual(
+            serialized[1]["id"], second_episode.id
+        )
+
+        self.assertEqual(
+            serialized[2]["demographics"][0]["first_name"], "Victoria"
+        )
+        self.assertEqual(
+            serialized[2]["antimicrobial"][0]["drug"], "Abacavir"
+        )
+        self.assertEqual(
+            serialized[2]["id"], third_episode.id
+        )
+
     def test_tagging_set_when_empty(self):
         """ we should always serialize tagging, even if its empty
         """
@@ -123,6 +177,7 @@ class SerialisedTestCase(OpalTestCase):
             ]
         )
         self.assertEqual(result[0]["tagging"][0], dict(id=1))
+
 
     def test_tagging_set_when_populated(self):
         """ we should always serialize tagging, even if its empty

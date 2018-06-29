@@ -1321,7 +1321,7 @@ class DumpAndCopyTestCase(FabfileTestCase):
         Env.return_value = self.prod_env
         fabfile.dump_and_copy("some_env")
         dump_database.assert_called_once_with(
-            self.prod_env.database_name, self.prod_env.backup_name
+            self.prod_env, self.prod_env.database_name, self.prod_env.backup_name
         )
         copy_backup.assert_called_once_with(self.prod_env)
 
@@ -1339,7 +1339,7 @@ class DumpDatabaseTestCase(FabfileTestCase):
         print "calling test_status_found"
         is_load_running.return_value = None
         os.path.return_value = True
-        fabfile.dump_database("db_name", "backup_name")
+        fabfile.dump_database(self.prod_env, "db_name", "backup_name")
         self.assertEqual(is_load_running.call_count, 1)
         self.assertFalse(time.sleep.called)
         local.assert_called_once_with(
@@ -1356,7 +1356,7 @@ class DumpDatabaseTestCase(FabfileTestCase):
         second_call = first_call + datetime.timedelta(seconds=3640)
         dt.datetime.now.side_effect = [first_call, second_call]
         with self.assertRaises(fabfile.FabException) as fe:
-            fabfile.dump_database("db_name", "backup_name")
+            fabfile.dump_database(self.prod_env, "db_name", "backup_name")
         self.assertEqual(
             str(fe.exception),
             "Database synch failed as it has been running for > an hour"
@@ -1368,7 +1368,7 @@ class DumpDatabaseTestCase(FabfileTestCase):
         print "calling test_fails_first_time_works_the_next"
         is_load_running.side_effect = [True, None]
         os.path.return_value = True
-        fabfile.dump_database("db_name", "backup_name")
+        fabfile.dump_database(self.prod_env, "db_name", "backup_name")
 
         print_fun.assert_called_once_with(
             "One or more loads are currently running, sleeping for 30 secs"
