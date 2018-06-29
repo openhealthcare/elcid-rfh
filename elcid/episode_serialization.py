@@ -13,11 +13,17 @@ def serialize_subrecords(ids, user, subrecords_to_serialise):
         return {}
 
     result = defaultdict(lambda: defaultdict(list))
+
+    # set an empty list for all subrecords that we want to create
+    for id in ids:
+        for subrecord in subrecords_to_serialise:
+            result[id][subrecord.get_api_name()] = []
+
     if issubclass(subrecords_to_serialise[0], omodels.PatientSubrecord):
-        qs_args = dict(patient__in=ids)
+        qs_args = dict(patient_id__in=ids)
         key = "patient_id"
     else:
-        qs_args = dict(episode__in=ids)
+        qs_args = dict(episode_id__in=ids)
         key = "episode_id"
 
     for model in subrecords_to_serialise:
@@ -44,12 +50,12 @@ def serialize_episode_subrecords(episodes, user, subrecords=None):
     """
 
     if not subrecords:
-        e_subrecords = episode_subrecords()
+        e_subrecords = list(episode_subrecords())
     else:  # Get only episode subrecords
         e_subrecords = [i for i in episode_subrecords() if i in subrecords]
 
     return serialize_subrecords(
-        episodes, user, e_subrecords
+        [i.id for i in episodes], user, e_subrecords
     )
 
 
@@ -65,7 +71,7 @@ def serialize_patient_subrecords(episodes, user, subrecords=None):
     """
     patient_ids = [i.patient_id for i in episodes]
     if not subrecords:
-        p_subrecords = patient_subrecords()
+        p_subrecords = list(patient_subrecords())
     else:  # Get only the patient subrecords
         p_subrecords = [i for i in patient_subrecords() if i in subrecords]
 
