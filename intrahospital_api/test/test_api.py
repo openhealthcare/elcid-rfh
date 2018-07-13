@@ -16,6 +16,7 @@ class PatientToDict(OpalTestCase):
             system, which in practical terms means UpstreamLabTests
             and UpstreamBloodCultures at present.
         """
+        self.maxDiff = None
         patient, episode = self.new_patient_and_episode_please()
         episode.set_tag_names(["something"], self.user)
         emodels.UpstreamLabTest.objects.create(
@@ -34,7 +35,6 @@ class PatientToDict(OpalTestCase):
         to_dicted = patient.to_dict(self.user)
         to_dicted.pop("lab_test")
         to_dicted["episodes"][episode.id].pop("lab_test")
-        to_dicted["episodes"][episode.id].pop("episode_history")
         result = api.patient_to_dict(patient, self.user)
         found_lab_tests_for_patient = result.pop("lab_test")
         found_lab_tests_for_episode = result["episodes"][episode.id].pop(
@@ -51,6 +51,26 @@ class PatientToDict(OpalTestCase):
         )
         self.assertEqual(
             found_lab_tests_for_episode, found_lab_tests_for_patient
+        )
+
+    def test_contains_empty_episode_subrecords(self):
+        """
+        We populate empty subrecords with an empty list
+        """
+        patient, episode = self.new_patient_and_episode_please()
+        result = api.patient_to_dict(patient, self.user)
+        self.assertEqual(
+            result["episodes"][episode.id]["antimicrobial"], []
+        )
+
+    def test_contains_empty_patient_subrecords(self):
+        """
+        We populate empty subrecords with an empty list
+        """
+        patient, episode = self.new_patient_and_episode_please()
+        result = api.patient_to_dict(patient, self.user)
+        self.assertEqual(
+            result["house_owner"], []
         )
 
     @mock.patch("intrahospital_api.api.patient_to_dict")
