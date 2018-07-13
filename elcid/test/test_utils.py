@@ -4,11 +4,13 @@ from opal.core.test import OpalTestCase
 from elcid import utils
 
 
-class TestCase(OpalTestCase):
+class ModelMethodLoggingTestCase(OpalTestCase):
 
     def test_logging_method(self):
         class LoggingTest(object):
-            @utils.method_logging
+            id = 1
+
+            @utils.model_method_logging
             def some_method(self):
                 return "some_var"
         a = LoggingTest()
@@ -21,11 +23,12 @@ class TestCase(OpalTestCase):
         first_call = info.call_args_list[0][0][0]
         second_call = info.call_args_list[1][0][0]
         self.assertEqual(
-            first_call, "2018-02-03 10:21:00 starting LoggingTest.some_method"
+            first_call, "2018-02-03 10:21:00 starting LoggingTest.some_method \
+(id 1)"
         )
         self.assertEqual(
             second_call,
-            "2018-02-03 10:22:00 finishing LoggingTest.some_method for \
+            "2018-02-03 10:22:00 finishing LoggingTest.some_method (id 1) for \
 2018-02-03 10:21:00"
         )
         self.assertEqual(

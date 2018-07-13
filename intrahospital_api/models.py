@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from elcid.utils import method_logging
+from elcid.utils import model_method_logging
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
@@ -44,7 +44,7 @@ class PatientLoad(models.Model):
     def verbose_name(self):
         return self.__class__._meta.verbose_name
 
-    @method_logging
+    @model_method_logging
     def start(self):
         self.started = timezone.now()
         self.state = self.RUNNING
@@ -58,13 +58,13 @@ class PatientLoad(models.Model):
             )
         return self.stopped - self.started
 
-    @method_logging
+    @model_method_logging
     def complete(self):
         self.stopped = timezone.now()
         self.state = self.SUCCESS
         self.save()
 
-    @method_logging
+    @model_method_logging
     def failed(self):
         self.stopped = timezone.now()
         self.state = self.FAILURE

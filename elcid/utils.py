@@ -19,18 +19,22 @@ def timing(f):
     return wrap
 
 
-def method_logging(f):
+def model_method_logging(f):
     @wraps(f)
     def wrap(self, *args, **kw):
         start_timestamp = timezone.now()
-        logger.info("{} starting {}.{}".format(
-            start_timestamp, self.__class__.__name__, f.__name__
+        logger.info("{} starting {}.{} (id {})".format(
+            start_timestamp,
+            self.__class__.__name__,
+            f.__name__,
+            self.id
         ))
         result = f(self, *args, **kw)
-        logger.info("{} finishing {}.{} for {}".format(
+        logger.info("{} finishing {}.{} (id {}) for {}".format(
             timezone.now(),
             self.__class__.__name__,
             f.__name__,
+            self.id,
             start_timestamp
         ))
         return result
