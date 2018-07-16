@@ -220,7 +220,8 @@ if 'test' in sys.argv:
         'intrahospital_api': 'intrahospital_api.nomigrations'
     }
 
-V_FORMAT = '%(asctime)s %(filename)s %(funcName)s %(levelname)s %(message)s'
+V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \
+%(levelname)s %(message)s'
 
 LOGGING = {
     'version': 1,

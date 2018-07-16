@@ -108,8 +108,9 @@ def any_loads_running():
     batch_loading = models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.RUNNING
     ).exists()
-
-    return patient_loading or batch_loading
+    result = patient_loading or batch_loading
+    logger.info("Checking loads are running {}".format(result))
+    return result
 
 
 @timing
@@ -230,6 +231,7 @@ load".format(time_ago.seconds)
 
 
 def batch_load(force=False):
+    logger.info("starting batch load")
     all_set = None
 
     # validate that we can run without exception
@@ -242,6 +244,7 @@ def batch_load(force=False):
         if not all_set:
             return
 
+    logger.info("good to go, commencing batch load")
     batch = models.BatchPatientLoad()
     batch.start()
     try:
