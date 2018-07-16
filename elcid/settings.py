@@ -220,6 +220,7 @@ if 'test' in sys.argv:
         'intrahospital_api': 'intrahospital_api.nomigrations'
     }
 
+V_FORMAT = '%(asctime)s %(filename)s %(funcName)s %(levelname)s %(message)s'
 
 LOGGING = {
     'version': 1,
@@ -231,7 +232,7 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s %(levelname)s %(message)s'
+            'format': V_FORMAT
         }
     },
     'handlers': {
@@ -269,7 +270,7 @@ LOGGING = {
             'propagate': True,
         },
         'intrahospital_api': {
-            'handlers': ['console'],
+            'handlers': ['console_detailed'],
             'level': 'INFO',
             'propagate': True,
         },
