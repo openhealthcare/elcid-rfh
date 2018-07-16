@@ -316,16 +316,28 @@ def update_patient_from_batch(demographics_set, data_delta):
     if not patient_demographics_set.exists():
         # this patient is not in our reconcile list,
         # move on, nothing to see here.
+        logging.info("unable to find a patient for {}".format(
+            upstream_demographics["hospital_number"]
+        ))
         return
 
     patient = patient_demographics_set.first().patient
+    logging.info("updating patient demographics for {}".format(
+        patient.id
+    ))
+    logging.info(json.dumps(upstream_demographics, indent=2))
     update_demographics.update_patient_demographics(
         patient, upstream_demographics
     )
+    logging.info("updating patient results for {}".format(
+        patient.id
+    ))
+    logging.info(json.dumps(data_delta["lab_tests"], indent=2))
     update_lab_tests.update_tests(
         patient,
         data_delta["lab_tests"],
     )
+    logging.info("batch patient {} update complete".format(patient.id))
 
 
 @timing
