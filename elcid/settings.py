@@ -38,8 +38,10 @@ MANAGERS = ADMINS
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
     'localhost',
+    '127.0.0.1',
     'ec2-52-16-175-249.eu-west-1.compute.amazonaws.com',
     '.openhealthcare.org.uk',
+    '.herokuapp.com'
     ]
 
 # Local time zone for this installation. Choices can be found here:
@@ -171,6 +173,8 @@ INSTALLED_APPS = (
     'elcid',
     'django.contrib.admin',
     'djcelery',
+    'apps.tb',
+    'obs',
 )
 
 #### API Settings
@@ -205,7 +209,6 @@ ADD_PATIENT_LAB_TESTS = True
 #### END API Settings
 
 
-
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
@@ -217,7 +220,9 @@ if 'test' in sys.argv:
         'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations'
+        'intrahospital_api': 'intrahospital_api.nomigrations',
+        'tb': 'apps.tb.nomigrations',
+        'obs': 'obs.nomigrations',
     }
 
 

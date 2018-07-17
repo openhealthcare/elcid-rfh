@@ -1,0 +1,41 @@
+<span>
+   <h5>[[ item.site ]]</h5>
+</span>
+<span ng-show="item.batch_number || item.expiry_date || item.induration">
+  <div class="row">
+    <div class="form-group">
+      <label class="control-label col-sm-4">
+        Batch number
+      </label>
+      <p class="form-control-static col-sm-8">
+        [[ item.batch_number ]]
+      </p>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="form-group">
+      <label class="control-label col-sm-4">
+        Expiry date
+      </label>
+      <p class="form-control-static col-sm-8">
+        [[ item.expiry_date | shortDate ]]
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="form-group">
+      <label class="control-label col-sm-4">
+        Induration
+      </label>
+      <p class="form-control-static col-sm-8">
+        [[ item.induration ]]
+      </p>
+    </div>
+  </div>
+</span>
+<span ng-hide="item.batch_number || item.expiry_date || item.induration">
+  Not Done
+</span>

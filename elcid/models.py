@@ -286,7 +286,6 @@ class Procedure(EpisodeSubrecord):
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
 
-
 class PrimaryDiagnosis(EpisodeSubrecord):
     """
     This is the confirmed primary diagnosisa
@@ -321,7 +320,7 @@ class Drug_delivered(lookuplists.LookupList):
 
 
 class Antimicrobial(EpisodeSubrecord):
-    _title = 'Antimicrobials'
+    _title = 'Medication History'
     _sort = 'start_date'
     _icon = 'fa fa-flask'
     _modal = 'lg'
@@ -561,7 +560,8 @@ class FinalDiagnosis(EpisodeSubrecord):
     hcai_related = models.BooleanField(verbose_name="HCAI related", default=False)
 
 
-class ImagingTypes(lookuplists.LookupList): pass
+class ImagingTypes(lookuplists.LookupList):
+    pass
 
 
 class Imaging(EpisodeSubrecord):
@@ -580,6 +580,65 @@ class PositiveBloodCultureHistory(PatientSubrecord):
     def _get_field_default(cls, name):
         # this should not be necessary...
         return None
+
+
+class ReferralRoute(omodels.EpisodeSubrecord):
+    _title = "Referral Route"
+    _icon = 'fa fa-level-up'
+    _is_singleton = True
+
+    REFERAL_TYPES = (
+        ("Primary care (GP)", "Primary care (GP)",),
+        ("Primary care (other)", "Primary care (other)",),
+        ("Secondary care", "Secondary care",),
+        ("TB service", "TB service",),
+        ("A&E", "A&E",),
+        ("Find & treat", "Find & treat",),
+        ("Prison screening", "Prison screening",),
+        ("Port Health/HPA", "Port Health/HPA",),
+    )
+
+    REFERRAL_REASON = (
+        ("Symptomatic", "Symptomatic",),
+        ("TB contact screening", "TB contact screening",),
+        ("New entract screening", "New entract screening",),
+        ("Transferred in TB Rx", "Transferred in TB Rx",),
+        ("Anti TNF Treatment", "Anti TNF Treatment",),
+        ("BCG Vaccination", "BCG Vaccination",),
+        ("Other", "Other",),
+    )
+
+    # date_of_referral
+    date_of_referral = models.DateField(null=True, blank=True)
+
+    referral_type = models.CharField(
+        max_length=256,
+        blank=True,
+        default="",
+        choices=REFERAL_TYPES
+    )
+
+    referral_reason = models.CharField(
+        max_length=256,
+        blank=True,
+        default="",
+        choices=REFERRAL_REASON
+    )
+
+
+class SymptomComplex(omodels.SymptomComplex):
+    pass
+
+
+class PastMedicalHistory(omodels.PastMedicalHistory):
+    pass
+
+
+class GP(omodels.PatientSubrecord):
+    name = models.CharField(
+        max_length=256
+    )
+    contact_details = models.TextField()
 
 
 # method for updating

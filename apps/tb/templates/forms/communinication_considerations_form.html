@@ -1,0 +1,6 @@
+{% load forms %}
+{% checkbox field="CommuninicationConsiderations.needs_an_interpreter" %}
+<div ng-show="editing.communinication_considerations.needs_an_interpreter">
+  {% input field="CommuninicationConsiderations.language" %}
+</div>
+{% checkbox field="CommuninicationConsiderations.sensory_impairment" %}
