@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.conf import settings
+from elcid.utils import model_method_logging
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
@@ -44,6 +44,7 @@ class PatientLoad(models.Model):
     def verbose_name(self):
         return self.__class__._meta.verbose_name
 
+    @model_method_logging
     def start(self):
         self.started = timezone.now()
         self.state = self.RUNNING
@@ -57,11 +58,13 @@ class PatientLoad(models.Model):
             )
         return self.stopped - self.started
 
+    @model_method_logging
     def complete(self):
         self.stopped = timezone.now()
         self.state = self.SUCCESS
         self.save()
 
+    @model_method_logging
     def failed(self):
         self.stopped = timezone.now()
         self.state = self.FAILURE
@@ -76,6 +79,7 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
     """ this model is the initial load of a patient
         future loads are done by the cron batch load
     """
+
     def __unicode__(self):
         hospital_number = self.patient.demographics_set.first().hospital_number
         if self.stopped:
@@ -97,6 +101,7 @@ class BatchPatientLoad(PatientLoad):
     """ This is the batch load of all reconciled patients
         every 5 mins
     """
+
     def __unicode__(self):
         if self.stopped:
             return "{} {} {} {}".format(
