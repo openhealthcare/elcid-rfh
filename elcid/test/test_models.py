@@ -1,6 +1,6 @@
 import datetime
-
 from django.test import TestCase
+from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 
 from opal.core import exceptions
@@ -363,6 +363,57 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         hl7_result.update_from_dict(update_dict, self.user)
         # validate that is hasn't been saved
         self.assertIsNone(hl7_result.id)
+
+    def test_get_relevant_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        yesterday = timezone.now() - datetime.timedelta(
+            1
+        )
+        upstream_lab_test.datetime_ordered = yesterday
+        upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 1
+        )
+        self.assertEqual(
+            relevant[0].datetime_ordered, yesterday
+        )
+        self.assertEqual(
+            relevant[0].extras["test_name"], "C REACTIVE PROTEIN"
+        )
+
+    def test_get_relevant_tests_over_three_weeks(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        four_weeks_ago = timezone.now() - datetime.timedelta(
+            4 * 7
+        )
+        upstream_lab_test.datetime_ordered = four_weeks_ago
+        upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 0
+        )
+
+    def test_get_not_relevant_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        yesterday = timezone.now() - datetime.timedelta(
+            1
+        )
+        upstream_lab_test.datetime_ordered = yesterday
+        upstream_lab_test.extras = dict(test_name="SOME OTHER TEST")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 0
+        )
 
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
