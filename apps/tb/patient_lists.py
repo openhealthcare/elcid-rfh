@@ -11,6 +11,10 @@ class TbPatientList(patient_lists.TaggedPatientList):
     slug = "tb_patient_list"
     tag = "tb_tag"
 
+    @classmethod
+    def visible_to(cls, user):
+        return user.is_superuser
+
     schema = [
         patient_lists.Column(
             title="Demographics",

@@ -182,6 +182,7 @@ class Employment(models.PatientSubrecord):
     occupation = fields.TextField(blank=True, null=True)
     financial_status = fields.CharField(
         max_length=256,
+        blank=True,
         choices=FINANICAL_STATUS_CHOICES
     )
 

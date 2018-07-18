@@ -6,6 +6,11 @@ from opal.core import menus
 from apps.tb.urls import urlpatterns
 
 
+class AddTBPatient(menus.MenuItem):
+    def for_user(self, user):
+        return user and user.is_superuser
+
+
 class TbPlugin(plugins.OpalPlugin):
     """
     Main entrypoint to expose this plugin to our Opal application.
@@ -30,7 +35,7 @@ class TbPlugin(plugins.OpalPlugin):
         ],
     }
     menuitems = [
-        menus.MenuItem(
+        AddTBPatient(
             href='/pathway/#/add_tb_patient',
             display='Add TB Patient',
             icon='fa fa-coffee',
