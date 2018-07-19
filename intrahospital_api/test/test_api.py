@@ -2,6 +2,7 @@ import mock
 from rest_framework.reverse import reverse
 
 from opal.core.test import OpalTestCase
+from opal import models as omodels
 from elcid import models as emodels
 from intrahospital_api import api
 from intrahospital_api import constants
@@ -108,3 +109,53 @@ class PatientToDict(OpalTestCase):
 
         result = self.client.get(url)
         self.assertEqual(result.status_code, 401)
+
+
+@mock.patch("intrahospital_api.api.get_api")
+class UpstreamDataViewsetTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.url = reverse(
+            'upstream-detail',
+            kwargs=dict(pk=self.patient.id),
+            request=self.rf.get("/")
+        )
+
+    def get_response(self, patient_id=None):
+        if patient_id is None:
+            patient_id = self.patient.id
+        url = reverse(
+            'upstream-detail',
+            kwargs=dict(pk=patient_id),
+            request=self.rf.get("/")
+        )
+        return self.client.get(url)
+
+    def test_get_found(self, get_api):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        result = dict(some="results")
+        get_api.return_value.results_for_hospital_number.return_value = result
+        response = self.get_response()
+        self.assertEqual(
+            response.data, result
+        )
+
+    def test_get_not_found(self, get_api):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        result = dict(some="results")
+        get_api.return_value.results_for_hospital_number.return_value = result
+        other_patient_id = omodels.Patient.objects.order_by("id").last().id + 1
+        self.assertEqual(self.get_response(other_patient_id).status_code, 404)
+
+    def test_not_logged_in(self, get_api):
+        result = dict(some="results")
+        get_api.return_value.results_for_hospital_number.return_value = result
+        self.assertEqual(self.get_response().status_code, 401)

@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from opal import models
 from elcid import models as emodels
 from lab import models as lmodels
-from intrahospital_api import loader
+from intrahospital_api import update_lab_tests
 
 
 class Command(BaseCommand):
@@ -32,5 +32,5 @@ class Command(BaseCommand):
         ).delete()
         with open(file_name) as f:
             results = json.load(f)
-            loader.save_lab_tests(patient, results, user)
+            update_lab_tests.update_tests(patient, results, user)
         print "success"
