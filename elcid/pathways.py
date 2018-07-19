@@ -66,7 +66,8 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             template="pathway/rfh_find_patient_form.html",
             step_controller="RfhFindPatientCtrl",
             display_name="Find patient",
-            icon="fa fa-user"
+            icon="fa fa-user",
+            model=models.Demographics
         ),
         Step(
             model=models.Location,
@@ -148,8 +149,8 @@ class BloodCultureStep(Step):
     step_controller = "BloodCulturePathwayFormCtrl"
     model = lmodels.LabTest
 
-    def pre_save(self, data, user, patient=None, episode=None):
-        existing_data = data.get(lmodels.LabTest.get_api_name(), [])
+    def pre_save(self, data, raw_data, user, patient=None, episode=None):
+        existing_data = raw_data.get(lmodels.LabTest.get_api_name(), [])
         ids = [i["id"] for i in existing_data if "id" in i]
         existing = lmodels.LabTest.objects.filter(patient=patient)
         existing = existing.filter(
