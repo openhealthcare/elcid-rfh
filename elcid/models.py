@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from lab import models as lmodels
 import opal.models as omodels
 
@@ -221,10 +222,10 @@ class UpstreamLabTest(lmodels.LabTest):
             "GENTAMICIN LEVEL",
             "CLOTTING SCREEN"
         ]
-        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
+        three_weeks_ago = timezone.now() - datetime.timedelta(3*7)
         qs = UpstreamLabTest.objects.filter(
             patient=patient,
-            datetime_ordered__gt=six_months_ago
+            datetime_ordered__gt=three_weeks_ago
         ).order_by("datetime_ordered")
         return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
