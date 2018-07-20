@@ -1,0 +1,31 @@
+{% with name=models.Antimicrobial.get_api_name %}
+  <div ng-repeat="parent in [episode]">
+    <div class="panel panel-default record-panel">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ models.Antimicrobial.get_icon }}"></i> {{ models.Antimicrobial.get_display_name }}
+          <span>
+              <i class="fa fa-plus-circle edit pull-right pointer"
+                 ng-click="parent.recordEditor.newItem('{{ name }}')"></i>
+              <i ng-show="parent.{{ name }}.length" class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".antimicrobial-panel"></i>
+         </span>
+        </h3>
+      </div>
+      <ul class="list-group antimicrobial-panel">
+        <li class="list-group-item" ng-repeat="item in parent.{{ name }}">
+          <div class="row">
+            <div class="col-md-9">
+              {% include models.Antimicrobial.get_display_template %}
+            </div>
+            <div class="col-md-3">
+              <span>
+                  <i class="fa fa-pencil edit pull-right pointer"
+                     ng-click="parent.recordEditor.editItem('{{ name }}', $index)"></i>
+              </span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+{% endwith %}
