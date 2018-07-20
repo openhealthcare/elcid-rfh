@@ -7,7 +7,25 @@ from elcid.api import (
     BloodCultureResultApi, UpstreamBloodCultureApi
 )
 from elcid import models as emodels
+from elcid import api
 from django.test import override_settings
+
+
+class ExtractObservationValueTestCase(OpalTestCase):
+    def test_extract_observation_value(self):
+        inputs_to_expected_results = (
+            ("<1", float(1),),
+            ("1>", float(1),),
+            (" 1 ", float(1),),
+            ("< 1", float(1),),
+            (" < 1", float(1),),
+            (".1 ", None),
+            ("0.1 ", 0.1),
+            ("1E", None),
+            ("'1'", None),
+        )
+        for input, expected in inputs_to_expected_results:
+            self.assertEqual(api.extract_observation_value(input), expected)
 
 
 class UpstreamBloodCultureApiTestCase(OpalTestCase):

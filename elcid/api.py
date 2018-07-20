@@ -1,10 +1,10 @@
 import datetime
+import re
 from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
-from django.db.models import Q
 from intrahospital_api import loader
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
@@ -12,9 +12,7 @@ from opal.core.api import patient_from_pk, LoginRequiredViewset
 from opal.core.views import json_response
 from opal.core import serialization
 from elcid import models as emodels
-from lab import models as lmodels
 from elcid.utils import timing
-from opal import models as omodels
 
 
 _LAB_TEST_TAGS = {
@@ -67,16 +65,11 @@ def extract_observation_value(observation_value):
         if its >12 return >12
         else return None
     """
-    obs_result = observation_value.split("~")[0]
-    try:
-        # we return None if its not numeric
+    regex = r'^[0-9][0-9.]*$'
+    obs_result = observation_value.strip()
+    obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
+    if re.match(regex, obs_result):
         return float(obs_result)
-    except ValueError:
-        try:
-            float(obs_result.strip("<").strip(">").strip())
-            return obs_result
-        except ValueError:
-            return None
 
 
 def get_observation_value(observation):
