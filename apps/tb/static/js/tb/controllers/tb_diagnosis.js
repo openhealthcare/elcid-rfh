@@ -1,10 +1,11 @@
 angular.module('opal.controllers').controller('TBDiagnosis', function(scope, step, episode){
+  "use strict";
+
   var tbTypeToStage = {
       "Active": "Active TB Treatment",
       "Latent": "Latent TB Treatment",
       "NTM": "NTM Treatment"
-  }
-  "use strict";
+  };
 
   var stageToTbType = _.invert(tbTypeToStage);
   var diagnosisId;
