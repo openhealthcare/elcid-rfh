@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 from functools import wraps
 import pytds
@@ -297,8 +298,12 @@ class ProdApi(base_api.BaseApi):
             as_dict=True
         ) as conn:
             with conn.cursor() as cur:
+                logger.info(
+                    "Running upstream query {} {}".format(query, params)
+                )
                 cur.execute(query, params)
                 result = cur.fetchall()
+        logger.info(result)
         return result
 
     @property
