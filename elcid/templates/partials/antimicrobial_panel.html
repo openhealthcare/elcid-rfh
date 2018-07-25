@@ -1,6 +1,6 @@
 {% with name=models.Antimicrobial.get_api_name %}
   <div ng-repeat="parent in [episode]">
-    <div class="panel panel-default record-panel">
+    <div class="panel panel-default record-panel antimicrobial-panel">
       <div class="panel-heading">
         <h3>
           <i class="{{ models.Antimicrobial.get_icon }}"></i> {{ models.Antimicrobial.get_display_name }}
@@ -11,7 +11,7 @@
          </span>
         </h3>
       </div>
-      <ul class="list-group antimicrobial-panel">
+      <ul class="list-group">
         <li class="list-group-item" ng-repeat="item in parent.{{ name }}">
           <div class="row">
             <div class="col-md-9">
