@@ -13,6 +13,9 @@ from opal.core.views import json_response
 from opal.core import serialization
 from elcid import models as emodels
 from elcid.utils import timing
+from opal import models as omodels
+import os
+import json
 
 
 _LAB_TEST_TAGS = {
@@ -35,6 +38,28 @@ _LAB_TEST_TAGS = {
         "OSMALITY", "PROTEIN ELECTROPHORESIS"
     ],
 }
+
+_ALWAYS_SHOW_AS_TABULAR = [
+    "UREA AND ELECTROLYTES",
+    "LIVER PROFILE",
+    "IMMUNOGLOBULINS",
+    "C REACTIVE PROTEIN",
+    "RENAL",
+    "FULL BLOOD COUNT",
+    "HAEMATINICS",
+    "HBA1C",
+    "THYROID FUNCTION TESTS",
+    "ARTERIAL BLOOD GASES",
+    "B12 AND FOLATE SCREEN",
+    "CLOTTING SCREEN",
+    "BICARBONATE",
+    "CARDIAC PROFILE",
+    "CHLORIDE",
+    "CHOLESTEROL/TRIGLYCERIDES",
+    "AFP",
+    "25-OH VITAMIN D",
+    "AMMONIA"
+]
 
 LAB_TEST_TAGS = defaultdict(list)
 
@@ -189,6 +214,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
+
         # so what I want to return is all observations to lab test desplay
         # name with the lab test properties on the observation
 
@@ -239,11 +265,12 @@ class LabTestResultsView(LoginRequiredViewset):
                 if test_name.strip() == "Sample Comment":
                     continue
 
-                # arbitrary but fine for prototyping, should we show it in a
-                # table
-                if isinstance(observation["observation_value"], (str, unicode,)):
-                    if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
-                        long_form = True
+                if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
+                    pass
+                else:
+                    if isinstance(observation["observation_value"], (str, unicode,)):
+                        if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
+                            long_form = True
 
                 if test_name not in by_observations:
                     obs_for_test_name = {
