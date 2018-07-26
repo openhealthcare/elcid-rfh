@@ -39,6 +39,6 @@ python-tds==1.8.2
 
 # Open Health Care packages on PyPi
 # opal-observations==0.3.0
-opal==v0.11.0
+opal==v0.11.2
 
 -e git+https://github.com/openhealthcare/opal-lab.git@v0.4.1#egg=opal_lab
