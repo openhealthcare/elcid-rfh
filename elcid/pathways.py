@@ -15,16 +15,6 @@ from opal.core.pathway.pathways import (
 )
 
 
-class IgnoreDemographicsMixin(object):
-    def save(self, data, user=None, episode=None, patient=None):
-        if patient:
-            if patient.demographics_set.exclude(external_system=None).exists():
-                data.pop("demographics")
-        return super(IgnoreDemographicsMixin, self).save(
-            data, user=user, episode=episode, patient=patient
-        )
-
-
 class SaveTaggingMixin(object):
     @transaction.atomic
     def save(self, data, user=None, episode=None, patient=None):
@@ -39,7 +29,7 @@ class SaveTaggingMixin(object):
         return patient, episode
 
 
-class RemovePatientPathway(IgnoreDemographicsMixin, SaveTaggingMixin, PagePathway):
+class RemovePatientPathway(SaveTaggingMixin, PagePathway):
     icon = "fa fa-sign-out"
     display_name = "Remove"
     finish_button_text = "Remove"
@@ -50,7 +40,8 @@ class RemovePatientPathway(IgnoreDemographicsMixin, SaveTaggingMixin, PagePathwa
         Step(
             display_name="No",
             template="pathway/remove.html",
-            step_controller="RemovePatientCtrl"
+            step_controller="RemovePatientCtrl",
+            save_data=False
         ),
     )
 
@@ -106,7 +97,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         return saved_patient, saved_episode
 
 
-class CernerDemoPathway(IgnoreDemographicsMixin, SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
+class CernerDemoPathway(SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 
@@ -131,7 +122,8 @@ class CernerDemoPathway(IgnoreDemographicsMixin, SaveTaggingMixin, RedirectsToPa
         Step(
             template="pathway/cernerletter.html",
             display_name="Clinical note",
-            icon="fa fa-envelope"
+            icon="fa fa-envelope",
+            save_data=False
         )
     )
 
@@ -157,12 +149,15 @@ class BloodCultureStep(Step):
             external_system=None
         )
         existing.exclude(id__in=ids).delete()
+        return super(BloodCultureStep, self).pre_save(
+            data, raw_data, user, patient=patient, episode=episode
+        )
 
 
-class BloodCulturePathway(IgnoreDemographicsMixin, PagePathway):
+class BloodCulturePathway(PagePathway):
     display_name = "Blood Culture"
     slug = "blood_culture"
 
     steps = (
-        BloodCultureStep(),
+        BloodCultureStep(delete_others=False),
     )
