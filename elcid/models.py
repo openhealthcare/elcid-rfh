@@ -5,6 +5,7 @@ import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from lab import models as lmodels
@@ -132,6 +133,22 @@ class UpstreamLabTest(lmodels.LabTest):
             These tests are read only
         """
         pass
+
+    def set_datetime_ordered(self, value, *args, **kwargs):
+        if value is None:
+            self.datetime_ordered = None
+        elif isinstance(value, datetime.datetime):
+            self.datetime_ordered = value
+        else:
+            input_format = settings.DATETIME_INPUT_FORMATS[0]
+
+            # never use DST, if we're an hour back, we're an hour back
+            with_tz = timezone.make_aware(
+                datetime.datetime.strptime(value, input_format),
+                timezone.get_current_timezone(),
+                is_dst=False
+            )
+            self.datetime_ordered = with_tz
 
     def update_from_api_dict(self, patient, data, user):
         """
