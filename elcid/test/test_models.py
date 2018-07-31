@@ -2,6 +2,8 @@ import datetime
 
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
+from django.conf import settings
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
@@ -323,6 +325,42 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         found_hl7_result = emodels.UpstreamLabTest.objects.get()
         self.assertEqual(
             found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
+        )
+
+    def test_set_datetime_ordered_none(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        lab_test.datetime_ordered = timezone.now()
+        lab_test.set_datetime_ordered(None)
+        self.assertIsNone(lab_test.datetime_ordered)
+
+    def test_set_datetime_ordered_datetime(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        now = timezone.now()
+        lab_test.set_datetime_ordered(now)
+        self.assertEqual(
+            lab_test.datetime_ordered, now
+        )
+
+    def test_set_datetime_ordered_string(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        date_str = "29/10/2017 10:00:00"
+        lab_test.set_datetime_ordered(date_str)
+        dt = datetime.datetime(2017, 10, 29, 10, 0)
+        dt = timezone.make_aware(dt)
+        self.assertEqual(
+            lab_test.datetime_ordered,
+            dt
+        )
+
+    def test_set_datetime_ordered_dst(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        date_str = "29/10/2017 1:00:00"
+        lab_test.set_datetime_ordered(date_str)
+        as_str = lab_test.datetime_ordered.strftime(
+            settings.DATETIME_INPUT_FORMATS[0]
+        )
+        self.assertEqual(
+            as_str, "29/10/2017 01:00:00"
         )
 
     def test_update_from_api_dict_first_time(self):
