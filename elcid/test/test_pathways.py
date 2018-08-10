@@ -1,19 +1,16 @@
 from datetime import date
 from mock import patch
-<<<<<<< HEAD
 from django.test import override_settings
 from django.contrib.auth.models import User
-from intrahospital_api import constants
-=======
->>>>>>> TB-development-branch
 
 from opal import models
 from opal.core.test import OpalTestCase
+from intrahospital_api import constants
 from elcid.pathways import (
-<<<<<<< HEAD
     AddPatientPathway, CernerDemoPathway, BloodCulturePathway,
     IgnoreDemographicsMixin
 )
+from apps.tb.pathways import AddTbPatientPathway
 from elcid import models as emodels
 
 
@@ -166,16 +163,8 @@ class BloodCulturePathwayTestCase(PathwayTestCase):
             "Paul"
         )
 
-=======
-    AddPatientPathway,
-    CernerDemoPathway,
-    BloodCulturePathway
-)
-from apps.tb.pathways import AddTbPatientPathway
-
 
 class TestBloodCulturePathway(OpalTestCase):
->>>>>>> TB-development-branch
     def test_delete_others(self):
         # in theory this should just work, but lets
         # double check the underlying api hasn't changed
