@@ -349,7 +349,7 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
 
 
 # The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+INTRAHOSPITAL_API = 'intrahospital_api.apis.lab_test_apis.dev_api.DevApi'
 
 # search with external demographics when adding a patient
 USE_UPSTREAM_DEMOGRAPHICS = True

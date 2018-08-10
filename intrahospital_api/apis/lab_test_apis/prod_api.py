@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 from functools import wraps
 import pytds

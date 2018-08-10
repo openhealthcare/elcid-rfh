@@ -50,13 +50,13 @@ from intrahospital_api import models
 from elcid import models as emodels
 from opal.models import Patient
 from elcid.utils import timing
-from intrahospital_api import get_api
+from intrahospital_api import get_lab_test_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api import update_demographics
 from intrahospital_api import update_lab_tests
 
-api = get_api()
+api = get_lab_test_api()
 logger = logging.getLogger('intrahospital_api')
 
 

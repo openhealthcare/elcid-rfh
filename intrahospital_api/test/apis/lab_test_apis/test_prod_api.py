@@ -4,7 +4,7 @@ from django.test import override_settings
 from pytds.tds import OperationalError
 from datetime import datetime, date
 from opal.core.test import OpalTestCase
-from intrahospital_api.apis import prod_api
+from intrahospital_api.apis.lab_test_apis import prod_api
 from lab import models as lmodels
 
 
@@ -98,8 +98,8 @@ FAKE_ROW_DATA = {
 }
 
 
+@mock.patch("intrahospital_api.apis.lab_test_apis.prod_api.time")
 class DbRetry(OpalTestCase):
-    @mock.patch("intrahospital_api.apis.prod_api.time")
     def test_retrys(self, time):
         m = mock.MagicMock(
             side_effect=[OperationalError('boom'), "response"]
@@ -117,7 +117,6 @@ class DbRetry(OpalTestCase):
             'some_mock: failed with boom, retrying in 30s'
         )
 
-    @mock.patch("intrahospital_api.apis.prod_api.time")
     def tests_works_as_normal(self, time):
         m = mock.MagicMock()
         m.return_value = "response"
@@ -132,7 +131,6 @@ class DbRetry(OpalTestCase):
         self.assertFalse(time.sleep.called)
         self.assertFalse(info.called)
 
-    @mock.patch("intrahospital_api.apis.prod_api.time")
     def tests_reraises(self, time):
         m = mock.MagicMock(
             side_effect=OperationalError('boom')
@@ -412,7 +410,7 @@ class ProdApiTestcase(OpalTestCase):
                 getattr(api, k), v
             )
 
-    @mock.patch('intrahospital_api.apis.prod_api.pytds')
+    @mock.patch('intrahospital_api.apis.lab_test_apis.prod_api.pytds')
     def test_execute_query_with_params(self, pytds):
         api = self.get_api()
         conn = pytds.connect().__enter__()
@@ -430,7 +428,7 @@ class ProdApiTestcase(OpalTestCase):
         )
         self.assertTrue(cursor.fetchall.called)
 
-    @mock.patch('intrahospital_api.apis.prod_api.pytds')
+    @mock.patch('intrahospital_api.apis.lab_test_apis.prod_api.pytds')
     def test_execute_query_without_params(self, pytds):
         api = self.get_api()
         conn = pytds.connect().__enter__()
@@ -443,7 +441,7 @@ class ProdApiTestcase(OpalTestCase):
         cursor.execute.assert_called_once_with("some query", None)
         self.assertTrue(cursor.fetchall.called)
 
-    @mock.patch("intrahospital_api.apis.prod_api.datetime.date")
+    @mock.patch("intrahospital_api.apis.lab_test_apis.prod_api.datetime.date")
     def test_raw_data(self, dt):
         dt.today.return_value = date(2017, 10, 1)
         api = self.get_api()

@@ -1,8 +1,7 @@
 from elcid import models as emodels
-from elcid.utils import timing
-from intrahospital_api import get_api
+from intrahospital_api import get_lab_test_api
 
-api = get_api()
+api = get_lab_test_api()
 
 
 def update_tests(patient, lab_tests):

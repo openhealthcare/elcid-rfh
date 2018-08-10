@@ -1,7 +1,7 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
-from intrahospital_api.apis import get_api
+from intrahospital_api.apis import get_lab_test_api
 from collections import defaultdict
 from opal.core.views import json_response
 
@@ -30,7 +30,7 @@ class PivottedData(StaffRequiredMixin, TemplateView):
     api_method = ""
 
     def get_context_data(self, *args, **kwargs):
-        api = get_api()
+        api = get_lab_test_api()
         ctx = super(PivottedData, self).get_context_data(
             *args, **kwargs
         )
@@ -74,7 +74,7 @@ class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
         ctx = super(IntrahospitalRawResultsView, self).get_context_data(
             *args, **kwargs
         )
-        api = get_api()
+        api = get_lab_test_api()
 
         results = api.raw_data(
             **self.kwargs
@@ -106,7 +106,7 @@ class IntrahospitalCookedResultsView(StaffRequiredMixin, TemplateView):
         ctx = super(IntrahospitalCookedResultsView, self).get_context_data(
             *args, **kwargs
         )
-        api = get_api()
+        api = get_lab_test_api()
         ctx["lab_results"] = api.results_for_hospital_number(
             kwargs["hospital_number"], **self.request.GET
         )
@@ -116,7 +116,7 @@ class IntrahospitalCookedResultsView(StaffRequiredMixin, TemplateView):
 
 @staff_member_required
 def results_as_json(request, *args, **kwargs):
-    api = get_api()
+    api = get_lab_test_api()
     results = api.results_for_hospital_number(
         kwargs["hospital_number"], **request.GET
     )
