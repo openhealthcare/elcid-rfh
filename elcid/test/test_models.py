@@ -1,7 +1,9 @@
 import datetime
-
 from django.test import TestCase
+from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
+from django.conf import settings
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
@@ -325,6 +327,42 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
             found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
         )
 
+    def test_set_datetime_ordered_none(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        lab_test.datetime_ordered = timezone.now()
+        lab_test.set_datetime_ordered(None)
+        self.assertIsNone(lab_test.datetime_ordered)
+
+    def test_set_datetime_ordered_datetime(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        now = timezone.now()
+        lab_test.set_datetime_ordered(now)
+        self.assertEqual(
+            lab_test.datetime_ordered, now
+        )
+
+    def test_set_datetime_ordered_string(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        date_str = "29/10/2017 10:00:00"
+        lab_test.set_datetime_ordered(date_str)
+        dt = datetime.datetime(2017, 10, 29, 10, 0)
+        dt = timezone.make_aware(dt)
+        self.assertEqual(
+            lab_test.datetime_ordered,
+            dt
+        )
+
+    def test_set_datetime_ordered_dst(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        date_str = "29/10/2017 1:00:00"
+        lab_test.set_datetime_ordered(date_str)
+        as_str = lab_test.datetime_ordered.strftime(
+            settings.DATETIME_INPUT_FORMATS[0]
+        )
+        self.assertEqual(
+            as_str, "29/10/2017 01:00:00"
+        )
+
     def test_update_from_api_dict_first_time(self):
         update_dict = dict(
             external_identifier="1",
@@ -363,6 +401,57 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         hl7_result.update_from_dict(update_dict, self.user)
         # validate that is hasn't been saved
         self.assertIsNone(hl7_result.id)
+
+    def test_get_relevant_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        yesterday = timezone.now() - datetime.timedelta(
+            1
+        )
+        upstream_lab_test.datetime_ordered = yesterday
+        upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 1
+        )
+        self.assertEqual(
+            relevant[0].datetime_ordered, yesterday
+        )
+        self.assertEqual(
+            relevant[0].extras["test_name"], "C REACTIVE PROTEIN"
+        )
+
+    def test_get_relevant_tests_over_three_weeks(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        four_weeks_ago = timezone.now() - datetime.timedelta(
+            4 * 7
+        )
+        upstream_lab_test.datetime_ordered = four_weeks_ago
+        upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 0
+        )
+
+    def test_get_not_relevant_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        yesterday = timezone.now() - datetime.timedelta(
+            1
+        )
+        upstream_lab_test.datetime_ordered = yesterday
+        upstream_lab_test.extras = dict(test_name="SOME OTHER TEST")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 0
+        )
 
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):

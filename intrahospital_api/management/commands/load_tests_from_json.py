@@ -4,11 +4,11 @@ as outputted by the prod api
 """
 import json
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from django.db import transaction
 from opal import models
 from elcid import models as emodels
 from lab import models as lmodels
-from intrahospital_api import loader
+from intrahospital_api import update_lab_tests
 
 
 class Command(BaseCommand):
@@ -16,12 +16,8 @@ class Command(BaseCommand):
         parser.add_argument('patient_id', type=int)
         parser.add_argument('file_name', type=str)
 
-    def handle(self, patient_id, file_name, *args, **options):
-        # we assume that there is a user called super
-        # which there won't be on prod, but we shouldn't
-        # be running this on prod
-        user = User.objects.get(username="super")
-        patient = models.Patient.objects.get(id=patient_id)
+    @transaction.atomic
+    def process(self, patient, results):
         lmodels.LabTest.objects.filter(
             patient=patient
         ).filter(
@@ -30,7 +26,14 @@ class Command(BaseCommand):
                 emodels.UpstreamBloodCulture.get_display_name(),
             ]
         ).delete()
+        update_lab_tests.update_tests(patient, results)
+
+    def handle(self, patient_id, file_name, *args, **options):
+        # we assume that there is a user called super
+        # which there won't be on prod, but we shouldn't
+        # be running this on prod
         with open(file_name) as f:
             results = json.load(f)
-            loader.save_lab_tests(patient, results, user)
+        patient = models.Patient.objects.get(id=patient_id)
+        self.process(patient, results)
         print "success"

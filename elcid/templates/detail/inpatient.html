@@ -25,7 +25,7 @@
   </div>
 
   {% record_panel models.Line %}
-  {% record_panel models.Antimicrobial %}
+  {% include "partials/antimicrobial_panel.html" %}
   {% record_panel models.Imaging %}
   {% include "partials/blood_culture_result_display.html" %}
   {% if permissions.view_lab_test_trends %}
