@@ -13,6 +13,14 @@ class BaseApi(object):
         """
         raise NotImplementedError('Please implement a results query')
 
+    def data_deltas(self, some_datetime):
+        """ All data (ie demographics/upstream lab tests) about a patient
+            since the datetime
+        """
+        raise NotImplementedError(
+            "Please a method that gets the data that has changed for a patient"
+        )
+
     def raw_data(self, hospital_number):
         """ The raw data that we receive from the api
         """
@@ -26,14 +34,6 @@ class BaseApi(object):
         """
         raise NotImplementedError(
             "Please a method that get's all cooked data about a patient"
-        )
-
-    def data_deltas(self, some_datetime):
-        """ All data (ie demographics/upstream lab tests) about a patient
-            since the datetime
-        """
-        raise NotImplementedError(
-            "Please a method that gets the data that has changed for a patient"
         )
 
     @property
