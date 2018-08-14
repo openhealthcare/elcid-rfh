@@ -1,0 +1,10 @@
+{% load forms %}
+{% datepicker field="ReferralRoute.date_of_referral" %}
+<div class="row">
+  <div class="col-md-6">
+    {% radio_vertical field="ReferralRoute.referral_type" %}
+  </div>
+  <div class="col-md-6">
+    {% radio_vertical field="ReferralRoute.referral_reason" %}
+  </div>
+</div>

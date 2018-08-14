@@ -57,19 +57,17 @@ angular.module('opal.controllers').controller('ResultView', function(
         return false;
       }
 
-      this.filter = function(someTag){
-        this.currentTag = someTag;
-        if(someTag === 'ALL'){
-          this.labTests = this.originalLabTests;
+      this.filter = function(someStr){
+        if(!someStr.length){
+          vm.labTests = angular.copy(vm.originalLabTests)
         }
         else{
-          this.labTests = _.filter(vm.originalLabTests, function(labTest){
-            return _.filter(labTest.tags, function(tag){
-              return tag == someTag
-            }).length;
+          var lSomeStr = someStr.toLowerCase();
+          vm.labTests = _.filter(this.labTests, function(labTest){
+            return labTest.lab_test_type.toLowerCase().indexOf(lSomeStr) !== -1;
           });
         }
-      }
+      };
 
       this.trendChange = function(labTest, observationName){
         /*

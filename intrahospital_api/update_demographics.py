@@ -1,16 +1,15 @@
 """
     Handles updating demographics pulled in by the loader
 """
-import logging
 from django.db import transaction
 from opal.models import Patient
 from opal.core.serialization import deserialize_date
+from intrahospital_api import logger
 from intrahospital_api import get_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 
 api = get_api()
-logger = logging.getLogger('intrahospital_api')
 
 
 def update_external_demographics(
