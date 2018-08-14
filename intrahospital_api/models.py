@@ -76,7 +76,7 @@ class PatientLoad(models.Model):
 
 
 class InitialPatientLoad(PatientLoad, PatientSubrecord):
-    """ this model is the initial load of a patient
+    """ This model is the initial load of a patient
         future loads are done by the cron batch load
     """
 
@@ -95,6 +95,11 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
                 self.state,
                 self.started
             )
+
+    def update_from_dict(self, data, *args, **kwargs):
+        """ For the purposes of the front end this model is read only.
+        """
+        pass
 
 
 class BatchPatientLoad(PatientLoad):

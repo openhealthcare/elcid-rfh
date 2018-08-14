@@ -85,25 +85,32 @@ def is_reconcilable(patient, external_demographics_dict):
 def have_demographics_changed(
     upstream_demographics, our_demographics_model
 ):
-        """ checks to see i the demographics have changed
-            if they haven't, don't bother updating
+    """ checks to see i the demographics have changed
+        if they haven't, don't bother updating
 
-            only compares keys that are coming from the
-            upstream dict
-        """
-        as_dict = our_demographics_model.to_dict(api.user)
-        relevent_keys = set(upstream_demographics.keys())
-        our_dict = {i: v for i, v in as_dict.items() if i in relevent_keys}
-        return not upstream_demographics == our_dict
+        only compares keys that are coming from the
+        upstream dict
+    """
+    as_dict = our_demographics_model.to_dict(api.user)
+    relevent_keys = set(upstream_demographics.keys())
+    our_dict = {i: v for i, v in as_dict.items() if i in relevent_keys}
+    return not upstream_demographics == our_dict
 
 
 def update_patient_demographics(patient, upstream_demographics_dict=None):
-    """ Updates a patient with the upstream demographics, if they have changed.
+    """
+    Updates a patient with the upstream demographics, if they have changed.
     """
     if upstream_demographics_dict is None:
         upstream_demographics_dict = api.demographics(
             patient.demographics_set.first().hospital_number
         )
+        # this should never really happen but has..
+        # It happens in the case of a patient who has previously
+        # matched with WinPath but who's hospital_number has
+        # then been changed by the admin.
+        if upstream_demographics_dict is None:
+            return
 
     demographics = patient.demographics_set.get()
     if have_demographics_changed(

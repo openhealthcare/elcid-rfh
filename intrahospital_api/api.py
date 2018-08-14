@@ -6,6 +6,7 @@ from opal import models as omodels
 from opal.core import subrecords
 from lab import models as lmodels
 from elcid.episode_serialization import serialize
+from intrahospital_api import get_api
 
 
 def patient_to_dict(patient, user):
@@ -47,6 +48,19 @@ def patient_to_dict(patient, user):
     d["episodes"] = episode_id_to_episode
 
     return d
+
+
+class UpstreamDataViewset(viewsets.ViewSet):
+    base_name = 'upstream'
+    permission_classes = (IsAuthenticated,)
+
+    def retrieve(self, request, pk=None):
+        patient = get_object_or_404(
+            omodels.Patient.objects.all(), pk=pk
+        )
+        api = get_api()
+        hospital_number = patient.demographics_set.first().hospital_number
+        return json_response(api.results_for_hospital_number(hospital_number))
 
 
 class PatientViewSet(viewsets.ViewSet):
