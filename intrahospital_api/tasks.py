@@ -1,9 +1,7 @@
 from __future__ import absolute_import
-import logging
+from intrahospital_api import logger
 
 from celery import shared_task
-
-logger = logging.getLogger('intrahospital_api')
 
 
 @shared_task

@@ -9,9 +9,6 @@ from elcid.utils import timing
 from lab import models as lmodels
 from elcid.models import Demographics
 
-# if we fail in a query, the amount of seconds we wait before retrying
-RETRY_DELAY = 30
-
 logger = logging.getLogger('intrahospital_api')
 
 

@@ -39,7 +39,6 @@
 """
 
 import datetime
-import logging
 import traceback
 import json
 from django.db import transaction
@@ -55,9 +54,9 @@ from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api import update_demographics
 from intrahospital_api import update_lab_tests
+from intrahospital_api import logger
 
 api = get_api()
-logger = logging.getLogger('intrahospital_api')
 
 
 @timing
@@ -91,9 +90,8 @@ def _initial_load():
 
 
 def log_errors(name):
-    email_logger = logging.getLogger('error_emailer')
-    email_logger.error("unable to run {}".format(name))
-    logger.error(traceback.format_exc())
+    error = "unable to run {} \n {}".format(name, traceback.format_exc())
+    logger.error(error)
 
 
 def any_loads_running():
@@ -300,14 +298,14 @@ def get_batch_start_time():
 def _batch_load():
     started = get_batch_start_time()
 
-    logging.info("start loading batch")
+    logger.info("start loading batch")
     # update the non reconciled
     update_demographics.reconcile_all_demographics()
-    logging.info("reconciled demographics")
+    logger.info("reconciled demographics")
 
-    lab_test_results_since = api.lab_test_results_since(started)
-    logging.info("calcualted data deltas")
-    update_from_batch(lab_test_results_since)
+    data_deltas = api.lab_test_results_since(started)
+    logger.info("calcualted data deltas")
+    update_from_batch(data_deltas)
 
 
 @transaction.atomic
@@ -319,32 +317,32 @@ def update_patient_from_batch(demographics_set, data_delta):
     if not patient_demographics_set.exists():
         # this patient is not in our reconcile list,
         # move on, nothing to see here.
-        logging.info("unable to find a patient for {}".format(
+        logger.info("unable to find a patient for {}".format(
             upstream_demographics["hospital_number"]
         ))
         return
 
     patient = patient_demographics_set.first().patient
-    logging.info("updating patient demographics for {}".format(
+    logger.info("updating patient demographics for {}".format(
         patient.id
     ))
-    logging.info(json.dumps(upstream_demographics, indent=2))
+    logger.info(json.dumps(upstream_demographics, indent=2))
     update_demographics.update_patient_demographics(
         patient, upstream_demographics
     )
-    logging.info("updating patient results for {}".format(
+    logger.info("updating patient results for {}".format(
         patient.id
     ))
-    logging.info(json.dumps(data_delta["lab_tests"], indent=2))
+    logger.info(json.dumps(data_delta["lab_tests"], indent=2))
     update_lab_tests.update_tests(
         patient,
         data_delta["lab_tests"],
     )
-    logging.info("batch patient {} update complete".format(patient.id))
+    logger.info("batch patient {} update complete".format(patient.id))
 
 
 @timing
-def update_from_batch(lab_test_results_since):
+def update_from_batch(data_deltas):
     # only look at patients that have been reconciled
     demographics_set = emodels.Demographics.objects.filter(
         external_system=EXTERNAL_SYSTEM
@@ -354,8 +352,8 @@ def update_from_batch(lab_test_results_since):
     demographics_set = demographics_set.filter(
         patient__initialpatientload__state=models.InitialPatientLoad.SUCCESS
     )
-    for data_delta in lab_test_results_since:
-        logging.info("batch updating with {}".format(data_delta))
+    for data_delta in data_deltas:
+        logger.info("batch updating with {}".format(data_delta))
         update_patient_from_batch(demographics_set, data_delta)
 
 
@@ -394,11 +392,11 @@ def _load_patient(patient, patient_load):
         )
         logger.info(json.dumps(results, indent=2))
         update_lab_tests.update_tests(patient, results)
-        logging.info(
+        logger.info(
             "tests updated for {} {}".format(patient.id, patient_load.id)
         )
         update_demographics.update_patient_demographics(patient)
-        logging.info(
+        logger.info(
             "demographics updated for {} {}".format(
                 patient.id, patient_load.id
             )
