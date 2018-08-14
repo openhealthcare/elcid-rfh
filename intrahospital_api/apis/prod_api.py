@@ -10,16 +10,16 @@ class ProdApi(base_api.BaseApi):
     def demographics(self, hospital_number):
         return self.lab_test_api.demographics(hospital_number)
 
-    def results_for_hospital_number(self, hospital_number):
-        return self.lab_test_api.results_for_hospital_number(hospital_number)
+    def lab_tests_for_hospital_number(self, hospital_number):
+        return self.lab_test_api.lab_tests_for_hospital_number(hospital_number)
 
-    def data_deltas(self, started):
-        return self.lab_test_api.data_deltas(started)
+    def lab_test_results_since(self, started):
+        return self.lab_test_api.lab_test_results_since(started)
 
-    def raw_data(self, hospital_number, lab_number=None, test_type=None):
-        return self.lab_test_api.raw_data(
+    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
+        return self.lab_test_api.raw_lab_tests(
             hospital_number, lab_number, test_type
         )
 
-    def cooked_data(self, hospital_number):
-        return self.lab_test_api.cooked_data(hospital_number)
+    def cooked_lab_tests(self, hospital_number):
+        return self.lab_test_api.cooked_lab_tests(hospital_number)

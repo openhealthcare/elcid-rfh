@@ -3,7 +3,6 @@ import logging
 import itertools
 from collections import defaultdict
 from django.conf import settings
-from intrahospital_api.apis import base_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.apis.backends import db
 from elcid.utils import timing
@@ -222,7 +221,7 @@ class LabTestApi(object):
         demographics_dict["external_system"] = EXTERNAL_SYSTEM
         return demographics_dict
 
-    def raw_data(self, hospital_number, lab_number=None, test_type=None):
+    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
         """ not all data, I lied. Only the last year's
         """
         db_date = datetime.date.today() - datetime.timedelta(365)
@@ -259,7 +258,7 @@ class LabTestApi(object):
         )
         return (Row(r) for r in all_rows)
 
-    def data_deltas(self, some_datetime):
+    def lab_test_results_since(self, some_datetime):
         """ yields an iterator of dictionary
 
             the dictionary contains
@@ -287,9 +286,9 @@ class LabTestApi(object):
                     )
                 )
 
-    def cooked_data(self, hospital_number):
-        raw_data = self.raw_data(hospital_number)
-        return (Row(row).get_all_fields() for row in raw_data)
+    def cooked_lab_tests(self, hospital_number):
+        raw_lab_tests = self.raw_lab_tests(hospital_number)
+        return (Row(row).get_all_fields() for row in raw_lab_tests)
 
     def cast_rows_to_lab_test(self, rows):
         """ We cast multiple rows to lab tests.
@@ -327,13 +326,13 @@ class LabTestApi(object):
         return result
 
     @timing
-    def results_for_hospital_number(self, hospital_number):
+    def lab_tests_for_hospital_number(self, hospital_number):
         """
             returns all the results for a particular person
 
             aggregated into labtest: observations([])
         """
 
-        raw_rows = self.raw_data(hospital_number)
+        raw_rows = self.raw_lab_tests(hospital_number)
         rows = (Row(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)

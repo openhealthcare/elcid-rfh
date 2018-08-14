@@ -16,38 +16,38 @@ class ProdApiTestCase(OpalTestCase):
             )
             self.assertEqual(result, "result")
 
-    def test_results_for_hospital_number(self):
+    def test_lab_tests_for_hospital_number(self):
         with mock.patch.object(self.api, "lab_test_api") as lab_tests:
-            lab_tests.results_for_hospital_number.return_value = "result"
-            result = self.api.results_for_hospital_number("some_number")
-            lab_tests.results_for_hospital_number.assert_called_once_with(
+            lab_tests.lab_tests_for_hospital_number.return_value = "result"
+            result = self.api.lab_tests_for_hospital_number("some_number")
+            lab_tests.lab_tests_for_hospital_number.assert_called_once_with(
                 "some_number"
             )
             self.assertEqual(result, "result")
 
-    def test_data_deltas(self):
+    def test_lab_test_results_since(self):
         with mock.patch.object(self.api, "lab_test_api") as lab_tests:
-            lab_tests.data_deltas.return_value = "result"
-            result = self.api.data_deltas("some_number")
-            lab_tests.data_deltas.assert_called_once_with(
+            lab_tests.lab_test_results_since.return_value = "result"
+            result = self.api.lab_test_results_since("some_number")
+            lab_tests.lab_test_results_since.assert_called_once_with(
                 "some_number"
             )
             self.assertEqual(result, "result")
 
-    def test_raw_data(self):
+    def test_raw_lab_tests(self):
         with mock.patch.object(self.api, "lab_test_api") as lab_tests:
-            lab_tests.raw_data.return_value = "result"
-            result = self.api.raw_data("some_number")
-            lab_tests.raw_data.assert_called_once_with(
+            lab_tests.raw_lab_tests.return_value = "result"
+            result = self.api.raw_lab_tests("some_number")
+            lab_tests.raw_lab_tests.assert_called_once_with(
                 "some_number", None, None
             )
             self.assertEqual(result, "result")
 
-    def test_cooked_data(self):
+    def test_cooked_lab_tests(self):
         with mock.patch.object(self.api, "lab_test_api") as lab_tests:
-            lab_tests.cooked_data.return_value = "result"
-            result = self.api.cooked_data("some_number")
-            lab_tests.cooked_data.assert_called_once_with(
+            lab_tests.cooked_lab_tests.return_value = "result"
+            result = self.api.cooked_lab_tests("some_number")
+            lab_tests.cooked_lab_tests.assert_called_once_with(
                 "some_number"
             )
             self.assertEqual(result, "result")

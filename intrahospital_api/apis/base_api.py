@@ -3,17 +3,17 @@ from django.contrib.auth.models import User
 
 
 class BaseApi(object):
-    def demographics(self, hospital_number):
+    def demographics_for_hospital_number(self, hospital_number):
         """ get me all demographics information for this patient
         """
         raise NotImplementedError('Please implement a demographics query')
 
-    def results(self, hospital_number):
+    def lab_tests_for_hospital_number(self, hospital_number):
         """ get me all lab test results for this hospital number
         """
-        raise NotImplementedError('Please implement a results query')
+        raise NotImplementedError('Please implement a lab tests query')
 
-    def data_deltas(self, some_datetime):
+    def lab_test_results_since(self, some_datetime):
         """ All data (ie demographics/upstream lab tests) about a patient
             since the datetime
         """
@@ -21,14 +21,14 @@ class BaseApi(object):
             "Please a method that gets the data that has changed for a patient"
         )
 
-    def raw_data(self, hospital_number):
+    def raw_lab_tests(self, hospital_number):
         """ The raw data that we receive from the api
         """
         raise NotImplementedError(
             "Please a method that get's all raw data about a patient"
         )
 
-    def cooked_data(self, hospital_number):
+    def cooked_lab_tests(self, hospital_number):
         """ The data 'cooked' into just the fields we want with
             the names we want
         """

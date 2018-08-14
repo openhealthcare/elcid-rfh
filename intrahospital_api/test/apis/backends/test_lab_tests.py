@@ -98,9 +98,9 @@ class LabTestApiTestCase(OpalTestCase):
     maxDiff = None
 
     def get_row(self, **kwargs):
-        raw_data = copy.copy(FAKE_ROW_DATA)
-        raw_data.update(kwargs)
-        return lab_tests.Row(raw_data)
+        raw_lab_tests = copy.copy(FAKE_ROW_DATA)
+        raw_lab_tests.update(kwargs)
+        return lab_tests.Row(raw_lab_tests)
 
     def test_demographics_dict(self):
         row = self.get_row()

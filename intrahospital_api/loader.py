@@ -117,7 +117,7 @@ def any_loads_running():
 def load_demographics(hospital_number):
     started = timezone.now()
     try:
-        result = api.demographics(hospital_number)
+        result = api.demographics_for_hospital_number(hospital_number)
     except:
         stopped = timezone.now()
         logger.info("demographics load failed in {}".format(
@@ -305,9 +305,9 @@ def _batch_load():
     update_demographics.reconcile_all_demographics()
     logging.info("reconciled demographics")
 
-    data_deltas = api.data_deltas(started)
+    lab_test_results_since = api.lab_test_results_since(started)
     logging.info("calcualted data deltas")
-    update_from_batch(data_deltas)
+    update_from_batch(lab_test_results_since)
 
 
 @transaction.atomic
@@ -344,7 +344,7 @@ def update_patient_from_batch(demographics_set, data_delta):
 
 
 @timing
-def update_from_batch(data_deltas):
+def update_from_batch(lab_test_results_since):
     # only look at patients that have been reconciled
     demographics_set = emodels.Demographics.objects.filter(
         external_system=EXTERNAL_SYSTEM
@@ -354,7 +354,7 @@ def update_from_batch(data_deltas):
     demographics_set = demographics_set.filter(
         patient__initialpatientload__state=models.InitialPatientLoad.SUCCESS
     )
-    for data_delta in data_deltas:
+    for data_delta in lab_test_results_since:
         logging.info("batch updating with {}".format(data_delta))
         update_patient_from_batch(demographics_set, data_delta)
 
@@ -386,7 +386,7 @@ def _load_patient(patient, patient_load):
             "deleted patient {} {}".format(patient.id, patient_load.id)
         )
 
-        results = api.results_for_hospital_number(hospital_number)
+        results = api.lab_tests_for_hospital_number(hospital_number)
         logger.info(
             "loaded results for patient {} {}".format(
                 patient.id, patient_load.id
