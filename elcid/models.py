@@ -261,11 +261,13 @@ class InfectionSource(lookuplists.LookupList):
 
 
 class Infection(EpisodeSubrecord):
-    _title = 'Infection Related Issues'
     _icon = 'fa fa-eyedropper'
     # this needs to be fixed
     source = ForeignKeyOrFreeText(InfectionSource)
     site = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Infection Related Issues"
 
 
 class MedicalProcedure(lookuplists.LookupList):
@@ -277,28 +279,31 @@ class SurgicalProcedure(lookuplists.LookupList):
 
 
 class Procedure(EpisodeSubrecord):
-    _title = 'Operation / Procedures'
     _icon = 'fa fa-sitemap'
     date = models.DateField(blank=True, null=True)
     medical_procedure = ForeignKeyOrFreeText(MedicalProcedure)
     surgical_procedure = ForeignKeyOrFreeText(SurgicalProcedure)
 
+    class Meta:
+        verbose_name = "Operation / Procedures"
+
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
+
 
 class PrimaryDiagnosis(EpisodeSubrecord):
     """
     This is the confirmed primary diagnosisa
     """
     _is_singleton = True
-    _title = 'Primary Diagnosis'
     _icon = 'fa fa-eye'
 
     condition = ForeignKeyOrFreeText(PrimaryDiagnosisCondition)
     confirmed = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name_plural = "Primary diagnoses"
+        verbose_name = 'Primary Diagnosis'
+        verbose_name_plural = "Primary Diagnoses"
 
 
 class Consultant(lookuplists.LookupList):
@@ -320,7 +325,6 @@ class Drug_delivered(lookuplists.LookupList):
 
 
 class Antimicrobial(EpisodeSubrecord):
-    _title = 'Medication History'
     _sort = 'start_date'
     _icon = 'fa fa-flask'
     _modal = 'lg'
@@ -337,6 +341,10 @@ class Antimicrobial(EpisodeSubrecord):
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
     no_antimicrobials = models.NullBooleanField(default=False)
 
+    class Meta:
+        verbose_name = "Medication History"
+        verbose_name_plural = "Medication Histories"
+
 
 class RenalFunction(lookuplists.LookupList):
     pass
@@ -347,7 +355,6 @@ class LiverFunction(lookuplists.LookupList):
 
 
 class MicrobiologyInput(EpisodeSubrecord):
-    _title = 'Clinical Advice'
     _sort = 'when'
     _icon = 'fa fa-comments'
     _modal = 'lg'
@@ -372,6 +379,10 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
+
+    class Meta:
+        verbose_name = "Clinical Advice"
+        verbose_name_plural = "Clinical Advice"
 
 
 class Line(EpisodeSubrecord):
@@ -460,8 +471,10 @@ class GramStainResult(lmodels.Observation, RfhObservation):
 
 
 class GramStain(BloodCultureMixin, lmodels.LabTest):
-    _title="Gram Stain"
     result = GramStainResult()
+
+    class Meta:
+        verbose_name = "Gram Stain"
 
 
 class QuickFishResult(lmodels.Observation, RfhObservation):
@@ -479,8 +492,10 @@ class QuickFishResult(lmodels.Observation, RfhObservation):
 
 
 class QuickFISH(BloodCultureMixin, lmodels.LabTest):
-    _title = "QuickFISH"
     result = QuickFishResult()
+
+    class Meta:
+        verbose_name = "QuickFISH"
 
 
 class GPCStaphResult(lmodels.Observation, RfhObservation):
@@ -498,7 +513,9 @@ class GPCStaphResult(lmodels.Observation, RfhObservation):
 
 class GPCStaph(BloodCultureMixin, lmodels.LabTest):
     result = GPCStaphResult()
-    _title = 'GPC Staph'
+
+    class Meta:
+        verbose_name = "GPC Staph"
 
 
 class GPCStrepResult(lmodels.Observation, RfhObservation):
@@ -516,7 +533,9 @@ class GPCStrepResult(lmodels.Observation, RfhObservation):
 
 class GPCStrep(BloodCultureMixin, lmodels.LabTest):
     result = GPCStrepResult()
-    _title = "GPC Strep"
+
+    class Meta:
+        verbose_name = "GPC Strep"
 
 
 class GNRResult(lmodels.Observation, RfhObservation):
@@ -534,8 +553,10 @@ class GNRResult(lmodels.Observation, RfhObservation):
 
 
 class GNR(BloodCultureMixin, lmodels.LabTest):
-    _title = 'GNR'
     result = GNRResult()
+
+    class Meta:
+        verbose_name = "GNR"
 
 
 class Organism(lmodels.Observation, RfhObservation):
@@ -546,18 +567,25 @@ class Organism(lmodels.Observation, RfhObservation):
 
 
 class BloodCultureOrganism(BloodCultureMixin, lmodels.LabTest):
-    _title = 'Organism'
     result = Organism()
+
+    class Meta:
+        verbose_name = "Organism"
 
 
 class FinalDiagnosis(EpisodeSubrecord):
     _icon = 'fa fa-pencil-square'
-    _title = "Final Diagnosis"
 
     source = models.CharField(max_length=255, blank=True)
     contaminant = models.BooleanField(default=False)
     community_related = models.BooleanField(default=False)
-    hcai_related = models.BooleanField(verbose_name="HCAI related", default=False)
+    hcai_related = models.BooleanField(
+        verbose_name="HCAI related", default=False
+    )
+
+    class Meta:
+        verbose_name = "Final Diagnosis"
+        verbose_name_plural = "Final Diagnoses"
 
 
 class ImagingTypes(lookuplists.LookupList):
@@ -583,7 +611,6 @@ class PositiveBloodCultureHistory(PatientSubrecord):
 
 
 class ReferralRoute(omodels.EpisodeSubrecord):
-    _title = "Referral Route"
     _icon = 'fa fa-level-up'
     _is_singleton = True
 
@@ -624,6 +651,9 @@ class ReferralRoute(omodels.EpisodeSubrecord):
         default="",
         choices=REFERRAL_REASON
     )
+
+    class Meta:
+        verbose_name = "Referral Route"
 
 
 class SymptomComplex(omodels.SymptomComplex):
