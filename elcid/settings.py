@@ -202,6 +202,8 @@ ADD_PATIENT_DEMOGRAPHICS = True
 # after we've added a patient, should we load in the labtests?
 ADD_PATIENT_LAB_TESTS = True
 
+EMAIL_JS_ERRORS = False
+
 #### END API Settings
 
 
@@ -264,7 +266,7 @@ LOGGING = {
             'propagate': True,
         },
         'error_emailer': {
-            'handlers': ['mail_admins'],
+            'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },

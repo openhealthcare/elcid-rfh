@@ -1,7 +1,6 @@
 """
 elCID Royal Free Hospital implementation
 """
-
 from opal.core import application
 from opal.core import menus
 
@@ -57,6 +56,19 @@ class Application(application.OpalApplication):
         icon='fa fa-plus',
         activepattern='/pathway/#/add_patient'
     )
+
+    @classmethod
+    def get_javascripts(klass):
+        """
+        Return the javascripts for our application
+        """
+        from django.conf import settings
+        scripts = super(Application, klass).get_javascripts()
+
+        if settings.EMAIL_JS_ERRORS:
+            scripts.append('js/elcid/services/exception_handler.js')
+
+        return scripts
 
     @classmethod
     def get_menu_items(klass, user=None):

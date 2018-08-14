@@ -196,6 +196,45 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         )
 
 
+class ErrorEmailerTestCase(OpalTestCase):
+    def setUp(self):
+        request = self.rf.get("/")
+        self.url = reverse(
+            "error_emailer-list",
+            request=request
+        )
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+
+    def test_post(self):
+        with mock.patch("elcid.api.logging") as logging:
+            self.client.post(
+                self.url, {
+                    "exception": "exception1",
+                    "cause": "cause1"
+                }
+            )
+            logging.getLogger.assert_called_once_with("error_emailer")
+            logging.getLogger().error.assert_called_once_with(
+                "exception: exception1, cause: cause1"
+            )
+
+    def test_post_without_cause(self):
+        with mock.patch("elcid.api.logging") as logging:
+            self.client.post(
+                self.url, {
+                    "exception": "exception1",
+                }
+            )
+            logging.getLogger.assert_called_once_with("error_emailer")
+            logging.getLogger().error.assert_called_once_with(
+                "exception: exception1, cause: None"
+            )
+
+
 class DemographicsSearchTestCase(OpalTestCase):
     def setUp(self):
         super(DemographicsSearchTestCase, self).setUp()
