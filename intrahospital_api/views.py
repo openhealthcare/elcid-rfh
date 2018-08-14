@@ -12,11 +12,11 @@ class StaffRequiredMixin(object):
         return super(StaffRequiredMixin, self).dispatch(*args, **kwargs)
 
 
-def pivot_data(raw_data):
+def pivot_data(raw_lab_tests):
     # pivot the row data to make it easy to read
     row_data_dict = defaultdict(list)
 
-    for row in raw_data:
+    for row in raw_lab_tests:
         for key, value in row.items():
             row_data_dict[key].append(value)
 
@@ -34,15 +34,15 @@ class PivottedData(StaffRequiredMixin, TemplateView):
         ctx = super(PivottedData, self).get_context_data(
             *args, **kwargs
         )
-        raw_data = getattr(api, self.api_method)(kwargs["hospital_number"])
-        row_data = pivot_data(raw_data)
+        raw_lab_tests = getattr(api, self.api_method)(kwargs["hospital_number"])
+        row_data = pivot_data(raw_lab_tests)
         row_data.sort(key=lambda x: x[0])
         ctx["row_data"] = row_data
         return ctx
 
 
 class IntrahospitalRawView(PivottedData):
-    api_method = "raw_data"
+    api_method = "raw_lab_tests"
 
     def get_context_data(self, *args, **kwargs):
         ctx = super(IntrahospitalRawView, self).get_context_data(
@@ -53,7 +53,7 @@ class IntrahospitalRawView(PivottedData):
 
 
 class IntrahospitalCookedView(PivottedData):
-    api_method = "cooked_data"
+    api_method = "cooked_lab_tests"
 
     def get_context_data(self, *args, **kwargs):
         ctx = super(IntrahospitalCookedView, self).get_context_data(
@@ -76,7 +76,7 @@ class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
         )
         api = get_api()
 
-        results = api.raw_data(
+        results = api.raw_lab_tests(
             **self.kwargs
         )
         results = sorted(
@@ -107,7 +107,7 @@ class IntrahospitalCookedResultsView(StaffRequiredMixin, TemplateView):
             *args, **kwargs
         )
         api = get_api()
-        ctx["lab_results"] = api.results_for_hospital_number(
+        ctx["lab_results"] = api.lab_tests_for_hospital_number(
             kwargs["hospital_number"], **self.request.GET
         )
         ctx["title"] = "Cooked Results Data"
@@ -117,7 +117,7 @@ class IntrahospitalCookedResultsView(StaffRequiredMixin, TemplateView):
 @staff_member_required
 def results_as_json(request, *args, **kwargs):
     api = get_api()
-    results = api.results_for_hospital_number(
+    results = api.lab_tests_for_hospital_number(
         kwargs["hospital_number"], **request.GET
     )
     return json_response(results)

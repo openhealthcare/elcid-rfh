@@ -76,7 +76,7 @@ class PivotTestCase(BaseViewTestcase):
 
     @mock.patch("intrahospital_api.views.get_api")
     def test_intrahospital_raw_view(self, get_api):
-        get_api().raw_data.return_value = [
+        get_api().raw_lab_tests.return_value = [
             dict(name="Wilma"),
             dict(name="Betty"),
         ]
@@ -91,7 +91,7 @@ class PivotTestCase(BaseViewTestcase):
 
     @mock.patch("intrahospital_api.views.get_api")
     def test_intrahospital_cooked_view(self, get_api):
-        get_api().cooked_data.return_value = [
+        get_api().cooked_lab_tests.return_value = [
             dict(name="Wilma"),
             dict(name="Betty"),
         ]

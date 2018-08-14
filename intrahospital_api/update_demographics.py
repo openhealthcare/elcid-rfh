@@ -47,7 +47,7 @@ def reconcile_patient_demographics(patient):
     """ for a patient,
     """
     demographics = patient.demographics_set.get()
-    external_demographics_dict = api.demographics(
+    external_demographics_dict = api.demographics_for_hospital_number(
         demographics.hospital_number
     )
     if not external_demographics_dict:
@@ -101,7 +101,7 @@ def update_patient_demographics(patient, upstream_demographics_dict=None):
     Updates a patient with the upstream demographics, if they have changed.
     """
     if upstream_demographics_dict is None:
-        upstream_demographics_dict = api.demographics(
+        upstream_demographics_dict = api.demographics_for_hospital_number(
             patient.demographics_set.first().hospital_number
         )
         # this should never really happen but has..

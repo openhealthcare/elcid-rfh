@@ -115,7 +115,7 @@ def any_loads_running():
 def load_demographics(hospital_number):
     started = timezone.now()
     try:
-        result = api.demographics(hospital_number)
+        result = api.demographics_for_hospital_number(hospital_number)
     except:
         stopped = timezone.now()
         logger.info("demographics load failed in {}".format(
@@ -303,7 +303,7 @@ def _batch_load():
     update_demographics.reconcile_all_demographics()
     logger.info("reconciled demographics")
 
-    data_deltas = api.data_deltas(started)
+    data_deltas = api.lab_test_results_since(started)
     logger.info("calcualted data deltas")
     update_from_batch(data_deltas)
 
@@ -384,7 +384,7 @@ def _load_patient(patient, patient_load):
             "deleted patient {} {}".format(patient.id, patient_load.id)
         )
 
-        results = api.results_for_hospital_number(hospital_number)
+        results = api.lab_tests_for_hospital_number(hospital_number)
         logger.info(
             "loaded results for patient {} {}".format(
                 patient.id, patient_load.id
