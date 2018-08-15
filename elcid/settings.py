@@ -196,7 +196,6 @@ HOSPITAL_DB = dict(
     database=None,
     username=None,
     password=None,
-    view=None
 )
 
 

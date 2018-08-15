@@ -10,21 +10,27 @@ from lab import models as lmodels
 from elcid.models import Demographics
 
 logger = logging.getLogger('intrahospital_api')
+VIEW = "Pathology_Result_view"
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
-@hospital_number ORDER BY last_updated DESC;"
+@hospital_number ORDER BY last_updated DESC;".format(view=VIEW)
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since ORDER BY last_updated DESC;".format(
+    view=VIEW
+)
 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and Result_ID = @lab_number ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since and Result_ID = @lab_number \
+ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and OBR_exam_code_Text = @test_type ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since and OBR_exam_code_Text = \
+@test_type ORDER BY last_updated DESC;".format(view=VIEW)
 
-ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY Patient_Number, last_updated DESC;"
+ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY \
+Patient_Number, last_updated DESC;".format(view=VIEW)
 
 
 ETHNICITY_MAPPING = {
@@ -184,31 +190,11 @@ class LabTestApi(object):
         self.view = settings.HOSPITAL_DB.get("view")
         self.connection = db.DBConnection()
 
-    @property
-    def demographics_query(self):
-        return DEMOGRAPHICS_QUERY.format(view=self.view)
-
-    @property
-    def all_data_for_hospital_number_query(self):
-        return ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER.format(view=self.view)
-
-    @property
-    def all_data_since_query(self):
-        return ALL_DATA_SINCE.format(view=self.view)
-
-    @property
-    def all_data_query_for_lab_number(self):
-        return ALL_DATA_QUERY_WITH_LAB_NUMBER.format(view=self.view)
-
-    @property
-    def all_data_query_for_lab_test_type(self):
-        return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(view=self.view)
-
     @timing
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
         rows = list(self.connection.execute_query(
-            self.demographics_query,
+            DEMOGRAPHICS_QUERY,
             params=dict(hospital_number=hospital_number)
         ))
         if not len(rows):
@@ -225,7 +211,7 @@ class LabTestApi(object):
 
         if lab_number:
             return self.connection.execute_query(
-                self.all_data_query_for_lab_number,
+                ALL_DATA_QUERY_WITH_LAB_NUMBER,
                 params=dict(
                     hospital_number=hospital_number,
                     since=db_date,
@@ -234,7 +220,7 @@ class LabTestApi(object):
             )
         if test_type:
             return self.connection.execute_query(
-                self.all_data_query_for_lab_test_type,
+                ALL_DATA_QUERY_WITH_LAB_TEST_TYPE,
                 params=dict(
                     hospital_number=hospital_number,
                     since=db_date,
@@ -243,14 +229,14 @@ class LabTestApi(object):
             )
         else:
             return self.connection.execute_query(
-                self.all_data_for_hospital_number_query,
+                ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
                 params=dict(hospital_number=hospital_number, since=db_date)
             )
 
     @timing
     def data_delta_query(self, since):
         all_rows = self.connection.execute_query(
-            self.all_data_since_query,
+            ALL_DATA_SINCE,
             params=dict(since=since)
         )
         return (Row(r) for r in all_rows)
