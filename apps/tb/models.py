@@ -437,6 +437,22 @@ class TBMeta(models.EpisodeSubrecord):
     directly_observed_therapy = fields.BooleanField(default=False)
 
 
+class TBCaseManager(lookuplists.LookupList):
+    pass
+
+
+class TBManagement(models.EpisodeSubrecord):
+    _is_singleton = True
+
+    class Meta:
+        verbose_name = "TB Management"
+
+    case_manager = ForeignKeyOrFreeText(TBCaseManager)
+    ltbr_number = fields.CharField(
+        max_length=200, blank=True, null=True,
+        verbose_name="LTBR Number"
+    )
+
 class TBAppointment(models.PatientSubrecord):
     state = fields.CharField(
         max_length=256, blank=True, default=""
