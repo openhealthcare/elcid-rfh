@@ -435,3 +435,26 @@ class TBMeta(models.EpisodeSubrecord):
 
     contact_tracing_done = fields.BooleanField(default=False)
     directly_observed_therapy = fields.BooleanField(default=False)
+
+
+class TBAppointment(models.PatientSubrecord):
+    state = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    start = fields.DateTimeField(blank=True, null=True)
+    end = fields.DateTimeField(blank=True, null=True)
+    clinic_resource = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    location = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    def update_from_dict(self, *args, **kwargs):
+        """
+        This model is read only
+        """
+        pass
+
+    class Meta:
+        verbose_name = "Appointments"

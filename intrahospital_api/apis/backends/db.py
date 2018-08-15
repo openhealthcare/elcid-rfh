@@ -118,7 +118,7 @@ class DBConnection(object):
     PASSWORD = settings.HOSPITAL_DB.get("password")
 
     @db_retry
-    def execute_query(self, query, params=None):
+    def execute_query(self, query, **params):
         with pytds.connect(
             self.IP_ADDRESS,
             self.DATABASE,

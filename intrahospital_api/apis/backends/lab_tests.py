@@ -187,7 +187,6 @@ class Row(db.Row):
 
 class LabTestApi(object):
     def __init__(self):
-        self.view = settings.HOSPITAL_DB.get("view")
         self.connection = db.DBConnection()
 
     @timing
