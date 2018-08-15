@@ -91,14 +91,12 @@ class AppointmentsApi(object):
         rows = self.connection.execute_query(
             FUTURE_TB_APPOINTMENTS_QUERY, now=timezone.now()
         )
-        result = {}
-        for row in rows:
-            cooked_row = Row(row)
-            if cooked_row["hospital_number"] in result:
-                continue
-            result[cooked_row["hospital_number"]] = {
+        if rows:
+            cooked_row = Row(rows[0])
+            return {
                 i: cooked_row[i] for i in Row.DEMOGRAPHICS.keys()
             }
+        return {}
 
     # TODO this could be cleaned up
     def tb_appointments_for_hospital_number(self, hospital_number):
