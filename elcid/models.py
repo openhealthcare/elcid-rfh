@@ -641,6 +641,7 @@ class ReferralRoute(omodels.EpisodeSubrecord):
         ("Find & treat", "Find & treat",),
         ("Prison screening", "Prison screening",),
         ("Port Health/HPA", "Port Health/HPA",),
+        ("Private", "Private")
     )
 
     REFERRAL_REASON = (
