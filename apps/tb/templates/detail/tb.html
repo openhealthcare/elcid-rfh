@@ -6,6 +6,7 @@
       <div class="col-md-8">
         <div ng-show="episode.stage !== 'New Referral'">
           {% record_panel models.ReferralRoute %}
+          {% record_panel models.TBManagement %}
           {% record_panel models.PastMedicalHistory %}
           {% record_panel models.CommuninicationConsiderations %}
           {% record_panel models.Nationality %}
