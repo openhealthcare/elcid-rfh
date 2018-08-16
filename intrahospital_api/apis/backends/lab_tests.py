@@ -194,7 +194,7 @@ class LabTestApi(object):
         hospital_number = hospital_number.strip()
         rows = list(self.connection.execute_query(
             DEMOGRAPHICS_QUERY,
-            params=dict(hospital_number=hospital_number)
+            hospital_number=hospital_number
         ))
         if not len(rows):
             return
@@ -211,32 +211,28 @@ class LabTestApi(object):
         if lab_number:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_NUMBER,
-                params=dict(
-                    hospital_number=hospital_number,
-                    since=db_date,
-                    lab_number=lab_number
-                )
+                hospital_number=hospital_number,
+                since=db_date,
+                lab_number=lab_number
             )
         if test_type:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE,
-                params=dict(
-                    hospital_number=hospital_number,
-                    since=db_date,
-                    test_type=test_type
-                )
+                hospital_number=hospital_number,
+                since=db_date,
+                test_type=test_type
             )
         else:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
-                params=dict(hospital_number=hospital_number, since=db_date)
+                hospital_number=hospital_number, since=db_date
             )
 
     @timing
     def data_delta_query(self, since):
         all_rows = self.connection.execute_query(
             ALL_DATA_SINCE,
-            params=dict(since=since)
+            since=since
         )
         return (Row(r) for r in all_rows)
 
