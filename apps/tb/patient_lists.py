@@ -4,7 +4,7 @@ from opal.models import Episode, Patient
 from opal.core import patient_lists
 from elcid import models
 from apps.tb import models as tmodels
-from episode_serialization import serialize
+from elcid.episode_serialization import serialize
 
 
 class TbPatientList(patient_lists.TaggedPatientList):
