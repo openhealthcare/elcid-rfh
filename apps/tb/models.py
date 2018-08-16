@@ -453,6 +453,7 @@ class TBManagement(models.EpisodeSubrecord):
         verbose_name="LTBR Number"
     )
 
+    
 class TBAppointment(models.PatientSubrecord):
     state = fields.CharField(
         max_length=256, blank=True, default=""

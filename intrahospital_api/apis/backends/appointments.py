@@ -89,7 +89,8 @@ class AppointmentsApi(object):
     # TODO, remove this, use the demographics service
     def demographics_for_hospital_number(self, hospital_number):
         rows = self.connection.execute_query(
-            FUTURE_TB_APPOINTMENTS_QUERY, now=timezone.now()
+            TB_APPOINTMENTS_FOR_HOSPITAL_NUMBER,
+            hospital_number=hospital_number
         )
         if rows:
             cooked_row = Row(rows[0])

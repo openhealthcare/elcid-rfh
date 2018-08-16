@@ -1,6 +1,9 @@
-from opal.models import Episode
+import datetime
+from django.utils import timezone
+from opal.models import Episode, Patient
 from opal.core import patient_lists
 from elcid import models
+from apps.tb import models as tmodels
 
 
 class TbPatientList(patient_lists.TaggedPatientList):
@@ -33,3 +36,30 @@ class TbPatientList(patient_lists.TaggedPatientList):
             template_path="columns/tb_risks.html"
         )
     ]
+
+
+class UpcomingTBAppointments(patient_lists.PatientList):
+    display_name = 'TB Appointments in the next 2 weeks'
+
+    @classmethod
+    def visible_to(cls, user):
+        return user.is_superuser
+
+    schema = [
+        patient_lists.Column(
+            title="Demographics",
+            icon="fa fa-user",
+            template_path="columns/tb_demographics.html",
+        ),
+        tmodels.TBAppointment,
+    ]
+
+    def get_queryset(self, user=None):
+        patients = Patient.objects.filter(
+            tbappointment__start__gte=timezone.now()
+        ).filter(
+            tbappointment__start__lte=timezone.now() + datetime.timedelta(14)
+        )
+        return Episode.objects.filter(
+            patient__in=patients
+        )

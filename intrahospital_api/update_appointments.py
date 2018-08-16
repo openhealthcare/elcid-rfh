@@ -2,6 +2,7 @@ from opal.models import Patient
 from elcid.models import Demographics
 from intrahospital_api import get_api
 from apps.tb.episode_categories import TbEpisode
+from apps.tb.patient_lists import TbPatientList
 
 
 def back_fill_appointments(patient):
@@ -44,6 +45,7 @@ def get_or_create_patient(hospital_number):
 
 
 def get_or_create_episode(patient):
+    api = get_api()
     episode = patient.episode_set.filter(
         category_name=TbEpisode.display_name
     )
@@ -52,8 +54,10 @@ def get_or_create_episode(patient):
         return episode, False
     else:
         episode = patient.episode_set.create(
-            category_name=TbEpisode.display_name
+            category_name=TbEpisode.display_name,
+            stage="New Referral"
         )
+        episode.set_tag_names([TbPatientList.tag], api.user)
         return episode, True
 
 

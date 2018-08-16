@@ -9,7 +9,7 @@ class ProdApi(base_api.BaseApi):
         self.lab_test_api = lab_tests.LabTestApi()
         self.appoinments_api = appointments.AppointmentsApi()
 
-    def demographics(self, hospital_number):
+    def demographics_for_hospital_number(self, hospital_number):
         return self.lab_test_api.demographics(hospital_number)
 
     def lab_tests_for_hospital_number(self, hospital_number):
