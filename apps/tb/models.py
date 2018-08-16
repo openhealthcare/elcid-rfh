@@ -453,7 +453,7 @@ class TBManagement(models.EpisodeSubrecord):
         verbose_name="LTBR Number"
     )
 
-    
+
 class TBAppointment(models.PatientSubrecord):
     state = fields.CharField(
         max_length=256, blank=True, default=""
@@ -475,3 +475,4 @@ class TBAppointment(models.PatientSubrecord):
 
     class Meta:
         verbose_name = "Appointments"
+        ordering = ["-start"]

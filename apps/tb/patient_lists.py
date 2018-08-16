@@ -4,6 +4,7 @@ from opal.models import Episode, Patient
 from opal.core import patient_lists
 from elcid import models
 from apps.tb import models as tmodels
+from episode_serialization import serialize
 
 
 class TbPatientList(patient_lists.TaggedPatientList):
@@ -40,6 +41,7 @@ class TbPatientList(patient_lists.TaggedPatientList):
 
 class UpcomingTBAppointments(patient_lists.PatientList):
     display_name = 'TB Appointments in the next 2 weeks'
+    template_name = 'patient_lists/layouts/table_list.html'
 
     @classmethod
     def visible_to(cls, user):
@@ -58,8 +60,14 @@ class UpcomingTBAppointments(patient_lists.PatientList):
         patients = Patient.objects.filter(
             tbappointment__start__gte=timezone.now()
         ).filter(
-            tbappointment__start__lte=timezone.now() + datetime.timedelta(14)
+            tbappointment__start__lte=timezone.now() + datetime.timedelta(7)
         )
         return Episode.objects.filter(
             patient__in=patients
+        )
+
+    def to_dict(self, user):
+        qs = super(UpcomingTBAppointments, self).get_queryset()
+        return serialize(
+            qs, user, subrecords=[models.Demographics, tmodels.TBAppointment]
         )
