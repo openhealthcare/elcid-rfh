@@ -40,7 +40,7 @@ class TbPatientList(patient_lists.TaggedPatientList):
 
 
 class UpcomingTBAppointments(patient_lists.PatientList):
-    display_name = 'Tb Appointments In The Next Week'
+    display_name = 'TB Appointments In The Next Week'
     template_name = 'patient_lists/layouts/table_list.html'
 
     @classmethod
@@ -59,12 +59,12 @@ class UpcomingTBAppointments(patient_lists.PatientList):
     def get_queryset(self, user=None):
         now = timezone.now()
         until = now + datetime.timedelta(7)
-        appointments = tmodels.TBAppointment.objects.filter(
+        patient_ids = tmodels.TBAppointment.objects.filter(
             start__gte=now).filter(
             start__lte=until
-        )
+        ).values_list('patient_id', flat=True).distinct()
         return Episode.objects.filter(
-            patient__tbappointment=appointments
+            patient_id__in=patient_ids
         ).distinct()
 
     def to_dict(self, user):
