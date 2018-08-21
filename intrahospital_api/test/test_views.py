@@ -81,7 +81,7 @@ class PivotTestCase(BaseViewTestcase):
             dict(name="Betty"),
         ]
         view = self.setup_view(
-            views.IntrahospitalRawView, self.raw_url, "123132123"
+            views.IntrahospitalRawLabTestView, self.raw_url, "123132123"
         )
         ctx = view.get_context_data(hospital_number="123132123")
         self.assertEqual(ctx["title"], "All Raw Data")
@@ -96,7 +96,7 @@ class PivotTestCase(BaseViewTestcase):
             dict(name="Betty"),
         ]
         view = self.setup_view(
-            views.IntrahospitalCookedView, self.cooked_url, "123132123"
+            views.IntrahospitalCookedLabTestView, self.cooked_url, "123132123"
         )
         ctx = view.get_context_data(hospital_number="123132123")
         self.assertEqual(ctx["title"], "All Cooked Data")
