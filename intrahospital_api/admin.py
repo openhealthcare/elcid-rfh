@@ -65,7 +65,7 @@ class PatientAdmin(OldPatientAdmin):
         'patient_detail_link',
         'upstream_lab_results',
         'upstream_appointments',
-        'upstream_blood_culture_results',
+        # 'upstream_blood_culture_results',
     )
 
     def refresh_lab_tests(self, request, queryset):
@@ -88,14 +88,14 @@ class PatientAdmin(OldPatientAdmin):
         )
         return format_html("<a href='{url}'>Raw Appointments</a>", url=url)
 
-    def upstream_blood_culture_results(self, obj):
-        hospital_number = obj.demographics_set.first().hospital_number
-        url = reverse(
-            'raw_results', kwargs=dict(
-                hospital_number=hospital_number, test_type="BLOOD CULTURE"
-            )
-        )
-        return format_html("<a href='{url}'>{url}</a>", url=url)
+    # def upstream_blood_culture_results(self, obj):
+    #     hospital_number = obj.demographics_set.first().hospital_number
+    #     url = reverse(
+    #         'raw_results', kwargs=dict(
+    #             hospital_number=hospital_number, test_type="BLOOD CULTURE"
+    #         )
+    #     )
+    #     return format_html("<a href='{url}'>{url}</a>", url=url)
 
 
 class PatientLoadAdmin(admin.ModelAdmin):
