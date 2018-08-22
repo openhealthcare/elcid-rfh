@@ -166,9 +166,7 @@ class Row(db.Row):
 
     def get_lab_test_dict(self):
         result = {}
-        lab_test_keys = list(self.LAB_TEST_MAPPING.keys())
-        lab_test_keys = lab_test_keys + list(self.OBSERVATION_MAPPING.keys())
-        for field in lab_test_keys:
+        for field in self.LAB_TEST_MAPPING.keys():
             result[field] = self[field]
         return result
 
