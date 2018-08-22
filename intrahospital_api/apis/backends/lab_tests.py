@@ -75,7 +75,7 @@ class Row(db.Row):
         external_identifier="Result_ID",
         site="site",
         status="status",
-        test_code="OBX_exam_code_ID",
+        test_code="OBR_exam_code_ID",
         test_name="OBR_exam_code_Text",
     )
 

@@ -183,7 +183,7 @@ class LabTestApiTestCase(OpalTestCase):
             'observation_number': 20334311,
             'status': 'complete',
             'observation_value': u'Negative',
-            'test_code': u'AN12',
+            'test_code': u'ANNR',
             'test_name': u'ANTI NEURONAL AB REFERRAL',
             'units': u'',
             'reference_range': u' -',

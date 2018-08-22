@@ -1,3 +1,4 @@
+from django.utils import timezone
 from opal.models import Patient
 from elcid.models import Demographics
 from intrahospital_api import get_api
@@ -14,11 +15,13 @@ def back_fill_appointments(patient):
 
 
 def save_appointments(patient, appointment_dicts):
+    api = get_api()
+    created = timezone.now()
+    created_by = api.user
     for appointment in appointment_dicts:
-        # this should never happend
         if not appointment_exists(patient, appointment):
             patient.tbappointment_set.create(
-                **appointment
+                created=created, created_by=created_by, **appointment
             )
 
 
@@ -72,6 +75,14 @@ def update_demographics(patient):
 
 def has_appointments(self, patient):
     return patient.tbappointment_set.exists()
+
+
+def update_all_appointments():
+    patients = Patient.objects.filter(
+        episode__category_name="TB"
+    )
+    for patient in patients:
+        back_fill_appointments(patient)
 
 
 def update_appointments():
