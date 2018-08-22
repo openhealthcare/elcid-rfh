@@ -121,11 +121,13 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   white-space: normal; }
 
 .patient-timeline-discussion {
-  min-height: 110px; }
+  min-height: 120px; }
   .patient-timeline-discussion ul {
     padding-left: 40px; }
   .patient-timeline-discussion ul li {
     list-style-type: disc; }
+  .patient-timeline-discussion i {
+    color: black; }
   .patient-timeline-discussion ol li {
     list-style-type: decimal; }
 
