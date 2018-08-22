@@ -20,4 +20,7 @@ class IntraHospitalApiPlugin(plugins.OpalPlugin):
             'js/intrahospital_api/services/initial_patient_lab_load_status.js'
         ]
     }
-    apis = [("patient", api.PatientViewSet,)]
+    apis = [
+        ("patient", api.PatientViewSet,),
+        ("upstream", api.UpstreamDataViewset,)
+    ]
