@@ -51,14 +51,14 @@ class Application(application.OpalApplication):
         "General Consultation": "inline_forms/clinical_advice.html",
     }
 
-    add_patient_menu_item = menus.MenuItem(
-        href='/pathway/#/add_patient',
-        display='Add Patient',
-        icon='fa fa-plus',
-        activepattern='/pathway/#/add_patient'
-    )
-
-    @classmethod
-    def get_menu_items(klass, user=None):
-        items = application.OpalApplication.get_menu_items(user=user)
-        return items + [klass.add_patient_menu_item]
+    # add_patient_menu_item = menus.MenuItem(
+    #     href='/pathway/#/add_patient',
+    #     display='Add Patient',
+    #     icon='fa fa-plus',
+    #     activepattern='/pathway/#/add_patient'
+    # )
+    #
+    # @classmethod
+    # def get_menu_items(klass, user=None):
+    #     items = application.OpalApplication.get_menu_items(user=user)
+    #     return items + [klass.add_patient_menu_item]

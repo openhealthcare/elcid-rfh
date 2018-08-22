@@ -162,6 +162,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'axes',
     'reversion',
+    'apps.tb',
     'opal',
     'opal.core.pathway',
     'rest_framework',
@@ -173,7 +174,6 @@ INSTALLED_APPS = (
     'elcid',
     'django.contrib.admin',
     'djcelery',
-    'apps.tb',
     'obs',
 )
 

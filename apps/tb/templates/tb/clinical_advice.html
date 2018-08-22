@@ -6,29 +6,40 @@
   <div class="container-fluid content-offset">
     <div class="panel panel-primary panel-container patient-detail">
       <div class="panel-heading patient-detail-heading">
-        <h1>
-        {% icon 'fa-user' %}
-        {{ demographics.name }}
-        <small>
+        <h4>
+          <div>
+            Name: {{ demographics.name }}
+          </div>
+          <div>
           {% if demographics.date_of_birth %}
-            ({{ demographics.date_of_birth|date:"d/m/y" }})
+            DOB: {{ demographics.date_of_birth|date:"d/m/y" }}
           {% endif %}
-          {{ demographics.hospital_number }}
-        </small>
-        </h1>
+          </div>
+          <div>
+            MRN: {{ demographics.hospital_number }}
+          </div>
+        </h4>
       </div>
       <div class="panel-body">
         {% if object.when %}
-          {{ object.when|date:"d/m/y" }}<br/>
-        {% endif %}
-        {% if object.initials %}
-          {{ object.initials }}<br/>
+          <p>
+            <strong>When:</strong> {{ object.when|date:"d/m/y" }}
+            {% if object.initials %}
+              ({{ object.initials }})
+            {% endif %}
+          </p>
         {% endif %}
         {% if object.discussion %}
-          {{ object.discussion }}<br/>
+          <p>
+            <strong>Discussion:</strong>
+            {{ object.discussion }}
+          </p>
         {% endif %}
-        {% if object.reason_for_interaction %}
-          {{ object.reason_for_interaction }}<br/>
+        {% if object.plan %}
+          <p>
+            <strong>Plan:</strong>
+            {{ object.plan }}
+          </p>
         {% endif %}
       </div>
     </div>

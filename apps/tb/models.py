@@ -237,7 +237,7 @@ class AccessConsiderations(models.PatientSubrecord):
 
 
 class PatientConsultation(models.PatientConsultation):
-    pass
+    plan = fields.TextField(blank=True, default="")
 
 
 class ContactDetails(models.PatientSubrecord):
