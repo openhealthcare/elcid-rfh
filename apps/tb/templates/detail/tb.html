@@ -90,23 +90,25 @@
       </div>
 
       <div class="col-md-4">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3>
-              Forms
-            </h3>
+        {% if request.user.is_superuser %}
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3>
+                Forms
+              </h3>
+            </div>
+            <div class="list-group">
+              <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
+                Initial Assessment
+                <div ng-show="episode.stage == 'New Referral'" class="pull-right star">{% icon "fa-certificate" %}</div>
+              </a>
+              <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
+                Active TB Treatment
+                <div ng-show="episode.stage == 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
+              </a>
+            </div>
           </div>
-          <div class="list-group">
-            <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
-              Initial Assessment
-              <div ng-show="episode.stage == 'New Referral'" class="pull-right star">{% icon "fa-certificate" %}</div>
-            </a>
-            <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
-              Active TB Treatment
-              <div ng-show="episode.stage == 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
-            </a>
-          </div>
-        </div>
+        {% endif %}
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3>
@@ -118,6 +120,7 @@
           </div>
         </div>
         {% record_panel models.TBAppointment editable=0 %}
+        {% include 'obs/detail_panel.html' %}
       </div>
     </div>
   </div>
