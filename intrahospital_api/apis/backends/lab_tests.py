@@ -172,7 +172,7 @@ class Row(db.Row):
 
     def get_observation_dict(self):
         result = {}
-        for field in self.OBSERVATION_MAPPING.keys()():
+        for field in self.OBSERVATION_MAPPING.keys():
             result[field] = self[field]
         return result
 
