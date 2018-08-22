@@ -78,9 +78,18 @@ def has_appointments(self, patient):
 
 
 def update_all_appointments():
+    api = get_api()
+    appointments = api.appointments_since_last_year()
+    patient_ids = []
+    for hospital_number, appointments in appointments.items():
+        patient, patient_created = get_or_create_patient(hospital_number)
+        episode, episode_created = get_or_create_episode(patient)
+        back_fill_appointments(patient)
+        patient_ids.append(patient.id)
     patients = Patient.objects.filter(
         episode__category_name="TB"
-    )
+    ).exclude(id__in=patient_ids)
+
     for patient in patients:
         back_fill_appointments(patient)
 

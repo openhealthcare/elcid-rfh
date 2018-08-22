@@ -1,4 +1,5 @@
 import logging
+import datetime
 from collections import defaultdict
 from django.utils import timezone
 from intrahospital_api.apis.backends import db
@@ -24,7 +25,7 @@ TB_APPOINTMENT_TYPES = [
     "Resp Medicine Tuberculosis General New",
 ]
 
-FUTURE_TB_APPOINTMENTS_QUERY = "SELECT * FROM {view} WHERE \
+TB_APPOINTMENTS_FROM_DATE = "SELECT * FROM {view} WHERE \
 Derived_Appointment_Type IN ({appointment_types}) AND \
 Appointment_Start_Datetime > @now".format(
     view=VIEW,
@@ -81,8 +82,16 @@ class AppointmentsApi(object):
         return result
 
     def future_tb_appointments(self):
+        return self.appointments_since(timezone.now())
+
+    def appointments_since_last_year(self):
+        return self.appointments_since(
+            timezone.now() - datetime.timedelta(weeks=52)
+        )
+
+    def appointments_since(self, dt):
         rows = self.connection.execute_query(
-            FUTURE_TB_APPOINTMENTS_QUERY, now=timezone.now()
+            TB_APPOINTMENTS_FROM_DATE, now=dt
         )
         return self.patient_to_appointments_dict(rows)
 
