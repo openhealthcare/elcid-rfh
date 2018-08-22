@@ -1,0 +1,54 @@
+{% extends 'opal.html' %}
+{% load forms %}
+{% block content %}
+{% with demographics=object.episode.patient.demographics_set.first %}
+<div class="outer-container patient-list-container" >
+  <div class="container-fluid content-offset">
+    <div class="panel panel-primary panel-container patient-detail">
+      <div class="panel-heading patient-detail-heading">
+        <h1>
+        {% icon 'fa-user' %}
+        {{ demographics.name }}
+        <small>
+          {% if demographics.date_of_birth %}
+            ({{ demographics.date_of_birth|date:"d/m/y" }})
+          {% endif %}
+          {{ demographics.hospital_number }}
+        </small>
+        </h1>
+      </div>
+      <div class="panel-body">
+        {% if object.when %}
+          {{ object.when|date:"d/m/y" }}<br/>
+        {% endif %}
+        {% if object.initials %}
+          {{ object.initials }}<br/>
+        {% endif %}
+        {% if object.discussion %}
+          {{ object.discussion }}<br/>
+        {% endif %}
+        {% if object.reason_for_interaction %}
+          {{ object.reason_for_interaction }}<br/>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  window.onload = function() {
+    window.print()
+  };
+
+  window.onafterprint = function(){
+    window.close()
+  }
+</script>
+<style>
+  @media print{
+  	@page {
+  		size: portrait;
+  	}
+  }
+</style>
+{% endwith %}
+{% endblock %}
