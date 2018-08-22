@@ -79,7 +79,7 @@ def has_appointments(self, patient):
 
 def update_all_appointments():
     api = get_api()
-    appointments = api.appointments_since_last_year()
+    appointments = api.tb_appointments_from_last_year()
     patient_ids = []
     for hospital_number, appointments in appointments.items():
         patient, patient_created = get_or_create_patient(hospital_number)
