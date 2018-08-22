@@ -126,10 +126,10 @@
             <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS</a>
           </div>
         </div>
-        {% if request.user.is_superuser %}
-          {% record_panel models.TBAppointment editable=0 %}
-        {% endif %}
         {% include 'obs/detail_panel.html' %}
+        {% comment %}
+          {% record_panel models.TBAppointment editable=0 %}
+        {% endcomment %}
       </div>
     </div>
   </div>
