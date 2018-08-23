@@ -16,5 +16,13 @@ class Command(BaseCommand):
             "patient_id", flat=True
         ).distinct()
         patients = Patient.objects.exclude(id__in=ipls)
-        for patient in patients:
+        load_tb_first = patients.filter(episode__category_name="TB").distinct()
+        for patient in load_tb_first:
+            load_patient(patient, async=False)
+
+        without_tb = patients.exclude(
+            id__in=load_tb_first.values_list("id", flat=True)
+        )
+
+        for patient in without_tb:
             load_patient(patient, async=False)
