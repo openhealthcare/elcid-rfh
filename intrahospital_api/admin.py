@@ -97,7 +97,6 @@ class PatientAdmin(OldPatientAdmin):
     #     )
     #     return format_html("<a href='{url}'>{url}</a>", url=url)
 
-
 class PatientLoadAdmin(admin.ModelAdmin):
     list_filter = ['state']
     ordering = ('-started',)

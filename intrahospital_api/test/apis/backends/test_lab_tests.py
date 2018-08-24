@@ -191,6 +191,32 @@ class LabTestApiTestCase(OpalTestCase):
         }
         self.assertEqual(result, expected)
 
+    def test_cast_rows_to_lab_tests(self):
+        api = lab_tests.LabTestApi()
+        rows = [self.get_row()]
+        result = api.cast_rows_to_lab_test(rows)
+        self.assertEqual(
+            result,
+            [{
+                'status': 'complete',
+                'external_identifier': u'0013I245895',
+                'external_system': 'RFH Database',
+                'site': u'^&                              ^',
+                'test_code': u'ANNR',
+                'test_name': u'ANTI NEURONAL AB REFERRAL',
+                'clinical_info': u'testing',
+                'datetime_ordered': '18/07/2015 16:18:00',
+                'observations': [{
+                    'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                    'observation_number': 20334311,
+                    'observation_value': u'Negative',
+                    'observation_datetime': '18/07/2015 16:18:00',
+                    'units': u'', 'last_updated': '18/07/2015 17:00:02',
+                    'reference_range': u' -'
+                }]
+            }]
+        )
+
     def test_all_fields(self):
         row = self.get_row()
         result = row.get_all_fields()
@@ -214,7 +240,7 @@ class LabTestApiTestCase(OpalTestCase):
             'reference_range': u' -',
             'site': u'^&                              ^',
             'status': 'complete',
-            'test_code': u'AN12',
+            'test_code': u'ANNR',
             'test_name': u'ANTI NEURONAL AB REFERRAL',
             'units': u''
         }

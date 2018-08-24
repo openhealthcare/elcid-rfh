@@ -2,7 +2,6 @@ import datetime
 import logging
 import itertools
 from collections import defaultdict
-from django.conf import settings
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.apis.backends import db
 from elcid.utils import timing
