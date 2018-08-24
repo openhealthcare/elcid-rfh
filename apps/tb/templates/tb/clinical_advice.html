@@ -1,5 +1,6 @@
 {% extends 'opal.html' %}
 {% load forms %}
+{% block all_javascripts %}{% endblock %}
 {% block content %}
 {% with demographics=object.episode.patient.demographics_set.first %}
 <div class="outer-container patient-list-container" >
@@ -45,12 +46,7 @@
     </div>
   </div>
 </div>
-<script>
-  window.onafterprint = function(){
-    window.close()
-  }
-  window.print()
-</script>
+
 <style>
   @media print{
   	@page {
