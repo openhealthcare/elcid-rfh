@@ -10,6 +10,7 @@ from opal.core.test import OpalTestCase
 from opal.models import Patient
 
 from elcid import models
+from elcid.patient_lists import RfhPatientList
 
 
 class AbstractPatientListTestCase(OpalTestCase):
@@ -125,4 +126,6 @@ class TestPatientList(AbstractPatientListTestCase):
 
     def test_patient_list_episode_comparators(self):
         pls = PatientList.list()
-        self.assertTrue(all(i.comparator_service for i in pls))
+        self.assertTrue(all(
+            i.comparator_service for i in pls if issubclass(i, RfhPatientList)
+        ))
