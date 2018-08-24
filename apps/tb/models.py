@@ -13,8 +13,8 @@ class RecreationalDrug(lookuplists.LookupList):
 
 class SocialHistory(models.EpisodeSubrecord):
     _is_singleton = True
-    _title = 'Social History'
     _icon = 'fa fa-clock-o'
+
     HOMELESSNESS_TYPE_CHOICES = (
         ("Hostel", "Hostel",),
         ("Sofa surfing", "Sofa surfing",),
@@ -142,6 +142,10 @@ class SocialHistory(models.EpisodeSubrecord):
         verbose_name="CPN/CMHT"
     )
 
+    class Meta:
+        verbose_name = "Social History"
+        verbose_name_plural = "Social Histories"
+
 
 class Pregnancy(models.PatientSubrecord):
     _is_singleton = True
@@ -240,7 +244,6 @@ class ContactDetails(models.PatientSubrecord):
     _is_singleton = True
     _advanced_searchable = False
     _icon = 'fa fa-phone'
-    _title = 'Contact Details'
 
     # telephone = fields.CharField(blank=True, null=True, max_length=50)
     # email = fields.CharField(blank=True, null=True, max_length=255)
@@ -248,17 +251,21 @@ class ContactDetails(models.PatientSubrecord):
     details = fields.TextField(blank=True, null=True)
 
     class Meta:
-        verbose_name_plural = "Contact details"
+        verbose_name = "Contact Details"
+        verbose_name_plural = "Contact Details"
 
 
 class NextOfKin(models.PatientSubrecord):
     _icon = 'fa fa-child'
     _advanced_searchable = False
-    _title = 'Next Of Kin'
 
     first_name = fields.CharField(blank=True, null=True, max_length=255)
     surname = fields.CharField(blank=True, null=True, max_length=255)
     details = fields.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Next Of Kin"
+        verbose_name_plural = "Next Of Kin"
 
 
 class TBSite(lookuplists.LookupList):
@@ -288,7 +295,6 @@ class TBHistory(models.PatientSubrecord):
         initial assessment form
     """
     _icon = 'fa fa-clock-o'
-    _title = "History of TB"
     _is_singleton = True
 
     TB_TYPES = (
@@ -346,6 +352,10 @@ class TBHistory(models.PatientSubrecord):
     treatment_centre = ForeignKeyOrFreeText(TBTreatmentCentre)
     details = fields.TextField(default="")
 
+    class Meta:
+        verbose_name = "History of TB"
+        verbose_name_plural = "History of TB"
+
 
 class Allergies(models.Allergies):
     pass
@@ -353,12 +363,15 @@ class Allergies(models.Allergies):
 
 class Travel(models.EpisodeSubrecord):
     _icon = 'fa fa-plane'
-    _title = "Travel History"
 
     country = ForeignKeyOrFreeText(models.Destination)
     when = fields.CharField(max_length=255, blank=True)
     duration = fields.CharField(max_length=255, blank=True)
     reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
+
+    class Meta:
+        verbose_name = "Travel History"
+        verbose_name_plural = "Travel Histories"
 
 
 class TBLocation(models.EpisodeSubrecord):
@@ -373,8 +386,8 @@ class TBLocation(models.EpisodeSubrecord):
 
 class BCG(models.PatientSubrecord):
     _icon = 'fa fa-asterisk'
-    _title = "BCG"
     _is_singleton = True
+
     BCG_PERIOD = (
         ('Neonatal', 'Neonatal',),
         ('School', 'School',),
@@ -392,6 +405,9 @@ class BCG(models.PatientSubrecord):
     red_book_documentation_of_bcg_seen = fields.BooleanField(
         default=False, verbose_name="Red Book Documentation Of BCG Given"
     )
+
+    class Meta:
+        verbose_name = "BCG"
 
 
 class MantouxTest(models.PatientSubrecord):
@@ -419,3 +435,44 @@ class TBMeta(models.EpisodeSubrecord):
 
     contact_tracing_done = fields.BooleanField(default=False)
     directly_observed_therapy = fields.BooleanField(default=False)
+
+
+class TBCaseManager(lookuplists.LookupList):
+    pass
+
+
+class TBManagement(models.EpisodeSubrecord):
+    _is_singleton = True
+
+    class Meta:
+        verbose_name = "TB Management"
+
+    case_manager = ForeignKeyOrFreeText(TBCaseManager)
+    ltbr_number = fields.CharField(
+        max_length=200, blank=True, null=True,
+        verbose_name="LTBR Number"
+    )
+
+
+class TBAppointment(models.PatientSubrecord):
+    state = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    start = fields.DateTimeField(blank=True, null=True)
+    end = fields.DateTimeField(blank=True, null=True)
+    clinic_resource = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    location = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    def update_from_dict(self, *args, **kwargs):
+        """
+        This model is read only
+        """
+        pass
+
+    class Meta:
+        verbose_name = "Appointments"
+        ordering = ["-start"]

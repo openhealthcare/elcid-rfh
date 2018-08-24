@@ -187,7 +187,7 @@ class DevApi(base_api.BaseApi):
         )
         return some_dt.strftime('%d/%m/%Y')
 
-    def demographics(self, hospital_number):
+    def demographics_for_hospital_number(self, hospital_number):
         # will always be found unless you prefix it with 'x'
         if hospital_number.startswith('x'):
             return
@@ -234,10 +234,10 @@ class DevApi(base_api.BaseApi):
         else:
             return random_result - deviation
 
-    def cooked_data(self, hospital_number):
+    def cooked_lab_tests(self, hospital_number):
         rows = []
-        demographics = self.demographics(hospital_number)
-        results = self.results_for_hospital_number(hospital_number)
+        demographics = self.demographics_for_hospital_number(hospital_number)
+        results = self.lab_tests_for_hospital_number(hospital_number)
         for result in results:
             for obs in result["observations"]:
                 row = {}
@@ -287,7 +287,7 @@ class DevApi(base_api.BaseApi):
             units=test_base_observation_value["units"],
         )
 
-    def results_for_hospital_number(self, hospital_number, **filter_kwargs):
+    def lab_tests_for_hospital_number(self, hospital_number, **filter_kwargs):
         """ We expect a return of something like
             {
                 clinical_info:  u'testing',
@@ -295,7 +295,7 @@ class DevApi(base_api.BaseApi):
                 external_identifier: "ANTI NEURONAL AB REFERRAL",
                 site: u'^&                              ^',
                 status: "Sucess",
-                test_code: "AN12"
+                test_code: "ANNR"
                 test_name: "Anti-CV2 (CRMP-5) antibodies",
                 observations: [{
                     "last_updated": "18 Jul 2019, 4:18 p.m.",
@@ -331,8 +331,8 @@ class DevApi(base_api.BaseApi):
 
         return result
 
-    def raw_data(self, hospital_number, **filter_kwargs):
+    def raw_lab_tests(self, hospital_number, **filter_kwargs):
         return [RAW_DATA]
 
-    def data_deltas(self, some_datetime):
+    def lab_test_results_since(self, some_datetime):
         return []

@@ -6,6 +6,7 @@
       <div class="col-md-8">
         <div ng-show="episode.stage !== 'New Referral'">
           {% record_panel models.ReferralRoute %}
+          {% record_panel models.TBManagement %}
           {% record_panel models.PastMedicalHistory %}
           {% record_panel models.CommuninicationConsiderations %}
           {% record_panel models.Nationality %}
@@ -113,9 +114,10 @@
             </h3>
           </div>
           <div class="panel-body">
-            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACs</a>
+            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS</a>
           </div>
         </div>
+        {% record_panel models.TBAppointment editable=0 %}
       </div>
     </div>
   </div>

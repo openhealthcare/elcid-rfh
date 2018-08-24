@@ -15,7 +15,7 @@ class DevApiTestCase(OpalTestCase):
         self.assertTrue(dob > datetime.date(1900, 1, 1))
 
     def test_demographics(self):
-        demographics = self.api.demographics('some')
+        demographics = self.api.demographics_for_hospital_number('some')
         expected_fields = [
             "sex",
             "date_of_birth",
@@ -37,7 +37,7 @@ class DevApiTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.apis.dev_api.random.choice")
     def test_demographics_male(self, choice):
         choice.side_effect = lambda x: x[0]
-        demographics = self.api.demographics('some')
+        demographics = self.api.demographics_for_hospital_number('some')
         self.assertEqual(demographics["sex"], "Male")
         self.assertIn(demographics["first_name"], dev_api.MALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Dr")
@@ -45,7 +45,7 @@ class DevApiTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.apis.dev_api.random.choice")
     def test_demographics_female(self, choice):
         choice.side_effect = lambda x: x[1]
-        demographics = self.api.demographics('some')
+        demographics = self.api.demographics_for_hospital_number('some')
         self.assertEqual(demographics["sex"], "Female")
         self.assertIn(demographics["first_name"], dev_api.FEMALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Ms")
@@ -59,9 +59,9 @@ class DevApiTestCase(OpalTestCase):
         self.assertTrue(bool(some_val))
         self.assertTrue(isinstance(some_val, float))
 
-    def test_cooked_data(self):
-        cooked_data = self.api.cooked_data("q2343424")
-        self.assertTrue(len(cooked_data) > 1)
+    def test_cooked_lab_tests(self):
+        cooked_lab_tests = self.api.cooked_lab_tests("q2343424")
+        self.assertTrue(len(cooked_lab_tests) > 1)
         expected_fields = [
             'first_name',
             'surname',
@@ -81,8 +81,8 @@ class DevApiTestCase(OpalTestCase):
             'ethnicity',
         ]
         self.assertEqual(
-            set(expected_fields), set(cooked_data[0].keys())
+            set(expected_fields), set(cooked_lab_tests[0].keys())
         )
 
-    def test_raw_data(self):
-        self.assertEqual(len(self.api.raw_data("2323441312")), 1)
+    def test_raw_lab_tests(self):
+        self.assertEqual(len(self.api.raw_lab_tests("2323441312")), 1)

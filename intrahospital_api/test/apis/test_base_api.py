@@ -15,24 +15,24 @@ class BaseApiTestCase(OpalTestCase):
             some_exception_str
         )
 
-    def test_demographics_throws(self):
+    def test_demographics_for_hospital_number_throws(self):
         self.method_test(
-            "demographics", 'Please implement a demographics query'
+            "demographics_for_hospital_number", 'Please implement a demographics query'
         )
 
-    def test_results(self):
+    def test_lab_tests_for_hospital_number(self):
         self.method_test(
-            "results", 'Please implement a results query'
+            "lab_tests_for_hospital_number", 'Please implement a lab tests query'
         )
 
-    def test_raw_data(self):
+    def test_raw_lab_tests(self):
         self.method_test(
-            "raw_data",
+            "raw_lab_tests",
             "Please a method that get's all raw data about a patient"
         )
 
-    def test_cooked_data(self):
+    def test_cooked_lab_tests(self):
         self.method_test(
-            "cooked_data",
+            "cooked_lab_tests",
             "Please a method that get's all cooked data about a patient"
         )

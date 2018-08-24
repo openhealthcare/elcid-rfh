@@ -72,10 +72,13 @@ class TBConsultationPathway(pathways.PagePathway):
             model=tb_models.ContactDetails,
             help_text_template="pathway/steps/help_text/contact_details.html"
         ),
-        HelpTextStep(
-            model=tb_models.NextOfKin,
-            help_text="This will be pulled in from Cerner"
-        ),
+        # TODO: Enable this once we are pulling from cerner.
+        # In the meantime it's less useful to have the placeholder
+        #
+        # HelpTextStep(
+        #     model=tb_models.NextOfKin,
+        #     help_text="This will be pulled in from Cerner"
+        # ),
         HelpTextStep(
             model=tb_models.CommuninicationConsiderations,
         ),
