@@ -214,7 +214,7 @@ class LabTestApiTestCase(OpalTestCase):
             'reference_range': u' -',
             'site': u'^&                              ^',
             'status': 'complete',
-            'test_code': u'AN12',
+            'test_code': u'ANNR',
             'test_name': u'ANTI NEURONAL AB REFERRAL',
             'units': u''
         }

@@ -16,6 +16,7 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
         self.tb_episode.category_name = TbEpisode.display_name
         self.tb_episode.save()
         self.mock_api = mock.MagicMock()
+        self.mock_api.user = self.user
         today = datetime.date.today()
         future = today + datetime.timedelta(1)
         past = today - datetime.timedelta(20)
@@ -46,22 +47,23 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
         self.mock_api.tb_appointments_for_hospital_number.return_value = [
             self.future_appointment, self.past_appointment
         ]
+        self.mock_api.user = self.user
 
         self.tb_episode.patient.tbappointment_set.create(
             state='Confirmed',
-            start=self.past_appointment.start,
-            end=self.past_appointment.end,
-            location=self.past_appointment.location,
-            clinical_resource=self.past_appointment.clinic_resource,
-            created=self.past_appointment.start - datetime.timedelta(1),
+            start=self.past_appointment["start"],
+            end=self.past_appointment["end"],
+            location=self.past_appointment["location"],
+            clinic_resource=self.past_appointment["clinic_resource"],
+            created=self.past_appointment["start"] - datetime.timedelta(1),
             created_by=self.user
         )
 
-    def test_load_all_appointments_existing(self, get_api):
+    def test_update_all_appointments_existing(self, get_api):
         get_api.return_value = self.mock_api
-        update_appointments.load_all_appointments()
+        update_appointments.update_all_appointments()
         self.assertEqual(tb_models.TBAppointment.objects.count(), 2)
-        self.assertEqaul(self.tb_episode.patient.tbappointment_set.count(), 2)
+        self.assertEqual(self.tb_episode.patient.tbappointment_set.count(), 2)
         appointment_set = self.tb_episode.patient.tbappointment_set
         self.assertTrue(
             appointment_set.filter(**self.past_appointment).exists()
@@ -70,12 +72,12 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
             appointment_set.filter(**self.future_appointment).exists()
         )
 
-    def test_load_all_appointments_new(self, get_api):
+    def test_update_all_appointments_new(self, get_api):
         tb_models.TBAppointment.objects.all().delete()
         get_api.return_value = self.mock_api
-        update_appointments.load_all_appointments()
+        update_appointments.update_all_appointments()
         self.assertEqual(tb_models.TBAppointment.objects.count(), 2)
-        self.assertEqaul(self.tb_episode.patient.tbappointment_set.count(), 2)
+        self.assertEqual(self.tb_episode.patient.tbappointment_set.count(), 2)
         appointment_set = self.tb_episode.patient.tbappointment_set
         self.assertTrue(
             appointment_set.filter(**self.past_appointment).exists()
@@ -107,6 +109,7 @@ class UpdateAppointmentsTestCase(OpalTestCase):
             surname="Flintstone",
             date_of_birth=datetime.date(1000, 1, 1)
         )
+        api.user = self.user
         update_appointments.update_appointments()
         patient = Patient.objects.get(demographics__hospital_number="11111")
         demographics = patient.demographics_set.first()
@@ -139,6 +142,7 @@ class UpdateAppointmentsTestCase(OpalTestCase):
             date_of_birth=datetime.date(2000, 1, 1)
         )
         api = get_api.return_value
+        api.user = self.user
         appointments = [{
             'clinic_resource': u'RAL Davis, Dr David TB',
             'end': datetime.datetime(2018, 9, 18, 14, 10),

@@ -295,7 +295,7 @@ class DevApi(base_api.BaseApi):
                 external_identifier: "ANTI NEURONAL AB REFERRAL",
                 site: u'^&                              ^',
                 status: "Sucess",
-                test_code: "AN12"
+                test_code: "ANNR"
                 test_name: "Anti-CV2 (CRMP-5) antibodies",
                 observations: [{
                     "last_updated": "18 Jul 2019, 4:18 p.m.",

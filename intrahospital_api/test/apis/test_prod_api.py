@@ -10,7 +10,7 @@ class ProdApiTestCase(OpalTestCase):
     def test_demographics(self):
         with mock.patch.object(self.api, "lab_test_api") as lab_tests:
             lab_tests.demographics.return_value = "result"
-            result = self.api.demographics("some_number")
+            result = self.api.demographics_for_hospital_number("some_number")
             lab_tests.demographics.assert_called_once_with(
                 "some_number"
             )

@@ -12,11 +12,11 @@ from intrahospital_api import views
 class BaseViewTestcase(OpalTestCase):
     def setUp(self):
         self.raw_url = reverse(
-            "raw_view", kwargs=dict(hospital_number="123132123")
+            "raw_lab_tests", kwargs=dict(hospital_number="123132123")
         )
 
         self.cooked_url = reverse(
-            "cooked_view", kwargs=dict(hospital_number="123132123")
+            "cooked_lab_tests", kwargs=dict(hospital_number="123132123")
         )
         user = User.objects.create(
             username="Wilma",
@@ -55,14 +55,14 @@ class NoneStaffRequiredTest(BaseViewTestcase):
     def test_intrahospital_raw_view(self):
         response = self.client.get(self.raw_url, follow=True)
         expected = [(
-            '/admin/login/?next=/intrahospital_api/raw/patient/123132123', 302
+            '/admin/login/?next=/intrahospital_api/raw/lab_tests/123132123', 302
         )]
         self.assertEqual(expected, response.redirect_chain)
 
     def test_intrahospital_cooked_view(self):
         response = self.client.get(self.raw_url, follow=True)
         expected = [(
-            '/admin/login/?next=/intrahospital_api/raw/patient/123132123', 302
+            '/admin/login/?next=/intrahospital_api/raw/lab_tests/123132123', 302
         )]
         self.assertEqual(expected, response.redirect_chain)
 
@@ -84,7 +84,7 @@ class PivotTestCase(BaseViewTestcase):
             views.IntrahospitalRawLabTestView, self.raw_url, "123132123"
         )
         ctx = view.get_context_data(hospital_number="123132123")
-        self.assertEqual(ctx["title"], "All Raw Data")
+        self.assertEqual(ctx["title"], "Raw Lab Test View")
         self.assertEqual(
             ctx["row_data"], [['name', 'Wilma', 'Betty']]
         )
@@ -99,7 +99,7 @@ class PivotTestCase(BaseViewTestcase):
             views.IntrahospitalCookedLabTestView, self.cooked_url, "123132123"
         )
         ctx = view.get_context_data(hospital_number="123132123")
-        self.assertEqual(ctx["title"], "All Cooked Data")
+        self.assertEqual(ctx["title"], "Cooked Lab Test View")
         self.assertEqual(
             ctx["row_data"], [['name', 'Wilma', 'Betty']]
         )
