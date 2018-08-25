@@ -4,6 +4,26 @@ elCID Royal Free Hospital implementation
 
 from opal.core import application
 from opal.core import menus
+from apps.tb import constants as tb_constants
+
+
+class NotTbMenuItem(menus.MenuItem):
+    def for_user(self, user):
+        from opal.models import UserProfile
+        if user.is_superuser:
+            return True
+        return not UserProfile.objects.filter(
+            user=user,
+            roles__name=tb_constants.TB_ROLE
+        ).exists()
+
+
+not_tb_menu_item = NotTbMenuItem(
+    href='/pathway/#/add_patient',
+    display='Add Patient',
+    icon='fa fa-plus',
+    activepattern='/pathway/#/add_patient'
+)
 
 
 class Application(application.OpalApplication):
@@ -51,14 +71,10 @@ class Application(application.OpalApplication):
         "General Consultation": "inline_forms/clinical_advice.html",
     }
 
-    # add_patient_menu_item = menus.MenuItem(
-    #     href='/pathway/#/add_patient',
-    #     display='Add Patient',
-    #     icon='fa fa-plus',
-    #     activepattern='/pathway/#/add_patient'
-    # )
-    #
-    # @classmethod
-    # def get_menu_items(klass, user=None):
-    #     items = application.OpalApplication.get_menu_items(user=user)
-    #     return items + [klass.add_patient_menu_item]
+    @classmethod
+    def get_menu_items(self, user):
+        menu_items = super(Application, self).get_menu_items(user)
+        if not_tb_menu_item.for_user(user):
+            menu_items.append(not_tb_menu_item)
+
+        return menu_items
