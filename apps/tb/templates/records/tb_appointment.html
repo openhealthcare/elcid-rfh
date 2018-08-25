@@ -1,18 +1,16 @@
-<span ng-show="item.start">
-    <strong>
-      [[ item.start | shortDateTime ]] - [[ item.end | shortDateTime ]]
-    </strong>
-   <br />
-</span>
-<span ng-show="item.state">
-   [[ item.state ]]
-   <br />
-</span>
-<span ng-show="item.clinic_resource">
-    [[ item.clinic_resource ]]
-   <br />
-</span>
-<span ng-show="item.location">
-    [[ item.location ]]
-   <br />
+<span ng-class="{'text-muted': item.end && (item.end | past) }">
+  <span ng-show="item.start">
+      <strong>
+        [[ item.start | shortDateTime ]] - [[ item.end | shortDateTime ]]
+      </strong>
+     <br />
+  </span>
+  <span ng-show="item.state">
+     [[ item.state ]]
+     <br />
+  </span>
+  <span ng-show="item.location">
+      [[ item.location ]]
+     <br />
+  </span>
 </span>

@@ -13,17 +13,17 @@
     <thead>
       <tr>
         <td>Date</td>
-        <td>Height</td>
         <td>Weight</td>
+        <td>Height</td>
         <td>RR</td>
         <td>Sp02</td>
       </tr>
     </thead>
     <tbody>
       <tr ng-repeat="ob in episode.observation|limitTo:5">
-        <td>[[ob.datetime | shortDate ]] [[ ob.datetime | hhmm ]]</td>
-      	<td>[[ob.height]]</td>
+        <td>[[ob.datetime | shortDate ]]</td>
       	<td>[[ob.weight]]</td>
+      	<td>[[ob.height]]</td>
         <td>[[ob.resp_rate]]</td>
       	<td>[[ob.sp02]]</td>
       </tr>
