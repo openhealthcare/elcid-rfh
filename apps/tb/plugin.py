@@ -3,12 +3,9 @@ Plugin definition for the TB Opal plugin
 """
 from opal.core import plugins
 from opal.core import menus
+from opal.models import UserProfile
 from apps.tb.urls import urlpatterns
-
-
-class AddTBPatient(menus.MenuItem):
-    def for_user(self, user):
-        return user and user.is_superuser
+from apps.tb import constants as tb_constants
 
 
 class TbPlugin(plugins.OpalPlugin):
@@ -34,14 +31,37 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/services/treatment_record.js',
         ],
     }
-    menuitems = [
-        AddTBPatient(
-            href='/pathway/#/add_tb_patient',
-            display='Add Patient',
-            icon='fa fa-plus',
-            activepattern='/pathway/#/add_tb_patient'
-        )
-    ]
+
+    @classmethod
+    def get_menu_items(self, user):
+        if not user:
+            return []
+
+        is_tb = UserProfile.objects.filter(
+            user=user,
+            roles__name=tb_constants.TB_ROLE
+        ).exists()
+
+        if is_tb:
+            return [
+                menus.MenuItem(
+                    href='/pathway/#/add_tb_patient',
+                    display='Add Patient',
+                    icon='fa fa-plus',
+                    activepattern='/pathway/#/add_tb_patient'
+                )
+            ]
+        elif user.is_superuser:
+            return [
+                menus.MenuItem(
+                    href='/pathway/#/add_tb_patient',
+                    display='Add TB Patient',
+                    icon='fa fa-plus',
+                    activepattern='/pathway/#/add_tb_patient'
+                )
+            ]
+        else:
+            return []
 
     def list_schemas(self):
         """
