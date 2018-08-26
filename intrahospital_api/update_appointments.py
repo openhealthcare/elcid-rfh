@@ -2,6 +2,7 @@ from django.utils import timezone
 from opal.models import Patient
 from elcid.models import Demographics
 from intrahospital_api import get_api
+from intrahospital_api.constants import EXTERNAL_SYSTEM
 from apps.tb.episode_categories import TbEpisode
 from apps.tb.patient_lists import TbPatientList
 
@@ -39,10 +40,14 @@ def get_or_create_patient(hospital_number):
     if demographics:
         return demographics.patient, False
     else:
+        api = get_api()
         patient = Patient()
         patient.save()
         patient.demographics_set.update(
             hospital_number=hospital_number,
+            external_system=EXTERNAL_SYSTEM,
+            created=timezone.now(),
+            created_by=api.user
         )
         return patient, True
 
@@ -78,9 +83,18 @@ def has_appointments(self, patient):
 
 
 def update_all_appointments():
+    api = get_api()
+    appointments = api.tb_appointments_from_last_year()
+    patient_ids = []
+    for hospital_number, appointments in appointments.items():
+        patient, patient_created = get_or_create_patient(hospital_number)
+        episode, episode_created = get_or_create_episode(patient)
+        back_fill_appointments(patient)
+        patient_ids.append(patient.id)
     patients = Patient.objects.filter(
         episode__category_name="TB"
-    )
+    ).exclude(id__in=patient_ids)
+
     for patient in patients:
         back_fill_appointments(patient)
 

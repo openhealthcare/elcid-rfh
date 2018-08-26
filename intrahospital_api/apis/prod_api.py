@@ -29,6 +29,9 @@ class ProdApi(base_api.BaseApi):
     def future_tb_appointments(self):
         return self.appoinments_api.future_tb_appointments()
 
+    def tb_appointments_from_last_year(self):
+        return self.appoinments_api.appointments_since_last_year()
+
     def tb_appointments_for_hospital_number(self, hospital_number):
         return self.appoinments_api.tb_appointments_for_hospital_number(
             hospital_number
