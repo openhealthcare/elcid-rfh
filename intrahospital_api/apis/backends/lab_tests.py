@@ -31,6 +31,10 @@ ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number =
 ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY \
 Patient_Number, last_updated DESC;".format(view=VIEW)
 
+LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM Pathology_Result_view WHERE \
+Patient_Number='@hospital_number' AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
+
+
 
 ETHNICITY_MAPPING = {
     "99": "Other - Not Known",
@@ -299,6 +303,17 @@ class LabTestApi(object):
             lab_test["external_system"] = EXTERNAL_SYSTEM
             result.append(lab_test)
         return result
+
+    def lab_test_count_for_hospital_number(hospital_number, since):
+        rows = list(self.connection.execute_query(
+            LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER,
+            hospital_number=hospital_number,
+            since=since
+        ))        
+        if len(rows):
+            return rows[0][0]
+        else:
+            return 0
 
     @timing
     def lab_tests_for_hospital_number(self, hospital_number):

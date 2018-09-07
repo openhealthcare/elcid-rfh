@@ -336,3 +336,6 @@ class DevApi(base_api.BaseApi):
 
     def lab_test_results_since(self, some_datetime):
         return []
+
+    def lab_test_count_for_hospital_number(self, hospital_number, since):
+        return 0
