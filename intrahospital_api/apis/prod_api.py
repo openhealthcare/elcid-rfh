@@ -18,11 +18,6 @@ class ProdApi(base_api.BaseApi):
     def demographics_for_hospital_number(self, hospital_number):
         return self.lab_test_api.demographics(hospital_number)
 
-    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
-        return self.lab_test_api.raw_lab_tests(
-            hospital_number, lab_number, test_type
-        )
-
     def future_tb_appointments(self):
         return self.appoinments_api.future_tb_appointments()
 
