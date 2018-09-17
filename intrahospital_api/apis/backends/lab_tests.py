@@ -31,7 +31,7 @@ LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM {vi
 Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
 
 OBSERVATIONS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT COUNT(*) FROM {view} WHERE \
-Patient_Number=@hospital_number AND last_updated >= @since"
+Patient_Number=@hospital_number AND last_updated >= @since".format(view=VIEW)
 
 
 
