@@ -16,7 +16,7 @@ DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;".format(view=VIEW)
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since ORDER BY last_updated DESC;".format(
+@hospital_number AND last_updated >= @since ORDER BY last_updated DESC;".format(
     view=VIEW
 )
 
@@ -204,29 +204,31 @@ class LabTestApi(object):
         demographics_dict["external_system"] = EXTERNAL_SYSTEM
         return demographics_dict
 
-    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
+    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None, since=None):
         """ not all data, I lied. Only the last year's
         """
-        db_date = datetime.date.today() - datetime.timedelta(365)
+
+        if not since:
+            since = datetime.date.today() - datetime.timedelta(365)
 
         if lab_number:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_NUMBER,
                 hospital_number=hospital_number,
-                since=db_date,
+                since=since,
                 lab_number=lab_number
             )
         if test_type:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE,
                 hospital_number=hospital_number,
-                since=db_date,
+                since=since,
                 test_type=test_type
             )
         else:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
-                hospital_number=hospital_number, since=db_date
+                hospital_number=hospital_number, since=since
             )
 
     @timing

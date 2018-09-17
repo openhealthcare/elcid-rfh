@@ -22,5 +22,6 @@ class IntraHospitalApiPlugin(plugins.OpalPlugin):
     }
     apis = [
         ("patient", api.PatientViewSet,),
-        ("upstream", api.UpstreamDataViewset,)
+        ("upstream", api.UpstreamDataViewset,),
+        ("raw_upstream", api.RawUpstreamDataViewset,),
     ]

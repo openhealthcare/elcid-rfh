@@ -27,9 +27,13 @@ def get_first_updated(lab_tests):
                 first_updated = updated
     return first_updated
 
-def reconcile_counts(patient):
+def get_first_update_for_patient(patient):
     upstream_tests = patient.labtest_set.filter(lab_test_type__istartswith="upstream")
     updated = get_first_updated(upstream_tests)
+
+
+def reconcile_counts(patient):
+    updated = get_first_update_for_patient(patient)
     lab_test_count = api.lab_test_count_for_hospital_number(patient.demographics().hospital_number, updated)
     if not lab_test_count == upstream_tests.count():
         return patient

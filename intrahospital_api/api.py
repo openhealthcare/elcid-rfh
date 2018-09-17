@@ -63,6 +63,21 @@ class UpstreamDataViewset(viewsets.ViewSet):
         return json_response(api.lab_tests_for_hospital_number(hospital_number))
 
 
+class RawUpstreamDataViewset(viewsets.ViewSet):
+    base_name = 'raw_upstream'
+    permission_classes = (IsAuthenticated,)
+
+    def retrieve(self, request, pk=None):
+        from intrahospital_api import update_lab_tests
+        patient = get_object_or_404(
+            omodels.Patient.objects.all(), pk=pk
+        )
+        updated = update_lab_tests.get_first_update_for_patient(patient)
+        api = get_api()
+        hospital_number = patient.demographics_set.first().hospital_number
+        return json_response(api.raw_lab_tests(hospital_number, since=updated))
+
+
 class PatientViewSet(viewsets.ViewSet):
     base_name = 'patient'
     permission_classes = (IsAuthenticated,)
