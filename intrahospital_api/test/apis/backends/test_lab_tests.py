@@ -1,6 +1,7 @@
 import copy
 import datetime
 from opal.core.test import OpalTestCase
+from opal.core import serialization
 from lab import models as lmodels
 from intrahospital_api.apis.backends import lab_tests
 
@@ -253,6 +254,37 @@ class LabTestApiTestCase(OpalTestCase):
         }
         self.assertEqual(result, expected)
 
+    def test_all_fields(self):
+        row = self.get_row()
+        result = row.get_all_fields()
+        expected = {
+            'external_identifier': u'0013I245895',
+            'nhs_number': u'7060976728',
+            'first_name': u'TEST',
+            'surname': u'ZZZTEST',
+            'title': '',
+            'sex': 'Female',
+            'hospital_number': u'20552710',
+            'date_of_birth': '10/10/1980',
+            'ethnicity': 'Mixed - White and Black Caribbean',
+            'clinical_info': u'testing',
+            'datetime_ordered': '18/07/2015 16:18:00',
+            'last_updated': '18/07/2015 17:00:02',
+            'observation_datetime': '18/07/2015 16:18:00',
+            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'observation_number': 20334311,
+            'observation_value': u'Negative',
+            'reference_range': u' -',
+            'site': u'^&                              ^',
+            'status': 'complete',
+            'test_code': u'ANNR',
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
+            'units': u''
+        }
+        self.assertEqual(result, expected)
+
+
+class CastRowsToLabTestTestCase(OpalTestCase):
     def test_cast_rows_to_lab_tests(self):
         api = lab_tests.LabTestApi()
         rows = [self.get_row()]
@@ -330,31 +362,58 @@ class LabTestApiTestCase(OpalTestCase):
             result, expected
         )
 
-    def test_all_fields(self):
-        row = self.get_row()
-        result = row.get_all_fields()
-        expected = {
-            'external_identifier': u'0013I245895',
-            'nhs_number': u'7060976728',
-            'first_name': u'TEST',
-            'surname': u'ZZZTEST',
-            'title': '',
-            'sex': 'Female',
-            'hospital_number': u'20552710',
-            'date_of_birth': '10/10/1980',
-            'ethnicity': 'Mixed - White and Black Caribbean',
-            'clinical_info': u'testing',
-            'datetime_ordered': '18/07/2015 16:18:00',
-            'last_updated': '18/07/2015 17:00:02',
-            'observation_datetime': '18/07/2015 16:18:00',
-            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
-            'observation_number': 20334311,
-            'observation_value': u'Negative',
-            'reference_range': u' -',
-            'site': u'^&                              ^',
-            'status': 'complete',
-            'test_code': u'ANNR',
-            'test_name': u'ANTI NEURONAL AB REFERRAL',
-            'units': u''
-        }
-        self.assertEqual(result, expected)
+    def filter_rows_by_lab_test_number(self, lab_test_number, rows):
+        return [i for i in rows if i["external_identifier"] == lab_test_number]
+
+    def obs_count(self, rows):
+        result = 0
+        for row in rows:
+            result += len(row["observations"])
+
+        return result
+
+    def test_large_case(self):
+        api = lab_tests.LabTestApi()
+        lab_test_number = "73180892672"
+        date_fields = [
+            "CRS_DOB",
+        ]
+
+        datetime_fields = [
+            "Observation_date",
+            "Observation_date",
+            "Request_Date",
+            "last_updated",
+        ]
+        import json
+        with open("/Users/frederickkingham/Downloads/raw_upstream_tests.json") as f:
+            upstream = json.load(f)
+
+        for row in upstream:
+            for field in date_fields:
+                value = row[field][:10]
+                row[field] = serialization.deserialize_date(
+                    value
+                )
+
+            for field in datetime_fields:
+                row[field] = serialization.deserialize_datetime(
+                    row[field]
+                )
+
+        rows = [lab_tests.Row(i) for i in upstream]
+        result = api.cast_rows_to_lab_test(rows)
+
+        import ipdb; ipdb.set_trace()
+
+        # for row in rows:
+        # hospital_number = row["external_identifier"]
+        filtered_rows = self.filter_rows_by_lab_test_number(lab_test_number, rows)
+        filtered_result = self.filter_rows_by_lab_test_number(lab_test_number, result)
+
+        filtered_result_count = self.obs_count(filtered_result)
+        self.assertEqual(
+            len(filtered_rows), filtered_result_count
+        )
+
+

@@ -29,14 +29,24 @@ def get_first_updated(lab_tests):
 
 def get_first_update_for_patient(patient):
     upstream_tests = patient.labtest_set.filter(lab_test_type__istartswith="upstream")
-    updated = get_first_updated(upstream_tests)
+    return get_first_updated(upstream_tests)
 
 
-def reconcile_counts(patient):
+def reconcile_lab_test_counts(patient):
     updated = get_first_update_for_patient(patient)
     lab_test_count = api.lab_test_count_for_hospital_number(patient.demographics().hospital_number, updated)
     if not lab_test_count == upstream_tests.count():
         return patient
+
+def reconcile_observation_counts(patient):
+    updated = get_first_update_for_patient(patient)
+    upstream_count = api.observations_count_for_hospital_number(patient.demographics().hospital_number, updated)
+    our_lab_tests = patient.labtest_set.filter(lab_test_type__istartswith="upstream")
+    our_observation_count = sum([len(i.extras["observations"]) for i in our_lab_tests])
+
+    if not our_observation_count == upstream_count:
+        return patient, our_observation_count, upstream_count
+
 
 def get_model_for_lab_test_type(patient, lab_test):
     if lab_test["test_name"] == "BLOOD CULTURE":

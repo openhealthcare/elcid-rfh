@@ -20,10 +20,6 @@ ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number 
     view=VIEW
 )
 
-ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and Result_ID = @lab_number \
-ORDER BY last_updated DESC;"
-
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since and OBR_exam_code_Text = \
 @test_type ORDER BY last_updated DESC;".format(view=VIEW)
@@ -31,8 +27,11 @@ ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number =
 ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY \
 Patient_Number, last_updated DESC;".format(view=VIEW)
 
-LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM Pathology_Result_view WHERE \
+LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM {view} WHERE \
 Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
+
+OBSERVATIONS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT COUNT(*) FROM {view} WHERE \
+Patient_Number=@hospital_number AND last_updated >= @since"
 
 
 
@@ -204,20 +203,13 @@ class LabTestApi(object):
         demographics_dict["external_system"] = EXTERNAL_SYSTEM
         return demographics_dict
 
-    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None, since=None):
+    def raw_lab_tests(self, hospital_number, test_type=None, since=None):
         """ not all data, I lied. Only the last year's
         """
 
         if not since:
             since = datetime.date.today() - datetime.timedelta(365)
 
-        if lab_number:
-            return self.connection.execute_query(
-                ALL_DATA_QUERY_WITH_LAB_NUMBER,
-                hospital_number=hospital_number,
-                since=since,
-                lab_number=lab_number
-            )
         if test_type:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE,
@@ -309,6 +301,17 @@ class LabTestApi(object):
     def lab_test_count_for_hospital_number(self, hospital_number, since):
         rows = list(self.connection.execute_query(
             LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER,
+            hospital_number=hospital_number,
+            since=since
+        ))        
+        if len(rows):
+            return rows[0][0]
+        else:
+            return 0
+
+    def observations_count_for_hospital_number(self, hospital_number, since):
+        rows = list(self.connection.execute_query(
+            OBSERVATIONS_COUNT_FOR_HOSPITAL_NUMBER,
             hospital_number=hospital_number,
             since=since
         ))        
