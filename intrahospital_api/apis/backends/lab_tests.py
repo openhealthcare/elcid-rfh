@@ -250,7 +250,7 @@ class LabTestApi(object):
         """
         all_rows = self.data_delta_query(some_datetime)
         hospital_number_to_rows = itertools.groupby(
-            all_rows, lambda x: x.get_hospital_number()
+            all_rows, lambda x: x["hospital_number"]
         )
         for hospital_number, rows in hospital_number_to_rows:
             if Demographics.objects.filter(
