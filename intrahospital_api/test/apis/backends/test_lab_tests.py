@@ -1,4 +1,5 @@
 import copy
+import mock
 import datetime
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
@@ -156,13 +157,15 @@ MULTIPLE_RESULTS_LAB_TEST = [
 ]
 
 
-class LabTestApiTestCase(OpalTestCase):
-    maxDiff = None
-
+class BaseLabTestCase(OpalTestCase):
     def get_row(self, **kwargs):
         raw_lab_tests = copy.copy(FAKE_ROW_DATA)
         raw_lab_tests.update(kwargs)
         return lab_tests.Row(raw_lab_tests)
+
+
+class RowTestCase(BaseLabTestCase):
+    maxDiff = None
 
     def test_demographics_dict(self):
         row = self.get_row()
@@ -182,18 +185,6 @@ class LabTestApiTestCase(OpalTestCase):
             result, expected
         )
 
-    def test_sex_male(self):
-        row = self.get_row(
-            CRS_SEX="M"
-        )
-        self.assertEqual(row.sex, "Male")
-
-        row = self.get_row(
-            CRS_SEX="",
-            SEX="M"
-        )
-
-        self.assertEqual(row.sex, "Male")
 
     def test_sex_female(self):
         row = self.get_row(
@@ -279,9 +270,48 @@ class LabTestApiTestCase(OpalTestCase):
             }]
         )
 
+    def test_all_fields(self):
+        row = self.get_row()
+        result = row.get_all_fields()
+        expected = {
+            'external_identifier': u'0013I245895',
+            'nhs_number': u'7060976728',
+            'first_name': u'TEST',
+            'surname': u'ZZZTEST',
+            'title': '',
+            'sex': 'Female',
+            'hospital_number': u'20552710',
+            'date_of_birth': '10/10/1980',
+            'ethnicity': 'Mixed - White and Black Caribbean',
+            'clinical_info': u'testing',
+            'datetime_ordered': '18/07/2015 16:18:00',
+            'last_updated': '18/07/2015 17:00:02',
+            'observation_datetime': '18/07/2015 16:18:00',
+            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'observation_number': 20334311,
+            'observation_value': u'Negative',
+            'reference_range': u' -',
+            'site': u'^&                              ^',
+            'status': 'complete',
+            'test_code': u'ANNR',
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
+            'units': u''
+        }
+        self.assertEqual(result, expected)
+
+
+class LabTestApiTestCase(BaseLabTestCase):
+    @mock.patch(
+        "intrahospital_api.apis.backends.lab_tests.LabTestApi.data_delta_query"
+    )
+    def test_lab_test_results_since(self, ddq):
+        api = lab_tests.LabTestApi()
+        ddq.return_value = (i for i in [self.get_row()])
+        result = api.lab_test_results_since(datetime.datetime.now())
+        self.assertEqual(list(result), [])
+
     def test_cast_rows_to_lab_tests_multiple(self):
         api = lab_tests.LabTestApi()
-
         expected = [
             {
                 'clinical_info': u'urgent pre-chemo pancreas ca',
@@ -329,32 +359,3 @@ class LabTestApiTestCase(OpalTestCase):
         self.assertEqual(
             result, expected
         )
-
-    def test_all_fields(self):
-        row = self.get_row()
-        result = row.get_all_fields()
-        expected = {
-            'external_identifier': u'0013I245895',
-            'nhs_number': u'7060976728',
-            'first_name': u'TEST',
-            'surname': u'ZZZTEST',
-            'title': '',
-            'sex': 'Female',
-            'hospital_number': u'20552710',
-            'date_of_birth': '10/10/1980',
-            'ethnicity': 'Mixed - White and Black Caribbean',
-            'clinical_info': u'testing',
-            'datetime_ordered': '18/07/2015 16:18:00',
-            'last_updated': '18/07/2015 17:00:02',
-            'observation_datetime': '18/07/2015 16:18:00',
-            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
-            'observation_number': 20334311,
-            'observation_value': u'Negative',
-            'reference_range': u' -',
-            'site': u'^&                              ^',
-            'status': 'complete',
-            'test_code': u'ANNR',
-            'test_name': u'ANTI NEURONAL AB REFERRAL',
-            'units': u''
-        }
-        self.assertEqual(result, expected)
