@@ -1,24 +1,38 @@
-## intrahospital_api
+## Intrahospital Api
 
-This loaded in demographics and tests from the upstream system.
-
-Its read only, it does not write.
+This provide all services to query from upstream within the hospital.
 
 #### Basic Overview
-There are 4 types of load.
 
-1. Demographics
-When you add a patient we search for the patient in the upstream system. If the patient is found. We return the demographics and mark the external system
-for these demographics as `RFH Database`.
+The intrahospital api is a framework for many different `service`.
 
-2. Load all tests for patient
-If the external system is `RFH Database`, when we save the patient, via the admin or via the inital load management command we load in all lab tests for a patient for the past year.
+A `service` is an upstream resource regarding a certain type of information for example lab tests or demographics.
 
-This means we query via hospital number and now - 1 year. We update all of their test results.
+Each service is independent but shares a common structure. Its a directory with the public functions exposed in the `__init__.py`.
 
-3. Batch load
-Every 5 mins we load in all test data since the beginning of the previous batch run. IE we overlap.
-This excludes patients currently being loaded in by 2.
+It has a file called `service.py` this handles the interaction between the backend and your models.
 
-#### More detail.
-The cron job that takes backups waits for all loads to finish. As does the deployment.
+It has a directory called `backends` this contains `live.py` and `dev.py`. `live.py` will be used in production, `dev.py` will be used in dev. Which is used is defined by `settings.API_STATE`.
+
+
+#### How do you write a new service.
+
+Your new service should be of be structured
+
+```
+    { service_name } /
+        __init__.py # put you public functions in here
+        service.py # put your model interations in here
+
+        backends /
+            live.py # put an object called `Api` in here its for your live db interactions
+            dev.py # put an object called `Api` in here its for your dev interactions.
+
+```
+
+To get your backend you can use `intrahospital_api.base.service_utils.get_api({{ service_name }})`
+
+When saving your models you should use the api user. This can be got from `intrahospital_api.base.service_utils.get_user()`
+
+
+

@@ -2,7 +2,7 @@ import logging
 import datetime
 from collections import defaultdict
 from django.utils import timezone
-from intrahospital_api.apis.backends import db
+from intrahospital_api.base import db
 
 logger = logging.getLogger('intrahospital_api')
 
@@ -68,7 +68,7 @@ class Row(db.Row):
     )
 
 
-class AppointmentsApi(object):
+class Api(object):
     def __init__(self):
         self.connection = db.DBConnection()
 

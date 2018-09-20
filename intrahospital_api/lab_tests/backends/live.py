@@ -1,19 +1,12 @@
 import datetime
 import logging
-import itertools
 from collections import defaultdict
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from intrahospital_api.apis.backends import db
+from intrahospital_api.base import db
 from elcid.utils import timing
 from lab import models as lmodels
-from elcid.models import Demographics
 
-logger = logging.getLogger('intrahospital_api')
 VIEW = "Pathology_Result_view"
-
-
-DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
-@hospital_number ORDER BY last_updated DESC;".format(view=VIEW)
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since ORDER BY last_updated DESC;".format(
@@ -35,41 +28,11 @@ LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM Pat
 Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
 
 
-
-ETHNICITY_MAPPING = {
-    "99": "Other - Not Known",
-    "A": "White - British",
-    "B": "White - Irish",
-    "C": "White - Any Other White Background",
-    "D": "Mixed - White and Black Caribbean",
-    "E": "Mixed - White and Black African",
-    "F": "Mixed - White and Asian",
-    "G": "Mixed - Any Other Mixed Background",
-    "H": "Asian or Asian British - Indian",
-    "J": "Asian or Asian British - Pakistani",
-    "K": "Asian or Asian British - Bangladeshi",
-    "L": "Asian - Any Other Asian Background",
-    "M": "Black or Black British - Caribbean",
-    "N": "Black or Black British - African",
-    "P": "Black - Any Other Black Background",
-    "R": "Other - Chinese",
-    "S": "Other - Any Other Ethnic Group",
-    "Z": "Other - Not Stated",
-}
-
-
 class Row(db.Row):
     """ a simple wrapper to get us the fields we actually want out of a row
     """
     DEMOGRAPHICS_MAPPING = dict(
         hospital_number="Patient_Number",
-        nhs_number=("CRS_NHS_Number", "Patient_ID_External",),
-        first_name=("CRS_Forename1", "Firstname",),
-        surname=("CRS_Surname", "Surname",),
-        date_of_birth="date_of_birth",
-        sex="sex",
-        ethnicity="ethnicity",
-        title=("CRS_Title", "title",)
     )
 
     LAB_TEST_MAPPING = dict(
@@ -98,25 +61,6 @@ class Row(db.Row):
 
     def __init__(self, db_row):
         self.db_row = db_row
-
-    @property
-    def sex(self):
-        sex_abbreviation = self.get_or_fallback("CRS_SEX", "SEX")
-
-        if sex_abbreviation == "M":
-            return "Male"
-        else:
-            return "Female"
-
-    @property
-    def ethnicity(self):
-        return ETHNICITY_MAPPING.get(self.db_row.get("CRS_Ethnic_Group"))
-
-    @property
-    def date_of_birth(self):
-        dob = self.get_or_fallback("CRS_DOB", "date_of_birth")
-        if dob:
-            return db.to_date_str(dob.date())
 
     @property
     def status(self):
@@ -186,23 +130,9 @@ class Row(db.Row):
         return result
 
 
-class LabTestApi(object):
+class Api(object):
     def __init__(self):
         self.connection = db.DBConnection()
-
-    @timing
-    def demographics(self, hospital_number):
-        hospital_number = hospital_number.strip()
-        rows = list(self.connection.execute_query(
-            DEMOGRAPHICS_QUERY,
-            hospital_number=hospital_number
-        ))
-        if not len(rows):
-            return
-
-        demographics_dict = Row(rows[0]).get_demographics_dict()
-        demographics_dict["external_system"] = EXTERNAL_SYSTEM
-        return demographics_dict
 
     def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
         """ not all data, I lied. Only the last year's
@@ -237,7 +167,7 @@ class LabTestApi(object):
         )
         return (Row(r) for r in all_rows)
 
-    def lab_test_results_since(self, some_datetime):
+    def lab_test_results_since(self, hospital_numbers, some_datetime):
         """ yields an iterator of dictionary
 
             the dictionary contains
@@ -252,20 +182,17 @@ class LabTestApi(object):
         hospital_number_to_rows = defaultdict(list)
 
         for row in all_rows:
-            hospital_number_to_rows[row["hospital_number"]].append(row)
+            if row["hospital_number"] in hospital_numbers:
+                hospital_number_to_rows[row["hospital_number"]].append(row)
+
+        hospital_number_to_lab_tests = {}
 
         for hospital_number, rows in hospital_number_to_rows.items():
-            if Demographics.objects.filter(
-                hospital_number=hospital_number
-            ).exists():
-                demographics = list(rows)[0].get_demographics_dict()
-                lab_tests = self.cast_rows_to_lab_test(rows)
-                yield (
-                    dict(
-                        demographics=demographics,
-                        lab_tests=lab_tests
-                    )
-                )
+            lab_tests = self.cast_rows_to_lab_test(rows)
+            hospital_number_to_lab_tests[hospital_number] = lab_tests
+
+        return hospital_number_to_lab_tests
+
 
     def cooked_lab_tests(self, hospital_number):
         raw_lab_tests = self.raw_lab_tests(hospital_number)

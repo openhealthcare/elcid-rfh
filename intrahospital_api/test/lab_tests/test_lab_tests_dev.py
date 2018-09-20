@@ -1,13 +1,13 @@
 import mock
 import datetime
 from opal.core.test import OpalTestCase
-from intrahospital_api.apis import dev_api
+from intrahospital_api.lab_tests.backends import dev
 from opal.core import serialization
 
 
 class DevApiTestCase(OpalTestCase):
     def setUp(self):
-        self.api = dev_api.DevApi()
+        self.api = dev.Api()
 
     def test_get_date_of_birth(self):
         dob_str = self.api.get_date_of_birth()
@@ -34,20 +34,20 @@ class DevApiTestCase(OpalTestCase):
         for field in expected_fields:
             self.assertTrue(bool(demographics[field]))
 
-    @mock.patch("intrahospital_api.apis.dev_api.random.choice")
+    @mock.patch("intrahospital_api.lab_tests.backends.dev.random.choice")
     def test_demographics_male(self, choice):
         choice.side_effect = lambda x: x[0]
         demographics = self.api.demographics_for_hospital_number('some')
         self.assertEqual(demographics["sex"], "Male")
-        self.assertIn(demographics["first_name"], dev_api.MALE_FIRST_NAMES)
+        self.assertIn(demographics["first_name"], dev.MALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Dr")
 
-    @mock.patch("intrahospital_api.apis.dev_api.random.choice")
+    @mock.patch("intrahospital_api.lab_tests.backends.dev.random.choice")
     def test_demographics_female(self, choice):
         choice.side_effect = lambda x: x[1]
         demographics = self.api.demographics_for_hospital_number('some')
         self.assertEqual(demographics["sex"], "Female")
-        self.assertIn(demographics["first_name"], dev_api.FEMALE_FIRST_NAMES)
+        self.assertIn(demographics["first_name"], dev.FEMALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Ms")
 
     def test_get_external_identifier(self):

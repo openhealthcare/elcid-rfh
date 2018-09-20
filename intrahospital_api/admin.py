@@ -69,7 +69,7 @@ class PatientAdmin(OldPatientAdmin):
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
-            loader.load_patient(patient, async=False)
+            loader.load_patient(patient, run_async=False)
 
     refresh_lab_tests.short_description = "Load in lab tests from upstream"
 

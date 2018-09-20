@@ -1,7 +1,7 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
-from intrahospital_api.apis import get_api
+from intrahospital_api.base import service_utils
 from collections import defaultdict
 from opal.core.views import json_response
 
@@ -29,9 +29,10 @@ class PivottedData(StaffRequiredMixin, TemplateView):
     template_name = "intrahospital_api/table_view.html"
     api_method = ""
     title = ""
+    service = ""
 
     def get_context_data(self, *args, **kwargs):
-        api = get_api()
+        api = service_utils.get_api(self.service)
         ctx = super(PivottedData, self).get_context_data(
             *args, **kwargs
         )
@@ -44,21 +45,25 @@ class PivottedData(StaffRequiredMixin, TemplateView):
 
 
 class IntrahospitalRawLabTestView(PivottedData):
+    service = "lab_tests"
     api_method = "raw_lab_tests"
     title = "Raw Lab Test View"
 
 
 class IntrahospitalCookedLabTestView(PivottedData):
+    service = "lab_tests"
     api_method = "cooked_lab_tests"
     title = "Cooked Lab Test View"
 
 
 class IntrahospitalCookedAppointmentsView(PivottedData):
+    service = "appointments"
     api_method = "tb_appointments_for_hospital_number"
     title = "TB Appointments"
 
 
 class IntrahospitalRawAppointmentsView(PivottedData):
+    service = "appointments"
     api_method = "raw_appointments_for_hospital_number"
     title = "Raw Appointments"
 

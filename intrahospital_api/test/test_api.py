@@ -111,7 +111,7 @@ class PatientToDict(OpalTestCase):
         self.assertEqual(result.status_code, 401)
 
 
-@mock.patch("intrahospital_api.api.get_api")
+@mock.patch("intrahospital_api.api.lab_test_service.lab_tests_for_hospital_number")
 class UpstreamDataViewsetTestCase(OpalTestCase):
     def setUp(self):
         self.patient, _ = self.new_patient_and_episode_please()
@@ -131,31 +131,31 @@ class UpstreamDataViewsetTestCase(OpalTestCase):
         )
         return self.client.get(url)
 
-    def test_get_found(self, get_api):
+    def test_get_found(self, lab_tests_for_hospital_number):
         self.assertTrue(
             self.client.login(
                 username=self.user.username, password=self.PASSWORD
             )
         )
         result = dict(some="results")
-        get_api.return_value.lab_tests_for_hospital_number.return_value = result
+        lab_tests_for_hospital_number.return_value = result
         response = self.get_response()
         self.assertEqual(
             response.data, result
         )
 
-    def test_get_not_found(self, get_api):
+    def test_get_not_found(self, lab_tests_for_hospital_number):
         self.assertTrue(
             self.client.login(
                 username=self.user.username, password=self.PASSWORD
             )
         )
         result = dict(some="results")
-        get_api.return_value.lab_tests_for_hospital_number.return_value = result
+        lab_tests_for_hospital_number.return_value = result
         other_patient_id = omodels.Patient.objects.order_by("id").last().id + 1
         self.assertEqual(self.get_response(other_patient_id).status_code, 404)
 
-    def test_not_logged_in(self, get_api):
+    def test_not_logged_in(self, lab_tests_for_hospital_number):
         result = dict(some="results")
-        get_api.return_value.lab_tests_for_hospital_number.return_value = result
+        lab_tests_for_hospital_number.return_value = result
         self.assertEqual(self.get_response().status_code, 401)

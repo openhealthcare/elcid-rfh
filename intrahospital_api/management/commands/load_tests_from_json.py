@@ -6,9 +6,9 @@ import json
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from opal import models
-from elcid import models as emodels
 from lab import models as lmodels
-from intrahospital_api import update_lab_tests
+from elcid import models as emodels
+from intrahospital_api import lab_tests as lab_tests_service
 
 
 class Command(BaseCommand):
@@ -26,7 +26,7 @@ class Command(BaseCommand):
                 emodels.UpstreamBloodCulture.get_display_name(),
             ]
         ).delete()
-        update_lab_tests.update_tests(patient, results)
+        lab_tests_service.update_patient_tests(patient, results)
 
     def handle(self, patient_id, file_name, *args, **options):
         # we assume that there is a user called super

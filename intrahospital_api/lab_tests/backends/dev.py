@@ -1,5 +1,4 @@
 from intrahospital_api import constants
-from intrahospital_api.apis import base_api
 from datetime import date, timedelta, datetime
 from lab import models as lmodels
 import random
@@ -179,7 +178,7 @@ TEST_BASES = {
 }
 
 
-class DevApi(base_api.BaseApi):
+class Api(object):
     def get_date_of_birth(self):
         some_date = date.today() - timedelta(random.randint(1, 365 * 70))
         some_dt = datetime.combine(

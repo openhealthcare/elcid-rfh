@@ -2,13 +2,13 @@ import datetime
 import mock
 from django.utils import timezone
 from opal.core.test import OpalTestCase
-from intrahospital_api import update_appointments
+from intrahospital_api.appointments import service
 from opal.models import Patient
 from apps.tb import models as tb_models
 from apps.tb.episode_categories import TbEpisode
 
 
-@mock.patch("intrahospital_api.update_appointments.get_api")
+@mock.patch("intrahospital_api.appointments.service.service_utils")
 class UpdateAllAppointmentsTestCase(OpalTestCase):
     def setUp(self, *args, **kwargs):
         _, self.tb_episode = self.new_patient_and_episode_please()
@@ -16,7 +16,6 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
         self.tb_episode.category_name = TbEpisode.display_name
         self.tb_episode.save()
         self.mock_api = mock.MagicMock()
-        self.mock_api.user = self.user
         today = datetime.date.today()
         future = today + datetime.timedelta(1)
         past = today - datetime.timedelta(20)
@@ -59,9 +58,10 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
             created_by=self.user
         )
 
-    def test_update_all_appointments_existing(self, get_api):
-        get_api.return_value = self.mock_api
-        update_appointments.update_all_appointments()
+    def test_update_all_appointments_existing(self, service_utils):
+        service_utils.get_api.return_value = self.mock_api
+        service_utils.get_user.return_value = self.user
+        service.update_all_appointments()
         self.assertEqual(tb_models.TBAppointment.objects.count(), 2)
         self.assertEqual(self.tb_episode.patient.tbappointment_set.count(), 2)
         appointment_set = self.tb_episode.patient.tbappointment_set
@@ -72,10 +72,11 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
             appointment_set.filter(**self.future_appointment).exists()
         )
 
-    def test_update_all_appointments_new(self, get_api):
+    def test_update_all_appointments_new(self, service_utils):
+        service_utils.get_api.return_value = self.mock_api
+        service_utils.get_user.return_value = self.user
         tb_models.TBAppointment.objects.all().delete()
-        get_api.return_value = self.mock_api
-        update_appointments.update_all_appointments()
+        service.update_all_appointments()
         self.assertEqual(tb_models.TBAppointment.objects.count(), 2)
         self.assertEqual(self.tb_episode.patient.tbappointment_set.count(), 2)
         appointment_set = self.tb_episode.patient.tbappointment_set
@@ -87,10 +88,11 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
         )
 
 
-@mock.patch("intrahospital_api.update_appointments.get_api")
+@mock.patch("intrahospital_api.appointments.service.service_utils")
 class UpdateAppointmentsTestCase(OpalTestCase):
-    def test_update_appointments(self, get_api):
-        api = get_api.return_value
+    def test_update_appointments(self, service_utils):
+        api = service_utils.get_api.return_value
+        service_utils.get_user.return_value = self.user
         appointments = [{
             'clinic_resource': u'RAL Davis, Dr David TB',
             'end': datetime.datetime(2018, 9, 18, 14, 10),
@@ -103,14 +105,14 @@ class UpdateAppointmentsTestCase(OpalTestCase):
         api.future_tb_appointments.return_value = {
             "11111": appointments
         }
-        api.appoinments_api.demographics_for_hospital_number.return_value = dict(
+        api.demographics_for_hospital_number.return_value = dict(
             hospital_number="11111",
             first_name="Wilma",
             surname="Flintstone",
             date_of_birth=datetime.date(1000, 1, 1)
         )
         api.user = self.user
-        update_appointments.update_appointments()
+        service.update_appointments()
         patient = Patient.objects.get(demographics__hospital_number="11111")
         demographics = patient.demographics_set.first()
         self.assertEqual(
@@ -133,7 +135,9 @@ class UpdateAppointmentsTestCase(OpalTestCase):
             episode.category_name, TbEpisode.display_name
         )
 
-    def test_patient_exists(self, get_api):
+    def test_patient_exists(self, service_utils):
+        api = service_utils.get_api.return_value
+        service_utils.get_user.return_value = self.user
         patient = Patient.objects.create()
         patient.demographics_set.update(
             hospital_number="11111",
@@ -141,8 +145,6 @@ class UpdateAppointmentsTestCase(OpalTestCase):
             surname="Rubble",
             date_of_birth=datetime.date(2000, 1, 1)
         )
-        api = get_api.return_value
-        api.user = self.user
         appointments = [{
             'clinic_resource': u'RAL Davis, Dr David TB',
             'end': datetime.datetime(2018, 9, 18, 14, 10),
@@ -161,7 +163,7 @@ class UpdateAppointmentsTestCase(OpalTestCase):
             surname="Flintstone",
             date_of_birth=datetime.date(1000, 1, 1)
         )
-        update_appointments.update_appointments()
+        service.update_appointments()
         patient = Patient.objects.get(demographics__hospital_number="11111")
         demographics = patient.demographics_set.first()
         self.assertEqual(

@@ -19,11 +19,7 @@
     reconciled a patient.
 
     batch_load()
-    Tries to reconcile all unreconciled demographics
-
-    runs the batch load for all patients that are reconciled.
-    currently not being loaded in.
-
+    load in tests for all patients if they exist in the lab test db
     this is run every 5 mins and after deployments
 
     Loads everything since the start of the previous
@@ -49,14 +45,10 @@ from intrahospital_api import models
 from elcid import models as emodels
 from opal.models import Patient
 from elcid.utils import timing
-from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from intrahospital_api import update_demographics
-from intrahospital_api import update_lab_tests
+from intrahospital_api import lab_tests, demographics
 from intrahospital_api import logger
-
-api = get_api()
 
 
 @timing
@@ -77,16 +69,13 @@ def initial_load():
 
 
 def _initial_load():
-    update_demographics.reconcile_all_demographics()
     # only run for reconciled patients
-    patients = Patient.objects.filter(
-        demographics__external_system=EXTERNAL_SYSTEM
-    )
+    patients = Patient.objects.all()
     total = patients.count()
 
     for iterator, patient in enumerate(patients.all()):
         logger.info("running {}/{}".format(iterator+1, total))
-        load_patient(patient, async=False)
+        load_patient(patient, run_async=False)
 
 
 def log_errors(name):
@@ -111,23 +100,7 @@ def any_loads_running():
     return result
 
 
-@timing
-def load_demographics(hospital_number):
-    started = timezone.now()
-    try:
-        result = api.demographics_for_hospital_number(hospital_number)
-    except:
-        stopped = timezone.now()
-        logger.info("demographics load failed in {}".format(
-            (stopped - started).seconds
-        ))
-        log_errors("load_demographics")
-        return
-
-    return result
-
-
-def load_patient(patient, async=None):
+def load_patient(patient, run_async=None):
     """
         Load all the things for a patient.
 
@@ -139,14 +112,14 @@ def load_patient(patient, async=None):
         it will default to settings.ASYNC_API.
     """
     logger.info("starting to load patient {}".format(patient.id))
-    if async is None:
-        async = settings.ASYNC_API
+    if run_async is None:
+        run_async = settings.ASYNC_API
 
     patient_load = models.InitialPatientLoad(
         patient=patient,
     )
     patient_load.start()
-    if async:
+    if run_async:
         logger.info("loading patient {} asynchronously".format(patient.id))
         async_task(patient, patient_load)
     else:
@@ -228,6 +201,7 @@ load".format(time_ago.seconds)
     return True
 
 
+@transaction.atomic
 def batch_load(force=False):
     logger.info("starting batch load")
     all_set = None
@@ -297,64 +271,12 @@ def get_batch_start_time():
 @timing
 def _batch_load():
     started = get_batch_start_time()
-
-    logger.info("start loading batch")
-    # update the non reconciled
-    update_demographics.reconcile_all_demographics()
-    logger.info("reconciled demographics")
-
-    data_deltas = api.lab_test_results_since(started)
-    logger.info("calcualted data deltas")
-    update_from_batch(data_deltas)
+    patients = get_loaded_patients()
+    lab_tests.update_lab_tests(patients, started)
 
 
-@transaction.atomic
-def update_patient_from_batch(demographics_set, data_delta):
-    upstream_demographics = data_delta["demographics"]
-    patient_demographics_set = demographics_set.filter(
-        hospital_number=upstream_demographics["hospital_number"]
-    )
-    if not patient_demographics_set.exists():
-        # this patient is not in our reconcile list,
-        # move on, nothing to see here.
-        logger.info("unable to find a patient for {}".format(
-            upstream_demographics["hospital_number"]
-        ))
-        return
-
-    patient = patient_demographics_set.first().patient
-    logger.info("updating patient demographics for {}".format(
-        patient.id
-    ))
-    logger.info(json.dumps(upstream_demographics, indent=2))
-    update_demographics.update_patient_demographics(
-        patient, upstream_demographics
-    )
-    logger.info("updating patient results for {}".format(
-        patient.id
-    ))
-    logger.info(json.dumps(data_delta["lab_tests"], indent=2))
-    update_lab_tests.update_tests(
-        patient,
-        data_delta["lab_tests"],
-    )
-    logger.info("batch patient {} update complete".format(patient.id))
-
-
-@timing
-def update_from_batch(data_deltas):
-    # only look at patients that have been reconciled
-    demographics_set = emodels.Demographics.objects.filter(
-        external_system=EXTERNAL_SYSTEM
-    )
-
-    # ignore patients that have not had an existing patient load
-    demographics_set = demographics_set.filter(
-        patient__initialpatientload__state=models.InitialPatientLoad.SUCCESS
-    )
-    for data_delta in data_deltas:
-        logger.info("batch updating with {}".format(data_delta))
-        update_patient_from_batch(demographics_set, data_delta)
+def get_loaded_patients():
+    return Patient.objects.filter(initialpatientload__state=models.InitialPatientLoad.SUCCESS)
 
 
 def async_load_patient(patient_id, patient_load_id):
@@ -373,34 +295,8 @@ def _load_patient(patient, patient_load):
         "started patient {} ipl {}".format(patient.id, patient_load.id)
     )
     try:
-        hospital_number = patient.demographics_set.first().hospital_number
-        patient.labtest_set.filter(
-            lab_test_type__in=[
-                emodels.UpstreamBloodCulture.get_display_name(),
-                emodels.UpstreamLabTest.get_display_name()
-            ]
-        ).delete()
-        logger.info(
-            "deleted patient {} {}".format(patient.id, patient_load.id)
-        )
-
-        results = api.lab_tests_for_hospital_number(hospital_number)
-        logger.info(
-            "loaded results for patient {} {}".format(
-                patient.id, patient_load.id
-            )
-        )
-        logger.info(json.dumps(results, indent=2))
-        update_lab_tests.update_tests(patient, results)
-        logger.info(
-            "tests updated for {} {}".format(patient.id, patient_load.id)
-        )
-        update_demographics.update_patient_demographics(patient)
-        logger.info(
-            "demographics updated for {} {}".format(
-                patient.id, patient_load.id
-            )
-        )
+        demographics.sync_patient_demographics(patient)
+        lab_tests.refresh_patient_lab_tests(patient)
     except:
         patient_load.failed()
         raise

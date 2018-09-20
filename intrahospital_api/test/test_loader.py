@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
 from opal.core.test import OpalTestCase
+from opal import models as opal_models
 from elcid import models as emodels
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
@@ -70,67 +71,40 @@ class _InitialLoadTestCase(ApiTestCase):
         ).update(external_system=EXTERNAL_SYSTEM)
 
     @mock.patch(
-        "intrahospital_api.loader.update_demographics.reconcile_all_demographics",
+        "intrahospital_api.loader.demographics.sync_patient_demographics",
     )
     @mock.patch(
-        "intrahospital_api.loader.load_patient",
+        "intrahospital_api.loader.lab_tests.refresh_patient_lab_tests",
     )
-    def test_flow(self, load_patient, reconcile_all_demographics):
+    def test_flow(self, refresh_patient_lab_tests, sync_patient_demographics):
         with mock.patch.object(loader.logger, "info") as info:
             loader._initial_load()
-            reconcile_all_demographics.assert_called_once_with()
-            call_args_list = load_patient.call_args_list
             self.assertEqual(
-                call_args_list[0][0], (self.patient_1,)
+                sync_patient_demographics.call_count, 3
             )
             self.assertEqual(
-                call_args_list[0][1], dict(async=False)
-            )
-            self.assertEqual(
-                call_args_list[1][0], (self.patient_2,)
-            )
-            self.assertEqual(
-                call_args_list[1][1], dict(async=False)
+                refresh_patient_lab_tests.call_count, 3
             )
             call_args_list = info.call_args_list
-            self.assertEqual(
-                call_args_list[0][0], ("running 1/2",)
-            )
-            self.assertEqual(
-                call_args_list[1][0], ("running 2/2",)
-            )
 
-    @override_settings(
-        INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
-    )
-    def test_integration(self):
-        with mock.patch.object(loader.logger, "info"):
-            loader._initial_load()
+            expected_log_messages = [
+                "running 1/3",        
+                "starting to load patient 1",
+                'loading patient 1 synchronously',
+                'started patient 1 ipl 1',
+                "running 2/3",        
+                "starting to load patient 2",
+                'loading patient 2 synchronously',
+                'started patient 2 ipl 2',
+                "running 3/3",        
+                "starting to load patient 3",
+                'loading patient 3 synchronously',
+            ]
 
-            self.assertIsNotNone(
-                self.patient_1.demographics_set.first().hospital_number
-            )
-
-            self.assertIsNotNone(
-                self.patient_2.demographics_set.first().hospital_number
-            )
-
-            self.assertEqual(
-                imodels.InitialPatientLoad.objects.first().patient.id,
-                self.patient_1.id
-            )
-            self.assertEqual(
-                imodels.InitialPatientLoad.objects.last().patient.id,
-                self.patient_2.id
-            )
-
-            upstream_patients = emodels.UpstreamLabTest.objects.values_list(
-                "patient_id", flat=True
-            ).distinct()
-            self.assertEqual(
-                set([self.patient_1.id, self.patient_2.id]),
-                set(upstream_patients)
-            )
+            for idx, expected_log_message in enumerate(expected_log_messages):
+                self.assertEqual(
+                    call_args_list[idx][0][0], expected_log_message
+                )
 
 
 class GetBatchStartTime(ApiTestCase):
@@ -172,13 +146,6 @@ class GetBatchStartTime(ApiTestCase):
         )
 
 
-class LogErrorsTestCase(ApiTestCase):
-    @mock.patch.object(loader.logger, "error")
-    def test_log_errors(self, err):
-        loader.logger.error("blah")
-        err.assert_called_once_with("blah")
-
-
 class AnyLoadsRunningTestCase(ApiTestCase):
     def setUp(self):
         super(AnyLoadsRunningTestCase, self).setUp()
@@ -215,33 +182,6 @@ class AnyLoadsRunningTestCase(ApiTestCase):
         self.assertFalse(loader.any_loads_running())
 
 
-class LoadDemographicsTestCase(ApiTestCase):
-
-    @mock.patch.object(loader.api, 'demographics_for_hospital_number')
-    def test_success(self, demographics):
-        demographics.return_value = "success"
-        result = loader.load_demographics("some_hospital_number")
-        demographics.assert_called_once_with("some_hospital_number")
-        self.assertEqual(result, "success")
-
-    @mock.patch.object(loader.api, 'demographics_for_hospital_number')
-    @mock.patch.object(loader.logger, 'info')
-    @mock.patch('intrahospital_api.loader.log_errors')
-    def test_failed(self, log_err, info, demographics):
-        demographics.side_effect = ValueError("Boom")
-        demographics.return_value = "success"
-        loader.load_demographics("some_hospital_number")
-        self.assertEqual(info.call_count, 1)
-        log_err.assert_called_once_with("load_demographics")
-
-    @override_settings(
-        INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
-    )
-    def test_integration(self):
-        result = loader.load_demographics("some_number")
-        self.assertTrue(isinstance(result, dict))
-
-
 @mock.patch('intrahospital_api.loader.async_task')
 @mock.patch('intrahospital_api.loader._load_patient')
 class LoadLabTestsForPatientTestCase(ApiTestCase):
@@ -251,43 +191,43 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
 
     @override_settings(ASYNC_API=True)
     def test_load_patient_arg_override_settings_True(
-        self, load_lab_tests, async
+        self, load_lab_tests, run_async 
     ):
-        loader.load_patient(self.patient, async=False)
+        loader.load_patient(self.patient, run_async=False)
         self.assertTrue(load_lab_tests.called)
-        self.assertFalse(async.called)
+        self.assertFalse(run_async.called)
 
     @override_settings(ASYNC_API=False)
     def test_load_patient_arg_override_settings_False(
-        self, load_lab_tests, async
+        self, load_lab_tests, run_async 
     ):
-        loader.load_patient(self.patient, async=True)
+        loader.load_patient(self.patient, run_async=True)
         self.assertFalse(load_lab_tests.called)
-        self.assertTrue(async.called)
+        self.assertTrue(run_async.called)
 
     @override_settings(ASYNC_API=True)
     def test_load_patient_arg_override_settings_None_True(
-        self, load_lab_tests, async
+        self, load_lab_tests, run_async 
     ):
         loader.load_patient(self.patient)
         self.assertFalse(load_lab_tests.called)
-        self.assertTrue(async.called)
+        self.assertTrue(run_async.called)
 
     @override_settings(ASYNC_API=False)
     def test_load_patient_arg_override_settings_None_False(
-        self, load_lab_tests, async
+        self, load_lab_tests, run_async
     ):
         loader.load_patient(self.patient)
         self.assertTrue(load_lab_tests.called)
-        self.assertFalse(async.called)
+        self.assertFalse(run_async.called)
 
     def test_load_patient_async(
-        self, load_lab_tests, async
+        self, load_lab_tests, run_async
     ):
-        loader.load_patient(self.patient, async=True)
+        loader.load_patient(self.patient, run_async=True)
         self.assertFalse(load_lab_tests.called)
-        self.assertTrue(async.called)
-        call_args_list = async.call_args_list
+        self.assertTrue(run_async.called)
+        call_args_list = run_async.call_args_list
         self.assertEqual(call_args_list[0][0][0], self.patient)
         patient_load = call_args_list[0][0][1]
         self.assertTrue(
@@ -297,10 +237,10 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
         self.assertIsNotNone(patient_load.started)
 
     def test_load_patient_async_false(
-        self, load_lab_tests, async
+        self, load_lab_tests, run_async
     ):
-        loader.load_patient(self.patient, async=False)
-        self.assertFalse(async.called)
+        loader.load_patient(self.patient, run_async=False)
+        self.assertFalse(run_async.called)
         self.assertTrue(load_lab_tests.called)
         call_args_list = load_lab_tests.call_args_list
         self.assertEqual(call_args_list[0][0][0], self.patient)
@@ -491,126 +431,35 @@ class BatchLoadTestCase(ApiTestCase):
 
 
 class _BatchLoadTestCase(ApiTestCase):
-    @mock.patch.object(loader.api, "lab_test_results_since")
-    @mock.patch('intrahospital_api.loader.update_demographics.reconcile_all_demographics')
-    @mock.patch('intrahospital_api.loader.update_from_batch')
+    @mock.patch('intrahospital_api.loader.get_batch_start_time')
+    @mock.patch('intrahospital_api.loader.lab_tests.update_lab_tests')
     def test_batch_load(
-        self, update_from_batch, reconcile_all_demographics, lab_test_results_since
+        self, update_lab_tests, get_batch_start_time
     ):
         now = timezone.now()
         imodels.BatchPatientLoad.objects.create(
             state=imodels.BatchPatientLoad.SUCCESS,
             started=now
         )
-        lab_test_results_since.return_value = "something"
+        get_batch_start_time.return_value = now
         loader._batch_load()
-        reconcile_all_demographics.assert_called_once_with()
-        lab_test_results_since.assert_called_once_with(now)
-        update_from_batch.assert_called_once_with("something")
-
-
-@mock.patch('intrahospital_api.loader.update_patient_from_batch')
-class UpdateFromBatchTestCase(ApiTestCase):
-    def setUp(self, *args, **kwargs):
-        super(UpdateFromBatchTestCase, self).setUp(*args, **kwargs)
-        self.patient, _ = self.new_patient_and_episode_please()
-        self.demographics = self.patient.demographics_set.first()
-        self.demographics.external_system = EXTERNAL_SYSTEM
-        self.demographics.save()
-        self.initial_load = imodels.InitialPatientLoad.objects.create(
-            patient=self.patient,
-            started=timezone.now(),
-            stopped=timezone.now(),
-            state=imodels.InitialPatientLoad.SUCCESS
+        get_batch_start_time.assert_called_once_with()
+        patient_loaded, _ = self.new_patient_and_episode_please()
+        self.new_patient_and_episode_please()
+        ipl = imodels.InitialPatientLoad(
+            patient=patient_loaded
         )
-        self.data_delta = dict(some="data")
-        self.lab_test_results_since = [self.data_delta]
-
-    def test_update_from_batch_ignore_non_reconciled(
-        self, update_patient_from_batch
-    ):
-        self.demographics.external_system = "asdfasfd"
-        self.demographics.save()
-        loader.update_from_batch(self.lab_test_results_since)
-        call_args = update_patient_from_batch.call_args
+        ipl.start()
+        ipl.complete()
+    
         self.assertEqual(
-            list(call_args[0][0]), list()
-        )
-        self.assertEqual(
-            call_args[0][1], self.data_delta
+            update_lab_tests.call_args[0][0][0],
+            patient_loaded
         )
 
-    def test_update_from_batch_ignore_failed_loads(
-        self, update_patient_from_batch
-    ):
-        self.initial_load.state = imodels.InitialPatientLoad.FAILURE
-        self.initial_load.save()
-        loader.update_from_batch(self.lab_test_results_since)
-        call_args = update_patient_from_batch.call_args
         self.assertEqual(
-            list(call_args[0][0]), list()
-        )
-        self.assertEqual(
-            call_args[0][1], self.data_delta
-        )
-
-    def test_update_from_batch_pass_through(
-        self, update_patient_from_batch
-    ):
-        loader.update_from_batch(self.lab_test_results_since)
-        call_args = update_patient_from_batch.call_args
-        self.assertEqual(
-            list(call_args[0][0]), [self.demographics]
-        )
-        self.assertEqual(
-            call_args[0][1], self.data_delta
+            update_lab_tests.call_args[0][1],
+            now
         )
 
 
-class UpdatePatientFromBatchTestCase(ApiTestCase):
-    def setUp(self, *args, **kwargs):
-        super(UpdatePatientFromBatchTestCase, self).setUp(*args, **kwargs)
-        self.patient, _ = self.new_patient_and_episode_please()
-        demographics = self.patient.demographics_set.first()
-        demographics.hospital_number = "123"
-        demographics.save()
-        emodels.UpstreamLabTest.objects.create(
-            patient=self.patient,
-            external_identifier="234",
-            extras=dict(
-                observations=[{
-                    "observation_number": "345",
-                    "result": "Pending"
-                }],
-                test_name="some_test"
-            )
-        )
-        self.lab_test_results_since = {
-            "demographics": {
-                "hospital_number": "123",
-                "first_name": "Jane"
-            },
-            "lab_tests": [{
-                "external_identifier": "234",
-                "test_name": "some_test",
-                "observations": [{
-                    "observation_number": "345",
-                    "result": "Positive"
-                }]
-            }]
-        }
-
-    def test_update_patient_from_batch_integration(self):
-        loader.update_patient_from_batch(
-            emodels.Demographics.objects.all(),
-            self.lab_test_results_since
-        )
-        self.assertEqual(
-            self.patient.demographics_set.first().first_name, "Jane"
-        )
-        observation = self.patient.labtest_set.first().extras[
-            "observations"
-        ][0]
-        self.assertEqual(
-            observation["result"], "Positive"
-        )

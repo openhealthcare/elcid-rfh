@@ -1,14 +1,14 @@
 from django.utils import timezone
 from opal.models import Patient
 from elcid.models import Demographics
-from intrahospital_api import get_api
+from intrahospital_api.base import service_utils
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from apps.tb.episode_categories import TbEpisode
 from apps.tb.patient_lists import TbPatientList
 
 
 def back_fill_appointments(patient):
-    api = get_api()
+    api = service_utils.get_api("appointments")
     appointments = api.tb_appointments_for_hospital_number(
         patient.demographics_set.first().hospital_number
     )
@@ -16,9 +16,10 @@ def back_fill_appointments(patient):
 
 
 def save_appointments(patient, appointment_dicts):
-    api = get_api()
+    api = service_utils.get_api("appointments")
+    user = service_utils.get_user()
     created = timezone.now()
-    created_by = api.user
+    created_by = user
     for appointment in appointment_dicts:
         if not appointment_exists(patient, appointment):
             patient.tbappointment_set.create(
@@ -40,7 +41,7 @@ def get_or_create_patient(hospital_number):
     if demographics:
         return demographics.patient, False
     else:
-        api = get_api()
+        api = service_utils.get_api("appointments")
         patient = Patient()
         patient.save()
         patient.demographics_set.update(
@@ -53,7 +54,8 @@ def get_or_create_patient(hospital_number):
 
 
 def get_or_create_episode(patient):
-    api = get_api()
+    api = service_utils.get_api("appointments")
+    user = service_utils.get_user()
     episode = patient.episode_set.filter(
         category_name=TbEpisode.display_name
     )
@@ -65,30 +67,31 @@ def get_or_create_episode(patient):
             category_name=TbEpisode.display_name,
             stage="New Referral"
         )
-        episode.set_tag_names([TbPatientList.tag], api.user)
+        episode.set_tag_names([TbPatientList.tag], user)
         return episode, True
 
 
 def update_demographics(patient):
     hospital_number = patient.demographics_set.first().hospital_number
-    api = get_api()
-    demographics_dict = api.appoinments_api.demographics_for_hospital_number(
+    service_utils.get_api('appointments')
+    appoinments_api = service_utils.get_api("appointments")
+    demographics_dict = appoinments_api.demographics_for_hospital_number(
         hospital_number
     )
     patient.demographics_set.update(**demographics_dict)
 
 
-def has_appointments(self, patient):
+def has_appointments(patient):
     return patient.tbappointment_set.exists()
 
 
 def update_all_appointments():
-    api = get_api()
-    appointments = api.tb_appointments_from_last_year()
+    appoinments_api = service_utils.get_api("appointments")
+    appointments = appoinments_api.appointments_since_last_year()
     patient_ids = []
     for hospital_number, appointments in appointments.items():
-        patient, patient_created = get_or_create_patient(hospital_number)
-        episode, episode_created = get_or_create_episode(patient)
+        patient, _ = get_or_create_patient(hospital_number)
+        get_or_create_episode(patient)
         back_fill_appointments(patient)
         patient_ids.append(patient.id)
     patients = Patient.objects.filter(
@@ -100,11 +103,11 @@ def update_all_appointments():
 
 
 def update_appointments():
-    api = get_api()
+    api = service_utils.get_api("appointments")
     future_appointments = api.future_tb_appointments()
     for hospital_number, appointments in future_appointments.items():
         patient, patient_created = get_or_create_patient(hospital_number)
-        episode, episode_created = get_or_create_episode(patient)
+        _, episode_created = get_or_create_episode(patient)
         if patient_created:
             update_demographics(patient)
 

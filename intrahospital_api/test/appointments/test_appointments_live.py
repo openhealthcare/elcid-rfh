@@ -2,7 +2,7 @@ import datetime
 import mock
 import copy
 from opal.core.test import OpalTestCase
-from intrahospital_api.apis.backends import appointments
+from intrahospital_api.appointments.backends import live
 
 TEST_DATA = [{
     u'AIG_Resource_ID': u'RAL Davis, Dr David TB',
@@ -49,7 +49,7 @@ TEST_DATA = [{
 
 class AppointmentsApiTestCase(OpalTestCase):
     def setUp(self, *args, **kwargs):
-        self.api = appointments.AppointmentsApi()
+        self.api = live.Api()
         self.expected = [{
             'clinic_resource': u'RAL Davis, Dr David TB',
             'end': datetime.datetime(2018, 9, 18, 14, 10),

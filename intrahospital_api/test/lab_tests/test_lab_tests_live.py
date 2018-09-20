@@ -3,7 +3,7 @@ import mock
 import datetime
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
-from intrahospital_api.apis.backends import lab_tests
+from intrahospital_api.lab_tests.backends import live
 
 FAKE_ROW_DATA = {
     u'Abnormal_Flag': u'',
@@ -161,61 +161,11 @@ class BaseLabTestCase(OpalTestCase):
     def get_row(self, **kwargs):
         raw_lab_tests = copy.copy(FAKE_ROW_DATA)
         raw_lab_tests.update(kwargs)
-        return lab_tests.Row(raw_lab_tests)
+        return live.Row(raw_lab_tests)
 
 
 class RowTestCase(BaseLabTestCase):
     maxDiff = None
-
-    def test_demographics_dict(self):
-        row = self.get_row()
-        result = row.get_demographics_dict()
-
-        expected = {
-            'nhs_number': u'7060976728',
-            'first_name': u'TEST',
-            'surname': u'ZZZTEST',
-            'title': '',
-            'sex': 'Female',
-            'hospital_number': u'20552710',
-            'date_of_birth': '10/10/1980',
-            'ethnicity': 'Mixed - White and Black Caribbean'
-        }
-        self.assertEqual(
-            result, expected
-        )
-
-
-    def test_sex_female(self):
-        row = self.get_row(
-            CRS_SEX="F"
-        )
-        self.assertEqual(row.sex, "Female")
-
-        row = self.get_row(
-            CRS_SEX="",
-            SEX="F"
-        )
-
-    def test_ethnicity(self):
-        row = self.get_row(
-            CRS_Ethnic_Group="A"
-        )
-        self.assertEqual(row.ethnicity, "White - British")
-
-    def test_date_of_birth(self):
-        dt = datetime.datetime(2017, 10, 1)
-        row = self.get_row(
-            CRS_DOB=dt
-        )
-        self.assertEqual(row.date_of_birth, "01/10/2017")
-
-        row = self.get_row(
-            CRS_DOB="",
-            date_of_birth=dt
-        )
-
-        self.assertEqual(row.date_of_birth, "01/10/2017")
 
     def test_status(self):
         row = self.get_row(OBX_Status="F")
@@ -244,8 +194,68 @@ class RowTestCase(BaseLabTestCase):
         }
         self.assertEqual(result, expected)
 
+    def test_all_fields(self):
+        row = self.get_row()
+        result = row.get_all_fields()
+        expected = {
+            'external_identifier': u'0013I245895',
+            'hospital_number': u'20552710',
+            'clinical_info': u'testing',
+            'datetime_ordered': '18/07/2015 16:18:00',
+            'last_updated': '18/07/2015 17:00:02',
+            'observation_datetime': '18/07/2015 16:18:00',
+            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'observation_number': 20334311,
+            'observation_value': u'Negative',
+            'reference_range': u' -',
+            'site': u'^&                              ^',
+            'status': 'complete',
+            'test_code': u'ANNR',
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
+            'units': u''
+        }
+        self.assertEqual(result, expected)
+
+
+class LabTestApiTestCase(BaseLabTestCase):
+    @mock.patch(
+        "intrahospital_api.lab_tests.backends.live.Api.data_delta_query"
+    )
+    def test_lab_test_results_since_no_hospital_number(self, ddq):
+        api = live.Api()
+        ddq.return_value = (i for i in [self.get_row()])
+        result = api.lab_test_results_since([], datetime.datetime.now())
+        self.assertEqual(list(result), [])
+
+    @mock.patch(
+        "intrahospital_api.lab_tests.backends.live.Api.data_delta_query"
+    )
+    def test_lab_test_results_since_hospital_number(self, ddq):
+        api = live.Api()
+        ddq.return_value = (i for i in [self.get_row()])
+        result = api.lab_test_results_since(['20552710'], datetime.datetime.now())
+        expected = [{
+            'status': 'complete', 
+            'external_identifier': u'0013I245895', 
+            'site': u'^&                              ^', 
+            'test_code': u'ANNR', 
+            'observations': [{
+                'observation_name': u'Anti-CV2 (CRMP-5) antibodies', 
+                'observation_number': 20334311, 
+                'observation_value': u'Negative', 
+                'observation_datetime': '18/07/2015 16:18:00', 
+                'units': u'',
+                'last_updated': '18/07/2015 17:00:02', 
+                'reference_range': u' -'}], 
+            'test_name': u'ANTI NEURONAL AB REFERRAL', 
+            'clinical_info': u'testing', 
+            'external_system': 'RFH Database', 
+            'datetime_ordered': '18/07/2015 16:18:00'
+        }]
+        self.assertEqual(result['20552710'], expected)
+
     def test_cast_rows_to_lab_tests(self):
-        api = lab_tests.LabTestApi()
+        api = live.Api()
         rows = [self.get_row()]
         result = api.cast_rows_to_lab_test(rows)
         self.assertEqual(
@@ -270,48 +280,8 @@ class RowTestCase(BaseLabTestCase):
             }]
         )
 
-    def test_all_fields(self):
-        row = self.get_row()
-        result = row.get_all_fields()
-        expected = {
-            'external_identifier': u'0013I245895',
-            'nhs_number': u'7060976728',
-            'first_name': u'TEST',
-            'surname': u'ZZZTEST',
-            'title': '',
-            'sex': 'Female',
-            'hospital_number': u'20552710',
-            'date_of_birth': '10/10/1980',
-            'ethnicity': 'Mixed - White and Black Caribbean',
-            'clinical_info': u'testing',
-            'datetime_ordered': '18/07/2015 16:18:00',
-            'last_updated': '18/07/2015 17:00:02',
-            'observation_datetime': '18/07/2015 16:18:00',
-            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
-            'observation_number': 20334311,
-            'observation_value': u'Negative',
-            'reference_range': u' -',
-            'site': u'^&                              ^',
-            'status': 'complete',
-            'test_code': u'ANNR',
-            'test_name': u'ANTI NEURONAL AB REFERRAL',
-            'units': u''
-        }
-        self.assertEqual(result, expected)
-
-
-class LabTestApiTestCase(BaseLabTestCase):
-    @mock.patch(
-        "intrahospital_api.apis.backends.lab_tests.LabTestApi.data_delta_query"
-    )
-    def test_lab_test_results_since(self, ddq):
-        api = lab_tests.LabTestApi()
-        ddq.return_value = (i for i in [self.get_row()])
-        result = api.lab_test_results_since(datetime.datetime.now())
-        self.assertEqual(list(result), [])
-
     def test_cast_rows_to_lab_tests_multiple(self):
-        api = lab_tests.LabTestApi()
+        api = live.Api()
         expected = [
             {
                 'clinical_info': u'urgent pre-chemo pancreas ca',

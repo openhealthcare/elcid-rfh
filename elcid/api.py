@@ -5,7 +5,7 @@ from collections import defaultdict
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
-from intrahospital_api import loader
+from intrahospital_api import demographics as upstream_demographics
 from rest_framework import viewsets
 from opal.core.api import OPALRouter
 from opal.core.api import patient_from_pk, LoginRequiredViewset
@@ -624,7 +624,9 @@ class DemographicsSearch(LoginRequiredViewset):
             ))
         else:
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                demographics = loader.load_demographics(hospital_number)
+                demographics = upstream_demographics.for_hospital_number(
+                    hospital_number
+                )
 
                 if demographics:
                     return json_response(dict(
