@@ -129,6 +129,8 @@ def update_patient_demographics(patient, upstream_demographics_dict=None):
 @timing
 def for_hospital_number(hospital_number):
     started = timezone.now()
+    api = service_utils.get_api("demographics")
+
     try:
         result = api.demographics_for_hospital_number(hospital_number)
     except:
