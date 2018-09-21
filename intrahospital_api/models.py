@@ -107,17 +107,26 @@ class BatchPatientLoad(PatientLoad):
         every 5 mins
     """
 
+    service_name = models.CharField(
+        max_length=255
+    )
+
     def __unicode__(self):
         if self.stopped:
             return "{} {} {} {}".format(
+                self.service_name,
                 self.state,
                 self.started,
                 self.count,
                 self.duration
             )
         else:
-            return "{} {} {}".format(
+            return "{} {} {} {}".format(
+                self.service_name,
                 self.state,
                 self.started,
                 self.count
             )
+
+
+

@@ -6,7 +6,7 @@ from opal import models as omodels
 from opal.core import subrecords
 from lab import models as lmodels
 from elcid.episode_serialization import serialize
-from intrahospital_api import lab_tests as lab_test_service
+from intrahospital_api.services.lab_tests import service as lab_test_service
 
 
 def patient_to_dict(patient, user):

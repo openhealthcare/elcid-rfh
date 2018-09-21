@@ -6,7 +6,7 @@ from django.utils import timezone
 from opal.models import Patient
 from opal.core.serialization import deserialize_date
 from intrahospital_api import logger
-from intrahospital_api.base import service_utils
+from intrahospital_api.services.base import service_utils
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 

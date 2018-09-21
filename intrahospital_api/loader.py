@@ -1,37 +1,37 @@
 """
-    Get a loader this.
+Get a loader this.
 
-    This is the entry point to the api.
+This is the entry point to the api.
 
-    The api handles all interaction with the external
-    system.
+The api handles all interaction with the external
+system.
 
-    This handles our internals and relationship
-    between elcid.
+This handles our internals and relationship
+between elcid.
 
-    we have 5 entry points
+we have 5 entry points
 
-    initial_load()
-    nukes all existing lab tests and replaces them.
+initial_load()
+nukes all existing lab tests and replaces them.
 
-    this is run in the inital load below. When we add a patient for the
-    first time, when we add a patient who has demographics or when we've
-    reconciled a patient.
+this is run in the inital load below. When we add a patient for the
+first time, when we add a patient who has demographics or when we've
+reconciled a patient.
 
-    batch_load()
-    load in tests for all patients if they exist in the lab test db
-    this is run every 5 mins and after deployments
+batch_load()
+load in tests for all patients if they exist in the lab test db
+this is run every 5 mins and after deployments
 
-    Loads everything since the start of the previous
-    successful load so that we paper over any cracks.
+Loads everything since the start of the previous
+successful load so that we paper over any cracks.
 
-    load_patient()
-    is what is run when we run it from the admin, or
-    after a patient has been reconciled from teh reconciliation pathway.
-    It loads in data for a single specific patient.
+load_patient()
+is what is run when we run it from the admin, or
+after a patient has been reconciled from teh reconciliation pathway.
+It loads in data for a single specific patient.
 
-    any_loads_running()
-    returns true if any, ie initial or batch, loads are running
+any_loads_running()
+returns true if any, ie initial or batch, loads are running
 """
 
 import datetime
@@ -47,33 +47,34 @@ from opal.models import Patient
 from elcid.utils import timing
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from intrahospital_api import lab_tests, demographics
+from intrahospital_api.services.base import service_utils
+from intrahospital_api.services.lab_tests import service as lab_tests_service
+from intrahospital_api.services.demographics import service as demographics_service
 from intrahospital_api import logger
 
 
 @timing
-def initial_load():
-    models.InitialPatientLoad.objects.all().delete()
-    models.BatchPatientLoad.objects.all().delete()
-    batch = models.BatchPatientLoad()
-    batch.start()
+def initial_load(remaining=False):
+    """
+    Runs an initial load.
 
-    try:
-        _initial_load()
-    except:
-        batch.failed()
-        log_errors("initial_load")
-        raise
-    else:
-        batch.complete()
+    If you pass in remaining it will only run
+    for patients that do not have an initialPatientLoad
+
+    Otherwise it will clear out all inital loads and load
+    in again
+    """
+
+    if not remaining:
+        models.InitialPatientLoad.objects.all().delete()
+    _initial_load()
 
 
 def _initial_load():
-    # only run for reconciled patients
-    patients = Patient.objects.all()
+    patients = Patient.objects.filter(initialpatientload=None)
     total = patients.count()
 
-    for iterator, patient in enumerate(patients.all()):
+    for iterator, patient in enumerate(patients):
         logger.info("running {}/{}".format(iterator+1, total))
         load_patient(patient, run_async=False)
 
@@ -136,149 +137,6 @@ def async_task(patient, patient_load):
     )
 
 
-def good_to_go():
-    """ Are we good to run a batch load, returns True if we should.
-        runs a lot of sanity checks.
-    """
-    if not models.BatchPatientLoad.objects.all().exists():
-        # an inital load is required via ./manage.py initial_test_load
-        raise BatchLoadError(
-            "We don't appear to have had an initial load run!"
-        )
-
-    current_running = models.BatchPatientLoad.objects.filter(
-        Q(stopped=None) | Q(state=models.BatchPatientLoad.RUNNING)
-    )
-
-    if current_running.count() > 1:
-        # we should never have multiple batches running at the same time
-        raise BatchLoadError(
-            "We appear to have {} concurrent batch loads".format(
-                current_running.count()
-            )
-        )
-
-    last_run_running = current_running.last()
-
-    if last_run_running:
-        time_ago = timezone.now() - last_run_running.started
-
-        # If a batch load is still running and started less that
-        # 10 mins ago, the let it run and don't try and run a batch load.
-        #
-        # Examples of when this might happen are when we've just done a
-        # deployment.
-        if time_ago.seconds < 600:
-            logger.info(
-                "batch still running after {} seconds, skipping".format(
-                    time_ago.seconds
-                )
-            )
-            return False
-        else:
-            if models.BatchPatientLoad.objects.all().count() == 1:
-                # we expect the inital batch patient load to take ages
-                # as its the first and runs the initial load
-                # so cut it some slack
-                logger.info(
-                    "batch still running after {} seconds, but its the first \
-load".format(time_ago.seconds)
-                )
-                return False
-            else:
-                raise BatchLoadError(
-                    "Last load is still running and has been for {} mins".format(
-                        time_ago.seconds/60
-                    )
-                )
-
-    one_hour_ago = timezone.now() - datetime.timedelta(seconds=60 * 60)
-    if models.BatchPatientLoad.objects.last().stopped < one_hour_ago:
-        raise BatchLoadError("Last load has not run since {}".format(
-            models.BatchPatientLoad.objects.last().stopped
-        ))
-
-    return True
-
-
-@transaction.atomic
-def batch_load(force=False):
-    logger.info("starting batch load")
-    all_set = None
-
-    # validate that we can run without exception
-    if not force:
-        try:
-            all_set = good_to_go()
-        except:
-            log_errors("batch load")
-
-        if not all_set:
-            return
-
-    logger.info("good to go, commencing batch load")
-    batch = models.BatchPatientLoad()
-    batch.start()
-    try:
-        _batch_load()
-    except:
-        batch.failed()
-        log_errors("batch load")
-    else:
-        batch.complete()
-
-
-def get_batch_start_time():
-    """
-        we need to paper over the cracks.
-
-        usually this just means get me everything since the start
-        of the last successful batch run.
-
-        ie batch A starts at 10:00 and finishes at 10:03
-        batch B will get all data since 10:00 so that nothing is lost
-
-        however...
-        the batches exclude initial patient loads, but usually that's ok
-        but we have extra cracks to paper over...
-
-        a patient load starts during the batch A load, at 9:58. It finishes
-        the db load from the upstream db at 9:59 but is still saving the data
-        to our db at 10:00
-
-        it is excluded from the batch A, so batch B goes and starts its run
-        from 9:59 accordingly.
-
-    """
-    last_successful_run = models.BatchPatientLoad.objects.filter(
-        state=models.BatchPatientLoad.SUCCESS
-    ).order_by("started").last()
-
-    long_patient_load = models.InitialPatientLoad.objects.filter(
-        state=models.InitialPatientLoad.SUCCESS
-    ).filter(
-        started__lt=last_successful_run.started
-    ).filter(
-        stopped__gt=last_successful_run.started
-    ).order_by("started").first()
-
-    if long_patient_load:
-        return long_patient_load.started
-    else:
-        return last_successful_run.started
-
-
-@timing
-def _batch_load():
-    started = get_batch_start_time()
-    patients = get_loaded_patients()
-    lab_tests.update_lab_tests(patients, started)
-
-
-def get_loaded_patients():
-    return Patient.objects.filter(initialpatientload__state=models.InitialPatientLoad.SUCCESS)
-
-
 def async_load_patient(patient_id, patient_load_id):
     patient = Patient.objects.get(id=patient_id)
     patient_load = models.InitialPatientLoad.objects.get(id=patient_load_id)
@@ -295,8 +153,8 @@ def _load_patient(patient, patient_load):
         "started patient {} ipl {}".format(patient.id, patient_load.id)
     )
     try:
-        demographics.sync_patient_demographics(patient)
-        lab_tests.refresh_patient_lab_tests(patient)
+        demographics_service.sync_patient_demographics(patient)
+        lab_tests_service.refresh_patient_lab_tests(patient)
     except:
         patient_load.failed()
         raise
