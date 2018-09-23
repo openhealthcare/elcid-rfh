@@ -2,7 +2,7 @@ import logging
 import datetime
 from collections import defaultdict
 from django.utils import timezone
-from intrahospital_api.base import db
+from intrahospital_api.services.base import db
 
 logger = logging.getLogger('intrahospital_api')
 

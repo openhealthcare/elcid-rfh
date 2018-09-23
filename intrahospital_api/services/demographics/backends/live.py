@@ -1,4 +1,4 @@
-from intrahospital_api.base import db
+from intrahospital_api.services.base import db
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 import logging

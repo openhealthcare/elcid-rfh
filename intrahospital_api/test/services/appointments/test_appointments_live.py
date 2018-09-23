@@ -2,7 +2,7 @@ import datetime
 import mock
 import copy
 from opal.core.test import OpalTestCase
-from intrahospital_api.appointments.backends import live
+from intrahospital_api.services.appointments.backends import live
 
 TEST_DATA = [{
     u'AIG_Resource_ID': u'RAL Davis, Dr David TB',

@@ -3,7 +3,7 @@ import mock
 import datetime
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
-from intrahospital_api.lab_tests.backends import live
+from intrahospital_api.services.lab_tests.backends import live
 
 FAKE_ROW_DATA = {
     u'Abnormal_Flag': u'',
@@ -219,7 +219,7 @@ class RowTestCase(BaseLabTestCase):
 
 class LabTestApiTestCase(BaseLabTestCase):
     @mock.patch(
-        "intrahospital_api.lab_tests.backends.live.Api.data_delta_query"
+        "intrahospital_api.services.lab_tests.backends.live.Api.data_delta_query"
     )
     def test_lab_test_results_since_no_hospital_number(self, ddq):
         api = live.Api()
@@ -228,7 +228,7 @@ class LabTestApiTestCase(BaseLabTestCase):
         self.assertEqual(list(result), [])
 
     @mock.patch(
-        "intrahospital_api.lab_tests.backends.live.Api.data_delta_query"
+        "intrahospital_api.services.lab_tests.backends.live.Api.data_delta_query"
     )
     def test_lab_test_results_since_hospital_number(self, ddq):
         api = live.Api()

@@ -3,7 +3,7 @@ import mock
 import datetime
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
-from intrahospital_api.demographics.backends import live as demographics
+from intrahospital_api.services.demographics.backends import live as demographics
 
 FAKE_ROW_DATA = {
     u'Abnormal_Flag': u'',

@@ -3,7 +3,7 @@ import mock
 from django.utils import timezone
 from opal.core.test import OpalTestCase
 from intrahospital_api import models as imodels
-from intrahospital_api.base import load_utils
+from intrahospital_api.services.base import load_utils
 from intrahospital_api.exceptions import BatchLoadError
 
 
@@ -147,8 +147,8 @@ class GoodToGoTestCase(OpalTestCase):
         )
 
 
-@mock.patch("intrahospital_api.base.load_utils.logger")
-@mock.patch("intrahospital_api.base.load_utils.good_to_go")
+@mock.patch("intrahospital_api.services.base.load_utils.logger")
+@mock.patch("intrahospital_api.services.base.load_utils.good_to_go")
 class BatchLoadTestCase(OpalTestCase):
     def test_not_good_to_go(self, good_to_go, logger):
         good_to_go.return_value = False

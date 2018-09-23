@@ -48,10 +48,10 @@ class _InitialLoadTestCase(ApiTestCase):
         ).update(external_system=EXTERNAL_SYSTEM)
 
     @mock.patch(
-        "intrahospital_api.loader.demographics_service.sync_patient_demographics",
+        "intrahospital_api.loader.demographics.service.sync_patient_demographics",
     )
     @mock.patch(
-        "intrahospital_api.loader.lab_tests_service.refresh_patient_lab_tests",
+        "intrahospital_api.loader.lab_tests.service.refresh_patient_lab_tests",
     )
     def test_flow(self, refresh_patient_lab_tests, sync_patient_demographics):
         with mock.patch.object(loader.logger, "info") as info:

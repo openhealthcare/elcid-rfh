@@ -188,6 +188,7 @@ API_STATE = "dev"
 # this needs to be set to true on prod
 ASYNC_API = False
 
+
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
 # the hospital db
@@ -346,9 +347,6 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.wsgi')
 
 
-
-# The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
 # search with external demographics when adding a patient
 USE_UPSTREAM_DEMOGRAPHICS = True

@@ -2,10 +2,10 @@ import datetime
 import mock
 from pytds.tds import OperationalError
 from opal.core.test import OpalTestCase
-from intrahospital_api.base import db
+from intrahospital_api.services.base import db
 
 
-@mock.patch("intrahospital_api.base.db.time")
+@mock.patch("intrahospital_api.services.base.db.time")
 class DbRetryTestCase(OpalTestCase):
     def test_retrys(self, time):
         m = mock.MagicMock(

@@ -1,7 +1,7 @@
 import mock
 import datetime
 from intrahospital_api.test.test_loader import ApiTestCase
-from intrahospital_api.demographics import service
+from intrahospital_api.services.demographics import service
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
@@ -55,7 +55,7 @@ class HaveDemographicsTestCase(ApiTestCase):
         )
 
 
-@mock.patch("intrahospital_api.demographics.service.service_utils")
+@mock.patch("intrahospital_api.services.demographics.service.service_utils")
 class UpdatePatientDemographicsTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(UpdatePatientDemographicsTestCase, self).setUp(*args, **kwargs)
@@ -111,7 +111,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         self.assertIsNone(self.patient.demographics_set.first().updated)
 
 
-@mock.patch("intrahospital_api.demographics.service.sync_patient_demographics")
+@mock.patch("intrahospital_api.services.demographics.service.sync_patient_demographics")
 class SyncDemographicsTestCase(ApiTestCase):
     def test_sync_demographics(self, sync_patient_demographics):
         patient, _ = self.new_patient_and_episode_please()
@@ -119,7 +119,7 @@ class SyncDemographicsTestCase(ApiTestCase):
         sync_patient_demographics.assert_called_once_with(patient)
 
 
-@mock.patch("intrahospital_api.demographics.service.service_utils")
+@mock.patch("intrahospital_api.services.demographics.service.service_utils")
 class SyncPatientDemographicsTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(SyncPatientDemographicsTestCase, self).setUp(*args, **kwargs)

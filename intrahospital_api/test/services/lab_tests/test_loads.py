@@ -6,7 +6,7 @@ from intrahospital_api.services.lab_tests import loads
 from intrahospital_api import models
 
 
-@mock.patch('intrahospital_api.lab_tests.loads.service.update_patients')
+@mock.patch('intrahospital_api.services.lab_tests.loads.service.update_patients')
 class BatchLoadTestCase(OpalTestCase):
     def test_batch_load(self, update_patients):
         patient, _ = self.new_patient_and_episode_please()

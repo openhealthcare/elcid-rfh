@@ -1,5 +1,5 @@
-from intrahospital_api.base import load_utils, service_utils
-from intrahospital_api.lab_tests import service
+from intrahospital_api.services.base import load_utils, service_utils
+from intrahospital_api.services.lab_tests import service
 
 SERVICE_NAME = "lab_tests"
 

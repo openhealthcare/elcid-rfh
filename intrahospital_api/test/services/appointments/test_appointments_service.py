@@ -2,13 +2,13 @@ import datetime
 import mock
 from django.utils import timezone
 from opal.core.test import OpalTestCase
-from intrahospital_api.appointments import service
+from intrahospital_api.services.appointments import service
 from opal.models import Patient
 from apps.tb import models as tb_models
 from apps.tb.episode_categories import TbEpisode
 
 
-@mock.patch("intrahospital_api.appointments.service.service_utils")
+@mock.patch("intrahospital_api.services.appointments.service.service_utils")
 class UpdateAllAppointmentsTestCase(OpalTestCase):
     def setUp(self, *args, **kwargs):
         _, self.tb_episode = self.new_patient_and_episode_please()
@@ -88,7 +88,7 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
         )
 
 
-@mock.patch("intrahospital_api.appointments.service.service_utils")
+@mock.patch("intrahospital_api.services.appointments.service.service_utils")
 class UpdateAppointmentsTestCase(OpalTestCase):
     def test_update_appointments(self, service_utils):
         api = service_utils.get_api.return_value
