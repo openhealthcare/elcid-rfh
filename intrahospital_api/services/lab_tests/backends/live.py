@@ -193,7 +193,6 @@ class Api(object):
 
         return hospital_number_to_lab_tests
 
-
     def cooked_lab_tests(self, hospital_number):
         raw_lab_tests = self.raw_lab_tests(hospital_number)
         return (Row(row).get_all_fields() for row in raw_lab_tests)

@@ -59,7 +59,6 @@ def sync_patient_demographics(patient):
             demographics.hospital_number
         ))
         return
-
     if demographics.external_system == EXTERNAL_SYSTEM:
         return update_patient_demographics(patient, external_demographics_dict)
     elif is_reconcilable(patient, external_demographics_dict):

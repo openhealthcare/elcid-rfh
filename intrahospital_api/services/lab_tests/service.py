@@ -1,6 +1,8 @@
-from intrahospital_api.services.base import service_utils
+from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
+
+SERVICE_NAME = "lab_tests"
 
 
 def lab_tests_for_hospital_number(hospital_number):
@@ -58,6 +60,10 @@ def update_patient(patient, lab_tests=None):
 
 
 def update_patients(patients, since):
+    """
+    Updates all the lab tests for a queryset of patients
+    since a certain time.
+    """
     api = service_utils.get_api("lab_tests")
     hospital_numbers = patients.values_list(
         'demographics__hospital_number', flat=True
@@ -85,3 +91,17 @@ def refresh_patient_lab_tests(patient):
     return update_patient(patient)
 
 
+def lab_test_batch_load():
+    started = load_utils.get_batch_start_time(SERVICE_NAME)
+    patients = load_utils.get_loaded_patients()
+    return update_patients(patients, started)
+
+
+# not an invalid, name, its not a constant, seperate out
+# for testing purposes
+# pylint: disable=invalid-name
+batch_load = load_utils.batch_load(
+    service_name=SERVICE_NAME
+)(
+    lab_test_batch_load
+)

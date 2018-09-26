@@ -12,7 +12,7 @@ from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
-@override_settings(API_USER="ohc")
+@override_settings(API_USER="ohc",  API_STATE="dev")
 class ApiTestCase(OpalTestCase):
     def setUp(self):
         super(ApiTestCase, self).setUp()

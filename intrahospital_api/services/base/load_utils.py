@@ -140,7 +140,7 @@ def batch_load(service_name):
             batch.start()
             try:
                 count = fun(*args, **kwargs)
-            except Exception:
+            except Exception as e:
                 batch.failed()
                 logger.error("{} batch load error".format(service_name))
             else:

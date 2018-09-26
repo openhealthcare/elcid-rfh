@@ -1,19 +1,16 @@
 from django.test import override_settings
 from django.contrib.auth.models import User
-from opal.core.test import OpalTestCase
+from intrahospital_api.test.test_loader import ApiTestCase
 from opal.models import Patient
 from intrahospital_api.management.commands import batch_demographics_load
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api import models
 
 
-@override_settings(API_USER="api_user")
-class BatchDemographicsLoadTestCase(OpalTestCase):
+class BatchDemographicsLoadTestCase(ApiTestCase):
     def setUp(self):
+        super(BatchDemographicsLoadTestCase, self).setUp()
         self.handle = batch_demographics_load.Command().handle
-        user = User.objects.create(username="api_user")
-        user.set_password("password")
-        user.save()
 
     def test_intergration_external(self):
         patient_1, _ = self.new_patient_and_episode_please()
@@ -36,7 +33,7 @@ class BatchDemographicsLoadTestCase(OpalTestCase):
         )
 
         self.assertEqual(
-            models.BatchPatientLoad.objects.first().count,
+            models.BatchPatientLoad.objects.filter(service_name="demographics").last().count,
             1
         )
 
@@ -65,7 +62,7 @@ class BatchDemographicsLoadTestCase(OpalTestCase):
         )
 
         self.assertEqual(
-            models.BatchPatientLoad.objects.first().count,
+            models.BatchPatientLoad.objects.filter(service_name="demographics").last().count,
             0
         )
 
