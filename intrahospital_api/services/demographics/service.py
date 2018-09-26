@@ -8,6 +8,7 @@ from opal.core.serialization import deserialize_date
 from intrahospital_api import logger
 from intrahospital_api.services.base import service_utils
 from intrahospital_api.constants import EXTERNAL_SYSTEM
+from intrahospital_api.services.base import load_utils
 from elcid.utils import timing
 
 
@@ -29,8 +30,12 @@ def update_external_demographics(
 def sync_demographics():
     """ Iterate through all patients and sync their demographics
     """
+    changed = 0
     for patient in Patient.objects.all():
-        sync_patient_demographics(patient)
+        synched = sync_patient_demographics(patient)
+        if synched:
+            changed += 1
+    return changed
 
 
 @transaction.atomic
@@ -56,15 +61,16 @@ def sync_patient_demographics(patient):
         return
 
     if demographics.external_system == EXTERNAL_SYSTEM:
-        update_patient_demographics(patient, external_demographics_dict)
+        return update_patient_demographics(patient, external_demographics_dict)
     elif is_reconcilable(patient, external_demographics_dict):
-        update_patient_demographics(
+        return update_patient_demographics(
             patient, external_demographics_dict
         )
     else:
         update_external_demographics(
             patient, external_demographics_dict
         )
+        return
 
 
 def is_reconcilable(patient, external_demographics_dict):
@@ -124,6 +130,7 @@ def update_patient_demographics(patient, upstream_demographics_dict=None):
         demographics.update_from_dict(
             upstream_demographics_dict, service_utils.get_user(), force=True
         )
+        return True
 
 
 @timing
@@ -141,4 +148,12 @@ def for_hospital_number(hospital_number):
         return
 
     return result
-    
+
+# not an invalid, name, its not a constant, seperate out
+# for testing purposes
+# pylint: disable=invalid-name
+batch_load = load_utils.batch_load(
+    service_name="demographics"
+)(
+    sync_demographics
+)

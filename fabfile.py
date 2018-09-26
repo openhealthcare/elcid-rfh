@@ -72,7 +72,6 @@ RELEASE_BACKUP_NAME = "{backup_dir}/release.{dt}.{db_name}.sql"
 
 MODULE_NAME = "elcid"
 PROJECT_NAME = MODULE_NAME
-CRON_TEST_LOAD = "/etc/cron.d/{0}_batch_test_load".format(PROJECT_NAME)
 
 DB_COMMAND_PREFIX = "sudo -u postgres psql --command"
 TEMPLATE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -225,6 +224,27 @@ def postgres_load_database(backup_name, new_env):
     local("sudo -u postgres psql -d {0} -f {1}".format(
         new_env.database_name,
         backup_name
+    ))
+
+
+def write_cron_backup(new_env):
+    """
+    Creates a cron job that copies a file to a remote server
+
+    This is not like other cron jobs as it does not run on test
+    """
+    print("Writing cron {}_backup".format(PROJECT_NAME))
+    template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        branch=new_env.branch,
+        unix_user=UNIX_USER
+    )
+    cron_file = "/etc/cron.d/{0}_backup".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
     ))
 
 
@@ -384,41 +404,25 @@ def restart_nginx():
     local('sudo service nginx restart')
 
 
-def write_cron_backup(new_env):
-    """ Creates a cron job that copies a file to a remote server
-    """
-    print("Writing cron {}_backup".format(PROJECT_NAME))
-    template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
-    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
-    output = template.render(
-        fabric_file=fabfile,
+def write_cron_jobs(new_env):
+    template_dir = "etc/cron_templates"
+
+    cron_jobs = os.listdir(template_dir)
+
+    for cron_job in cron_jobs:
+        template_path = os.path.join(template_dir, cron_job)
+        render_cron_template(new_env, template_path, cron_job)
+
+
+def render_cron_template(new_env, template_path, template_name):
+    write_template_name = "{}_{}".format(PROJECT_NAME, template_name)
+    template = jinja_env.get_template(template_path)
+    template.stream(
         virtualenv=new_env.virtual_env_path,
         branch=new_env.branch,
-        unix_user=UNIX_USER
-    )
-    cron_file = "/etc/cron.d/{0}_backup".format(PROJECT_NAME)
-    local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
-    ))
-
-
-def write_cron_lab_tests(new_env):
-    """ Creates a cron job that copies a file to a remote server
-    """
-    print("Writing cron {}_batch_test_load".format(PROJECT_NAME))
-    template = jinja_env.get_template(
-        'etc/conf_templates/cron_lab_tests.jinja2'
-    )
-    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
-    output = template.render(
-        fabric_file=fabfile,
-        virtualenv=new_env.virtual_env_path,
         unix_user=UNIX_USER,
         project_dir=new_env.project_directory
-    )
-    local("echo '{0}' | sudo tee {1}".format(
-        output, CRON_TEST_LOAD
-    ))
+    ).dump(write_template_name)
 
 
 def send_error_email(error, some_env):
@@ -602,7 +606,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     # symlink the celery conf
     services_create_celery_conf(new_env)
     # for the moment write cron lab tests on both prod and test
-    write_cron_lab_tests(new_env)
+    write_cron_jobs(new_env)
 
     # django setup
     run_management_command("collectstatic --noinput", new_env)
@@ -674,7 +678,7 @@ def roll_back_prod(branch_name):
     _roll_back(branch_name)
     create_pg_pass(roll_to_env, get_private_settings())
     write_cron_backup(roll_to_env)
-    write_cron_lab_tests(roll_to_env)
+    write_cron_jobs(roll_to_env)
 
 
 def create_pg_pass(env, additional_settings):
@@ -703,9 +707,7 @@ def dump_and_copy(branch_name):
         dump_database(env, env.database_name, env.backup_name)
         copy_backup(env)
     except Exception as e:
-        send_error_email("database backup failed with '{}'".format(
-            str(e.message))
-        )
+        send_error_email("database backup failed with '{}'".format(str(e.message)), env)
 
 
 def is_load_running(env):
@@ -715,20 +717,17 @@ def is_load_running(env):
 
 
 def dump_database(env, db_name, backup_name):
-    # we only care about whether a batch is running if the cron job
-    # exists
-    if os.path.exists(CRON_TEST_LOAD):
-        start = datetime.datetime.now()
-        while is_load_running(env):
-            if (datetime.datetime.now() - start).seconds > 3600:
-                raise FabException(
-                    "Database synch failed as it has been running for > \
+    start = datetime.datetime.now()
+    while is_load_running(env):
+        if (datetime.datetime.now() - start).seconds > 3600:
+            raise FabException(
+                "Database synch failed as it has been running for > \
 an hour"
-                )
-            print(
-                "One or more loads are currently running, sleeping for 30 secs"
             )
-            time.sleep(30)
+        print(
+            "One or more loads are currently running, sleeping for 30 secs"
+        )
+        time.sleep(30)
 
     pg = "pg_dump {db_name} -U {db_user} > {bu_name}"
     local(

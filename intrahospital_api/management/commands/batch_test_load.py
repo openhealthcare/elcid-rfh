@@ -1,9 +1,9 @@
 """
-A management command that runs every 5 mins and loads in
-batches of patients
+A management command that runs every hour and loads in
+lab tests of patients
 """
 from django.core.management.base import BaseCommand
-from intrahospital_api.loader import batch_load
+from intrahospital_api.services.lab_tests import loads
 
 
 class Command(BaseCommand):
@@ -17,4 +17,4 @@ skips sanity checks"
         )
 
     def handle(self, *args, **options):
-        batch_load(force=options["force"])
+        loads.batch_load()

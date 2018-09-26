@@ -10,51 +10,6 @@ from intrahospital_api import models
 MAX_ALLOWABLE_BATCH_RUN_TIME = 3600
 
 
-def good_to_go(service_name):
-    """
-    Are we good to run a batch load, returns True if we should.
-    runs a lot of sanity checks.
-    """
-    batch_loads = models.BatchPatientLoad.objects.filter(
-        service_name=service_name
-    )
-
-    if not batch_loads.exists():
-        return True
-
-    current_running = batch_loads.filter(
-        Q(stopped=None) | Q(state=models.BatchPatientLoad.RUNNING)
-    )
-
-    if current_running.count() > 1:
-        # we should never have multiple batches running at the same time
-        raise BatchLoadError(
-            "We appear to have {} concurrent batch loads".format(
-                current_running.count()
-            )
-        )
-
-    last_run_running = current_running.last()
-
-    if last_run_running:
-        time_ago = timezone.now() - last_run_running.started
-
-        # If a batch load is still running and started less that
-        # 10 mins ago, the let it run and don't try and run a batch load.
-        #
-        # Examples of when this might happen are when we've just done a
-        # deployment.
-        if time_ago.seconds < 600:
-            logger.info(
-                "batch still running after {} seconds, skipping".format(
-                    time_ago.seconds
-                )
-            )
-            return False
-
-    return True
-
-
 def any_loads_running():
     """
     Returns a boolean as to whether any loads are
