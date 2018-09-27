@@ -549,13 +549,9 @@ class RestartTestCase(FabfileTestCase):
         fabfile.restart_supervisord(self.prod_env)
         print_function.assert_called_once_with("Restarting supervisord")
         first_call = local.call_args_list[0][0][0]
-        self.assertEqual(
-            first_call, 'pkill super; pkill gunic; pkill gloss_flask'
-        )
-        second_call = local.call_args_list[1][0][0]
-        expected_second_call = "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin\
+        expected_first_call = "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin\
 /supervisord -c /usr/lib/ohc/elcidrfh-some_branch/etc/production.conf"
-        self.assertEqual(second_call, expected_second_call)
+        self.assertEqual(first_call, expected_first_call)
 
     def test_restart_nginx(self, local, print_function):
         fabfile.restart_nginx()
@@ -566,25 +562,30 @@ class RestartTestCase(FabfileTestCase):
 @mock.patch('fabfile.local')
 @mock.patch('fabfile.print', create=True)
 class CronTestCase(FabfileTestCase):
-    def test_cron_write_backup(self, print_function, local):
-        fabfile.cron_write_backup(self.prod_env)
-        local.assert_called_once_with(
-            'echo \'0 2 * * * postgres pg_dump elcidrfh_some_branch > \
-/usr/lib/ohc/var/back.$(date +"\\%d.\\%m.\\%Y").elcidrfh_some_branch.sql 2>> \
-/usr/lib/ohc/log/cron.log\' | sudo tee /etc/cron.d/elcid_backup'
+    def test_write_cron_lab_tests(
+        self, print_function, local
+    ):
+        fabfile.write_cron_lab_tests(self.prod_env)
+        local.assert_called_once_with("echo '0/5 * * * * ohc \
+/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/python \
+/usr/lib/ohc/elcidrfh-some_branch/manage.py \
+batch_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \
+/etc/cron.d/elcid_batch_test_load")
+        print_function.assert_called_once_with(
+            'Writing cron elcid_batch_test_load'
         )
-        print_function.assert_called_once_with('Writing cron backup')
 
     @mock.patch("fabfile.os")
-    def test_cron_copy_backup(self, os, print_function, local):
+    def test_write_cron_backup(self, os, print_function, local):
         os.path.abspath.return_value = "/somthing/somewhere/fabfile.py"
-        fabfile.cron_copy_backup(self.prod_env)
+        fabfile.write_cron_backup(self.prod_env)
         local.assert_called_once_with("echo '0 3 * * * ohc \
 /home/ohc/.virtualenvs/elcidrfh-some_branch/bin/fab -f \
-/somthing/somewhere/fabfile.py copy_backup:some_branch >> \
-/usr/lib/ohc/log/cron.log 2>&1' | sudo tee \
-/etc/cron.d/elcid_copy")
-        print_function.assert_called_once_with("Writing cron copy")
+/somthing/somewhere/fabfile.py dump_and_copy:some_branch >> \
+/usr/lib/ohc/log/cron.log 2>&1' | sudo tee /etc/cron.d/elcid_backup")
+        print_function.assert_called_once_with(
+            "Writing cron elcid_backup"
+        )
 
 
 @mock.patch("fabfile.print", create=True)
@@ -613,7 +614,7 @@ class CopyBackupTestCase(FabfileTestCase):
             2017, 9, 7
         )
         os.path.isfile.return_value = True
-        fabfile.copy_backup(self.prod_env.branch)
+        fabfile.copy_backup(self.prod_env)
         lp = "/usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
         rp = "/usr/lib/ohc/var/live/back.07.09.2017.elcidrfh_some_branch.sql"
         put.assert_called_once_with(
@@ -641,7 +642,7 @@ class CopyBackupTestCase(FabfileTestCase):
             "fabfile.Env.backup_name", new_callable=mock.PropertyMock
         ) as prop:
             prop.return_value = "some_backup"
-            fabfile.copy_backup(self.prod_env.branch)
+            fabfile.copy_backup(self.prod_env)
 
         self.assertEqual(
             run_management_command.call_args[0][0],
@@ -670,7 +671,7 @@ class CopyBackupTestCase(FabfileTestCase):
             "fabfile.Env.backup_name", new_callable=mock.PropertyMock
         ) as prop:
             prop.return_value = "some_backup"
-            fabfile.copy_backup(self.prod_env.branch)
+            fabfile.copy_backup(self.prod_env)
 
         self.assertEqual(
             run_management_command.call_args[0][0],
@@ -813,12 +814,16 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile.get_private_settings")
     @mock.patch("fabfile.pip_create_virtual_env")
+    @mock.patch("fabfile.kill_running_processes")
     @mock.patch("fabfile.pip_set_project_directory")
     @mock.patch("fabfile.pip_install_requirements")
     @mock.patch("fabfile.postgres_create_database")
+    @mock.patch("fabfile.create_pg_pass")
     @mock.patch("fabfile.postgres_load_database")
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
+    @mock.patch("fabfile.services_create_celery_conf")
+    @mock.patch("fabfile.write_cron_lab_tests")
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -833,12 +838,16 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
+        write_cron_lab_tests,
+        services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
         postgres_load_database,
+        create_pg_pass,
         postgres_create_database,
         pip_install_requirements,
         pip_set_project_directory,
+        kill_running_processes,
         pip_create_virtual_env,
         get_private_settings,
         env_constructor
@@ -862,8 +871,10 @@ class DeployTestCase(FabfileTestCase):
         pip_create_virtual_env.assert_called_once_with(self.prod_env)
         pip_set_project_directory.assert_called_once_with(self.prod_env)
         pip_install_requirements.assert_called_once_with(self.prod_env, "1.2.3")
+        kill_running_processes.assert_called_once_with()
 
         postgres_create_database.assert_called_once_with(self.prod_env)
+        create_pg_pass.assert_called_once_with(self.prod_env, pv)
         self.assertFalse(postgres_load_database.called)
         services_symlink_nginx.assert_called_once_with(self.prod_env)
         services_symlink_upstart.assert_called_once_with(self.prod_env)
@@ -884,7 +895,7 @@ class DeployTestCase(FabfileTestCase):
 
         second_call = run_management_command.call_args_list[1][0]
         self.assertEqual(
-            second_call[0], "migrate"
+            second_call[0], "migrate --noinput"
         )
 
         self.assertEqual(
@@ -914,14 +925,18 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.os")
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile.get_private_settings")
+    @mock.patch("fabfile.kill_running_processes")
     @mock.patch("fabfile.pip_create_virtual_env")
     @mock.patch("fabfile.pip_set_project_directory")
     @mock.patch("fabfile.pip_install_requirements")
     @mock.patch("fabfile.postgres_create_database")
+    @mock.patch("fabfile.create_pg_pass")
     @mock.patch("fabfile.postgres_load_database")
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_local_settings")
+    @mock.patch("fabfile.write_cron_lab_tests")
+    @mock.patch("fabfile.services_create_celery_conf")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
     @mock.patch("fabfile.run_management_command")
@@ -934,14 +949,18 @@ class DeployTestCase(FabfileTestCase):
         run_management_command,
         services_create_gunicorn_conf,
         services_create_upstart_conf,
+        services_create_celery_conf,
+        write_cron_lab_tests,
         services_create_local_settings,
         services_symlink_upstart,
         services_symlink_nginx,
         postgres_load_database,
+        create_pg_pass,
         postgres_create_database,
         pip_install_requirements,
         pip_set_project_directory,
         pip_create_virtual_env,
+        kill_running_processes,
         get_private_settings,
         env_constructor,
         os
@@ -967,15 +986,29 @@ class DeployTestCase(FabfileTestCase):
         )
         pip_create_virtual_env.assert_called_once_with(self.prod_env)
         pip_set_project_directory.assert_called_once_with(self.prod_env)
-        pip_install_requirements.assert_called_once_with(self.prod_env, "1.2.3")
+        pip_install_requirements.assert_called_once_with(
+            self.prod_env, "1.2.3"
+        )
 
         postgres_create_database.assert_called_once_with(self.prod_env)
-        postgres_load_database.assert_called_once_with("some_backup", self.prod_env)
+        create_pg_pass.assert_called_once_with(
+            self.prod_env, pv
+        )
+        postgres_load_database.assert_called_once_with(
+            "some_backup", self.prod_env
+        )
         services_symlink_nginx.assert_called_once_with(self.prod_env)
         services_symlink_upstart.assert_called_once_with(self.prod_env)
-        services_create_local_settings.assert_called_once_with(self.prod_env, pv)
+        services_create_local_settings.assert_called_once_with(
+            self.prod_env, pv
+        )
+        write_cron_lab_tests.assert_called_once_with(
+            self.prod_env
+        )
         services_create_gunicorn_conf.assert_called_once_with(self.prod_env)
         services_create_upstart_conf.assert_called_once_with(self.prod_env)
+        write_cron_lab_tests.assert_called_once_with(self.prod_env)
+        services_create_celery_conf.assert_called_once_with(self.prod_env)
         self.assertEqual(
             run_management_command.call_count, 4
         )
@@ -990,7 +1023,7 @@ class DeployTestCase(FabfileTestCase):
 
         second_call = run_management_command.call_args_list[1][0]
         self.assertEqual(
-            second_call[0], "migrate"
+            second_call[0], "migrate --noinput"
         )
 
         self.assertEqual(
@@ -1267,6 +1300,99 @@ class DiffStatusTestCase(FabfileTestCase):
         )
 
 
+@mock.patch("fabfile.dump_database")
+@mock.patch("fabfile.copy_backup")
+@mock.patch("fabfile.send_error_email")
+class DumpAndCopyTestCase(FabfileTestCase):
+    def test_error_raised(
+        self, send_error_email, copy_backup, dump_database
+    ):
+        dump_database.side_effect = ValueError("break")
+        fabfile.dump_and_copy("some_env")
+        send_error_email.assert_called_once_with(
+            "database backup failed with 'break'"
+        )
+        self.assertFalse(copy_backup.called)
+
+    @mock.patch("fabfile.Env")
+    def test_error_not_raised(
+        self, Env, send_error_email, copy_backup, dump_database
+    ):
+        Env.return_value = self.prod_env
+        fabfile.dump_and_copy("some_env")
+        dump_database.assert_called_once_with(
+            self.prod_env, self.prod_env.database_name, self.prod_env.backup_name
+        )
+        copy_backup.assert_called_once_with(self.prod_env)
+
+
+@mock.patch("fabfile.is_load_running")
+@mock.patch("fabfile.local")
+@mock.patch("fabfile.time")
+@mock.patch("fabfile.datetime")
+@mock.patch("fabfile.os")
+@mock.patch("fabfile.print", create=True)
+class DumpDatabaseTestCase(FabfileTestCase):
+    def test_status_found(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling test_status_found"
+        is_load_running.return_value = None
+        os.path.return_value = True
+        fabfile.dump_database(self.prod_env, "db_name", "backup_name")
+        self.assertEqual(is_load_running.call_count, 1)
+        self.assertFalse(time.sleep.called)
+        local.assert_called_once_with(
+            "pg_dump db_name -U ohc > backup_name"
+        )
+
+    def test_timed_out(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling test_timed_out"
+        is_load_running.return_value = True
+        os.path.return_value = True
+        first_call = datetime.datetime.now()
+        second_call = first_call + datetime.timedelta(seconds=3640)
+        dt.datetime.now.side_effect = [first_call, second_call]
+        with self.assertRaises(fabfile.FabException) as fe:
+            fabfile.dump_database(self.prod_env, "db_name", "backup_name")
+        self.assertEqual(
+            str(fe.exception),
+            "Database synch failed as it has been running for > an hour"
+        )
+
+    def test_fails_first_time_works_the_next(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling test_fails_first_time_works_the_next"
+        is_load_running.side_effect = [True, None]
+        os.path.return_value = True
+        fabfile.dump_database(self.prod_env, "db_name", "backup_name")
+
+        print_fun.assert_called_once_with(
+            "One or more loads are currently running, sleeping for 30 secs"
+        )
+        time.sleep.assert_called_once_with(30)
+
+        local.assert_called_once_with(
+            "pg_dump db_name -U ohc > backup_name"
+        )
+
+    def no_cron_job(
+        self, print_fun, os, dt, time, local, is_load_running
+    ):
+        print "calling no_cron_job"
+        os.path.return_value = False
+        fabfile.dump_database("db_name", "backup_name")
+        self.assertFalse(is_load_running.called)
+        self.assertFalse(time.called)
+        self.assertFalse(dt.called)
+        local.assert_called_once_with(
+            "pg_dump db_name -U ohc > backup_name"
+        )
+
+
 class DeployProdTestCase(FabfileTestCase):
     @mock.patch("fabfile.diff_status")
     @mock.patch("fabfile.infer_current_branch")
@@ -1274,8 +1400,8 @@ class DeployProdTestCase(FabfileTestCase):
     @mock.patch("fabfile.Env")
     @mock.patch("fabfile.validate_private_settings")
     @mock.patch("fabfile.local")
-    @mock.patch("fabfile.cron_write_backup")
-    @mock.patch("fabfile.cron_copy_backup")
+    @mock.patch("fabfile.write_cron_backup")
+    @mock.patch("fabfile.dump_database")
     @mock.patch("fabfile.run_management_command")
     @mock.patch("fabfile._deploy")
     @mock.patch("fabfile.print", create=True)
@@ -1284,8 +1410,8 @@ class DeployProdTestCase(FabfileTestCase):
         print_function,
         _deploy,
         run_management_command,
-        cron_copy_backup,
-        cron_write_backup,
+        dump_database,
+        write_cron_backup,
         local,
         validate_private_settings,
         env_constructor,
@@ -1305,18 +1431,19 @@ class DeployProdTestCase(FabfileTestCase):
         ]
         fabfile.deploy_prod("new_branch")
         validate_private_settings.assert_called_once_with()
-        local.assert_called_once_with(
-            "sudo -u postgres pg_dump elcidrfh_old_env -U postgres > \
-/usr/lib/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql"
+
+        dump_database.assert_called_once_with(
+            old_env,
+            'elcidrfh_old_env',
+            "/usr/lib/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql"
         )
-        cron_write_backup.assert_called_once_with(new_env)
-        cron_copy_backup.assert_called_once_with(new_env)
+
+        write_cron_backup.assert_called_once_with(new_env)
         _deploy.assert_called_once_with(
             "new_branch",
             '/usr/lib/ohc/var/release.08.09.2017.10.47.elcidrfh_old_env.sql',
             remove_existing=False
         )
-
         self.assertEqual(
             run_management_command.call_count, 2
         )

@@ -1,0 +1,25 @@
+<div upstream-blood-culture-result-display class="panel panel-default">
+  <div class="panel-heading"><h3>
+    <i class="fa fa-crosshairs"></i>Upstream Blood Cultures
+  </h3></div>
+  <div ng-show="patientLoadStatus.isLoading()">
+    <h2 class="text-center no-results">Lab tests loading please wait</h2>
+  </div>
+  <div ng-show="patientLoadStatus.isAbsent()">
+    <h2 class="text-center no-results">Unable to get lab tests for this patient</h2>
+  </div>
+  <div ng-show="patientLoadStatus.isFailed()">
+    <h2 class="text-center no-results">Failed to load lab tests for this patient</h2>
+  </div>
+  <ul ng-show="patientLoadStatus.isLoaded()" class="list-group">
+    <li ng-class="{'text-muted': lab_test.no_growth}" class="list-group-item" ng-repeat="lab_test in bc_results">
+      <h5>[[ lab_test.datetime_ordered | shortDate ]]  - [[ lab_test.extras.site ]] [[ lab_test.external_identifier ]]</h5>
+      <div ng-repeat="observation in lab_test.observations">
+          <div>[[ observation.observation_name ]]: &nbsp; [[ observation.observation_value ]]</div>
+      </div>
+      <p>
+        Clinical Info: &nbsp; [[ lab_test.extras.clinical_info ]]
+      </p>
+    </li>
+  </ul>
+</div>

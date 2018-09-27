@@ -1,49 +1,19 @@
 {% load panels %}
+{% load forms %}
 <div class="col-md-6">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h3>
-        <i class="fa fa-map-marker"></i> Location
-        <i class="fa fa-pencil edit pull-right"
-           ng-click="episode.recordEditor.editItem('location', 0)"></i>
-      </h3>
-    </div>
-    <div class="panel-body">
-      <div class="row">
-        <div class="col-md-4">
-          <b>Category</b>
-        </div>
-        <div class="col-md-8">
-          [[episode.category.charAt(0).toUpperCase() + episode.category.substring(1)]]
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">
-          <b>Hospital</b>
-        </div>
-        <div class="col-md-8">
-          [[ episode.location[0].hospital ]]
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">
-          <b>Ward</b>
-        </div>
-        <div class="col-md-8">
-          [[ episode.location[0].ward ]]
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">
-          <b>Bed</b>
-        </div>
-        <div class="col-md-8">
-          [[ episode.location[0].bed ]]
-        </div>
-      </div>
-    </div>
-  </div>
+  {% record_panel models.Location %}
   {% teams_panel %}
+  {% if permissions.view_lab_test_trends %}
+    <div class="panel panel-default">
+      <div class="panel-heading"><h3>
+        {% icon 'fa fa-crosshairs' %} Trends
+      </h3></div>
+      <div class="panel-body overflow-x-auto">
+        {% include "partials/lab_test_sparklines.html" with target="patient" %}
+      </div>
+    </div>
+  {% endif %}
+
 
   {% record_panel models.PrimaryDiagnosis %}
 
@@ -55,9 +25,12 @@
   </div>
 
   {% record_panel models.Line %}
-  {% record_panel models.Antimicrobial %}
+  {% include "partials/antimicrobial_panel.html" %}
   {% record_panel models.Imaging %}
   {% include "partials/blood_culture_result_display.html" %}
+  {% if permissions.view_lab_test_trends %}
+    {% include "partials/upstream_blood_culture_result_display.html" %}
+  {% endif %}
   {% record_panel models.FinalDiagnosis %}
 </div>
 <div class="col-md-6">
@@ -94,23 +67,14 @@
               <div class="row">
                 <div class="col-sm-10 timeline-data-[[ $index ]]">
                   <span ng-show="item.initials && item.initials.trim().length">
-                    <b>By: </b> [[item.initials]]<span ng-show="item.discussed_with"> with [[item.discussed_with]]</span>
-                    <br />
+                    <b>By: </b> [[item.initials]]                    <br />
                   </span>
                   <span ng-show="item.reason_for_interaction">
                     <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
                     <br />
                   </span>
-                  <span ng-show="item.clinical_discussion">
-                    <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
-                    <br />
-                  </span>
-                  <span ng-show="item.infection_control">
-                    <b>Infection control: </b><div markdown="infection_control"></div>
-                    <br />
-                  </span>
-                  <span ng-show="item.agreed_plan">
-                    <b>Plan: </b><div markdown="agreed_plan"></div>
+                  <span ng-show="item.discussion">
+                    <b>Clinical Discussion: </b><div markdown="discussion"></div>
                     <br />
                   </span>
                 </div>

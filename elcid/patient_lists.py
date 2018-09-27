@@ -1,9 +1,27 @@
 from opal.utils import AbstractBase
 from opal.core.patient_lists import TaggedPatientList
+from elcid import models
+from opal import models as omodels
+from intrahospital_api.models import InitialPatientLoad
+from episode_serialization import serialize
+
+PATIENT_LIST_SUBRECORDS = [
+    models.PrimaryDiagnosis,
+    models.Demographics,
+    models.Antimicrobial,
+    models.Diagnosis,
+    models.Location,
+    omodels.Tagging,
+    InitialPatientLoad
+]
 
 
 class RfhPatientList(TaggedPatientList, AbstractBase):
     comparator_service = "EpisodeAddedComparator"
+
+    def to_dict(self, user):
+        qs = super(RfhPatientList, self).get_queryset()
+        return serialize(qs, user, subrecords=PATIENT_LIST_SUBRECORDS)
 
 
 class Hepatology(RfhPatientList):
@@ -127,7 +145,7 @@ class TB(RfhPatientList):
 
 
 class Sepsis(RfhPatientList):
-    display_name = 'Sepsis'
+    display_name = 'Sepsis Pathway'
     direct_add = True
     tag = "sepsis"
     template_name = 'episode_list.html'
@@ -141,3 +159,27 @@ class Bacteraemia(RfhPatientList):
     template_name = 'episode_list.html'
     schema = []
     order = -10
+
+
+class PCP(RfhPatientList):
+    display_name = 'PCP'
+    direct_add = True
+    tag = "pcp"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class R1(RfhPatientList):
+    display_name = 'R1'
+    direct_add = True
+    tag = "r1"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class LiverTransplantation(RfhPatientList):
+    display_name = 'Liver Transplantation'
+    direct_add = True
+    tag = "liver_transplantation"
+    template_name = 'episode_list.html'
+    schema = []

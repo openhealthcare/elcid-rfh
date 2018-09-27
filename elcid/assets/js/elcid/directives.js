@@ -23,3 +23,102 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
     }
   };
 });
+
+directives.directive("upstreamBloodCultureResultDisplay", function(
+  UpstreamBloodCultureLoader, InitialPatientTestLoadStatus
+){
+  return {
+    restrict: 'A',
+    scope: true,
+    link : function(scope, $element){
+      scope.culture_order = [];
+      scope.cultures = {}
+      scope.patientLoadStatus = new InitialPatientTestLoadStatus(scope.patient);
+      scope.patientLoadStatus.load();
+
+      scope.loadBloodCultures = function(){
+        UpstreamBloodCultureLoader.load(scope.patient.id).then(function(bc_results){
+          scope.bc_results = bc_results;
+        });
+      }
+
+      if(!scope.patientLoadStatus.isAbsent()){
+        scope.patientLoadStatus.promise.then(function(){
+          scope.loadBloodCultures();
+        });
+      }
+    }
+  };
+});
+
+
+directives.directive("sparkLine", function () {
+  "use strict";
+  return {
+    restrict: 'A',
+    scope: {
+      data: "=sparkLine",
+    },
+    link: function (scope, element, attrs) {
+      var data = angular.copy(scope.data);
+      data.unshift("values");
+      var graphParams = {
+        bindto: element[0],
+        data: {
+          columns: [data]
+        },
+        legend: {
+          show: false
+        },
+        tooltip: {
+          show: false
+        },
+        axis: {
+          x: {show: false},
+          y: {show: false}
+        },
+        point: {
+          show: false,
+        },
+        size: {
+          height: 25,
+          width: 150
+        }
+      };
+      setTimeout(function(){
+        var chart = c3.generate(graphParams);
+      }, 100);
+    }
+  };
+});
+
+
+directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader){
+  "use strict";
+  return {
+    restrict: 'A',
+    scope: true,
+    link: function(scope){
+      // TODO: this is wrong, well maybe not wrong, but not right
+      var episode = scope.row || scope.episode;
+      var patientId = episode.demographics[0].patient_id;
+      var patientLoadStatus = new InitialPatientTestLoadStatus(
+          episode
+      );
+
+      // make sure we are using the correct
+      // js object scope(ie this)
+      patientLoadStatus.load();
+      scope.patientLoadStatus = patientLoadStatus;
+
+      if(!scope.patientLoadStatus.isAbsent()){
+        scope.patientLoadStatus.promise.then(function(){
+            // success
+            LabTestSummaryLoader.load(patientId).then(function(result){
+              scope.data = result;
+            });
+        });
+      }
+    }
+  };
+});

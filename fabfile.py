@@ -43,12 +43,14 @@ from __future__ import print_function
 import datetime
 import json
 import copy
+import time
 from jinja2 import Environment, FileSystemLoader
 from fabric.api import local, env
 from fabric.operations import put
 from fabric.context_managers import lcd, settings
 from fabric.decorators import task
-import os.path
+import os
+import stat
 
 env.hosts = ['127.0.0.1']
 UNIX_USER = "ohc"
@@ -60,7 +62,7 @@ PROJECT_ROOT = "/usr/lib/{unix_user}".format(unix_user=UNIX_USER)
 PROJECT_DIRECTORY = "{project_root}/{release_name}"
 BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
 GIT_URL = "https://github.com/openhealthcare/elcid-rfh"
-
+LOG_DIR = "/usr/lib/{}/log/".format(UNIX_USER)
 # the daily back up
 BACKUP_NAME = "{backup_dir}/back.{dt}.{db_name}.sql"
 REMOTE_BACKUP_NAME = "{backup_dir}/live/back.{dt}.{db_name}.sql"
@@ -70,13 +72,18 @@ RELEASE_BACKUP_NAME = "{backup_dir}/release.{dt}.{db_name}.sql"
 
 MODULE_NAME = "elcid"
 PROJECT_NAME = MODULE_NAME
-CRON_COMMENT = "{} back up".format(MODULE_NAME)
+CRON_TEST_LOAD = "/etc/cron.d/{0}_batch_test_load".format(PROJECT_NAME)
+
 DB_COMMAND_PREFIX = "sudo -u postgres psql --command"
 TEMPLATE_DIR = os.path.abspath(os.path.dirname(__file__))
 PRIVATE_SETTINGS = "{project_root}/private_settings.json".format(
     project_root=PROJECT_ROOT
 )
 jinja_env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+
+
+class FabException(Exception):
+    pass
 
 
 class Env(object):
@@ -138,6 +145,7 @@ def run_management_command(some_command, env):
         cmd = "{0}/bin/python manage.py {1}".format(
             env.virtual_env_path, some_command
         )
+        print(cmd)
         result = local(cmd, capture=True)
         print(result.stdout)
         print(result.stderr)
@@ -240,6 +248,32 @@ def services_symlink_nginx(new_env):
     local('sudo ln -s {0} {1}'.format(abs_address, symlink_name))
 
 
+def services_create_celery_conf(new_env):
+    print("Creating celery conf")
+    template = jinja_env.get_template(
+        'etc/conf_templates/celery.conf.jinja2'
+    )
+    output = template.render(
+        env_name=new_env.virtual_env_path,
+        log_dir=LOG_DIR
+    )
+    celery_conf = '{0}/etc/celery.conf'.format(
+        new_env.project_directory
+    )
+
+    if os.path.isfile(celery_conf) and not new_env.remove_existing:
+        raise ValueError(
+            'celery conf {} unexpectedly already exists'.format(
+                celery_conf
+            )
+        )
+
+    local("rm -f {}".format(celery_conf))
+
+    with open(celery_conf, 'w') as f:
+        f.write(output)
+
+
 def services_symlink_upstart(new_env):
     print("Symlinking upstart")
     abs_address = "{}/etc/upstart.conf".format(new_env.project_directory, "")
@@ -330,11 +364,14 @@ def services_create_upstart_conf(new_env):
         f.write(output)
 
 
+def kill_running_processes():
+    with settings(warn_only=True):
+        local("sudo pkill super; pkill gunic; pkill celery;")
+
+
 def restart_supervisord(new_env):
     print("Restarting supervisord")
     # warn only in case nothing is running
-    with settings(warn_only=True):
-        local("pkill super; pkill gunic; pkill gloss_flask")
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
     local("{0}/bin/supervisord -c {1}/etc/production.conf".format(
@@ -347,27 +384,11 @@ def restart_nginx():
     local('sudo service nginx restart')
 
 
-def cron_write_backup(new_env):
-    """ Creates a cron job that has a postgres user writing to a file
-    """
-    print("Writing cron backup")
-    template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
-    output = template.render(
-        database_name=new_env.database_name,
-        backup_dir=BACKUP_DIR
-    )
-
-    cron_file = "/etc/cron.d/{0}_backup".format(PROJECT_NAME)
-    local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
-    ))
-
-
-def cron_copy_backup(new_env):
+def write_cron_backup(new_env):
     """ Creates a cron job that copies a file to a remote server
     """
-    print("Writing cron copy")
-    template = jinja_env.get_template('etc/conf_templates/cron_copy.jinja2')
+    print("Writing cron {}_backup".format(PROJECT_NAME))
+    template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(
         fabric_file=fabfile,
@@ -375,9 +396,28 @@ def cron_copy_backup(new_env):
         branch=new_env.branch,
         unix_user=UNIX_USER
     )
-    cron_file = "/etc/cron.d/{0}_copy".format(PROJECT_NAME)
+    cron_file = "/etc/cron.d/{0}_backup".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
         output, cron_file
+    ))
+
+
+def write_cron_lab_tests(new_env):
+    """ Creates a cron job that copies a file to a remote server
+    """
+    print("Writing cron {}_batch_test_load".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_lab_tests.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, CRON_TEST_LOAD
     ))
 
 
@@ -391,9 +431,7 @@ def send_error_email(error, some_env):
     )
 
 
-@task
-def copy_backup(branch_name):
-    current_env = Env(branch_name)
+def copy_backup(current_env):
     private_settings = get_private_settings()
     env.host_string = private_settings["host_string"]
     env.password = private_settings["remote_password"]
@@ -534,6 +572,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     private_settings = get_private_settings()
     env.host_string = private_settings["host_string"]
 
+    kill_running_processes()
+
     # Setup environment
     pip_create_virtual_env(new_env)
     pip_set_project_directory(new_env)
@@ -541,6 +581,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
     # create a database
     postgres_create_database(new_env)
+    create_pg_pass(new_env, private_settings)
 
     # load in a backup
     if backup_name:
@@ -558,9 +599,14 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     # symlink the upstart conf
     services_symlink_upstart(new_env)
 
+    # symlink the celery conf
+    services_create_celery_conf(new_env)
+    # for the moment write cron lab tests on both prod and test
+    write_cron_lab_tests(new_env)
+
     # django setup
     run_management_command("collectstatic --noinput", new_env)
-    run_management_command("migrate", new_env)
+    run_management_command("migrate --noinput", new_env)
     run_management_command("create_singletons", new_env)
     run_management_command("load_lookup_lists", new_env)
     restart_supervisord(new_env)
@@ -626,8 +672,72 @@ def roll_back_prod(branch_name):
 
     roll_to_env = Env(branch_name)
     _roll_back(branch_name)
-    cron_write_backup(roll_to_env)
-    cron_copy_backup(roll_to_env)
+    create_pg_pass(roll_to_env, get_private_settings())
+    write_cron_backup(roll_to_env)
+    write_cron_lab_tests(roll_to_env)
+
+
+def create_pg_pass(env, additional_settings):
+    pg_pass = os.path.join(os.environ["HOME"], ".pgpass")
+
+    print("Creating pg pass")
+    template = jinja_env.get_template(
+        'etc/conf_templates/pgpass.conf.jinja2'
+    )
+    output = template.render(
+        db_name=env.database_name,
+        db_user=DB_USER,
+        db_password=additional_settings["db_password"]
+    )
+
+    with open(pg_pass, 'w') as f:
+        f.write(output)
+
+    os.chmod(pg_pass, stat.S_IRWXU)
+
+
+@task
+def dump_and_copy(branch_name):
+    env = Env(branch_name)
+    try:
+        dump_database(env, env.database_name, env.backup_name)
+        copy_backup(env)
+    except Exception as e:
+        send_error_email("database backup failed with '{}'".format(
+            str(e.message))
+        )
+
+
+def is_load_running(env):
+    return json.loads(
+        run_management_command("batch_load_running", env)
+    )["status"]
+
+
+def dump_database(env, db_name, backup_name):
+    # we only care about whether a batch is running if the cron job
+    # exists
+    if os.path.exists(CRON_TEST_LOAD):
+        start = datetime.datetime.now()
+        while is_load_running(env):
+            if (datetime.datetime.now() - start).seconds > 3600:
+                raise FabException(
+                    "Database synch failed as it has been running for > \
+an hour"
+                )
+            print(
+                "One or more loads are currently running, sleeping for 30 secs"
+            )
+            time.sleep(30)
+
+    pg = "pg_dump {db_name} -U {db_user} > {bu_name}"
+    local(
+        pg.format(
+            db_name=db_name,
+            db_user=DB_USER,
+            bu_name=backup_name
+        )
+    )
 
 
 @task
@@ -644,15 +754,15 @@ def deploy_prod(old_branch, old_database_name=None):
     new_env = Env(new_branch)
 
     validate_private_settings()
-    dump_str = "sudo -u postgres pg_dump {0} -U postgres > {1}"
+
     if old_database_name is None:
         dbname = old_env.database_name
     else:
         dbname = old_database_name
-    local(dump_str.format(dbname, old_env.release_backup_name))
 
-    cron_write_backup(new_env)
-    cron_copy_backup(new_env)
+    dump_database(old_env, dbname, old_env.release_backup_name)
+
+    write_cron_backup(new_env)
     old_status = run_management_command("status_report", old_env)
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
     new_status = run_management_command("status_report", new_env)

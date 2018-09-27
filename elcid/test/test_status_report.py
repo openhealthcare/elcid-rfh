@@ -24,8 +24,7 @@ class RandomiseStatusReport(OpalTestCase):
             created=datetime.datetime(2015, 1, 1)
         )
 
-        patient.allergies_set.create(
-            drug_ft="Amoxicillin",
+        patient.positivebloodculturehistory_set.create(
             created=datetime.datetime.now() - datetime.timedelta(1)
         )
 
@@ -38,16 +37,16 @@ class RandomiseStatusReport(OpalTestCase):
             output["all_time"]["Demographics"], 1
         )
 
-        # 0 because the demographcis were not created in the last week
+        # 0 because the demographics were not created in the last week
         self.assertEqual(
             output["last_week"]["Demographics"], 0
         )
 
         self.assertEqual(
-            output["all_time"]["Allergies"], 1
+            output["all_time"]["Positive Blood Culture History"], 1
         )
         self.assertEqual(
-            output["last_week"]["Allergies"], 1
+            output["last_week"]["Positive Blood Culture History"], 1
         )
 
     def test_handle_episodes(self):

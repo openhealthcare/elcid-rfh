@@ -1,0 +1,7 @@
+{% load forms %}
+{% input field="Nationality.arrival_in_the_uk" %}
+{% checkbox field="Nationality.immigration_concerns" %}
+<div ng-show="editing.nationality.immigration_concerns">
+  {% textarea field="Nationality.immigration_details" %}
+  {% textarea field="Nationality.immigration_support_officer" %}
+</div>

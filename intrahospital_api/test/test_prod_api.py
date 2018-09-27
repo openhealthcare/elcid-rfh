@@ -1,19 +1,12 @@
 import mock
 import copy
 from django.test import override_settings
+from pytds.tds import OperationalError
 from datetime import datetime, date
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import prod_api
 from lab import models as lmodels
 
-
-class UtilsTestCase(OpalTestCase):
-    def test_to_db_date(self):
-        some_date = date(2017, 1, 10)
-        self.assertEqual(
-            prod_api.to_db_date(some_date),
-            "2017-01-10"
-        )
 
 FAKE_ROW_DATA = {
     u'Abnormal_Flag': u'',
@@ -103,6 +96,57 @@ FAKE_ROW_DATA = {
     u'last_updated': datetime(2015, 7, 18, 17, 0, 2, 240000),
     u'visible': u'Y'
 }
+
+
+class DbRetry(OpalTestCase):
+    @mock.patch("intrahospital_api.apis.prod_api.time")
+    def test_retrys(self, time):
+        m = mock.MagicMock(
+            side_effect=[OperationalError('boom'), "response"]
+        )
+        m.__name__ = "some_mock"
+
+        with mock.patch.object(prod_api.logger, "info") as info:
+            response = prod_api.db_retry(m)()
+
+        self.assertEqual(
+            response, "response"
+        )
+        time.sleep.assert_called_once_with(30)
+        info.assert_called_once_with(
+            'some_mock: failed with boom, retrying in 30s'
+        )
+
+    @mock.patch("intrahospital_api.apis.prod_api.time")
+    def tests_works_as_normal(self, time):
+        m = mock.MagicMock()
+        m.return_value = "response"
+        m.__name__ = "some_mock"
+
+        with mock.patch.object(prod_api.logger, "info") as info:
+            response = prod_api.db_retry(m)()
+
+        self.assertEqual(
+            response, "response"
+        )
+        self.assertFalse(time.sleep.called)
+        self.assertFalse(info.called)
+
+    @mock.patch("intrahospital_api.apis.prod_api.time")
+    def tests_reraises(self, time):
+        m = mock.MagicMock(
+            side_effect=OperationalError('boom')
+        )
+        m.__name__ = "some_mock"
+
+        with mock.patch.object(prod_api.logger, "info") as info:
+            with self.assertRaises(OperationalError):
+                prod_api.db_retry(m)()
+
+        time.sleep.assert_called_once_with(30)
+        info.assert_called_once_with(
+            'some_mock: failed with boom, retrying in 30s'
+        )
 
 
 class RowTestCase(OpalTestCase):
@@ -209,18 +253,17 @@ class RowTestCase(OpalTestCase):
 
     def test_get_date_of_birth(self):
         dt = datetime(2017, 10, 1)
-        expected = dt.date()
         row = self.get_row(
             CRS_DOB=dt
         )
-        self.assertEqual(row.get_date_of_birth(), expected)
+        self.assertEqual(row.get_date_of_birth(), "01/10/2017")
 
         row = self.get_row(
             CRS_DOB="",
             date_of_birth=dt
         )
 
-        self.assertEqual(row.get_date_of_birth(), expected)
+        self.assertEqual(row.get_date_of_birth(), "01/10/2017")
 
     def test_get_title(self):
         expected = "Ms"
@@ -246,8 +289,7 @@ class RowTestCase(OpalTestCase):
             'title': '',
             'sex': 'Female',
             'hospital_number': u'20552710',
-            'date_of_birth': date(1980, 10, 10),
-            'external_system': 'RFH Demographics',
+            'date_of_birth': '10/10/1980',
             'ethnicity': 'Mixed - White and Black Caribbean'
         }
         self.assertEqual(
@@ -279,7 +321,7 @@ class RowTestCase(OpalTestCase):
         )
 
     def test_get_test_name(self):
-        row = self.get_row(OBX_exam_code_Text="Blood Cultures")
+        row = self.get_row(OBR_exam_code_Text="Blood Cultures")
         self.assertEqual(
             row.get_test_name(), "Blood Cultures"
         )
@@ -288,13 +330,20 @@ class RowTestCase(OpalTestCase):
         row = self.get_row()
         result = row.get_results_dict()
         expected = {
+            'clinical_info': u'testing',
+            'datetime_ordered': '18/07/2015 16:18:00',
+            'external_identifier': u'0013I245895',
+            'last_updated': '18/07/2015 17:00:02',
+            'observation_datetime': '18/07/2015 16:18:00',
+            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'observation_number': 20334311,
             'status': 'complete',
-            'external_identifier': 20334311,
             'observation_value': u'Negative',
             'test_code': u'AN12',
-            'test_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
             'units': u'',
-            'reference_range': u' -'
+            'reference_range': u' -',
+            'site': u'^&                              ^',
         }
         self.assertEqual(result, expected)
 
@@ -302,21 +351,28 @@ class RowTestCase(OpalTestCase):
         row = self.get_row()
         result = row.get_all_fields()
         expected = {
-            'status': 'complete',
-            'external_identifier': 20334311,
-            'observation_value': u'Negative',
-            'test_code': u'AN12',
-            'test_name': u'Anti-CV2 (CRMP-5) antibodies',
-            'units': u'',
-            'reference_range': u' -',
+            'external_identifier': u'0013I245895',
             'nhs_number': u'7060976728',
             'first_name': u'TEST',
             'surname': u'ZZZTEST',
             'title': '',
             'sex': 'Female',
             'hospital_number': u'20552710',
-            'date_of_birth': date(1980, 10, 10),
-            'ethnicity': 'Mixed - White and Black Caribbean'
+            'date_of_birth': '10/10/1980',
+            'ethnicity': 'Mixed - White and Black Caribbean',
+            'clinical_info': u'testing',
+            'datetime_ordered': '18/07/2015 16:18:00',
+            'last_updated': '18/07/2015 17:00:02',
+            'observation_datetime': '18/07/2015 16:18:00',
+            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+            'observation_number': 20334311,
+            'observation_value': u'Negative',
+            'reference_range': u' -',
+            'site': u'^&                              ^',
+            'status': 'complete',
+            'test_code': u'AN12',
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
+            'units': u''
         }
         self.assertEqual(result, expected)
 
@@ -357,7 +413,25 @@ class ProdApiTestcase(OpalTestCase):
             )
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
-    def test_execute_query(self, pytds):
+    def test_execute_query_with_params(self, pytds):
+        api = self.get_api()
+        conn = pytds.connect().__enter__()
+        cursor = conn.cursor().__enter__()
+        cursor.fetchall.return_value = ["some_results"]
+        result = api.execute_query(
+            "some query", dict(hospital_number="1231222222")
+        )
+        self.assertEqual(
+            result, ["some_results"]
+        )
+        cursor.execute.assert_called_once_with(
+            "some query",
+            dict(hospital_number="1231222222")
+        )
+        self.assertTrue(cursor.fetchall.called)
+
+    @mock.patch('intrahospital_api.apis.prod_api.pytds')
+    def test_execute_query_without_params(self, pytds):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
@@ -366,35 +440,8 @@ class ProdApiTestcase(OpalTestCase):
         self.assertEqual(
             result, ["some_results"]
         )
-        cursor.execute.assert_called_once_with("some query")
+        cursor.execute.assert_called_once_with("some query", None)
         self.assertTrue(cursor.fetchall.called)
-
-    def test_check_hosptial_number_success(self):
-        api = self.get_api()
-        api.check_hospital_number("12342343")
-        api.check_hospital_number("ascc12342343")
-        api.check_hospital_number("ascc12-342343")
-
-    def test_check_hospital_number_fail(self):
-        api = self.get_api()
-        bad_numbers = [
-            "'asd'",
-            "\"zxcc\"",
-            "asd asd"
-        ]
-        for bad_number in bad_numbers:
-            with mock.patch('intrahospital_api.apis.prod_api.logging') as l:
-                logger = l.getLogger()
-                err = "flawed hosital number {} passed to the intrahospital api"
-                err = err.format(bad_number)
-
-                with self.assertRaises(ValueError) as ve:
-                    api.check_hospital_number(bad_number)
-                self.assertEqual(
-                    str(ve.exception),
-                    err
-                )
-                logger.error.assert_called_once_with(err)
 
     @mock.patch("intrahospital_api.apis.prod_api.datetime.date")
     def test_raw_data(self, dt):
@@ -408,9 +455,15 @@ class ProdApiTestcase(OpalTestCase):
 
         # make sure we query by the correct db date
         expected_query = "SELECT * FROM some_view WHERE Patient_Number = \
-'12312222' AND last_updated > '2016-10-01' ORDER BY last_updated DESC;"
+@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(
+                hospital_number="12312222",
+                since=date(2016, 10, 1)
+            )
         )
 
     def test_cooked_data(self):
@@ -430,6 +483,15 @@ class ProdApiTestcase(OpalTestCase):
             result["first_name"], "TEST"
         )
 
+        expected_query = "SELECT top(1) * FROM some_view WHERE Patient_Number \
+= @hospital_number ORDER BY last_updated DESC;"
+        self.assertEqual(
+            execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(hospital_number="123")
+        )
+
     def test_empty_demographics(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_query") as execute_query:
@@ -445,15 +507,3 @@ class ProdApiTestcase(OpalTestCase):
             result = api.demographics("A1' 23")
 
         self.assertIsNone(result)
-
-    @mock.patch('intrahospital_api.apis.prod_api.logging')
-    def test_demographics_api_fail(self, logging):
-        api = self.get_api()
-        with mock.patch.object(api, "execute_query") as execute_query:
-            execute_query.side_effect = ValueError('Boom')
-            result = api.demographics("123")
-        self.assertIsNone(result)
-        logging.getLogger.assert_called_once_with("error_emailer")
-        logging.getLogger.return_value.error.assert_called_once_with(
-            "unable to get demographics"
-        )
