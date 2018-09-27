@@ -10,6 +10,7 @@ class Application(application.OpalApplication):
     schema_module = 'elcid.schema'
     javascripts = [
         'js/elcid/routes.js',
+        'js/elcid/filters.js',
         'js/elcid/directives.js',
         'js/elcid/controllers/discharge.js',
         'js/elcid/services/records/microbiology_input.js',
@@ -17,17 +18,28 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/welcome.js',
         'js/elcid/controllers/procedure_form.js',
         'js/elcid/controllers/clinical_advice_form.js',
+        'js/elcid/controllers/lab_test_json_dump_view.js',
         'js/elcid/controllers/result_view.js',
+        'js/elcid/controllers/rfh_find_patient.js',
         'js/elcid/controllers/bloodculture_pathway_form.js',
         'js/elcid/controllers/remove_patient_step.js',
+
+        'js/elcid/services/demographics_search.js',
+
+
         'js/elcid/controllers/tagging_step.js',
+        'js/elcid/controllers/investigations.js',
         # used in the blood culture forms
         'js/elcid/services/blood_culture_helper.js',
 
-        'js/elcid/services/blood_culture_record.js',
-
-        # used to load in the blood cultures
         'js/elcid/services/blood_culture_loader.js',
+        'js/elcid/services/upstream_blood_culture_loader.js',
+        'js/elcid/services/blood_culture_record.js',
+        'js/elcid/services/lab_test_results.js',
+        'js/elcid/services/demographics_search.js',
+        'js/elcid/services/lab_test_summary_loader.js',
+        'js/elcid/services/lab_test_json_dump.js',
+        'js/elcid/services/observation_detail.js',
         'js/elcid/services/episode_added_comparator.js',
     ]
 

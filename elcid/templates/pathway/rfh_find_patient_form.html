@@ -25,13 +25,13 @@
     <div class="row">
       <div class="col-md-12 text-center">
         <p class="lead">
-          Unable to find a on elCID patient with the hospital number [[ demographics.hospital_number ]]
+          Unable to find a patient with the hospital number [[ demographics.hospital_number ]]. Add now:
         </p>
       </div>
     </div>
     <form class="form-horizontal">
       <div class="form-group">
-        <label class="control-label col-sm-3">Hospital</label>
+        <label class="control-label col-sm-3">Hospital #</label>
         <label class="control-label col-sm-8 text-left">
           [[ demographics.hospital_number ]]
         </label>
@@ -44,49 +44,69 @@
   </div>
 </div>
 <span ng-if="state === 'has_demographics'">
-<div class="row">
-  <div class="col-md-12">
-    <p class="lead">
-      Found the patient [[ demographics.first_name ]] [[ demographics.surname ]]
-    </p>
-  </div>
-</div>
-<div class="row">
-  <div class="col-sm-8">
-    <div class="row">
-      <div class="col-md-4">
-        <b>Hospital #[[ demographics.hospital_number ]]</b>
+  <div class="row">
+    <div class="col-sm-7">
+      <div class="row">
+        <div class="col-md-12">
+          <p class="lead">
+            Found [[ demographics.first_name ]] [[ demographics.surname ]]
+          </p>
+        </div>
       </div>
-      <div class="col-md-8">
-        [[ demographics.hospital_number ]]
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="row">
+            <div class="col-md-4">
+              <b>Hospital #</b>
+            </div>
+            <div class="col-md-8">
+              [[ demographics.hospital_number ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <b>Name</b>
+            </div>
+            <div class="col-md-8">
+              [[ demographics.first_name ]]
+              [[ demographics.surname ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <b>Date of Birth</b>
+            </div>
+            <div class="col-md-8">
+              [[ demographics.date_of_birth | shortDate ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <b>Gender</b>
+            </div>
+            <div class="col-md-8">
+              [[ demographics.sex ]]
+            </div>
+          </div>
+          <br />
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-md-4">
-        <b>Name</b>
-      </div>
-      <div class="col-md-8">
-        [[ demographics.first_name ]]
-        [[ demographics.surname ]]
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-4">
-        <b>Date of Birth</b>
-      </div>
-      <div class="col-md-8">
-        [[ demographics.date_of_birth | shortDate ]]
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-4">
-        <b>Gender</b>
-      </div>
-      <div class="col-md-8">
-        [[ demographics.sex ]]
+    <div class="col-sm-5">
+      <div ng-show="allTags.length" class="well text-center">
+        <div class="row">
+          <div class="col-md-12">
+            <p class="lead">
+              Current Lists
+            </p>
+          </div>
+        </div>
+        <span ng-repeat="tag in allTags">
+          <a class="btn btn-default pointer" href="/#/list/[[ tag ]]">
+            [[ metadata.tags[tag].display_name ]]
+          </a>
+        </span>
       </div>
     </div>
-    <br />
-  </div>
   </div>
 </span>

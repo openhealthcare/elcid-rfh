@@ -1,18 +1,18 @@
 angular.module('opal.controllers').controller('RfhFindPatientCtrl',
-  function(scope, Episode, step, episode, $window) {
+  function(scope, step, episode, DemographicsSearch, $window) {
     "use strict";
 
     scope.lookup_hospital_number = function() {
-        Episode.findByHospitalNumber(
-            scope.demographics.hospital_number,
-            {
-                newPatient:    scope.new_patient,
-                newForPatient: scope.new_for_patient,
-                error        : function(){
-                    // this shouldn't happen, but we should probably handle it better
-                    $window.alert('ERROR: More than one patient found with hospital number');
-                }
-            });
+      DemographicsSearch.find(
+        scope.demographics.hospital_number,
+        {
+            // we can't find the patient on either elicd or the hospital demographcis
+            patient_not_found:    scope.new_patient,
+            // the patient has been entered into elcid before
+            patient_found_in_elcid: scope.new_for_patient,
+            // the patient exists on the intrahospital api, but not in elcid
+            patient_found_upstream: scope.new_for_patient
+        });
     };
 
     this.initialise = function(scope){
@@ -30,6 +30,15 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     };
 
     scope.new_for_patient = function(patient){
+        var allTags = [];
+        _.each(patient.episodes, function(episode){
+          _.each(_.keys(episode.tagging[0]), function(tag){
+            if(scope.metadata.tags[tag]){
+              allTags.push(tag);
+            }
+          });
+        });
+        scope.allTags = _.uniq(allTags);
         scope.demographics = patient.demographics[0];
         scope.state   = 'has_demographics';
         scope.hideFooter = false;

@@ -16,18 +16,21 @@ angular.module('opal.controllers').controller(
           })).length;
         };
 
-        $q.all([Referencedata, recordLoader]).then(function(datasets){
+        $q.all([Referencedata.load(), recordLoader.load()]).then(function(datasets){
             angular.extend($scope, datasets[0].toLookuplists());
-            var item = $scope.episode.newItem("microbiology_input", {column: $rootScope.fields.microbiology_input});
+            var item = $scope.episode.newItem("microbiology_input");
 
             self.editing = {microbiology_input: item.makeCopy()};
             $scope.$watch("clinicalAdviceForm.editing.microbiology_input", self.watchMicroFields, true);
             self.save = function(){
               ngProgressLite.set(0);
               ngProgressLite.start();
-              item.save(self.editing.microbiology_input).then(function() {
+              // reset the item so that we are definitely saving
+              // using the episode that is currently on scope
+              var resetItem = $scope.episode.newItem("microbiology_input");
+              resetItem.save(self.editing.microbiology_input).then(function() {
                   ngProgressLite.done();
-                  item = $scope.episode.newItem('microbiology_input', {column: $rootScope.fields.microbiology_input});
+                  item = $scope.episode.newItem('microbiology_input');
                   self.editing.microbiology_input = item.makeCopy();
                   self.changed = false;
               });

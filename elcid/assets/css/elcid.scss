@@ -9,10 +9,10 @@ $bg: #EEE;
 
 $red  : #f76c51;
 $blue : #5fa2dd;
-$bluelight: #a0c7ea;
+$blue-light: #a0c7ea;
 $green: #9cc96b;
 $obsidian: #343637;
-$obsidianlight: #cbc9c8;
+$obsidian-light: #cbc9c8;
 $navbar-height: 77px;
 $small-text-color: $secondary-background;
 
@@ -28,6 +28,18 @@ body{
     background-color: $primary;
     color: white;
     border-color: $primary;
+}
+
+.radio-vertical.radio{
+   input[type="radio"]{
+     opacity: 1;
+     z-index: 0;
+     margin-top:2px;
+   }
+
+   label::before{
+     content: none;
+   }
 }
 
 h5{
@@ -67,7 +79,7 @@ h5{
 .navbar-nav li:hover a,
 .navbar-nav li.active a,
 .navbar-nav li.active{
-	background: $obsidianlight;
+	background: $obsidian-light;
 }
 
 .panel-primary .panel-default .panel-heading,
@@ -111,6 +123,8 @@ a.list-group-item {
     background-color: $obsidian;
   }
 }
+
+
 
 .patient-row{
   .label-warning{
@@ -185,7 +199,79 @@ a.list-group-item {
 }
 
 .growl-item.alert-success{
-  background-color: $primary;
-  border-color: $obsidian;
+  background-color: lighten($primary, 5%);
+  border-color: lighten($primary, 10%);
   color: $white;
+}
+
+.lab-tests{
+  $too-high: #E02F03;
+  $too-low: #E02F03;
+
+  hr {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .lab-test-row{
+    padding-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-bottom: 10px;
+
+    &.selectable:hover{
+      background-color: #f5f5f5;
+    }
+  }
+
+  .observation-graph-pane{
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .c3-region.too-high{
+    fill: fade-out($too-high, 0.5);
+  }
+
+  .c3-region.too-low{
+    fill: fade-out($too-low, 0.5);
+  }
+
+  .too-high{
+    color: $too-high;
+  }
+
+  .too-low{
+    color: $too-low;
+  }
+}
+
+.overflow-x-auto{
+  overflow-x: auto;
+}
+
+.no-results{
+  font-weight: 600;
+  color: $obsidian-light;
+}
+
+.trends-panel{
+  min-height: 395px;
+
+  .no-results{
+    padding-top: 120px;
+  }
+}
+
+.star i{
+  color: lighten(#006c96, 10%);
+  font-size: 24px;
+}
+
+.field-text{
+  // used in forms so that we can put straight text
+  // where we would put a form field
+  padding-top: 8px;
 }

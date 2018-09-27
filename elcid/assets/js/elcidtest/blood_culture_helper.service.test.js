@@ -6,8 +6,8 @@ describe("BloodCultureHelper", function(){
     var bc = {'consistency_token': '689a9b05',
            'created': '11/01/2017 12:25:59',
            'created_by_id': 1,
-           'date_ordered': '04/01/2017',
-           'date_received': undefined,
+           'datetime_ordered': '04/01/2017',
+           'datetime_received': undefined,
            'external_identifier': undefined,
            'external_system': undefined,
            'extras': {
@@ -42,7 +42,7 @@ describe("BloodCultureHelper", function(){
   var labTests = [
       // blood culture 1, isolate 1
       getBloodCulture({
-        date_ordered: '04/01/2017',
+        datetime_ordered: '04/01/2017',
         lab_test_type: 'Organism',
         result: {result: 'Acinetobacter'},
         extras: {
@@ -52,7 +52,7 @@ describe("BloodCultureHelper", function(){
          source: 'Hickman'}
       }),
       getBloodCulture({
-        date_ordered: '04/01/2017',
+        datetime_ordered: '04/01/2017',
         lab_test_type: 'Gram Stain',
         result: {result: 'Yeast'},
         extras: {
@@ -63,7 +63,7 @@ describe("BloodCultureHelper", function(){
       }),
       // blood culture 1, isolate 2
       getBloodCulture({
-        date_ordered: '04/01/2017',
+        datetime_ordered: '04/01/2017',
         lab_test_type: 'QuickFISH',
         result: {result: 'C. glabrata'},
         extras: {
@@ -74,7 +74,7 @@ describe("BloodCultureHelper", function(){
       }),
       // blood culture 2, isolate 1
       getBloodCulture({
-        date_ordered: '05/01/2017',
+        datetime_ordered: '05/01/2017',
         lab_test_type: 'QuickFISH',
         result: {result: 'C. glabrata'},
         extras: {
@@ -89,7 +89,7 @@ describe("BloodCultureHelper", function(){
     module('opal.services');
     inject(function($injector){
       BloodCultureHelper  = $injector.get('BloodCultureHelper');
-      bloodCultureHelper = new BloodCultureHelper(labTests);
+      bloodCultureHelper = new BloodCultureHelper(angular.copy(labTests));
     });
   });
 
@@ -98,11 +98,11 @@ describe("BloodCultureHelper", function(){
       expect(bloodCultureHelper.bloodCultures.length).toBe(2);
       expect(bloodCultureHelper.bloodCultures[0].source).toBe('Hickman');
       expect(bloodCultureHelper.bloodCultures[0].lab_number).toBe('123122');
-      expect(bloodCultureHelper.bloodCultures[0].date_ordered).toBe('04/01/2017');
+      expect(bloodCultureHelper.bloodCultures[0].datetime_ordered).toBe('04/01/2017');
 
       expect(bloodCultureHelper.bloodCultures[1].source).toBe('other');
       expect(bloodCultureHelper.bloodCultures[1].lab_number).toBe('123123');
-      expect(bloodCultureHelper.bloodCultures[1].date_ordered).toBe('05/01/2017');
+      expect(bloodCultureHelper.bloodCultures[1].datetime_ordered).toBe('05/01/2017');
     });
 
     it('should return all lab tests', function(){
@@ -134,12 +134,12 @@ describe("BloodCultureHelper", function(){
       expect(result.lab_tests[0].extras.aerobic).toBe(false);
     });
 
-    it('should return labtests with the addition of its extras and date_ordered', function(){
-      bloodCultureHelper.bloodCultures[0].date_ordered = '05/01/2017'
+    it('should return labtests with the addition of its extras and datetime_ordered', function(){
+      bloodCultureHelper.bloodCultures[0].datetime_ordered = '05/01/2017'
       var labTests = bloodCultureHelper.bloodCultures[0].getLabTests();
       expect(labTests.length > 0).toBe(true);
       _.each(labTests, function(labTest){
-        expect(labTest.date_ordered).toBe('05/01/2017');
+        expect(labTest.datetime_ordered).toBe('05/01/2017');
       });
     });
 
@@ -147,6 +147,18 @@ describe("BloodCultureHelper", function(){
       bloodCultureHelper.bloodCultures[0].addIsolate(true);
       var newIsolate = _.last(bloodCultureHelper.bloodCultures[0].isolates);
       expect(newIsolate.aerobic).toBe(true);
+      expect(newIsolate.isolate_number).toBe(4);
+    });
+
+    it('should set the isolate number to 1 if currently all isolates are number null', function(){
+      var lts = angular.copy([labTests[0]]);
+      _.each(lts, function(lt){
+        lt.extras.isolate = null;
+      });
+      bloodCultureHelper = new BloodCultureHelper(angular.copy(lts));
+      bloodCultureHelper.bloodCultures[0].addIsolate(true);
+      var allLabTests = bloodCultureHelper.getAllLabTests()
+      expect(allLabTests[1].extras.isolate).toBe(2);
     });
 
     it('should add anaerobic isolates', function(){
@@ -156,12 +168,10 @@ describe("BloodCultureHelper", function(){
     });
 
     it('should remove isolates', function(){
-      it('should add anaerobic isolates', function(){
-        var firstIsolate = bloodCultureHelper.bloodCultures[0].isolates[0]
-        bloodCultureHelper.bloodCultures[0].removeIsolate()(firstIsolate);
-        expect(bloodCultureHelper.bloodCultures[0].isolates.length).toBe(1)
-        expect(bloodCultureHelper.bloodCultures[0].isolates[0]).not.toEqual(firstIsolate);
-      });
+      var firstIsolate = bloodCultureHelper.bloodCultures[0].isolates[0]
+      bloodCultureHelper.bloodCultures[0].removeIsolate(firstIsolate);
+      expect(bloodCultureHelper.bloodCultures[0].isolates.length).toBe(1)
+      expect(bloodCultureHelper.bloodCultures[0].isolates[0]).not.toEqual(firstIsolate);
     });
   });
 

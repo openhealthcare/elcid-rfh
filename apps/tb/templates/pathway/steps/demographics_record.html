@@ -1,0 +1,42 @@
+{% load forms %}
+<div ng-repeat="item in [editing.demographics]">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-4">
+          <b>Name</b>
+        </div>
+        <div class="col-md-8">
+          [[ item.first_name ]]
+          [[ item.surname ]]
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <b>DOB</b>
+        </div>
+        <div class="col-md-8">
+          [[ item.date_of_birth | shortDate ]]
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-4">
+          <b>Hospital #</b>
+        </div>
+        <div class="col-md-8">
+          [[ item.hospital_number ]]
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <b>NHS #</b>
+        </div>
+        <div class="col-md-8">
+          [[ episode.demographics[0].nhs_number ]]
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

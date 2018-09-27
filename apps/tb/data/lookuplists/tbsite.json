@@ -1,0 +1,64 @@
+{
+  "tbsite": [
+    {
+      "synonyms": [],
+      "name": "Abdominal"
+    },
+    {
+      "synonyms": ["Spinal"],
+      "name": "Bone/Joint: Spine"
+    },
+    {
+      "synonyms": [],
+      "name": "Bone/Joint: Other"
+    },
+    {
+      "synonyms": [],
+      "name": "CNS: Meningitis"
+    },
+    {
+      "synonyms": [],
+      "name": "CNS: Other"
+    },
+    {
+      "synonyms": [],
+      "name": "Lymph Node (extra thoracic)"
+    },
+    {
+      "synonyms": [],
+      "name": "Lymph Node (intra thoracic)"
+    },
+    {
+      "synonyms": [],
+      "name": "Laryngeal"
+    },
+    {
+      "synonyms": [],
+      "name": "Pleural"
+    },
+    {
+      "synonyms": [],
+      "name": "Gastro/Peritoneal"
+    },
+    {
+      "synonyms": [],
+      "name": "Cryptic Disseminated"
+    },
+    {
+      "synonyms": [],
+      "name": "Pulmonary"
+    },
+    {
+      "synonyms": [],
+      "name": "Miliary"
+    },
+    {
+      "synonyms": [],
+      "name": "Ocular"
+    },
+    {
+      "synonyms": [],
+      "name": "Renal Tract"
+    }
+  ]
+}
