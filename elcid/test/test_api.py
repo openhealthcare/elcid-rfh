@@ -3,9 +3,48 @@ import mock
 import datetime
 from opal.core.test import OpalTestCase
 from rest_framework.reverse import reverse
-from elcid.api import BloodCultureResultApi
+from elcid.api import (
+    BloodCultureResultApi, UpstreamBloodCultureApi
+)
 from elcid import models as emodels
+from elcid import api
 from django.test import override_settings
+
+
+class ExtractObservationValueTestCase(OpalTestCase):
+    def test_extract_observation_value(self):
+        inputs_to_expected_results = (
+            ("<1", float(1),),
+            ("1>", float(1),),
+            (" 1 ", float(1),),
+            ("< 1", float(1),),
+            (" < 1", float(1),),
+            (".1 ", None),
+            ("0.1 ", 0.1),
+            ("1E", None),
+            ("'1'", None),
+        )
+        for input, expected in inputs_to_expected_results:
+            self.assertEqual(api.extract_observation_value(input), expected)
+
+
+class UpstreamBloodCultureApiTestCase(OpalTestCase):
+    def setUp(self):
+        self.api = UpstreamBloodCultureApi()
+
+    def test_no_growth_observations_present(self):
+        obs = [
+            dict(observation_name="Aerobic bottle culture"),
+            dict(observation_name="Anaerobic bottle culture"),
+        ]
+        self.assertTrue(self.api.no_growth_observations(obs))
+
+    def test_no_growth_observations_not_present(self):
+        obs = [
+            dict(observation_name="something"),
+            dict(observation_name="Anaerobic bottle culture"),
+        ]
+        self.assertFalse(self.api.no_growth_observations(obs))
 
 
 class BloodCultureResultApiTestCase(OpalTestCase):
@@ -179,11 +218,11 @@ class DemographicsSearchTestCase(OpalTestCase):
     def setUp(self):
         super(DemographicsSearchTestCase, self).setUp()
         request = self.rf.get("/")
-        self.url = reverse(
-            "demographics_search-detail",
-            kwargs=dict(pk=1),
+        self.raw_url = reverse(
+            "demographics_search-list",
             request=request
         )
+        self.url = "{}?hospital_number=1".format(self.raw_url)
         # initialise the property
         self.user
         self.assertTrue(
@@ -193,6 +232,19 @@ class DemographicsSearchTestCase(OpalTestCase):
             )
         )
 
+    def get_url(self, hospital_number):
+        return "{}?hospital_number={}".format(
+            self.raw_url, hospital_number
+        )
+
+    def get_patient(self, name, hospital_number):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name=name,
+            hospital_number=hospital_number
+        )
+        return patient
+
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=False)
     def test_without_demographics_add_patient_not_found(self):
         response = json.loads(self.client.get(self.url).content)
@@ -201,18 +253,26 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.get_api")
-    def test_with_demographics_add_patient_not_found(self, get_api):
-        get_api().demographics.return_value = None
+    def test_without_hospital_number(self):
+        self.assertEqual(self.client.get(self.raw_url).status_code, 400)
+
+    @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
+    @mock.patch("elcid.api.loader.load_demographics")
+    def test_with_demographics_add_patient_not_found(
+        self, load_demographics
+    ):
+        load_demographics.return_value = None
         response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
             response["status"], "patient_not_found"
         )
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.get_api")
-    def test_with_demographics_add_patient_found_upstream(self, get_api):
-        get_api().demographics.return_value = dict(first_name="Wilma")
+    @mock.patch("elcid.api.loader.load_demographics")
+    def test_with_demographics_add_patient_found_upstream(
+        self, load_demographics
+    ):
+        load_demographics.return_value = dict(first_name="Wilma")
         response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
             response["status"], "patient_found_upstream"
@@ -222,15 +282,47 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
     def test_patient_found(self):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            first_name="Wilma",
-            hospital_number="1"
-        )
+        self.get_patient("Wilma", "1")
         response = json.loads(self.client.get(self.url).content)
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
         )
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
+    def test_patient_found_with_full_stop(self):
+        self.get_patient("Dot", "123.123")
+        response = json.loads(
+            self.client.get(self.get_url("123.123")).content
+        )
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Dot"
+        )
+
+    def test_patient_found_with_forward_slash(self):
+        self.get_patient("Dot", "123/123")
+        response = json.loads(
+            self.client.get(self.get_url("123%2F123")).content
+        )
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Dot"
+        )
+
+    def test_patient_found_with_hash(self):
+        self.get_patient("Dot", "123#123")
+        response = json.loads(
+            self.client.get(self.get_url("123%23123")).content
+        )
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Dot"
         )

@@ -1,24 +1,16 @@
 import datetime
-import ffs
-import pytz
-
-from mock import patch
-
-from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase
+from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
+from django.conf import settings
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
 from opal.models import (
-    Patient, Episode, Condition, Synonym, Symptom, Antimicrobial,
-    Microbiology_organism
+    Patient, Episode, Condition, Synonym, Antimicrobial
 )
 from elcid import models as emodels
-
-
-HERE = ffs.Path.here()
-TEST_DATA = HERE/'test_data'
 
 
 class AbstractPatientTestCase(TestCase):
@@ -96,7 +88,7 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
         self.assertEqual('AA1112', demographics.hospital_number)
 
     def test_update_from_dict_with_missing_consistency_token(self):
-        with self.assertRaises(exceptions.APIError):
+        with self.assertRaises(exceptions.MissingConsistencyTokenError):
             self.demographics.update_from_dict({}, self.user)
 
     def test_update_from_dict_with_incorrect_consistency_token(self):
@@ -104,6 +96,12 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             self.demographics.update_from_dict(
                 {'consistency_token': '87654321'}, self.user
             )
+
+    def test_get_modal_footer_template(self):
+        temp = emodels.Demographics.get_modal_footer_template()
+        self.assertEqual(
+            temp, "partials/demographics_footer.html"
+        )
 
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
@@ -150,64 +148,6 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
         self.location.update_from_dict(data, self.user)
         self.assertEqual('HH', self.location.hospital)
 
-
-class PresentingComplaintTest(OpalTestCase, AbstractEpisodeTestCase):
-    def setUp(self):
-        super(PresentingComplaintTest, self).setUp()
-        self.symptom_1 = Symptom.objects.create(name="tiredness")
-        self.symptom_2 = Symptom.objects.create(name="alertness")
-        self.symptom_3 = Symptom.objects.create(name="apathy")
-        self.presenting_complaint = emodels.PresentingComplaint.objects.create(
-            symptom=self.symptom_1,
-            duration="a week",
-            details="information",
-            consistency_token=1111,
-            episode=self.episode
-        )
-        self.presenting_complaint.symptoms.add(self.symptom_2, self.symptom_3)
-
-    def test_to_dict(self):
-        expected_data = dict(
-            id=self.presenting_complaint.id,
-            consistency_token=self.presenting_complaint.consistency_token,
-            symptoms=["alertness", "apathy"],
-            duration="a week",
-            details="information",
-            episode_id=1,
-            updated=None,
-            updated_by_id=None,
-            created=None,
-            created_by_id=None
-        )
-        self.assertEqual(
-            expected_data, self.presenting_complaint.to_dict(self.user)
-        )
-
-    def test_update_from_dict(self):
-        data = {
-            u'consistency_token': self.presenting_complaint.consistency_token,
-            u'id': self.presenting_complaint.id,
-            u'symptoms': [u'alertness', u'tiredness'],
-            u'duration': 'a month',
-            u'details': 'other information'
-        }
-        self.presenting_complaint.update_from_dict(data, self.user)
-        new_symptoms = self.presenting_complaint.symptoms.values_list(
-            "name", flat=True
-        )
-        self.assertEqual(set(new_symptoms), set([u'alertness', u'tiredness']))
-        self.assertEqual(self.presenting_complaint.duration, 'a month')
-        self.assertEqual(
-            self.presenting_complaint.details, 'other information'
-        )
-
-
-class AllergyTest(OpalTestCase):
-    def test_get_modal_footer_template(self):
-        self.assertEqual(
-            emodels.Allergies.get_modal_footer_template(),
-            "partials/_sourced_modal_footer.html"
-        )
 
 class GetForLookupListTestCase(OpalTestCase):
     def setUp(self):
@@ -365,46 +305,152 @@ class RfhObservationMixinTestCase(OpalTestCase):
         )
 
 
-class HL7ResultTestCase(OpalTestCase, AbstractEpisodeTestCase):
-    def test_update_from_dict_repeated(self):
-        emodels.HL7Result.objects.create(
+class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
+    def test_update_from_api_dict_repeated(self):
+        emodels.UpstreamLabTest.objects.create(
             patient=self.patient,
             external_identifier="1",
-            status=emodels.HL7Result.PENDING
+            status=emodels.UpstreamLabTest.PENDING
         )
         update_dict = dict(
             external_identifier="1",
-            status=emodels.HL7Result.COMPLETE
+            status=emodels.UpstreamLabTest.COMPLETE
         )
-        hl7_result = emodels.HL7Result(patient_id=self.patient.id)
-        hl7_result.update_from_dict(update_dict, self. user)
+        hl7_result = emodels.UpstreamLabTest.objects.get(
+            patient_id=self.patient.id,
+            external_identifier="1"
+        )
+        hl7_result.update_from_api_dict(self.patient, update_dict, self.user)
 
-        found_hl7_result = emodels.HL7Result.objects.get()
-        self.assertEqual(found_hl7_result.status, emodels.HL7Result.COMPLETE)
+        found_hl7_result = emodels.UpstreamLabTest.objects.get()
+        self.assertEqual(
+            found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
+        )
 
-    def test_update_from_dict_first_time(self):
+    def test_set_datetime_ordered_none(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        lab_test.datetime_ordered = timezone.now()
+        lab_test.set_datetime_ordered(None)
+        self.assertIsNone(lab_test.datetime_ordered)
+
+    def test_set_datetime_ordered_datetime(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        now = timezone.now()
+        lab_test.set_datetime_ordered(now)
+        self.assertEqual(
+            lab_test.datetime_ordered, now
+        )
+
+    def test_set_datetime_ordered_string(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        date_str = "29/10/2017 10:00:00"
+        lab_test.set_datetime_ordered(date_str)
+        dt = datetime.datetime(2017, 10, 29, 10, 0)
+        dt = timezone.make_aware(dt)
+        self.assertEqual(
+            lab_test.datetime_ordered,
+            dt
+        )
+
+    def test_set_datetime_ordered_dst(self):
+        lab_test = emodels.UpstreamLabTest(patient=self.patient)
+        date_str = "29/10/2017 1:00:00"
+        lab_test.set_datetime_ordered(date_str)
+        as_str = lab_test.datetime_ordered.strftime(
+            settings.DATETIME_INPUT_FORMATS[0]
+        )
+        self.assertEqual(
+            as_str, "29/10/2017 01:00:00"
+        )
+
+    def test_update_from_api_dict_first_time(self):
         update_dict = dict(
             external_identifier="1",
-            status=emodels.HL7Result.COMPLETE
+            status=emodels.UpstreamLabTest.COMPLETE
         )
-        hl7_result = emodels.HL7Result(patient_id=self.patient.id)
-        hl7_result.update_from_dict(update_dict, self. user)
+        hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
+        hl7_result.update_from_api_dict(self.patient, update_dict, self.user)
 
-        found_hl7_result = emodels.HL7Result.objects.get()
-        self.assertEqual(found_hl7_result.status, emodels.HL7Result.COMPLETE)
+        found_hl7_result = emodels.UpstreamLabTest.objects.get()
+        self.assertEqual(
+            found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
+        )
 
     def test_error_raised_if_external_identifier_not_in_dict(self):
         update_dict = dict(
-            status=emodels.HL7Result.COMPLETE
+            status=emodels.UpstreamLabTest.COMPLETE
         )
-        hl7_result = emodels.HL7Result(patient_id=self.patient.id)
+        hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
 
         with self.assertRaises(ValueError) as e:
-            hl7_result.update_from_dict(update_dict, self. user)
+            hl7_result.update_from_api_dict(
+                self.patient, update_dict, self.user
+            )
 
         self.assertEqual(
             str(e.exception),
-            "an external identifier is required in {'status': 'complete'}"
+            "To create an upstream lab test and external id is required"
+        )
+
+    def test_update_from_dict(self):
+        # Nothing should happen
+        update_dict = dict(
+            status=emodels.UpstreamLabTest.COMPLETE
+        )
+        hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
+        hl7_result.update_from_dict(update_dict, self.user)
+        # validate that is hasn't been saved
+        self.assertIsNone(hl7_result.id)
+
+    def test_get_relevant_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        yesterday = timezone.now() - datetime.timedelta(
+            1
+        )
+        upstream_lab_test.datetime_ordered = yesterday
+        upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 1
+        )
+        self.assertEqual(
+            relevant[0].datetime_ordered, yesterday
+        )
+        self.assertEqual(
+            relevant[0].extras["test_name"], "C REACTIVE PROTEIN"
+        )
+
+    def test_get_relevant_tests_over_three_weeks(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        four_weeks_ago = timezone.now() - datetime.timedelta(
+            4 * 7
+        )
+        upstream_lab_test.datetime_ordered = four_weeks_ago
+        upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 0
+        )
+
+    def test_get_not_relevant_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
+        yesterday = timezone.now() - datetime.timedelta(
+            1
+        )
+        upstream_lab_test.datetime_ordered = yesterday
+        upstream_lab_test.extras = dict(test_name="SOME OTHER TEST")
+        upstream_lab_test.save()
+
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        self.assertEqual(
+            len(relevant), 0
         )
 
 

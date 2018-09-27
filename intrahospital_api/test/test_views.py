@@ -55,16 +55,16 @@ class NoneStaffRequiredTest(BaseViewTestcase):
     def test_intrahospital_raw_view(self):
         response = self.client.get(self.raw_url, follow=True)
         expected = [(
-            'http://testserver/admin/login/?next=/intrahospital_api/raw/123132123', 302
+            '/admin/login/?next=/intrahospital_api/raw/patient/123132123', 302
         )]
-        self.assertEqual(response.redirect_chain, expected)
+        self.assertEqual(expected, response.redirect_chain)
 
     def test_intrahospital_cooked_view(self):
         response = self.client.get(self.raw_url, follow=True)
         expected = [(
-            'http://testserver/admin/login/?next=/intrahospital_api/raw/123132123', 302
+            '/admin/login/?next=/intrahospital_api/raw/patient/123132123', 302
         )]
-        self.assertEqual(response.redirect_chain, expected)
+        self.assertEqual(expected, response.redirect_chain)
 
 
 class PivotTestCase(BaseViewTestcase):
@@ -84,7 +84,7 @@ class PivotTestCase(BaseViewTestcase):
             views.IntrahospitalRawView, self.raw_url, "123132123"
         )
         ctx = view.get_context_data(hospital_number="123132123")
-        self.assertEqual(ctx["title"], "Raw Data")
+        self.assertEqual(ctx["title"], "All Raw Data")
         self.assertEqual(
             ctx["row_data"], [['name', 'Wilma', 'Betty']]
         )
@@ -99,7 +99,7 @@ class PivotTestCase(BaseViewTestcase):
             views.IntrahospitalCookedView, self.cooked_url, "123132123"
         )
         ctx = view.get_context_data(hospital_number="123132123")
-        self.assertEqual(ctx["title"], "Cooked Data")
+        self.assertEqual(ctx["title"], "All Cooked Data")
         self.assertEqual(
             ctx["row_data"], [['name', 'Wilma', 'Betty']]
         )

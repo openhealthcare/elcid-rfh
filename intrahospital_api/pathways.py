@@ -2,6 +2,7 @@ from opal.core.pathway.pathways import (
     Step,
     PagePathway,
 )
+from intrahospital_api import loader
 
 
 class ReconcilePatientPathway(PagePathway):
@@ -17,3 +18,10 @@ class ReconcilePatientPathway(PagePathway):
             step_controller="ReconcilePatientCtrl"
         ),
     )
+
+    def save(self, *args, **kwargs):
+        patient, episode = super(ReconcilePatientPathway, self).save(
+            *args, **kwargs
+        )
+        loader.load_patient(patient)
+        return patient, episode

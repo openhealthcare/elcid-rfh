@@ -38,15 +38,17 @@ MANAGERS = ADMINS
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = [
     'localhost',
+    '127.0.0.1',
     'ec2-52-16-175-249.eu-west-1.compute.amazonaws.com',
     '.openhealthcare.org.uk',
+    '.herokuapp.com'
     ]
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/London'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -105,21 +107,6 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'hq6wg27$1pnjvuesa-1%-wiqrpnms_kx+w4g&&o^wr$5@stjbu'
 
-# List of callables that know how to import templates from various sources.
-if DEBUG:
-    TEMPLATE_LOADERS = (
-        'django.template.loaders.filesystem.Loader',
-        'django.template.loaders.app_directories.Loader',
-    )
-else:
-    TEMPLATE_LOADERS = (
-        ('django.template.loaders.cached.Loader', (
-            'django.template.loaders.filesystem.Loader',
-            'django.template.loaders.app_directories.Loader',
-            )),
-    )
-
-
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -140,23 +127,31 @@ ROOT_URLCONF = 'elcid.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'elcid.wsgi.application'
 
-TEMPLATE_DIRS = (
-    os.path.join(PROJECT_PATH, 'templates'),
-)
-
-TEMPLATE_CONTEXT_PROCESSORS= (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.i18n',
-    'django.core.context_processors.media',
-    'django.core.context_processors.request',
-    'django.core.context_processors.static',
-    'django.core.context_processors.tz',
-    'django.contrib.messages.context_processors.messages',
-    'opal.context_processors.settings',
-    'opal.context_processors.models',
-    'lab.context_processors.lab_tests',
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(PROJECT_PATH, 'templates'),
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.template.context_processors.tz',
+                'django.contrib.messages.context_processors.messages',
+                'opal.context_processors.settings',
+                'opal.context_processors.models',
+                'elcid.context_processors.permissions',
+                'lab.context_processors.lab_tests',
+            ],
+        },
+    },
+]
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -174,11 +169,45 @@ INSTALLED_APPS = (
     'compressor',
     'opal.core.search',
     'lab',
+    'intrahospital_api',
     'elcid',
     'django.contrib.admin',
     'djcelery',
-    'intrahospital_api',
+    'apps.tb',
+    'obs',
 )
+
+#### API Settings
+
+# The intrahospital api is what we use to connect to the rest of the hospital
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+
+# when running the batch load, this user needs to be set
+API_USER = "needs to be set"
+
+# this needs to be set to true on prod
+ASYNC_API = False
+
+# if the intrahospital api is prod, we need
+# an ip address, a database, a username and a password for
+# the hospital db
+HOSPITAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
+
+
+# search with external demographics when adding a patient
+ADD_PATIENT_DEMOGRAPHICS = True
+
+# after we've added a patient, should we load in the labtests?
+ADD_PATIENT_LAB_TESTS = True
+
+#### END API Settings
+
 
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
@@ -188,11 +217,16 @@ if 'test' in sys.argv:
     MIGRATION_MODULES = {
         'opal': 'opal.nomigrations',
         'elcid': 'elcid.nomigrations',
+        'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations'
+        'intrahospital_api': 'intrahospital_api.nomigrations',
+        'tb': 'apps.tb.nomigrations',
+        'obs': 'obs.nomigrations',
     }
 
+V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \
+%(levelname)s %(message)s'
 
 LOGGING = {
     'version': 1,
@@ -202,30 +236,30 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugFalse'
         }
     },
+    'formatters': {
+        'verbose': {
+            'format': V_FORMAT
+        }
+    },
     'handlers': {
         'console': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'logging.StreamHandler'
+            'level': 'INFO',
+            'filters': [],
+            'class': 'logging.StreamHandler',
+        },
+        'console_detailed': {
+            'level': 'INFO',
+            'filters': [],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'opal.core.log.ConfidentialEmailer'
         },
-        'standard_error_emailer': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True
-        }
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
@@ -237,17 +271,24 @@ LOGGING = {
             'propagate': True,
         },
         'error_emailer': {
-            'handlers': ['standard_error_emailer'],
+            'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },
         'intrahospital_api': {
-            'handlers': ['console'],
+            'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
-        }
+        },
     }
 }
+
+if 'test' not in sys.argv:
+    LOGGING['loggers']['elcid.time_logger'] = {
+        'handlers': ['console_detailed'],
+        'level': 'INFO',
+        'propagate': False,
+    }
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
@@ -294,7 +335,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.2.9'
+VERSION_NUMBER = '0.3.5'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -334,6 +375,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
 
 if 'test' not in sys.argv:
     try:

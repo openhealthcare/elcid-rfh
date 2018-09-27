@@ -1,0 +1,24 @@
+{
+  "lymphnodeswellingsiteoptions": [
+    {
+      "synonyms": [],
+      "name": "next"
+    },
+    {
+      "synonyms": [],
+      "name": "axilla"
+    },
+    {
+      "synonyms": [],
+      "name": "inguinal"
+    },
+    {
+      "synonyms": [],
+      "name": "mediastinal"
+    },
+    {
+      "synonyms": [],
+      "name": "abdominal"
+    }
+  ]
+}

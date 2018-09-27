@@ -2,8 +2,7 @@ import mock
 import datetime
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import dev_api
-from elcid import models as emodels
-from lab import models as lmodels
+from opal.core import serialization
 
 
 class DevApiTestCase(OpalTestCase):
@@ -11,7 +10,8 @@ class DevApiTestCase(OpalTestCase):
         self.api = dev_api.DevApi()
 
     def test_get_date_of_birth(self):
-        dob = self.api.get_date_of_birth()
+        dob_str = self.api.get_date_of_birth()
+        dob = serialization.deserialize_date(dob_str)
         self.assertTrue(dob > datetime.date(1900, 1, 1))
 
     def test_demographics(self):
@@ -19,6 +19,7 @@ class DevApiTestCase(OpalTestCase):
         expected_fields = [
             "sex",
             "date_of_birth",
+            "ethnicity",
             "first_name",
             "surname",
             "title",
@@ -27,7 +28,7 @@ class DevApiTestCase(OpalTestCase):
             "external_system"
         ]
         self.assertEqual(
-            demographics["external_system"], "DEV_API"
+            demographics["external_system"], "RFH Database"
         )
         self.assertFalse(set(demographics.keys()) - set(expected_fields))
         for field in expected_fields:
@@ -49,14 +50,6 @@ class DevApiTestCase(OpalTestCase):
         self.assertIn(demographics["first_name"], dev_api.FEMALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Ms")
 
-    def test_results(self):
-        with mock.patch.object(self.api, "create_lab_test"):
-            self.api.results("123434223")
-            self.assertEqual(
-                self.api.create_lab_test.call_count,
-                len(dev_api.TEST_BASES) * 10
-            )
-
     def test_get_external_identifier(self):
         external_identifier = self.api.get_external_identifier()
         self.assertEqual(len(external_identifier), 9)
@@ -66,25 +59,6 @@ class DevApiTestCase(OpalTestCase):
         self.assertTrue(bool(some_val))
         self.assertTrue(isinstance(some_val, float))
 
-    def test_create_lab_test(self):
-        dt = datetime.datetime(2017, 1, 1, 1, 1)
-        lab_test = self.api.create_lab_test(
-            "B12 AND FOLATE SCREEN",
-            dt
-        )
-        self.assertEqual(
-            lab_test["lab_test_type"], emodels.HL7Result.get_display_name()
-        )
-        self.assertEqual(
-            lab_test["status"], lmodels.LabTest.COMPLETE
-        )
-        self.assertEqual(
-            lab_test["datetime_ordered"], '01/01/2017 01:01:00'
-        )
-        self.assertEqual(
-            len(lab_test["observations"]), 2
-        )
-
     def test_cooked_data(self):
         cooked_data = self.api.cooked_data("q2343424")
         self.assertTrue(len(cooked_data) > 1)
@@ -92,16 +66,19 @@ class DevApiTestCase(OpalTestCase):
             'first_name',
             'surname',
             'title',
-            'result_status',
             'observation_value',
             'sex',
             'hospital_number',
             'nhs_number',
             'date_of_birth',
-            'test_name',
             'units',
             'external_system',
-            'reference_range'
+            'reference_range',
+            'observation_number',
+            'last_updated',
+            'observation_datetime',
+            'observation_name',
+            'ethnicity',
         ]
         self.assertEqual(
             set(expected_fields), set(cooked_data[0].keys())
