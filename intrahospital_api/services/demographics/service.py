@@ -11,6 +11,8 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.base import load_utils
 from elcid.utils import timing
 
+SERVICE_NAME = "demographics"
+
 
 def update_external_demographics(
     patient,
@@ -152,7 +154,7 @@ def for_hospital_number(hospital_number):
 # for testing purposes
 # pylint: disable=invalid-name
 batch_load = load_utils.batch_load(
-    service_name="demographics"
+    service_name=SERVICE_NAME
 )(
     sync_demographics
 )
