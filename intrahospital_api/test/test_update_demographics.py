@@ -192,6 +192,30 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
             "Janey"
         )
 
+    def test_demographics_passed_in(self, demographics):
+        update_demographics.update_patient_demographics(
+            self.patient, dict(first_name="Janey")
+        )
+        self.assertEqual(
+            self.patient.demographics_set.first().first_name,
+            "Janey"
+        )
+        self.assertFalse(demographics.called)
+
+    def test_no_patient_demographics(self, demographics):
+        # Tests the edge case of where no demographics are found
+        demographics.return_value = None
+        update_demographics.update_patient_demographics(self.patient)
+        self.assertEqual(
+            self.patient.demographics_set.first().first_name, "Jane"
+        )
+        self.assertEqual(
+            self.patient.demographics_set.first().surname, "Bloggs"
+        )
+        self.assertIsNone(
+            self.patient.demographics_set.first().updated
+        )
+
     def test_update_patient_demographics_have_not_changed(self, demographics):
         demographics.return_value = dict(first_name="Jane")
         update_demographics.update_patient_demographics(self.patient)

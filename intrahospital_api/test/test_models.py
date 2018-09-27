@@ -25,6 +25,10 @@ class InitialPatientLoadTestCase(OpalTestCase):
             unicode(self.ipl)
             self.assertTrue(m.called)
 
+    def test_update_from_dict(self):
+        self.ipl.update_from_dict(dict(state=self.ipl.SUCCESS))
+        self.assertEqual(self.ipl.state, self.ipl.RUNNING)
+
 
 class BatchPatientLoadTestCase(OpalTestCase):
     def setUp(self):
