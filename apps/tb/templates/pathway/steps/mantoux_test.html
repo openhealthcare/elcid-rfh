@@ -1,0 +1,8 @@
+{% load forms %}
+
+<div ng-repeat="editing in mantoux_tests">
+  <h4><center>[[ editing.mantoux_test.site ]]</center></h4>
+  {% input field="MantouxTest.batch_number" %}
+  {% datepicker field="MantouxTest.expiry_date" %}
+  {% input field="MantouxTest.induration" %}
+</div>

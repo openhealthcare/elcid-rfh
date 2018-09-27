@@ -2,14 +2,15 @@ from datetime import date
 from mock import patch
 from django.test import override_settings
 from django.contrib.auth.models import User
-from intrahospital_api import constants
 
 from opal import models
 from opal.core.test import OpalTestCase
+from intrahospital_api import constants
 from elcid.pathways import (
     AddPatientPathway, CernerDemoPathway, BloodCulturePathway,
     IgnoreDemographicsMixin
 )
+from apps.tb.pathways import AddTbPatientPathway
 from elcid import models as emodels
 
 
@@ -162,6 +163,8 @@ class BloodCulturePathwayTestCase(PathwayTestCase):
             "Paul"
         )
 
+
+class TestBloodCulturePathway(OpalTestCase):
     def test_delete_others(self):
         # in theory this should just work, but lets
         # double check the underlying api hasn't changed
@@ -253,7 +256,7 @@ class BloodCulturePathwayTestCase(PathwayTestCase):
         )
 
 
-class TestCernerDemoPathway(PathwayTestCase):
+class TestCernerDemoPathway(OpalTestCase):
     data = dict(
         demographics=[dict(hospital_number="234", nhs_number="12312")],
         procedure=[dict(date=date.today())],
@@ -287,7 +290,7 @@ class TestCernerDemoPathway(PathwayTestCase):
         self.assertEqual(demographics.nhs_number, "12312")
 
 
-class TestAddPatientPathway(PathwayTestCase):
+class TestAddPatientPathway(OpalTestCase):
     def setUp(self):
         super(TestAddPatientPathway, self).setUp()
         self.assertTrue(
@@ -381,3 +384,28 @@ class TestAddPatientPathway(PathwayTestCase):
             list(new_episode.get_tag_names(None)),
             ['antifungal']
         )
+
+
+class TestAddTbPatientPathway(OpalTestCase):
+    def setUp(self):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        self.url = AddTbPatientPathway().save_url()
+
+    def test_saves_tag_and_episode(self):
+        test_data = dict(
+            demographics=[dict(hospital_number="234", nhs_number="12312")],
+            tagging=[{u'tb': True}],
+        )
+        response = self.post_json(self.url, test_data)
+        self.assertEqual(response.status_code, 200)
+        patient = models.Patient.objects.get()
+        episode = patient.episode_set.get()
+        self.assertEqual(
+            list(episode.get_tag_names(None)),
+            ["tb_tag"]
+        )
+        self.assertEqual(episode.category_name, "TB")

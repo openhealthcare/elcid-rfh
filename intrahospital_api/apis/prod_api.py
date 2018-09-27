@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 from functools import wraps
 import pytds
 import itertools
@@ -8,6 +7,7 @@ import time
 from collections import defaultdict
 from pytds.tds import OperationalError
 from intrahospital_api.apis import base_api
+from intrahospital_api import logger
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
 from lab import models as lmodels
@@ -16,8 +16,6 @@ from elcid.models import Demographics
 
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
-
-logger = logging.getLogger('intrahospital_api')
 
 
 DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \

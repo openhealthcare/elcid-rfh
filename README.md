@@ -18,6 +18,10 @@ http://elcid.openhealthcare.org.uk
 For information about the use of the upstream api
 please see the README.md in intrahospital_api.
 
+When running the server locally, we are using sass. So installl sass and run
+<!-- sass --watch elcid/assets/css/elcid.scss:elcid/assets/css/elcid.css -->
+
+
 ##Open source
 
 GNU Affero GPLv3

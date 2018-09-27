@@ -6,7 +6,6 @@ from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
 
-
 from opal.core.pathway.pathways import (
     RedirectsToPatientMixin,
     Step,

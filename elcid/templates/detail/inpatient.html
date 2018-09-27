@@ -67,23 +67,14 @@
               <div class="row">
                 <div class="col-sm-10 timeline-data-[[ $index ]]">
                   <span ng-show="item.initials && item.initials.trim().length">
-                    <b>By: </b> [[item.initials]]<span ng-show="item.discussed_with"> with [[item.discussed_with]]</span>
-                    <br />
+                    <b>By: </b> [[item.initials]]                    <br />
                   </span>
                   <span ng-show="item.reason_for_interaction">
                     <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
                     <br />
                   </span>
-                  <span ng-show="item.clinical_discussion">
-                    <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
-                    <br />
-                  </span>
-                  <span ng-show="item.infection_control">
-                    <b>Infection control: </b><div markdown="infection_control"></div>
-                    <br />
-                  </span>
-                  <span ng-show="item.agreed_plan">
-                    <b>Plan: </b><div markdown="agreed_plan"></div>
+                  <span ng-show="item.discussion">
+                    <b>Clinical Discussion: </b><div markdown="discussion"></div>
                     <br />
                   </span>
                 </div>

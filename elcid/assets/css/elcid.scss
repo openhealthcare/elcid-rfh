@@ -30,6 +30,18 @@ body{
     border-color: $primary;
 }
 
+.radio-vertical.radio{
+   input[type="radio"]{
+     opacity: 1;
+     z-index: 0;
+     margin-top:2px;
+   }
+
+   label::before{
+     content: none;
+   }
+}
+
 h5{
   font-weight: 600;
   text-transform: capitalize;
@@ -239,11 +251,21 @@ a.list-group-item {
   color: $obsidian-light;
 }
 
-
 .trends-panel{
   min-height: 395px;
 
   .no-results{
     padding-top: 120px;
   }
+}
+
+.star i{
+  color: lighten(#006c96, 10%);
+  font-size: 24px;
+}
+
+.field-text{
+  // used in forms so that we can put straight text
+  // where we would put a form field
+  padding-top: 8px;
 }

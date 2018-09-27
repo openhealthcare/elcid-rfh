@@ -173,17 +173,10 @@ class GetBatchStartTime(ApiTestCase):
 
 
 class LogErrorsTestCase(ApiTestCase):
-    @mock.patch(
-        "intrahospital_api.loader.logging.getLogger",
-    )
     @mock.patch.object(loader.logger, "error")
-    def test_log_errors(self, err, getLogger):
-        loader.log_errors("blah")
-        getLogger.assert_called_once_with("error_emailer")
-        getLogger().error.assert_called_once_with(
-            "unable to run blah"
-        )
-        self.assertTrue(err.called)
+    def test_log_errors(self, err):
+        loader.logger.error("blah")
+        err.assert_called_once_with("blah")
 
 
 class AnyLoadsRunningTestCase(ApiTestCase):
