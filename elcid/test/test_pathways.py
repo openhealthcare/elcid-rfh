@@ -1,12 +1,167 @@
 from datetime import date
-from django.test import override_settings
 from mock import patch
+from django.test import override_settings
+from django.contrib.auth.models import User
 
 from opal import models
 from opal.core.test import OpalTestCase
+from intrahospital_api import constants
 from elcid.pathways import (
-    AddPatientPathway, CernerDemoPathway, BloodCulturePathway
+    AddPatientPathway, CernerDemoPathway, BloodCulturePathway,
+    IgnoreDemographicsMixin
 )
+from apps.tb.pathways import AddTbPatientPathway
+from elcid import models as emodels
+
+
+@override_settings(
+    ASYNC_API=False,
+    INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi',
+    API_USER="ohc"
+)
+class PathwayTestCase(OpalTestCase):
+    def setUp(self):
+        super(PathwayTestCase, self).setUp()
+        User.objects.create(username="ohc", password="fake_password")
+
+
+class IgnoreDemographicsMixinTestCase(PathwayTestCase):
+    def setUp(self):
+        class SomeSaveParentPathway(object):
+            def save(self, data, user=None, episode=None, patient=None):
+                self.data = data
+                self.user = user
+                self.episode = episode
+                self.patient = patient
+
+        class SomeSaveChildPathway(
+            IgnoreDemographicsMixin, SomeSaveParentPathway
+        ):
+            pass
+
+        self.pathway = SomeSaveChildPathway()
+        self.patient, self.episode = self.new_patient_and_episode_please()
+
+    def test_popped_with_external_system(self):
+        self.patient.demographics_set.update(
+            first_name="Paul",
+            surname="Daniels",
+            external_system=constants.EXTERNAL_SYSTEM
+        )
+        data = dict(demographics=[{"first_name": "Daniel"}])
+        self.pathway.save(
+            data, user=self.user, episode=self.episode, patient=self.patient
+        )
+
+        self.assertEqual(
+            self.pathway.user, self.user
+        )
+        self.assertEqual(
+            self.pathway.episode, self.episode
+        )
+        self.assertEqual(
+            self.pathway.patient, self.patient
+        )
+        self.assertEqual(
+            self.pathway.data, {}
+        )
+
+    def test_popped_without_external_system(self):
+        self.patient.demographics_set.update(
+            first_name="Paul",
+            surname="Daniels",
+        )
+        data = dict(demographics=[{"first_name": "Daniel"}])
+        self.pathway.save(
+            data, user=self.user, episode=self.episode, patient=self.patient
+        )
+
+        self.assertEqual(
+            self.pathway.user, self.user
+        )
+        self.assertEqual(
+            self.pathway.episode, self.episode
+        )
+        self.assertEqual(
+            self.pathway.patient, self.patient
+        )
+        self.assertEqual(
+            self.pathway.data, dict(demographics=[{"first_name": "Daniel"}])
+        )
+
+
+class BloodCulturePathwayTestCase(PathwayTestCase):
+    def test_includes_demographcis_with_external_system(self):
+        patient, episode = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Paul",
+            surname="Daniels",
+        )
+
+        quick_fish = patient.labtest_set.create(
+            lab_test_type='QuickFISH',
+        )
+        data = dict(
+            lab_test=[{
+                "id": quick_fish.id,
+                "lab_test_type": "QuickFISH",
+                "result": {"result": "CNS"}
+            }],
+            demographics=[{
+                "first_name": "Daniel",
+                "surname": "Pauls",
+            }]
+        )
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        pathway = BloodCulturePathway()
+        url = pathway.save_url(patient=patient, episode=episode)
+        result = self.post_json(url, data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(
+            patient.demographics_set.first().first_name,
+            "Daniel"
+        )
+
+    def test_ignores_demographics_with_external_system(self):
+        patient, episode = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Paul",
+            surname="Daniels",
+            external_system=constants.EXTERNAL_SYSTEM,
+            external_identifier="blah"
+        )
+
+        quick_fish = patient.labtest_set.create(
+            lab_test_type='QuickFISH',
+        )
+        data = dict(
+            lab_test=[{
+                "id": quick_fish.id,
+                "lab_test_type": "QuickFISH",
+                "result": {"result": "CNS"}
+            }],
+            demographics=[{
+                "first_name": "Daniel",
+                "surname": "Pauls",
+            }]
+        )
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        pathway = BloodCulturePathway()
+        url = pathway.save_url(patient=patient, episode=episode)
+        result = self.post_json(url, data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(
+            patient.demographics_set.first().first_name,
+            "Paul"
+        )
 
 
 class TestBloodCulturePathway(OpalTestCase):
@@ -38,6 +193,66 @@ class TestBloodCulturePathway(OpalTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertEqual(
             patient.labtest_set.get().lab_test_type, "QuickFISH"
+        )
+
+    def test_delete_others_ignores_upstream_tests(self):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        patient, episode = self.new_patient_and_episode_please()
+        patient.labtest_set.create(
+            lab_test_type='Gram Stain',
+        )
+        quick_fish = patient.labtest_set.create(
+            lab_test_type='QuickFISH',
+        )
+        upstream_lab_test = patient.labtest_set.create(
+            lab_test_type=emodels.UpstreamLabTest.get_display_name(),
+            external_system=constants.EXTERNAL_SYSTEM
+        )
+        upstream_blood_culture = patient.labtest_set.create(
+            lab_test_type=emodels.UpstreamBloodCulture.get_display_name(),
+            external_system=constants.EXTERNAL_SYSTEM
+        )
+
+        data = dict(
+            lab_test=[{
+                "id": quick_fish.id,
+                "lab_test_type": "QuickFISH",
+                "result": {"result": "CNS"}
+            }]
+        )
+
+        pathway = BloodCulturePathway()
+        url = pathway.save_url(patient=patient, episode=episode)
+        result = self.post_json(url, data)
+        self.assertEqual(result.status_code, 200)
+        expected_quick_fish = patient.labtest_set.first()
+        self.assertEqual(
+            expected_quick_fish.id, quick_fish.id
+        )
+        self.assertEqual(
+            expected_quick_fish.lab_test_type, quick_fish.lab_test_type
+        )
+
+        expected_upstream_lab_test = patient.labtest_set.all()[1]
+        self.assertEqual(
+            expected_upstream_lab_test.id, upstream_lab_test.id
+        )
+        self.assertEqual(
+            expected_upstream_lab_test.lab_test_type,
+            upstream_lab_test.lab_test_type
+        )
+
+        expected_upstream_blood_culture = patient.labtest_set.all()[2]
+        self.assertEqual(
+            expected_upstream_blood_culture.id, upstream_blood_culture.id
+        )
+        self.assertEqual(
+            expected_upstream_blood_culture.lab_test_type,
+            upstream_blood_culture.lab_test_type
         )
 
 
@@ -77,6 +292,7 @@ class TestCernerDemoPathway(OpalTestCase):
 
 class TestAddPatientPathway(OpalTestCase):
     def setUp(self):
+        super(TestAddPatientPathway, self).setUp()
         self.assertTrue(
             self.client.login(
                 username=self.user.username, password=self.PASSWORD
@@ -84,7 +300,39 @@ class TestAddPatientPathway(OpalTestCase):
         )
         self.url = AddPatientPathway().save_url()
 
-    @override_settings(GLOSS_ENABLED=False)
+    @patch("elcid.pathways.loader.load_patient")
+    @override_settings(ADD_PATIENT_LAB_TESTS=True)
+    def test_queries_loader_if_external_demographics(self, load_patient):
+        test_data = dict(
+            demographics=[dict(
+                hospital_number="234",
+                nhs_number="12312",
+                external_system=constants.EXTERNAL_SYSTEM
+            )],
+            tagging=[{u'antifungal': True}],
+        )
+        response = self.post_json(self.url, test_data)
+        self.assertEqual(response.status_code, 200)
+        load_patient.assert_called_once_with(
+            models.Patient.objects.get()
+        )
+
+    @patch("elcid.pathways.loader.load_patient")
+    @override_settings(ADD_PATIENT_LAB_TESTS=True)
+    def test_does_not_query_loader_if_local_demographics(
+        self, load_patient
+    ):
+        test_data = dict(
+            demographics=[dict(
+                hospital_number="234",
+                nhs_number="12312"
+            )],
+            tagging=[{u'antifungal': True}],
+        )
+        response = self.post_json(self.url, test_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(load_patient.called)
+
     def test_saves_tag(self):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
@@ -103,7 +351,6 @@ class TestAddPatientPathway(OpalTestCase):
             ["antifungal"]
         )
 
-    @override_settings(GLOSS_ENABLED=False)
     def test_saves_without_tags(self):
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
@@ -120,88 +367,45 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
-    @override_settings(GLOSS_ENABLED=True)
-    @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_found(self, gloss_api):
+    @patch("elcid.pathways.datetime")
+    def test_episode_start(self, datetime):
         patient, episode = self.new_patient_and_episode_please()
-        demographics = patient.demographics_set.first()
-        demographics.hospital_number = "234"
-        demographics.first_name = "Indiana"
-        demographics.save()
-        gloss_api.patient_query.return_value = patient
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        url = AddPatientPathway().save_url(patient=patient)
-        self.post_json(url, test_data)
-        saved_demographics = models.Patient.objects.get().demographics_set.get()
-
-        # we don't expect demographics to have changed as these will have been
-        # loaded in from gloss
-        self.assertEqual(saved_demographics.first_name, "Indiana")
-
-        # we expect a new episode to have been created on the same patient
-        saved_episode = patient.episode_set.last()
-        self.assertNotEqual(episode.id, saved_episode.id)
-        self.assertEqual(
-            list(saved_episode.get_tag_names(None)),
-            ['antifungal']
-        )
-        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
-
-    @override_settings(GLOSS_ENABLED=True)
-    @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_only_found_in_gloss(self, gloss_api):
-        def side_effect(arg):
-            patient, _ = self.new_patient_and_episode_please()
-            demographics = patient.demographics_set.first()
-            demographics.consistency_token = "1231222"
-            demographics.first_name = "Sarah"
-            demographics.save()
-            return patient
-
-        gloss_api.patient_query.side_effect = side_effect
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        self.post_json(self.url, test_data)
-        saved_demographics = models.Patient.objects.get().demographics_set.get()
-
-        # if the patient isn't found, everything should just work
-        self.assertEqual(saved_demographics.first_name, "Sarah")
-
-        saved_episode = models.Episode.objects.get()
-        self.assertEqual(
-            list(saved_episode.get_tag_names(None)),
-            ['antifungal']
-        )
-        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
-
-    @override_settings(GLOSS_ENABLED=True)
-    @patch("elcid.pathways.gloss_api")
-    def test_gloss_interaction_when_not_creating_a_patient(self, gloss_api):
-        patient, existing_episode = self.new_patient_and_episode_please()
-        url = AddPatientPathway().save_url(
-            patient=patient
-        )
-        demographics = patient.demographics_set.first()
-        demographics.hospital_number = "234"
-        gloss_api.patient_query.return_value = None
+        datetime.date.today.return_value = date(2016, 5, 1)
+        url = AddPatientPathway().save_url()
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             tagging=[{u'antifungal': True}]
         )
         self.post_json(url, test_data)
-        new_episode = patient.episode_set.last()
-        self.assertEqual(
-            list(patient.episode_set.all()),
-            [existing_episode, new_episode]
-        )
+        new_episode = models.Episode.objects.last()
+        self.assertEqual(new_episode.start, date(2016, 5, 1))
 
         self.assertEqual(
             list(new_episode.get_tag_names(None)),
             ['antifungal']
         )
-        self.assertEqual(gloss_api.subscribe.call_args[0][0], "234")
+
+
+class TestAddTbPatientPathway(OpalTestCase):
+    def setUp(self):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        self.url = AddTbPatientPathway().save_url()
+
+    def test_saves_tag_and_episode(self):
+        test_data = dict(
+            demographics=[dict(hospital_number="234", nhs_number="12312")],
+            tagging=[{u'tb': True}],
+        )
+        response = self.post_json(self.url, test_data)
+        self.assertEqual(response.status_code, 200)
+        patient = models.Patient.objects.get()
+        episode = patient.episode_set.get()
+        self.assertEqual(
+            list(episode.get_tag_names(None)),
+            ["tb_tag"]
+        )
+        self.assertEqual(episode.category_name, "TB")

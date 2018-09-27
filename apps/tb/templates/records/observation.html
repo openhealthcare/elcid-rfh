@@ -1,0 +1,27 @@
+<span ng-show="item.datetime">
+  Date: [[ item.datetime | shortDateTime ]]<br />
+  <span ng-show="item.bp_systolic">
+    BP: [[ item.bp_systolic ]]/[[ item.bp_diastolic ]]<br />
+  </span>
+  <span ng-show="item.pulse">
+    Pulse: [[ item.pulse ]]<br />
+  </span>
+  <span ng-show="item.resp_rate">
+    RR: [[ item.resp_rate ]]<br />
+  </span>
+  <span ng-show="item.sp02">
+    Sp02: [[ item.sp02 ]]<br />
+  </span>
+  <span ng-show="item.temperature">
+    Temp: [[ item.temperature ]]
+  </span>
+  <span ng-show="item.weight">
+    Weight: [[ item.weight ]]<br />
+  </span>
+  <span ng-show="item.height">
+    Height: [[ item.height ]]<br />
+  </span>
+  <span ng-show="item.height && item.weight">
+    BMI: [[ item.height | bmi: item.weight ]]
+  </span>
+</span>

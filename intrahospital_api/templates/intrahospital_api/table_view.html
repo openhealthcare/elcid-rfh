@@ -1,0 +1,7 @@
+{% extends "intrahospital_api/base.html" %}
+{% block content %}
+  <div style="overflow-x: scroll" class="container">
+    <h1>{{ title }}</h1>
+    {% include "intrahospital_api/partials/pivot_table.html" %}
+  </div>
+{% endblock content %}

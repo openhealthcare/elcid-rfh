@@ -1,5 +1,5 @@
 from opal.core import detail
-from django.conf import settings
+from intrahospital_api import constants
 
 
 class Result(detail.PatientDetailView):
@@ -9,6 +9,6 @@ class Result(detail.PatientDetailView):
 
     @classmethod
     def visible_to(klass, user):
-        if user.is_superuser:
-            return True
-        return settings.GLOSS_ENABLED
+        return user.profile.roles.filter(
+            name=constants.VIEW_LAB_TESTS_IN_DETAIL
+        ).exists()
