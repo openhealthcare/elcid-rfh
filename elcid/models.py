@@ -5,10 +5,10 @@ import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
 from lab import models as lmodels
-
-
 import opal.models as omodels
 
 from opal.models import (
@@ -38,6 +38,10 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
         'hospital_number', 'nhs_number', 'surname', 'first_name',
         'middle_name', 'post_code',
     )
+
+    @classmethod
+    def get_modal_footer_template(cls):
+        return "partials/demographics_footer.html"
 
     class Meta:
         verbose_name_plural = "Demographics"
@@ -87,13 +91,23 @@ class Location(EpisodeSubrecord):
             return 'demographics'
 
 
-class HL7Result(lmodels.ReadOnlyLabTest):
+class UpstreamLabTest(lmodels.LabTest):
+    # these fields we will save as extras when we
+    # update from dict
+    convert_to_extras = ['test_code', 'test_name', 'site', 'clinical_info']
+
     class Meta:
-        verbose_name = "HL7 Result"
+        verbose_name = "Upstream Lab Test"
 
     @classmethod
     def get_api_name(cls):
-        return "hl7_result"
+        return "upstream_lab_test"
+
+    def set_extras(self, extras, *args, **kwargs):
+        self.extras = extras
+
+    def get_extras(self, *args, **kwargs):
+        return self.extras
 
     def to_dict(self, user):
         """
@@ -110,32 +124,109 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             we serialise the usual way but not via the episode
             serialisation
         """
-        return super(HL7Result, self).to_dict(user)
+        result = super(UpstreamLabTest, self).to_dict(user)
+        result["observations"] = result["extras"].pop("observations", {})
+        return result
 
     def update_from_dict(self, data, *args, **kwargs):
-        populated = (
-            i for i in data.keys() if i != "lab_test_type" and i != "id"
-        )
-        if not any(populated):
-            return
+        """
+            These tests are read only
+        """
+        pass
 
-        if "id" not in data:
-            if 'patient_id' in data:
-                self.patient = omodels.Patient.objects.get(id=data['patient_id'])
+    def set_datetime_ordered(self, value, *args, **kwargs):
+        if value is None:
+            self.datetime_ordered = None
+        elif isinstance(value, datetime.datetime):
+            self.datetime_ordered = value
+        else:
+            input_format = settings.DATETIME_INPUT_FORMATS[0]
 
-            if "external_identifier" not in data:
-                raise ValueError(
-                    "an external identifier is required in {}".format(data)
+            # never use DST, if we're an hour back, we're an hour back
+            with_tz = timezone.make_aware(
+                datetime.datetime.strptime(value, input_format),
+                timezone.get_current_timezone(),
+                is_dst=False
+            )
+            self.datetime_ordered = with_tz
+
+    def update_from_api_dict(self, patient, data, user):
+        """
+            This is the updateFromDict of the the UpstreamLabTest
+
+            Its a bit different from conventional updates from dicts
+
+            Firstly pretty much everything is stored in extras as
+            per your usual ReadOnlyLabTest.
+
+            Despite this we have json observations that we are
+            updating.
+
+            Observations are updated so we only ever expect a single
+            observation with an observation number. Add in a sanity check.
+
+            They are keyed with observation number in the observations array
+            ie in data["observations"][0]["observation_number"]
+        """
+        # we never expect it to be updated using an id
+        if "id" in data:
+            raise ValueError(
+                "We do not expect an id in {} but we received {}".format(
+                    UpstreamLabTest, data["id"]
                 )
-            if "external_identifier" in data and data["external_identifier"]:
-                existing = self.__class__.objects.filter(
-                    patient=self.patient,
-                    external_identifier=data["external_identifier"],
-                ).first()
+            )
 
-                if existing:
-                    data["id"] = existing.id
-            super(HL7Result, self).update_from_dict(data, *args, **kwargs)
+        if "external_identifier" not in data and not self.id:
+            err = "To create an upstream lab test and external id is required"
+            raise ValueError(err)
+
+        # we never expect the patient to change
+        # check though
+        if self.patient_id and not self.patient == patient:
+            err = "{} used to have patient {} and we're trying to set it to {}"
+            raise ValueError(err.format(self, self.patient, patient))
+
+        self.patient = patient
+
+        obs = data.get("observations", [])
+        obs_numbers = set(i["observation_number"] for i in obs)
+
+        # we run updates based on obs numbers
+        # we are loading these in from a remote source
+        # when an obs is updated, the old one is deleted and a new row is added
+        # Make sure these have been properly
+        # cleaned.
+        if not len(obs) == len(obs_numbers):
+            raise ValueError(
+                "duplicate obs numbers found in {}".format(obs)
+            )
+
+        if "extras" not in data:
+            data["extras"] = {}
+
+        for i in self.convert_to_extras:
+            if i in data:
+                data["extras"][i] = data.pop(i)
+
+        to_keep = []
+
+        if self.extras:
+            # remove any observations that have been updated
+            existing_observations = self.extras.get("observations", [])
+
+            for old_obs in existing_observations:
+                if old_obs["observation_number"] not in obs_numbers:
+                    to_keep.append(old_obs)
+
+        data["extras"]["observations"] = to_keep + data.pop("observations", [])
+
+        # we force the update from dict as we will be updating without
+        # a consistency token in the data
+        result = super(UpstreamLabTest, self).update_from_dict(
+            data, user, force=True
+        )
+
+        return result
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -148,12 +239,39 @@ class HL7Result(lmodels.ReadOnlyLabTest):
             "GENTAMICIN LEVEL",
             "CLOTTING SCREEN"
         ]
-        six_months_ago = datetime.date.today() - datetime.timedelta(6*30)
-        qs = HL7Result.objects.filter(
+        three_weeks_ago = timezone.now() - datetime.timedelta(3*7)
+        qs = UpstreamLabTest.objects.filter(
             patient=patient,
-            datetime_ordered__gt=six_months_ago
+            datetime_ordered__gt=three_weeks_ago
         ).order_by("datetime_ordered")
-        return [i for i in qs if i.extras.get("profile_description") in relevent_tests]
+        return [i for i in qs if i.extras.get("test_name") in relevent_tests]
+
+
+class UpstreamBloodCulture(UpstreamLabTest):
+    """ Upstream blood cultures are funny beasts
+
+    Observation types that have previously existed
+    are...
+
+    	* Aerobic bottle culture
+        * Aerobic Bottle: Microscopy
+        * Anaerobic bottle culture
+        * Anaerobic Bottle: Microscopy
+
+        * Blood Culture
+        * Reference Lab. Comment
+        * Reference Lab. Name
+        * Comments
+
+    Of these Blood Culture needs some tweaking
+    """
+
+    class Meta:
+        verbose_name = "Upstream Blood Culture"
+
+    @classmethod
+    def get_api_name(cls):
+        return "upstream_blood_culture"
 
 
 class InfectionSource(lookuplists.LookupList):
@@ -161,11 +279,13 @@ class InfectionSource(lookuplists.LookupList):
 
 
 class Infection(EpisodeSubrecord):
-    _title = 'Infection related issues'
     _icon = 'fa fa-eyedropper'
     # this needs to be fixed
     source = ForeignKeyOrFreeText(InfectionSource)
     site = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Infection Related Issues"
 
 
 class MedicalProcedure(lookuplists.LookupList):
@@ -177,11 +297,13 @@ class SurgicalProcedure(lookuplists.LookupList):
 
 
 class Procedure(EpisodeSubrecord):
-    _title = 'Operation / Procedures'
     _icon = 'fa fa-sitemap'
     date = models.DateField(blank=True, null=True)
     medical_procedure = ForeignKeyOrFreeText(MedicalProcedure)
     surgical_procedure = ForeignKeyOrFreeText(SurgicalProcedure)
+
+    class Meta:
+        verbose_name = "Operation / Procedures"
 
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
@@ -192,43 +314,22 @@ class PrimaryDiagnosis(EpisodeSubrecord):
     This is the confirmed primary diagnosisa
     """
     _is_singleton = True
-    _title = 'Primary Diagnosis'
     _icon = 'fa fa-eye'
 
     condition = ForeignKeyOrFreeText(PrimaryDiagnosisCondition)
     confirmed = models.BooleanField(default=False)
 
     class Meta:
-        verbose_name_plural = "Primary diagnoses"
+        verbose_name = 'Primary Diagnosis'
+        verbose_name_plural = "Primary Diagnoses"
 
 
 class Consultant(lookuplists.LookupList):
     pass
 
 
-
-class Diagnosis(EpisodeSubrecord):
-    """
-    This is a working-diagnosis list, will often contain things that are
-    not technically diagnoses, but is for historical reasons, called diagnosis.
-    """
-    _title = 'Diagnosis / Issues'
-    _sort = 'date_of_diagnosis'
-    _icon = 'fa fa-stethoscope'
-
-    condition         = ForeignKeyOrFreeText(omodels.Condition)
-    provisional       = models.NullBooleanField()
-    details           = models.CharField(max_length=255, blank=True)
-    date_of_diagnosis = models.DateField(blank=True, null=True)
-
-    def __unicode__(self):
-        return u'Diagnosis of {0} - {1}'.format(
-            self.condition,
-            self.date_of_diagnosis
-            )
-
-    class Meta:
-        verbose_name_plural = "Diagnoses"
+class Diagnosis(omodels.Diagnosis):
+    pass
 
 
 class Iv_stop(lookuplists.LookupList):
@@ -242,7 +343,6 @@ class Drug_delivered(lookuplists.LookupList):
 
 
 class Antimicrobial(EpisodeSubrecord):
-    _title = 'Antimicrobials'
     _sort = 'start_date'
     _icon = 'fa fa-flask'
     _modal = 'lg'
@@ -259,6 +359,10 @@ class Antimicrobial(EpisodeSubrecord):
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
     no_antimicrobials = models.NullBooleanField(default=False)
 
+    class Meta:
+        verbose_name = "Medication History"
+        verbose_name_plural = "Medication Histories"
+
 
 class RenalFunction(lookuplists.LookupList):
     pass
@@ -269,7 +373,6 @@ class LiverFunction(lookuplists.LookupList):
 
 
 class MicrobiologyInput(EpisodeSubrecord):
-    _title = 'Clinical Advice'
     _sort = 'when'
     _icon = 'fa fa-comments'
     _modal = 'lg'
@@ -294,6 +397,10 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
+
+    class Meta:
+        verbose_name = "Clinical Advice"
+        verbose_name_plural = "Clinical Advice"
 
 
 class Line(EpisodeSubrecord):
@@ -382,8 +489,10 @@ class GramStainResult(lmodels.Observation, RfhObservation):
 
 
 class GramStain(BloodCultureMixin, lmodels.LabTest):
-    _title="Gram Stain"
     result = GramStainResult()
+
+    class Meta:
+        verbose_name = "Gram Stain"
 
 
 class QuickFishResult(lmodels.Observation, RfhObservation):
@@ -401,8 +510,10 @@ class QuickFishResult(lmodels.Observation, RfhObservation):
 
 
 class QuickFISH(BloodCultureMixin, lmodels.LabTest):
-    _title = "QuickFISH"
     result = QuickFishResult()
+
+    class Meta:
+        verbose_name = "QuickFISH"
 
 
 class GPCStaphResult(lmodels.Observation, RfhObservation):
@@ -420,7 +531,9 @@ class GPCStaphResult(lmodels.Observation, RfhObservation):
 
 class GPCStaph(BloodCultureMixin, lmodels.LabTest):
     result = GPCStaphResult()
-    _title = 'GPC Staph'
+
+    class Meta:
+        verbose_name = "GPC Staph"
 
 
 class GPCStrepResult(lmodels.Observation, RfhObservation):
@@ -438,7 +551,9 @@ class GPCStrepResult(lmodels.Observation, RfhObservation):
 
 class GPCStrep(BloodCultureMixin, lmodels.LabTest):
     result = GPCStrepResult()
-    _title = "GPC Strep"
+
+    class Meta:
+        verbose_name = "GPC Strep"
 
 
 class GNRResult(lmodels.Observation, RfhObservation):
@@ -456,8 +571,10 @@ class GNRResult(lmodels.Observation, RfhObservation):
 
 
 class GNR(BloodCultureMixin, lmodels.LabTest):
-    _title = 'GNR'
     result = GNRResult()
+
+    class Meta:
+        verbose_name = "GNR"
 
 
 class Organism(lmodels.Observation, RfhObservation):
@@ -468,21 +585,29 @@ class Organism(lmodels.Observation, RfhObservation):
 
 
 class BloodCultureOrganism(BloodCultureMixin, lmodels.LabTest):
-    _title = 'Organism'
     result = Organism()
+
+    class Meta:
+        verbose_name = "Organism"
 
 
 class FinalDiagnosis(EpisodeSubrecord):
     _icon = 'fa fa-pencil-square'
-    _title = "Final Diagnosis"
 
     source = models.CharField(max_length=255, blank=True)
     contaminant = models.BooleanField(default=False)
     community_related = models.BooleanField(default=False)
-    hcai_related = models.BooleanField(verbose_name="HCAI related", default=False)
+    hcai_related = models.BooleanField(
+        verbose_name="HCAI related", default=False
+    )
+
+    class Meta:
+        verbose_name = "Final Diagnosis"
+        verbose_name_plural = "Final Diagnoses"
 
 
-class ImagingTypes(lookuplists.LookupList): pass
+class ImagingTypes(lookuplists.LookupList):
+    pass
 
 
 class Imaging(EpisodeSubrecord):
@@ -501,6 +626,67 @@ class PositiveBloodCultureHistory(PatientSubrecord):
     def _get_field_default(cls, name):
         # this should not be necessary...
         return None
+
+
+class ReferralRoute(omodels.EpisodeSubrecord):
+    _icon = 'fa fa-level-up'
+    _is_singleton = True
+
+    REFERAL_TYPES = (
+        ("Primary care (GP)", "Primary care (GP)",),
+        ("Primary care (other)", "Primary care (other)",),
+        ("Secondary care", "Secondary care",),
+        ("TB service", "TB service",),
+        ("A&E", "A&E",),
+        ("Find & treat", "Find & treat",),
+        ("Prison screening", "Prison screening",),
+        ("Port Health/HPA", "Port Health/HPA",),
+    )
+
+    REFERRAL_REASON = (
+        ("Symptomatic", "Symptomatic",),
+        ("TB contact screening", "TB contact screening",),
+        ("New entract screening", "New entract screening",),
+        ("Transferred in TB Rx", "Transferred in TB Rx",),
+        ("Anti TNF Treatment", "Anti TNF Treatment",),
+        ("BCG Vaccination", "BCG Vaccination",),
+        ("Other", "Other",),
+    )
+
+    # date_of_referral
+    date_of_referral = models.DateField(null=True, blank=True)
+
+    referral_type = models.CharField(
+        max_length=256,
+        blank=True,
+        default="",
+        choices=REFERAL_TYPES
+    )
+
+    referral_reason = models.CharField(
+        max_length=256,
+        blank=True,
+        default="",
+        choices=REFERRAL_REASON
+    )
+
+    class Meta:
+        verbose_name = "Referral Route"
+
+
+class SymptomComplex(omodels.SymptomComplex):
+    pass
+
+
+class PastMedicalHistory(omodels.PastMedicalHistory):
+    pass
+
+
+class GP(omodels.PatientSubrecord):
+    name = models.CharField(
+        max_length=256
+    )
+    contact_details = models.TextField()
 
 
 # method for updating

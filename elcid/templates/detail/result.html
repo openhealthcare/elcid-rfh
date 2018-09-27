@@ -5,54 +5,55 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-9">
             <h3>
               Lab Tests <i class="fa fa-flask"></i>
             </h3>
           </div>
-          <div class="col-md-6 text-right">
-            <div class="btn-group" uib-dropdown is-open="status.isopen">
-              <button type="button" class="btn btn-secondary" uib-dropdown-toggle ng-disabled="disabled" id="list-dropdown">
-                <i class="fa fa-user-md"></i>
-                  [[ resultView.currentTag ]]
-                <i class="fa fa-angle-down"></i>
-              </button>
-              <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="list-dropdown">
-                <li ng-show="tag !== resultView.currentTag" ng-repeat="tag in resultView.tags">
-                  <a ng-click="resultView.filter(tag)">
-                    [[ tag ]]
-                  </a>
-                </li>
-              </ul>
-            </div>
+          <div class="text-right col-md-3">
+            <input class="form-control" placeholder="Filter" ng-change="resultView.filter(resultView.filterString)" ng-model="resultView.filterString" />
           </div>
         </div>
       </div>
-      <ul class="list-group">
+      <div ng-show="resultView.patientLoadStatus.isLoading()">
+        <h2 class="text-center no-results">Lab tests loading please wait</h2>
+      </div>
+      <div ng-show="resultView.patientLoadStatus.isAbsent()">
+        <h2 class="text-center no-results">Unable to get lab tests for this patient</h2>
+      </div>
+      <div ng-show="resultView.patientLoadStatus.isFailed()">
+        <h2 class="text-center no-results">Failed to load lab tests for this patient</h2>
+      </div>
+      <ul ng-show="resultView.patientLoadStatus.isLoaded()" class="list-group">
         <li class="list-group-item " ng-repeat="labTest in resultView.labTests">
           <div class="content-offset-below">
             <div class="row">
               <div class="col-md-6">
-                <h5>[[ labTest.lab_test_type ]]</h5>
-              </div>
-              <div class="text-right col-md-6">
-                <span ng-repeat="tag in labTest.tags">
-                  <a ng-click="resultView.filter(tag)" class="btn btn-default pointer btn-sm">[[ tag ]]</a>
-                </span>
+                <h5 class="inline">[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|shortDate ]]</span></h5> {% if request.user.is_superuser %}<a class="text-muted" href="/intrahospital_api/raw/results/[[ patient.demographics[0].hospital_number ]]/test/[[ labTest.lab_test_type ]]">&nbsp;view upstream {% icon "fa fa-code-fork" %}</a>{% endif %}
               </div>
             </div>
             <div ng-show="labTest.observations.length">
               <div ng-if="labTest.long_form">
-                <div ng-repeat="obsDate in labTest.observation_date_range track by $index" class="row">
-                  <div class="col-md-12">
-                    <h5>[[ obsDate|shortDate ]]</h5>
-                    <div ng-repeat="observation_name in labTest.observation_names">
-                      <div class="row">
-                        <div class="col-md-12">
-                          <p>
-                            [[ observation_name ]] - [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
+                <div class="row lab-test-row content-offset-below-10" ng-repeat="obsDate in labTest.observation_date_range track by $index" class="row">
+                  <div class="col-sm-3">
+                    <span ng-hide="labTest.observation_date_range.length === 1">
+                      [[ obsDate|shortDate ]]
+                    </span>
+                  </div>
+                  <div class="col-sm-9">
+                    <div class="row content-offset-below-10" ng-if="resultView.isPopulated(labTest.by_observations[observation_name][obsDate])" ng-repeat="observation_name in labTest.observation_names">
+                      <div class="col-md-3">
+                        [[ observation_name ]]
+                      </div>
+                      <div class="col-md-9">
+                        <p ng-if="resultView.isNumber(labTest.by_observations[observation_name][obsDate].observation_value)">
+                          [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
+                        </p>
+                        <span ng-if="!resultView.isNumber(labTest.by_observations[observation_name][obsDate].observation_value)">
+                          <p ng-repeat="par_obs in resultView.splitObservation(labTest.by_observations[observation_name][obsDate]) track by $index">
+                            [[ par_obs ]]
                           </p>
-                        </div>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -62,7 +63,7 @@
                 <div class="row lab-test-row content-offset-below-10">
                   <div class="col-sm-3">
                   </div>
-                  <div class="col-sm-1">
+                  <div class="col-sm-2">
                     Range
                   </div>
                   <div ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
@@ -72,21 +73,12 @@
                 <div ng-repeat="observation_name in labTest.observation_names">
                   <div {# we need to remove this for the time being - ng-click="resultView.showObservation(labTest, observation_name)" #}class="lab-test-row selectable row">
                     <div class="col-sm-3">
-                      <span class="too-high" ng-show="resultView.trendChange(labTest, observation_name) === 1">
-                        {% icon "fa-chevron-circle-up" %}
-                      </span>
-                      <span class="too-high" ng-show="resultView.trendChange(labTest, observation_name) === -1">
-                        {% icon "fa-chevron-circle-down" %}
-                      </span>
-                      <span ng-show="!resultView.trendChange(labTest, observation_name)">
-                        {% icon "fa-chevron-circle-right" %}
-                      </span>
                       [[ observation_name ]]
                       <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
                         ([[ labTest.observation_metadata[observation_name].units ]])
                       </span>
                     </div>
-                    <div class="text-muted col-sm-1">
+                    <div class="text-muted col-sm-2">
                       [[ labTest.observation_metadata[observation_name].reference_range.min ]]
                       -
                       [[ labTest.observation_metadata[observation_name].reference_range.max ]]

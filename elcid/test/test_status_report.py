@@ -37,7 +37,7 @@ class RandomiseStatusReport(OpalTestCase):
             output["all_time"]["Demographics"], 1
         )
 
-        # 0 because the demographcis were not created in the last week
+        # 0 because the demographics were not created in the last week
         self.assertEqual(
             output["last_week"]["Demographics"], 0
         )

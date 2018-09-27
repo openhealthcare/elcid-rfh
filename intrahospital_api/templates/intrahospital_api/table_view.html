@@ -1,51 +1,7 @@
-{% load staticfiles %}
-{% load compress %}
-{% load application %}
-{% load plugins %}
-
-<!doctype html>
-<html>
-  <head>
-    {% core_javascripts 'opal.upstream.deps' %}
-    <link href='//fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
-    <link href='//fonts.googleapis.com/css?family=Merriweather:400,300,700' rel='stylesheet' type='text/css'>
-    <link href="{% static "js/lib/c3-0.4.10/c3.css" %}" rel="stylesheet" media="all">
-  	<link href="{% static "bootstrap-3.1.0/css/bootstrap.css" %}" rel="stylesheet" media="all">
-  	<link href="{% static "css/select.css" %}" rel="stylesheet" media="all">
-  	<link href="{% static "css/bootstrap-datepicker.css" %}" rel="stylesheet" media="all">
-  	<link href="{% static "css/font-awesome/css/font-awesome.css" %}" rel="stylesheet" media="all">
-  	<link href="{% static "css/awesome-bootstrap-checkbox.css" %}" rel="stylesheet" media="all">
-    <link href="{% static "css/ngprogress-lite.css" %}" rel="stylesheet" media="screen">
-  	<link href="{% static "js/lib/bower_components/angular-growl-v2/build/angular-growl.css" %}" rel="stylesheet" media="screen">
-
-    {% compress css %}
-      <link href="{% static "css/opal.css" %}" rel="stylesheet" media="all">
-      {% plugin_stylesheets %}
-      {% application_stylesheets %}
-    {% endcompress %}
-  </head>
-  <body>
-    <div style="overflow-x: scroll" class="container">
-      <h1>{{ title }}</h1>
-      <table class="table table-striped">
-        <tbody>
-          {% for row in row_data %}
-            <tr>
-              {% for cell in row %}
-                {% if forloop.first %}
-                  <th class="text-left">
-                    {{ cell }}
-                  </th>
-                {% else %}
-                  <td class="text-left">
-                    {{ cell }}
-                  </td>
-                {% endif %}
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </body>
-</html>
+{% extends "intrahospital_api/base.html" %}
+{% block content %}
+  <div style="overflow-x: scroll" class="container">
+    <h1>{{ title }}</h1>
+    {% include "intrahospital_api/partials/pivot_table.html" %}
+  </div>
+{% endblock content %}

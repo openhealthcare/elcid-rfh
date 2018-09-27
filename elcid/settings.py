@@ -41,13 +41,14 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'ec2-52-16-175-249.eu-west-1.compute.amazonaws.com',
     '.openhealthcare.org.uk',
+    '.herokuapp.com'
     ]
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/London'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -137,6 +138,7 @@ TEMPLATES = [
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.debug',
+                'django.template.context_processors.request',
                 'django.template.context_processors.i18n',
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
@@ -171,10 +173,20 @@ INSTALLED_APPS = (
     'elcid',
     'django.contrib.admin',
     'djcelery',
+    'apps.tb',
+    'obs',
 )
+
+#### API Settings
 
 # The intrahospital api is what we use to connect to the rest of the hospital
 INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+
+# when running the batch load, this user needs to be set
+API_USER = "needs to be set"
+
+# this needs to be set to true on prod
+ASYNC_API = False
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
@@ -194,6 +206,9 @@ ADD_PATIENT_DEMOGRAPHICS = True
 # after we've added a patient, should we load in the labtests?
 ADD_PATIENT_LAB_TESTS = True
 
+#### END API Settings
+
+
 if 'test' in sys.argv:
     INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
@@ -205,9 +220,13 @@ if 'test' in sys.argv:
         'intrahospital_api': 'intrahospital_api.nomigrations',
         'guidelines': 'guidelines.nomigrations',
         'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations'
+        'intrahospital_api': 'intrahospital_api.nomigrations',
+        'tb': 'apps.tb.nomigrations',
+        'obs': 'obs.nomigrations',
     }
 
+V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \
+%(levelname)s %(message)s'
 
 LOGGING = {
     'version': 1,
@@ -217,30 +236,30 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugFalse'
         }
     },
+    'formatters': {
+        'verbose': {
+            'format': V_FORMAT
+        }
+    },
     'handlers': {
         'console': {
             'level': 'INFO',
-            'filters': ['require_debug_false'],
-            'class': 'logging.StreamHandler'
+            'filters': [],
+            'class': 'logging.StreamHandler',
+        },
+        'console_detailed': {
+            'level': 'INFO',
+            'filters': [],
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'opal.core.log.ConfidentialEmailer'
         },
-        'standard_error_emailer': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True
-        }
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
@@ -252,22 +271,24 @@ LOGGING = {
             'propagate': True,
         },
         'error_emailer': {
-            'handlers': ['standard_error_emailer'],
+            'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
         },
-        'elcid.time_logger': {
-            'handlers': ['console'],
+        'intrahospital_api': {
+            'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
         },
-        'intrahospital_api': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        }
     }
 }
+
+if 'test' not in sys.argv:
+    LOGGING['loggers']['elcid.time_logger'] = {
+        'handlers': ['console_detailed'],
+        'level': 'INFO',
+        'propagate': False,
+    }
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
@@ -314,7 +335,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.3.0'
+VERSION_NUMBER = '0.3.5'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

@@ -1,6 +1,11 @@
-from django.conf import settings
-from django.utils.module_loading import import_string
+"""
+Opal core intrahospital api package
+"""
+from opal.core import celery  # NOQA
+import logging
+from apis import get_api
 
-
-def get_api():
-    return import_string(settings.INTRAHOSPITAL_API)()
+__all__ = [
+    "get_api"
+]
+logger = logging.getLogger('intrahospital_api')

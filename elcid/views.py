@@ -16,7 +16,7 @@ from opal.core import application
 from elcid.forms import BulkCreateUsersForm
 
 app = application.get_app()
-u = unicode
+
 
 def temp_password():
     num = random.randint(1, 100)

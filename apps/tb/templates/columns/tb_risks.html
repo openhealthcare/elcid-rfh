@@ -1,0 +1,45 @@
+    <div class="row" ng-show="row.social_history[0].drinking && row.social_history[0].drinking == 'Excess'">
+      <div class="col-md-6">
+        <b>Alcohol:</b>
+      </div>
+      <div class="col-md-6">
+        Excess <span ng-show="row.social_history[0].alcohol_dependent">(Alcohol dependent)</span>
+      </div>
+    </div>
+    <div class="row" ng-show="row.social_history[0].smoking && row.social_history[0].smoking != 'Never'">
+      <div class="col-md-6">
+        <b>Smoking:</b>
+      </div>
+      <div class="col-md-6">
+        [[ row.social_history[0].smoking ]]
+      </div>
+    </div>
+
+    <div class="row"
+         ng-show="row.social_history[0].intravenous_drug_use && row.social_history[0].intravenous_drug_use != 'Never'">
+      <div class="col-md-6">
+        <b>IV Drug use:</b>
+      </div>
+      <div class="col-md-6">
+        [[ row.social_history[0].intravenous_drug_use ]]
+      </div>
+    </div>
+    <div class="row" ng-show="row.social_history[0].incarceration && row.social_history[0].incarceration != 'Never'">
+      <div class="col-md-6">
+        <b>Incarceration:</b>
+      </div>
+      <div class="col-md-6">
+        [[ row.social_history[0].incarceration ]]
+      </div>
+    </div>
+    <div class="row" ng-show="row.social_history[0].homelessness && row.social_history[0].homelessness != 'Never'">
+      <div class="col-md-6">
+        <b>Homelessness:</b>
+      </div>
+      <div class="col-md-6">
+        [[ row.social_history[0].homelessness ]]
+      </div>
+    </div>
+
+
+  </div>

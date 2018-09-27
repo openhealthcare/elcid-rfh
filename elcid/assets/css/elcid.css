@@ -15,6 +15,13 @@ body {
   color: white;
   border-color: #0091C9; }
 
+.radio-vertical.radio input[type="radio"] {
+  opacity: 1;
+  z-index: 0;
+  margin-top: 2px; }
+.radio-vertical.radio label::before {
+  content: none; }
+
 h5 {
   font-weight: 600;
   text-transform: capitalize;
@@ -139,8 +146,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   margin-right: 10px;
   padding-bottom: 10px; }
   .lab-tests .lab-test-row.selectable:hover {
-    background-color: #f5f5f5;
-    cursor: pointer; }
+    background-color: #f5f5f5; }
 .lab-tests .observation-graph-pane {
   padding-top: 10px;
   padding-bottom: 10px; }
@@ -153,8 +159,23 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .lab-tests .too-low {
   color: #E02F03; }
 
+.overflow-x-auto {
+  overflow-x: auto; }
+
 .no-results {
   font-weight: 600;
   color: #cbc9c8; }
+
+.trends-panel {
+  min-height: 395px; }
+  .trends-panel .no-results {
+    padding-top: 120px; }
+
+.star i {
+  color: #0091c9;
+  font-size: 24px; }
+
+.field-text {
+  padding-top: 8px; }
 
 /*# sourceMappingURL=elcid.css.map */

@@ -1,13 +1,34 @@
 angular.module('opal.controllers').controller('ResultView', function(
-  $scope, LabTestResults, ObservationDetail, ngProgressLite
+  $scope, LabTestResults, ObservationDetail, ngProgressLite, InitialPatientTestLoadStatus
 ){
       "use strict";
       var vm = this;
       // lab tests after filtering
       this.labTests = [];
+      this.patientLoadStatus = new InitialPatientTestLoadStatus($scope.patient);
+      this.patientLoadStatus.load();
       // lab tests before filtering
       this.originalLabTests = [];
       this.observationDetail = {};
+      this.parseFloat = parseFloat;
+
+      this.splitObservation = function(observation){
+        return observation.observation_value.split('~');
+      }
+
+      this.isNumber = _.isNumber;
+
+      this.isPopulated = function(observation){
+        if(_.isUndefined(observation)){
+          return false;
+        }
+
+        if(_.isNumber(observation.observation_value)){
+          return true;
+        }
+
+        return observation.observation_value.replace('-', '').trim().length;
+      }
 
 
       this.shownObservations = {};
@@ -36,19 +57,17 @@ angular.module('opal.controllers').controller('ResultView', function(
         return false;
       }
 
-      this.filter = function(someTag){
-        this.currentTag = someTag;
-        if(someTag === 'ALL'){
-          this.labTests = this.originalLabTests;
+      this.filter = function(someStr){
+        if(!someStr.length){
+          vm.labTests = angular.copy(vm.originalLabTests)
         }
         else{
-          this.labTests = _.filter(vm.originalLabTests, function(labTest){
-            return _.filter(labTest.tags, function(tag){
-              return tag == someTag
-            }).length;
+          var lSomeStr = someStr.toLowerCase();
+          vm.labTests = _.filter(this.labTests, function(labTest){
+            return labTest.lab_test_type.toLowerCase().indexOf(lSomeStr) !== -1;
           });
         }
-      }
+      };
 
       this.trendChange = function(labTest, observationName){
         /*
@@ -125,11 +144,14 @@ angular.module('opal.controllers').controller('ResultView', function(
 
         // _.each(vm.originalLabTests, function())
         ObservationDetail.load($scope.patient.id, labTest.api_name, apiName).then(function(detail){
-          debugger;
           vm.observationDetail[labTest.lab_test_type][observationName] = detail.observations;
         });
       };
 
       this.labTests = [];
-      this.getLabTests($scope.patient);
+      if(!this.patientLoadStatus.isAbsent()){
+        this.patientLoadStatus.promise.then(function(){
+          vm.getLabTests($scope.patient);
+        });
+      }
 });

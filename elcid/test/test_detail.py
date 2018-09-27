@@ -35,31 +35,3 @@ class ResultTestCase(OpalTestCase):
         self.assertFalse(
             detail.Result.visible_to(self.not_permissioned)
         )
-
-
-class JsonDumpViewTestCase(OpalTestCase):
-    def setUp(self):
-        self.permissioned = User.objects.create(
-            username="permissioned", password="permissioned"
-        )
-
-        profile, _ = UserProfile.objects.get_or_create(
-            user=self.permissioned
-        )
-        profile.roles.create(name=constants.VIEW_LAB_TEST_JSON_IN_DETAIL)
-
-        self.not_permissioned = User.objects.create(
-            username="not_permissioned", password="not_permissioned"
-        )
-        UserProfile.objects.get_or_create(user=self.not_permissioned)
-
-    def test_slug(self):
-        self.assertEqual('test_results', detail.Result.get_slug())
-
-    def test_visible_with_role(self):
-        self.assertTrue(detail.JsonDumpView.visible_to(self.permissioned))
-
-    def test_invisible_without_role(self):
-        self.assertFalse(
-            detail.JsonDumpView.visible_to(self.not_permissioned)
-        )
