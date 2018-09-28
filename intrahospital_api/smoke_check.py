@@ -84,6 +84,9 @@ class ChecksEmailMessage(object):
 
 
 class LoadCheck(object):
+    """
+
+    """
     def __init__(
         self,
         email,
