@@ -1,5 +1,6 @@
 import datetime
 from django.conf import settings
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from opal.core import serialization
@@ -10,13 +11,15 @@ from intrahospital_api.services.lab_tests import service
 
 
 def get_qs(min_dt, max_dt=None):
+    patients = Patient.objects.filter(episode__tagging__archived=False)
     lab_tests = lmodels.LabTest.objects.filter(
         lab_test_type__istartswith="upstream"
-    )
+    ).filter(patient__in=patients)
+
     recent_lab_tests = []
-    max_updated = datetime.datetime.min()
+    max_updated = timezone.make_aware(datetime.datetime.min)
     if max_dt is None:
-        max_dt = datetime.datetime.max()
+        max_dt = timezone.make_aware(datetime.datetime.max)
 
     for lab_test in lab_tests:
         observations = lab_test.extras["observations"]
@@ -26,11 +29,12 @@ def get_qs(min_dt, max_dt=None):
                 last_updated = serialization.deserialize_datetime(
                     last_updated_str
                 )
-                if max_updated < last_updated:
-                    max_updated = last_updated
 
                 if last_updated >= min_dt and last_updated <= max_dt:
                     recent_lab_tests.append(lab_test.id)
+
+                    if max_updated < last_updated:
+                        max_updated = last_updated
 
     return lmodels.LabTest.objects.filter(
         id__in=recent_lab_tests
