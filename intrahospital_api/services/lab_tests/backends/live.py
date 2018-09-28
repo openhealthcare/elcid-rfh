@@ -15,7 +15,7 @@ ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number 
 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since and Result_ID = @lab_number \
-ORDER BY last_updated DESC;"
+ORDER BY last_updated DESC;".format(view=VIEW)
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND last_updated > @since and OBR_exam_code_Text = \
@@ -129,6 +129,21 @@ class Row(db.Row):
             result[field] = self[field]
         return result
 
+from time import time
+from functools import wraps
+
+def timing_2(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time()
+        result = f(*args, **kw)
+        te = time()
+        print 'timing_func: %r %2.4f sec' % (
+            f.__name__, te-ts
+        )
+        return result
+    return wrap
+
 
 class Api(object):
     def __init__(self):
@@ -166,13 +181,13 @@ class Api(object):
                 hospital_number=hospital_number, since=db_date
             )
 
-
+    @timing_2
     def lab_test_results_since_2(self, hospital_numbers, some_datetime):
         hospital_number_to_rows = defaultdict(list)
 
         for hospital_number in hospital_numbers:
             hospital_number_to_rows[hospital_number].append(
-                self.raw_lab_tests(hospital_number, some_datetime)
+                self.raw_lab_tests(hospital_number, db_date=some_datetime)
             )
 
         hospital_number_to_lab_tests = {}
@@ -192,6 +207,7 @@ class Api(object):
         )
         return (Row(r) for r in all_rows)
 
+    @timing_2
     def lab_test_results_since(self, hospital_numbers, some_datetime):
         """ yields an iterator of dictionary
 
