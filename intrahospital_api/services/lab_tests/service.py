@@ -77,8 +77,15 @@ def update_patients(patients, since):
         logger.info(
             'updating patient results for {}'.format(hospital_number)
         )
-        patient = patients.get(demographics__hospital_number=hospital_number)
-        total += update_patient(patient, lab_tests)
+
+        # we should never have more than one patient per hospital number
+        # but it has happened
+        patients = patients.filter(
+            demographics__hospital_number=hospital_number
+        )
+
+        for patient in patients:
+            total += update_patient(patient, lab_tests)
 
     return total
 
