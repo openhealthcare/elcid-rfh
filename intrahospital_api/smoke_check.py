@@ -69,14 +69,13 @@ class ChecksEmailMessage(object):
             self.get_html(self.text)
         )
 
-        for admin in settings.ADMINS:
-            django_send_mail(
-                subject,
-                body,
-                admin[1],
-                settings.OPAL_BRAND_NAME,
-                html_message=html_body
-            )
+        django_send_mail(
+            subject,
+            body,
+            settings.OPAL_BRAND_NAME,
+            [i[1] for i in settings.ADMINS],
+            html_message=html_body
+        )
 
     def send_if_necessary(self):
         if self.text:
