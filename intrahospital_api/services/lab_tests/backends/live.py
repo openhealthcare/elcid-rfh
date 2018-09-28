@@ -134,10 +134,17 @@ class Api(object):
     def __init__(self):
         self.connection = db.DBConnection()
 
-    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
-        """ not all data, I lied. Only the last year's
+    def raw_lab_tests(
+            self,
+            hospital_number,
+            lab_number=None,
+            test_type=None,
+            db_date=None
+        ):
+        """ if not db date, just get last years data
         """
-        db_date = datetime.date.today() - datetime.timedelta(365)
+        if db_date is None:
+            db_date = datetime.date.today() - datetime.timedelta(365)
 
         if lab_number:
             return self.connection.execute_query(
@@ -158,6 +165,24 @@ class Api(object):
                 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
                 hospital_number=hospital_number, since=db_date
             )
+
+
+    def lab_test_results_since_2(self, hospital_numbers, some_datetime):
+        hospital_number_to_rows = defaultdict(list)
+
+        for hospital_number in hospital_numbers:
+            hospital_number_to_rows[hospital_number].append(
+                self.raw_lab_tests(hospital_number, some_datetime)
+            )
+
+        hospital_number_to_lab_tests = {}
+
+        for hospital_number, rows in hospital_number_to_rows.items():
+            lab_tests = self.cast_rows_to_lab_test(rows)
+            hospital_number_to_lab_tests[hospital_number] = lab_tests
+
+        return hospital_number_to_lab_tests
+
 
     @timing
     def data_delta_query(self, since):
