@@ -186,8 +186,11 @@ class Api(object):
         hospital_number_to_rows = defaultdict(list)
 
         for hospital_number in hospital_numbers:
-            hospital_number_to_rows[hospital_number].append(
-                self.raw_lab_tests(hospital_number, db_date=some_datetime)
+            raw_rows = self.raw_lab_tests(
+                hospital_number, db_date=some_datetime
+            )
+            hospital_number_to_rows[hospital_number].extend(
+                Row(i) for i in raw_rows
             )
 
         hospital_number_to_lab_tests = {}
