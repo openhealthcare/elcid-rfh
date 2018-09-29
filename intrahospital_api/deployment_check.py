@@ -11,7 +11,7 @@ from intrahospital_api.services.lab_tests import service
 
 
 def get_qs(min_dt, max_dt=None):
-    patients = Patient.objects.filter(episode__tagging__archived=False)
+    patients = Patient.objects.exclude(episode__tagging__archived=True)
     lab_tests = lmodels.LabTest.objects.filter(
         lab_test_type__istartswith="upstream"
     ).filter(patient__in=patients)
