@@ -2,6 +2,7 @@
 elCID implementation specific models!
 """
 import datetime
+import copy
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
@@ -179,6 +180,8 @@ class UpstreamLabTest(lmodels.LabTest):
         if "external_identifier" not in data and not self.id:
             err = "To create an upstream lab test and external id is required"
             raise ValueError(err)
+
+        data = copy.copy(data)
 
         # we never expect the patient to change
         # check though

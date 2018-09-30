@@ -1,4 +1,5 @@
 import datetime
+import copy
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
@@ -327,6 +328,22 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
             found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
         )
 
+    def test_update_from_api_dict_does_not_mutate(self):
+        update_dict = dict(
+            status=emodels.UpstreamLabTest.COMPLETE,
+            observations=[{"obs_number": 1}],
+            lab_test_type=emodels.UpstreamLabTest.get_display_name()
+        )
+        update_dict_copy = copy.copy(update_dict)
+        hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
+        hl7_result.update_from_api_dict(self.patient.update_dict, self.user)
+
+        reloaded_hl7 = emodels.UpstreamLabTest.objects.get(id=hl7_result.id)
+        self.assertEqual(
+            reloaded_hl7.extras["observations"][0]['obs_number'], 1
+        )
+        # update from dict should not mutate the original dict
+
     def test_set_datetime_ordered_none(self):
         lab_test = emodels.UpstreamLabTest(patient=self.patient)
         lab_test.datetime_ordered = timezone.now()
@@ -401,6 +418,7 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         hl7_result.update_from_dict(update_dict, self.user)
         # validate that is hasn't been saved
         self.assertIsNone(hl7_result.id)
+
 
     def test_get_relevant_tests(self):
         patient, _ = self.new_patient_and_episode_please()

@@ -10,8 +10,15 @@ from intrahospital_api import models as imodels
 from intrahospital_api.services.lab_tests import service
 
 
+class RollBackError(Exception):
+    pass
+
+def get_patients():
+    return Patient.objects.exclude(episode__tagging__archived=True)
+
+
 def get_qs(min_dt, max_dt=None):
-    patients = Patient.objects.exclude(episode__tagging__archived=True)
+    patients = get_patients()
     lab_tests = lmodels.LabTest.objects.filter(
         lab_test_type__istartswith="upstream"
     ).filter(patient__in=patients)
@@ -42,29 +49,38 @@ def get_qs(min_dt, max_dt=None):
 
 
 @transaction.atomic
-def check_since(some_dt):
-    result = {}
+def check_since(some_dt, result=None):
+    """
+    Expects a dictionary, which it updates, then rolls back
+    the transaction changes.
+
+    This should only be run on test
+    """
+
+    if "test" not in settings.OPAL_BRAND_NAME.lower():
+        raise ValueError('this should only be run on a test server')
     current, max_updated = get_qs(some_dt)
-    patient_ids = current.values_list('patient_id', flat=True)
-    result = dict(current=current.count())
+    # if you don't cast this to a list it will recalculate
+    # later after we have deleted the current
+    # ie, patient_ids will always be empty later
+    patient_ids = list(current.values_list('patient_id', flat=True))
+    result["current"] = current.count()
     current.delete()
 
-    patients = Patient.objects.all()
+    patients = Patient.objects.filter(id__in=patient_ids)
     service.update_patients(patients, some_dt)
     batch_load, _ = get_qs(some_dt, max_updated)
     result["batch_load"] = batch_load.count()
     batch_load.delete()
 
     patients = Patient.objects.filter(id__in=patient_ids)
+
     for patient in patients:
         service.update_patient(patient)
     initial_load, _ = get_qs(some_dt, max_updated)
     result["initial_load"] = initial_load.count()
 
-    print "=" * 10
-    print result
-    print "=" * 10
-    raise ValueError('boom')
+    raise RollBackError('rolling back')
 
 
 
