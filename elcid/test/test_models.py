@@ -331,16 +331,17 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
     def test_update_from_api_dict_does_not_mutate(self):
         update_dict = dict(
             status=emodels.UpstreamLabTest.COMPLETE,
-            observations=[{"obs_number": 1}],
+            observations=[{"observation_number": 1}],
+            external_identifier="1",
             lab_test_type=emodels.UpstreamLabTest.get_display_name()
         )
         update_dict_copy = copy.copy(update_dict)
         hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
-        hl7_result.update_from_api_dict(self.patient.update_dict, self.user)
+        hl7_result.update_from_api_dict(self.patient, update_dict, self.user)
 
         reloaded_hl7 = emodels.UpstreamLabTest.objects.get(id=hl7_result.id)
         self.assertEqual(
-            reloaded_hl7.extras["observations"][0]['obs_number'], 1
+            reloaded_hl7.extras["observations"][0]['observation_number'], 1
         )
         # update from dict should not mutate the original dict
 
