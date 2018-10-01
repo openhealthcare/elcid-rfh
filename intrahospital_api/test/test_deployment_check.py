@@ -82,11 +82,25 @@ class DeploymentCheckTestCase(ApiTestCase):
         )
 
         self.assertEqual(
+            result["current_ids"], [(self.patient.id, u'0013I245895')]
+        )
+
+        self.assertEqual(
             result["batch_load"], 2
         )
 
         self.assertEqual(
+            result["batch_load_ids"],
+            [(1, u'0013I245895'), (1, u'0013I245895')]
+        )
+
+        self.assertEqual(
             result["initial_load"], 3
+        )
+
+        self.assertEqual(
+            result["initial_load_ids"],
+            [(1, u'0013I245895'), (1, u'0013I245895'), (1, u'0013I245895')]
         )
 
         # make sure the roll back has happened

@@ -63,13 +63,17 @@ def check_since(some_dt, result=None):
     # if you don't cast this to a list it will recalculate
     # later after we have deleted the current
     # ie, patient_ids will always be empty later
-    patient_ids = list(current.values_list('patient_id', flat=True))
+    patient_ids_external_identifier = list(current.values_list('patient_id', 'external_identifier'))
+    patient_ids = [i[0] for i in patient_ids_external_identifier]
     result["current"] = current.count()
+    result["current_ids"] = patient_ids_external_identifier
     current.delete()
 
     patients = Patient.objects.filter(id__in=patient_ids)
     service.update_patients(patients, some_dt)
     batch_load, _ = get_qs(some_dt, max_updated)
+    batch_load_identifiers = list(batch_load.values_list('patient_id', 'external_identifier'))
+    result["batch_load_ids"] = batch_load_identifiers
     result["batch_load"] = batch_load.count()
     batch_load.delete()
 
@@ -78,7 +82,9 @@ def check_since(some_dt, result=None):
     for patient in patients:
         service.update_patient(patient)
     initial_load, _ = get_qs(some_dt, max_updated)
+    intial_load_identifiers = list(initial_load.values_list('patient_id', 'external_identifier'))
     result["initial_load"] = initial_load.count()
+    result["initial_load_ids"] = intial_load_identifiers
 
     raise RollBackError('rolling back')
 
