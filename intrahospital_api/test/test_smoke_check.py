@@ -5,7 +5,8 @@ from intrahospital_api import smoke_check
 
 
 @override_settings(
-    ADMin
+    OPAL_BRAND_NAME="something",
+    ADMINS=(("Wilma", "wilma@openhealthcare.org.uk",),)
 )
 @mock.patch("intrahospital_api.smoke_check.django_send_mail")
 class CheckEmailTestCase(OpalTestCase):
@@ -25,23 +26,56 @@ class CheckEmailTestCase(OpalTestCase):
         html_message = django_send_mail.call_args[1]["html_message"]
 
         self.assertEqual(
-            subject, ""
+            subject, "Batch Load Err: some_problem-1"
         )
 
         self.assertEqual(
-            body, ""
+            body, "some_problem-1\n\nproblem with 1"
         )
 
         self.assertEqual(
-            to, [""]
+            to, ["wilma@openhealthcare.org.uk"]
         )
 
         self.assertEqual(
-            from,
+            from_name, "something"
+        )
+
+        self.assertEqual(
+            html_message,  '<p>some_problem-1</p><br /><br /><p>problem with 1</p>'
         )
 
     def test_record_multiple_and_send(self, django_send_mail):
-        pass
+        self.check_email.record_problem(
+            "some_problem", "problem with 1"
+        )
+
+        self.check_email.record_problem(
+
+            "some_problem", "problem with 2"
+        )
+
+        self.check_email.record_problem(
+            "some_problem", "other problem"
+        )
+
+        self.check_email.send()
+
+        subject = django_send_mail.call_args[0][0]
+        body = django_send_mail.call_args[0][1]
+        html_message = django_send_mail.call_args[1]["html_message"]
+
+        self.assertEqual(
+            subject, "Batch Load Err: some_problem-1"
+        )
+
+        self.assertEqual(
+            body, "some_problem-1\n\nproblem with 1"
+        )
+
+        self.assertEqual(
+            html_message,  '<p>some_problem-1</p><br /><br /><p>problem with 1</p>'
+        )
 
     def test_send_if_necessary(self, django_send_mail):
         pass

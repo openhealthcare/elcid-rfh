@@ -27,7 +27,7 @@ def min_datetime():
 
 def get_todays_loads(qs):
     return qs.filter(
-        start__gte=min_datetime()
+        started__gte=min_datetime()
     )
 
 
@@ -230,7 +230,7 @@ def check_loads():
         LoadCheck(
             email,
             lab_test_service.SERVICE_NAME,
-            models.BatchPatientLoad.objects.all(
+            models.BatchPatientLoad.objects.filter(
                 service_name=lab_test_service.SERVICE_NAME
             ),
             max_load_time=datetime.timedelta(seconds=600)
@@ -238,7 +238,7 @@ def check_loads():
         LoadCheck(
             email,
             demographics_service.SERVICE_NAME,
-            models.BatchPatientLoad.objects.all(
+            models.BatchPatientLoad.objects.filter(
                 service_name=demographics_service.SERVICE_NAME,
             ),
             max_load_time=datetime.timedelta(seconds=1200)
