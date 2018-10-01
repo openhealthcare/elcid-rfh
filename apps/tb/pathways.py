@@ -13,6 +13,7 @@ from intrahospital_api import loader
 
 from apps.tb.patient_lists import TbPatientList
 from apps.tb import models as tb_models
+from intrahospital_api import constants
 
 
 class AddTbPatientPathway(AddPatientPathway):
@@ -30,7 +31,7 @@ class AddTbPatientPathway(AddPatientPathway):
 
     @transaction.atomic
     def save(self, data, user, patient=None, episode=None):
-        patient, episode = super(AddTbPatientPathway, self).save(
+        saved_patient, episode = super(AddTbPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
 
@@ -47,7 +48,7 @@ class AddTbPatientPathway(AddPatientPathway):
             if demo_system == constants.EXTERNAL_SYSTEM:
                 loader.load_patient(saved_patient)
 
-        return patient, episode
+        return saved_patient, episode
 
 
 class NewSubrecordStep(HelpTextStep):
