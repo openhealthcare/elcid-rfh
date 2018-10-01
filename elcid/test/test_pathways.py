@@ -7,8 +7,7 @@ from intrahospital_api import constants
 from opal import models
 from opal.core.test import OpalTestCase
 from elcid.pathways import (
-    AddPatientPathway, CernerDemoPathway, BloodCulturePathway,
-    IgnoreDemographicsMixin
+    AddPatientPathway, CernerDemoPathway, BloodCulturePathway
 )
 from elcid import models as emodels
 
@@ -24,108 +23,8 @@ class PathwayTestCase(OpalTestCase):
         User.objects.create(username="ohc", password="fake_password")
 
 
-class IgnoreDemographicsMixinTestCase(PathwayTestCase):
-    def setUp(self):
-        class SomeSaveParentPathway(object):
-            def save(self, data, user=None, episode=None, patient=None):
-                self.data = data
-                self.user = user
-                self.episode = episode
-                self.patient = patient
-
-        class SomeSaveChildPathway(
-            IgnoreDemographicsMixin, SomeSaveParentPathway
-        ):
-            pass
-
-        self.pathway = SomeSaveChildPathway()
-        self.patient, self.episode = self.new_patient_and_episode_please()
-
-    def test_popped_with_external_system(self):
-        self.patient.demographics_set.update(
-            first_name="Paul",
-            surname="Daniels",
-            external_system=constants.EXTERNAL_SYSTEM
-        )
-        data = dict(demographics=[{"first_name": "Daniel"}])
-        self.pathway.save(
-            data, user=self.user, episode=self.episode, patient=self.patient
-        )
-
-        self.assertEqual(
-            self.pathway.user, self.user
-        )
-        self.assertEqual(
-            self.pathway.episode, self.episode
-        )
-        self.assertEqual(
-            self.pathway.patient, self.patient
-        )
-        self.assertEqual(
-            self.pathway.data, {}
-        )
-
-    def test_popped_without_external_system(self):
-        self.patient.demographics_set.update(
-            first_name="Paul",
-            surname="Daniels",
-        )
-        data = dict(demographics=[{"first_name": "Daniel"}])
-        self.pathway.save(
-            data, user=self.user, episode=self.episode, patient=self.patient
-        )
-
-        self.assertEqual(
-            self.pathway.user, self.user
-        )
-        self.assertEqual(
-            self.pathway.episode, self.episode
-        )
-        self.assertEqual(
-            self.pathway.patient, self.patient
-        )
-        self.assertEqual(
-            self.pathway.data, dict(demographics=[{"first_name": "Daniel"}])
-        )
-
-
 class BloodCulturePathwayTestCase(PathwayTestCase):
-    def test_includes_demographcis_with_external_system(self):
-        patient, episode = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            first_name="Paul",
-            surname="Daniels",
-        )
-
-        quick_fish = patient.labtest_set.create(
-            lab_test_type='QuickFISH',
-        )
-        data = dict(
-            lab_test=[{
-                "id": quick_fish.id,
-                "lab_test_type": "QuickFISH",
-                "result": {"result": "CNS"}
-            }],
-            demographics=[{
-                "first_name": "Daniel",
-                "surname": "Pauls",
-            }]
-        )
-        self.assertTrue(
-            self.client.login(
-                username=self.user.username, password=self.PASSWORD
-            )
-        )
-        pathway = BloodCulturePathway()
-        url = pathway.save_url(patient=patient, episode=episode)
-        result = self.post_json(url, data)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(
-            patient.demographics_set.first().first_name,
-            "Daniel"
-        )
-
-    def test_ignores_demographics_with_external_system(self):
+    def test_ignores_demographics(self):
         patient, episode = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             first_name="Paul",
