@@ -16,7 +16,7 @@ from apps.tb import models as tb_models
 
 
 class AddTbPatientPathway(AddPatientPathway):
-    display_name = "Add TB Patient"
+    display_name = "Add Patient"
     slug = 'add_tb_patient'
 
     steps = (
