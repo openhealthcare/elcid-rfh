@@ -1,0 +1,32 @@
+{
+    "tbstageoptions": [
+        {
+            "synonyms": [],
+            "name": "New Referral"
+        },
+        {
+            "synonyms": [],
+            "name": "Assessed"
+        },
+        {
+            "synonyms": [],
+            "name": "Active TB Treatment"
+        },
+        {
+            "synonyms": [],
+            "name": "Latent TB Treatment"
+        },
+        {
+            "synonyms": [],
+            "name": "NTM Treatment"
+        },
+        {
+            "synonyms": [],
+            "name": "Under Investigation"
+        },
+        {
+            "synonyms": [],
+            "name": "Discharged"
+        }
+    ]
+}

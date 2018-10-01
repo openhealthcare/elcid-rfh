@@ -476,3 +476,18 @@ class TBAppointment(models.PatientSubrecord):
     class Meta:
         verbose_name = "Appointments"
         ordering = ["-start"]
+
+
+class TBStageOptions(lookuplists.LookupList):
+    pass
+
+
+class TBStage(models.EpisodeSubrecord):
+    _is_singleton = True
+    _icon = "fa fa-tasks"
+    FIRST_STAGE = "New Referral"
+
+    class Meta:
+        verbose_name = "Current Status"
+
+    stage = ForeignKeyOrFreeText(TBStageOptions)
