@@ -9,6 +9,7 @@ try and run it outside of test
 
 import datetime
 import six
+import json
 from django.utils import timezone
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -35,7 +36,7 @@ class Command(BaseCommand):
         try:
             deployment_check.check_since(since, result)
         except deployment_check.RollBackError:
-            six._print(result)
+            six._print(json.dumps(result, indent=2))
         except Exception as e:
             pass
 

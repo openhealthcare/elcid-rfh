@@ -31,7 +31,7 @@ class DeploymentCheckTestCase(OpalTestCase):
         cmd = deployment_check.Command()
         check_since.side_effect = dep_check_side_effect
         cmd.handle(hours=4)
-        six._print.assert_called_once_with({"current": 1})
+        six._print.assert_called_once_with('{\n  "current": 1\n}')
         # interestingly mock stores a reference so its
         # passed in an empty dictionary but because its a reference
         # this, to mock, looks like the result of the dict
