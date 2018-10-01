@@ -1,3 +1,4 @@
+import copy
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
@@ -85,7 +86,11 @@ def update_patients(patients, since):
         )
 
         for patient in patients:
-            total += update_patient(patient, lab_tests)
+            # lab tests are changed in place so
+            # if there are multiple lab tests
+            # for patient we need to copy them first
+            lts = copy.copy(lab_tests)
+            total += update_patient(patient, lts)
 
     return total
 
