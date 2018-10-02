@@ -72,7 +72,6 @@ def remove_in_everything(some_list, list_1, list_2):
     set_1 = set(list_1)
     set_2 = set(list_2)
     result = []
-
     for i in some_list:
         if i not in set_1 or i not in set_2:
             result.append(i)
@@ -86,12 +85,23 @@ def check_since(some_dt, result=None):
     the transaction changes.
 
     This should only be run on test
+
+    we remove duplicates across
+
+    current is the way it is before we test the batch loads and inital loads
+
+    the result are observations, lab number, patient id that do not exist at
+    least 1 other state (be it current, post batch load or post initial load)
+
+    the count is the total observations loaded regardless of whether
+    they are in another load or not
     """
 
     if "test" not in settings.OPAL_BRAND_NAME.lower():
         raise ValueError('this should only be run on a test server')
 
     current, max_updated = get_and_reset(some_dt)
+    result["current_count"] = len(current)
 
     # current is the output of get_key
     patient_ids = [i[-1] for i in current]
@@ -99,11 +109,13 @@ def check_since(some_dt, result=None):
     patients = Patient.objects.filter(id__in=patient_ids)
     service.update_patients(patients, some_dt)
     batch_load, _ = get_and_reset(some_dt, max_updated)
+    result["batch_load_count"] = len(batch_load)
 
     for patient in patients:
         service.update_patient(patient)
 
     initial_load, _ = get_and_reset(some_dt, max_updated)
+    result["initial_load_count"] = len(initial_load)
 
     result["current"] = remove_in_everything(current, batch_load, initial_load)
     result["batch_load"] = remove_in_everything(

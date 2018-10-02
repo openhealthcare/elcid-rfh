@@ -145,6 +145,11 @@ class DeploymentCheckTestCase(ApiTestCase):
         )
 
         self.assertEqual(
+            result["current_count"],
+            2
+        )
+
+        self.assertEqual(
             result["batch_load"],
             [
                 (1, u'0013I245895', 1),
@@ -154,11 +159,21 @@ class DeploymentCheckTestCase(ApiTestCase):
         )
 
         self.assertEqual(
+            result["batch_load_count"],
+            4
+        )
+
+        self.assertEqual(
             result["initial_load"],
             [
                 (4, u'0013I245895', 1),
                 (5, u'0013I245895', 1)
             ]
+        )
+
+        self.assertEqual(
+            result["initial_load_count"],
+            3
         )
 
 
