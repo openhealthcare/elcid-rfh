@@ -85,7 +85,11 @@ def has_appointments(patient):
     return patient.tbappointment_set.exists()
 
 
-def update_all_appointments():
+def update_all_appointments_in_the_last_year():
+    """
+    Loads in all appointments for the last year, creating
+    patients if necessary.
+    """
     appoinments_api = service_utils.get_api("appointments")
     appointments = appoinments_api.appointments_since_last_year()
     patient_ids = []
@@ -102,7 +106,11 @@ def update_all_appointments():
         back_fill_appointments(patient)
 
 
-def update_appointments():
+def update_future_appointments():
+    """
+    Loads in all future appointments, creating patients
+    if necessary.
+    """
     api = service_utils.get_api("appointments")
     future_appointments = api.future_tb_appointments()
     for hospital_number, appointments in future_appointments.items():

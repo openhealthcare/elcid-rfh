@@ -61,7 +61,7 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
     def test_update_all_appointments_existing(self, service_utils):
         service_utils.get_api.return_value = self.mock_api
         service_utils.get_user.return_value = self.user
-        service.update_all_appointments()
+        service.update_all_appointments_in_the_last_year()
         self.assertEqual(tb_models.TBAppointment.objects.count(), 2)
         self.assertEqual(self.tb_episode.patient.tbappointment_set.count(), 2)
         appointment_set = self.tb_episode.patient.tbappointment_set
@@ -76,7 +76,7 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
         service_utils.get_api.return_value = self.mock_api
         service_utils.get_user.return_value = self.user
         tb_models.TBAppointment.objects.all().delete()
-        service.update_all_appointments()
+        service.update_all_appointments_in_the_last_year()
         self.assertEqual(tb_models.TBAppointment.objects.count(), 2)
         self.assertEqual(self.tb_episode.patient.tbappointment_set.count(), 2)
         appointment_set = self.tb_episode.patient.tbappointment_set
@@ -90,7 +90,7 @@ class UpdateAllAppointmentsTestCase(OpalTestCase):
 
 @mock.patch("intrahospital_api.services.appointments.service.service_utils")
 class UpdateAppointmentsTestCase(OpalTestCase):
-    def test_update_appointments(self, service_utils):
+    def test_update_future_appointments(self, service_utils):
         api = service_utils.get_api.return_value
         service_utils.get_user.return_value = self.user
         appointments = [{
@@ -112,7 +112,7 @@ class UpdateAppointmentsTestCase(OpalTestCase):
             date_of_birth=datetime.date(1000, 1, 1)
         )
         api.user = self.user
-        service.update_appointments()
+        service.update_future_appointments()
         patient = Patient.objects.get(demographics__hospital_number="11111")
         demographics = patient.demographics_set.first()
         self.assertEqual(
@@ -163,7 +163,7 @@ class UpdateAppointmentsTestCase(OpalTestCase):
             surname="Flintstone",
             date_of_birth=datetime.date(1000, 1, 1)
         )
-        service.update_appointments()
+        service.update_future_appointments()
         patient = Patient.objects.get(demographics__hospital_number="11111")
         demographics = patient.demographics_set.first()
         self.assertEqual(
