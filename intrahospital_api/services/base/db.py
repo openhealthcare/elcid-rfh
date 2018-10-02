@@ -54,7 +54,7 @@ class Row(object):
     example use:
 
     class DemographicsRow(Row):
-        MAPPINGS = {
+        FIELD_MAPPINGS = {
             "hospital_number": "patient_number",
             "name": "name",
             "date_of_birth": ("primary_field", "secondary_field",)
@@ -77,6 +77,14 @@ class Row(object):
     demographics_row["hospital_number"] == "1"
     demographics_row["name"] == "Wilma Flintstone"
     demographics_row["date_of_birth"] == "1/1/2000"
+
+    You can also do
+        result = demographics_row.translate()
+        result == dict(
+            hospital_number=1,
+            name="Wilma Flintstone",
+            date_of_birth="1/1/2000"
+        )
     """
     FIELD_MAPPINGS = {}
 
@@ -109,6 +117,15 @@ class Row(object):
         if hasattr(self, translated_field):
             return getattr(self, translated_field)
         return self.db_row[translated_field]
+
+    def translate(self):
+        """
+        Returns the row tranlsated by the FIELD_MAPPINGS
+        """
+        result = {}
+        for field in self.FIELD_MAPPINGS.keys():
+            result[field] = self[field]
+        return result
 
 
 class DBConnection(object):

@@ -74,6 +74,9 @@ class ToDatetimeStrTestCase(OpalTestCase):
 
 
 class TestRow(db.Row):
+    FIELD_MAPPINGS = {
+        "something": "something"
+    }
     @property
     def something(self):
         return "interesting"
@@ -126,3 +129,11 @@ class RowTestCase(OpalTestCase):
         test_row = TestRow(dict())
         test_row.FIELD_MAPPINGS = dict(looking="something")
         self.assertEqual(test_row["looking"], "interesting")
+
+    def test_translate(self):
+        test_row = TestRow(dict(a="1"))
+        test_row.FIELD_MAPPINGS = dict(b="a")
+        self.assertEqual(
+            test_row.translate(),
+            dict(b="1")
+        )

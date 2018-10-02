@@ -4,8 +4,9 @@ import datetime
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
 from intrahospital_api.services.demographics.backends import live as demographics
+from intrahospital_api import constants
 
-FAKE_ROW_DATA = {
+FAKE_PATHOLOGY_ROW_DATA = {
     u'Abnormal_Flag': u'',
     u'Accession_number': u'73151060487',
     u'CRS_ADDRESS_LINE1': u'James Centre',
@@ -94,33 +95,25 @@ FAKE_ROW_DATA = {
     u'visible': u'Y'
 }
 
+FAKE_MAIN_DEMOGRAPHICS_ROW = {
+    u'PATIENT_NUMBER': u'20552710',
+    u'NHS_NUMBER': u'111',
+    u'FORENAME1': u'TEST',
+    u'SURNAME': u'ZZZTEST',
+    u'DOB': datetime.datetime(1980, 10, 10, 0, 0),
+    u'SEX': u'F',
+    u'ETHNIC_GROUP': u'D',
+    u'TITLE': u'Ms',
+}
 
-class RowTestCase(OpalTestCase):
+
+class PathologyDemographicsRowTestCase(OpalTestCase):
     maxDiff = None
 
     def get_row(self, **kwargs):
-        raw_demographics = copy.copy(FAKE_ROW_DATA)
+        raw_demographics = copy.copy(FAKE_PATHOLOGY_ROW_DATA)
         raw_demographics.update(kwargs)
-        return demographics.Row(raw_demographics)
-
-    def test_demographics_dict(self):
-        row = self.get_row()
-        result = row.get_demographics_dict()
-
-        expected = {
-            'nhs_number': u'7060976728',
-            'first_name': u'TEST',
-            'surname': u'ZZZTEST',
-            'title': '',
-            'sex': 'Female',
-            'hospital_number': u'20552710',
-            'date_of_birth': '10/10/1980',
-            'ethnicity': 'Mixed - White and Black Caribbean'
-        }
-        self.assertEqual(
-            result, expected
-        )
-
+        return demographics.PathologyDemographicsRow(raw_demographics)
 
     def test_sex_female(self):
         row = self.get_row(
@@ -128,10 +121,12 @@ class RowTestCase(OpalTestCase):
         )
         self.assertEqual(row.sex, "Female")
 
+    def test_sex_not_set(self):
         row = self.get_row(
             CRS_SEX="",
-            SEX="F"
+            SEX=""
         )
+        self.assertIsNone(row.sex)
 
     def test_ethnicity(self):
         row = self.get_row(
@@ -154,3 +149,114 @@ class RowTestCase(OpalTestCase):
         self.assertEqual(row.date_of_birth, "01/10/2017")
 
 
+class MainDemographicsTestCase(OpalTestCase):
+    def get_row(self, **kwargs):
+        raw_demographics = copy.copy(FAKE_MAIN_DEMOGRAPHICS_ROW)
+        raw_demographics.update(kwargs)
+        return demographics.MainDemographicsRow(raw_demographics)
+
+    def test_date_of_birth(self):
+        dt = datetime.datetime(2017, 10, 1)
+        row = self.get_row(
+            DOB=dt
+        )
+        self.assertEqual(row["date_of_birth"], "01/10/2017")
+
+    def test_sex_male(self):
+        row = self.get_row(
+            SEX="M"
+        )
+        self.assertEqual(row["sex"], "Male")
+
+    def test_sex_female(self):
+        row = self.get_row(
+            SEX="F"
+        )
+        self.assertEqual(row["sex"], "Female")
+
+    def test_sex_none(self):
+        row = self.get_row(
+            SEX=""
+        )
+        self.assertIsNone(row.sex)
+
+    def test_ethnicity(self):
+        row = self.get_row(
+            ETHNIC_GROUP="A"
+        )
+        self.assertEqual(row["ethnicity"], "White - British")
+
+    def test_title(self):
+        row = self.get_row(
+            Title="Ms"
+        )
+        self.assertEqual(row["title"], "Ms")
+
+
+class DemographicsApiTestCase(OpalTestCase):
+    def setUp(self, *args, **kwargs):
+        super(DemographicsApiTestCase, self).setUp(*args, **kwargs)
+        self.api = demographics.Api()
+
+    def run_demographics_for_hospital_number(
+        self, pathology_return, main_return
+    ):
+
+        with mock.patch.object(
+            self.api, "pathology_demographics_for_hospital_number"
+        ) as pdhn:
+            if pathology_return is None:
+                pdhn.return_value = pathology_return
+            else:
+                pdhn.return_value[0].translate.return_value = pathology_return
+            with mock.patch.object(
+                self.api, "main_demographics_for_hospital_number"
+            ) as mdhn:
+                if main_return is None:
+                    mdhn.return_value = main_return
+                else:
+                    mdhn.return_value[0].translate.return_value = main_return
+                result = self.api.demographics_for_hospital_number("111")
+        return result, pdhn, mdhn
+
+    def test_demographics_for_hospital_number_main_found(self):
+        pathology_return = {"hospital_number": "1"}
+        main_return = {"hospital_number": "2"}
+        result, pdhn, mdhn = self.run_demographics_for_hospital_number(
+            pathology_return, main_return
+        )
+        self.assertEqual(
+            result,
+            dict(
+                hospital_number="2",
+                external_system=constants.EXTERNAL_SYSTEM
+            )
+        )
+        mdhn.assert_called_once_with("111")
+        self.assertFalse(pdhn.called)
+
+    def test_demographics_for_hospital_number_pathology_found(self):
+        pathology_return = {"hospital_number": "1"}
+        main_return = None
+        result, pdhn, mdhn = self.run_demographics_for_hospital_number(
+            pathology_return, main_return
+        )
+        self.assertEqual(
+            result,
+            dict(
+                hospital_number="1",
+                external_system=constants.EXTERNAL_SYSTEM
+            )
+        )
+        mdhn.assert_called_once_with("111")
+        pdhn.assert_called_once_with("111")
+
+    def test_demographics_for_hospital_number_none_found(self):
+        pathology_return = None
+        main_return = None
+        result, pdhn, mdhn = self.run_demographics_for_hospital_number(
+            pathology_return, main_return
+        )
+        self.assertIsNone(result)
+        mdhn.assert_called_once_with("111")
+        pdhn.assert_called_once_with("111")

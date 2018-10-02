@@ -4,11 +4,20 @@ from elcid.utils import timing
 import logging
 
 logger = logging.getLogger('intrahospital_api')
-VIEW = "Pathology_Result_view"
+PATHOLOGY_VIEW = "Pathology_Result_view"
 
+MAIN_DEMOGRAPHICS_VIEW = "VIEW_CRS_Patient_Masterfile"
 
-DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
-@hospital_number ORDER BY last_updated DESC;".format(view=VIEW)
+MAIN_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
+@hospital_number ORDER BY last_updated DESC;".format(
+    view=MAIN_DEMOGRAPHICS_VIEW
+)
+
+# The pathology demographics query, looks at CERNER but falls back to WINPATH
+# the view is limited to patients that are on WINPATH
+PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
+@hospital_number ORDER BY last_updated DESC;".format(view=PATHOLOGY_VIEW)
+
 
 ETHNICITY_MAPPING = {
     "99": "Other - Not Known",
@@ -32,7 +41,7 @@ ETHNICITY_MAPPING = {
 }
 
 
-class Row(db.Row):
+class PathologyDemographicsRow(db.Row):
     """ A simple wrapper to get us the fields we actually want out of a row
     """
     FIELD_MAPPINGS = dict(
@@ -60,16 +69,44 @@ class Row(db.Row):
     def sex(self):
         sex_abbreviation = self.get_or_fallback("CRS_SEX", "SEX")
 
-        if sex_abbreviation == "M":
-            return "Male"
-        else:
-            return "Female"
+        if sex_abbreviation:
+            if sex_abbreviation == "M":
+                return "Male"
+            else:
+                return "Female"
 
-    def get_demographics_dict(self):
-        result = {}
-        for field in self.FIELD_MAPPINGS.keys():
-            result[field] = self[field]
-        return result
+
+class MainDemographicsRow(db.Row):
+    FIELD_MAPPINGS = dict(
+        hospital_number="PATIENT_NUMBER",
+        nhs_number="NHS_NUMBER",
+        first_name="FORENAME1",
+        surname="SURNAME",
+        date_of_birth="date_of_birth",
+        sex="sex",
+        ethnicity="ethnicity",
+        title="TITLE"
+    )
+
+    @property
+    def date_of_birth(self):
+        dob = self.db_row.get("DOB")
+        if dob:
+            return db.to_date_str(dob.date())
+
+    @property
+    def ethnicity(self):
+        return ETHNICITY_MAPPING.get(self.db_row.get("ETHNIC_GROUP"))
+
+    @property
+    def sex(self):
+        sex_abbreviation = self.db_row.get("SEX")
+
+        if sex_abbreviation:
+            if sex_abbreviation == "M":
+                return "Male"
+            else:
+                return "Female"
 
 
 class Api(object):
@@ -79,15 +116,37 @@ class Api(object):
         self.connection = db.DBConnection()
 
     @timing
+    def pathology_demographics_for_hospital_number(self, hospital_number):
+        rows = self.connection.execute_query(
+            PATHOLOGY_DEMOGRAPHICS_QUERY,
+            hospital_number=hospital_number
+        )
+        return [PathologyDemographicsRow(i) for i in rows]
+
+    @timing
+    def main_demographics_for_hospital_number(self, hospital_number):
+        rows = self.connection.execute_query(
+            MAIN_DEMOGRAPHICS_QUERY,
+            hospital_number=hospital_number
+        )
+        return [MainDemographicsRow(i) for i in rows]
+
     def demographics_for_hospital_number(self, hospital_number):
         hospital_number = hospital_number.strip()
-        rows = list(self.connection.execute_query(
-            DEMOGRAPHICS_QUERY,
-            hospital_number=hospital_number
-        ))
-        if not rows:
-            return
 
-        demographics_dict = Row(rows[0]).get_demographics_dict()
-        demographics_dict["external_system"] = EXTERNAL_SYSTEM
-        return demographics_dict
+        rows = self.main_demographics_for_hospital_number(hospital_number)
+
+        if not rows:
+            rows = self.pathology_demographics_for_hospital_number(
+                hospital_number
+            )
+
+        if rows:
+            result = rows[0].translate()
+            result["external_system"] = EXTERNAL_SYSTEM
+            return result
+
+
+
+
+
