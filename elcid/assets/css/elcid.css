@@ -120,12 +120,16 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .btn-text-wrap {
   white-space: normal; }
 
-.patient-timeline-discussion ul {
-  padding-left: 40px; }
-.patient-timeline-discussion ul li {
-  list-style-type: disc; }
-.patient-timeline-discussion ol li {
-  list-style-type: decimal; }
+.patient-timeline-discussion {
+  min-height: 120px; }
+  .patient-timeline-discussion ul {
+    padding-left: 40px; }
+  .patient-timeline-discussion ul li {
+    list-style-type: disc; }
+  .patient-timeline-discussion i {
+    color: black; }
+  .patient-timeline-discussion ol li {
+    list-style-type: decimal; }
 
 .no-touchevents
 .patient-timeline-discussion i.edit {
