@@ -1,0 +1,62 @@
+{% extends 'opal.html' %}
+{% load forms %}
+{% block content %}
+{% with demographics=object.episode.patient.demographics_set.first %}
+<div class="outer-container patient-list-container" >
+  <div class="container-fluid content-offset">
+    <div class="panel panel-primary panel-container patient-detail">
+      <div class="panel-heading patient-detail-heading">
+        <h4>
+          <div>
+            Name: {{ demographics.name }}
+          </div>
+          <div>
+          {% if demographics.date_of_birth %}
+            DOB: {{ demographics.date_of_birth|date:"d/m/y" }}
+          {% endif %}
+          </div>
+          <div>
+            MRN: {{ demographics.hospital_number }}
+          </div>
+        </h4>
+      </div>
+      <div class="panel-body">
+        {% if object.when %}
+          <p>
+            <strong>When:</strong> {{ object.when|date:"d/m/y" }}
+            {% if object.initials %}
+              ({{ object.initials }})
+            {% endif %}
+          </p>
+        {% endif %}
+        {% if object.discussion %}
+          <p>
+            <strong>Discussion:</strong>
+            {{ object.discussion }}
+          </p>
+        {% endif %}
+        {% if object.plan %}
+          <p>
+            <strong>Plan:</strong>
+            {{ object.plan }}
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  window.onafterprint = function(){
+    window.close()
+  }
+  window.print()
+</script>
+<style>
+  @media print{
+  	@page {
+  		size: portrait;
+  	}
+  }
+</style>
+{% endwith %}
+{% endblock %}

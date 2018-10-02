@@ -6,5 +6,8 @@ from django.conf.urls import url
 from apps.tb import views
 
 urlpatterns = [
-    # url(pattern, view)
+    url(
+        r'^tb/clinical_advice/(?P<pk>\d+)/?$',
+        views.ClinicalAdvicePrintView.as_view()
+    ),
 ]
