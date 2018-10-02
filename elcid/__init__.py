@@ -4,6 +4,27 @@ elCID Royal Free Hospital implementation
 
 from opal.core import application
 from opal.core import menus
+from apps.tb import constants as tb_constants
+
+
+class StandardAddPatientMenuItem(menus.MenuItem):
+    def for_user(self, user):
+        from opal.models import UserProfile
+        if user.is_superuser:
+            return True
+        return not UserProfile.objects.filter(
+            user=user,
+            roles__name=tb_constants.TB_ROLE
+        ).exists()
+
+
+# ie, not the TB one
+standard_add_patient_menu_item = StandardAddPatientMenuItem(
+    href='/pathway/#/add_patient',
+    display='Add Patient',
+    icon='fa fa-plus',
+    activepattern='/pathway/#/add_patient'
+)
 
 
 class Application(application.OpalApplication):
@@ -51,14 +72,12 @@ class Application(application.OpalApplication):
         "General Consultation": "inline_forms/clinical_advice.html",
     }
 
-    add_patient_menu_item = menus.MenuItem(
-        href='/pathway/#/add_patient',
-        display='Add Patient',
-        icon='fa fa-plus',
-        activepattern='/pathway/#/add_patient'
-    )
-
     @classmethod
-    def get_menu_items(klass, user=None):
-        items = application.OpalApplication.get_menu_items(user=user)
-        return items + [klass.add_patient_menu_item]
+    def get_menu_items(cls, user):
+        menu_items = super(Application, cls).get_menu_items(user)
+        if standard_add_patient_menu_item.for_user(user):
+            menu_items.append(standard_add_patient_menu_item)
+        else:
+            menu_items = [i for i in menu_items if not i.href == "/#/list/"]
+
+        return menu_items
