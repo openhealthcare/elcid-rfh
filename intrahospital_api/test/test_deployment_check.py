@@ -33,9 +33,11 @@ class DeploymentCheckTestCase(ApiTestCase):
         super(DeploymentCheckTestCase, self).setUp()
         self.patient, _ = self.new_patient_and_episode_please()
 
-    def create_lab_test(self, **kwargs):
+    def create_lab_test(self, obs_number=None, **kwargs):
         update_dict = copy.copy(UPDATE_DICT)
         update_dict.update(**kwargs)
+        if obs_number:
+            update_dict["observations"][0]["observation_number"] = obs_number
         upstream_test = elcid_models.UpstreamLabTest()
         upstream_test = upstream_test.update_from_api_dict(
             self.patient, update_dict, self.user
@@ -59,17 +61,17 @@ class DeploymentCheckTestCase(ApiTestCase):
         result = {}
         # has to be below the observation datetime
         some_dt = timezone.make_aware(datetime.datetime(2014, 1 ,1))
-        self.create_lab_test()
+        self.create_lab_test(1)
 
         def batch_load(*args, **kwargs):
-            self.create_lab_test()
-            self.create_lab_test()
+            self.create_lab_test(2)
+            self.create_lab_test(3)
             return 2
 
         def initial_load(*args, **kwargs):
-            self.create_lab_test()
-            self.create_lab_test()
-            self.create_lab_test()
+            self.create_lab_test(4)
+            self.create_lab_test(5)
+            self.create_lab_test(6)
             return 3
 
         update_patients.side_effect = batch_load
@@ -78,35 +80,87 @@ class DeploymentCheckTestCase(ApiTestCase):
             deployment_check.check_since(some_dt, result)
 
         self.assertEqual(
-            result["current"], 1
+            result["current"],
+            [(1, u'0013I245895', self.patient.id)]
         )
 
         self.assertEqual(
-            result["current_ids"], [(self.patient.id, u'0013I245895')]
+            result["batch_load"],
+            [
+                (2, u'0013I245895', self.patient.id),
+                (3, u'0013I245895', self.patient.id),
+            ]
         )
 
         self.assertEqual(
-            result["batch_load"], 2
-        )
-
-        self.assertEqual(
-            result["batch_load_ids"],
-            [(1, u'0013I245895'), (1, u'0013I245895')]
-        )
-
-        self.assertEqual(
-            result["initial_load"], 3
-        )
-
-        self.assertEqual(
-            result["initial_load_ids"],
-            [(1, u'0013I245895'), (1, u'0013I245895'), (1, u'0013I245895')]
+            result["initial_load"],
+            [
+                (4, u'0013I245895', self.patient.id),
+                (5, u'0013I245895', self.patient.id),
+                (6, u'0013I245895', self.patient.id),
+            ]
         )
 
         # make sure the roll back has happened
         self.assertEqual(
             self.patient.labtest_set.count(), 1
         )
+
+    @mock.patch("intrahospital_api.deployment_check.service.update_patients")
+    @mock.patch("intrahospital_api.deployment_check.service.update_patient")
+    @override_settings(OPAL_BRAND_NAME="unit_test")
+    def test_removes_same_values(self, update_patient, update_patients):
+        """
+        If values are duplicate in multiple batches we shoud remove them
+        """
+
+
+        result = {}
+        # has to be below the observation datetime
+        some_dt = timezone.make_aware(datetime.datetime(2014, 1 ,1))
+        self.create_lab_test(1)
+        self.create_lab_test(2)
+
+        def batch_load(*args, **kwargs):
+            self.create_lab_test(1)
+            self.create_lab_test(2)
+            self.create_lab_test(3)
+            self.create_lab_test(4)
+            return 4
+
+        def initial_load(*args, **kwargs):
+            self.create_lab_test(2)
+            self.create_lab_test(4)
+            self.create_lab_test(5)
+            return 3
+
+        update_patients.side_effect = batch_load
+        update_patient.side_effect = initial_load
+        with self.assertRaises(deployment_check.RollBackError):
+            deployment_check.check_since(some_dt, result)
+
+        self.assertEqual(
+            result["current"],
+            [(1, u'0013I245895', 1)]
+        )
+
+        self.assertEqual(
+            result["batch_load"],
+            [
+                (1, u'0013I245895', 1),
+                (3, u'0013I245895', 1),
+                (4, u'0013I245895', 1)
+            ]
+        )
+
+        self.assertEqual(
+            result["initial_load"],
+            [
+                (4, u'0013I245895', 1),
+                (5, u'0013I245895', 1)
+            ]
+        )
+
 
 
 

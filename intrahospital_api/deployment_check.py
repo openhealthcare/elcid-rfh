@@ -23,10 +23,11 @@ def get_qs(min_dt, max_dt=None):
         lab_test_type__istartswith="upstream"
     ).filter(patient__in=patients)
 
-    recent_lab_tests = []
     max_updated = timezone.make_aware(datetime.datetime.min)
     if max_dt is None:
         max_dt = timezone.make_aware(datetime.datetime.max)
+
+    result = {}
 
     for lab_test in lab_tests:
         observations = lab_test.extras["observations"]
@@ -38,14 +39,44 @@ def get_qs(min_dt, max_dt=None):
                 )
 
                 if last_updated >= min_dt and last_updated <= max_dt:
-                    recent_lab_tests.append(lab_test.id)
+                    result[observation["observation_number"]] = lab_test
 
                     if max_updated < last_updated:
                         max_updated = last_updated
 
-    return lmodels.LabTest.objects.filter(
-        id__in=recent_lab_tests
-    ), max_updated
+    return result, max_updated
+
+
+def get_key(observation_number, lab_test):
+    return (
+        observation_number, lab_test.external_identifier, lab_test.patient_id,
+    )
+
+
+def get_and_reset(some_dt, max_dt=None):
+    obs_to_lab_test, max_updated = get_qs(some_dt, max_dt)
+    values = [get_key(i, v) for i, v in obs_to_lab_test.items()]
+    for lab_test in obs_to_lab_test.values():
+        lab_test.delete()
+
+    return values, max_updated
+
+
+def remove_in_everything(some_list, list_1, list_2):
+    """
+        if an element is in some_list but not in either list_1 or list_2
+        then keep it.
+
+        Otherwise remove it
+    """
+    set_1 = set(list_1)
+    set_2 = set(list_2)
+    result = []
+
+    for i in some_list:
+        if i not in set_1 or i not in set_2:
+            result.append(i)
+    return result
 
 
 @transaction.atomic
@@ -59,33 +90,28 @@ def check_since(some_dt, result=None):
 
     if "test" not in settings.OPAL_BRAND_NAME.lower():
         raise ValueError('this should only be run on a test server')
-    current, max_updated = get_qs(some_dt)
-    # if you don't cast this to a list it will recalculate
-    # later after we have deleted the current
-    # ie, patient_ids will always be empty later
-    patient_ids_external_identifier = list(current.values_list('patient_id', 'external_identifier'))
-    patient_ids = [i[0] for i in patient_ids_external_identifier]
-    result["current"] = current.count()
-    result["current_ids"] = patient_ids_external_identifier
-    current.delete()
+
+    current, max_updated = get_and_reset(some_dt)
+
+    # current is the output of get_key
+    patient_ids = [i[-1] for i in current]
 
     patients = Patient.objects.filter(id__in=patient_ids)
     service.update_patients(patients, some_dt)
-    batch_load, _ = get_qs(some_dt, max_updated)
-    batch_load_identifiers = list(batch_load.values_list('patient_id', 'external_identifier'))
-    result["batch_load_ids"] = batch_load_identifiers
-    result["batch_load"] = batch_load.count()
-    batch_load.delete()
-
-    patients = Patient.objects.filter(id__in=patient_ids)
+    batch_load, _ = get_and_reset(some_dt, max_updated)
 
     for patient in patients:
         service.update_patient(patient)
-    initial_load, _ = get_qs(some_dt, max_updated)
-    intial_load_identifiers = list(initial_load.values_list('patient_id', 'external_identifier'))
-    result["initial_load"] = initial_load.count()
-    result["initial_load_ids"] = intial_load_identifiers
 
+    initial_load, _ = get_and_reset(some_dt, max_updated)
+
+    result["current"] = remove_in_everything(current, batch_load, initial_load)
+    result["batch_load"] = remove_in_everything(
+        batch_load, current, initial_load
+    )
+    result["initial_load"] = remove_in_everything(
+        initial_load, current, batch_load
+    )
     raise RollBackError('rolling back')
 
 
