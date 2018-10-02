@@ -60,7 +60,7 @@ class UpstreamDataViewset(viewsets.ViewSet):
         )
         api = get_api()
         hospital_number = patient.demographics_set.first().hospital_number
-        return json_response(api.results_for_hospital_number(hospital_number))
+        return json_response(api.lab_tests_for_hospital_number(hospital_number))
 
 
 class PatientViewSet(viewsets.ViewSet):

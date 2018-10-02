@@ -217,14 +217,14 @@ class AnyLoadsRunningTestCase(ApiTestCase):
 
 class LoadDemographicsTestCase(ApiTestCase):
 
-    @mock.patch.object(loader.api, 'demographics')
+    @mock.patch.object(loader.api, 'demographics_for_hospital_number')
     def test_success(self, demographics):
         demographics.return_value = "success"
         result = loader.load_demographics("some_hospital_number")
         demographics.assert_called_once_with("some_hospital_number")
         self.assertEqual(result, "success")
 
-    @mock.patch.object(loader.api, 'demographics')
+    @mock.patch.object(loader.api, 'demographics_for_hospital_number')
     @mock.patch.object(loader.logger, 'info')
     @mock.patch('intrahospital_api.loader.log_errors')
     def test_failed(self, log_err, info, demographics):
@@ -491,21 +491,21 @@ class BatchLoadTestCase(ApiTestCase):
 
 
 class _BatchLoadTestCase(ApiTestCase):
-    @mock.patch.object(loader.api, "data_deltas")
+    @mock.patch.object(loader.api, "lab_test_results_since")
     @mock.patch('intrahospital_api.loader.update_demographics.reconcile_all_demographics')
     @mock.patch('intrahospital_api.loader.update_from_batch')
     def test_batch_load(
-        self, update_from_batch, reconcile_all_demographics, data_deltas
+        self, update_from_batch, reconcile_all_demographics, lab_test_results_since
     ):
         now = timezone.now()
         imodels.BatchPatientLoad.objects.create(
             state=imodels.BatchPatientLoad.SUCCESS,
             started=now
         )
-        data_deltas.return_value = "something"
+        lab_test_results_since.return_value = "something"
         loader._batch_load()
         reconcile_all_demographics.assert_called_once_with()
-        data_deltas.assert_called_once_with(now)
+        lab_test_results_since.assert_called_once_with(now)
         update_from_batch.assert_called_once_with("something")
 
 
@@ -524,14 +524,14 @@ class UpdateFromBatchTestCase(ApiTestCase):
             state=imodels.InitialPatientLoad.SUCCESS
         )
         self.data_delta = dict(some="data")
-        self.data_deltas = [self.data_delta]
+        self.lab_test_results_since = [self.data_delta]
 
     def test_update_from_batch_ignore_non_reconciled(
         self, update_patient_from_batch
     ):
         self.demographics.external_system = "asdfasfd"
         self.demographics.save()
-        loader.update_from_batch(self.data_deltas)
+        loader.update_from_batch(self.lab_test_results_since)
         call_args = update_patient_from_batch.call_args
         self.assertEqual(
             list(call_args[0][0]), list()
@@ -545,7 +545,7 @@ class UpdateFromBatchTestCase(ApiTestCase):
     ):
         self.initial_load.state = imodels.InitialPatientLoad.FAILURE
         self.initial_load.save()
-        loader.update_from_batch(self.data_deltas)
+        loader.update_from_batch(self.lab_test_results_since)
         call_args = update_patient_from_batch.call_args
         self.assertEqual(
             list(call_args[0][0]), list()
@@ -557,7 +557,7 @@ class UpdateFromBatchTestCase(ApiTestCase):
     def test_update_from_batch_pass_through(
         self, update_patient_from_batch
     ):
-        loader.update_from_batch(self.data_deltas)
+        loader.update_from_batch(self.lab_test_results_since)
         call_args = update_patient_from_batch.call_args
         self.assertEqual(
             list(call_args[0][0]), [self.demographics]
@@ -585,7 +585,7 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
                 test_name="some_test"
             )
         )
-        self.data_deltas = {
+        self.lab_test_results_since = {
             "demographics": {
                 "hospital_number": "123",
                 "first_name": "Jane"
@@ -603,7 +603,7 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
     def test_update_patient_from_batch_integration(self):
         loader.update_patient_from_batch(
             emodels.Demographics.objects.all(),
-            self.data_deltas
+            self.lab_test_results_since
         )
         self.assertEqual(
             self.patient.demographics_set.first().first_name, "Jane"

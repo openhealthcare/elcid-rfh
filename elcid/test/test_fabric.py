@@ -569,7 +569,7 @@ class CronTestCase(FabfileTestCase):
         local.assert_called_once_with("echo '0/5 * * * * ohc \
 /home/ohc/.virtualenvs/elcidrfh-some_branch/bin/python \
 /usr/lib/ohc/elcidrfh-some_branch/manage.py \
-batch_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \
+batch_test_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \
 /etc/cron.d/elcid_batch_test_load")
         print_function.assert_called_once_with(
             'Writing cron elcid_batch_test_load'

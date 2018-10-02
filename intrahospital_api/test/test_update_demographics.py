@@ -83,7 +83,7 @@ class ReconcileDemographicsTestCase(ApiTestCase):
 
 
 @mock.patch.object(update_demographics.logger, 'info')
-@mock.patch.object(update_demographics.api, 'demographics')
+@mock.patch.object(update_demographics.api, 'demographics_for_hospital_number')
 class ReconcilePatientDemographicsTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(ReconcilePatientDemographicsTestCase, self).setUp(
@@ -173,7 +173,7 @@ class ReconcilePatientDemographicsTestCase(ApiTestCase):
         )
 
 
-@mock.patch.object(update_demographics.api, 'demographics')
+@mock.patch.object(update_demographics.api, 'demographics_for_hospital_number')
 class UpdatePatientDemographicsTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(UpdatePatientDemographicsTestCase, self).setUp(*args, **kwargs)

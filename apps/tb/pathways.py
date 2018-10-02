@@ -2,12 +2,14 @@
 Pathways for the TB service
 """
 from django.db import transaction
-from opal.core.pathway import pathways, HelpTextStep, Step
+from django.conf import settings
+from opal.core.pathway import pathways, HelpTextStep
 
 from elcid import models
 from elcid.pathways import AddPatientPathway
 
 from obs import models as obs_models
+from intrahospital_api import loader
 
 from apps.tb.patient_lists import TbPatientList
 from apps.tb import models as tb_models
@@ -36,6 +38,14 @@ class AddTbPatientPathway(AddPatientPathway):
         episode.category_name = "TB"
         episode.stage = "New Referral"
         episode.save()
+
+        # if the patient its a new patient and we have
+        # got their demographics from the upstream api service
+        # bring in their lab tests
+        if not patient and settings.ADD_PATIENT_LAB_TESTS:
+            demo_system = data["demographics"][0].get("external_system")
+            if demo_system == constants.EXTERNAL_SYSTEM:
+                loader.load_patient(saved_patient)
 
         return patient, episode
 
@@ -72,10 +82,13 @@ class TBConsultationPathway(pathways.PagePathway):
             model=tb_models.ContactDetails,
             help_text_template="pathway/steps/help_text/contact_details.html"
         ),
-        HelpTextStep(
-            model=tb_models.NextOfKin,
-            help_text="This will be pulled in from Cerner"
-        ),
+        # TODO: Enable this once we are pulling from cerner.
+        # In the meantime it's less useful to have the placeholder
+        #
+        # HelpTextStep(
+        #     model=tb_models.NextOfKin,
+        #     help_text="This will be pulled in from Cerner"
+        # ),
         HelpTextStep(
             model=tb_models.CommuninicationConsiderations,
         ),

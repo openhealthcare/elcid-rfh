@@ -138,7 +138,7 @@ class UpstreamDataViewsetTestCase(OpalTestCase):
             )
         )
         result = dict(some="results")
-        get_api.return_value.results_for_hospital_number.return_value = result
+        get_api.return_value.lab_tests_for_hospital_number.return_value = result
         response = self.get_response()
         self.assertEqual(
             response.data, result
@@ -151,11 +151,12 @@ class UpstreamDataViewsetTestCase(OpalTestCase):
             )
         )
         result = dict(some="results")
-        get_api.return_value.results_for_hospital_number.return_value = result
+        get_api.return_value.lab_tests_for_hospital_number.return_value = result
         other_patient_id = omodels.Patient.objects.order_by("id").last().id + 1
         self.assertEqual(self.get_response(other_patient_id).status_code, 404)
 
     def test_not_logged_in(self, get_api):
         result = dict(some="results")
-        get_api.return_value.results_for_hospital_number.return_value = result
+        get_api.return_value.lab_tests_for_hospital_number.return_value = result
+
         self.assertEqual(self.get_response().status_code, 401)

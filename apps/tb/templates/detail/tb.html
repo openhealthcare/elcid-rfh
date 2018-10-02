@@ -6,6 +6,7 @@
       <div class="col-md-8">
         <div ng-show="episode.stage !== 'New Referral'">
           {% record_panel models.ReferralRoute %}
+          {% record_panel models.TBManagement %}
           {% record_panel models.PastMedicalHistory %}
           {% record_panel models.CommuninicationConsiderations %}
           {% record_panel models.Nationality %}
@@ -55,16 +56,20 @@
                     <div class="row">
                       <div class="col-sm-10 consultation-timeline-data-[[ $index ]]">
                         <span ng-show="item.initials && item.initials.trim().length">
-                          <b>By: </b> [[item.initials]]
-                          <br />
+                          <p>
+                            <b>By: </b> [[item.initials]]
+                          </p>
                         </span>
                         <span ng-show="item.reason_for_interaction">
-                          <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
-                          <br />
+                          <p>
+                            <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
+                          </p>
                         </span>
                         <span ng-show="item.discussion">
                           <b> Discussion: </b><div markdown="discussion"></div>
-                          <br />
+                        </span>
+                        <span ng-show="item.plan">
+                          <b> Plan: </b><div markdown="plan"></div>
                         </span>
                       </div>
                       <div class="col-sm-2">
@@ -78,6 +83,11 @@
                             <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".consultation-timeline-data-[[ $index ]]"></i>
                           </div>
                         </div>
+                        <div class="row content-offset-10">
+                          <div class="col-md-12">
+                            <i print-page="/tb/clinical_advice/[[ item.id ]]" class="fa fa-print edit pull-right pointer"></i>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -89,23 +99,25 @@
       </div>
 
       <div class="col-md-4">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3>
-              Forms
-            </h3>
+        {% if request.user.is_superuser %}
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3>
+                Forms
+              </h3>
+            </div>
+            <div class="list-group">
+              <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
+                Initial Assessment
+                <div ng-show="episode.stage == 'New Referral'" class="pull-right star">{% icon "fa-certificate" %}</div>
+              </a>
+              <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
+                Active TB Treatment
+                <div ng-show="episode.stage == 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
+              </a>
+            </div>
           </div>
-          <div class="list-group">
-            <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
-              Initial Assessment
-              <div ng-show="episode.stage == 'New Referral'" class="pull-right star">{% icon "fa-certificate" %}</div>
-            </a>
-            <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
-              Active TB Treatment
-              <div ng-show="episode.stage == 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
-            </a>
-          </div>
-        </div>
+        {% endif %}
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3>
@@ -113,9 +125,11 @@
             </h3>
           </div>
           <div class="panel-body">
-            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACs</a>
+            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS</a>
           </div>
         </div>
+        {% include 'tb/obs_panel.html' %}
+        {% record_panel models.TBAppointment editable=0 %}
       </div>
     </div>
   </div>
