@@ -13,10 +13,11 @@ from intrahospital_api import loader
 
 from apps.tb.patient_lists import TbPatientList
 from apps.tb import models as tb_models
+from intrahospital_api import constants
 
 
 class AddTbPatientPathway(AddPatientPathway):
-    display_name = "Add TB Patient"
+    display_name = "Add Patient"
     slug = 'add_tb_patient'
 
     steps = (
@@ -30,7 +31,7 @@ class AddTbPatientPathway(AddPatientPathway):
 
     @transaction.atomic
     def save(self, data, user, patient=None, episode=None):
-        patient, episode = super(AddTbPatientPathway, self).save(
+        saved_patient, episode = super(AddTbPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
 
@@ -38,6 +39,9 @@ class AddTbPatientPathway(AddPatientPathway):
         episode.category_name = "TB"
         episode.stage = "New Referral"
         episode.save()
+        tb_stage = episode.tbstage_set.first()
+        tb_stage.stage=tb_models.TBStage.FIRST_STAGE
+        tb_stage.save()
 
         # if the patient its a new patient and we have
         # got their demographics from the upstream api service
@@ -47,7 +51,7 @@ class AddTbPatientPathway(AddPatientPathway):
             if demo_system == constants.EXTERNAL_SYSTEM:
                 loader.load_patient(saved_patient)
 
-        return patient, episode
+        return saved_patient, episode
 
 
 class NewSubrecordStep(HelpTextStep):

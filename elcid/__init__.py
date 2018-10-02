@@ -7,7 +7,7 @@ from opal.core import menus
 from apps.tb import constants as tb_constants
 
 
-class NotTbMenuItem(menus.MenuItem):
+class StandardAddPatientMenuItem(menus.MenuItem):
     def for_user(self, user):
         from opal.models import UserProfile
         if user.is_superuser:
@@ -18,7 +18,8 @@ class NotTbMenuItem(menus.MenuItem):
         ).exists()
 
 
-not_tb_menu_item = NotTbMenuItem(
+# ie, not the TB one
+standard_add_patient_menu_item = StandardAddPatientMenuItem(
     href='/pathway/#/add_patient',
     display='Add Patient',
     icon='fa fa-plus',
@@ -72,9 +73,11 @@ class Application(application.OpalApplication):
     }
 
     @classmethod
-    def get_menu_items(self, user):
-        menu_items = super(Application, self).get_menu_items(user)
-        if not_tb_menu_item.for_user(user):
-            menu_items.append(not_tb_menu_item)
+    def get_menu_items(cls, user):
+        menu_items = super(Application, cls).get_menu_items(user)
+        if standard_add_patient_menu_item.for_user(user):
+            menu_items.append(standard_add_patient_menu_item)
+        else:
+            menu_items = [i for i in menu_items if not i.href == "/#/list/"]
 
         return menu_items
