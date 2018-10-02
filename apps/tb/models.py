@@ -448,7 +448,46 @@ class TBManagement(models.EpisodeSubrecord):
         verbose_name = "TB Management"
 
     case_manager = ForeignKeyOrFreeText(TBCaseManager)
-    ltbr_number  = fields.CharField(
+    ltbr_number = fields.CharField(
         max_length=200, blank=True, null=True,
-        verbose_name = "LTBR Number"
+        verbose_name="LTBR Number"
     )
+
+
+class TBAppointment(models.PatientSubrecord):
+    state = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    start = fields.DateTimeField(blank=True, null=True)
+    end = fields.DateTimeField(blank=True, null=True)
+    clinic_resource = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    location = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    def update_from_dict(self, *args, **kwargs):
+        """
+        This model is read only
+        """
+        pass
+
+    class Meta:
+        verbose_name = "Appointments"
+        ordering = ["-start"]
+
+
+class TBStageOptions(lookuplists.LookupList):
+    pass
+
+
+class TBStage(models.EpisodeSubrecord):
+    _is_singleton = True
+    _icon = "fa fa-tasks"
+    FIRST_STAGE = "New Referral"
+
+    class Meta:
+        verbose_name = "Current Status"
+
+    stage = ForeignKeyOrFreeText(TBStageOptions)

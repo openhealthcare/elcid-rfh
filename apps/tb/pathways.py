@@ -39,6 +39,9 @@ class AddTbPatientPathway(AddPatientPathway):
         episode.category_name = "TB"
         episode.stage = "New Referral"
         episode.save()
+        tb_stage = episode.tbstage_set.first()
+        tb_stage.stage=tb_models.TBStage.FIRST_STAGE
+        tb_stage.save()
 
         # if the patient its a new patient and we have
         # got their demographics from the upstream api service
