@@ -37,8 +37,8 @@ class TbPlugin(plugins.OpalPlugin):
     menuitems = [
         AddTBPatient(
             href='/pathway/#/add_tb_patient',
-            display='Add TB Patient',
-            icon='fa fa-coffee',
+            display='Add Patient',
+            icon='fa fa-plus',
             activepattern='/pathway/#/add_tb_patient'
         )
     ]
