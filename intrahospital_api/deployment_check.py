@@ -106,7 +106,7 @@ def check_since(some_dt, result=None):
     # current is the output of get_key
     patient_ids = [i[-1] for i in current]
 
-    patients = Patient.objects.filter(id__in=patient_ids)
+    patients = get_patients()
     service.update_patients(patients, some_dt)
     batch_load, _ = get_and_reset(some_dt, max_updated)
     result["batch_load_count"] = len(batch_load)
