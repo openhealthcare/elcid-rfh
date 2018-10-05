@@ -405,9 +405,9 @@ class ProdApiTestcase(OpalTestCase):
         return api
 
     def get_row(self, **kwargs):
-        raw_data = copy.copy(FAKE_ROW_DATA)
+        raw_data = copy.copy(FAKE_PATHOLOGY_DATA)
         raw_data.update(kwargs)
-        return prod_api.Row(raw_data)
+        return prod_api.PathologyRow(raw_data)
 
     def test_init_fail(self):
         # make sure all init values are set
