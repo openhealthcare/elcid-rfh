@@ -315,7 +315,7 @@ class RowTestCase(OpalTestCase):
         )
 
     def test_get_test_code(self):
-        row = self.get_row(OBX_exam_code_ID="123")
+        row = self.get_row(OBR_exam_code_ID="123")
         self.assertEqual(
             row.get_test_code(), "123"
         )
@@ -339,7 +339,7 @@ class RowTestCase(OpalTestCase):
             'observation_number': 20334311,
             'status': 'complete',
             'observation_value': u'Negative',
-            'test_code': u'AN12',
+            'test_code': u'ANNR',
             'test_name': u'ANTI NEURONAL AB REFERRAL',
             'units': u'',
             'reference_range': u' -',
@@ -370,7 +370,7 @@ class RowTestCase(OpalTestCase):
             'reference_range': u' -',
             'site': u'^&                              ^',
             'status': 'complete',
-            'test_code': u'AN12',
+            'test_code': u'ANNR',
             'test_name': u'ANTI NEURONAL AB REFERRAL',
             'units': u''
         }
@@ -534,7 +534,7 @@ class ProdApiTestcase(OpalTestCase):
                 'status': 'complete',
                 'external_identifier': u'0013I245895',
                 'site': u'^&                              ^',
-                'test_code': u'AN12',
+                'test_code': u'ANNR',
                 'observations': [
                     {
                         'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -631,7 +631,7 @@ class ProdApiTestcase(OpalTestCase):
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -652,7 +652,7 @@ class ProdApiTestcase(OpalTestCase):
                     'status': 'complete',
                     'external_identifier': u'123',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -713,7 +713,7 @@ class ProdApiTestcase(OpalTestCase):
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -734,7 +734,7 @@ class ProdApiTestcase(OpalTestCase):
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -793,7 +793,7 @@ class ProdApiTestcase(OpalTestCase):
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -862,7 +862,7 @@ class ProdApiTestcase(OpalTestCase):
                         'status': 'complete',
                         'external_identifier': u'124',
                         'site': u'^&                              ^',
-                        'test_code': u'AN12',
+                        'test_code': u'ANNR',
                         'observations': [
                             {
                                 'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -898,7 +898,7 @@ class ProdApiTestcase(OpalTestCase):
                         'status': 'complete',
                         'external_identifier': u'126',
                         'site': u'^&                              ^',
-                        'test_code': u'AN12',
+                        'test_code': u'ANNR',
                         'observations': [
                             {
                                 'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
