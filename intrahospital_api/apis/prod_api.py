@@ -389,21 +389,26 @@ class ProdApi(base_api.BaseApi):
 
         """
         all_rows = self.data_delta_query(some_datetime)
-        hospital_number_to_rows = itertools.groupby(
-            all_rows, lambda x: x.get_hospital_number()
-        )
-        for hospital_number, rows in hospital_number_to_rows:
+
+        hospital_number_to_rows = defaultdict(list)
+
+        for row in all_rows:
+            hospital_number_to_rows[row.get_hospital_number()].append(row)
+
+        result = []
+
+        for hospital_number, rows in hospital_number_to_rows.items():
             if Demographics.objects.filter(
                 hospital_number=hospital_number
             ).exists():
                 demographics = list(rows)[0].get_demographics_dict()
                 lab_tests = self.cast_rows_to_lab_test(rows)
-                yield (
-                    dict(
-                        demographics=demographics,
-                        lab_tests=lab_tests
-                    )
-                )
+                result.append(dict(
+                    demographics=demographics,
+                    lab_tests=lab_tests
+                ))
+
+        return result
 
     def cooked_data(self, hospital_number):
         raw_data = self.raw_data(hospital_number)

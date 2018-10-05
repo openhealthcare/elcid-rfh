@@ -391,6 +391,11 @@ class ProdApiTestcase(OpalTestCase):
             api = prod_api.ProdApi()
         return api
 
+    def get_row(self, **kwargs):
+        raw_data = copy.copy(FAKE_ROW_DATA)
+        raw_data.update(kwargs)
+        return prod_api.Row(raw_data)
+
     def test_init_fail(self):
         # make sure all init values are set
         for k in self.REQUIRED_FIELDS.keys():
@@ -507,3 +512,429 @@ class ProdApiTestcase(OpalTestCase):
             result = api.demographics("A1' 23")
 
         self.assertIsNone(result)
+
+    def test_data_deltas(self):
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='20552710'
+        )
+        expected_result = [{
+            'demographics': {
+                'nhs_number': u'7060976728',
+                'first_name': u'TEST',
+                'surname': u'ZZZTEST',
+                'title': '',
+                'sex': 'Female',
+                'hospital_number': u'20552710',
+                'date_of_birth': '10/10/1980',
+                'ethnicity': 'Mixed - White and Black Caribbean'
+            },
+            'lab_tests': [{
+                'status': 'complete',
+                'external_identifier': u'0013I245895',
+                'site': u'^&                              ^',
+                'test_code': u'AN12',
+                'observations': [
+                    {
+                        'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                        'observation_number': 20334311,
+                        'observation_value': u'Negative',
+                        'observation_datetime': '18/07/2015 16:18:00',
+                        'units': u'',
+                        'last_updated': '18/07/2015 17:00:02',
+                        'reference_range': u' -'
+                    }
+                ],
+                'test_name': u'ANTI NEURONAL AB REFERRAL',
+                'clinical_info': u'testing',
+                'external_system': 'RFH Database',
+                'datetime_ordered': '18/07/2015 16:18:00'
+            }]
+        }]
+        with mock.patch.object(api, "data_delta_query") as execute_query:
+            expected = [
+                self.get_row()
+            ]
+            execute_query.return_value = expected
+            since = datetime.now()
+            result = api.data_deltas(since)
+        self.assertEqual(
+            result, expected_result
+        )
+
+    def test_data_deltas_none(self):
+        """
+        If the db query does not return anything
+        we should return an empty iterator
+        """
+
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='20552710'
+        )
+
+        with mock.patch.object(api, "data_delta_query") as execute_query:
+            expected = []
+            execute_query.return_value = expected
+            since = datetime.now()
+            result = api.data_deltas(since)
+        self.assertEqual(
+            result, []
+        )
+
+    def test_data_deltas_no_patient(self):
+        """
+        If the db query return something but we have
+        no match patient, we should return an empty
+        iterator
+        """
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        # a different hospital number to the one returned
+        patient.demographics_set.update(
+            hospital_number='20552711'
+        )
+
+        with mock.patch.object(api, "data_delta_query") as execute_query:
+            expected = [self.get_row()]
+            execute_query.return_value = expected
+            since = datetime.now()
+            result = api.data_deltas(since)
+        self.assertEqual(
+            result, []
+        )
+
+    def test_data_deltas_multiple_tests(self):
+        """
+        If there are multiple tests for a patient
+        we should see this in the output
+        """
+        expected = [
+            self.get_row(Result_ID="122"),
+            self.get_row(Result_ID="123")
+        ]
+        expected_result = [{
+            'demographics': {
+                'nhs_number': u'7060976728',
+                'first_name': u'TEST',
+                'surname': u'ZZZTEST',
+                'title': '',
+                'sex': 'Female',
+                'hospital_number': u'20552710',
+                'date_of_birth': '10/10/1980',
+                'ethnicity': 'Mixed - White and Black Caribbean'
+            },
+            'lab_tests': [
+                {
+                    'status': 'complete',
+                    'external_identifier': u'122',
+                    'site': u'^&                              ^',
+                    'test_code': u'AN12',
+                    'observations': [
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334311,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        }
+                    ],
+                    'test_name': u'ANTI NEURONAL AB REFERRAL',
+                    'clinical_info': u'testing',
+                    'external_system': 'RFH Database',
+                    'datetime_ordered': '18/07/2015 16:18:00'
+                },
+                {
+                    'status': 'complete',
+                    'external_identifier': u'123',
+                    'site': u'^&                              ^',
+                    'test_code': u'AN12',
+                    'observations': [
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334311,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        }
+                    ],
+                    'test_name': u'ANTI NEURONAL AB REFERRAL',
+                    'clinical_info': u'testing',
+                    'external_system': 'RFH Database',
+                    'datetime_ordered': '18/07/2015 16:18:00'
+                },
+            ]
+        }]
+
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='20552710'
+        )
+
+        with mock.patch.object(api, "data_delta_query") as execute_query:
+            execute_query.return_value = expected
+            since = datetime.now()
+            result = api.data_deltas(since)
+        self.assertEqual(
+            result, expected_result
+        )
+
+    def test_data_deltas_same_test_number_different_test_type(self):
+        """
+        A patient can have multiple lab tests with the same
+        number but with different types.
+
+        We should see these as seperate tests in the output.
+        """
+        expected = [
+            self.get_row(Result_ID="122", OBR_exam_code_Text="Blood"),
+            self.get_row(Result_ID="122", OBR_exam_code_Text="Commentry")
+        ]
+        expected_result = [{
+            'demographics': {
+                'nhs_number': u'7060976728',
+                'first_name': u'TEST',
+                'surname': u'ZZZTEST',
+                'title': '',
+                'sex': 'Female',
+                'hospital_number': u'20552710',
+                'date_of_birth': '10/10/1980',
+                'ethnicity': 'Mixed - White and Black Caribbean'
+            },
+            'lab_tests': [
+                {
+                    'status': 'complete',
+                    'external_identifier': u'122',
+                    'site': u'^&                              ^',
+                    'test_code': u'AN12',
+                    'observations': [
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334311,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        }
+                    ],
+                    'test_name': u'Blood',
+                    'clinical_info': u'testing',
+                    'external_system': 'RFH Database',
+                    'datetime_ordered': '18/07/2015 16:18:00'
+                },
+                {
+                    'status': 'complete',
+                    'external_identifier': u'122',
+                    'site': u'^&                              ^',
+                    'test_code': u'AN12',
+                    'observations': [
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334311,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        }
+                    ],
+                    'test_name': u'Commentry',
+                    'clinical_info': u'testing',
+                    'external_system': 'RFH Database',
+                    'datetime_ordered': '18/07/2015 16:18:00'
+                },
+            ]
+        }]
+
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='20552710'
+        )
+
+        with mock.patch.object(api, "data_delta_query") as execute_query:
+            execute_query.return_value = expected
+            since = datetime.now()
+            result = api.data_deltas(since)
+        self.assertEqual(
+            result, expected_result
+        )
+
+    def test_data_deltas_multiple_observations(self):
+        """
+        Multiple observations with the same lab test
+        number should be aggregated
+        """
+        expected = [
+            self.get_row(Result_ID="122", OBX_id=20334311),
+            self.get_row(Result_ID="122", OBX_id=20334312)
+        ]
+        expected_result = [{
+            'demographics': {
+                'nhs_number': u'7060976728',
+                'first_name': u'TEST',
+                'surname': u'ZZZTEST',
+                'title': '',
+                'sex': 'Female',
+                'hospital_number': u'20552710',
+                'date_of_birth': '10/10/1980',
+                'ethnicity': 'Mixed - White and Black Caribbean'
+            },
+            'lab_tests': [
+                {
+                    'status': 'complete',
+                    'external_identifier': u'122',
+                    'site': u'^&                              ^',
+                    'test_code': u'AN12',
+                    'observations': [
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334311,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        },
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334312,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        }
+                    ],
+                    'test_name': u'ANTI NEURONAL AB REFERRAL',
+                    'clinical_info': u'testing',
+                    'external_system': 'RFH Database',
+                    'datetime_ordered': '18/07/2015 16:18:00'
+                },
+            ]
+        }]
+
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='20552710'
+        )
+
+        with mock.patch.object(api, "data_delta_query") as execute_query:
+            execute_query.return_value = expected
+            since = datetime.now()
+            result = api.data_deltas(since)
+        self.assertEqual(
+            result, expected_result
+        )
+
+    def test_data_deltas_multiple_patients(self):
+        """
+        Multiple patients with lab tests
+        """
+        self.maxDiff = None
+        expected = [
+            self.get_row(Patient_Number="123", Result_ID="124"),
+            self.get_row(Patient_Number="125", Result_ID="126"),
+        ]
+        expected_result = [
+            {
+                'demographics': {
+                    'nhs_number': u'7060976728',
+                    'first_name': u'TEST',
+                    'surname': u'ZZZTEST',
+                    'title': '',
+                    'sex': 'Female',
+                    'hospital_number': u'123',
+                    'date_of_birth': '10/10/1980',
+                    'ethnicity': 'Mixed - White and Black Caribbean'
+                },
+                'lab_tests': [
+                    {
+                        'status': 'complete',
+                        'external_identifier': u'124',
+                        'site': u'^&                              ^',
+                        'test_code': u'AN12',
+                        'observations': [
+                            {
+                                'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                                'observation_number': 20334311,
+                                'observation_value': u'Negative',
+                                'observation_datetime': '18/07/2015 16:18:00',
+                                'units': u'',
+                                'last_updated': '18/07/2015 17:00:02',
+                                'reference_range': u' -'
+                            }
+                        ],
+                        'test_name': u'ANTI NEURONAL AB REFERRAL',
+                        'clinical_info': u'testing',
+                        'external_system': 'RFH Database',
+                        'datetime_ordered': '18/07/2015 16:18:00'
+                    },
+
+                ]
+            },
+            {
+                'demographics': {
+                    'nhs_number': u'7060976728',
+                    'first_name': u'TEST',
+                    'surname': u'ZZZTEST',
+                    'title': '',
+                    'sex': 'Female',
+                    'hospital_number': u'125',
+                    'date_of_birth': '10/10/1980',
+                    'ethnicity': 'Mixed - White and Black Caribbean'
+                },
+                'lab_tests': [
+                    {
+                        'status': 'complete',
+                        'external_identifier': u'126',
+                        'site': u'^&                              ^',
+                        'test_code': u'AN12',
+                        'observations': [
+                            {
+                                'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                                'observation_number': 20334311,
+                                'observation_value': u'Negative',
+                                'observation_datetime': '18/07/2015 16:18:00',
+                                'units': u'',
+                                'last_updated': '18/07/2015 17:00:02',
+                                'reference_range': u' -'
+                            }
+                        ],
+                        'test_name': u'ANTI NEURONAL AB REFERRAL',
+                        'clinical_info': u'testing',
+                        'external_system': 'RFH Database',
+                        'datetime_ordered': '18/07/2015 16:18:00'
+                    },
+
+                ]
+            }
+        ]
+
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='123'
+        )
+
+        patient_2, _ = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(
+            hospital_number='125'
+        )
+
+        with mock.patch.object(api, "data_delta_query") as execute_query:
+            execute_query.return_value = expected
+            since = datetime.now()
+            result = api.data_deltas(since)
+        self.assertEqual(
+            result, expected_result
+        )
