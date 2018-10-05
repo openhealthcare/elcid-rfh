@@ -17,8 +17,12 @@ from elcid.models import Demographics
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
 
+MAIN_DEMOGRAPHICS_VIEW = "VIEW_CRS_Patient_Masterfile"
 
-DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
+PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
+@hospital_number ORDER BY last_updated DESC;"
+
+MAIN_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
@@ -90,7 +94,61 @@ def db_retry(f):
     return wrap
 
 
-class Row(object):
+class MainDemographicsRow(object):
+    DEMOGRAPHICS_FIELDS = [
+        "hospital_number",
+        "nhs_number",
+        "first_name",
+        "surname",
+        "date_of_birth",
+        "sex",
+        "ethnicity",
+        "title"
+    ]
+
+    def __init__(self, db_row):
+        self.db_row = db_row
+
+    def get_hospital_number(self):
+        return self.db_row.get("PATIENT_NUMBER")
+
+    def get_nhs_number(self):
+        return self.db_row.get("NHS_NUMBER")
+
+    def get_first_name(self):
+        return self.db_row.get("FORENAME1")
+
+    def get_surname(self):
+        return self.db_row.get("SURNAME")
+
+    def get_date_of_birth(self):
+        dob = self.db_row.get("DOB")
+        if dob:
+            return to_date_str(dob.date())
+
+    def get_sex(self):
+        sex_abbreviation = self.db_row.get("SEX")
+
+        if sex_abbreviation:
+            if sex_abbreviation == "M":
+                return "Male"
+            else:
+                return "Female"
+
+    def get_ethnicity(self):
+        return ETHNICITY_MAPPING.get(self.db_row.get("ETHNIC_GROUP"))
+
+    def get_title(self):
+        return self.db_row.get("TITLE")
+
+    def get_demographics_dict(self):
+        result = {}
+        for field in self.DEMOGRAPHICS_FIELDS:
+            result[field] = getattr(self, "get_{}".format(field))()
+        return result
+
+
+class PathologyRow(object):
     """ a simple wrapper to get us the fields we actually want out of a row
     """
     DEMOGRAPHICS_FIELDS = [
@@ -305,8 +363,8 @@ class ProdApi(base_api.BaseApi):
         return result
 
     @property
-    def demographics_query(self):
-        return DEMOGRAPHICS_QUERY.format(view=self.view)
+    def pathology_demographics_query(self):
+        return PATHOLOGY_DEMOGRAPHICS_QUERY.format(view=self.view)
 
     @property
     def all_data_for_hospital_number_query(self):
@@ -324,20 +382,48 @@ class ProdApi(base_api.BaseApi):
     def all_data_query_for_lab_test_type(self):
         return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(view=self.view)
 
-    @timing
-    @db_retry
+
+    @property
+    def main_demographics_query(self):
+        return MAIN_DEMOGRAPHICS_QUERY.format(view=MAIN_DEMOGRAPHICS_VIEW)
+
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
+
+        demographics_result = self.main_demographics(hospital_number)
+
+        if not demographics_result:
+            demographics_result = self.pathology_demographics(hospital_number)
+
+        if demographics_result:
+            demographics_result["external_system"] = EXTERNAL_SYSTEM
+            return demographics_result
+
+
+    @timing
+    @db_retry
+    def main_demographics(self, hospital_number):
         rows = list(self.execute_query(
-            self.demographics_query,
+            self.main_demographics_query,
             params=dict(hospital_number=hospital_number)
         ))
         if not len(rows):
             return
 
-        demographics_dict = Row(rows[0]).get_demographics_dict()
-        demographics_dict["external_system"] = EXTERNAL_SYSTEM
-        return demographics_dict
+        return MainDemographicsRow(rows[0]).get_demographics_dict()
+
+
+    @timing
+    @db_retry
+    def pathology_demographics(self, hospital_number):
+        rows = list(self.execute_query(
+            self.pathology_demographics_query,
+            params=dict(hospital_number=hospital_number)
+        ))
+        if not len(rows):
+            return
+
+        return PathologyRow(rows[0]).get_demographics_dict()
 
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
         """ not all data, I lied. Only the last year's
@@ -375,7 +461,7 @@ class ProdApi(base_api.BaseApi):
             self.all_data_since_query,
             params=dict(since=since)
         )
-        return (Row(r) for r in all_rows)
+        return (PathologyRow(r) for r in all_rows)
 
     def data_deltas(self, some_datetime):
         """ yields an iterator of dictionary
@@ -401,7 +487,7 @@ class ProdApi(base_api.BaseApi):
             if Demographics.objects.filter(
                 hospital_number=hospital_number
             ).exists():
-                demographics = list(rows)[0].get_demographics_dict()
+                demographics = rows[0].get_demographics_dict()
                 lab_tests = self.cast_rows_to_lab_test(rows)
                 result.append(dict(
                     demographics=demographics,
@@ -412,7 +498,7 @@ class ProdApi(base_api.BaseApi):
 
     def cooked_data(self, hospital_number):
         raw_data = self.raw_data(hospital_number)
-        return (Row(row).get_all_fields() for row in raw_data)
+        return (PathologyRow(row).get_all_fields() for row in raw_data)
 
     def cast_rows_to_lab_test(self, rows):
         """ We cast multiple rows to lab tests.
@@ -458,5 +544,5 @@ class ProdApi(base_api.BaseApi):
         """
 
         raw_rows = self.raw_data(hospital_number)
-        rows = (Row(raw_row) for raw_row in raw_rows)
+        rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)

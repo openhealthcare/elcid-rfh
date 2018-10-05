@@ -11,7 +11,7 @@ import opal.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('opal', '0035_auto_20180806_1150'),
+        ('opal', '0034_auto_20171214_1845'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('tb', '0028_pregnancy'),
     ]

@@ -5,10 +5,11 @@ from pytds.tds import OperationalError
 from datetime import datetime, date
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import prod_api
+from intrahospital_api import constants
 from lab import models as lmodels
 
 
-FAKE_ROW_DATA = {
+FAKE_PATHOLOGY_DATA = {
     u'Abnormal_Flag': u'',
     u'Accession_number': u'73151060487',
     u'CRS_ADDRESS_LINE1': u'James Centre',
@@ -149,11 +150,11 @@ class DbRetry(OpalTestCase):
         )
 
 
-class RowTestCase(OpalTestCase):
+class PathologyRowTestCase(OpalTestCase):
     def get_row(self, **kwargs):
-        raw_data = copy.copy(FAKE_ROW_DATA)
+        raw_data = copy.copy(FAKE_PATHOLOGY_DATA)
         raw_data.update(kwargs)
-        return prod_api.Row(raw_data)
+        return prod_api.PathologyRow(raw_data)
 
     def test_get_or_fall_back_hit_first(self):
         row = self.get_row(Department="something")
@@ -377,6 +378,18 @@ class RowTestCase(OpalTestCase):
         self.assertEqual(result, expected)
 
 
+FAKE_MAIN_DEMOGRAPHICS_ROW = {
+    u'PATIENT_NUMBER': u'20552710',
+    u'NHS_NUMBER': u'111',
+    u'FORENAME1': u'TEST',
+    u'SURNAME': u'ZZZTEST',
+    u'DOB': datetime(1980, 10, 10, 0, 0),
+    u'SEX': u'F',
+    u'ETHNIC_GROUP': u'D',
+    u'TITLE': u'Ms',
+}
+
+
 class ProdApiTestcase(OpalTestCase):
     REQUIRED_FIELDS = dict(
         ip_address="0.0.0.0",
@@ -452,9 +465,9 @@ class ProdApiTestcase(OpalTestCase):
     def test_raw_data(self, dt):
         dt.today.return_value = date(2017, 10, 1)
         api = self.get_api()
-        expected = [copy.copy(FAKE_ROW_DATA)]
+        expected = [copy.copy(FAKE_PATHOLOGY_DATA)]
         with mock.patch.object(api, 'execute_query') as execute_query:
-            execute_query.return_value = [copy.copy(FAKE_ROW_DATA)]
+            execute_query.return_value = [copy.copy(FAKE_PATHOLOGY_DATA)]
             result = api.raw_data("12312222")
         self.assertEqual(result, expected)
 
@@ -474,15 +487,15 @@ class ProdApiTestcase(OpalTestCase):
     def test_cooked_data(self):
         api = self.get_api()
         with mock.patch.object(api, "raw_data") as raw_data:
-            raw_data.return_value = [copy.copy(FAKE_ROW_DATA)]
+            raw_data.return_value = [copy.copy(FAKE_PATHOLOGY_DATA)]
             rows = api.cooked_data("123")
         self.assertEqual(len(list(rows)), 1)
 
-    def test_demographics_success(self):
+    def test_pathology_demographics_success(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_query") as execute_query:
-            execute_query.return_value = [FAKE_ROW_DATA]
-            result = api.demographics("123")
+            execute_query.return_value = [FAKE_PATHOLOGY_DATA]
+            result = api.pathology_demographics("123")
 
         self.assertEqual(
             result["first_name"], "TEST"
@@ -497,19 +510,97 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.call_args[1]["params"], dict(hospital_number="123")
         )
 
-    def test_empty_demographics(self):
+    def test_pathology_demographics_hospital_number_fail(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_query") as execute_query:
             execute_query.return_value = []
-            result = api.demographics("123")
+            result = api.pathology_demographics("A1' 23")
 
         self.assertIsNone(result)
 
-    def test_demographics_hospital_number_fail(self):
+    def test_main_demographics_success(self):
+        api = self.get_api()
+        with mock.patch.object(api, "execute_query") as execute_query:
+            execute_query.return_value = [FAKE_MAIN_DEMOGRAPHICS_ROW]
+            result = api.main_demographics("123")
+
+        self.assertEqual(
+            result["first_name"], "TEST"
+        )
+
+        self.assertEqual(
+            result["surname"], "ZZZTEST"
+        )
+        self.assertEqual(
+            result["hospital_number"], "20552710"
+        )
+        self.assertEqual(
+            result["date_of_birth"], "10/10/1980"
+        )
+        self.assertEqual(
+            result["sex"], "Female"
+        )
+        self.assertEqual(
+            result["title"], "Ms"
+        )
+        self.assertEqual(
+            result["ethnicity"], "Mixed - White and Black Caribbean"
+        )
+
+        expected_query = "SELECT top(1) * FROM VIEW_CRS_Patient_Masterfile WHERE Patient_Number \
+= @hospital_number ORDER BY last_updated DESC;"
+        self.assertEqual(
+            execute_query.call_args[0][0], expected_query
+        )
+        self.assertEqual(
+            execute_query.call_args[1]["params"], dict(hospital_number="123")
+        )
+
+    def test_main_demographics_fail(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_query") as execute_query:
             execute_query.return_value = []
-            result = api.demographics("A1' 23")
+            result = api.main_demographics("A1' 23")
+
+        self.assertIsNone(result)
+
+    def test_demographics_found_in_main(self):
+        api = self.get_api()
+        with mock.patch.object(api, "main_demographics") as main_demographics:
+            with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
+                main_demographics.return_value = dict(first_name="Wilma")
+                result = api.demographics("111")
+
+        self.assertEqual(
+            result,
+            dict(first_name="Wilma", external_system=constants.EXTERNAL_SYSTEM)
+        )
+
+        main_demographics.assert_called_once_with("111")
+        self.assertFalse(pathology_demographics.called)
+
+    def test_demographics_found_in_pathology(self):
+        api = self.get_api()
+        with mock.patch.object(api, "main_demographics") as main_demographics:
+            with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
+                main_demographics.return_value = None
+                pathology_demographics.return_value = dict(first_name="Wilma")
+                result = api.demographics("111")
+
+        self.assertEqual(
+            result,
+            dict(first_name="Wilma", external_system=constants.EXTERNAL_SYSTEM)
+        )
+
+        main_demographics.assert_called_once_with("111")
+        pathology_demographics.assert_called_once_with("111")
+
+    def test_demographics_not_found_in_either(self):
+        api = self.get_api()
+
+        with mock.patch.object(api, "execute_query") as execute_query:
+            execute_query.return_value = []
+            result = api.demographics("123")
 
         self.assertIsNone(result)
 
