@@ -342,7 +342,7 @@ class LabTestApiTestCase(BaseLabTestCase):
                 'status': 'complete',
                 'external_identifier': u'0013I245895',
                 'site': u'^&                              ^',
-                'test_code': u'AN12',
+                'test_code': u'ANNR',
                 'observations': [
                     {
                         'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -365,7 +365,6 @@ class LabTestApiTestCase(BaseLabTestCase):
             execute_query.return_value = expected
             since = datetime.datetime.now()
             result = api.lab_test_results_since(['20552710'], since)
-        import ipdb; ipdb.set_trace()
         self.assertEqual(
             result, expected_result
         )
@@ -417,17 +416,7 @@ class LabTestApiTestCase(BaseLabTestCase):
             self.get_row(Result_ID="123")
         ]
         expected_result = [{
-            'demographics': {
-                'nhs_number': u'7060976728',
-                'first_name': u'TEST',
-                'surname': u'ZZZTEST',
-                'title': '',
-                'sex': 'Female',
-                'hospital_number': u'20552710',
-                'date_of_birth': '10/10/1980',
-                'ethnicity': 'Mixed - White and Black Caribbean'
-            },
-            'lab_tests': [
+            '20552710': [
                 {
                     'status': 'complete',
                     'external_identifier': u'122',
