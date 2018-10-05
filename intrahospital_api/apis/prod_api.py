@@ -203,7 +203,7 @@ class Row(object):
         return self.db_row.get('Relevant_Clinical_Info')
 
     def get_test_code(self):
-        return self.db_row.get('OBX_exam_code_ID')
+        return self.db_row.get('OBR_exam_code_ID')
 
     def get_test_name(self):
         return self.db_row.get("OBR_exam_code_Text")
