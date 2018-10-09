@@ -5,6 +5,7 @@ elCID Royal Free Hospital implementation
 from opal.core import application
 from opal.core import menus
 from apps.tb import constants as tb_constants
+from elcid import episode_categories
 
 
 class StandardAddPatientMenuItem(menus.MenuItem):
@@ -71,6 +72,8 @@ class Application(application.OpalApplication):
     patient_view_forms = {
         "General Consultation": "inline_forms/clinical_advice.html",
     }
+
+    default_episode_category = episode_categories.InfectionService.display_name
 
     @classmethod
     def get_menu_items(cls, user):
