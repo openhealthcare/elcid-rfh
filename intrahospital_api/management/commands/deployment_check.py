@@ -29,7 +29,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         result = {}
 
-        since = timezone.now()- datetime.timedelta(
+        since = timezone.now() - datetime.timedelta(
             seconds=options["hours"] * 60 * 60
         )
 
