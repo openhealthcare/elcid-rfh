@@ -27,6 +27,9 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 AUTOCOMPLETE_SEARCH = True
 
+# The intrahospital api is what we use to connect to the rest of the hospital
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+
 ADMINS = (
     ('Support', 'support@openhealthcare.org.uk',),
 )
@@ -179,14 +182,15 @@ INSTALLED_APPS = (
 
 #### API Settings
 
-# The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
-
 # when running the batch load, this user needs to be set
-API_USER = "needs to be set"
+API_USER = "super"
+
+# use the dev api by default, options are dev or live
+API_STATE = "dev"
 
 # this needs to be set to true on prod
 ASYNC_API = False
+
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
@@ -196,7 +200,6 @@ HOSPITAL_DB = dict(
     database=None,
     username=None,
     password=None,
-    view=None
 )
 
 
@@ -347,9 +350,6 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.wsgi')
 
 
-
-# The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
 # search with external demographics when adding a patient
 USE_UPSTREAM_DEMOGRAPHICS = True
