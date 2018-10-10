@@ -6,6 +6,7 @@ from django.test import override_settings
 from intrahospital_api.test.test_loader import ApiTestCase
 from intrahospital_api import deployment_check
 from elcid import models as elcid_models
+from elcid import patient_lists
 
 UPDATE_DICT = {
     'status': 'complete',
@@ -31,7 +32,10 @@ UPDATE_DICT = {
 class DeploymentCheckTestCase(ApiTestCase):
     def setUp(self):
         super(DeploymentCheckTestCase, self).setUp()
-        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient, episode = self.new_patient_and_episode_please()
+        episode.tagging_set.create(
+            value=patient_lists.Bacteraemia.tag, archived=False
+        )
 
     def create_lab_test(self, obs_number=None, **kwargs):
         update_dict = copy.copy(UPDATE_DICT)
@@ -113,8 +117,6 @@ class DeploymentCheckTestCase(ApiTestCase):
         """
         If values are duplicate in multiple batches we shoud remove them
         """
-
-
         result = {}
         # has to be below the observation datetime
         some_dt = timezone.make_aware(datetime.datetime(2014, 1 ,1))
