@@ -411,17 +411,18 @@ class LabTestApiTestCase(BaseLabTestCase):
         If there are multiple tests for a patient
         we should see this in the output
         """
+        self.maxDiff = None
         expected = [
             self.get_row(Result_ID="122"),
             self.get_row(Result_ID="123")
         ]
-        expected_result = [{
+        expected_result = {
             '20552710': [
                 {
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -442,7 +443,7 @@ class LabTestApiTestCase(BaseLabTestCase):
                     'status': 'complete',
                     'external_identifier': u'123',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -460,7 +461,7 @@ class LabTestApiTestCase(BaseLabTestCase):
                     'datetime_ordered': '18/07/2015 16:18:00'
                 },
             ]
-        }]
+        }
 
         api = live.Api()
         patient, _ = self.new_patient_and_episode_please()
@@ -471,7 +472,7 @@ class LabTestApiTestCase(BaseLabTestCase):
         with mock.patch.object(api, "data_delta_query") as execute_query:
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(["122", "123"], since)
+            result = api.lab_test_results_since(["20552710"], since)
         self.assertEqual(
             result, expected_result
         )
@@ -487,23 +488,13 @@ class LabTestApiTestCase(BaseLabTestCase):
             self.get_row(Result_ID="122", OBR_exam_code_Text="Blood"),
             self.get_row(Result_ID="122", OBR_exam_code_Text="Commentry")
         ]
-        expected_result = [{
-            'demographics': {
-                'nhs_number': u'7060976728',
-                'first_name': u'TEST',
-                'surname': u'ZZZTEST',
-                'title': '',
-                'sex': 'Female',
-                'hospital_number': u'20552710',
-                'date_of_birth': '10/10/1980',
-                'ethnicity': 'Mixed - White and Black Caribbean'
-            },
-            'lab_tests': [
+        expected_result = {
+            '20552710': [
                 {
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -524,7 +515,7 @@ class LabTestApiTestCase(BaseLabTestCase):
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -542,7 +533,7 @@ class LabTestApiTestCase(BaseLabTestCase):
                     'datetime_ordered': '18/07/2015 16:18:00'
                 },
             ]
-        }]
+        }
 
         api = live.Api()
         patient, _ = self.new_patient_and_episode_please()
@@ -553,7 +544,7 @@ class LabTestApiTestCase(BaseLabTestCase):
         with mock.patch.object(api, "data_delta_query") as execute_query:
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(["122"], since)
+            result = api.lab_test_results_since(["20552710"], since)
         self.assertEqual(
             result, expected_result
         )
@@ -563,27 +554,18 @@ class LabTestApiTestCase(BaseLabTestCase):
         Multiple observations with the same lab test
         number should be aggregated
         """
+        self.maxDiff = None
         expected = [
             self.get_row(Result_ID="122", OBX_id=20334311),
             self.get_row(Result_ID="122", OBX_id=20334312)
         ]
-        expected_result = [{
-            'demographics': {
-                'nhs_number': u'7060976728',
-                'first_name': u'TEST',
-                'surname': u'ZZZTEST',
-                'title': '',
-                'sex': 'Female',
-                'hospital_number': u'20552710',
-                'date_of_birth': '10/10/1980',
-                'ethnicity': 'Mixed - White and Black Caribbean'
-            },
-            'lab_tests': [
+        expected_result = {
+            '20552710': [
                 {
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
-                    'test_code': u'AN12',
+                    'test_code': u'ANNR',
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -610,7 +592,7 @@ class LabTestApiTestCase(BaseLabTestCase):
                     'datetime_ordered': '18/07/2015 16:18:00'
                 },
             ]
-        }]
+        }
 
         api = live.Api()
         patient, _ = self.new_patient_and_episode_please()
@@ -621,7 +603,7 @@ class LabTestApiTestCase(BaseLabTestCase):
         with mock.patch.object(api, "data_delta_query") as execute_query:
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(["122"], since)
+            result = api.lab_test_results_since(["20552710"], since)
         self.assertEqual(
             result, expected_result
         )
@@ -634,60 +616,33 @@ class LabTestApiTestCase(BaseLabTestCase):
             self.get_row(Patient_Number="123", Result_ID="124"),
             self.get_row(Patient_Number="125", Result_ID="126"),
         ]
-        expected_result = [
-            {
-                'demographics': {
-                    'nhs_number': u'7060976728',
-                    'first_name': u'TEST',
-                    'surname': u'ZZZTEST',
-                    'title': '',
-                    'sex': 'Female',
-                    'hospital_number': u'123',
-                    'date_of_birth': '10/10/1980',
-                    'ethnicity': 'Mixed - White and Black Caribbean'
-                },
-                'lab_tests': [
-                    {
-                        'status': 'complete',
-                        'external_identifier': u'124',
-                        'site': u'^&                              ^',
-                        'test_code': u'AN12',
-                        'observations': [
-                            {
-                                'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
-                                'observation_number': 20334311,
-                                'observation_value': u'Negative',
-                                'observation_datetime': '18/07/2015 16:18:00',
-                                'units': u'',
-                                'last_updated': '18/07/2015 17:00:02',
-                                'reference_range': u' -'
-                            }
-                        ],
-                        'test_name': u'ANTI NEURONAL AB REFERRAL',
-                        'clinical_info': u'testing',
-                        'external_system': 'RFH Database',
-                        'datetime_ordered': '18/07/2015 16:18:00'
-                    },
-
-                ]
-            },
-            {
-                'demographics': {
-                    'nhs_number': u'7060976728',
-                    'first_name': u'TEST',
-                    'surname': u'ZZZTEST',
-                    'title': '',
-                    'sex': 'Female',
-                    'hospital_number': u'125',
-                    'date_of_birth': '10/10/1980',
-                    'ethnicity': 'Mixed - White and Black Caribbean'
-                },
-                'lab_tests': [
-                    {
+        expected_result = {
+            '123': [{
+                    'status': 'complete',
+                    'external_identifier': u'124',
+                    'site': u'^&                              ^',
+                    'test_code': u'ANNR',
+                    'observations': [
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334311,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        }
+                    ],
+                    'test_name': u'ANTI NEURONAL AB REFERRAL',
+                    'clinical_info': u'testing',
+                    'external_system': 'RFH Database',
+                    'datetime_ordered': '18/07/2015 16:18:00'
+            }],
+            "125": [{
                         'status': 'complete',
                         'external_identifier': u'126',
                         'site': u'^&                              ^',
-                        'test_code': u'AN12',
+                        'test_code': u'ANNR',
                         'observations': [
                             {
                                 'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -703,11 +658,8 @@ class LabTestApiTestCase(BaseLabTestCase):
                         'clinical_info': u'testing',
                         'external_system': 'RFH Database',
                         'datetime_ordered': '18/07/2015 16:18:00'
-                    },
-
-                ]
-            }
-        ]
+            }]
+        }
 
         api = live.Api()
         patient, _ = self.new_patient_and_episode_please()

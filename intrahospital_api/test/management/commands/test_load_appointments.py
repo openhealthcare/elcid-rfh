@@ -48,6 +48,5 @@ class LoadAppointmentsTestCase(OpalTestCase):
         )
         self.assertTrue(
             update_future_appointments.called
-
-
+        )
 

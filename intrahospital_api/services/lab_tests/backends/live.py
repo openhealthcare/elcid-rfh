@@ -180,7 +180,6 @@ class Api(object):
         """
         all_rows = self.data_delta_query(some_datetime)
         hospital_number_to_rows = defaultdict(list)
-
         for row in all_rows:
             if row["hospital_number"] in hospital_numbers:
                 hospital_number_to_rows[row["hospital_number"]].append(row)

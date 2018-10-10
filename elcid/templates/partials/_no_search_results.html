@@ -5,7 +5,11 @@
       We couldn't find any results for your search.
     </p>
     <center>
-      <a href="/pathway/#/add_patient" class="btn btn-primary btn-lg">{% icon 'fa-plus' %} Add a patient</a>
+      {% if permissions.tb_professional %}
+        <a href="/pathway/#/add_tb_patient" class="btn btn-primary btn-lg">{% icon 'fa-plus' %} Add a patient</a>
+      {% else %}
+        <a href="/pathway/#/add_patient" class="btn btn-primary btn-lg">{% icon 'fa-plus' %} Add a patient</a>
+      {% endif %}
     </center>
   </div>
 </div>

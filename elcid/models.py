@@ -362,10 +362,6 @@ class Antimicrobial(EpisodeSubrecord):
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
     no_antimicrobials = models.NullBooleanField(default=False)
 
-    class Meta:
-        verbose_name = "Medication History"
-        verbose_name_plural = "Medication Histories"
-
 
 class RenalFunction(lookuplists.LookupList):
     pass

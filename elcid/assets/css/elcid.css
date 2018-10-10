@@ -150,6 +150,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 }
 
 .patient-timeline-discussion {
+<<<<<<< HEAD
   min-height: 120px;
 }
 .patient-timeline-discussion ul {
@@ -164,6 +165,17 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .patient-timeline-discussion ol li {
   list-style-type: decimal;
 }
+=======
+  min-height: 120px; }
+  .patient-timeline-discussion ul {
+    padding-left: 40px; }
+  .patient-timeline-discussion ul li {
+    list-style-type: disc; }
+  .patient-timeline-discussion i {
+    color: black; }
+  .patient-timeline-discussion ol li {
+    list-style-type: decimal; }
+>>>>>>> v0.3.6
 
 .no-touchevents .patient-timeline-discussion i.edit {
   display: none;

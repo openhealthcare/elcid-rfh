@@ -476,3 +476,4 @@ class TBAppointment(models.PatientSubrecord):
     class Meta:
         verbose_name = "Appointments"
         ordering = ["-start"]
+

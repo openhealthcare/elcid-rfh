@@ -1,0 +1,23 @@
+<div ng-repeat="parent in [episode]">
+  <div class="panel panel-default record-panel">
+    <div class="panel-heading">
+      <h3>
+        <i class="{{ models.Imaging.get_icon }}"></i> {{ models.Imaging.get_display_name }}
+        <span ng-show="{{ editable }}" >
+            <i class="fa fa-plus-circle edit pull-right pointer" ng-click="parent.recordEditor.newItem('{{ models.Imaging.get_api_name }}')"></i> </span>
+      </h3>
+    </div>
+    <ul class="list-group">
+      <li class="list-group-item" ng-repeat="item in parent.{{  models.Imaging.get_api_name }}">
+      <div class="row">
+        <div class="col-md-12">
+          {% include models.Imaging.get_detail_template %}
+        </div>
+        </div>
+      </li>
+    </ul>
+    <div class="panel-footer">
+        <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]"></i>PACS <i class="fa fa-external-link" aria-hidden="true"></i></a>
+    </div>
+  </div>
+</div>
