@@ -118,7 +118,10 @@ def get_and_clean(some_dt, max_dt=None):
     """
     obs_to_lab_test, max_updated = get_qs(some_dt, max_dt)
     values = [get_key(i, v) for i, v in obs_to_lab_test.items()]
-    for lab_test in obs_to_lab_test.values():
+
+    # remove duplicate lab tests
+    lab_tests = list(set(obs_to_lab_test.values()))
+    for lab_test in lab_tests:
         lab_test.delete()
 
     return values, max_updated
