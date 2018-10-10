@@ -54,7 +54,7 @@ def update_patient(patient):
     # but the below should work the same as an
     # initial lab test load
     api = get_api()
-    hospital_number = patient.hospital_number()
+    hospital_number = patient.demographics_set.first().hospital_number
     results = api.results_for_hospital_number(hospital_number)
     update_lab_tests.update_tests(patient, results)
 
