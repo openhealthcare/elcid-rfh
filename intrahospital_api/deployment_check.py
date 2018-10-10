@@ -29,7 +29,8 @@ from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from opal.core import serialization
-from opal.models import Patient
+from opal.models import Patient, Tagging
+from elcid import patient_lists
 from lab import models as lmodels
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
@@ -61,13 +62,17 @@ def update_patient(patient):
 
 def get_patients():
     """
-    We only look at patients who have active tags, and even a narrow
-    subset.
-
-    We are essentially just looking at a bunch of patients who we would
-    expect to have lab tests.
+    We only look at patients on the bacteraemia list as
+    we these should have lab tests
     """
-    return Patient.objects.exclude(episode__tagging__archived=True)
+    tags = Tagging.objects.filter(
+        value=patient_lists.Bacteraemia.tag
+    ).filter(
+        archived=False
+    )
+    return Patient.objects.filter(
+        episode__tagging__in=tags
+    )
 
 
 def get_qs(min_dt, max_dt=None):

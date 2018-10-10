@@ -113,8 +113,6 @@ class DeploymentCheckTestCase(ApiTestCase):
         """
         If values are duplicate in multiple batches we shoud remove them
         """
-
-
         result = {}
         # has to be below the observation datetime
         some_dt = timezone.make_aware(datetime.datetime(2014, 1 ,1))
