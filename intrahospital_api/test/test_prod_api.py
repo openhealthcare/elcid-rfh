@@ -392,11 +392,11 @@ FAKE_MAIN_DEMOGRAPHICS_ROW = {
 
 class ProdApiTestcase(OpalTestCase):
     REQUIRED_FIELDS = dict(
-        ip_address="0.0.0.0",
-        database="made_up",
-        username="some_username",
-        password="some_password",
-        view="some_view"
+        IP_ADDRESS="0.0.0.0",
+        DATABASE="made_up",
+        USERNAME="some_username",
+        PASSWORD="some_password",
+        VIEW="some_view"
     )
 
     def get_api(self):
@@ -427,7 +427,7 @@ class ProdApiTestcase(OpalTestCase):
         api = self.get_api()
         for k, v in self.REQUIRED_FIELDS.items():
             self.assertEqual(
-                getattr(api, k), v
+                getattr(api, k.lower()), v
             )
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
