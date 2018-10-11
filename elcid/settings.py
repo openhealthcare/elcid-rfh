@@ -196,10 +196,10 @@ ASYNC_API = False
 # an ip address, a database, a username and a password for
 # the hospital db
 HOSPITAL_DB = dict(
-    ip_address=None,
-    database=None,
-    username=None,
-    password=None,
+    IP_ADDRESS=None,
+    DATABASE=None,
+    USERNAME=None,
+    PASSWORD=None,
 )
 
 

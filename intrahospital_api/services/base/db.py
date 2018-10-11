@@ -112,10 +112,10 @@ class Row(object):
 
 
 class DBConnection(object):
-    IP_ADDRESS = settings.HOSPITAL_DB.get("ip_address")
-    DATABASE = settings.HOSPITAL_DB.get("database")
-    USERNAME = settings.HOSPITAL_DB.get("username")
-    PASSWORD = settings.HOSPITAL_DB.get("password")
+    ip_address = settings.HOSPITAL_DB.get("IP_ADDRESS")
+    database = settings.HOSPITAL_DB.get("DATABASE")
+    username = settings.HOSPITAL_DB.get("USERNAME")
+    password = settings.HOSPITAL_DB.get("PASSWORD")
 
     @db_retry
     def execute_query(self, query, **params):
