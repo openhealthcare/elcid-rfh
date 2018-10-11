@@ -59,12 +59,9 @@ class Row(db.Row):
         OBSERVATION_MAPPING.items() + LAB_TEST_MAPPING.items() + DEMOGRAPHICS_MAPPING.items()
     )
 
-    def __init__(self, db_row):
-        self.db_row = db_row
-
     @property
     def status(self):
-        status_abbr = self.db_row.get("OBX_Status")
+        status_abbr = self.raw_data.get("OBX_Status")
 
         if status_abbr == 'F':
             return lmodels.LabTest.COMPLETE
@@ -73,7 +70,7 @@ class Row(db.Row):
 
     @property
     def site(self):
-        site = self.db_row.get('Specimen_Site')
+        site = self.raw_data.get('Specimen_Site')
         if "^" in site and "-" in site:
             return site.split("^")[1].strip().split("-")[0].strip()
         return site
@@ -81,25 +78,25 @@ class Row(db.Row):
     @property
     def datetime_ordered(self):
         return db.to_datetime_str(
-            self.db_row.get(
-                "Observation_date", self.db_row.get("Request_Date")
+            self.raw_data.get(
+                "Observation_date", self.raw_data.get("Request_Date")
             )
         )
 
     @property
     def observation_datetime(self):
-        dt = self.db_row.get("Observation_date")
-        dt = dt or self.db_row.get("Request_Date")
+        dt = self.raw_data.get("Observation_date")
+        dt = dt or self.raw_data.get("Request_Date")
         return db.to_datetime_str(dt)
 
     @property
     def last_updated(self):
-        return db.to_datetime_str(self.db_row.get("last_updated"))
+        return db.to_datetime_str(self.raw_data.get("last_updated"))
 
     def get_demographics_dict(self):
         result = {}
         for field in self.DEMOGRAPHICS_MAPPING.keys():
-            result[field] = self[field]
+            result[field] = getattr(self, field)
         return result
 
     def get_results_dict(self):
@@ -107,26 +104,26 @@ class Row(db.Row):
         result_keys = self.OBSERVATION_MAPPING.keys()
         result_keys = result_keys + self.LAB_TEST_MAPPING.keys()
         for field in result_keys:
-            result[field] = self[field]
+            result[field] = getattr(self, field)
 
         return result
 
     def get_lab_test_dict(self):
         result = {}
         for field in self.LAB_TEST_MAPPING.keys():
-            result[field] = self[field]
+            result[field] = getattr(self, field)
         return result
 
     def get_observation_dict(self):
         result = {}
         for field in self.OBSERVATION_MAPPING.keys():
-            result[field] = self[field]
+            result[field] = getattr(self, field)
         return result
 
     def get_all_fields(self):
         result = {}
         for field in self.FIELD_MAPPINGS.keys():
-            result[field] = self[field]
+            result[field] = getattr(self, field)
         return result
 
 
@@ -181,8 +178,8 @@ class Api(object):
         all_rows = self.data_delta_query(some_datetime)
         hospital_number_to_rows = defaultdict(list)
         for row in all_rows:
-            if row["hospital_number"] in hospital_numbers:
-                hospital_number_to_rows[row["hospital_number"]].append(row)
+            if row.hospital_number in hospital_numbers:
+                hospital_number_to_rows[row.hospital_number].append(row)
 
         hospital_number_to_lab_tests = {}
 

@@ -1,6 +1,7 @@
 import copy
 import mock
 import datetime
+from django.test import override_settings
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
 from intrahospital_api.services.lab_tests.backends import live
@@ -216,7 +217,14 @@ class RowTestCase(BaseLabTestCase):
         }
         self.assertEqual(result, expected)
 
-
+@override_settings(
+    HOSPITAL_DB=dict(
+        IP_ADDRESS="1.1.1.1",
+        DATABASE="DATABASE",
+        USERNAME="username",
+        PASSWORD="password",
+    )
+)
 class LabTestApiTestCase(BaseLabTestCase):
     @mock.patch(
         "intrahospital_api.services.lab_tests.backends.live.Api.data_delta_query"
@@ -235,19 +243,19 @@ class LabTestApiTestCase(BaseLabTestCase):
         ddq.return_value = (i for i in [self.get_row()])
         result = api.lab_test_results_since(['20552710'], datetime.datetime.now())
         expected = [{
-            'status': 'complete', 
-            'external_identifier': u'0013I245895', 
-            'site': u'^&                              ^', 
-            'test_code': u'ANNR', 
+            'status': 'complete',
+            'external_identifier': u'0013I245895',
+            'site': u'^&                              ^',
+            'test_code': u'ANNR',
             'observations': [{
                 'observation_name': u'Anti-CV2 (CRMP-5) antibodies', 
                 'observation_number': 20334311, 
-                'observation_value': u'Negative', 
+                'observation_value': u'Negative',
                 'observation_datetime': '18/07/2015 16:18:00',
                 'units': u'',
-                'last_updated': '18/07/2015 17:00:02', 
+                'last_updated': '18/07/2015 17:00:02',
                 'reference_range': u' -'}], 
-            'test_name': u'ANTI NEURONAL AB REFERRAL', 
+            'test_name': u'ANTI NEURONAL AB REFERRAL',
             'clinical_info': u'testing', 
             'external_system': 'RFH Database', 
             'datetime_ordered': '18/07/2015 16:18:00'

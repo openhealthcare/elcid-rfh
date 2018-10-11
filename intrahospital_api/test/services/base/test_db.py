@@ -54,7 +54,6 @@ class DbRetryTestCase(OpalTestCase):
         )
 
 
-
 class ToDateStrTestCase(OpalTestCase):
     def test_to_date_str(self):
         dt = datetime.datetime(2018, 8, 13, 22, 30, 24)
@@ -82,12 +81,12 @@ class TestRow(db.Row):
 class RowTestCase(OpalTestCase):
     def test_test_get_or_fallback(self):
         self.assertEqual(
-            TestRow(dict(a=1, b=2)).get_or_fallback("a", "b"),
+            TestRow(dict(a=1, b=2))._get_or_fallback("a", "b"),
             1
         )
 
         self.assertEqual(
-            TestRow(dict(a=None, b=2)).get_or_fallback("a", "b"),
+            TestRow(dict(a=None, b=2))._get_or_fallback("a", "b"),
             2
         )
 
@@ -95,7 +94,7 @@ class RowTestCase(OpalTestCase):
         test_row = TestRow(dict(a="1"))
         test_row.FIELD_MAPPINGS = dict(b="a")
         self.assertEqual(
-            test_row["b"], "1"
+            test_row.b, "1"
         )
 
     def test_get_item_list_first(self):
@@ -105,24 +104,24 @@ class RowTestCase(OpalTestCase):
         test_row = TestRow(dict(a="1", c="2"))
         test_row.FIELD_MAPPINGS = dict(b=["c", "a"])
         self.assertEqual(
-            test_row["b"], "2"
+            test_row.b, "2"
         )
 
     def test_get_item_list_second(self):
         test_row = TestRow(dict(a="1", c=None))
         test_row.FIELD_MAPPINGS = dict(b=["c", "a"])
         self.assertEqual(
-            test_row["b"], "1"
+            test_row.b, "1"
         )
 
     def test_get_item_tuple(self):
         test_row = TestRow(dict(a="1", c=None))
         test_row.FIELD_MAPPINGS = dict(b=("c", "a",))
         self.assertEqual(
-            test_row["b"], "1"
+            test_row.b, "1"
         )
 
     def test_get_item_property(self):
         test_row = TestRow(dict())
         test_row.FIELD_MAPPINGS = dict(looking="something")
-        self.assertEqual(test_row["looking"], "interesting")
+        self.assertEqual(test_row.looking, "interesting")

@@ -63,67 +63,67 @@ class Row(object):
         @property
         def name(self):
             return "{} {}".format(
-                self.db_row["first_name"], self.db_row["last_name"]
+                self.raw_data["first_name"], self.raw_data["last_name"]
             )
 
-    db_row = dict(
+    raw_data = dict(
         patient_number="1",
         first_name="Wilma",
         last_name="Flintstone",
         secondary_field="1/1/2000"
     )
-    demographics_row = DemographicsRow(db_row)
+    demographics_row = DemographicsRow(raw_data)
 
-    demographics_row["hospital_number"] == "1"
-    demographics_row["name"] == "Wilma Flintstone"
-    demographics_row["date_of_birth"] == "1/1/2000"
+    demographics_row.hospital_number == "1"
+    demographics_row.name == "Wilma Flintstone"
+    demographics_row.date_of_birth == "1/1/2000"
     """
     FIELD_MAPPINGS = {}
 
-    def __init__(self, db_row):
-        self.db_row = db_row
+    def __init__(self, raw_data):
+        self.raw_data = raw_data
 
-    def get_or_fallback(self, primary_field, secondary_field):
+    def _get_or_fallback(self, primary_field, secondary_field):
         """ look at one field, if its empty, use a different field
         """
-        # we use Cerner information if it exists, otherwise
-        # we fall back to winpath demographics
-        # these are combined in the same table
-        # so we fall back to a different
-        # field name in the same row
-        result = self.db_row.get(primary_field)
+        # if we have a source that is not always possible
+        # this checks for one field being populated and
+        # falls back to another if its not populated
+        result = self.raw_data.get(primary_field)
 
         if not result:
-            result = self.db_row.get(secondary_field, "")
+            result = self.raw_data.get(secondary_field, "")
 
         return result
 
-    def __getitem__(self, key):
+    def __getattr__(self, key):
         translated_field = self.FIELD_MAPPINGS[key]
 
         if isinstance(translated_field, (tuple, list)):
-            return self.get_or_fallback(
+            return self._get_or_fallback(
                 translated_field[0], translated_field[1]
             )
 
         if hasattr(self, translated_field):
             return getattr(self, translated_field)
-        return self.db_row[translated_field]
+
+        return self.raw_data[translated_field]
 
 
 class DBConnection(object):
-    ip_address = settings.HOSPITAL_DB.get("IP_ADDRESS")
-    database = settings.HOSPITAL_DB.get("DATABASE")
-    username = settings.HOSPITAL_DB.get("USERNAME")
-    password = settings.HOSPITAL_DB.get("PASSWORD")
+    def __init__(self):
+        self.ip_address = settings.HOSPITAL_DB["IP_ADDRESS"]
+        self.database = settings.HOSPITAL_DB["DATABASE"]
+        self.username = settings.HOSPITAL_DB["USERNAME"]
+        self.password = settings.HOSPITAL_DB["PASSWORD"]
 
     @db_retry
     def execute_query(self, query, **params):
         with pytds.connect(
-            self.IP_ADDRESS,
-            self.DATABASE,
-            self.USERNAME,
-            self.PASSWORD,
+            self.ip_address,
+            self.database,
+            self.username,
+            self.password,
             as_dict=True
         ) as conn:
             with conn.cursor() as cur:

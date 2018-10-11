@@ -76,8 +76,9 @@ class PatientLoad(models.Model):
 
 
 class InitialPatientLoad(PatientLoad, PatientSubrecord):
-    """ This model is the initial load of a patient
-        future loads are done by the cron batch load
+    """
+    This model is the initial load of a patient
+    future loads are done by the cron batch load
     """
 
     def __unicode__(self):
@@ -97,14 +98,15 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
             )
 
     def update_from_dict(self, data, *args, **kwargs):
-        """ For the purposes of the front end this model is read only.
+        """
+        For the purposes of the front end this model is read only.
         """
         pass
 
 
 class BatchPatientLoad(PatientLoad):
-    """ This is the batch load of all reconciled patients
-        every 5 mins
+    """
+    This is a load that runs at a regular interval for a particular service.
     """
 
     service_name = models.CharField(
