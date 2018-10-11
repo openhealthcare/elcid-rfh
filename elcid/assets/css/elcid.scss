@@ -274,3 +274,16 @@ a.list-group-item {
   // where we would put a form field
   padding-top: 8px;
 }
+
+.central-info-alert.alert.alert-info{
+  text-align: left;
+  font-size: 21px;
+  background-color: lighten($primary, 58%);
+  border-color: darken($primary, 10%);
+  border-width: 3px;
+
+  .btn{
+    padding-left: 50px;
+    padding-right: 50px;
+  }
+}
