@@ -38,7 +38,7 @@ describe('AddEpisodeHelperCtrl', function(){
                     "created": "07/04/2015 11:45:00"
                 },
                 "category_name": "TB",
-                "start": "10/10/2018"
+                "start": moment().format('DD/MM/YYYY')
             }
             $httpBackend.expectPOST('/api/v0.1/episode/', expectedPost).respond({
                 id: 3
