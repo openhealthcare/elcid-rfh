@@ -44,6 +44,7 @@ import datetime
 import json
 import copy
 import time
+import glob
 from jinja2 import Environment, FileSystemLoader
 from fabric.api import local, env
 from fabric.operations import put
@@ -405,13 +406,12 @@ def restart_nginx():
 
 
 def write_cron_jobs(new_env):
-    template_dir = "etc/cron_templates"
+    template_glob = "etc/cron_templates/*.jinja2"
 
-    cron_jobs = os.listdir(template_dir)
+    cron_jobs = glob.glob(template_glob)
 
     for cron_job in cron_jobs:
-        template_path = os.path.join(template_dir, cron_job)
-        render_cron_template(new_env, template_path, cron_job)
+        render_cron_template(new_env, cron_job, cron_job)
 
 
 def render_cron_template(new_env, template_path, template_name):
