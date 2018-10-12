@@ -7,8 +7,7 @@ from intrahospital_api.services.lab_tests import service
 
 
 class Command(BaseCommand):
-    help = " runs a batch load since the last successful batch run. --force\
-skips sanity checks"
+    help = "Loads in lab tests"
 
     def handle(self, *args, **options):
         service.batch_load()
