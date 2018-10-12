@@ -4,6 +4,7 @@ from elcid.utils import model_method_logging
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
+from intrahospital_api import exceptions
 
 
 class ExternalDemographics(PatientSubrecord):
@@ -115,7 +116,7 @@ class BatchPatientLoad(PatientLoad):
 
     def __unicode__(self):
         if self.stopped:
-            return "{} {} {} {}".format(
+            return "{} {} {} {} {}".format(
                 self.service_name,
                 self.state,
                 self.started,
@@ -129,6 +130,21 @@ class BatchPatientLoad(PatientLoad):
                 self.started,
                 self.count
             )
+
+    def save(self, *args, **kwargs):
+        if self.state == self.RUNNING:
+            existing_batch_load = self.__class__.objects.filter(
+                service_name=self.service_name,
+                state=self.RUNNING
+            ).first()
+            if existing_batch_load:
+                err = "Trying to start a batch for {} when {} is still \
+running"
+                raise exceptions.BatchLoadError(err.format(
+                    self.service_name, existing_batch_load.id)
+                )
+
+        super(BatchPatientLoad, self).save(*args, **kwargs)
 
 
 
