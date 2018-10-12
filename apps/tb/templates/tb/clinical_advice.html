@@ -8,39 +8,71 @@
     <div class="panel panel-primary panel-container patient-detail">
       <div class="panel-heading patient-detail-heading">
         <h4>
-          <div>
-            Name: {{ demographics.name }}
+          <div class="row">
+            <div class="col-xs-1 text-right">
+              Name:
+            </div>
+            <div class="col-xs-10">
+              {{ demographics.name }}
+            </div>
           </div>
           <div>
           {% if demographics.date_of_birth %}
-            DOB: {{ demographics.date_of_birth|date:"d/m/y" }}
+            <div class='row'>
+              <div class='col-xs-1 text-right'>
+                DOB:
+              </div>
+              <div class='col-xs-10'>
+                {{ demographics.date_of_birth|date:"d/m/y" }}
+              </div>
+            </div>
           {% endif %}
           </div>
           <div>
-            MRN: {{ demographics.hospital_number }}
+            <div class='row'>
+              <div class='col-xs-1 text-right'>
+                MRN:
+              </div>
+              <div class='col-xs-10'>
+                {{ demographics.hospital_number }}
+              </div>
+            </div>
           </div>
         </h4>
       </div>
       <div class="panel-body">
         {% if object.when %}
-          <p>
-            <strong>When:</strong> {{ object.when|date:"d/m/y" }}
-            {% if object.initials %}
-              ({{ object.initials }})
-            {% endif %}
-          </p>
+          <div class='row'>
+            <div class='col-xs-1'>
+                <strong>When:</strong>
+            </div>
+            <div class='col-xs-10'>
+                {{ object.when|date:"d/m/y" }}
+                {% if object.initials %}
+                  ({{ object.initials }})
+                {% endif %}
+            </div>
+          </div>
         {% endif %}
         {% if object.discussion %}
-          <p>
-            <strong>Discussion:</strong>
-            {{ object.discussion }}
-          </p>
+          <div class="row">
+            <div class="col-xs-12">
+              <strong>Discussion:</strong>
+            </div>
+            <div class="col-xs-12">
+              {{ object.discussion }}
+            </div>
+          </div>
         {% endif %}
         {% if object.plan %}
-          <p>
-            <strong>Plan:</strong>
-            {{ object.plan }}
-          </p>
+          <div class="row">
+            <div class="col-xs-12">
+              <strong>Plan:</strong>
+            </div>
+            <div class="col-xs-12">
+              {{ object.plan }}
+            </div>
+          </div>
         {% endif %}
       </div>
     </div>

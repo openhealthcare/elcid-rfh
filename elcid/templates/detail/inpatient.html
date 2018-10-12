@@ -1,5 +1,21 @@
 {% load panels %}
 {% load forms %}
+{% if permissions.tb_professional %}
+  <div ng-controller="AddEpisodeHelperCtrl as addEpisodeHelper">
+    <div ng-show="!addEpisodeHelper.hasEpisodeCategory('TB')" class="col-md-10 col-md-push-1">
+      <div class="central-info-alert alert alert-info text-center" role="alert">
+        <div class="row">
+          <div class="col-sm-8">
+            This patient does not have an open TB Case.
+          </div>
+          <div class="col-sm-4 text-right">
+            <a ng-click="addEpisodeHelper.addEpisode('TB')" class="btn btn-primary">Start TB Case</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
 <div class="col-md-6">
   {% record_panel models.Location %}
   {% teams_panel %}
