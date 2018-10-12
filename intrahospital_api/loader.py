@@ -47,22 +47,22 @@ from opal.models import Patient
 from elcid.utils import timing
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from intrahospital_api import update_demographics
 from intrahospital_api.services.lab_tests import service as lab_tests
-from intrahospital_api import logger
-from intrahospital_api import get_api
+from intrahospital_api import logger, get_api, update_demographics
 
 
 @timing
 def initial_load(remaining=False):
     """
-    Runs an initial load.
+    This is the initial load of lab tests.
 
-    If you pass in remaining it will only run
-    for patients that do not have an initialPatientLoad
+    It will delete lab tests and the initial load objects
+    for all patients and then load them in fresh.
 
-    Otherwise it will clear out all inital loads and load
-    in again
+    It is the refresth button for lab tests.
+
+    If you pass in remaining = True it will just
+    run for patients that do not have inital loads.
     """
 
     if not remaining:
