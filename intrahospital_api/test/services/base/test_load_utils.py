@@ -117,21 +117,6 @@ class GoodToGoTestCase(OpalTestCase):
     def test_no_initial_batch_load(self):
         self.assertTrue(load_utils.good_to_go("test_service"))
 
-    @mock.patch.object(load_utils.logger, 'info')
-    def test_last_load_running(self, info):
-        imodels.BatchPatientLoad.objects.create(
-            state=imodels.BatchPatientLoad.RUNNING,
-            started=timezone.now(),
-            stopped=timezone.now(),
-            service_name="test_service"
-        )
-        self.assertFalse(
-            load_utils.good_to_go("test_service")
-        )
-        info.assert_called_once_with(
-            "batch still running after 0 seconds, skipping"
-        )
-
     @mock.patch.object(load_utils.logger, 'error')
     def test_last_load_still_running(self, error):
         diff = load_utils.MAX_ALLOWABLE_BATCH_RUN_TIME
@@ -201,5 +186,5 @@ class BatchLoadTestCase(OpalTestCase):
         self.assertEqual(bpl.state, imodels.BatchPatientLoad.FAILURE)
         self.assertTrue(good_to_go.called)
         self.assertTrue(_batch_load.called)
-        logger.error.assert_called_once_with("test_service batch load error")
+        logger.error.assert_called_once_with("test_service batch load error Boom")
 

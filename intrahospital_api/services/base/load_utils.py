@@ -39,31 +39,23 @@ def good_to_go(service_name):
     if not batch_loads.exists():
         return True
 
-    current_running = batch_loads.filter(
+    last_run_running = batch_loads.filter(
         Q(stopped=None) | Q(state=models.BatchPatientLoad.RUNNING)
-    )
+    ).first()
 
-    if current_running.count() > 1:
-        # we should never have multiple batches running at the same time
-        raise BatchLoadError(
-            "We appear to have {} concurrent batch loads".format(
-                current_running.count()
-            )
-        )
-
-    last_run_running = current_running.last()
-
+    # If the previous load is still running we don't want to start a new one.
     if last_run_running:
         time_ago = timezone.now() - last_run_running.started
 
         if time_ago.seconds < MAX_ALLOWABLE_BATCH_RUN_TIME:
             logger.info(
-                "batch still running after {} seconds, skipping".format(
+                "batch still running after {} seconds".format(
                     time_ago.seconds
                 )
             )
             return False
         else:
+            # The batch has been running for too long. Email us to look at it
             logger.error(
                 "Previous batch load for {} still running after {} seconds".format(
                     service_name, MAX_ALLOWABLE_BATCH_RUN_TIME
@@ -100,6 +92,18 @@ def get_batch_start_time(service_name):
     it is excluded from the batch A, so batch B goes and starts its run
     from 9:59 accordingly.
 
+    e.g.
+        1. Batch A starts.
+        2. Patient Y is added, their personal load is started.
+        3. Batch A finishes.
+        4. Batch B starts
+        5. Patient Y's load finishes.
+        6. Batch B stops
+
+        7. Batch C starts.
+
+        What time should Batch C load from?
+        It starts from the time at 2
     """
     last_successful_run = models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.SUCCESS,
@@ -142,7 +146,9 @@ def batch_load(service_name):
                 count = fun(*args, **kwargs)
             except Exception as e:
                 batch.failed()
-                logger.error("{} batch load error".format(service_name))
+                logger.error("{} batch load error {}".format(
+                    service_name, str(e)
+                ))
             else:
                 batch.count = count
                 batch.complete()

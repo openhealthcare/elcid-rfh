@@ -104,6 +104,7 @@ class Row(object):
                 translated_field[0], translated_field[1]
             )
 
+        # used by properties
         if hasattr(self, translated_field):
             return getattr(self, translated_field)
 
