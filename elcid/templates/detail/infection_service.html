@@ -1,0 +1,110 @@
+{% load panels %}
+{% load forms %}
+<div class="col-md-6">
+  {% record_panel models.Location %}
+  {% teams_panel %}
+  {% if permissions.view_lab_test_trends %}
+    <div class="panel panel-default">
+      <div class="panel-heading"><h3>
+        {% icon 'fa fa-crosshairs' %} Trends
+      </h3></div>
+      <div class="panel-body overflow-x-auto">
+        {% include "partials/lab_test_sparklines.html" with target="patient" %}
+      </div>
+    </div>
+  {% endif %}
+
+
+  {% record_panel models.PrimaryDiagnosis %}
+
+  {% record_panel models.Diagnosis %}
+  {% record_panel models.Infection %}
+  {% record_panel models.Procedure %}
+  <div class="visible-print">
+    {% record_panel models.MicrobiologyInput %}
+  </div>
+
+  {% record_panel models.Line %}
+  {% include "partials/antimicrobial_panel.html" %}
+  {% include "partials/imaging_panel.html" %}
+  {% include "partials/blood_culture_result_display.html" %}
+  {% if permissions.view_lab_test_trends %}
+    {% include "partials/upstream_blood_culture_result_display.html" %}
+  {% endif %}
+  {% record_panel models.FinalDiagnosis %}
+</div>
+<div class="col-md-6">
+  <div ng-show="episode.microbiology_input.length" class="panel panel-default hidden-print">
+    <div class="panel-body">
+      <div class="patient-timeline-container">
+        <div class="row">
+          <div class="col-md-3 patient-timeline">
+            <div class="patient-timeline-now">
+              <div class="patient-timeline-now-text bg-secondary">
+                Now
+              </div>
+            </div>
+          </div>
+        </div>
+        <svg class="speech-bubble-timeline-container">
+          <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
+          <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
+        </svg>
+        <div ng-repeat="item in episode.microbiology_input | orderBy:orderByDate" class="row content-offset-20">
+
+          <div class="col-md-3 patient-timeline">
+            <div class="patient-timeline-speech-bubble">
+              <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
+            </div>
+            <div ng-show="item.when">
+              <div class="patient-timeline-date">
+                [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
+              </div>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <div class="patient-timeline-discussion">
+              <div class="row">
+                <div class="col-sm-10 timeline-data-[[ $index ]]">
+                  <span ng-show="item.initials && item.initials.trim().length">
+                    <p>
+                      <b>By: </b> [[item.initials]]
+                      <span ng-show="item.discussed_with">(discussed with [[ item.discussed_with ]])</span>
+                    </p>
+                  </span>
+                  <span ng-show="item.reason_for_interaction">
+                    <p>
+                      <b>Reason For Interaction: </b><br/>[[item.reason_for_interaction]]
+                    </p>
+                  </span>
+                  <span ng-show="item.clinical_discussion">
+                    <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
+                  </span>
+                  <span ng-show="item.infection_control">
+                    <b>Infection control: </b><div markdown="infection_control"></div>
+                  </span>
+                  <span ng-show="item.agreed_plan">
+                    <b>Agreed Plan: </b><div markdown="agreed_plan"></div>
+                  </span>
+                </div>
+                <div class="col-sm-2">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(item, 'microbiology_input')"></i>
+                    </div>
+                  </div>
+                  <div class="row content-offset-10">
+                    <div class="col-md-12">
+                      <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% include "inline_forms/clinical_advice.html" %}
+</div>
