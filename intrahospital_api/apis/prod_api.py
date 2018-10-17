@@ -7,6 +7,7 @@ import time
 from collections import defaultdict
 from pytds.tds import OperationalError
 from intrahospital_api.apis import base_api
+from intrahospital_api.apis import db
 from intrahospital_api import logger
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
@@ -59,291 +60,171 @@ ETHNICITY_MAPPING = {
 }
 
 
-def to_date_str(some_date):
-    """ we return something that is 'updatedable by dict'
-        so we need to convert all dates into strings
-    """
-    if some_date:
-        return some_date.strftime(settings.DATE_INPUT_FORMATS[0])
+class MainDemographicsRow(db.Row):
+    FIELD_MAPPINGS = dict(
+        hospital_number="PATIENT_NUMBER",
+        nhs_number="NHS_NUMBER",
+        first_name="FORENAME1",
+        surname="SURNAME",
+        date_of_birth="date_of_birth",
+        sex="sex",
+        ethnicity="ethnicity",
+        title="TITLE"
+    )
 
-
-def to_datetime_str(some_datetime):
-    """ we return something that is 'updatedable by dict'
-        so we need to convert all datetimes into strings
-    """
-    if some_datetime:
-        return some_datetime.strftime(settings.DATETIME_INPUT_FORMATS[0])
-
-
-def db_retry(f):
-    """ We are reading a database that is also receiving intermittent writes.
-        When these writes are coming the DB locks.
-        Lets put in a retry after 30 seconds
-    """
-    @wraps(f)
-    def wrap(*args, **kw):
-        try:
-            result = f(*args, **kw)
-        except OperationalError as o:
-            logger.info('{}: failed with {}, retrying in {}s'.format(
-                f.__name__, str(o), RETRY_DELAY
-            ))
-            time.sleep(RETRY_DELAY)
-            result = f(*args, **kw)
-        return result
-    return wrap
-
-
-class MainDemographicsRow(object):
-    DEMOGRAPHICS_FIELDS = [
-        "hospital_number",
-        "nhs_number",
-        "first_name",
-        "surname",
-        "date_of_birth",
-        "sex",
-        "ethnicity",
-        "title"
-    ]
-
-    def __init__(self, db_row):
-        self.db_row = db_row
-
-    def get_hospital_number(self):
-        return self.db_row.get("PATIENT_NUMBER")
-
-    def get_nhs_number(self):
-        return self.db_row.get("NHS_NUMBER")
-
-    def get_first_name(self):
-        return self.db_row.get("FORENAME1")
-
-    def get_surname(self):
-        return self.db_row.get("SURNAME")
-
-    def get_date_of_birth(self):
-        dob = self.db_row.get("DOB")
+    @property
+    def date_of_birth(self):
+        dob = self.raw_data.get("DOB")
         if dob:
-            return to_date_str(dob.date())
+            return db.to_date_str(dob.date())
 
-    def get_sex(self):
-        sex_abbreviation = self.db_row.get("SEX")
+    @property
+    def sex(self):
+        sex_abbreviation = self.raw_data.get("SEX")
 
         if sex_abbreviation:
             if sex_abbreviation == "M":
                 return "Male"
             else:
                 return "Female"
-
-    def get_ethnicity(self):
-        return ETHNICITY_MAPPING.get(self.db_row.get("ETHNIC_GROUP"))
-
-    def get_title(self):
-        return self.db_row.get("TITLE")
+    @property
+    def ethnicity(self):
+        return ETHNICITY_MAPPING.get(self.raw_data.get("ETHNIC_GROUP"))
 
     def get_demographics_dict(self):
         result = {}
-        for field in self.DEMOGRAPHICS_FIELDS:
-            result[field] = getattr(self, "get_{}".format(field))()
+        for field in self.FIELD_MAPPINGS:
+            result[field] = getattr(self, field)
         return result
 
 
-class PathologyRow(object):
+class PathologyRow(db.Row):
     """ a simple wrapper to get us the fields we actually want out of a row
     """
-    DEMOGRAPHICS_FIELDS = [
-        'date_of_birth',
-        'date_of_birth',
-        'ethnicity',
-        'first_name',
-        'hospital_number',
-        'nhs_number',
-        'sex',
-        'surname',
-        'title'
-    ]
+    DEMOGRAPHICS_MAPPING = dict(
+        hospital_number="Patient_Number",
+        nhs_number=("CRS_NHS_Number", "Patient_ID_External",),
+        first_name=("CRS_Forename1", "Firstname",),
+        surname=("CRS_Surname", "Surname",),
+        date_of_birth="date_of_birth",
+        sex="sex",
+        ethnicity="ethnicity",
+        title=("CRS_Title", "title",)
+    )
 
-    LAB_TEST_FIELDS = [
-        'clinical_info',
-        'datetime_ordered',
-        'external_identifier',
-        'site',
-        'status',
-        'test_code',
-        'test_name',
-    ]
+    LAB_TEST_MAPPING = dict(
+        clinical_info="Relevant_Clinical_Info",
+        datetime_ordered="datetime_ordered",
+        external_identifier="Result_ID",
+        site="site",
+        status="status",
+        test_code="OBR_exam_code_ID",
+        test_name="OBR_exam_code_Text",
+    )
 
-    OBSERVATION_FIELDS = [
-        'last_updated',
-        'observation_datetime',
-        'observation_name',
-        'observation_number',
-        'observation_value',
-        'reference_range',
-        'units',
-    ]
+    OBSERVATION_MAPPING = dict(
+        last_updated="last_updated",
+        observation_datetime="observation_datetime",
+        observation_name="OBX_exam_code_Text",
+        observation_number="OBX_id",
+        observation_value="Result_Value",
+        reference_range="Result_Range",
+        units="Result_Units"
+    )
 
-    RESULT_FIELDS = LAB_TEST_FIELDS + OBSERVATION_FIELDS
+    RESULT_MAPPING = dict(
+        OBSERVATION_MAPPING.items() + LAB_TEST_MAPPING.items()
+    )
 
-    def __init__(self, db_row):
-        self.db_row = db_row
+    FIELD_MAPPINGS = dict(
+        RESULT_MAPPING.items() + DEMOGRAPHICS_MAPPING.items()
+    )
 
-    def get_or_fallback(self, primary_field, secondary_field):
-        """ look at one field, if its empty, use a different field
-        """
-        # we use Cerner information if it exists, otherwise
-        # we fall back to winpath demographics
-        # these are combined in the same table
-        # so we fall back to a different
-        # field name in the same row
-        result = self.db_row.get(primary_field)
-
-        if not result:
-            result = self.db_row.get(secondary_field, "")
-
-        return result
-
-    # Demographics Fields
-    def get_hospital_number(self):
-        return self.db_row.get("Patient_Number")
-
-    def get_nhs_number(self):
-        return self.get_or_fallback(
-            "CRS_NHS_Number", "Patient_ID_External"
-        )
-
-    def get_surname(self):
-        return self.get_or_fallback("CRS_Surname", "Surname")
-
-    def get_first_name(self):
-        return self.get_or_fallback("CRS_Forename1", "Firstname")
-
-    def get_sex(self):
-        sex_abbreviation = self.get_or_fallback("CRS_SEX", "SEX")
+    @property
+    def sex(self):
+        sex_abbreviation = self._get_or_fallback("CRS_SEX", "SEX")
 
         if sex_abbreviation == "M":
             return "Male"
         else:
             return "Female"
 
-    def get_ethnicity(self):
-        return ETHNICITY_MAPPING.get(self.db_row.get("CRS_Ethnic_Group"))
+    @property
+    def ethnicity(self):
+        return ETHNICITY_MAPPING.get(self.raw_data.get("CRS_Ethnic_Group"))
 
-    def get_date_of_birth(self):
-        dob = self.get_or_fallback("CRS_DOB", "date_of_birth")
+    @property
+    def date_of_birth(self):
+        dob = self._get_or_fallback("CRS_DOB", "date_of_birth")
         if dob:
-            return to_date_str(dob.date())
-
-    def get_title(self):
-        return self.get_or_fallback("CRS_Title", "title")
+            return db.to_date_str(dob.date())
 
     def get_demographics_dict(self):
         result = {}
-        for field in self.DEMOGRAPHICS_FIELDS:
-            result[field] = getattr(self, "get_{}".format(field))()
+        for key in self.DEMOGRAPHICS_MAPPING.keys():
+            result[key] = getattr(self, key)
         return result
 
-    def get_status(self):
-        status_abbr = self.db_row.get("OBX_Status")
+    @property
+    def status(self):
+        status_abbr = self.raw_data.get("OBX_Status")
 
         if status_abbr == 'F':
             return lmodels.LabTest.COMPLETE
         else:
             return lmodels.LabTest.PENDING
 
-    def get_site(self):
-        site = self.db_row.get('Specimen_Site')
+    @property
+    def site(self):
+        site = self.raw_data.get('Specimen_Site')
         if "^" in site and "-" in site:
             return site.split("^")[1].strip().split("-")[0].strip()
         return site
 
-    def get_clinical_info(self):
-        return self.db_row.get('Relevant_Clinical_Info')
-
-    def get_test_code(self):
-        return self.db_row.get('OBR_exam_code_ID')
-
-    def get_test_name(self):
-        return self.db_row.get("OBR_exam_code_Text")
-
-    def get_external_identifier(self):
-        return self.db_row.get("Result_ID")
-
-    def get_datetime_ordered(self):
-        return to_datetime_str(
-            self.db_row.get(
-                "Observation_date", self.db_row.get("Request_Date")
+    @property
+    def datetime_ordered(self):
+        return db.to_datetime_str(
+            self.raw_data.get(
+                "Observation_date", self.raw_data.get("Request_Date")
             )
         )
 
-    # fields of the individual observations within the lab test
-    def get_observation_number(self):
-        return self.db_row.get("OBX_id")
+    @property
+    def observation_datetime(self):
+        dt = self.raw_data.get("Observation_date")
+        dt = dt or self.raw_data.get("Request_Date")
+        return db.to_datetime_str(dt)
 
-    def get_observation_name(self):
-        return self.db_row.get("OBX_exam_code_Text")
+    @property
+    def last_updated(self):
+        return db.to_datetime_str(self.raw_data.get("last_updated"))
 
-    def get_observation_value(self):
-        return self.db_row.get('Result_Value')
+    def get_dict(self, name):
+        result = {}
+        mapping = getattr(self, name)
 
-    def get_units(self):
-        return self.db_row.get("Result_Units")
+        for field in mapping.keys():
+            result[field] = getattr(self, field)
 
-    def get_observation_datetime(self):
-        dt = self.db_row.get("Observation_date")
-        dt = dt or self.db_row.get("Request_Date")
-        return to_datetime_str(dt)
-
-    def get_reference_range(self):
-        return self.db_row.get("Result_Range")
-
-    def get_last_updated(self):
-        return to_datetime_str(self.db_row.get("last_updated"))
+        return result
 
     def get_results_dict(self):
-        result = {}
-        for field in self.RESULT_FIELDS:
-            result[field] = getattr(self, "get_{}".format(field))()
-
-        return result
+        return self.get_dict("RESULT_MAPPING")
 
     def get_lab_test_dict(self):
-        result = {}
-        for field in self.LAB_TEST_FIELDS:
-            result[field] = getattr(self, "get_{}".format(field))()
-        return result
+        return self.get_dict("LAB_TEST_MAPPING")
 
     def get_observation_dict(self):
-        result = {}
-        for field in self.OBSERVATION_FIELDS:
-            result[field] = getattr(self, "get_{}".format(field))()
-        return result
+        return self.get_dict("OBSERVATION_MAPPING")
 
     def get_all_fields(self):
-        result = {}
-        fields = self.DEMOGRAPHICS_FIELDS + self.RESULT_FIELDS
-        for field in fields:
-            result[field] = getattr(self, "get_{}".format(field))()
-        return result
+        return self.get_dict("FIELD_MAPPINGS")
 
 
-class ProdApi(base_api.BaseApi):
+class ProdApi(db.DBConnection, base_api.BaseApi):
     def __init__(self):
-        self.ip_address = settings.HOSPITAL_DB.get("ip_address")
-        self.database = settings.HOSPITAL_DB.get("database")
-        self.username = settings.HOSPITAL_DB.get("username")
-        self.password = settings.HOSPITAL_DB.get("password")
-        self.view = settings.HOSPITAL_DB.get("view")
-        if not all([
-            self.ip_address,
-            self.database,
-            self.username,
-            self.password,
-            self.view
-        ]):
-            raise ValueError(
-                "You need to set proper credentials to use the prod api"
-            )
+        super(ProdApi, self).__init__()
+        self.view = settings.HOSPITAL_DB["VIEW"]
 
     def execute_query(self, query, params=None):
         with pytds.connect(
@@ -382,7 +263,6 @@ class ProdApi(base_api.BaseApi):
     def all_data_query_for_lab_test_type(self):
         return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(view=self.view)
 
-
     @property
     def main_demographics_query(self):
         return MAIN_DEMOGRAPHICS_QUERY.format(view=MAIN_DEMOGRAPHICS_VIEW)
@@ -399,9 +279,8 @@ class ProdApi(base_api.BaseApi):
             demographics_result["external_system"] = EXTERNAL_SYSTEM
             return demographics_result
 
-
     @timing
-    @db_retry
+    @db.db_retry
     def main_demographics(self, hospital_number):
         rows = list(self.execute_query(
             self.main_demographics_query,
@@ -414,7 +293,7 @@ class ProdApi(base_api.BaseApi):
 
 
     @timing
-    @db_retry
+    @db.db_retry
     def pathology_demographics(self, hospital_number):
         rows = list(self.execute_query(
             self.pathology_demographics_query,
@@ -455,7 +334,7 @@ class ProdApi(base_api.BaseApi):
             )
 
     @timing
-    @db_retry
+    @db.db_retry
     def data_delta_query(self, since):
         all_rows = self.execute_query(
             self.all_data_since_query,
@@ -479,7 +358,7 @@ class ProdApi(base_api.BaseApi):
         hospital_number_to_rows = defaultdict(list)
 
         for row in all_rows:
-            hospital_number_to_rows[row.get_hospital_number()].append(row)
+            hospital_number_to_rows[row.hospital_number].append(row)
 
         result = []
 

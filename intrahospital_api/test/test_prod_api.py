@@ -99,185 +99,115 @@ FAKE_PATHOLOGY_DATA = {
 }
 
 
-class DbRetry(OpalTestCase):
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def test_retrys(self, time):
-        m = mock.MagicMock(
-            side_effect=[OperationalError('boom'), "response"]
-        )
-        m.__name__ = "some_mock"
-
-        with mock.patch.object(prod_api.logger, "info") as info:
-            response = prod_api.db_retry(m)()
-
-        self.assertEqual(
-            response, "response"
-        )
-        time.sleep.assert_called_once_with(30)
-        info.assert_called_once_with(
-            'some_mock: failed with boom, retrying in 30s'
-        )
-
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def tests_works_as_normal(self, time):
-        m = mock.MagicMock()
-        m.return_value = "response"
-        m.__name__ = "some_mock"
-
-        with mock.patch.object(prod_api.logger, "info") as info:
-            response = prod_api.db_retry(m)()
-
-        self.assertEqual(
-            response, "response"
-        )
-        self.assertFalse(time.sleep.called)
-        self.assertFalse(info.called)
-
-    @mock.patch("intrahospital_api.apis.prod_api.time")
-    def tests_reraises(self, time):
-        m = mock.MagicMock(
-            side_effect=OperationalError('boom')
-        )
-        m.__name__ = "some_mock"
-
-        with mock.patch.object(prod_api.logger, "info") as info:
-            with self.assertRaises(OperationalError):
-                prod_api.db_retry(m)()
-
-        time.sleep.assert_called_once_with(30)
-        info.assert_called_once_with(
-            'some_mock: failed with boom, retrying in 30s'
-        )
-
-
 class PathologyRowTestCase(OpalTestCase):
     def get_row(self, **kwargs):
         raw_data = copy.copy(FAKE_PATHOLOGY_DATA)
         raw_data.update(kwargs)
         return prod_api.PathologyRow(raw_data)
 
-    def test_get_or_fall_back_hit_first(self):
-        row = self.get_row(Department="something")
-
-        self.assertEqual(
-            row.get_or_fallback("Department", "CRS_Deparment"),
-            "something"
-        )
-
-    def test_get_or_fall_back_hit_second(self):
-        row = self.get_row(
-            Department="",
-            CRS_Deparment="something"
-        )
-
-        self.assertEqual(
-            row.get_or_fallback("Department", "CRS_Deparment"),
-            "something"
-        )
-
     def test_get_hospital_number(self):
         row = self.get_row(
             Patient_Number="1232",
         )
-        self.assertEqual(row.get_hospital_number(), "1232")
+        self.assertEqual(row.hospital_number, "1232")
 
     def test_get_nhs_number(self):
         row = self.get_row(
             CRS_NHS_Number="1232",
         )
-        self.assertEqual(row.get_nhs_number(), "1232")
+        self.assertEqual(row.nhs_number, "1232")
 
         row = self.get_row(
             CRS_NHS_Number="",
             Patient_ID_External="1232"
         )
 
-        self.assertEqual(row.get_nhs_number(), "1232")
+        self.assertEqual(row.nhs_number, "1232")
 
     def test_get_surname(self):
         row = self.get_row(
             CRS_Surname="Rubble"
         )
-        self.assertEqual(row.get_surname(), "Rubble")
+        self.assertEqual(row.surname, "Rubble")
 
         row = self.get_row(
             CRS_Surname="",
             Surname="Rubble"
         )
 
-        self.assertEqual(row.get_surname(), "Rubble")
+        self.assertEqual(row.surname, "Rubble")
 
     def test_first_name(self):
         row = self.get_row(
             CRS_Forename1="Betty"
         )
-        self.assertEqual(row.get_first_name(), "Betty")
+        self.assertEqual(row.first_name, "Betty")
 
         row = self.get_row(
             CRS_Forename1="",
             Firstname="Betty"
         )
 
-        self.assertEqual(row.get_first_name(), "Betty")
+        self.assertEqual(row.first_name, "Betty")
 
     def test_get_sex_male(self):
         row = self.get_row(
             CRS_SEX="M"
         )
-        self.assertEqual(row.get_sex(), "Male")
+        self.assertEqual(row.sex, "Male")
 
         row = self.get_row(
             CRS_SEX="",
             SEX="M"
         )
 
-        self.assertEqual(row.get_sex(), "Male")
+        self.assertEqual(row.sex, "Male")
 
     def test_get_sex_female(self):
         row = self.get_row(
             CRS_SEX="F"
         )
-        self.assertEqual(row.get_sex(), "Female")
+        self.assertEqual(row.sex, "Female")
 
         row = self.get_row(
             CRS_SEX="",
             SEX="F"
         )
 
-        self.assertEqual(row.get_sex(), "Female")
+        self.assertEqual(row.sex, "Female")
 
     def test_get_ethnicity(self):
         row = self.get_row(
             CRS_Ethnic_Group="A"
         )
-        self.assertEqual(row.get_ethnicity(), "White - British")
+        self.assertEqual(row.ethnicity, "White - British")
 
     def test_get_date_of_birth(self):
         dt = datetime(2017, 10, 1)
         row = self.get_row(
             CRS_DOB=dt
         )
-        self.assertEqual(row.get_date_of_birth(), "01/10/2017")
+        self.assertEqual(row.date_of_birth, "01/10/2017")
 
         row = self.get_row(
             CRS_DOB="",
             date_of_birth=dt
         )
 
-        self.assertEqual(row.get_date_of_birth(), "01/10/2017")
+        self.assertEqual(row.date_of_birth, "01/10/2017")
 
     def test_get_title(self):
         expected = "Ms"
         row = self.get_row(
             CRS_Title="Ms"
         )
-        self.assertEqual(row.get_title(), expected)
+        self.assertEqual(row.title, expected)
 
         row = self.get_row(
             CRS_Title="",
             title="Ms"
         )
-        self.assertEqual(row.get_title(), expected)
+        self.assertEqual(row.title, expected)
 
     def test_get_demographics_dict(self):
         row = self.get_row()
@@ -300,31 +230,31 @@ class PathologyRowTestCase(OpalTestCase):
     def test_get_reference_range(self):
         row = self.get_row(Result_Range="10 - 2")
         self.assertEqual(
-            row.get_reference_range(),
+            row.reference_range,
             "10 - 2"
         )
 
     def test_get_status(self):
         row = self.get_row(OBX_Status="F")
         self.assertEqual(
-            row.get_status(), lmodels.LabTest.COMPLETE
+            row.status, lmodels.LabTest.COMPLETE
         )
 
         row = self.get_row(OBX_Status="C")
         self.assertEqual(
-            row.get_status(), lmodels.LabTest.PENDING
+            row.status, lmodels.LabTest.PENDING
         )
 
     def test_get_test_code(self):
         row = self.get_row(OBR_exam_code_ID="123")
         self.assertEqual(
-            row.get_test_code(), "123"
+            row.test_code, "123"
         )
 
     def test_get_test_name(self):
         row = self.get_row(OBR_exam_code_Text="Blood Cultures")
         self.assertEqual(
-            row.get_test_name(), "Blood Cultures"
+            row.test_name, "Blood Cultures"
         )
 
     def test_get_results_dict(self):
@@ -389,46 +319,29 @@ FAKE_MAIN_DEMOGRAPHICS_ROW = {
     u'TITLE': u'Ms',
 }
 
-
-class ProdApiTestcase(OpalTestCase):
-    REQUIRED_FIELDS = dict(
-        ip_address="0.0.0.0",
-        database="made_up",
-        username="some_username",
-        password="some_password",
-        view="some_view"
+@override_settings(
+    HOSPITAL_DB=dict(
+        IP_ADDRESS="0.0.0.0",
+        DATABASE="made_up",
+        USERNAME="some_username",
+        PASSWORD="some_password",
+        VIEW="some_view"
     )
-
+)
+class ProdApiTestcase(OpalTestCase):
     def get_api(self):
-        with override_settings(HOSPITAL_DB=self.REQUIRED_FIELDS):
-            api = prod_api.ProdApi()
-        return api
+        return prod_api.ProdApi()
 
     def get_row(self, **kwargs):
         raw_data = copy.copy(FAKE_PATHOLOGY_DATA)
         raw_data.update(kwargs)
         return prod_api.PathologyRow(raw_data)
 
-    def test_init_fail(self):
-        # make sure all init values are set
-        for k in self.REQUIRED_FIELDS.keys():
-            missing = {
-                i: v for i, v in self.REQUIRED_FIELDS.items() if not k == i
-            }
-            with override_settings(HOSPITAL_DB=missing):
-                with self.assertRaises(ValueError) as er:
-                    prod_api.ProdApi()
-                self.assertEqual(
-                    str(er.exception),
-                    "You need to set proper credentials to use the prod api"
-                )
-
-    def test_init_success(self):
-        api = self.get_api()
-        for k, v in self.REQUIRED_FIELDS.items():
-            self.assertEqual(
-                getattr(api, k), v
-            )
+    def test_init(self):
+        api = prod_api.ProdApi()
+        self.assertEqual(
+            api.view, "some_view"
+        )
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
     def test_execute_query_with_params(self, pytds):
