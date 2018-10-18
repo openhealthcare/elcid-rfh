@@ -164,3 +164,30 @@ class BloodCulturePathway(IgnoreDemographicsMixin, PagePathway):
     steps = (
         BloodCultureStep(),
     )
+
+
+class BloodCultureLabNumberStep(Step):
+    template = "pathway/blood_culture_lab_number.html"
+    display_name = "Blood Culture"
+    icon = "fa fa-crosshairs"
+    step_controller = "BloodCultureLabNumberPathwayFormCtrl"
+    model = lmodels.LabTest
+
+    def pre_save(self, data, user, patient=None, episode=None):
+        existing_data = data.get(lmodels.LabTest.get_api_name(), [])
+        ids = [i["id"] for i in existing_data if "id" in i]
+        existing = lmodels.LabTest.objects.filter(patient=patient)
+        existing = existing.filter(
+            external_system=None
+        )
+        existing.exclude(id__in=ids).delete()
+
+
+class BloodCultureLabNumberPathway(IgnoreDemographicsMixin, PagePathway):
+    display_name = "Blood Culture"
+    slug = "blood_culture_lab_number"
+    modal_template = "pathway/blood_culture_page_pathway.html"
+
+    steps = (
+        BloodCultureLabNumberStep(),
+    )

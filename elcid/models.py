@@ -686,6 +686,18 @@ class GP(omodels.PatientSubrecord):
     contact_details = models.TextField()
 
 
+class FishOptions(lookuplists.LookupList):
+    pass
+
+
+class GramStrainOptions(lookuplists.LookupList):
+    pass
+
+
+class Sepsityper(lookuplists.LookupList):
+    pass
+
+
 # method for updating
 @receiver(post_save, sender=omodels.Tagging)
 def record_positive_blood_culture(sender, instance, **kwargs):

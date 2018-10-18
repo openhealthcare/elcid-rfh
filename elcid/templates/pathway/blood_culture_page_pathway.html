@@ -1,0 +1,16 @@
+{% extends 'pathway/templates/modal_page_pathway.html' %}
+
+
+{% block pathway_footer %}
+  <div class="modal-footer">
+    <div class="row">
+        <div class="col-md-12"></div>
+            <a href="" class="btn btn-secondary" style="display: inline-block; float: left; margin-left: 12px;">
+                <i class="fa fa-trash-o"></i> Delete
+            </a>
+            {% include "pathway/partial/save_button.html" %}
+            {% include "pathway/partial/cancel_button.html" %}
+        </div>
+    </div>
+  </div>
+ {% endblock pathway_footer %}
