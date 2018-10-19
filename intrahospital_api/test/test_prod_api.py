@@ -390,7 +390,7 @@ FAKE_MAIN_DEMOGRAPHICS_ROW = {
 }
 
 
-class ProdApiTestcase(OpalTestCase):
+class ApiTestCase(OpalTestCase):
     REQUIRED_FIELDS = dict(
         ip_address="0.0.0.0",
         database="made_up",
@@ -409,6 +409,8 @@ class ProdApiTestcase(OpalTestCase):
         raw_data.update(kwargs)
         return prod_api.PathologyRow(raw_data)
 
+
+class ProdApiTestcase(ApiTestCase):
     def test_init_fail(self):
         # make sure all init values are set
         for k in self.REQUIRED_FIELDS.keys():
@@ -604,7 +606,12 @@ class ProdApiTestcase(OpalTestCase):
 
         self.assertIsNone(result)
 
-    def test_data_deltas(self):
+
+@mock.patch("intrahospital_api.apis.prod_api.ProdApi.demographics")
+@mock.patch("intrahospital_api.apis.prod_api.ProdApi.raw_data")
+@mock.patch("intrahospital_api.apis.prod_api.ProdApi.data_delta_query")
+class DataDeltasTestCase(ApiTestCase):
+    def test_data_deltas(self, data_delta_query, raw_query, demographics):
         api = self.get_api()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
@@ -643,18 +650,17 @@ class ProdApiTestcase(OpalTestCase):
                 'datetime_ordered': '18/07/2015 16:18:00'
             }]
         }]
-        with mock.patch.object(api, "data_delta_query") as execute_query:
-            expected = [
-                self.get_row()
-            ]
-            execute_query.return_value = expected
-            since = datetime.now()
-            result = api.data_deltas(since)
+
+        data_delta_query.return_value = [self.get_row()]
+        raw_query.return_value = [self.get_row().db_row]
+        demographics.return_value = self.get_row().get_demographics_dict()
+        since = datetime.now()
+        result = api.data_deltas(since)
         self.assertEqual(
             result, expected_result
         )
 
-    def test_data_deltas_none(self):
+    def test_data_deltas_none(self, data_delta_query, raw_query, demographics):
         """
         If the db query does not return anything
         we should return an empty iterator
@@ -666,16 +672,17 @@ class ProdApiTestcase(OpalTestCase):
             hospital_number='20552710'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
-            expected = []
-            execute_query.return_value = expected
-            since = datetime.now()
-            result = api.data_deltas(since)
+        expected = []
+        data_delta_query.return_value = expected
+        since = datetime.now()
+        result = api.data_deltas(since)
+        self.assertFalse(raw_query.called)
+        self.assertFalse(demographics.called)
         self.assertEqual(
             result, []
         )
 
-    def test_data_deltas_no_patient(self):
+    def test_data_deltas_no_patient(self, data_delta_query, raw_query, demographics):
         """
         If the db query return something but we have
         no match patient, we should return an empty
@@ -688,24 +695,24 @@ class ProdApiTestcase(OpalTestCase):
             hospital_number='20552711'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
-            expected = [self.get_row()]
-            execute_query.return_value = expected
-            since = datetime.now()
-            result = api.data_deltas(since)
+        expected = [self.get_row()]
+        data_delta_query.return_value = expected
+        since = datetime.now()
+        result = api.data_deltas(since)
+        self.assertFalse(raw_query.called)
+        self.assertFalse(demographics.called)
         self.assertEqual(
             result, []
         )
 
-    def test_data_deltas_multiple_tests(self):
+    def test_data_deltas_multiple_tests(
+        self, data_delta_query, raw_query, demographics
+    ):
         """
         If there are multiple tests for a patient
         we should see this in the output
         """
-        expected = [
-            self.get_row(Result_ID="122"),
-            self.get_row(Result_ID="123")
-        ]
+
         expected_result = [{
             'demographics': {
                 'nhs_number': u'7060976728',
@@ -763,31 +770,35 @@ class ProdApiTestcase(OpalTestCase):
             ]
         }]
 
+        data_delta_query.return_value = [
+            self.get_row(Result_ID="122"),
+            self.get_row(Result_ID="123")
+        ]
+        raw_query.side_effect = [
+            [self.get_row(Result_ID="122").db_row],
+            [self.get_row(Result_ID="123").db_row]
+        ]
+        demographics.return_value = self.get_row().get_demographics_dict()
         api = self.get_api()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='20552710'
         )
-
-        with mock.patch.object(api, "data_delta_query") as execute_query:
-            execute_query.return_value = expected
-            since = datetime.now()
-            result = api.data_deltas(since)
+        since = datetime.now()
+        result = api.data_deltas(since)
         self.assertEqual(
             result, expected_result
         )
 
-    def test_data_deltas_same_test_number_different_test_type(self):
+    def test_data_deltas_same_test_number_different_test_type(
+        self, data_delta_query, raw_query, demographics
+    ):
         """
         A patient can have multiple lab tests with the same
         number but with different types.
 
         We should see these as seperate tests in the output.
         """
-        expected = [
-            self.get_row(Result_ID="122", OBR_exam_code_Text="Blood"),
-            self.get_row(Result_ID="122", OBR_exam_code_Text="Commentry")
-        ]
         expected_result = [{
             'demographics': {
                 'nhs_number': u'7060976728',
@@ -845,29 +856,34 @@ class ProdApiTestcase(OpalTestCase):
             ]
         }]
 
+        data_delta_query.return_value = [
+            self.get_row(Result_ID="122", OBR_exam_code_Text="Blood"),
+            self.get_row(Result_ID="122", OBR_exam_code_Text="Commentry")
+        ]
+        raw_query.return_value = [
+            self.get_row(Result_ID="122", OBR_exam_code_Text="Blood").db_row,
+            self.get_row(Result_ID="122", OBR_exam_code_Text="Commentry").db_row
+        ]
+        demographics.return_value = self.get_row().get_demographics_dict()
+
         api = self.get_api()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='20552710'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
-            execute_query.return_value = expected
-            since = datetime.now()
-            result = api.data_deltas(since)
+        since = datetime.now()
+        result = api.data_deltas(since)
         self.assertEqual(
             result, expected_result
         )
 
-    def test_data_deltas_multiple_observations(self):
+    def test_data_deltas_multiple_observations(self, data_delta_query, raw_query, demographics):
         """
         Multiple observations with the same lab test
         number should be aggregated
         """
-        expected = [
-            self.get_row(Result_ID="122", OBX_id=20334311),
-            self.get_row(Result_ID="122", OBX_id=20334312)
-        ]
+
         expected_result = [{
             'demographics': {
                 'nhs_number': u'7060976728',
@@ -919,23 +935,26 @@ class ProdApiTestcase(OpalTestCase):
             hospital_number='20552710'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
-            execute_query.return_value = expected
-            since = datetime.now()
-            result = api.data_deltas(since)
+        data_delta_query.return_value = [
+            self.get_row(Result_ID="122", OBX_id=20334311),
+            self.get_row(Result_ID="122", OBX_id=20334312)
+        ]
+        raw_query.return_value = [
+            self.get_row(Result_ID="122", OBX_id=20334311).db_row,
+            self.get_row(Result_ID="122", OBX_id=20334312).db_row
+        ]
+        demographics.return_value = self.get_row().get_demographics_dict()
+        since = datetime.now()
+        result = api.data_deltas(since)
         self.assertEqual(
             result, expected_result
         )
 
-    def test_data_deltas_multiple_patients(self):
+    def test_data_deltas_multiple_patients(self, data_delta_query, raw_query, demographics):
         """
         Multiple patients with lab tests
         """
-        self.maxDiff = None
-        expected = [
-            self.get_row(Patient_Number="123", Result_ID="124"),
-            self.get_row(Patient_Number="125", Result_ID="126"),
-        ]
+
         expected_result = [
             {
                 'demographics': {
@@ -1022,10 +1041,156 @@ class ProdApiTestcase(OpalTestCase):
             hospital_number='125'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
-            execute_query.return_value = expected
-            since = datetime.now()
-            result = api.data_deltas(since)
+        data_delta_query.return_value = [
+            self.get_row(Patient_Number="123", Result_ID="124"),
+            self.get_row(Patient_Number="125", Result_ID="126")
+        ]
+        raw_query.side_effect = [
+            [self.get_row(Patient_Number="123", Result_ID="124").db_row],
+            [self.get_row(Patient_Number="125", Result_ID="126").db_row]
+        ]
+        demographics.side_effect = [
+            self.get_row(
+                Patient_Number="123", Result_ID="124"
+            ).get_demographics_dict(),
+            self.get_row(
+                Patient_Number="125", Result_ID="126"
+            ).get_demographics_dict()
+        ]
+
+        since = datetime.now()
+        result = api.data_deltas(since)
+        self.assertEqual(
+            result, expected_result
+        )
+
+    def test_data_delta_lab_tests_used(
+        self, data_delta_query, raw_query, demographics
+    ):
+        """
+        The output of the lab tests should be written by the query for lab tests
+        """
+        expected_result = [{
+            'demographics': {
+                'nhs_number': u'7060976728',
+                'first_name': u'TEST',
+                'surname': u'ZZZTEST',
+                'title': '',
+                'sex': 'Female',
+                'hospital_number': u'20552710',
+                'date_of_birth': '10/10/1980',
+                'ethnicity': 'Mixed - White and Black Caribbean'
+            },
+            'lab_tests': [
+                {
+                    'status': 'complete',
+                    'external_identifier': u'122',
+                    'site': u'^&                              ^',
+                    'test_code': u'ANNR',
+                    'observations': [
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334311,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        },
+                        {
+                            'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                            'observation_number': 20334312,
+                            'observation_value': u'Negative',
+                            'observation_datetime': '18/07/2015 16:18:00',
+                            'units': u'',
+                            'last_updated': '18/07/2015 17:00:02',
+                            'reference_range': u' -'
+                        }
+                    ],
+                    'test_name': u'ANTI NEURONAL AB REFERRAL',
+                    'clinical_info': u'testing',
+                    'external_system': 'RFH Database',
+                    'datetime_ordered': '18/07/2015 16:18:00'
+                },
+            ]
+        }]
+
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='20552710'
+        )
+
+        data_delta_query.return_value = [
+            self.get_row(Result_ID="122", OBX_id=20334311),
+        ]
+        raw_query.return_value = [
+            self.get_row(Result_ID="122", OBX_id=20334311).db_row,
+            self.get_row(Result_ID="122", OBX_id=20334312).db_row
+        ]
+        demographics.return_value = self.get_row().get_demographics_dict()
+        since = datetime.now()
+        result = api.data_deltas(since)
+        self.assertEqual(
+            result, expected_result
+        )
+
+    def test_data_delta_demographics_used(
+        self, data_delta_query, raw_query, demographics
+    ):
+        """
+        The result of the demographics query should overwrite the
+        result returned by the data delta query.
+
+        This is because the demographics service may have more accurate
+        information
+        """
+        api = self.get_api()
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number='20552710'
+        )
+        expected_result = [{
+            'demographics': {
+                'nhs_number': u'7060976728',
+                'first_name': u'TEST',
+                'surname': u'overwritten',
+                'title': '',
+                'sex': 'Female',
+                'hospital_number': u'20552710',
+                'date_of_birth': '10/10/1980',
+                'ethnicity': 'Mixed - White and Black Caribbean'
+            },
+            'lab_tests': [{
+                'status': 'complete',
+                'external_identifier': u'0013I245895',
+                'site': u'^&                              ^',
+                'test_code': u'ANNR',
+                'observations': [
+                    {
+                        'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                        'observation_number': 20334311,
+                        'observation_value': u'Negative',
+                        'observation_datetime': '18/07/2015 16:18:00',
+                        'units': u'',
+                        'last_updated': '18/07/2015 17:00:02',
+                        'reference_range': u' -'
+                    }
+                ],
+                'test_name': u'ANTI NEURONAL AB REFERRAL',
+                'clinical_info': u'testing',
+                'external_system': 'RFH Database',
+                'datetime_ordered': '18/07/2015 16:18:00'
+            }]
+        }]
+
+        data_delta_query.return_value = [self.get_row()]
+        raw_query.return_value = [self.get_row().db_row]
+        demographics.return_value = self.get_row(
+            CRS_Surname="overwritten"
+        ).get_demographics_dict()
+        since = datetime.now()
+        result = api.data_deltas(since)
         self.assertEqual(
             result, expected_result
         )

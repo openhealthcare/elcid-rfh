@@ -464,35 +464,52 @@ class ProdApi(base_api.BaseApi):
         return (PathologyRow(r) for r in all_rows)
 
     def data_deltas(self, some_datetime):
-        """ yields an iterator of dictionary
+        """
+        Find out what has changed since (x)
 
-            the dictionary contains
+        Reload demographics (using cerner as the primary data source if
+        available)
 
-            "demographics" : demographics, the first (ie the most recent)
-            demographics result in the set.
+        Reload all lab tests that have changed in that period.
+        Reloaded lab tests will contain observations before the start of
+        `some_datetime` this is because observations are removed and
+        replaced sometimes by new data. This therefore provides a
+        lab test complete as it currently is.
 
-            "lab_tests": all lab tests for the patient
-
+        The demographics/lab tests are returned in a dictionary per patient
+        imaginatively with the keys "demographics", "lab_tests"
         """
         all_rows = self.data_delta_query(some_datetime)
 
-        hospital_number_to_rows = defaultdict(list)
+        hospital_number_to_rows = defaultdict(set)
 
         for row in all_rows:
-            hospital_number_to_rows[row.get_hospital_number()].append(row)
-
-        result = []
-
-        for hospital_number, rows in hospital_number_to_rows.items():
+            hospital_number = row.get_hospital_number()
             if Demographics.objects.filter(
                 hospital_number=hospital_number
             ).exists():
-                demographics = rows[0].get_demographics_dict()
-                lab_tests = self.cast_rows_to_lab_test(rows)
-                result.append(dict(
-                    demographics=demographics,
-                    lab_tests=lab_tests
-                ))
+                hospital_number_to_rows[hospital_number].add(
+                    row.get_external_identifier()
+                )
+        result = []
+
+        for hospital_number, lab_numbers in hospital_number_to_rows.items():
+            lab_test_rows = []
+            lab_numbers = list(lab_numbers)
+            for lab_number in lab_numbers:
+                raw_rows = self.raw_data(
+                    hospital_number, lab_number=lab_number
+                )
+                rows = [PathologyRow(i) for i in raw_rows]
+                lab_test_rows.extend(
+                    rows
+                )
+            lab_tests = self.cast_rows_to_lab_test(lab_test_rows)
+            demographics = self.demographics(hospital_number)
+            result.append(dict(
+                demographics=demographics,
+                lab_tests=lab_tests
+            ))
 
         return result
 
