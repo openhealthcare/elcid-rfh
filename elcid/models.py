@@ -187,20 +187,6 @@ class UpstreamLabTest(lmodels.LabTest):
             raise ValueError(err.format(self, self.patient, patient))
 
         self.patient = patient
-
-        obs = data.get("observations", [])
-        obs_numbers = set(i["observation_number"] for i in obs)
-
-        # we run updates based on obs numbers
-        # we are loading these in from a remote source
-        # when an obs is updated, the old one is deleted and a new row is added
-        # Make sure these have been properly
-        # cleaned.
-        if not len(obs) == len(obs_numbers):
-            raise ValueError(
-                "duplicate obs numbers found in {}".format(obs)
-            )
-
         if "extras" not in data:
             data["extras"] = {}
 
@@ -208,17 +194,7 @@ class UpstreamLabTest(lmodels.LabTest):
             if i in data:
                 data["extras"][i] = data.pop(i)
 
-        to_keep = []
-
-        if self.extras:
-            # remove any observations that have been updated
-            existing_observations = self.extras.get("observations", [])
-
-            for old_obs in existing_observations:
-                if old_obs["observation_number"] not in obs_numbers:
-                    to_keep.append(old_obs)
-
-        data["extras"]["observations"] = to_keep + data.pop("observations", [])
+        data["extras"]["observations"] = data.pop("observations", [])
 
         # we force the update from dict as we will be updating without
         # a consistency token in the data

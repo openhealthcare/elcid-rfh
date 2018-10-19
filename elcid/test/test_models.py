@@ -376,6 +376,23 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
             found_hl7_result.status, emodels.UpstreamLabTest.COMPLETE
         )
 
+    def test_update_from_api_dict_replaces_existing_observations(self):
+        update_dict = dict(
+            external_identifier="1",
+            status=emodels.UpstreamLabTest.COMPLETE,
+            observations=[dict(observation_name="Platelets")]
+        )
+        hl7_result = emodels.UpstreamLabTest(patient_id=self.patient.id)
+        hl7_result.extras = {
+            "observations":  [dict(observation_name="Monocytes")]
+        }
+        hl7_result.update_from_api_dict(self.patient, update_dict, self.user)
+        observations = hl7_result.extras["observations"]
+        self.assertEqual(
+            observations,
+            [dict(observation_name="Platelets")]
+        )
+
     def test_error_raised_if_external_identifier_not_in_dict(self):
         update_dict = dict(
             status=emodels.UpstreamLabTest.COMPLETE
