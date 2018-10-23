@@ -12,7 +12,6 @@ from elcid import api
 from elcid import views
 
 urlpatterns = [
-    url('^admin/bulk-create-users$', views.BulkCreateUserView.as_view(), name='bulk-create-users'),
     url(r'^test/500$', views.Error500View.as_view(), name='test-500'),
     url(r'stories/$', views.TemplateView.as_view(template_name='stories.html')),
     url(r'elcid/v0.1/', include(api.elcid_router.urls)),
