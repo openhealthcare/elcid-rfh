@@ -1366,6 +1366,7 @@ class DumpDatabaseTestCase(FabfileTestCase):
         self, print_fun, os, dt, time, local, is_load_running
     ):
         print "calling test_fails_first_time_works_the_next"
+        dt.datetime.now.return_value = datetime.datetime.now()
         is_load_running.side_effect = [True, None]
         os.path.return_value = True
         fabfile.dump_database(self.prod_env, "db_name", "backup_name")
