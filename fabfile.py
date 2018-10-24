@@ -90,6 +90,7 @@ class Env(object):
     def __init__(self, branch, remove_existing=False):
         self.branch = branch
         self.remove_existing = remove_existing
+        self.now = datetime.datetime.now()
 
     @property
     def project_directory(self):
@@ -115,19 +116,17 @@ class Env(object):
 
     @property
     def backup_name(self):
-        now = datetime.datetime.now()
         return BACKUP_NAME.format(
             backup_dir=BACKUP_DIR,
-            dt=now.strftime("%d.%m.%Y"),
+            dt=self.now.strftime("%d.%m.%Y"),
             db_name=self.database_name
         )
 
     @property
     def remote_backup_name(self):
-        now = datetime.datetime.now()
         return REMOTE_BACKUP_NAME.format(
             backup_dir=BACKUP_DIR,
-            dt=now.strftime("%d.%m.%Y"),
+            dt=self.now.strftime("%d.%m.%Y"),
             db_name=self.database_name
         )
 
@@ -135,7 +134,7 @@ class Env(object):
     def release_backup_name(self):
         return RELEASE_BACKUP_NAME.format(
             backup_dir=BACKUP_DIR,
-            dt=datetime.datetime.now().strftime("%d.%m.%Y.%H.%M"),
+            dt=self.now.strftime("%d.%m.%Y.%H.%M"),
             db_name=self.database_name
         )
 
