@@ -117,8 +117,9 @@ class EnvTestCase(FabfileTestCase):
     @mock.patch("fabfile.datetime")
     def test_remote_backup_name(self, dt):
         dt.datetime.now.return_value = datetime.datetime(2017, 9, 21)
+        prod_env = fabfile.Env("some_branch", False)
         self.assertEqual(
-            self.prod_env.remote_backup_name,
+            prod_env.remote_backup_name,
             "/usr/lib/ohc/var/live/back.21.09.2017.elcidrfh_some_branch.sql"
         )
 
@@ -145,8 +146,9 @@ class EnvTestCase(FabfileTestCase):
         dt.datetime.now.return_value = datetime.datetime(
             2017, 9, 7, 11, 12
         )
+        prod_env = fabfile.Env("some_branch", False)
         self.assertEqual(
-            self.prod_env.backup_name,
+            prod_env.backup_name,
             "/usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
         )
         self.assertTrue(dt.datetime.now.called)
@@ -156,8 +158,9 @@ class EnvTestCase(FabfileTestCase):
         dt.datetime.now.return_value = datetime.datetime(
             2017, 9, 7, 11, 12
         )
+        prod_env = fabfile.Env("some_branch", False)
         self.assertEqual(
-            self.prod_env.release_backup_name,
+            prod_env.release_backup_name,
             "/usr/lib/ohc/var/release.07.09.2017.11.\
 12.elcidrfh_some_branch.sql"
         )
@@ -614,7 +617,10 @@ class CopyBackupTestCase(FabfileTestCase):
             2017, 9, 7
         )
         os.path.isfile.return_value = True
-        fabfile.copy_backup(self.prod_env)
+        prod_env = fabfile.Env("some_branch", False)
+
+        fabfile.copy_backup(prod_env)
+
         lp = "/usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
         rp = "/usr/lib/ohc/var/live/back.07.09.2017.elcidrfh_some_branch.sql"
         put.assert_called_once_with(
