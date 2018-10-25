@@ -26,7 +26,7 @@ class ResultTestCase(OpalTestCase):
         UserProfile.objects.get_or_create(user=self.not_permissioned)
 
     def test_slug(self):
-        self.assertEqual('test_results', detail.Result.get_slug())
+        self.assertEqual('lab_tests', detail.Result.get_slug())
 
     def test_visible_with_role(self):
         self.assertTrue(detail.Result.visible_to(self.permissioned))
