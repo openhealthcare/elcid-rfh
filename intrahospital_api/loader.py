@@ -47,22 +47,21 @@ from opal.models import Patient
 from elcid.utils import timing
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from intrahospital_api.services.lab_tests import service as lab_tests
-from intrahospital_api import logger, get_api, update_demographics
+from intrahospital_api.services import demographics
+from intrahospital_api.services import lab_tests
+from intrahospital_api import logger
 
 
 @timing
 def initial_load(remaining=False):
     """
-    This is the initial load of lab tests.
+    Runs an initial load.
 
-    It will delete lab tests and the initial load objects
-    for all patients and then load them in fresh.
+    If you pass in remaining it will only run
+    for patients that do not have an initialPatientLoad
 
-    It is the refresth button for lab tests.
-
-    If you pass in remaining = True it will just
-    run for patients that do not have inital loads.
+    Otherwise it will clear out all inital loads and load
+    in again
     """
 
     if not remaining:
@@ -130,31 +129,14 @@ def async_load_patient(patient_id, patient_load_id):
         raise
 
 
-@timing
-def load_demographics(hospital_number):
-    started = timezone.now()
-    api = get_api()
-    try:
-        result = api.demographics(hospital_number)
-    except:
-        stopped = timezone.now()
-        logger.info("demographics load failed in {}".format(
-            (stopped - started).seconds
-        ))
-        log_errors("load_demographics")
-        return
-
-    return result
-
-
 @transaction.atomic
 def _load_patient(patient, patient_load):
     logger.info(
         "started patient {} ipl {}".format(patient.id, patient_load.id)
     )
     try:
-        update_demographics.update_patient_demographics(patient)
-        lab_tests.refresh_patient_lab_tests(patient)
+        demographics.service.load_patient(patient)
+        lab_tests.service.refresh_patient_lab_tests(patient)
     except:
         patient_load.failed()
         raise

@@ -48,16 +48,16 @@ class _InitialLoadTestCase(ApiTestCase):
         ).update(external_system=EXTERNAL_SYSTEM)
 
     @mock.patch(
-        "intrahospital_api.loader.update_demographics.update_patient_demographics",
+        "intrahospital_api.loader.demographics.service.load_patient",
     )
     @mock.patch(
-        "intrahospital_api.loader.lab_tests.refresh_patient_lab_tests",
+        "intrahospital_api.loader.lab_tests.service.refresh_patient_lab_tests",
     )
-    def test_flow(self, refresh_patient_lab_tests, update_patient_demographics):
+    def test_flow(self, refresh_patient_lab_tests, load_patient):
         with mock.patch.object(loader.logger, "info") as info:
             loader._initial_load()
             self.assertEqual(
-                update_patient_demographics.call_count, 3
+                load_patient.call_count, 3
             )
             self.assertEqual(
                 refresh_patient_lab_tests.call_count, 3
@@ -69,7 +69,7 @@ class _InitialLoadTestCase(ApiTestCase):
                 "starting to load patient 1",
                 'loading patient 1 synchronously',
                 'started patient 1 ipl 1',
-                "running 2/3",
+                "running 2/3",        
                 "starting to load patient 2",
                 'loading patient 2 synchronously',
                 'started patient 2 ipl 2',

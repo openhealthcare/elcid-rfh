@@ -78,14 +78,5 @@ class PatientAdminTestCase(OpalTestCase):
         self.admin = admin.PatientAdmin(omodels.Patient, self.site)
 
     def test_upstream_lab_results(self):
-        r = "<a href='/intrahospital_api/raw/results/123'>/intrahospital_api/\
-raw/results/123</a>"
+        r = "<a href='/intrahospital_api/raw/lab_tests/123'>Raw Lab Tests</a>"
         self.assertEqual(self.admin.upstream_lab_results(self.patient), r)
-
-    def test_upstream_blood_culture_results(self):
-        r = "<a href='/intrahospital_api/raw/results/123/test/BLOOD%20CULTURE'\
->/intrahospital_api/raw/results/123/test/BLOOD%20CULTURE</a>"
-        self.assertEqual(
-            self.admin.upstream_blood_culture_results(self.patient),
-            r
-        )

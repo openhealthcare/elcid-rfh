@@ -3,6 +3,8 @@ import datetime
 from django.utils import timezone
 from opal.core.test import OpalTestCase
 from opal import models as opal_models
+from lab import models as lab_models
+from elcid import models as elcid_models
 from intrahospital_api.services.lab_tests import service
 from intrahospital_api import models
 from intrahospital_api.test import test_loader
@@ -65,4 +67,157 @@ class UpdatePatientsTestCase(test_loader.ApiTestCase):
             called_patients, set([patient_1, patient_2])
         )
 
+
+class GetModelForLabTestTypeTestCase(OpalTestCase):
+    def setUp(self):
+        super(GetModelForLabTestTypeTestCase, self).setUp()
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def get_lab_test_dict(self, **kwargs):
+        lab_test = dict(
+            test_name="BLOOD CULTURE",
+            external_identifier="1",
+        )
+        lab_test.update(kwargs)
+        return lab_test
+
+    def create_lab_test(self, lab_test_updates, extras_updates):
+        if lab_test_updates is None:
+            lab_test_updates = {}
+
+        if extras_updates is None:
+            extras_updates = {}
+
+        lab_test = lab_models.LabTest.objects.create(
+            patient=self.patient, **lab_test_updates
+        )
+        lab_test.extras = extras_updates
+        lab_test.save()
+        return lab_test
+
+    def test_blood_culture_found(self):
+        lab_test_updates = dict(
+            lab_test_type=elcid_models.UpstreamBloodCulture.get_display_name(),
+            external_identifier="1"
+        )
+        extras_updates = dict(test_name="BLOOD CULTURE")
+        lab_test = self.create_lab_test(
+            lab_test_updates, extras_updates=extras_updates
+        )
+        lab_test_dict = self.get_lab_test_dict()
+        result = service.get_model_for_lab_test_type(
+            self.patient, lab_test_dict
+        )
+        self.assertEqual(
+            lab_test.id, result.id
+        )
+
+    def test_upstream_lab_test_found(self):
+        lab_test_updates = dict(
+            lab_test_type=elcid_models.UpstreamLabTest.get_display_name(),
+            external_identifier="1"
+        )
+        extras_updates = dict(test_name="LIVER PROFILE")
+        lab_test = self.create_lab_test(
+            lab_test_updates, extras_updates=extras_updates
+        )
+        lab_test_dict = self.get_lab_test_dict(
+            test_name="LIVER PROFILE"
+        )
+        result = service.get_model_for_lab_test_type(
+            self.patient, lab_test_dict
+        )
+        self.assertEqual(
+            lab_test.id, result.id
+        )
+
+    def test_upstream_blood_culture_not_found(self):
+        lab_test_dict = self.get_lab_test_dict()
+        result = service.get_model_for_lab_test_type(
+            self.patient, lab_test_dict
+        )
+        self.assertIsNone(result.id)
+        self.assertEqual(
+            result.__class__, elcid_models.UpstreamBloodCulture
+        )
+
+    def test_upstream_lab_test_not_found(self):
+        lab_test_dict = self.get_lab_test_dict(test_name="LIVER PROFILE")
+        result = service.get_model_for_lab_test_type(
+            self.patient, lab_test_dict
+        )
+        self.assertIsNone(result.id)
+        self.assertEqual(
+            result.__class__, elcid_models.UpstreamLabTest
+        )
+
+    def test_does_not_return_wrong_model_type_blood_culture(self):
+        """
+        If we are looking for an Upstream Blood Culture
+        with id "1" we should not return an
+        Upstream Lab Test
+        """
+        lab_test_updates = dict(
+            lab_test_type=elcid_models.UpstreamBloodCulture.get_display_name(),
+            external_identifier="1"
+        )
+        extras_updates = dict(test_name="BLOOD CULTURE")
+        lab_test = self.create_lab_test(
+            lab_test_updates, extras_updates=extras_updates
+        )
+        lab_test_dict = self.get_lab_test_dict(test_name="LIVER PROFILE")
+        result = service.get_model_for_lab_test_type(
+            self.patient, lab_test_dict
+        )
+        self.assertIsNone(result.id)
+        self.assertEqual(
+            result.__class__, elcid_models.UpstreamLabTest
+        )
+
+    def test_does_not_return_wrong_model_type_lab_test(self):
+        """
+        If we are looking for an Upstream Blood Culture
+        with id "1" we should not return an
+        Upstream Lab Test
+        """
+        lab_test_updates = dict(
+            lab_test_type=elcid_models.UpstreamLabTest.get_display_name(),
+            external_identifier="1"
+        )
+        extras_updates = dict(test_name="LIVER PROFILE")
+        lab_test = self.create_lab_test(
+            lab_test_updates, extras_updates=extras_updates
+        )
+        lab_test_dict = self.get_lab_test_dict(test_name="BLOOD CULTURE")
+        result = service.get_model_for_lab_test_type(
+            self.patient, lab_test_dict
+        )
+        self.assertIsNone(result.id)
+        self.assertEqual(
+            result.__class__, elcid_models.UpstreamBloodCulture
+        )
+
+    def test_multiple_tests(self):
+        lab_test_updates = dict(
+            lab_test_type=elcid_models.UpstreamLabTest.get_display_name(),
+            external_identifier="1"
+        )
+        extras_updates = dict(test_name="LIVER PROFILE")
+        lab_test = self.create_lab_test(
+            lab_test_updates, extras_updates=extras_updates
+        )
+        lab_test = self.create_lab_test(
+            lab_test_updates, extras_updates=extras_updates
+        )
+
+        lab_test_dict = self.get_lab_test_dict(
+            test_name="LIVER PROFILE"
+        )
+        with self.assertRaises(ValueError) as ve:
+            service.get_model_for_lab_test_type(
+                self.patient, lab_test_dict
+            )
+        self.assertEqual(
+            str(ve.exception), "multiple test types found for 1 LIVER PROFILE"
+        )
 

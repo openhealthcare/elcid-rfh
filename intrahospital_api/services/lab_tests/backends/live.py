@@ -93,12 +93,6 @@ class Row(db.Row):
     def last_updated(self):
         return db.to_datetime_str(self.raw_data.get("last_updated"))
 
-    def get_demographics_dict(self):
-        result = {}
-        for field in self.DEMOGRAPHICS_MAPPING.keys():
-            result[field] = getattr(self, field)
-        return result
-
     def get_results_dict(self):
         result = {}
         result_keys = self.OBSERVATION_MAPPING.keys()
