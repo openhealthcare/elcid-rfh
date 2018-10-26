@@ -157,12 +157,20 @@ class GetOrCreateAppointmentsTestCase(AbstractServiceTestCase):
 @mock.patch('intrahospital_api.services.appointments.service.load_patient')
 class LoadPatientsTestCase(AbstractServiceTestCase):
     def test_load_patient_tb(self, load_patient):
-        service.load_patients()
+        load_patient.return_value = True
+        result = service.load_patients()
         load_patient.assert_called_once_with(self.patient)
+        self.assertEqual(
+            result, 1
+        )
 
     def test_load_patient_not_tb(self, load_patient):
+        load_patient.return_value = True
         self.patient.episode_set.update(
-            category_name="Infection Service"
+            category_name="Infection Srvice"
         )
-        service.load_patients()
+        result = service.load_patients()
         self.assertFalse(load_patient.called)
+        self.assertEqual(
+            result, 0
+        )

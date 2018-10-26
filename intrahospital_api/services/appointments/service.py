@@ -24,7 +24,7 @@ def load_patient(patient):
     appointments = api.tb_appointments_for_hospital_number(
         patient.demographics_set.first().hospital_number
     )
-    save_appointments(patient, appointments)
+    return save_appointments(patient, appointments)
 
 
 def has_changed(appointment, appointment_dict):
@@ -51,6 +51,7 @@ def save_appointments(patient, appointment_dicts):
         )
         if is_new or has_changed(appointment, appointment_dict):
             appointment.update_from_api_dict(appointment_dict, user)
+            return True
 
 
 def get_or_create_appointment(patient, appointment_dict):
@@ -74,9 +75,14 @@ def load_patients():
     patients = Patient.objects.filter(
         episode__category_name=TbEpisode.display_name
     )
+    updated = 0
 
     for patient in patients:
-        load_patient(patient)
+        loaded = load_patient(patient)
+        if loaded:
+            updated += 1
+
+    return updated
 
 
 # not an invalid, name, its not a constant, seperate out
