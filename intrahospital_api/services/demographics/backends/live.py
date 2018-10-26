@@ -123,7 +123,7 @@ class Api(db.DBConnection):
     def main_demographics(self, hospital_number):
         rows = list(self.execute_query(
             MAIN_DEMOGRAPHICS_QUERY,
-            params=dict(hospital_number=hospital_number)
+            hospital_number=hospital_number
         ))
         if not len(rows):
             return
@@ -134,7 +134,7 @@ class Api(db.DBConnection):
     def pathology_demographics(self, hospital_number):
         rows = list(self.execute_query(
             PATHOLOGY_DEMOGRAPHICS_QUERY,
-            params=dict(hospital_number=hospital_number)
+            hospital_number=hospital_number
         ))
         if not len(rows):
             return

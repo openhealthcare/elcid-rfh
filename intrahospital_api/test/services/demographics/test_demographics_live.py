@@ -209,7 +209,7 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
             execute_query.call_args[0][0], expected_query
         )
         self.assertEqual(
-            execute_query.call_args[1]["params"], dict(hospital_number="123")
+            execute_query.call_args[1]["hospital_number"], "123"
         )
 
     def test_main_demographics_fail(self):
