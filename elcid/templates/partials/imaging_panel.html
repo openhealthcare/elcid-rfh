@@ -3,16 +3,18 @@
     <div class="panel-heading">
       <h3>
         <i class="{{ models.Imaging.get_icon }}"></i> {{ models.Imaging.get_display_name }}
-        <span ng-show="{{ editable }}" >
-            <i class="fa fa-plus-circle edit pull-right pointer" ng-click="parent.recordEditor.newItem('{{ models.Imaging.get_api_name }}')"></i> </span>
+        <i class="fa fa-plus-circle edit pull-right pointer" ng-click="parent.recordEditor.newItem('{{ models.Imaging.get_api_name }}')"></i>
       </h3>
     </div>
     <ul class="list-group">
       <li class="list-group-item" ng-repeat="item in parent.{{  models.Imaging.get_api_name }}">
-      <div class="row">
-        <div class="col-md-12">
+        <div class="row">
+          <div class="col-md-9">
           {% include models.Imaging.get_detail_template %}
-        </div>
+          </div>
+          <div class="col-md-3">
+            <i class="fa fa-pencil edit pull-right pointer" ng-click="parent.recordEditor.editItem('{{ models.Imaging.get_api_name }}', $index)"></i>
+          </div>
         </div>
       </li>
     </ul>
