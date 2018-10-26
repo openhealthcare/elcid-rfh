@@ -1,9 +1,10 @@
+import datetime
 from django.utils import timezone
 from opal.models import Patient
 from opal.core import serialization
 from elcid import models as elcid_models
 from apps.tb.episode_categories import TbEpisode
-from intrahospital_api.services.base import service_utils
+from intrahospital_api.services.base import service_utils, db
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.base import load_utils
 from apps.tb.episode_categories import TbEpisode
@@ -26,26 +27,29 @@ def load_patient(patient):
     save_appointments(patient, appointments)
 
 
-def has_changed(appointment, appointment_dict, user):
+def has_changed(appointment, appointment_dict):
     """
     Returns True if an appointment has changed
     """
-    to_dicted = appointment.to_dict(user)
     for key in appointment_dict.keys():
-        if not to_dicted[key] == appointment_dict[key]:
+        model_value = getattr(appointment, key)
+        if isinstance(model_value, datetime.datetime):
+            model_value = db.to_datetime_str(model_value)
+        elif isinstance(model_value, datetime.date):
+            model_value = db.to_date_str(model_value)
+
+        if not model_value == appointment_dict[key]:
             return True
     return False
 
 
 def save_appointments(patient, appointment_dicts):
     user = service_utils.get_user()
-    created = timezone.now()
-    created_by = user
     for appointment_dict in appointment_dicts:
         appointment, is_new = get_or_create_appointment(
             patient, appointment_dict
         )
-        if is_new or has_changed(appointment, appointment_dict, user):
+        if is_new or has_changed(appointment, appointment_dict):
             appointment.update_from_api_dict(appointment_dict, user)
 
 
@@ -58,9 +62,9 @@ def get_or_create_appointment(patient, appointment_dict):
     ).first()
 
     if appointment:
-        return appointment, True
+        return appointment, False
     else:
-        return elcid_models.Appointment(patient=patient), False
+        return elcid_models.Appointment(patient=patient), True
 
 
 def load_patients():

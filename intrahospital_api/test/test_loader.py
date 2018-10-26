@@ -48,13 +48,13 @@ class _InitialLoadTestCase(ApiTestCase):
         ).update(external_system=EXTERNAL_SYSTEM)
 
     @mock.patch(
-        "intrahospital_api.loader.demographics.service.load_patient",
+        "intrahospital_api.loader.demographics_service.load_patient",
     )
     @mock.patch(
-        "intrahospital_api.loader.lab_tests.service.refresh_patient",
+        "intrahospital_api.loader.lab_tests_service.refresh_patient",
     )
     @mock.patch(
-        "intrahospital_api.loader.appointments.service.refresh_patient",
+        "intrahospital_api.loader.appointments_service.refresh_patient",
     )
     def test_flow(
         self, refresh_appointments, refresh_patient_lab_tests, load_patient

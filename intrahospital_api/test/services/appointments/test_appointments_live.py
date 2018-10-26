@@ -61,10 +61,11 @@ class AppointmentsApiTestCase(OpalTestCase):
         self.api = live.Api()
         self.expected = [{
             'clinic_resource': u'RAL Davis, Dr David TB',
-            'end': datetime.datetime(2018, 9, 18, 14, 10),
+            'end': '18/09/2018 14:10:00',
             'location': u'RAL GROVE CLINIC',
-            'start': datetime.datetime(2018, 9, 18, 14, 0),
-            'state': u'Confirmed'
+            'start': '18/09/2018 14:00:00',
+            'state': u'Confirmed',
+            'appointment_type': 'Thoracic TB F/Up'
         }]
 
     def test_tb_appointments_for_hospital_number(self):

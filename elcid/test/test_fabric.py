@@ -573,25 +573,27 @@ class CronTestCase(FabfileTestCase):
         fabfile.write_cron_jobs(self.prod_env)
 
         self.assertEqual(
-            get_template.call_count, 2
+            get_template.call_count, 3
         )
 
         expected_calls = set([
             get_template.call_args_list[0][0][0],
             get_template.call_args_list[1][0][0],
+            get_template.call_args_list[2][0][0],
         ])
         self.assertEqual(
             expected_calls,
             set([
                 'etc/cron_templates/cron_lab_tests.jinja2',
-                'etc/cron_templates/cron_demographics_load.jinja2'
+                'etc/cron_templates/cron_demographics_load.jinja2',
+                'etc/cron_templates/cron_appointments.jinja2'
             ])
         )
 
         streamer = get_template.return_value.stream
 
         self.assertEqual(
-            streamer.call_count, 2
+            streamer.call_count, 3
         )
         expected_call_args = dict(
             virtualenv='/home/ohc/.virtualenvs/elcidrfh-some_branch',
