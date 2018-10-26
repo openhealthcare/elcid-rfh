@@ -204,4 +204,17 @@ class AsyncLoadPatientTestCase(ApiTestCase):
         self.assertEqual(str(ve.exception), "Boom")
 
 
+class LogErrorTestCase(OpalTestCase):
+    def test_log_error(self):
+        with mock.patch.object(loader.logger, "error") as le:
+            loader.log_errors("boom")
+        le.assert_called_once_with('unable to run boom \n None\n')
 
+
+@override_settings(API_STATE="dev")
+class QueryPatientDemographicsTestCase(OpalTestCase):
+    def test_query_patient_demographics(self):
+        result = loader.query_patient_demographics("111")
+        self.assertEqual(
+            result["hospital_number"], "111"
+        )
