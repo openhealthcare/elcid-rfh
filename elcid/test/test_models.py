@@ -569,3 +569,27 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+
+
+class AppointmentsTestCase(OpalTestCase):
+    def setUp(self):
+        super(AppointmentsTestCase, self).setUp()
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.appointment = emodels.Appointment(patient=self.patient)
+
+    def test_update_from_dict(self):
+        data = timezone.now()
+        self.appointment.update_from_dict(data, self.user)
+        self.assertIsNone(self.appointment.start)
+
+    def test_update_from_api_dict(self):
+        now = timezone.now()
+        data = dict(start=now)
+        self.appointment.update_from_api_dict(data, self.user)
+        self.assertEqual(self.appointment.start, now)
+        then = now + datetime.timedelta(minutes=10)
+
+        # make sure we don't get burned by consistency token issues
+        data = dict(start=then)
+        self.appointment.update_from_api_dict(data, self.user)
+        self.assertEqual(self.appointment.start, then)

@@ -227,7 +227,7 @@ class Api(object):
             LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER,
             hospital_number=hospital_number,
             since=since
-        ))        
+        ))
         if len(rows):
             return rows[0][0]
         else:

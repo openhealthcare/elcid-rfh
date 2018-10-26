@@ -47,8 +47,13 @@ from opal.models import Patient
 from elcid.utils import timing
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from intrahospital_api.services import demographics
-from intrahospital_api.services import lab_tests
+from intrahospital_api.services.demographics import \
+service as demographics_service
+from intrahospital_api.services.lab_tests import \
+service as lab_tests_service
+from intrahospital_api.services.appointments import \
+service as appointments_service
+from intrahospital_api.services.base import service_utils
 from intrahospital_api import logger
 
 
@@ -81,6 +86,11 @@ def _initial_load():
 def log_errors(name):
     error = "unable to run {} \n {}".format(name, traceback.format_exc())
     logger.error(error)
+
+
+def query_patient_demographics(hospital_number):
+    api = service_utils.get_api('demographics')
+    return api.demographics_for_hospital_number(hospital_number)
 
 
 def load_patient(patient, run_async=None):
@@ -135,8 +145,9 @@ def _load_patient(patient, patient_load):
         "started patient {} ipl {}".format(patient.id, patient_load.id)
     )
     try:
-        demographics.service.load_patient(patient)
-        lab_tests.service.refresh_patient_lab_tests(patient)
+        demographics_service.load_patient(patient)
+        lab_tests_service.refresh_patient(patient)
+        appointments_service.refresh_patient(patient)
     except:
         patient_load.failed()
         raise

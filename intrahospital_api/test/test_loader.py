@@ -51,11 +51,19 @@ class _InitialLoadTestCase(ApiTestCase):
         "intrahospital_api.loader.demographics.service.load_patient",
     )
     @mock.patch(
-        "intrahospital_api.loader.lab_tests.service.refresh_patient_lab_tests",
+        "intrahospital_api.loader.lab_tests.service.refresh_patient",
     )
-    def test_flow(self, refresh_patient_lab_tests, load_patient):
+    @mock.patch(
+        "intrahospital_api.loader.appointments.service.refresh_patient",
+    )
+    def test_flow(
+        self, refresh_appointments, refresh_patient_lab_tests, load_patient
+    ):
         with mock.patch.object(loader.logger, "info") as info:
             loader._initial_load()
+            self.assertEqual(
+                refresh_appointments.call_count, 3
+            )
             self.assertEqual(
                 load_patient.call_count, 3
             )

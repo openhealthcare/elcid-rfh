@@ -95,7 +95,7 @@ def update_patients(patients, since):
     return total
 
 
-def refresh_patient_lab_tests(patient):
+def refresh_patient(patient):
     patient.labtest_set.filter(lab_test_type__in=[
         elcid_models.UpstreamBloodCulture.get_display_name(),
         elcid_models.UpstreamLabTest.get_display_name()

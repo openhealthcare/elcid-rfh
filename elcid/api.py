@@ -624,7 +624,7 @@ class DemographicsSearch(LoginRequiredViewset):
             ))
         else:
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                demographics = loader.load_demographics(hospital_number)
+                demographics = loader.query_patient_demographics(hospital_number)
 
                 if demographics:
                     return json_response(dict(

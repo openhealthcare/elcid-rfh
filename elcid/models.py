@@ -686,6 +686,41 @@ class GP(omodels.PatientSubrecord):
     contact_details = models.TextField()
 
 
+class Appointment(omodels.PatientSubrecord):
+    state = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+    start = models.DateTimeField(blank=True, null=True)
+    end = models.DateTimeField(blank=True, null=True)
+    clinic_resource = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+    appointment_type = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    location = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    def update_from_dict(self, *args, **kwargs):
+        """
+        This model is read only from the front end
+        """
+        pass
+
+    def update_from_api_dict(self, *args, **kwargs):
+        return super(Appointment, self).update_from_dict(
+            *args, force=True, **kwargs
+        )
+
+    class Meta:
+        verbose_name = "Appointments"
+        verbose_name_plural = "Appointments"
+        ordering = ["-start"]
+
+
+
 # method for updating
 @receiver(post_save, sender=omodels.Tagging)
 def record_positive_blood_culture(sender, instance, **kwargs):
