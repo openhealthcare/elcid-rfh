@@ -14,7 +14,7 @@ class BatchAppointmentsTestCase(OpalTestCase):
         self.handle = batch_appointments_load.Command().handle
 
     def test_batch_appointments_load(self, batch_load):
-        handle()
+        self.handle()
         self.assertTrue(
             batch_load.called
         )
