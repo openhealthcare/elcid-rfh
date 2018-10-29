@@ -590,21 +590,11 @@ class CronTestCase(FabfileTestCase):
             ])
         )
 
-        streamer = get_template.return_value.stream
-
-        self.assertEqual(
-            streamer.call_count, 3
-        )
         expected_call_args = dict(
             virtualenv='/home/ohc/.virtualenvs/elcidrfh-some_branch',
             project_dir="/usr/lib/ohc/elcidrfh-some_branch",
             unix_user="ohc",
             branch="some_branch"
-        )
-
-        self.assertEqual(
-            streamer.call_args_list[0][1],
-            expected_call_args
         )
 
     @mock.patch("fabfile.os")
