@@ -36,7 +36,7 @@ class ViewsTest(OpalTestCase):
         self.assertStatusCode('/templates/modals/add_episode.html/', 200)
 
     def test_delete_item_confirmation_template_view(self):
-        self.assertStatusCode('/templates/modals/delete_item_confirmation.html/', 200)
+        self.assertStatusCode('/templates/delete_item_confirmation_modal.html/', 200)
 
     def test_all_modal_templates(self):
         """ This renders all of our modal templates and blows up
