@@ -415,13 +415,19 @@ def write_cron_jobs(new_env):
 
 def render_cron_template(new_env, template_path, template_name):
     write_template_name = "{}_{}".format(PROJECT_NAME, template_name)
+    write_template_name = write_template_name.replace(".jinja2", "")
+    write_template_name = "/etc/cron.d/{}".format(write_template_name)
     template = jinja_env.get_template(template_path)
-    template.stream(
+
+    output = template.render(
         virtualenv=new_env.virtual_env_path,
         branch=new_env.branch,
         unix_user=UNIX_USER,
         project_dir=new_env.project_directory
-    ).dump(write_template_name)
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, write_template_name
+    ))
 
 
 def send_error_email(error, some_env):
