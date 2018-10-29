@@ -34,30 +34,11 @@ from elcid import patient_lists
 from lab import models as lmodels
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
-from intrahospital_api import get_api
-from intrahospital_api import update_lab_tests
+from intrahospital_api.services.lab_tests import service
 
 
 class RollBackError(Exception):
     pass
-
-
-def batch_load_patients(since):
-    # this is all done much better after the refactor, but
-    # the below _should_ work ok
-    api = get_api()
-    data_deltas = api.data_deltas(since)
-    loader.update_from_batch(data_deltas)
-
-
-def update_patient(patient):
-    # this is all done much better after the refacot
-    # but the below should work the same as an
-    # initial lab test load
-    api = get_api()
-    hospital_number = patient.demographics_set.first().hospital_number
-    results = api.results_for_hospital_number(hospital_number)
-    update_lab_tests.update_tests(patient, results)
 
 
 def get_patients():
@@ -174,12 +155,14 @@ def check_since(some_dt, result=None):
     result["current_count"] = len(current)
 
     patients = get_patients()
-    batch_load_patients(some_dt)
+    service.update_patients(
+        patients, some_dt
+    )
     batch_load, _ = get_and_clean(some_dt, max_updated)
     result["batch_load_count"] = len(batch_load)
 
     for patient in patients:
-        update_patient(patient)
+        service.update_patient(patient)
 
     initial_load, _ = get_and_clean(some_dt, max_updated)
     result["initial_load_count"] = len(initial_load)

@@ -58,8 +58,8 @@ class DeploymentCheckTestCase(ApiTestCase):
 
 
 
-    @mock.patch("intrahospital_api.deployment_check.batch_load_patients")
-    @mock.patch("intrahospital_api.deployment_check.update_patient")
+    @mock.patch("intrahospital_api.deployment_check.service.update_patients")
+    @mock.patch("intrahospital_api.deployment_check.service.update_patient")
     @override_settings(OPAL_BRAND_NAME="unit_test")
     def test_results(self, update_patient, update_patients):
         result = {}
@@ -110,8 +110,8 @@ class DeploymentCheckTestCase(ApiTestCase):
             self.patient.labtest_set.count(), 1
         )
 
-    @mock.patch("intrahospital_api.deployment_check.batch_load_patients")
-    @mock.patch("intrahospital_api.deployment_check.update_patient")
+    @mock.patch("intrahospital_api.deployment_check.service.update_patients")
+    @mock.patch("intrahospital_api.deployment_check.service.update_patient")
     @override_settings(OPAL_BRAND_NAME="unit_test")
     def test_removes_same_values(self, update_patient, update_patients):
         """
