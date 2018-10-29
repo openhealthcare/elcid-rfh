@@ -326,3 +326,30 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Dot"
         )
+
+
+class GetReferenceRangeTestCase(OpalTestCase):
+    def to_obs(self, something):
+        return dict(reference_range=something)
+
+    def test_clean_ref_range(self):
+        self.assertEqual(
+            api.get_reference_range(self.to_obs("[ 2 - 3 ]")),
+            dict(min="2", max="3")
+        )
+
+    def test_return_none_if_only_dash(self):
+        self.assertIsNone(
+            api.get_reference_range(self.to_obs(" - "))
+        )
+
+    def test_return_none_if_more_than_one_dash(self):
+        self.assertIsNone(
+            api.get_reference_range(self.to_obs("else -something - or"))
+        )
+
+    def test_return_stripped_max_min(self):
+        self.assertEqual(
+            api.get_reference_range(self.to_obs("2-3")),
+            dict(min="2", max="3")
+        )
