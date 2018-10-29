@@ -24,7 +24,7 @@ class RandomiseStatusReport(OpalTestCase):
             created=datetime.datetime(2015, 1, 1)
         )
 
-        patient.positivebloodculturehistory_set.create(
+        episode.imaging_set.create(
             created=datetime.datetime.now() - datetime.timedelta(1)
         )
 
@@ -43,10 +43,10 @@ class RandomiseStatusReport(OpalTestCase):
         )
 
         self.assertEqual(
-            output["all_time"]["Positive Blood Culture History"], 1
+            output["all_time"]["Imaging"], 1
         )
         self.assertEqual(
-            output["last_week"]["Positive Blood Culture History"], 1
+            output["last_week"]["Imaging"], 1
         )
 
     def test_handle_episodes(self):

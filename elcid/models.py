@@ -615,15 +615,6 @@ class Imaging(EpisodeSubrecord):
     details = models.TextField(blank=True, null=True)
 
 
-class PositiveBloodCultureHistory(PatientSubrecord):
-    when = models.DateTimeField(default=datetime.datetime.now)
-
-    @classmethod
-    def _get_field_default(cls, name):
-        # this should not be necessary...
-        return None
-
-
 class ReferralRoute(omodels.EpisodeSubrecord):
     _icon = 'fa fa-level-up'
     _is_singleton = True
@@ -684,16 +675,3 @@ class GP(omodels.PatientSubrecord):
         max_length=256
     )
     contact_details = models.TextField()
-
-
-# method for updating
-@receiver(post_save, sender=omodels.Tagging)
-def record_positive_blood_culture(sender, instance, **kwargs):
-    from elcid.patient_lists import Bacteraemia
-
-    if instance.value == Bacteraemia.tag:
-        pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
-            patient_id=instance.episode.patient.id
-        )
-        pbch.when = datetime.datetime.now()
-        pbch.save()

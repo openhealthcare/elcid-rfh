@@ -13,9 +13,6 @@
                   <span ng-show="row.location[0].ward">
                     &nbsp; {% icon models.Location.get_icon %} [[ row.location[0].ward ]]
                   </span>
-                  <span class="pull-right" ng-repeat="episode in [row]" ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length">
-                    {% include "partials/historical_bacteraemia.html" %}
-                  </span>
                 </small>
               </h3>
             </div>
