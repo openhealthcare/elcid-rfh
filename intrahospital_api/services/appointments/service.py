@@ -51,7 +51,7 @@ def save_appointments(patient, appointment_dicts):
         )
         if is_new or has_changed(appointment, appointment_dict):
             appointment.update_from_api_dict(appointment_dict, user)
-            return True
+    return True
 
 
 def get_or_create_appointment(patient, appointment_dict):

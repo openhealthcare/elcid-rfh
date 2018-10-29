@@ -135,6 +135,30 @@ class SaveAppointmentsTestCase(AbstractServiceTestCase):
         )
         self.assertIsNotNone(reloaded_appointment.updated)
 
+    def test_save_multiple_appointments(self):
+        appointment_dict_1 = self.get_api_response()[0]
+        appointment_dict_2 = self.get_api_response(
+            start="19/09/2018 14:10:00",
+            end="19/09/2018 15:10:00"
+        )[0]
+        appointment_dicts = [appointment_dict_1, appointment_dict_2]
+        service.save_appointments(self.patient, appointment_dicts)
+        appointments = elcid_models.Appointment.objects.all()
+        self.assertEqual(appointments.count(), 2)
+        self.assertEqual(self.patient.appointment_set.count(), 2)
+
+        self.assertTrue(
+            appointments.filter(
+                start=timezone.make_aware(datetime.datetime(2018, 9, 18, 14, 10))
+            ).exists()
+        )
+
+        self.assertTrue(
+            appointments.filter(
+                start=timezone.make_aware(datetime.datetime(2018, 9, 19, 14, 10))
+            ).exists()
+        )
+
 
 class GetOrCreateAppointmentsTestCase(AbstractServiceTestCase):
     def test_old_appointment(self):
