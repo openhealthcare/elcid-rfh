@@ -415,6 +415,8 @@ def write_cron_jobs(new_env):
 
 def render_cron_template(new_env, template_path, template_name):
     write_template_name = "{}_{}".format(PROJECT_NAME, template_name)
+    write_template_name = write_template_name.replace(".jinja2", "")
+    write_template_name = "/etc/cron.d/{}".format(write_template_name)
     template = jinja_env.get_template(template_path)
     template.stream(
         virtualenv=new_env.virtual_env_path,
