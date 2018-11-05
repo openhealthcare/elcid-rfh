@@ -27,7 +27,7 @@ Patient_Number, last_updated DESC;".format(view=VIEW)
 LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM {view} WHERE \
 Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
 
-SUMMARY_RESULTS = "SELECT Result_Value, Result_ID, last_updated, Patient_Number from \
+SUMMARY_RESULTS = "SELECT Patient_Number, Result_Value, Result_ID, last_updated from \
 {view}".format(view=VIEW)
 
 QUICK_REVIEW = "SELECT Patient_Number, Result_ID, max(last_updated), count(*) \
@@ -130,9 +130,9 @@ class Row(db.Row):
 class SummaryRow(db.Row):
     FIELD_MAPPINGS = dict(
         observation_value="Result_Value",
-        hospital_number="Patient_Number",
         last_updated="last_updated",
         external_identifier="Result_ID",
+        hospital_number="Patient_Number",
     )
 
     @property
@@ -169,17 +169,27 @@ class Api(object):
                 hospital_number=hospital_number, since=db_date
             )
 
-    def get_summary(self, *patient_numbers):
+    def get_summaries(self, *patient_numbers):
         query = SUMMARY_RESULTS
         if patient_numbers:
-            query = query + " WHERE HOSPITAL_NUMBER IN ({})".format(
+            query = query + " WHERE Patient_Number IN ({})".format(
                 ", ".join(["'{}'".format(i) for i in patient_numbers])
             )
 
         all_rows = self.connection.execute_query(
             query
         )
-        return [SummaryRow(i for i in all_rows)]
+        return self.group_summaries([SummaryRow(i for i in all_rows)])
+
+    def group_summaries(self, summary_rows):
+        result = defaultdict(lambda: defaultdict(list))
+        for summary_row in summary_rows:
+            hn = summary_row["hospital_number"]
+            ln = summary_row["external_identifier"]
+            result[hn][ln].append(
+                summary_row["observation_value"], summary_row["last_updated"]
+            )
+        return result
 
     @timing
     def data_delta_query(self, since):

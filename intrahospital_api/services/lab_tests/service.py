@@ -2,6 +2,7 @@ import copy
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
+from lab.models import LabTest
 
 SERVICE_NAME = "lab_tests"
 
@@ -93,6 +94,70 @@ def update_patients(patients, since):
             total += update_patient(patient, lts)
 
     return total
+
+
+def diff_patient(patient, db_results):
+    result = dict(
+        missing_lab_tests=[],
+        additional_lab_tests=[]
+        additional_observations=[],
+        different_observations=[],
+    )
+    lab_tests = patient.labtest_set.filter(
+        lab_test_type__istartswith="upstream"
+    )
+    hn = patient.demographics_set.all()[0].hospital_number
+    db_lab_tests = db_results[hn]
+
+    our_lab_test_numbers = set(db_lab_tests.values_list(
+        "external_identifier", flat=True
+    ))
+
+    db_lab_test_numbers = set(db_lab_tests.keys())
+    result["missing_lab_tests"] = db_lab_test_numbers - our_lab_test_numbers
+    result["additional_lab_tests"] = our_lab_test_numbers - db_lab_test_numbers
+    lab_test_results = dict()
+
+    for lab_test in lab_tests:
+        ei = lab_test.external_identifier
+        if ei in additional_lab_tests:
+            continue
+
+        observation_set = lab_test.extras["observations"]
+        our_observations = set(
+            (
+                i["observation_value"], i["last_updated"],
+            ) for i in observation_set
+        )
+        db_observations = set(db_lab_tests[ei])
+        mo = db_observations - our_observations
+        ao = our_observations - db_observations
+
+        if mo:
+            lab_test_results[ei]["missing_observations"] = mo
+
+        if ao:
+            lab_test_results[ei]["additional_observations"] = ao
+
+    result["observation_diffs"] = lab_test_results
+
+    if(any(result.values())):
+        return result
+
+
+def smoke_check(*patient_numbers):
+    patients = elcid_models.Patient.objects.filter(
+        demographics__hospital_number__in=patient_numbers
+    ).prefetch_related("demographics")
+    api = service_utils.get_api("lab_tests")
+    db_results = api.get_summaries(*patient_numbers)
+    results = {}
+    for patient in patients:
+        hn = patient.demographics_set.all()[0].hospital_number
+        diffs = diff_patient(patient, db_results)
+        if diffs:
+            results[h] = diffs
+    return results
 
 
 def refresh_patient(patient):
