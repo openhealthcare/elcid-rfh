@@ -24,8 +24,14 @@ ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number =
 ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY \
 Patient_Number, last_updated DESC;".format(view=VIEW)
 
-LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM Pathology_Result_view WHERE \
+LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM {view} WHERE \
 Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
+
+SUMMARY_RESULTS = "SELECT Result_Value, Result_ID, last_updated, Patient_Number from \
+{view}".format(view=VIEW)
+
+QUICK_REVIEW = "SELECT Patient_Number, Result_ID, max(last_updated), count(*) \
+from {view} group by Patient_Number, Result_ID".format(view=VIEW)
 
 
 class Row(db.Row):
@@ -121,6 +127,19 @@ class Row(db.Row):
         return result
 
 
+class SummaryRow(db.Row):
+    FIELD_MAPPINGS = dict(
+        observation_value="Result_Value",
+        hospital_number="Patient_Number",
+        last_updated="last_updated",
+        external_identifier="Result_ID",
+    )
+
+    @property
+    def last_updated(self):
+        return db.to_datetime_str(self.raw_data.get("last_updated"))
+
+
 class Api(object):
     def __init__(self):
         self.connection = db.DBConnection()
@@ -149,6 +168,18 @@ class Api(object):
                 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
                 hospital_number=hospital_number, since=db_date
             )
+
+    def get_summary(self, *patient_numbers):
+        query = SUMMARY_RESULTS
+        if patient_numbers:
+            query = query + " WHERE HOSPITAL_NUMBER IN ({})".format(
+                ", ".join(["'{}'".format(i) for i in patient_numbers])
+            )
+
+        all_rows = self.connection.execute_query(
+            query
+        )
+        return [SummaryRow(i for i in all_rows)]
 
     @timing
     def data_delta_query(self, since):
@@ -244,3 +275,12 @@ class Api(object):
         raw_rows = self.raw_lab_tests(hospital_number)
         rows = (Row(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
+
+
+    @timing
+    def raw_summary_results(self, since):
+        return self.connection.execute_query(
+            SUMMARY_RESULTS,
+            since=since
+        )
+

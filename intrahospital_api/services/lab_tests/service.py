@@ -109,6 +109,7 @@ def lab_test_batch_load():
     return update_patients(patients, started)
 
 
+
 # not an invalid, name, its not a constant, seperate out
 # for testing purposes
 # pylint: disable=invalid-name
