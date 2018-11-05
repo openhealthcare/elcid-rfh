@@ -834,6 +834,14 @@ the address you want to sync to on prod in your private settings"
 
         self.assertEqual(result, expected)
 
+class GetCronOutputFileName(FabfileTestCase):
+    def test_get_cron_output_file_name(self):
+        result = fabfile.get_cron_output_file_name(
+            "etc/cron_templates/cron_demographics_load.jinja2"
+        )
+        self.assertEqual(
+            result, "/etc/cron.d/elcid_cron_demographics_load"
+        )
 
 class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.Env")

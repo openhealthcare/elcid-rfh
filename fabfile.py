@@ -404,20 +404,23 @@ def restart_nginx():
     local('sudo service nginx restart')
 
 
-def write_cron_jobs(new_env):
-    template_dir = "etc/cron_templates"
+def get_cron_output_file_name(full_path):
+    template_dir = "etc/cron_templates/"
+    template_name = full_path.replace(template_dir, "")
+    template_name = template_name.replace(".jinja2", "")
+    template_name = "{}_{}".format(PROJECT_NAME, template_name)
+    return "/etc/cron.d/{}".format(template_name)
 
+
+def write_cron_jobs(new_env):
     cron_jobs = glob.glob("etc/cron_templates/*.jinja2")
 
-    for cron_job in cron_jobs:
-        template_path = os.path.join(template_dir, cron_job)
-        render_cron_template(new_env, template_path, cron_job)
+    for full_path in cron_jobs:
+        output_file = get_cron_output_file_name(full_path)
+        render_cron_template(new_env, full_path, output_file)
 
 
-def render_cron_template(new_env, template_path, template_name):
-    write_template_name = "{}_{}".format(PROJECT_NAME, template_name)
-    write_template_name = write_template_name.replace(".jinja2", "")
-    write_template_name = "/etc/cron.d/{}".format(write_template_name)
+def render_cron_template(new_env, template_path, output_file):
     template = jinja_env.get_template(template_path)
 
     output = template.render(
@@ -427,7 +430,7 @@ def render_cron_template(new_env, template_path, template_name):
         project_dir=new_env.project_directory
     )
     local("echo '{0}' | sudo tee {1}".format(
-        output, write_template_name
+        output, output_file
     ))
 
 
