@@ -178,12 +178,6 @@ class LabTestResultsView(LoginRequiredViewset):
             lab_test_type = as_dict["extras"].get(
                 "test_name", lab_test.lab_test_type
             )
-            if lab_test_type == "FULL BLOOD COUNT" and observations:
-                print "id {} name {} result {}".format(
-                    lab_test.id,
-                    observations[0]["observation_name"],
-                    observations[0]["observation_value"]
-                )
 
             for observation in observations:
                 obs_result = extract_observation_value(observation["observation_value"])
