@@ -2,6 +2,7 @@ import copy
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
+from opal.models import Patient
 from lab.models import LabTest
 
 SERVICE_NAME = "lab_tests"
@@ -96,20 +97,45 @@ def update_patients(patients, since):
     return total
 
 
+import time
+
+def time_bulk_load_query():
+    test_bulks = [50, 100, 200]
+    hospital_numbers = elcid_models.Demographics.objects.all().values_list(
+        "hospital_number", flat=True
+    )
+    for test_bulk in test_bulks:
+        ts = time()
+        result = bulk_load_query(hospital_numbers, test_bulk)
+        te = time()
+        print 'result: %s rows in  %2.4f sec' % (
+            len(result), te-ts
+        )
+
+
+def bulk_load_query(hospital_numbers, amount):
+    hospital_numbers = list(hospital_numbers)
+    api = service_utils.get_api("lab_tests")
+    result = []
+    for i in xrange(0, len(hospital_numbers), amount):
+        hns = hospital_numbers[i:i+amount]
+        result.extend(api.get_rows(*hns))
+
+
 def diff_patient(patient, db_results):
     result = dict(
         missing_lab_tests=[],
-        additional_lab_tests=[]
+        additional_lab_tests=[],
         additional_observations=[],
         different_observations=[],
     )
-    lab_tests = patient.labtest_set.filter(
+    our_lab_tests = patient.labtest_set.filter(
         lab_test_type__istartswith="upstream"
     )
     hn = patient.demographics_set.all()[0].hospital_number
     db_lab_tests = db_results[hn]
 
-    our_lab_test_numbers = set(db_lab_tests.values_list(
+    our_lab_test_numbers = set(our_lab_tests.values_list(
         "external_identifier", flat=True
     ))
 
@@ -118,9 +144,9 @@ def diff_patient(patient, db_results):
     result["additional_lab_tests"] = our_lab_test_numbers - db_lab_test_numbers
     lab_test_results = dict()
 
-    for lab_test in lab_tests:
+    for lab_test in our_lab_tests:
         ei = lab_test.external_identifier
-        if ei in additional_lab_tests:
+        if ei in result["additional_lab_tests"]:
             continue
 
         observation_set = lab_test.extras["observations"]
@@ -133,11 +159,14 @@ def diff_patient(patient, db_results):
         mo = db_observations - our_observations
         ao = our_observations - db_observations
 
-        if mo:
-            lab_test_results[ei]["missing_observations"] = mo
+        if mo or ao:
+            lab_test_results[ei] = {}
 
-        if ao:
-            lab_test_results[ei]["additional_observations"] = ao
+            if mo:
+                lab_test_results[ei]["missing_observations"] = mo
+
+            if ao:
+                lab_test_results[ei]["additional_observations"] = ao
 
     result["observation_diffs"] = lab_test_results
 
@@ -145,18 +174,18 @@ def diff_patient(patient, db_results):
         return result
 
 
-def smoke_check(*patient_numbers):
-    patients = elcid_models.Patient.objects.filter(
-        demographics__hospital_number__in=patient_numbers
-    ).prefetch_related("demographics")
+def smoke_check(*patients):
     api = service_utils.get_api("lab_tests")
-    db_results = api.get_summaries(*patient_numbers)
+    hospital_numbers = elcid_models.Demographics.objects.filter(
+        patient__in=patients
+    ).values_list("hospital_number", flat=True)
+    db_results = api.get_summaries(*hospital_numbers)
     results = {}
     for patient in patients:
         hn = patient.demographics_set.all()[0].hospital_number
         diffs = diff_patient(patient, db_results)
         if diffs:
-            results[h] = diffs
+            results[hn] = diffs
     return results
 
 

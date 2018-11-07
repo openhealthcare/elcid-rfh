@@ -33,6 +33,16 @@ SUMMARY_RESULTS = "SELECT Patient_Number, Result_Value, Result_ID, last_updated 
 QUICK_REVIEW = "SELECT Patient_Number, Result_ID, max(last_updated), count(*) \
 from {view} group by Patient_Number, Result_ID".format(view=VIEW)
 
+GET_ROW_ID = "SELECT top(1) id from {view} WHERE Patient_Number=@hospital_number".format(view=VIEW)
+
+BULK_LOAD = """
+SELECT Patient_Number, Result_Value, Result_ID, last_updated from {view} WHERE Patient_Number in (
+    SELECT Patient_Number WHERE id in (
+        {}
+    )
+)
+"""
+
 
 class Row(db.Row):
     """ a simple wrapper to get us the fields we actually want out of a row
@@ -169,25 +179,38 @@ class Api(object):
                 hospital_number=hospital_number, since=db_date
             )
 
-    def get_summaries(self, *patient_numbers):
-        query = SUMMARY_RESULTS
-        if patient_numbers:
-            query = query + " WHERE Patient_Number IN ({})".format(
-                ", ".join(["'{}'".format(i) for i in patient_numbers])
-            )
+    def get_row_id_for_hospital_number(self, hospital_number):
+        result = self.connection.execute_query(
+            GET_ROW_ID, hospital_number=hospital_number
+        )
+        if result:
+            return result["id"]
 
-        all_rows = self.connection.execute_query(
+    def bulk_query_with_row_ids(self, row_ids):
+        query = BULK_LOAD.format(
+            ", ".join(str(i) for i in row_ids),
+            view=VIEW
+        )
+        result = self.connection.execute_query(
             query
         )
-        return self.group_summaries([SummaryRow(i for i in all_rows)])
+        return result
+
+    def get_rows(self, *patient_numbers):
+        ids = [
+            self.get_row_id_for_hospital_number(i) for i in patient_numbers
+        ]
+        rows = self.bulk_query_with_row_ids(ids)
+
+        return self.group_summaries([SummaryRow(i) for i in rows])
 
     def group_summaries(self, summary_rows):
         result = defaultdict(lambda: defaultdict(list))
         for summary_row in summary_rows:
-            hn = summary_row["hospital_number"]
-            ln = summary_row["external_identifier"]
+            hn = summary_row.hospital_number
+            ln = summary_row.external_identifier
             result[hn][ln].append(
-                summary_row["observation_value"], summary_row["last_updated"]
+                (summary_row.observation_value, summary_row.last_updated,)
             )
         return result
 
