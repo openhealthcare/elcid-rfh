@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.base import db
-from elcid.utils import timing
+from elcid.utils import timing, with_time
 from lab import models as lmodels
 
 VIEW = "Pathology_Result_view"
@@ -184,7 +184,7 @@ class Api(object):
             GET_ROW_ID, hospital_number=hospital_number
         )
         if result:
-            return result["id"]
+            return result[0]["id"]
 
     def bulk_query_with_row_ids(self, row_ids):
         query = BULK_LOAD.format(
@@ -196,13 +196,34 @@ class Api(object):
         )
         return result
 
+    @with_time
     def get_rows(self, *patient_numbers):
         ids = [
             self.get_row_id_for_hospital_number(i) for i in patient_numbers
         ]
-        rows = self.bulk_query_with_row_ids(ids)
+        ids = [i for ids if i]
+        return self.bulk_query_with_row_ids(ids)
 
-        return self.group_summaries([SummaryRow(i) for i in rows])
+    @with_time
+    def get_rows_quickly(self, *patient_numbers):
+        row_ids = []
+        with self.connection() as conn:
+            with conn.cursor() as cur:
+                row_id = cur.execute(
+                    GET_ROW_ID,
+                    dict(hospital_number=hospital_number)
+                ).fechone()
+                if row_id:
+                    row_ids.append(row_id)
+
+                if row_ids:
+                    query = BULK_LOAD.format(
+                        ", ".join(str(i) for i in row_ids),
+                        view=VIEW
+                    )
+                    result = cur.execute(query).fetchall()
+
+        return result
 
     def group_summaries(self, summary_rows):
         result = defaultdict(lambda: defaultdict(list))

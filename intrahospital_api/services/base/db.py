@@ -1,6 +1,6 @@
 import logging
 import time
-from functools import wraps
+from functools import wraps, partial
 from pytds.tds import OperationalError
 from django.conf import settings
 import pytds
@@ -118,15 +118,20 @@ class DBConnection(object):
         self.username = settings.HOSPITAL_DB["USERNAME"]
         self.password = settings.HOSPITAL_DB["PASSWORD"]
 
-    @db_retry
-    def execute_query(self, query, **params):
-        with pytds.connect(
+    def connection(self):
+        return partial(
+            pytds.connect,
             self.ip_address,
             self.database,
             self.username,
             self.password,
             as_dict=True
-        ) as conn:
+        )
+
+
+    @db_retry
+    def execute_query(self, query, **params):
+        with self.connection() as conn:
             with conn.cursor() as cur:
                 logger.info(
                     "Running upstream query {} {}".format(query, params)

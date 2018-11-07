@@ -19,6 +19,16 @@ def timing(f):
     return wrap
 
 
+def with_time(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time()
+        result = f(*args, **kw)
+        te = time()
+        return result, te-ts
+    return wrap
+
+
 def model_method_logging(f):
     @wraps(f)
     def wrap(self, *args, **kw):
