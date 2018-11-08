@@ -201,20 +201,21 @@ class Api(object):
         ids = [
             self.get_row_id_for_hospital_number(i) for i in patient_numbers
         ]
-        ids = [i for ids if i]
+        ids = [i for i in ids if i]
         return self.bulk_query_with_row_ids(ids)
 
     @with_time
-    def get_rows_quickly(self, *patient_numbers):
+    def get_rows_quickly(self, *hospital_numbers):
         row_ids = []
-        with self.connection() as conn:
+        with self.connection.connection() as conn:
             with conn.cursor() as cur:
-                row_id = cur.execute(
-                    GET_ROW_ID,
-                    dict(hospital_number=hospital_number)
-                ).fechone()
-                if row_id:
-                    row_ids.append(row_id)
+                for hospital_number in hospital_numbers:
+                    row_id = cur.execute(
+                        GET_ROW_ID,
+                        dict(hospital_number=hospital_number)
+                    ).fechone()
+                    if row_id:
+                        row_ids.append(row_id)
 
                 if row_ids:
                     query = BULK_LOAD.format(
