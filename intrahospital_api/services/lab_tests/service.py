@@ -7,7 +7,8 @@ from lab.models import LabTest
 
 SERVICE_NAME = "lab_tests"
 
-
+from intrahospital_api.services.base import service_utils
+api = service_utils.get_api("lab_tests")
 def lab_tests_for_hospital_number(hospital_number):
     return service_utils.get_api("lab_tests").lab_tests_for_hospital_number(
         hospital_number
@@ -99,7 +100,7 @@ def update_patients(patients, since):
 
 import time
 
-def time_bulk_load_query():
+def time_bulk_load_query(some_query):
     test_bulks = [50, 100, 200]
     hospital_numbers = elcid_models.Demographics.objects.all().values_list(
         "hospital_number", flat=True

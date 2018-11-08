@@ -118,8 +118,8 @@ class DBConnection(object):
         self.username = settings.HOSPITAL_DB["USERNAME"]
         self.password = settings.HOSPITAL_DB["PASSWORD"]
 
-    def connection(self):
-        return partial(
+    def __call__(self):
+        return pytds.connect(
             pytds.connect,
             self.ip_address,
             self.database,
@@ -130,7 +130,7 @@ class DBConnection(object):
 
     @db_retry
     def execute_query(self, query, **params):
-        with self.connection() as conn:
+        with self() as conn:
             with conn.cursor() as cur:
                 logger.info(
                     "Running upstream query {} {}".format(query, params)

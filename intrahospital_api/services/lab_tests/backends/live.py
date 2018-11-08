@@ -201,7 +201,6 @@ class Api(object):
         return result
 
 
-
     @with_time
     def get_rows(self, *patient_numbers):
         ids = [
@@ -213,7 +212,7 @@ class Api(object):
     @with_time
     def get_rows_quickly(self, *hospital_numbers):
         row_ids = []
-        with self.connection.connection() as conn:
+        with self.connection() as conn:
             with conn.cursor() as cur:
                 for hospital_number in hospital_numbers:
                     cur.execute(
@@ -243,17 +242,39 @@ class Api(object):
         )[:amount]
         return self.get_summaries_quickly(*hospital_numbers)
 
+    def test_raw_rows(self, amount=2):
+        demographics = elcid_models.Demographics.objects.all().reverse()
+        hospital_numbers = demographics.values_list(
+            "hospital_number", flat=True
+        )[:amount]
+        return self.get_raw_rows(*hospital_numbers)
+
+    def test_get_rows_quickly(self, amount=2):
+        demographics = elcid_models.Demographics.objects.all().reverse()
+        hospital_numbers = demographics.values_list(
+            "hospital_number", flat=True
+        )[:amount]
+        return self.get_rows_quickly(*hospital_numbers)
+
+    @with_time
+    def get_raw_rows(self, *hospital_numbers):
+        result = []
+        for hospital_number in hospital_numbers:
+            result.extend(self.raw_lab_tests(hospital_number))
+        return result
+
     @timing
-    def get_summary_row(self, cur, hospital_number):
-        return cur.execute(
+    def get_summary_rows(self, cur, hospital_number):
+        cur.execute(
             SUMMARY_RESULTS_FOR_HOSPITAL_NUMBER,
             dict(hospital_number=hospital_number)
         )
+        return cur.fetchall()
 
     @with_time
     def get_summaries_quickly(self, *hospital_numbers):
         result = []
-        with self.connection.connection() as conn:
+        with self.connection() as conn:
             with conn.cursor() as cur:
                 for hospital_number in hospital_numbers:
                     result.extend(self.get_summary_row(cur, hospital_number))
