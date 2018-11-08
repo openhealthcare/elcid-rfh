@@ -299,8 +299,6 @@ class Api(object):
     def lab_test_results_since(self, hospital_numbers, some_datetime):
         result = {}
         for hospital_number in hospital_numbers:
-            result[hospital_number] =  self.lab_tests_for_hospital_number(None)
+            result[hospital_number] = self.lab_tests_for_hospital_number(None)
         return result
 
-    def lab_test_count_for_hospital_number(self, hospital_number, since):
-        return 0

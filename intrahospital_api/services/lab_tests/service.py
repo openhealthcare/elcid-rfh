@@ -99,7 +99,7 @@ def update_patients(patients, since):
 def diff_patient(patient, db_results):
     result = dict(
         missing_lab_tests=[],
-        additional_lab_tests=[]
+        additional_lab_tests=[],
         additional_observations=[],
         different_observations=[],
     )

@@ -9,7 +9,7 @@ from lab import models as lmodels
 VIEW = "Pathology_Result_view"
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since ORDER BY last_updated DESC;".format(
+@hospital_number ORDER BY last_updated DESC;".format(
     view=VIEW
 )
 
@@ -18,14 +18,11 @@ ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and OBR_exam_code_Text = \
+@hospital_number and OBR_exam_code_Text = \
 @test_type ORDER BY last_updated DESC;".format(view=VIEW)
 
 ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY \
 Patient_Number, last_updated DESC;".format(view=VIEW)
-
-LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM {view} WHERE \
-Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
 
 SUMMARY_RESULTS = "SELECT Patient_Number, Result_Value, Result_ID, last_updated from \
 {view}".format(view=VIEW)
@@ -145,36 +142,29 @@ class Api(object):
         self.connection = db.DBConnection()
 
     def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
-        """ not all data, I lied. Only the last year's
-        """
-        db_date = datetime.date.today() - datetime.timedelta(365)
-
         if lab_number:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_NUMBER,
                 hospital_number=hospital_number,
-                since=db_date,
                 lab_number=lab_number
             )
         if test_type:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE,
                 hospital_number=hospital_number,
-                since=db_date,
                 test_type=test_type
             )
         else:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
-                hospital_number=hospital_number, since=db_date
+                hospital_number=hospital_number
             )
 
     def get_summaries(self, *patient_numbers):
         rows = self.connection.execute_query_multiple_times(
             SUMMARY_RESULTS, patient_numbers
         )
-
-        return self.group_summaries([SummaryRow(i for i in all_rows)])
+        return self.group_summaries([SummaryRow(i for i in rows)])
 
     def group_summaries(self, summary_rows):
         result = defaultdict(lambda: defaultdict(list))
@@ -258,17 +248,6 @@ class Api(object):
             result.append(lab_test)
         return result
 
-    def lab_test_count_for_hospital_number(self, hospital_number, since):
-        rows = list(self.connection.execute_query(
-            LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER,
-            hospital_number=hospital_number,
-            since=since
-        ))
-        if len(rows):
-            return rows[0][0]
-        else:
-            return 0
-
     @timing
     def lab_tests_for_hospital_number(self, hospital_number):
         """
@@ -280,7 +259,6 @@ class Api(object):
         raw_rows = self.raw_lab_tests(hospital_number)
         rows = (Row(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
-
 
     @timing
     def raw_summary_results(self, since):
