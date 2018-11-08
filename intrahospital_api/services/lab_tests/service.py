@@ -2,6 +2,7 @@ import copy
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
+from opal import models as opal_models
 from lab.models import LabTest
 
 SERVICE_NAME = "lab_tests"
@@ -96,7 +97,7 @@ def update_patients(patients, since):
     return total
 
 
-def diff_patient(patient, db_results):
+def diff_patient(hospital_number, patient, db_results):
     result = dict(
         missing_lab_tests=[],
         additional_lab_tests=[],
@@ -106,10 +107,9 @@ def diff_patient(patient, db_results):
     lab_tests = patient.labtest_set.filter(
         lab_test_type__istartswith="upstream"
     )
-    hn = patient.demographics_set.all()[0].hospital_number
-    db_lab_tests = db_results[hn]
+    db_lab_tests = db_results[hospital_number]
 
-    our_lab_test_numbers = set(db_lab_tests.values_list(
+    our_lab_test_numbers = set(lab_tests.values_list(
         "external_identifier", flat=True
     ))
 
@@ -120,7 +120,7 @@ def diff_patient(patient, db_results):
 
     for lab_test in lab_tests:
         ei = lab_test.external_identifier
-        if ei in additional_lab_tests:
+        if ei in result["additional_lab_tests"]:
             continue
 
         observation_set = lab_test.extras["observations"]
@@ -145,18 +145,18 @@ def diff_patient(patient, db_results):
         return result
 
 
-def smoke_check(*patient_numbers):
-    patients = elcid_models.Patient.objects.filter(
-        demographics__hospital_number__in=patient_numbers
-    ).prefetch_related("demographics")
+def smoke_check(*hospital_numbers):
     api = service_utils.get_api("lab_tests")
-    db_results = api.get_summaries(*patient_numbers)
+    db_results = api.get_summaries(*hospital_numbers)
     results = {}
-    for patient in patients:
-        hn = patient.demographics_set.all()[0].hospital_number
-        diffs = diff_patient(patient, db_results)
-        if diffs:
-            results[h] = diffs
+    for hospital_number in hospital_numbers:
+        patients = opal_models.Patient.objects.filter(
+            demographics__hospital_number=hospital_number
+        )
+        for patient in patients:
+            diffs = diff_patient(hospital_number, patient, db_results)
+            if diffs:
+                results[hospital_number] = diffs
     return results
 
 

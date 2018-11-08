@@ -14,18 +14,20 @@ ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number 
 )
 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and Result_ID = @lab_number \
-ORDER BY last_updated DESC;"
+@hospital_number and Result_ID = @lab_number \
+ORDER BY last_updated DESC;".format(
+    view=VIEW
+)
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number and OBR_exam_code_Text = \
-@test_type ORDER BY last_updated DESC;".format(view=VIEW)
+@hospital_number and OBR_exam_code_Text = @test_type ORDER BY last_updated \
+DESC;".format(view=VIEW)
 
 ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY \
 Patient_Number, last_updated DESC;".format(view=VIEW)
 
 SUMMARY_RESULTS = "SELECT Patient_Number, Result_Value, Result_ID, last_updated from \
-{view}".format(view=VIEW)
+{view} WHERE Patient_Number = @hospital_number".format(view=VIEW)
 
 QUICK_REVIEW = "SELECT Patient_Number, Result_ID, max(last_updated), count(*) \
 from {view} group by Patient_Number, Result_ID".format(view=VIEW)
@@ -160,19 +162,22 @@ class Api(object):
                 hospital_number=hospital_number
             )
 
-    def get_summaries(self, *patient_numbers):
+    def get_summaries(self, *hospital_numbers):
+        query_params = [
+            dict(hospital_number=i) for i in hospital_numbers
+        ]
         rows = self.connection.execute_query_multiple_times(
-            SUMMARY_RESULTS, patient_numbers
+            SUMMARY_RESULTS, query_params
         )
-        return self.group_summaries([SummaryRow(i for i in rows)])
+        return self.group_summaries([SummaryRow(i) for i in rows])
 
     def group_summaries(self, summary_rows):
         result = defaultdict(lambda: defaultdict(list))
         for summary_row in summary_rows:
-            hn = summary_row["hospital_number"]
-            ln = summary_row["external_identifier"]
+            hn = summary_row.hospital_number
+            ln = summary_row.external_identifier
             result[hn][ln].append(
-                summary_row["observation_value"], summary_row["last_updated"]
+                (summary_row.observation_value, summary_row.last_updated,)
             )
         return result
 
