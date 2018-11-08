@@ -4,6 +4,7 @@ from collections import defaultdict
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.base import db
 from elcid.utils import timing, with_time
+from elcid import models as elcid_models
 from lab import models as lmodels
 
 VIEW = "Pathology_Result_view"
@@ -29,6 +30,9 @@ Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Numb
 
 SUMMARY_RESULTS = "SELECT Patient_Number, Result_Value, Result_ID, last_updated from \
 {view}".format(view=VIEW)
+
+SUMMARY_RESULTS_FOR_HOSPITAL_NUMBER = "SELECT Patient_Number, Result_Value, Result_ID, last_updated from \
+{view} WHERE Patient_Number=@hospital_number".format(view=VIEW)
 
 QUICK_REVIEW = "SELECT Patient_Number, Result_ID, max(last_updated), count(*) \
 from {view} group by Patient_Number, Result_ID".format(view=VIEW)
@@ -196,6 +200,8 @@ class Api(object):
         )
         return result
 
+
+
     @with_time
     def get_rows(self, *patient_numbers):
         ids = [
@@ -210,20 +216,47 @@ class Api(object):
         with self.connection.connection() as conn:
             with conn.cursor() as cur:
                 for hospital_number in hospital_numbers:
-                    row_id = cur.execute(
+                    cur.execute(
                         GET_ROW_ID,
                         dict(hospital_number=hospital_number)
-                    ).fechone()
+                    )
+
+                    row_id = cur.fetchone()
+
                     if row_id:
-                        row_ids.append(row_id)
+                        row_ids.append(row_id["id"])
 
                 if row_ids:
                     query = BULK_LOAD.format(
                         ", ".join(str(i) for i in row_ids),
                         view=VIEW
                     )
-                    result = cur.execute(query).fetchall()
+                    cur.execute(query)
+                    result = cur.fetchall()
 
+        return result
+
+    def test_get_summaries_quickly(self, amount=2):
+        demographics = elcid_models.Demographics.objects.all().reverse()
+        hospital_numbers = demographics.values_list(
+            "hospital_number", flat=True
+        )[:amount]
+        return self.get_summaries_quickly(*hospital_numbers)
+
+    @timing
+    def get_summary_row(self, cur, hospital_number):
+        return cur.execute(
+            SUMMARY_RESULTS_FOR_HOSPITAL_NUMBER,
+            dict(hospital_number=hospital_number)
+        )
+
+    @with_time
+    def get_summaries_quickly(self, *hospital_numbers):
+        result = []
+        with self.connection.connection() as conn:
+            with conn.cursor() as cur:
+                for hospital_number in hospital_numbers:
+                    result.extend(self.get_summary_row(cur, hospital_number))
         return result
 
     def group_summaries(self, summary_rows):

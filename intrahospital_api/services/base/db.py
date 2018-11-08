@@ -128,7 +128,6 @@ class DBConnection(object):
             as_dict=True
         )
 
-
     @db_retry
     def execute_query(self, query, **params):
         with self.connection() as conn:
@@ -140,3 +139,4 @@ class DBConnection(object):
                 result = cur.fetchall()
         logger.info(result)
         return result
+
