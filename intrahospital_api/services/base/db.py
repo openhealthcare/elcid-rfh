@@ -135,3 +135,27 @@ class DBConnection(object):
                 result = cur.fetchall()
         logger.info(result)
         return result
+
+    @db_retry
+    def execute_query_multiple_times(self, query, list_of_params):
+        """
+        Iterates over a list of params and executes
+        the same query each time for each param
+        """
+        result = []
+        with pytds.connect(
+            self.ip_address,
+            self.database,
+            self.username,
+            self.password,
+            as_dict=True
+        ) as conn:
+            for params in list_of_params:
+                with conn.cursor() as cur:
+                    logger.info(
+                        "Running upstream query {} {}".format(query, params)
+                    )
+                    cur.execute(query, params)
+                    result.extend(cur.fetchall())
+        logger.info(result)
+        return result

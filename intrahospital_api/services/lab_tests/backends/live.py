@@ -170,15 +170,10 @@ class Api(object):
             )
 
     def get_summaries(self, *patient_numbers):
-        query = SUMMARY_RESULTS
-        if patient_numbers:
-            query = query + " WHERE Patient_Number IN ({})".format(
-                ", ".join(["'{}'".format(i) for i in patient_numbers])
-            )
-
-        all_rows = self.connection.execute_query(
-            query
+        rows = self.connection.execute_query_multiple_times(
+            SUMMARY_RESULTS, patient_numbers
         )
+
         return self.group_summaries([SummaryRow(i for i in all_rows)])
 
     def group_summaries(self, summary_rows):
