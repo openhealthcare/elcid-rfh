@@ -133,11 +133,13 @@ def diff_patient(hospital_number, patient, db_results):
         mo = db_observations - our_observations
         ao = our_observations - db_observations
 
-        if mo:
-            lab_test_results[ei]["missing_observations"] = mo
+        if mo or ao:
+            lab_test_results[ei] = {}
+            if mo:
+                lab_test_results[ei]["missing_observations"] = mo
 
-        if ao:
-            lab_test_results[ei]["additional_observations"] = ao
+            if ao:
+                lab_test_results[ei]["additional_observations"] = ao
 
     result["observation_diffs"] = lab_test_results
 
