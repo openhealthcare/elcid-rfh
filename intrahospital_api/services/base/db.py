@@ -133,7 +133,7 @@ class DBConnection(object):
                 )
                 cur.execute(query, params)
                 result = cur.fetchall()
-        logger.info(result)
+        logger.debug(result)
         return result
 
     @db_retry
@@ -157,5 +157,5 @@ class DBConnection(object):
                     )
                     cur.execute(query, params)
                     result.extend(cur.fetchall())
-        logger.info(result)
+        logger.debu(result)
         return result
