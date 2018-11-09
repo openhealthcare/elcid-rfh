@@ -218,3 +218,14 @@ class QueryPatientDemographicsTestCase(OpalTestCase):
         self.assertEqual(
             result["hospital_number"], "111"
         )
+
+    @mock.patch("intrahospital_api.loader.service_utils.get_api")
+    @mock.patch("intrahospital_api.loader.log_errors")
+    def test_query_patient_demographics_error(self, log_errors, get_api):
+        api = get_api.return_value
+        api.demographics_for_hospital_number.side_effect = ValueError("Boom")
+        result = loader.query_patient_demographics("111")
+        self.assertIsNone(result)
+        err = log_errors.assert_called_once_with("query_patient_demographics")
+
+
