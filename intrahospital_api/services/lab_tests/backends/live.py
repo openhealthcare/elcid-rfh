@@ -13,8 +13,7 @@ ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number 
     view=VIEW
 )
 
-ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number and Result_ID = @lab_number \
+ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Result_ID = @lab_number \
 ORDER BY last_updated DESC;".format(
     view=VIEW
 )
@@ -143,13 +142,7 @@ class Api(object):
     def __init__(self):
         self.connection = db.DBConnection()
 
-    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
-        if lab_number:
-            return self.connection.execute_query(
-                ALL_DATA_QUERY_WITH_LAB_NUMBER,
-                hospital_number=hospital_number,
-                lab_number=lab_number
-            )
+    def raw_lab_tests(self, hospital_number, test_type=None):
         if test_type:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE,
@@ -160,6 +153,12 @@ class Api(object):
             return self.connection.execute_query(
                 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
                 hospital_number=hospital_number
+            )
+
+    def lab_tests_by_lab_test_number(self, lab_number):
+            return self.connection.execute_query(
+                ALL_DATA_QUERY_WITH_LAB_NUMBER,
+                lab_number=lab_number
             )
 
     def get_summaries(self, *hospital_numbers):
