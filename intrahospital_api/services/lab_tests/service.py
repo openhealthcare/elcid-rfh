@@ -1,10 +1,10 @@
-import copy
 from collections import defaultdict
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
 from opal import models as opal_models
 from lab.models import LabTest
+from intrahospital_api import models as intrahospital_api_models
 
 SERVICE_NAME = "lab_tests"
 
@@ -157,19 +157,40 @@ def diff_patient(hospital_number, patient, db_results):
         return result
 
 
-def smoke_check(*hospital_numbers):
+def diff_patients(*patients):
+    """
+        returns a dictionary of hospital number to the output
+        of diff_patient
+    """
+    hospital_number_to_patients = defaultdict(list)
+
+    for patient in patients:
+        hn = patient.demographics_set.get().hospital_number
+        hospital_number_to_patients[hn] = patient
+
     api = service_utils.get_api("lab_tests")
-    db_results = api.get_summaries(*hospital_numbers)
+    db_results = api.get_summaries(
+        *hospital_number_to_patients.keys()
+    )
     results = {}
-    for hospital_number in hospital_numbers:
-        patients = opal_models.Patient.objects.filter(
-            demographics__hospital_number=hospital_number
-        )
+    for hospital_number, patients in hospital_number_to_patients.items():
         for patient in patients:
             diffs = diff_patient(hospital_number, patient, db_results)
             if diffs:
                 results[hospital_number] = diffs
     return results
+
+
+def smoke_check():
+    patient_ids = intrahospital_api_models.InitialPatientLoad.objects.filter(
+        state="success"
+    ).values_list(
+        "patient_id", flat=True
+    ).distinct()
+
+    patients = opal_models.Patient.objects.filter(id__in=patient_ids)
+    hospital_number_with_issues = diff_patients(*patients).keys()
+    patients_with_issues = opal_models.Patient.objects.filter
 
 
 def refresh_patient(patient):
