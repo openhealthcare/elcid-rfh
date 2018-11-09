@@ -1,4 +1,5 @@
 import copy
+from collections import defaultdict
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
@@ -98,50 +99,59 @@ def update_patients(patients, since):
 
 
 def diff_patient(hospital_number, patient, db_results):
+    """
+    Missing lab tests are lab tests numbers that exist upstream but not locally
+    Additional lab tests are lab test numbers that exist locally but not upstream
+    Different observations is a dict
+    {
+        {{ lab_number }}: missing_observations: set([{{ observation value }}, {{ last_updated}}]),
+                          additional_observations: set([{{ observation value }}, {{ last_updated}}])
+    }
+
+    """
     result = dict(
         missing_lab_tests=[],
         additional_lab_tests=[],
-        additional_observations=[],
-        different_observations=[],
+        different_observations={},
     )
     lab_tests = patient.labtest_set.filter(
         lab_test_type__istartswith="upstream"
     )
     db_lab_tests = db_results[hospital_number]
 
-    our_lab_test_numbers = set(lab_tests.values_list(
-        "external_identifier", flat=True
-    ))
+    lab_test_number_to_observations = defaultdict(list)
+    for lab_test in lab_tests:
+        lab_test_number_to_observations[
+            lab_test.external_identifier
+        ].extend(lab_test.extras["observations"])
 
+    our_lab_test_numbers = set(lab_test_number_to_observations.keys())
     db_lab_test_numbers = set(db_lab_tests.keys())
     result["missing_lab_tests"] = db_lab_test_numbers - our_lab_test_numbers
     result["additional_lab_tests"] = our_lab_test_numbers - db_lab_test_numbers
     lab_test_results = dict()
 
-    for lab_test in lab_tests:
-        ei = lab_test.external_identifier
-        if ei in result["additional_lab_tests"]:
+    for lab_test_number, observations in lab_test_number_to_observations.items():
+
+        if lab_test_number in result["additional_lab_tests"]:
             continue
 
-        observation_set = lab_test.extras["observations"]
         our_observations = set(
             (
                 i["observation_value"], i["last_updated"],
-            ) for i in observation_set
+            ) for i in observations
         )
-        db_observations = set(db_lab_tests[ei])
-        mo = db_observations - our_observations
-        ao = our_observations - db_observations
+        db_observations = set(db_lab_tests[lab_test_number])
+        missing_observations = db_observations - our_observations
+        additional_observations = our_observations - db_observations
 
-        if mo or ao:
-            lab_test_results[ei] = {}
-            if mo:
-                lab_test_results[ei]["missing_observations"] = mo
+        if missing_observations or additional_observations:
+            lab_test_results[lab_test_number] = dict(
+                missing_observations=missing_observations,
+                additional_observations=additional_observations
+            )
 
-            if ao:
-                lab_test_results[ei]["additional_observations"] = ao
-
-    result["observation_diffs"] = lab_test_results
+    result["different_observations"] = lab_test_results
 
     if(any(result.values())):
         return result
