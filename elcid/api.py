@@ -272,7 +272,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
                     pass
                 else:
-                    if isinstance(observation["observation_value"], (str, unicode,)):
+                    if isinstance(observation["observation_value"], str):
                         if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
                             long_form = True
 
