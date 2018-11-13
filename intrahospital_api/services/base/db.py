@@ -157,5 +157,5 @@ class DBConnection(object):
                     )
                     cur.execute(query, params)
                     result.extend(cur.fetchall())
-        logger.debu(result)
+        logger.debug(result)
         return result

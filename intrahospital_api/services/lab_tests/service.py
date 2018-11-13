@@ -1,4 +1,6 @@
 from collections import defaultdict
+from django.core.mail import send_mail
+from django.conf import settings
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
@@ -181,7 +183,7 @@ def diff_patients(*patients):
     return results
 
 
-def smoke_check():
+def smoke_test():
     patient_ids = intrahospital_api_models.InitialPatientLoad.objects.filter(
         state="success"
     ).values_list(
@@ -190,7 +192,16 @@ def smoke_check():
 
     patients = opal_models.Patient.objects.filter(id__in=patient_ids)
     hospital_number_with_issues = diff_patients(*patients).keys()
-    patients_with_issues = opal_models.Patient.objects.filter
+    patients_with_issues = opal_models.Patient.objects.filter(
+        demographics__hospital_number__in=hospital_number_with_issues
+    )
+    issues = [
+        "{}/#/patient/{}".format(p.id) for p in patients_with_issues
+    ]
+
+    if len(issues):
+        send_mail.
+
 
 
 def refresh_patient(patient):
