@@ -1,6 +1,6 @@
 from django.test import override_settings
 from django.contrib.auth.models import User
-from intrahospital_api.test.test_loader import ApiTestCase
+from intrahospital_api.test.core import ApiTestCase
 from opal.models import Patient
 from intrahospital_api.management.commands import batch_demographics_load
 from intrahospital_api.constants import EXTERNAL_SYSTEM

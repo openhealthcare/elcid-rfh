@@ -1,6 +1,6 @@
 import mock
 import datetime
-from intrahospital_api.test.test_loader import ApiTestCase
+from intrahospital_api.test.core import ApiTestCase
 from intrahospital_api.services.demographics import service
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 

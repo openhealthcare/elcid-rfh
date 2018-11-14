@@ -7,7 +7,7 @@ from opal.models import Patient
 from elcid import models as elcid_models
 from apps.tb import models as tb_models
 from apps.tb.episode_categories import TbEpisode
-from intrahospital_api.test import test_loader
+from intrahospital_api.test.core import ApiTestCase
 
 
 SERVICE_STR = "intrahospital_api.services.appointments.service.{}"
@@ -29,7 +29,7 @@ API_RESPONSE = {
 }
 
 
-class AbstractServiceTestCase(test_loader.ApiTestCase):
+class AbstractServiceTestCase(ApiTestCase):
     def setUp(self):
         super(AbstractServiceTestCase, self).setUp()
         self.patient = self.create_tb_patient()

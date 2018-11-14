@@ -7,11 +7,11 @@ from lab import models as lab_models
 from elcid import models as elcid_models
 from intrahospital_api.services.lab_tests import service
 from intrahospital_api import models
-from intrahospital_api.test import test_loader
+from intrahospital_api.test.core import ApiTestCase
 
 
 @mock.patch('intrahospital_api.services.lab_tests.service.update_patients')
-class BatchLoadTestCase(test_loader.ApiTestCase):
+class BatchLoadTestCase(ApiTestCase):
     def test_batch_load(self, update_patients):
         patient, _ = self.new_patient_and_episode_please()
         started = timezone.now() - datetime.timedelta(seconds=20)
@@ -36,7 +36,7 @@ class BatchLoadTestCase(test_loader.ApiTestCase):
         self.assertEqual(result, 2)
 
 
-class UpdatePatientsTestCase(test_loader.ApiTestCase):
+class UpdatePatientsTestCase(ApiTestCase):
 
     @mock.patch("intrahospital_api.services.lab_tests.service.update_patient")
     def test_multiple_patients_with_the_same_hospital_number(

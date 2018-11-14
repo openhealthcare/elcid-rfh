@@ -1,22 +1,19 @@
 import mock
 import datetime
 from django.contrib.auth.models import User
-from django.test import override_settings
 from django.utils import timezone
-from opal.core.test import OpalTestCase
+from django.test import override_settings
 from opal import models as opal_models
+from opal.core.test import OpalTestCase
 from elcid import models as emodels
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
+from intrahospital_api.test.core import ApiTestCase
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
-@override_settings(API_USER="ohc",  API_STATE="dev")
-class ApiTestCase(OpalTestCase):
-    def setUp(self):
-        super(ApiTestCase, self).setUp()
-        User.objects.create(username="ohc", password="fake_password")
+
 
 
 @mock.patch("intrahospital_api.loader._initial_load")
