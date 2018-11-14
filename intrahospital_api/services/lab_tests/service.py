@@ -101,6 +101,12 @@ def update_patients(patients, since):
     return total
 
 
+def lab_test_batch_load():
+    started = load_utils.get_batch_start_time(SERVICE_NAME)
+    patients = load_utils.get_loaded_patients()
+    return update_patients(patients, started)
+
+
 def diff_patient(hospital_number, patient, db_results):
     """
     Missing lab tests are lab tests numbers that exist upstream but not locally
@@ -226,10 +232,7 @@ def refresh_patient(patient):
     return update_patient(patient)
 
 
-def lab_test_batch_load():
-    started = load_utils.get_batch_start_time(SERVICE_NAME)
-    patients = load_utils.get_loaded_patients()
-    return update_patients(patients, started)
+
 
 
 
