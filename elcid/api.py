@@ -320,7 +320,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 ).toordinal()
             )
 
-        all_tags = _LAB_TEST_TAGS.keys()
+        all_tags = list(_LAB_TEST_TAGS.keys())
 
         return json_response(
             dict(
