@@ -4,23 +4,38 @@
   <div class="col-md-12">
     <div class="row">
       <div class="col-md-8">
-        <div ng-show="episode.stage !== 'New Referral'">
+        <div ng-show="episode.stage !== 'New RXSrral'">
           {% record_panel models.ReferralRoute %}
-          {% record_panel models.TBManagement %}
-          {% record_panel models.PastMedicalHistory %}
           {% record_panel models.CommuninicationConsiderations %}
+
           {% record_panel models.Nationality %}
+          {% record_panel models.TBHistory %}
+          {% record_panel models.Travel %}
+
+
+
+          {% record_panel models.PastMedicalHistory %}
+
+
+          {% record_panel models.Antimicrobial title="Medication History" %}
+          {% record_panel models.Allergies %}
+          {% record_panel models.SocialHistory %}
+          {% record_panel models.Diagnosis %}
+          {% record_panel models.Treatment %}
+
+
+          <div ng-show="false == true">
+          {% record_panel models.TBManagement %}
+
           {% record_panel models.AccessConsiderations %}
           {% record_panel models.Employment %}
           {% record_panel models.SymptomComplex %}
-          {% record_panel models.SocialHistory %}
           {% record_panel models.BCG %}
-          {% record_panel models.TBHistory %}
-          {% record_panel models.Travel %}
-          {% record_panel models.Antimicrobial title="Medication History" %}
+
+
           {% record_panel models.Observation %}
           {% record_panel models.MantouxTest %}
-          {% record_panel models.Treatment %}
+          </div>
         </div>
         <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
           <div class="panel-body">
