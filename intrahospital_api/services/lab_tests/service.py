@@ -107,7 +107,7 @@ def lab_test_batch_load():
     return update_patients(patients, started)
 
 
-def diff_patient(hospital_number, patient, db_results):
+def diff_patient(patient, db_lab_tests):
     """
     Missing lab tests are lab tests numbers that exist upstream but not locally
     Additional lab tests are lab test numbers that exist locally but not upstream
@@ -126,7 +126,6 @@ def diff_patient(hospital_number, patient, db_results):
     lab_tests = patient.labtest_set.filter(
         lab_test_type__istartswith="upstream"
     )
-    db_lab_tests = db_results[hospital_number]
 
     lab_test_number_to_observations = defaultdict(list)
     for lab_test in lab_tests:
@@ -184,7 +183,7 @@ def diff_patients(*patients):
     results = {}
     for hospital_number, patients in hospital_number_to_patients.items():
         for patient in patients:
-            diffs = diff_patient(hospital_number, patient, db_results)
+            diffs = diff_patient(patient, db_results[hospital_number])
             if diffs:
                 results[hospital_number] = diffs
     return results

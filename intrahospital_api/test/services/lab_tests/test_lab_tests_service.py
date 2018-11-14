@@ -267,3 +267,111 @@ class BatchLoadTestCase(ApiTestCase):
         )
 
         self.assertEqual(result, 2)
+
+
+class DiffPatientTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient.demographics_set.update(
+            hospital_number="111"
+        )
+
+    def create_lab_test(self, lab_test_number, observations_list):
+        return self.patient.labtest_set.create(
+            lab_test_type='Upstream Lab Test',
+            external_identifier=lab_test_number,
+            extras=dict(observations=observations_list)
+        )
+
+    def test_missing_lab_tests(self):
+        db_results = {
+            "111": [
+                ("0.11", '12/11/2018 07:07:28')
+            ]
+        }
+        result = service.diff_patient(self.patient, db_results)
+        self.assertEqual(
+            result, dict(
+                missing_lab_tests=set(["111"]),
+                different_observations={},
+                additional_lab_tests=set()
+            )
+        )
+
+    def test_additional_lab_tests(self):
+        db_results = {}
+        self.create_lab_test("111", [dict(
+            observation_value="0.11",
+            last_updated="12/11/2018 07:07:28"
+        )])
+        result = service.diff_patient(self.patient, db_results)
+        self.assertEqual(
+            result, dict(
+                missing_lab_tests=set(),
+                different_observations={},
+                additional_lab_tests=set(["111"])
+            )
+        )
+
+    def test_additional_observations(self):
+        self.create_lab_test("111", [
+            dict(
+                observation_value="0.11",
+                last_updated="12/11/2018 07:07:28"
+            ),
+            dict(
+                observation_value="0.12",
+                last_updated="12/11/2018 08:07:28"
+            ),
+        ])
+
+        db_results = {
+            "111": [
+                ("0.11", '12/11/2018 07:07:28')
+            ]
+        }
+        result = service.diff_patient(self.patient, db_results)
+        self.assertEqual(
+            result, dict(
+                missing_lab_tests=set(),
+                different_observations={
+                    "111": dict(
+                        additional_observations=set([
+                            ("0.12", "12/11/2018 08:07:28",),
+                        ]),
+                        missing_observations=set()
+                    )
+                },
+                additional_lab_tests=set()
+            )
+        )
+
+    def test_missing_observations(self):
+        self.create_lab_test("111", [
+            dict(
+                observation_value="0.11",
+                last_updated="12/11/2018 07:07:28"
+            ),
+        ])
+
+        db_results = {
+            "111": [
+                ("0.11", '12/11/2018 07:07:28'),
+                ("0.12", '12/11/2018 08:07:28'),
+            ]
+        }
+        result = service.diff_patient(self.patient, db_results)
+        self.assertEqual(
+            result, dict(
+                missing_lab_tests=set(),
+                different_observations={
+                    "111": dict(
+                        missing_observations=set([
+                            ("0.12", "12/11/2018 08:07:28",),
+                        ]),
+                        additional_observations=set()
+                    )
+                },
+                additional_lab_tests=set()
+            )
+        )
