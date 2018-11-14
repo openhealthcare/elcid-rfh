@@ -107,6 +107,14 @@ def lab_test_batch_load():
     return update_patients(patients, started)
 
 
+def refresh_patient(patient):
+    patient.labtest_set.filter(lab_test_type__in=[
+        elcid_models.UpstreamBloodCulture.get_display_name(),
+        elcid_models.UpstreamLabTest.get_display_name()
+    ]).delete()
+    return update_patient(patient)
+
+
 def diff_patient(patient, db_lab_tests):
     """
     Missing lab tests are lab tests numbers that exist upstream but not locally
@@ -223,15 +231,6 @@ def smoke_test():
 
     if len(patients_with_issues) > 0:
         send_mail(patients_with_issues)
-
-
-def refresh_patient(patient):
-    patient.labtest_set.filter(lab_test_type__in=[
-        elcid_models.UpstreamBloodCulture.get_display_name(),
-        elcid_models.UpstreamLabTest.get_display_name()
-    ]).delete()
-    return update_patient(patient)
-
 
 
 # not an invalid, name, its not a constant, seperate out

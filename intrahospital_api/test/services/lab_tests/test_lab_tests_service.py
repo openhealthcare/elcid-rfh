@@ -270,6 +270,39 @@ class BatchLoadTestCase(ApiTestCase):
         self.assertEqual(result, 2)
 
 
+@mock.patch(
+    "intrahospital_api.services.lab_tests.service.update_patient"
+)
+class RefreshPatientTestCase(OpalTestCase):
+    def test_refresh_patient(self, update_patient):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.labtest_set.create(
+            lab_test_type=elcid_models.UpstreamBloodCulture.get_display_name(),
+            external_identifier="123",
+            extras=dict(
+                observations=[dict(
+                    observation_value="0.11",
+                    last_updated="12/11/2018 07:07:28"
+                )]
+            )
+        )
+        patient.labtest_set.create(
+            lab_test_type=elcid_models.UpstreamLabTest.get_display_name(),
+            external_identifier="123",
+            extras=dict(
+                observations=[dict(
+                    observation_value="0.11",
+                    last_updated="12/11/2018 07:07:28"
+                )]
+            )
+        )
+        service.refresh_patient(patient)
+        self.assertFalse(
+            patient.labtest_set.exists()
+        )
+        update_patient.assert_called_once_with(patient)
+
+
 class DiffPatientTestCase(OpalTestCase):
     def setUp(self):
         self.patient, _ = self.new_patient_and_episode_please()
@@ -279,7 +312,7 @@ class DiffPatientTestCase(OpalTestCase):
 
     def create_lab_test(self, lab_test_number, observations_list):
         return self.patient.labtest_set.create(
-            lab_test_type='Upstream Lab Test',
+            lab_test_type=elcid_models.UpstreamLabTest.get_display_name(),
             external_identifier=lab_test_number,
             extras=dict(observations=observations_list)
         )
@@ -394,7 +427,7 @@ class DiffPatientsTestCase(OpalTestCase):
 
     def create_lab_test(self, lab_test_number, observations_list):
         return self.patient.labtest_set.create(
-            lab_test_type='Upstream Lab Test',
+            lab_test_type=elcid_models.UpstreamLabTest.get_display_name(),
             external_identifier=lab_test_number,
             extras=dict(observations=observations_list)
         )
@@ -463,7 +496,7 @@ class SmokeTestTestCase(OpalTestCase):
 
     def create_lab_test(self, lab_test_number, observations_list):
         return self.patient.labtest_set.create(
-            lab_test_type='Upstream Lab Test',
+            lab_test_type=elcid_models.UpstreamLabTest.get_display_name(),
             external_identifier=lab_test_number,
             extras=dict(observations=observations_list)
         )
