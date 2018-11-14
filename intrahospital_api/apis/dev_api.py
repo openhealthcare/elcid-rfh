@@ -336,7 +336,7 @@ class DevApi(base_api.BaseApi):
             ),
             observation_name=test_base_observation_name,
             observation_number=self.get_external_identifier(),
-            observation_value=str(self.get_observation_value(
+            observation_value="{0:.2f}".format(self.get_observation_value(
                 test_base_observation_value["reference_range"]
             )),
             reference_range=test_base_observation_value["reference_range"],
