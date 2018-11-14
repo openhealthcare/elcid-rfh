@@ -150,13 +150,14 @@ def diff_patient(patient, db_lab_tests):
             ) for i in observations
         )
         db_observations = set(db_lab_tests[lab_test_number])
-        missing_observations = db_observations - our_observations
-        additional_observations = our_observations - db_observations
 
-        if missing_observations or additional_observations:
+        # for the moment we don't record additional observations
+        # as we are keeping the super set of what is upstream
+        missing_observations = db_observations - our_observations
+
+        if missing_observations:
             lab_test_results[lab_test_number] = dict(
                 missing_observations=missing_observations,
-                additional_observations=additional_observations
             )
 
     result["different_observations"] = lab_test_results
@@ -165,16 +166,16 @@ def diff_patient(patient, db_lab_tests):
         return result
 
 
-def diff_patients(*patients):
+def diff_patients(*patients_to_diff):
     """
         returns a dictionary of hospital number to the output
         of diff_patient
     """
     hospital_number_to_patients = defaultdict(list)
 
-    for patient in patients:
+    for patient in patients_to_diff:
         hn = patient.demographics_set.get().hospital_number
-        hospital_number_to_patients[hn] = patient
+        hospital_number_to_patients[hn].append(patient)
 
     api = service_utils.get_api("lab_tests")
     db_results = api.get_summaries(
@@ -229,9 +230,6 @@ def refresh_patient(patient):
         elcid_models.UpstreamLabTest.get_display_name()
     ]).delete()
     return update_patient(patient)
-
-
-
 
 
 

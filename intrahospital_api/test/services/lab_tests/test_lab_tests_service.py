@@ -283,6 +283,19 @@ class DiffPatientTestCase(OpalTestCase):
             extras=dict(observations=observations_list)
         )
 
+    def test_no_diff(self):
+        db_results = {
+            "111": [
+                ("0.11", '12/11/2018 07:07:28')
+            ]
+        }
+        self.create_lab_test("111", [dict(
+            observation_value="0.11",
+            last_updated="12/11/2018 07:07:28"
+        )])
+        result = service.diff_patient(self.patient, db_results)
+        self.assertIsNone(result)
+
     def test_missing_lab_tests(self):
         db_results = {
             "111": [
@@ -314,6 +327,10 @@ class DiffPatientTestCase(OpalTestCase):
         )
 
     def test_additional_observations(self):
+        """
+        For the moment if we have additional observations
+        locally, this is ok
+        """
         self.create_lab_test("111", [
             dict(
                 observation_value="0.11",
@@ -331,20 +348,8 @@ class DiffPatientTestCase(OpalTestCase):
             ]
         }
         result = service.diff_patient(self.patient, db_results)
-        self.assertEqual(
-            result, dict(
-                missing_lab_tests=set(),
-                different_observations={
-                    "111": dict(
-                        additional_observations=set([
-                            ("0.12", "12/11/2018 08:07:28",),
-                        ]),
-                        missing_observations=set()
-                    )
-                },
-                additional_lab_tests=set()
-            )
-        )
+        self.assertIsNone(result)
+
 
     def test_missing_observations(self):
         self.create_lab_test("111", [
@@ -369,9 +374,69 @@ class DiffPatientTestCase(OpalTestCase):
                         missing_observations=set([
                             ("0.12", "12/11/2018 08:07:28",),
                         ]),
-                        additional_observations=set()
                     )
                 },
                 additional_lab_tests=set()
             )
         )
+
+
+@mock.patch(
+    "intrahospital_api.services.lab_tests.service.service_utils.get_api"
+)
+class DiffPatientsTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient.demographics_set.update(
+            hospital_number="111"
+        )
+
+    def create_lab_test(self, lab_test_number, observations_list):
+        return self.patient.labtest_set.create(
+            lab_test_type='Upstream Lab Test',
+            external_identifier=lab_test_number,
+            extras=dict(observations=observations_list)
+        )
+
+    def test_diff_flow(self, get_api):
+        api = get_api.return_value
+        api.get_summaries.return_value = {
+            "111": {
+                "113": [("0.11", '12/11/2018 07:07:28')]
+            }
+        }
+
+        self.create_lab_test("112", [dict(
+            observation_value="0.12",
+            last_updated="13/11/2018 07:07:28"
+        )])
+
+        result = service.diff_patients(self.patient)
+        self.assertEqual(
+            result, {
+                "111": dict(
+                    missing_lab_tests=set(["113"]),
+                    additional_lab_tests=set(["112"]),
+                    different_observations={}
+                )
+            }
+        )
+
+    def test_no_diff_flow(self, get_api):
+        api = get_api.return_value
+        api.get_summaries.return_value = {
+            "111": {
+                "113": [("0.11", '12/11/2018 07:07:28')]
+            }
+        }
+
+        self.create_lab_test("113", [dict(
+            observation_value="0.11",
+            last_updated="12/11/2018 07:07:28"
+        )])
+
+        result = service.diff_patients(self.patient)
+        self.assertEqual(
+            result, {}
+        )
+
