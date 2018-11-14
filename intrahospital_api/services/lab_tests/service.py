@@ -198,9 +198,9 @@ def diff_patients(*patients_to_diff):
     return results
 
 
-def send_mail(patients_with_issues):
+def send_smoke_check_results(patients_with_issues):
     issues = [
-        "{}/#/patient/{}".format(
+        "{}#/patient/{}".format(
             settings.DEFAULT_DOMAIN, p.id
         ) for p in patients_with_issues
     ]
@@ -230,7 +230,7 @@ def smoke_test():
     )
 
     if len(patients_with_issues) > 0:
-        send_mail(patients_with_issues)
+        send_smoke_check_results(patients_with_issues)
 
 
 # not an invalid, name, its not a constant, seperate out

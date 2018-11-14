@@ -475,9 +475,50 @@ class DiffPatientsTestCase(OpalTestCase):
         )
 
 
-@override_settings(DEFAULT_DOMAIN="http://something")
+@override_settings(
+    DEFAULT_DOMAIN="http://something/",
+    DEFAULT_FROM_EMAIL="me@iam.com",
+    ADMINS=[("someone", "someone@somewhere.com",)]
+)
 @mock.patch(
-    "intrahospital_api.services.lab_tests.service.send_mail"
+    "intrahospital_api.services.lab_tests.service.django_send_mail"
+)
+class SendMailTestCase(OpalTestCase):
+    def test_send_mail(self, django_send_mail):
+        patient_1, _ = self.new_patient_and_episode_please()
+        patient_2, _ = self.new_patient_and_episode_please()
+        patients = opal_models.Patient.objects.filter(
+            id__in=[patient_1.id, patient_2.id]
+        )
+        service.send_smoke_check_results(patients)
+        call_args = django_send_mail.call_args
+        self.assertEqual(
+            call_args[0][0],
+            "The Smoke Check has found 2 issues"
+        )
+        # the text output of the email
+        txt = "http://something/#/patient/{}\nhttp://something/#/patient/{}"
+        txt = txt.format(patient_1.id, patient_2.id)
+
+        # the html output of the email
+        html = "http://something/#/patient/{}<br />http://something/#/patient/{}"
+        html = html.format(patient_1.id, patient_2.id)
+        self.assertEqual(
+            call_args[0][1], txt
+        )
+        self.assertEqual(
+            call_args[0][2], "me@iam.com"
+        )
+        self.assertEqual(
+            call_args[0][3], ["someone@somewhere.com"]
+        )
+        self.assertEqual(
+            call_args[1], dict(html_message=html)
+        )
+
+
+@mock.patch(
+    "intrahospital_api.services.lab_tests.service.send_smoke_check_results"
 )
 @mock.patch(
     "intrahospital_api.services.lab_tests.service.service_utils.get_api"
