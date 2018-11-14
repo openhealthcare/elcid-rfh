@@ -1,5 +1,6 @@
+import copy
 from collections import defaultdict
-from django.core.mail import send_mail
+from django.core.mail import send_mail as django_send_mail
 from django.conf import settings
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
@@ -86,11 +87,11 @@ def update_patients(patients, since):
 
         # we should never have more than one patient per hospital number
         # but it has happened
-        patients = patients.filter(
+        patients_with_hn = patients.filter(
             demographics__hospital_number=hospital_number
         )
 
-        for patient in patients:
+        for patient in patients_with_hn:
             # lab tests are changed in place so
             # if there are multiple lab tests
             # for patient we need to copy them first
@@ -183,6 +184,18 @@ def diff_patients(*patients):
     return results
 
 
+def send_mail(issues):
+    django_send_mail(
+        "The Smoke Check has found {} issues".format(
+            len(issues)
+        ),
+        "\n".join(issues),
+        settings.DEFAULT_FROM_EMAIL,
+        [i[1] for i in settings.ADMINS],
+        html_message="<br />".join(issues)
+    )
+
+
 def smoke_test():
     patient_ids = intrahospital_api_models.InitialPatientLoad.objects.filter(
         state="success"
@@ -196,12 +209,13 @@ def smoke_test():
         demographics__hospital_number__in=hospital_number_with_issues
     )
     issues = [
-        "{}/#/patient/{}".format(p.id) for p in patients_with_issues
+        "{}/#/patient/{}".format(
+            settings.DEFAULT_DOMAIN, p.id
+        ) for p in patients_with_issues
     ]
 
-    if len(issues):
-        send_mail.
-
+    if len(issues) > 0:
+        send_mail(issues)
 
 
 def refresh_patient(patient):
