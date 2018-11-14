@@ -190,7 +190,13 @@ def diff_patients(*patients_to_diff):
     return results
 
 
-def send_mail(issues):
+def send_mail(patients_with_issues):
+    issues = [
+        "{}/#/patient/{}".format(
+            settings.DEFAULT_DOMAIN, p.id
+        ) for p in patients_with_issues
+    ]
+
     django_send_mail(
         "The Smoke Check has found {} issues".format(
             len(issues)
@@ -204,7 +210,7 @@ def send_mail(issues):
 
 def smoke_test():
     patient_ids = intrahospital_api_models.InitialPatientLoad.objects.filter(
-        state="success"
+        state=intrahospital_api_models.InitialPatientLoad.SUCCESS
     ).values_list(
         "patient_id", flat=True
     ).distinct()
@@ -214,14 +220,9 @@ def smoke_test():
     patients_with_issues = opal_models.Patient.objects.filter(
         demographics__hospital_number__in=hospital_number_with_issues
     )
-    issues = [
-        "{}/#/patient/{}".format(
-            settings.DEFAULT_DOMAIN, p.id
-        ) for p in patients_with_issues
-    ]
 
-    if len(issues) > 0:
-        send_mail(issues)
+    if len(patients_with_issues) > 0:
+        send_mail(patients_with_issues)
 
 
 def refresh_patient(patient):

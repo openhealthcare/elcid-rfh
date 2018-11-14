@@ -1,6 +1,7 @@
 import mock
 import datetime
 from django.utils import timezone
+from django.test import override_settings
 from opal.core.test import OpalTestCase
 from opal import models as opal_models
 from lab import models as lab_models
@@ -440,3 +441,66 @@ class DiffPatientsTestCase(OpalTestCase):
             result, {}
         )
 
+
+@override_settings(DEFAULT_DOMAIN="http://something")
+@mock.patch(
+    "intrahospital_api.services.lab_tests.service.send_mail"
+)
+@mock.patch(
+    "intrahospital_api.services.lab_tests.service.service_utils.get_api"
+)
+class SmokeTestTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient.initialpatientload_set.create(
+            state=models.InitialPatientLoad.SUCCESS,
+            started=timezone.now(),
+            stopped=timezone.now()
+        )
+        self.patient.demographics_set.update(
+            hospital_number="111"
+        )
+
+    def create_lab_test(self, lab_test_number, observations_list):
+        return self.patient.labtest_set.create(
+            lab_test_type='Upstream Lab Test',
+            external_identifier=lab_test_number,
+            extras=dict(observations=observations_list)
+        )
+
+    def test_flow(self, get_api, send_mail):
+        api = get_api.return_value
+        api.get_summaries.return_value = {
+            "111": {
+                "113": [("0.11", '12/11/2018 07:07:28')]
+            }
+        }
+
+        self.create_lab_test("112", [dict(
+            observation_value="0.12",
+            last_updated="13/11/2018 07:07:28"
+        )])
+
+        service.smoke_test()
+        patient_set = send_mail.call_args[0][0]
+        self.assertEqual(
+            patient_set.get(), self.patient
+        )
+
+    def test_flow_no_issues(self, get_api, send_mail):
+        api = get_api.return_value
+        api.get_summaries.return_value = {
+            "111": {
+                "113": [("0.11", '12/11/2018 07:07:28')]
+            }
+        }
+
+        self.create_lab_test("113", [dict(
+            observation_value="0.11",
+            last_updated="12/11/2018 07:07:28"
+        )])
+
+        service.smoke_test()
+        self.assertFalse(
+            send_mail.called
+        )
