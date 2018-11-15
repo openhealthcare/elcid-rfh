@@ -405,6 +405,10 @@ def restart_nginx():
 
 
 def get_cron_output_file_name(full_path):
+    """
+    Get's the full file path of where we are outputting
+    our new cron_file.
+    """
     template_dir = "etc/cron_templates/"
     template_name = full_path.replace(template_dir, "")
     template_name = template_name.replace(".jinja2", "")
@@ -421,6 +425,10 @@ def write_cron_jobs(new_env):
 
 
 def render_cron_template(new_env, template_path, output_file):
+    """
+    Render the jinja2 template and put it in the correct
+    location.
+    """
     template = jinja_env.get_template(template_path)
 
     output = template.render(

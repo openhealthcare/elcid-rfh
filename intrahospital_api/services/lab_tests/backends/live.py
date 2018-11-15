@@ -33,7 +33,8 @@ from {view} group by Patient_Number, Result_ID".format(view=VIEW)
 
 
 class Row(db.Row):
-    """ a simple wrapper to get us the fields we actually want out of a row
+    """
+    A simple wrapper to get us the fields we actually want out of a row
     """
     DEMOGRAPHICS_MAPPING = dict(
         hospital_number="Patient_Number",
@@ -189,9 +190,10 @@ class Api(object):
         return (Row(r) for r in all_rows)
 
     def lab_test_results_since(self, hospital_numbers, some_datetime):
-        """ yields an iterator of dictionary
+        """
+        Yields an iterator of dictionary
 
-            the dictionary contains
+        The dictionary contains
 
             "demographics" : demographics, the first (ie the most recent)
             demographics result in the set.
@@ -218,12 +220,13 @@ class Api(object):
         return (Row(row).get_all_fields() for row in raw_lab_tests)
 
     def cast_rows_to_lab_test(self, rows):
-        """ We cast multiple rows to lab tests.
+        """
+        We cast multiple rows to lab tests.
 
-            A lab test number(external identifier) can have multiple lab test
-            types and multiple obsevartions.
+        A lab test number(external identifier) can have multiple lab test
+        types and multiple obsevartions.
 
-            So we split the rows (observations) up via lab number/lab test type
+        So we split the rows (observations) up via lab number/lab test type
 
         """
         lab_number_type_to_observations = defaultdict(list)
@@ -255,9 +258,9 @@ class Api(object):
     @timing
     def lab_tests_for_hospital_number(self, hospital_number):
         """
-            returns all the results for a particular person
+        Returns all the results for a particular person
 
-            aggregated into labtest: observations([])
+        Aggregated into labtest: observations([])
         """
 
         raw_rows = self.raw_lab_tests(hospital_number)

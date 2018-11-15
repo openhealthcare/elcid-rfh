@@ -131,6 +131,17 @@ def batch_load(service_name):
     """
     A decorator that runs the function as batch load
     ie wrapping it in the batch load decorator
+
+    A Batch load is wrapped in a model called
+    the BatchPatientLoad records when it starts and stops.
+
+    The function we calling is expected to return
+    a integer which should be a count of the objects
+    (be they lab tests, appointments, demographics etc)
+    that have changed.
+
+    The wrapper also handles if an error is thrown it
+    notifies developers that a batch load error.
     """
     def batch_load_wrapper(fun):
         @wraps(fun)
