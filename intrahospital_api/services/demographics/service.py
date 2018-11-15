@@ -1,6 +1,7 @@
 """
     Handles updating demographics pulled in by the api
 """
+import datetime
 from django.db import transaction
 from django.utils import timezone
 from opal.models import Patient
@@ -101,10 +102,17 @@ def have_demographics_changed(
         only compares keys that are coming from the
         upstream dict
     """
+    # upstream_demographics["date_of_birth"] = our_dict["date_of_birth"]
     as_dict = our_demographics_model.to_dict(service_utils.get_user())
     relevent_keys = set(upstream_demographics.keys())
     our_dict = {i: v for i, v in as_dict.items() if i in relevent_keys}
-    return not upstream_demographics == our_dict
+    to_compare = {}
+    for k, v in upstream_demographics.items():
+        if isinstance(our_dict[k], datetime.date):
+            to_compare[k] = deserialize_date(v)
+        else:
+            to_compare[k] = v
+    return not to_compare == our_dict
 
 
 def update_patient_demographics(patient, upstream_demographics_dict=None):

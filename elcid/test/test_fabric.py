@@ -565,37 +565,26 @@ class RestartTestCase(FabfileTestCase):
 @mock.patch('fabfile.local')
 @mock.patch('fabfile.print', create=True)
 class CronTestCase(FabfileTestCase):
+    @mock.patch('fabfile.glob.glob')
     @mock.patch("fabfile.jinja_env.get_template")
     def test_write_cron_jobs(
-        self, get_template, print_function, local
+        self, get_template, glob, print_function, local
     ):
 
+        glob.return_value = [
+            'etc/cron_templates/cron_demographics_load.jinja2'
+        ]
         fabfile.write_cron_jobs(self.prod_env)
 
         self.assertEqual(
-            get_template.call_count, 3
+            get_template.call_count, 1
         )
 
-        expected_calls = set([
-            get_template.call_args_list[0][0][0],
-            get_template.call_args_list[1][0][0],
-            get_template.call_args_list[2][0][0],
-        ])
         self.assertEqual(
-            expected_calls,
-            set([
-                'etc/cron_templates/cron_lab_tests.jinja2',
-                'etc/cron_templates/cron_demographics_load.jinja2',
-                'etc/cron_templates/cron_appointments.jinja2'
-            ])
+            get_template.call_args[0][0],
+            'etc/cron_templates/cron_demographics_load.jinja2'
         )
 
-        expected_call_args = dict(
-            virtualenv='/home/ohc/.virtualenvs/elcidrfh-some_branch',
-            project_dir="/usr/lib/ohc/elcidrfh-some_branch",
-            unix_user="ohc",
-            branch="some_branch"
-        )
 
     @mock.patch("fabfile.os")
     def test_write_cron_backup(self, os, print_function, local):
