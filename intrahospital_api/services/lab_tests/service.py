@@ -15,7 +15,7 @@ SERVICE_NAME = "lab_tests"
 
 
 def lab_tests_for_hospital_number(hospital_number):
-    return service_utils.get_api("lab_tests").lab_tests_for_hospital_number(
+    return service_utils.get_api(SERVICE_NAME).lab_tests_for_hospital_number(
         hospital_number
     )
 
@@ -55,7 +55,7 @@ def update_patient(patient, lab_tests=None):
     that need saving updates those that need
     updating.
     """
-    api = service_utils.get_api("lab_tests")
+    api = service_utils.get_api(SERVICE_NAME)
     user = service_utils.get_user()
     if lab_tests is None:
         lab_tests = api.lab_tests_for_hospital_number(
@@ -73,7 +73,7 @@ def update_patients(patients, since):
     Updates all the lab tests for a queryset of patients
     since a certain time.
     """
-    api = service_utils.get_api("lab_tests")
+    api = service_utils.get_api(SERVICE_NAME)
     hospital_numbers = patients.values_list(
         'demographics__hospital_number', flat=True
     )
@@ -214,7 +214,7 @@ def diff_patients(*patients_to_diff):
     of diff_patient
     """
     hospital_number_to_patients = defaultdict(list)
-    max_dt = timezone.now()
+    max_dt = load_utils.get_batch_start_time(SERVICE_NAME)
 
     for patient in patients_to_diff:
         hn = patient.demographics_set.get().hospital_number

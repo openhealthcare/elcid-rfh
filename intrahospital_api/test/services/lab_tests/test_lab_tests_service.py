@@ -496,7 +496,9 @@ class DiffPatientTestCase(OpalTestCase):
         )
         self.assertIsNone(result)
 
-
+@mock.patch(
+    "intrahospital_api.services.lab_tests.service.load_utils.get_batch_start_time"
+)
 @mock.patch(
     "intrahospital_api.services.lab_tests.service.service_utils.get_api"
 )
@@ -506,6 +508,11 @@ class DiffPatientsTestCase(OpalTestCase):
         self.patient.demographics_set.update(
             hospital_number="111"
         )
+        self.batch_start_time = timezone.make_aware(
+            datetime.datetime(
+                2018, 12, 10, 11, 8
+            )
+        )
 
     def create_lab_test(self, lab_test_number, observations_list):
         return self.patient.labtest_set.create(
@@ -514,8 +521,9 @@ class DiffPatientsTestCase(OpalTestCase):
             extras=dict(observations=observations_list)
         )
 
-    def test_diff_flow(self, get_api):
+    def test_diff_flow(self, get_api, get_batch_start_time):
         api = get_api.return_value
+        get_batch_start_time.return_value = self.batch_start_time
         api.get_summaries.return_value = {
             "111": {
                 "113": [("0.11", '12/11/2018 07:07:28')]
@@ -538,8 +546,9 @@ class DiffPatientsTestCase(OpalTestCase):
             }
         )
 
-    def test_no_diff_flow(self, get_api):
+    def test_no_diff_flow(self, get_api, get_batch_start_time):
         api = get_api.return_value
+        get_batch_start_time.return_value = self.batch_start_time
         api.get_summaries.return_value = {
             "111": {
                 "113": [("0.11", '12/11/2018 07:07:28')]
