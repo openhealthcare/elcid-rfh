@@ -1,8 +1,10 @@
 import mock
 import datetime
+from django.conf import settings
 from django.utils import timezone
 from django.test import override_settings
 from opal.core.test import OpalTestCase
+from opal.core import serialization
 from opal import models as opal_models
 from lab import models as lab_models
 from elcid import models as elcid_models
@@ -309,6 +311,16 @@ class DiffPatientTestCase(OpalTestCase):
         self.patient.demographics_set.update(
             hospital_number="111"
         )
+        self.max_dt = timezone.make_aware(
+            datetime.datetime(
+                2018, 12, 10, 11, 8
+            )
+        )
+        future_time = self.max_dt + datetime.timedelta(hours=1)
+
+        self.future_time_str = future_time.strftime(
+            settings.DATETIME_INPUT_FORMATS[0]
+        )
 
     def create_lab_test(self, lab_test_number, observations_list):
         return self.patient.labtest_set.create(
@@ -327,7 +339,9 @@ class DiffPatientTestCase(OpalTestCase):
             observation_value="0.11",
             last_updated="12/11/2018 07:07:28"
         )])
-        result = service.diff_patient(self.patient, db_results)
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
         self.assertIsNone(result)
 
     def test_missing_lab_tests(self):
@@ -336,7 +350,9 @@ class DiffPatientTestCase(OpalTestCase):
                 ("0.11", '12/11/2018 07:07:28')
             ]
         }
-        result = service.diff_patient(self.patient, db_results)
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
         self.assertEqual(
             result, dict(
                 missing_lab_tests=set(["111"]),
@@ -351,7 +367,9 @@ class DiffPatientTestCase(OpalTestCase):
             observation_value="0.11",
             last_updated="12/11/2018 07:07:28"
         )])
-        result = service.diff_patient(self.patient, db_results)
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
         self.assertEqual(
             result, dict(
                 missing_lab_tests=set(),
@@ -381,9 +399,10 @@ class DiffPatientTestCase(OpalTestCase):
                 ("0.11", '12/11/2018 07:07:28')
             ]
         }
-        result = service.diff_patient(self.patient, db_results)
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
         self.assertIsNone(result)
-
 
     def test_missing_observations(self):
         self.create_lab_test("111", [
@@ -399,7 +418,9 @@ class DiffPatientTestCase(OpalTestCase):
                 ("0.12", '12/11/2018 08:07:28'),
             ]
         }
-        result = service.diff_patient(self.patient, db_results)
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
         self.assertEqual(
             result, dict(
                 missing_lab_tests=set(),
@@ -413,6 +434,67 @@ class DiffPatientTestCase(OpalTestCase):
                 additional_lab_tests=set()
             )
         )
+
+    def test_ignore_our_lab_tests_with_all_obs_over_the_max_dt(self):
+        self.create_lab_test("111", [
+            dict(
+                observation_value="0.11",
+                last_updated=self.future_time_str
+            ),
+        ])
+        db_results = {}
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
+        self.assertIsNone(result)
+
+    def test_ignore_their_lab_tests_with_all_obs_over_the_max(self):
+        db_results = {"111": [
+            ("0.11", self.future_time_str,),
+        ]}
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
+        self.assertIsNone(result)
+
+    def test_ignore_observations_with_some_of_our_obs_over_the_max(self):
+        db_results = {
+            "111": [
+                ("0.11", '12/11/2018 07:07:28')
+            ]
+        }
+        self.create_lab_test("111", [
+            dict(
+                observation_value="0.11",
+                last_updated="12/11/2018 07:07:28"
+            ),
+            dict(
+                observation_value="0.11",
+                last_updated=self.future_time_str
+            ),
+        ])
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
+        self.assertIsNone(result)
+
+    def test_ignore_observations_with_some_of_our_obs_over_the_max(self):
+        db_results = {
+            "111": [
+                ("0.11", '12/11/2018 07:07:28'),
+                ("0.12", self.future_time_str),
+            ]
+        }
+        self.create_lab_test("111", [
+            dict(
+                observation_value="0.11",
+                last_updated="12/11/2018 07:07:28"
+            )
+        ])
+        result = service.diff_patient(
+            self.patient, db_results, self.max_dt
+        )
+        self.assertIsNone(result)
 
 
 @mock.patch(

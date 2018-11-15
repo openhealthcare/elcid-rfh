@@ -2,10 +2,12 @@ import copy
 from collections import defaultdict
 from django.core.mail import send_mail as django_send_mail
 from django.conf import settings
+from django.utils import timezone
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
 from opal import models as opal_models
+from opal.core import serialization
 from lab.models import LabTest
 from intrahospital_api import models as intrahospital_api_models
 
@@ -115,7 +117,34 @@ def refresh_patient(patient):
     return update_patient(patient)
 
 
-def diff_patient(patient, db_lab_tests):
+def clean_observations(observations, max_dt):
+    """"
+    Takes in a list of tules (obs_value, last_updated)
+
+    This filters out any dicts where the last_updated > max_dt
+    """
+    result = []
+    for observation in observations:
+        last_updated = serialization.deserialize_datetime(
+            observation[1]
+        )
+        if last_updated < max_dt:
+            result.append(observation)
+
+    return result
+
+
+def clean_lab_tests(lab_test_number_to_observations, max_dt):
+    result = dict()
+
+    for lab_test_number, observations in lab_test_number_to_observations.items():
+        cleaned_observations = clean_observations(observations, max_dt)
+        if cleaned_observations:
+            result[lab_test_number] = cleaned_observations
+    return result
+
+
+def diff_patient(patient, unclean_db_lab_tests, max_dt):
     """
     Missing lab tests are lab tests numbers that exist upstream but not locally
     Additional lab tests are lab test numbers that exist locally but not upstream
@@ -135,33 +164,38 @@ def diff_patient(patient, db_lab_tests):
         lab_test_type__istartswith="upstream"
     )
 
-    lab_test_number_to_observations = defaultdict(list)
-    for lab_test in lab_tests:
-        lab_test_number_to_observations[
-            lab_test.external_identifier
-        ].extend(lab_test.extras["observations"])
+    lab_test_number_to_summaries = defaultdict(list)
 
-    our_lab_test_numbers = set(lab_test_number_to_observations.keys())
+    for lab_test in lab_tests:
+        observations = lab_test.extras["observations"]
+        summaries = [
+            (i["observation_value"], i["last_updated"],) for i in observations
+        ]
+        lab_test_number_to_summaries[
+            lab_test.external_identifier
+        ].extend(summaries)
+
+    lab_test_number_to_summaries = clean_lab_tests(
+        lab_test_number_to_summaries, max_dt
+    )
+    db_lab_tests = clean_lab_tests(unclean_db_lab_tests, max_dt)
+    our_lab_test_numbers = set(lab_test_number_to_summaries.keys())
+
     db_lab_test_numbers = set(db_lab_tests.keys())
     result["missing_lab_tests"] = db_lab_test_numbers - our_lab_test_numbers
     result["additional_lab_tests"] = our_lab_test_numbers - db_lab_test_numbers
     lab_test_results = dict()
 
-    for lab_test_number, observations in lab_test_number_to_observations.items():
+    for lab_test_number, our_summaries in lab_test_number_to_summaries.items():
 
         if lab_test_number in result["additional_lab_tests"]:
             continue
 
-        our_observations = set(
-            (
-                i["observation_value"], i["last_updated"],
-            ) for i in observations
-        )
-        db_observations = set(db_lab_tests[lab_test_number])
+        db_summaries = set(db_lab_tests[lab_test_number])
 
         # for the moment we don't record additional observations
         # as we are keeping the super set of what is upstream
-        missing_observations = db_observations - our_observations
+        missing_observations = db_summaries - set(our_summaries)
 
         if missing_observations:
             lab_test_results[lab_test_number] = dict(
@@ -176,10 +210,11 @@ def diff_patient(patient, db_lab_tests):
 
 def diff_patients(*patients_to_diff):
     """
-        returns a dictionary of hospital number to the output
-        of diff_patient
+    Returns a dictionary of hospital number to the output
+    of diff_patient
     """
     hospital_number_to_patients = defaultdict(list)
+    max_dt = timezone.now()
 
     for patient in patients_to_diff:
         hn = patient.demographics_set.get().hospital_number
@@ -192,7 +227,9 @@ def diff_patients(*patients_to_diff):
     results = {}
     for hospital_number, patients in hospital_number_to_patients.items():
         for patient in patients:
-            diffs = diff_patient(patient, db_results[hospital_number])
+            diffs = diff_patient(
+                patient, db_results[hospital_number], max_dt
+            )
             if diffs:
                 results[hospital_number] = diffs
     return results
