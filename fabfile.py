@@ -44,13 +44,14 @@ import datetime
 import json
 import copy
 import time
+import os
+import stat
+import glob
 from jinja2 import Environment, FileSystemLoader
 from fabric.api import local, env
 from fabric.operations import put
 from fabric.context_managers import lcd, settings
 from fabric.decorators import task
-import os
-import stat
 
 env.hosts = ['127.0.0.1']
 UNIX_USER = "ohc"
@@ -403,27 +404,42 @@ def restart_nginx():
     local('sudo service nginx restart')
 
 
+def get_cron_output_file_name(full_path):
+    """
+    Get's the full file path of where we are outputting
+    our new cron_file.
+    """
+    template_dir = "etc/cron_templates/"
+    template_name = full_path.replace(template_dir, "")
+    template_name = template_name.replace(".jinja2", "")
+    template_name = "{}_{}".format(PROJECT_NAME, template_name)
+    return "/etc/cron.d/{}".format(template_name)
+
+
 def write_cron_jobs(new_env):
-    template_dir = "etc/cron_templates"
+    cron_jobs = glob.glob("etc/cron_templates/*.jinja2")
 
-    cron_jobs = os.listdir(template_dir)
-
-    for cron_job in cron_jobs:
-        template_path = os.path.join(template_dir, cron_job)
-        render_cron_template(new_env, template_path, cron_job)
+    for full_path in cron_jobs:
+        output_file = get_cron_output_file_name(full_path)
+        render_cron_template(new_env, full_path, output_file)
 
 
-def render_cron_template(new_env, template_path, template_name):
-    write_template_name = "{}_{}".format(PROJECT_NAME, template_name)
-    write_template_name = write_template_name.replace(".jinja2", "")
-    write_template_name = "/etc/cron.d/{}".format(write_template_name)
+def render_cron_template(new_env, template_path, output_file):
+    """
+    Render the jinja2 template and put it in the correct
+    location.
+    """
     template = jinja_env.get_template(template_path)
-    template.stream(
+
+    output = template.render(
         virtualenv=new_env.virtual_env_path,
         branch=new_env.branch,
         unix_user=UNIX_USER,
         project_dir=new_env.project_directory
-    ).dump(write_template_name)
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, output_file
+    ))
 
 
 def send_error_email(error, some_env):

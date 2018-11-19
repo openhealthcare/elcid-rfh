@@ -1,6 +1,7 @@
 import copy
 import mock
 import datetime
+from django.utils import timezone
 from django.test import override_settings
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
@@ -687,3 +688,108 @@ class LabTestApiTestCase(BaseLabTestCase):
         self.assertEqual(
             result, expected_result
         )
+
+    def test_group_summaries_one_row(self):
+        """
+        Tests that group summaries work when there is only
+        one row
+        """
+        lab_test = self.get_row()
+        api = live.Api()
+        result = api.group_summaries([lab_test])
+        self.assertEqual(
+            result, {
+                "20552710": {
+                    "0013I245895": [
+                        (
+                            "Negative",
+                            '18/07/2015 17:00:02',
+                        )
+                    ]
+                }
+            }
+        )
+
+    def test_group_summaries_same_hospital_number(self):
+        """
+        Tests that group summaries work when its the same
+        hospital number but different lab numbers
+        """
+        lab_test_1 = self.get_row()
+        lab_test_2 = self.get_row(Result_ID="1231232")
+        api = live.Api()
+        result = api.group_summaries([
+            lab_test_1, lab_test_2
+        ])
+        self.assertEqual(
+            result, {
+                "20552710": {
+                    "0013I245895": [
+                        (
+                            "Negative",
+                            '18/07/2015 17:00:02',
+                        )
+                    ],
+                    "1231232": [
+                        (
+                            "Negative",
+                            '18/07/2015 17:00:02',
+                        )
+                    ]
+                }
+            }
+        )
+
+    def test_group_summaries_same_lab_number(self):
+        """
+        Tests that group summaries work when its the same
+        lab number
+        """
+        lab_test_1 = self.get_row()
+        lab_test_2 = self.get_row(Patient_Number="1231232")
+        api = live.Api()
+        result = api.group_summaries([
+            lab_test_1, lab_test_2
+        ])
+        self.assertEqual(
+            result, {
+                "20552710": {
+                    "0013I245895": [
+                        (
+                            "Negative",
+                            '18/07/2015 17:00:02',
+                        )
+                    ],
+                },
+                "1231232": {
+                    "0013I245895": [
+                        (
+                            "Negative",
+                            '18/07/2015 17:00:02',
+                        )
+                    ]
+                }
+            }
+        )
+
+    def test_data_delta_query(self):
+        api = live.Api()
+        since = timezone.now()
+        with mock.patch.object(api.connection, "execute_query") as eq:
+            eq.return_value = [copy.copy(FAKE_ROW_DATA)]
+            result = next(api.data_delta_query(since))
+            eq.assert_called_once_with(
+                live.ALL_DATA_SINCE, since=since
+            )
+            self.assertEqual(
+                result.hospital_number, "20552710"
+            )
+
+    def test_data_delta_query_no_result(self):
+        api = live.Api()
+        since = timezone.now()
+        with mock.patch.object(api.connection, "execute_query") as eq:
+            eq.return_value = []
+            result = list(api.data_delta_query(since))
+            self.assertEqual(result, [])
+

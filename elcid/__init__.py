@@ -34,7 +34,6 @@ class Application(application.OpalApplication):
         'js/elcid/routes.js',
         'js/elcid/filters.js',
         'js/elcid/directives.js',
-        'js/elcid/controllers/discharge.js',
         'js/elcid/services/records/microbiology_input.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/welcome.js',

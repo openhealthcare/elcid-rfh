@@ -1,22 +1,19 @@
 import mock
 import datetime
 from django.contrib.auth.models import User
-from django.test import override_settings
 from django.utils import timezone
-from opal.core.test import OpalTestCase
+from django.test import override_settings
 from opal import models as opal_models
+from opal.core.test import OpalTestCase
 from elcid import models as emodels
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
+from intrahospital_api.test.core import ApiTestCase
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
-@override_settings(API_USER="ohc",  API_STATE="dev")
-class ApiTestCase(OpalTestCase):
-    def setUp(self):
-        super(ApiTestCase, self).setUp()
-        User.objects.create(username="ohc", password="fake_password")
+
 
 
 @mock.patch("intrahospital_api.loader._initial_load")
@@ -218,3 +215,14 @@ class QueryPatientDemographicsTestCase(OpalTestCase):
         self.assertEqual(
             result["hospital_number"], "111"
         )
+
+    @mock.patch("intrahospital_api.loader.service_utils.get_api")
+    @mock.patch("intrahospital_api.loader.log_errors")
+    def test_query_patient_demographics_error(self, log_errors, get_api):
+        api = get_api.return_value
+        api.demographics_for_hospital_number.side_effect = ValueError("Boom")
+        result = loader.query_patient_demographics("111")
+        self.assertIsNone(result)
+        err = log_errors.assert_called_once_with("query_patient_demographics")
+
+

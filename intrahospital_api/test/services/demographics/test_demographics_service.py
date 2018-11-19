@@ -1,6 +1,6 @@
 import mock
 import datetime
-from intrahospital_api.test.test_loader import ApiTestCase
+from intrahospital_api.test.core import ApiTestCase
 from intrahospital_api.services.demographics import service
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
@@ -12,7 +12,8 @@ class HaveDemographicsTestCase(ApiTestCase):
             first_name="James",
             surname="Watson",
             sex_ft="Male",
-            religion="Christian"
+            religion="Christian",
+            date_of_birth=datetime.date(1968, 1, 1)
         )
         self.demographics = patient.demographics_set.first()
         super(HaveDemographicsTestCase, self).setUp(*args, **kwargs)
@@ -21,7 +22,8 @@ class HaveDemographicsTestCase(ApiTestCase):
         update_dict = dict(
             first_name="James",
             surname="Watson",
-            sex="Male"
+            sex="Male",
+            date_of_birth='01/01/1968'
         )
         self.assertFalse(
             service.have_demographics_changed(
@@ -29,11 +31,12 @@ class HaveDemographicsTestCase(ApiTestCase):
             )
         )
 
-    def test_need_to_service_fk_or_ft(self):
+    def test_have_changed_fk_or_ft(self):
         update_dict = dict(
             first_name="James",
             surname="Watson",
-            sex="not disclosed"
+            sex="not disclosed",
+            date_of_birth='01/01/1968'
         )
         self.assertTrue(
             service.have_demographics_changed(
@@ -41,11 +44,26 @@ class HaveDemographicsTestCase(ApiTestCase):
             )
         )
 
-    def test_need_to_service_str(self):
+    def test_have_changed_str(self):
         update_dict = dict(
             first_name="Jamey",
             surname="Watson",
-            sex="Male"
+            sex="Male",
+            date_of_birth='01/01/1968'
+        )
+
+        self.assertTrue(
+            service.have_demographics_changed(
+                update_dict, self.demographics
+            )
+        )
+
+    def test_have_changed_dt(self):
+        update_dict = dict(
+            first_name="Jamey",
+            surname="Watson",
+            sex="Male",
+            date_of_birth='02/01/1968'
         )
 
         self.assertTrue(

@@ -45,13 +45,15 @@ def has_changed(appointment, appointment_dict):
 
 def save_appointments(patient, appointment_dicts):
     user = service_utils.get_user()
+    count = 0
     for appointment_dict in appointment_dicts:
         appointment, is_new = get_or_create_appointment(
             patient, appointment_dict
         )
         if is_new or has_changed(appointment, appointment_dict):
             appointment.update_from_api_dict(appointment_dict, user)
-            return True
+            count += 1
+    return count
 
 
 def get_or_create_appointment(patient, appointment_dict):
@@ -80,7 +82,7 @@ def load_patients():
     for patient in patients:
         loaded = load_patient(patient)
         if loaded:
-            updated += 1
+            updated += loaded
 
     return updated
 

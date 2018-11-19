@@ -90,7 +90,13 @@ def log_errors(name):
 
 def query_patient_demographics(hospital_number):
     api = service_utils.get_api('demographics')
-    return api.demographics_for_hospital_number(hospital_number)
+    demographics = None
+    try:
+        demographics = api.demographics_for_hospital_number(hospital_number)
+    except:
+        log_errors("query_patient_demographics")
+
+    return demographics
 
 
 def load_patient(patient, run_async=None):

@@ -9,27 +9,32 @@ from lab import models as lmodels
 VIEW = "Pathology_Result_view"
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since ORDER BY last_updated DESC;".format(
+@hospital_number ORDER BY last_updated DESC;".format(
     view=VIEW
 )
 
-ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and Result_ID = @lab_number \
-ORDER BY last_updated DESC;"
+ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Result_ID = @lab_number \
+ORDER BY last_updated DESC;".format(
+    view=VIEW
+)
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and OBR_exam_code_Text = \
-@test_type ORDER BY last_updated DESC;".format(view=VIEW)
+@hospital_number and OBR_exam_code_Text = @test_type ORDER BY last_updated \
+DESC;".format(view=VIEW)
 
 ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY \
 Patient_Number, last_updated DESC;".format(view=VIEW)
 
-LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER = "SELECT Count(DISTINCT Result_ID) FROM Pathology_Result_view WHERE \
-Patient_Number=@hospital_number AND last_updated >= @since GROUP BY Patient_Number".format(view=VIEW)
+SUMMARY_RESULTS = "SELECT Patient_Number, Result_Value, Result_ID, last_updated from \
+{view} WHERE Patient_Number = @hospital_number".format(view=VIEW)
+
+QUICK_REVIEW = "SELECT Patient_Number, Result_ID, max(last_updated), count(*) \
+from {view} group by Patient_Number, Result_ID".format(view=VIEW)
 
 
 class Row(db.Row):
-    """ a simple wrapper to get us the fields we actually want out of a row
+    """
+    A simple wrapper to get us the fields we actually want out of a row
     """
     DEMOGRAPHICS_MAPPING = dict(
         hospital_number="Patient_Number",
@@ -121,34 +126,60 @@ class Row(db.Row):
         return result
 
 
+class SummaryRow(db.Row):
+    FIELD_MAPPINGS = dict(
+        observation_value="Result_Value",
+        last_updated="last_updated",
+        external_identifier="Result_ID",
+        hospital_number="Patient_Number",
+    )
+
+    @property
+    def last_updated(self):
+        return db.to_datetime_str(self.raw_data.get("last_updated"))
+
+
 class Api(object):
     def __init__(self):
         self.connection = db.DBConnection()
 
-    def raw_lab_tests(self, hospital_number, lab_number=None, test_type=None):
-        """ not all data, I lied. Only the last year's
-        """
-        db_date = datetime.date.today() - datetime.timedelta(365)
-
-        if lab_number:
-            return self.connection.execute_query(
-                ALL_DATA_QUERY_WITH_LAB_NUMBER,
-                hospital_number=hospital_number,
-                since=db_date,
-                lab_number=lab_number
-            )
+    def raw_lab_tests(self, hospital_number, test_type=None):
         if test_type:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE,
                 hospital_number=hospital_number,
-                since=db_date,
                 test_type=test_type
             )
         else:
             return self.connection.execute_query(
                 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER,
-                hospital_number=hospital_number, since=db_date
+                hospital_number=hospital_number
             )
+
+    def lab_tests_by_lab_test_number(self, lab_number):
+            return self.connection.execute_query(
+                ALL_DATA_QUERY_WITH_LAB_NUMBER,
+                lab_number=lab_number
+            )
+
+    def get_summaries(self, *hospital_numbers):
+        query_params = [
+            dict(hospital_number=i) for i in hospital_numbers
+        ]
+        rows = self.connection.execute_query_multiple_times(
+            SUMMARY_RESULTS, query_params
+        )
+        return self.group_summaries([SummaryRow(i) for i in rows])
+
+    def group_summaries(self, summary_rows):
+        result = defaultdict(lambda: defaultdict(list))
+        for summary_row in summary_rows:
+            hn = summary_row.hospital_number
+            ln = summary_row.external_identifier
+            result[hn][ln].append(
+                (summary_row.observation_value, summary_row.last_updated,)
+            )
+        return result
 
     @timing
     def data_delta_query(self, since):
@@ -159,9 +190,10 @@ class Api(object):
         return (Row(r) for r in all_rows)
 
     def lab_test_results_since(self, hospital_numbers, some_datetime):
-        """ yields an iterator of dictionary
+        """
+        Yields an iterator of dictionary
 
-            the dictionary contains
+        The dictionary contains
 
             "demographics" : demographics, the first (ie the most recent)
             demographics result in the set.
@@ -188,12 +220,13 @@ class Api(object):
         return (Row(row).get_all_fields() for row in raw_lab_tests)
 
     def cast_rows_to_lab_test(self, rows):
-        """ We cast multiple rows to lab tests.
+        """
+        We cast multiple rows to lab tests.
 
-            A lab test number(external identifier) can have multiple lab test
-            types and multiple obsevartions.
+        A lab test number(external identifier) can have multiple lab test
+        types and multiple obsevartions.
 
-            So we split the rows (observations) up via lab number/lab test type
+        So we split the rows (observations) up via lab number/lab test type
 
         """
         lab_number_type_to_observations = defaultdict(list)
@@ -222,25 +255,22 @@ class Api(object):
             result.append(lab_test)
         return result
 
-    def lab_test_count_for_hospital_number(self, hospital_number, since):
-        rows = list(self.connection.execute_query(
-            LAB_TESTS_COUNT_FOR_HOSPITAL_NUMBER,
-            hospital_number=hospital_number,
-            since=since
-        ))
-        if len(rows):
-            return rows[0][0]
-        else:
-            return 0
-
     @timing
     def lab_tests_for_hospital_number(self, hospital_number):
         """
-            returns all the results for a particular person
+        Returns all the results for a particular person
 
-            aggregated into labtest: observations([])
+        Aggregated into labtest: observations([])
         """
 
         raw_rows = self.raw_lab_tests(hospital_number)
         rows = (Row(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
+
+    @timing
+    def raw_summary_results(self, since):
+        return self.connection.execute_query(
+            SUMMARY_RESULTS,
+            since=since
+        )
+

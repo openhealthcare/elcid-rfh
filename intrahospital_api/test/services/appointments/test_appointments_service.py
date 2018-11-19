@@ -7,7 +7,7 @@ from opal.models import Patient
 from elcid import models as elcid_models
 from apps.tb import models as tb_models
 from apps.tb.episode_categories import TbEpisode
-from intrahospital_api.test import test_loader
+from intrahospital_api.test.core import ApiTestCase
 
 
 SERVICE_STR = "intrahospital_api.services.appointments.service.{}"
@@ -29,12 +29,16 @@ API_RESPONSE = {
 }
 
 
-class AbstractServiceTestCase(test_loader.ApiTestCase):
+class AbstractServiceTestCase(ApiTestCase):
     def setUp(self):
         super(AbstractServiceTestCase, self).setUp()
-        self.patient, episode = self.new_patient_and_episode_please()
+        self.patient = self.create_tb_patient()
+
+    def create_tb_patient(self):
+        patient, episode = self.new_patient_and_episode_please()
         episode.category_name = TbEpisode.display_name
         episode.save()
+        return patient
 
     def get_api_response(self, **kwargs):
         response = copy.copy(API_RESPONSE)
@@ -108,32 +112,63 @@ class HasChangedTestCase(AbstractServiceTestCase):
 class SaveAppointmentsTestCase(AbstractServiceTestCase):
     def test_save_appointments_new(self):
         appointment_dicts = self.get_api_response()
-        service.save_appointments(self.patient, appointment_dicts)
+        result = service.save_appointments(self.patient, appointment_dicts)
         appointment = elcid_models.Appointment.objects.first()
         self.assertEqual(appointment.patient, self.patient)
+        self.assertTrue(result)
 
     def test_save_appointments_unchanged_old(self):
         appointment = self.get_appointment()
         appointment.updated = None
         appointment.save()
         appointment_dicts = self.get_api_response()
-        service.save_appointments(self.patient, appointment_dicts)
+        result = service.save_appointments(self.patient, appointment_dicts)
 
         reloaded_appointment = elcid_models.Appointment.objects.get(
             id=appointment.id
         )
         self.assertIsNone(reloaded_appointment.updated)
+        self.assertFalse(result)
 
     def test_save_appointments_changed_old(self):
         appointment = self.get_appointment()
         appointment.updated = None
         appointment.save()
         appointment_dicts = self.get_api_response(state="DNA")
-        service.save_appointments(self.patient, appointment_dicts)
+        result = service.save_appointments(self.patient, appointment_dicts)
         reloaded_appointment = elcid_models.Appointment.objects.get(
             id=appointment.id
         )
         self.assertIsNotNone(reloaded_appointment.updated)
+        self.assertTrue(result)
+
+    def test_save_multiple_appointments(self):
+        appointment_dict_1 = self.get_api_response()[0]
+        appointment_dict_2 = self.get_api_response(
+            start="19/09/2018 14:10:00",
+            end="19/09/2018 15:10:00"
+        )[0]
+        appointment_dicts = [appointment_dict_1, appointment_dict_2]
+        service.save_appointments(self.patient, appointment_dicts)
+        appointments = elcid_models.Appointment.objects.all()
+        self.assertEqual(appointments.count(), 2)
+        self.assertEqual(self.patient.appointment_set.count(), 2)
+
+        self.assertTrue(
+            appointments.filter(
+                start=timezone.make_aware(
+                    datetime.datetime(2018, 9, 18, 14, 10)
+                )
+            ).exists()
+        )
+
+        self.assertTrue(
+            appointments.filter(
+                start=timezone.make_aware(
+                    datetime.datetime(2018, 9, 19, 14, 10)
+                )
+            ).exists()
+        )
 
 
 class GetOrCreateAppointmentsTestCase(AbstractServiceTestCase):
@@ -174,3 +209,15 @@ class LoadPatientsTestCase(AbstractServiceTestCase):
         self.assertEqual(
             result, 0
         )
+
+    def test_load_patients_multiple(self, load_patient):
+        for _ in xrange(3):
+            self.create_tb_patient()
+
+        # 4 because another patient is created by the test setup
+        load_patient.side_effect = [1, 3, 2, 0]
+        result = service.load_patients()
+        self.assertEqual(
+            result, sum([1, 3, 2, 0])
+        )
+

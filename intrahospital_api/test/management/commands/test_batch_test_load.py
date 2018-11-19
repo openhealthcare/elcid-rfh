@@ -2,7 +2,7 @@ from django.test import override_settings
 from intrahospital_api.management.commands import batch_test_load
 from intrahospital_api import constants
 from intrahospital_api.models import InitialPatientLoad, BatchPatientLoad
-from intrahospital_api.test.test_loader import ApiTestCase
+from intrahospital_api.test.core import ApiTestCase
 
 
 class BatchLoadTestCase(ApiTestCase):
