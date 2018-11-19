@@ -10,6 +10,8 @@ from intrahospital_api import exceptions
 class ExternalDemographics(PatientSubrecord):
     _is_singleton = True
     _icon = "fa fa-handshake-o"
+    _advanced_searchable = False
+    _exclude_from_extract = True
 
     hospital_number = models.CharField(max_length=255, blank=True)
     nhs_number = models.CharField(max_length=255, blank=True, null=True)
@@ -81,6 +83,8 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
     This model is the initial load of a patient
     future loads are done by the cron batch load
     """
+    _advanced_searchable = False
+    _exclude_from_extract = True
 
     def __unicode__(self):
         hospital_number = self.patient.demographics_set.first().hospital_number
