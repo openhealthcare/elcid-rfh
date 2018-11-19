@@ -240,7 +240,7 @@ class UpstreamLabTest(lmodels.LabTest):
             "CLOTTING SCREEN"
         ]
         three_weeks_ago = timezone.now() - datetime.timedelta(3*7)
-        qs = self.__class__.objects.filter(
+        qs = UpstreamLabTest.objects.filter(
             patient=patient,
             datetime_ordered__gt=three_weeks_ago
         ).order_by("datetime_ordered")
