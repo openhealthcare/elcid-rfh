@@ -97,7 +97,7 @@ def update_patients(patients, since):
             # lab tests are changed in place so
             # if there are multiple lab tests
             # for patient we need to copy them first
-            lts = copy.copy(lab_tests)
+            lts = copy.deepcopy(lab_tests)
             total += update_patient(patient, lts)
 
     return total
@@ -115,6 +115,15 @@ def refresh_patient(patient):
         elcid_models.UpstreamLabTest.get_display_name()
     ]).delete()
     return update_patient(patient)
+
+
+def _refresh_all():
+    count = 0
+    patients = load_utils.get_loaded_patients()
+
+    for patient in patients:
+        count += refresh_patient(patient)
+    return count
 
 
 def clean_observations(observations, max_dt):
@@ -278,3 +287,15 @@ batch_load = load_utils.batch_load(
 )(
     lab_test_batch_load
 )
+
+
+# runs through each test individually and updates them as a
+# batch. Useful for when the last batch load ran a long
+# time ago
+refresh_all = load_utils.batch_load(
+    service_name=SERVICE_NAME
+)(
+    _refresh_all
+)
+
+

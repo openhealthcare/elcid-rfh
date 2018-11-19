@@ -12,9 +12,11 @@ from intrahospital_api.services.lab_tests import service
 from intrahospital_api import models
 from intrahospital_api.test.core import ApiTestCase
 
+LAB_TEST_BASE = "intrahospital_api.services.lab_tests.service"
+
 
 @mock.patch(
-    "intrahospital_api.services.lab_tests.service.service_utils.get_api"
+    "{}.service_utils.get_api".format(LAB_TEST_BASE)
 )
 class LabTestsForHospitalNumberTestCase(ApiTestCase):
     def test_lab_tests_for_hospital_number(self, get_api):
@@ -246,7 +248,7 @@ class UpdatePatientsTestCase(ApiTestCase):
         )
 
 
-@mock.patch('intrahospital_api.services.lab_tests.service.update_patients')
+@mock.patch('{}.update_patients'.format(LAB_TEST_BASE))
 class BatchLoadTestCase(ApiTestCase):
     def test_batch_load(self, update_patients):
         patient, _ = self.new_patient_and_episode_please()
@@ -304,6 +306,40 @@ class RefreshPatientTestCase(OpalTestCase):
         )
         update_patient.assert_called_once_with(patient)
 
+
+@mock.patch("{}.refresh_patient".format(LAB_TEST_BASE))
+@mock.patch("{}.load_utils.get_loaded_patients".format(LAB_TEST_BASE))
+class RefreshAllTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def test_returns_a_count(
+        self, get_loaded_patients, refresh_patient
+    ):
+        get_loaded_patients.return_value = opal_models.Patient.objects.filter(
+            id=self.patient.id
+        )
+        refresh_patient.return_value = 2
+        result = service._refresh_all()
+
+        self.assertEqual(result, 2)
+        refresh_patient.assert_called_once_with(self.patient)
+
+    def test_public_method(
+        self, get_loaded_patients, refresh_patient
+    ):
+        get_loaded_patients.return_value = opal_models.Patient.objects.filter(
+            id=self.patient.id
+        )
+        refresh_patient.return_value = 2
+        service.refresh_all()
+        bpl = models.BatchPatientLoad.objects.get(
+            service_name=service.SERVICE_NAME
+        )
+        self.assertEqual(
+            bpl.count, 2
+        )
+        refresh_patient.assert_called_once_with(self.patient)
 
 class DiffPatientTestCase(OpalTestCase):
     def setUp(self):
