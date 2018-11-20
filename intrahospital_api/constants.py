@@ -1,3 +1,6 @@
+"""
+Constants used by the upstream integration for elCID RFH.
+"""
 # do they view the trend graphs in the detail page and in the list page
 # also do they see the UpstreamBloodCulturePanel
 VIEW_LAB_TEST_TRENDS = "view_lab_test_trends"

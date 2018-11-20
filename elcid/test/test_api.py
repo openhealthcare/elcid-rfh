@@ -257,7 +257,7 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(self.client.get(self.raw_url).status_code, 400)
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.query_patient_demographics")
     def test_with_demographics_add_patient_not_found(
         self, load_demographics
     ):
@@ -268,7 +268,7 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.query_patient_demographics")
     def test_with_demographics_add_patient_found_upstream(
         self, load_demographics
     ):
