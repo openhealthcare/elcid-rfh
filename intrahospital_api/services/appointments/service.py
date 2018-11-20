@@ -1,3 +1,6 @@
+"""
+Appointments service for elCID RFH
+"""
 import datetime
 from django.utils import timezone
 from opal.models import Patient
@@ -11,52 +14,10 @@ from apps.tb.episode_categories import TbEpisode
 from apps.tb.patient_lists import TbPatientList
 
 
-def refresh_patient(patient):
-    if patient.episode_set.filter(
-        category_name=TbEpisode.display_name
-    ).exists():
-        patient.appointment_set.all().delete()
-        load_patient(patient)
-
-
-def load_patient(patient):
-    api = service_utils.get_api("appointments")
-    appointments = api.tb_appointments_for_hospital_number(
-        patient.demographics_set.first().hospital_number
-    )
-    return save_appointments(patient, appointments)
-
-
-def has_changed(appointment, appointment_dict):
+def _get_or_create_appointment(patient, appointment_dict):
     """
-    Returns True if an appointment has changed
+    INTERNAL METHOD, NEVER CALLED EXTERNALLY
     """
-    for key in appointment_dict.keys():
-        model_value = getattr(appointment, key)
-        if isinstance(model_value, datetime.datetime):
-            model_value = db.to_datetime_str(model_value)
-        elif isinstance(model_value, datetime.date):
-            model_value = db.to_date_str(model_value)
-
-        if not model_value == appointment_dict[key]:
-            return True
-    return False
-
-
-def save_appointments(patient, appointment_dicts):
-    user = service_utils.get_user()
-    count = 0
-    for appointment_dict in appointment_dicts:
-        appointment, is_new = get_or_create_appointment(
-            patient, appointment_dict
-        )
-        if is_new or has_changed(appointment, appointment_dict):
-            appointment.update_from_api_dict(appointment_dict, user)
-            count += 1
-    return count
-
-
-def get_or_create_appointment(patient, appointment_dict):
     start = serialization.deserialize_datetime(
             appointment_dict["start"]
     )
@@ -70,8 +31,66 @@ def get_or_create_appointment(patient, appointment_dict):
         return elcid_models.Appointment(patient=patient), True
 
 
-def load_patients():
+def _has_changed(appointment, appointment_dict):
     """
+    Returns True if an appointment has changed
+
+    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    """
+    for key in appointment_dict.keys():
+        model_value = getattr(appointment, key)
+        if isinstance(model_value, datetime.datetime):
+            model_value = db.to_datetime_str(model_value)
+        elif isinstance(model_value, datetime.date):
+            model_value = db.to_date_str(model_value)
+
+        if not model_value == appointment_dict[key]:
+            return True
+    return False
+
+
+def _save_appointments(patient, appointment_dicts):
+    """
+    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    """
+    user = service_utils.get_user()
+    count = 0
+    for appointment_dict in appointment_dicts:
+        appointment, is_new = _get_or_create_appointment(
+            patient, appointment_dict
+        )
+        if is_new or _has_changed(appointment, appointment_dict):
+            appointment.update_from_api_dict(appointment_dict, user)
+            count += 1
+    return count
+
+
+def _load_patient(patient):
+    """
+    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    """
+    api = service_utils.get_api("appointments")
+    appointments = api.tb_appointments_for_hospital_number(
+        patient.demographics_set.first().hospital_number
+    )
+    return _save_appointments(patient, appointments)
+
+
+def refresh_patient(patient):
+    """
+    PUBLIC METHOD, CALLED EXTERNALLY
+    """
+    if patient.episode_set.filter(
+        category_name=TbEpisode.display_name
+    ).exists():
+        patient.appointment_set.all().delete()
+        _load_patient(patient)
+
+
+def _load_patients():
+    """
+    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+
     Loads in all appointments for all patients with the category of tb
     """
     patients = Patient.objects.filter(
@@ -80,7 +99,7 @@ def load_patients():
     updated = 0
 
     for patient in patients:
-        loaded = load_patient(patient)
+        loaded = _load_patient(patient)
         if loaded:
             updated += loaded
 
@@ -93,5 +112,5 @@ def load_patients():
 batch_load = load_utils.batch_load(
     service_name="appointments"
 )(
-    load_patients
+    _load_patients
 )

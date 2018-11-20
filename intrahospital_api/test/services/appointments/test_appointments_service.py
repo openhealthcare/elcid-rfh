@@ -61,7 +61,7 @@ class AbstractServiceTestCase(ApiTestCase):
 
 
 class RefreshPatientTestCase(AbstractServiceTestCase):
-    @mock.patch(SERVICE_STR.format("load_patient"))
+    @mock.patch(SERVICE_STR.format("_load_patient"))
     def test_refresh_patient(self, load_patient):
         # create an appointment
         self.get_appointment()
@@ -81,7 +81,7 @@ class LoadPatientTestCase(AbstractServiceTestCase):
     def test_load_patient(self, get_api):
         api = get_api.return_value
         api.tb_appointments_for_hospital_number.return_value = self.get_api_response()
-        service.load_patient(self.patient)
+        service._load_patient(self.patient)
         appointment = self.patient.appointment_set.get()
         for i, v in RESPONSE.items():
             self.assertEqual(
@@ -94,7 +94,7 @@ class HasChangedTestCase(AbstractServiceTestCase):
         appointment = self.get_appointment()
         appointment_dict = self.get_api_response(state="DNA")[0]
         self.assertTrue(
-            service.has_changed(
+            service._has_changed(
                 appointment, appointment_dict
             )
         )
@@ -103,7 +103,7 @@ class HasChangedTestCase(AbstractServiceTestCase):
         appointment = self.get_appointment()
         appointment_dict = self.get_api_response()[0]
         self.assertFalse(
-            service.has_changed(
+            service._has_changed(
                 appointment, appointment_dict
             )
         )
@@ -112,7 +112,7 @@ class HasChangedTestCase(AbstractServiceTestCase):
 class SaveAppointmentsTestCase(AbstractServiceTestCase):
     def test_save_appointments_new(self):
         appointment_dicts = self.get_api_response()
-        result = service.save_appointments(self.patient, appointment_dicts)
+        result = service._save_appointments(self.patient, appointment_dicts)
         appointment = elcid_models.Appointment.objects.first()
         self.assertEqual(appointment.patient, self.patient)
         self.assertTrue(result)
@@ -122,7 +122,7 @@ class SaveAppointmentsTestCase(AbstractServiceTestCase):
         appointment.updated = None
         appointment.save()
         appointment_dicts = self.get_api_response()
-        result = service.save_appointments(self.patient, appointment_dicts)
+        result = service._save_appointments(self.patient, appointment_dicts)
 
         reloaded_appointment = elcid_models.Appointment.objects.get(
             id=appointment.id
@@ -135,7 +135,7 @@ class SaveAppointmentsTestCase(AbstractServiceTestCase):
         appointment.updated = None
         appointment.save()
         appointment_dicts = self.get_api_response(state="DNA")
-        result = service.save_appointments(self.patient, appointment_dicts)
+        result = service._save_appointments(self.patient, appointment_dicts)
         reloaded_appointment = elcid_models.Appointment.objects.get(
             id=appointment.id
         )
@@ -149,7 +149,7 @@ class SaveAppointmentsTestCase(AbstractServiceTestCase):
             end="19/09/2018 15:10:00"
         )[0]
         appointment_dicts = [appointment_dict_1, appointment_dict_2]
-        service.save_appointments(self.patient, appointment_dicts)
+        service._save_appointments(self.patient, appointment_dicts)
         appointments = elcid_models.Appointment.objects.all()
         self.assertEqual(appointments.count(), 2)
         self.assertEqual(self.patient.appointment_set.count(), 2)
@@ -174,7 +174,7 @@ class SaveAppointmentsTestCase(AbstractServiceTestCase):
 class GetOrCreateAppointmentsTestCase(AbstractServiceTestCase):
     def test_old_appointment(self):
         appointment_dict = self.get_api_response()[0]
-        appointment, created = service.get_or_create_appointment(
+        appointment, created = service._get_or_create_appointment(
             self.patient, appointment_dict
         )
         self.assertEqual(appointment.patient, self.patient)
@@ -183,17 +183,17 @@ class GetOrCreateAppointmentsTestCase(AbstractServiceTestCase):
     def test_new_appointment(self):
         appointment_dict = self.get_api_response()[0]
         self.get_appointment()
-        _, created = service.get_or_create_appointment(
+        _, created = service._get_or_create_appointment(
             self.patient, appointment_dict
         )
         self.assertFalse(created)
 
 
-@mock.patch('intrahospital_api.services.appointments.service.load_patient')
+@mock.patch('intrahospital_api.services.appointments.service._load_patient')
 class LoadPatientsTestCase(AbstractServiceTestCase):
     def test_load_patient_tb(self, load_patient):
         load_patient.return_value = True
-        result = service.load_patients()
+        result = service._load_patients()
         load_patient.assert_called_once_with(self.patient)
         self.assertEqual(
             result, 1
@@ -204,7 +204,7 @@ class LoadPatientsTestCase(AbstractServiceTestCase):
         self.patient.episode_set.update(
             category_name="Infection Srvice"
         )
-        result = service.load_patients()
+        result = service._load_patients()
         self.assertFalse(load_patient.called)
         self.assertEqual(
             result, 0
@@ -216,8 +216,7 @@ class LoadPatientsTestCase(AbstractServiceTestCase):
 
         # 4 because another patient is created by the test setup
         load_patient.side_effect = [1, 3, 2, 0]
-        result = service.load_patients()
+        result = service._load_patients()
         self.assertEqual(
             result, sum([1, 3, 2, 0])
         )
-
