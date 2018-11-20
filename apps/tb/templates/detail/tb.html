@@ -3,7 +3,7 @@
 <div class="row">
   <div class="col-md-12">
     <div class="row">
-      <div class="col-md-8">
+      <div class="col-md-6">
         {% record_panel models.ReferralRoute %}
         {% record_panel models.CommuninicationConsiderations %}
         {% record_panel models.Nationality %}
@@ -15,6 +15,20 @@
         {% record_panel models.SocialHistory %}
         {% record_panel models.Diagnosis %}
         {% record_panel models.Treatment %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3>
+              <i class="fa fa-file-image-o"></i> Imaging
+            </h3>
+          </div>
+          <div class="panel-body">
+            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i class="fa fa-external-link" aria-hidden="true"></i></a>
+          </div>
+        </div>
+        {% include 'tb/obs_panel.html' %}
+      </div>
+
+      <div class="col-md-6">
 
         <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
           <div class="panel-body">
@@ -90,20 +104,7 @@
           </div>
         </div>
         {% include "inline_forms/patient_consultation.html" %}
-      </div>
 
-      <div class="col-md-4">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3>
-              <i class="fa fa-file-image-o"></i> Imaging
-            </h3>
-          </div>
-          <div class="panel-body">
-            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i class="fa fa-external-link" aria-hidden="true"></i></a>
-          </div>
-        </div>
-        {% include 'tb/obs_panel.html' %}
       </div>
     </div>
   </div>
