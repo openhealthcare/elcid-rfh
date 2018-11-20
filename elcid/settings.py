@@ -267,21 +267,12 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'elcid.requestLogger': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
+
         'error_emailer': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
-        },
-        'intrahospital_api': {
-            'handlers': ['console_detailed', 'mail_admins'],
-            'level': 'INFO',
-            'propagate': True,
-        },
+        }
     }
 }
 
@@ -290,6 +281,16 @@ if 'test' not in sys.argv:
         'handlers': ['console_detailed'],
         'level': 'INFO',
         'propagate': False,
+    }
+    LOGGING['loggers']['elcid.requestLogger'] = {
+        'handlers': ['console'],
+        'level': 'INFO',
+        'propagate': True,
+    }
+    LOGGING['loggers']['intrahospital_api'] = {
+        'handlers': ['console_detailed', 'mail_admins'],
+        'level': 'INFO',
+        'propagate': True,
     }
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
