@@ -531,41 +531,25 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
         self.assertEqual('New condition', diagnosis.condition)
 
 
-class PositiveBloodCultureHistoryTestCase(OpalTestCase):
+class AppointmentsTestCase(OpalTestCase):
     def setUp(self):
-        self.patient, self.episode = self.new_patient_and_episode_please()
+        super(AppointmentsTestCase, self).setUp()
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.appointment = emodels.Appointment(patient=self.patient)
 
-    def test_creation_on_tagging_save(self):
-        self.episode.set_tag_names(["bacteraemia"], self.user)
-        pbch = self.patient.positivebloodculturehistory_set.get()
-        self.assertEqual(pbch.when.date(), datetime.date.today())
+    def test_update_from_dict(self):
+        data = timezone.now()
+        self.appointment.update_from_dict(data, self.user)
+        self.assertIsNone(self.appointment.start)
 
-    def test_not_created_on_a_different_tag_save(self):
-        self.episode.set_tag_names(["something"], self.user)
-        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 0)
+    def test_update_from_api_dict(self):
+        now = timezone.now()
+        data = dict(start=now)
+        self.appointment.update_from_api_dict(data, self.user)
+        self.assertEqual(self.appointment.start, now)
+        then = now + datetime.timedelta(minutes=10)
 
-    def test_not_updated_on_other_removal(self):
-        weeks_ago = datetime.datetime(2017, 1, 1)
-        self.episode.set_tag_names(["bacteraemia"], self.user)
-        self.patient.positivebloodculturehistory_set.update(
-            when=weeks_ago
-        )
-        self.episode.set_tag_names(["something"], self.user)
-        pbch = self.patient.positivebloodculturehistory_set.get()
-        self.assertEqual(pbch.when.date(), weeks_ago.date())
-
-    def test_updated_on_repeat_saves(self):
-        weeks_ago = datetime.datetime(2017, 1, 1)
-        self.episode.set_tag_names(["bacteraemia"], self.user)
-        self.patient.positivebloodculturehistory_set.update(
-            when=weeks_ago
-        )
-        self.episode.set_tag_names(["something"], self.user)
-        self.episode.set_tag_names(["bacteraemia"], self.user)
-        pbch = self.patient.positivebloodculturehistory_set.get()
-        self.assertEqual(pbch.when.date(), datetime.date.today())
-
-    def test_only_one_instance_created(self):
-        self.episode.set_tag_names(["bacteraemia"], self.user)
-        self.episode.set_tag_names(["bacteraemia"], self.user)
-        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+        # make sure we don't get burned by consistency token issues
+        data = dict(start=then)
+        self.appointment.update_from_api_dict(data, self.user)
+        self.assertEqual(self.appointment.start, then)

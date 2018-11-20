@@ -11,12 +11,12 @@ wsgiref==0.1.2
 dj-static==0.0.6
 django-reversion==1.10.2
 django-axes==1.7.0
-letter==0.4.1
+letter==0.5
 supervisor==3.0
 django-debug-toolbar==1.2.1
 mock==1.0.1
-requests==2.18.4
-python-dateutil==2.4.2
+requests==2.20.1
+python-dateutil==2.7.5
 djangorestframework==3.4.7
 celery==3.1.25
 django-celery==3.2.2
@@ -35,10 +35,7 @@ Fabric==1.14.0
 python-tds==1.8.2
 
 
-# Open Health Care packages on PyPi
-opal==0.12.0
-
-
 # Open Health Care repositories on GitHub
+-e git+https://github.com/openhealthcare/opal.git@v0.13.0#egg=opal
 -e git+https://github.com/openhealthcare/opal-observations.git@v0.5.0#egg=opal_observations
--e git+https://github.com/openhealthcare/opal-lab.git@v0.4.0#egg=opal_lab
+-e git+https://github.com/openhealthcare/opal-lab.git@v0.4.1#egg=opal_lab

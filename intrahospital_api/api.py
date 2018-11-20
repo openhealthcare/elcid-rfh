@@ -1,15 +1,27 @@
+"""
+DRF API endpoints:
+
+* Overriding the core Opal Patient API endoint
+* Providing lab tests as a separate API call (due to volume/performance)
+"""
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import viewsets
+from lab import models as lmodels
 from opal.core.views import json_response
 from opal import models as omodels
 from opal.core import subrecords
-from lab import models as lmodels
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+
 from elcid.episode_serialization import serialize
-from intrahospital_api import get_api
+from intrahospital_api.services.lab_tests import service as lab_test_service
 
 
 def patient_to_dict(patient, user):
+    """
+    Serialize a patient without LabTests (faster, there are lots.)
+
+    This code copied from Opal core until we can override without needing to.
+    """
     active_episode = patient.get_active_episode()
     subs = [
         i for i in subrecords.subrecords() if not i == lmodels.LabTest
@@ -21,7 +33,6 @@ def patient_to_dict(patient, user):
     )
     d = {
         'id': patient.id,
-        'active_episode_id': active_episode.id if active_episode else None
     }
     for model in subrecords.patient_subrecords():
         if model == lmodels.LabTest:
@@ -51,23 +62,35 @@ def patient_to_dict(patient, user):
 
 
 class UpstreamDataViewset(viewsets.ViewSet):
+    """
+    A badly named class and API endpoint that retrieves lab test data
+    """
     base_name = 'upstream'
     permission_classes = (IsAuthenticated,)
 
     def retrieve(self, request, pk=None):
+        """
+        GET endpoint for our API - 404 or serialized tests.
+        """
         patient = get_object_or_404(
             omodels.Patient.objects.all(), pk=pk
         )
-        api = get_api()
         hospital_number = patient.demographics_set.first().hospital_number
-        return json_response(api.results_for_hospital_number(hospital_number))
+        return json_response(lab_test_service.lab_tests_for_hospital_number(hospital_number))
 
 
 class PatientViewSet(viewsets.ViewSet):
+    """
+    Overriding the Opal Core Patient API endpoint in order to exclude lab tests
+    from serialization due to volume (performance).
+    """
     base_name = 'patient'
     permission_classes = (IsAuthenticated,)
 
     def retrieve(self, request, pk=None):
+        """
+        GET endpoint for our API - seriliase with our custom serializer.
+        """
         patient = get_object_or_404(omodels.Patient.objects.all(), pk=pk)
         omodels.PatientRecordAccess.objects.create(
             patient=patient, user=request.user

@@ -1,0 +1,1 @@
+0 4 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py batch_demographics_load >> /usr/lib/ohc/log/cron_synch.log 2>&1

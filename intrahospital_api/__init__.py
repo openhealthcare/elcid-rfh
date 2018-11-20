@@ -1,11 +1,9 @@
 """
-Opal core intrahospital api package
+elCID RFH intrahospital API package
 """
 from opal.core import celery  # NOQA
 import logging
-from apis import get_api
 
-__all__ = [
-    "get_api"
-]
+
+# So other modules can import without re-typing the string 'intrahospital_api'
 logger = logging.getLogger('intrahospital_api')

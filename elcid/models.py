@@ -615,15 +615,6 @@ class Imaging(EpisodeSubrecord):
     details = models.TextField(blank=True, null=True)
 
 
-class PositiveBloodCultureHistory(PatientSubrecord):
-    when = models.DateTimeField(default=datetime.datetime.now)
-
-    @classmethod
-    def _get_field_default(cls, name):
-        # this should not be necessary...
-        return None
-
-
 class ReferralRoute(omodels.EpisodeSubrecord):
     _icon = 'fa fa-level-up'
     _is_singleton = True
@@ -686,14 +677,36 @@ class GP(omodels.PatientSubrecord):
     contact_details = models.TextField()
 
 
-# method for updating
-@receiver(post_save, sender=omodels.Tagging)
-def record_positive_blood_culture(sender, instance, **kwargs):
-    from elcid.patient_lists import Bacteraemia
+class Appointment(omodels.PatientSubrecord):
+    state = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+    start = models.DateTimeField(blank=True, null=True)
+    end = models.DateTimeField(blank=True, null=True)
+    clinic_resource = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+    appointment_type = models.CharField(
+        max_length=256, blank=True, default=""
+    )
 
-    if instance.value == Bacteraemia.tag:
-        pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
-            patient_id=instance.episode.patient.id
+    location = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    def update_from_dict(self, *args, **kwargs):
+        """
+        This model is read only from the front end
+        """
+        pass
+
+    def update_from_api_dict(self, *args, **kwargs):
+        return super(Appointment, self).update_from_dict(
+            *args, force=True, **kwargs
         )
-        pbch.when = datetime.datetime.now()
-        pbch.save()
+
+    class Meta:
+        verbose_name = "Appointments"
+        verbose_name_plural = "Appointments"
+        ordering = ["-start"]
+

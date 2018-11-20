@@ -3,7 +3,7 @@ from intrahospital_api import constants
 
 
 class Result(detail.PatientDetailView):
-    display_name = "Test Results"
+    display_name = "Lab Tests"
     order = 5
     template = "detail/result.html"
 
