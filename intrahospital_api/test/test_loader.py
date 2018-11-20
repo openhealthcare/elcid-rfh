@@ -14,27 +14,9 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
 
-
-
-@mock.patch("intrahospital_api.loader._initial_load")
-@mock.patch("intrahospital_api.loader.log_errors")
 class InitialLoadTestCase(ApiTestCase):
-    def test_deletes_existing(self, log_errors, _initial_load):
-        patient, _ = self.new_patient_and_episode_please()
-        imodels.InitialPatientLoad.objects.create(
-            patient=patient, started=timezone.now()
-        )
-
-        loader.initial_load()
-
-        self.assertFalse(
-            imodels.InitialPatientLoad.objects.exists()
-        )
-
-
-class _InitialLoadTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
-        super(_InitialLoadTestCase, self).setUp(*args, **kwargs)
+        super(InitialLoadTestCase, self).setUp(*args, **kwargs)
 
         # the first two patients should be updated, but not the last
         self.patient_1, _ = self.new_patient_and_episode_please()
@@ -43,6 +25,20 @@ class _InitialLoadTestCase(ApiTestCase):
         emodels.Demographics.objects.filter(
             patient__in=[self.patient_1, self.patient_2]
         ).update(external_system=EXTERNAL_SYSTEM)
+
+    @mock.patch("intrahospital_api.loader.log_errors")
+    def test_deletes_existing(self, log_errors):
+        patient, _ = self.new_patient_and_episode_please()
+        pk = imodels.InitialPatientLoad.objects.create(
+            patient=patient, started=timezone.now()
+        ).pk
+
+        loader.initial_load()
+
+        self.assertFalse(
+            imodels.InitialPatientLoad.objects.filter(id=pk).exists()
+        )
+
 
     @mock.patch(
         "intrahospital_api.loader.demographics_service.load_patient",
@@ -57,7 +53,7 @@ class _InitialLoadTestCase(ApiTestCase):
         self, refresh_appointments, refresh_patient_lab_tests, load_patient
     ):
         with mock.patch.object(loader.logger, "info") as info:
-            loader._initial_load()
+            loader.initial_load()
             self.assertEqual(
                 refresh_appointments.call_count, 3
             )
@@ -70,15 +66,15 @@ class _InitialLoadTestCase(ApiTestCase):
             call_args_list = info.call_args_list
 
             expected_log_messages = [
-                "running 1/3",        
+                "running 1/3",
                 "starting to load patient 1",
                 'loading patient 1 synchronously',
                 'started patient 1 ipl 1',
-                "running 2/3",        
+                "running 2/3",
                 "starting to load patient 2",
                 'loading patient 2 synchronously',
                 'started patient 2 ipl 2',
-                "running 3/3",        
+                "running 3/3",
                 "starting to load patient 3",
                 'loading patient 3 synchronously',
             ]
@@ -98,7 +94,7 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
 
     @override_settings(ASYNC_API=True)
     def test_load_patient_arg_override_settings_True(
-        self, load_lab_tests, run_async 
+        self, load_lab_tests, run_async
     ):
         loader.load_patient(self.patient, run_async=False)
         self.assertTrue(load_lab_tests.called)
@@ -106,7 +102,7 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
 
     @override_settings(ASYNC_API=False)
     def test_load_patient_arg_override_settings_False(
-        self, load_lab_tests, run_async 
+        self, load_lab_tests, run_async
     ):
         loader.load_patient(self.patient, run_async=True)
         self.assertFalse(load_lab_tests.called)
@@ -114,7 +110,7 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
 
     @override_settings(ASYNC_API=True)
     def test_load_patient_arg_override_settings_None_True(
-        self, load_lab_tests, run_async 
+        self, load_lab_tests, run_async
     ):
         loader.load_patient(self.patient)
         self.assertFalse(load_lab_tests.called)
@@ -224,5 +220,3 @@ class QueryPatientDemographicsTestCase(OpalTestCase):
         result = loader.query_patient_demographics("111")
         self.assertIsNone(result)
         err = log_errors.assert_called_once_with("query_patient_demographics")
-
-
