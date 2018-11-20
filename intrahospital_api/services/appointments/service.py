@@ -87,11 +87,6 @@ def load_patients():
     return updated
 
 
-# not an invalid, name, its not a constant, seperate out
-# for testing purposes
-# pylint: disable=invalid-name
-batch_load = load_utils.batch_load(
-    service_name="appointments"
-)(
-    load_patients
-)
+@load_utils.batch_load('appointments')
+def batch_load():
+    return load_patients()

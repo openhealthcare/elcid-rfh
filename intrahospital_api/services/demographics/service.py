@@ -161,11 +161,7 @@ def for_hospital_number(hospital_number):
 
     return result
 
-# not an invalid, name, its not a constant, seperate out
-# for testing purposes
-# pylint: disable=invalid-name
-batch_load = load_utils.batch_load(
-    service_name="demographics"
-)(
-    load_patients
-)
+
+@load_utils.batch_load('demographics')
+def batch_load():
+    return load_patients()
