@@ -70,10 +70,7 @@ def initial_load(remaining=False):
 
     if not remaining:
         models.InitialPatientLoad.objects.all().delete()
-    _initial_load()
 
-
-def _initial_load():
     patients = Patient.objects.filter(initialpatientload=None)
     total = patients.count()
 
