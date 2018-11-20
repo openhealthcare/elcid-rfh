@@ -1,7 +1,6 @@
 from intrahospital_api.services.base import db
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
-from intrahospital_api import logger
 
 RESULTS_VIEW = "Pathology_Result_view"
 MAIN_DEMOGRAPHICS_VIEW = "VIEW_CRS_Patient_Masterfile"
@@ -140,7 +139,6 @@ class Api(db.DBConnection):
             return
 
         return PathologyRow(rows[0]).get_demographics_dict()
-
 
     @timing
     def demographics_for_hospital_number(self, hospital_number):

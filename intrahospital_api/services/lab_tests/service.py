@@ -2,13 +2,11 @@ import copy
 from collections import defaultdict
 from django.core.mail import send_mail as django_send_mail
 from django.conf import settings
-from django.utils import timezone
 from intrahospital_api.services.base import service_utils, load_utils
 from intrahospital_api import logger
 from elcid import models as elcid_models
 from opal import models as opal_models
 from opal.core import serialization
-from lab.models import LabTest
 from intrahospital_api import models as intrahospital_api_models
 
 SERVICE_NAME = "lab_tests"
@@ -297,5 +295,3 @@ refresh_all = load_utils.batch_load(
 )(
     _refresh_all
 )
-
-

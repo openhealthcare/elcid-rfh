@@ -4,9 +4,7 @@
 """
 from django.core.management.base import BaseCommand
 from intrahospital_api.services.lab_tests import service
-from intrahospital_api import models
 from intrahospital_api import logger
-from opal.models import Patient
 
 
 class Command(BaseCommand):
