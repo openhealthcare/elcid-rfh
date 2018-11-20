@@ -1,21 +1,29 @@
 """
-Admin for elcid fields
+Admin for elCID models
 """
 from django.contrib import admin
-from reversion import models as rmodels
+from django.core.urlresolvers import reverse
 from django.utils.html import format_html
 from opal import models as omodels
 from opal.admin import PatientAdmin as OldPatientAdmin, PatientSubrecordAdmin
-from django.core.urlresolvers import reverse
+from reversion import models as rmodels
+
 from intrahospital_api import loader
 from intrahospital_api import models as imodels
 
 
 class TaggingListFilter(admin.SimpleListFilter):
-    title = 'team'
+    """
+    A Django Admin filter used by the Patient admin. It allows the user to
+    Filter patients by the teams they are, or have been on.
+    """
+    title          = 'team'
     parameter_name = 'team'
 
     def lookups(self, request, model_admin):
+        """
+        Return a list of filter options to display in the Django Admin sidebar
+        """
         tags = omodels.Tagging.objects.values_list(
             'value', flat=True
         ).distinct()
@@ -34,8 +42,6 @@ class TaggingListFilter(admin.SimpleListFilter):
         provided in the query string and retrievable via
         `self.value()`.
         """
-        # Compare the requested value (either '80s' or '90s')
-        # to decide how to filter the queryset.
         value = self.value()
         if value:
             if value.endswith("-current"):
