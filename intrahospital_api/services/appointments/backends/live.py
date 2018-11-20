@@ -74,9 +74,9 @@ class Api(object):
     def patient_to_appointments_dict(self, rows):
         result = defaultdict(list)
         for row in rows:
-            cooked_row = Row(row)
-            result[cooked_row.hospital_number].append({
-                i: getattr(cooked_row, i) for i in Row.APPOINTMENT_FIELDS.keys()
+            cooked = Row(row)
+            result[cooked.hospital_number].append({
+                i: getattr(cooked, i) for i in Row.APPOINTMENT_FIELDS.keys()
             })
         return result
 

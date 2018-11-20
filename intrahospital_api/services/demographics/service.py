@@ -44,7 +44,8 @@ def load_patients():
 @transaction.atomic
 def load_patient(patient):
     """
-    If a patient is from upstream, see if any details have change if so, update.
+    If a patient is from upstream, see if any details have change if so,
+    update.
 
     If not but the patient has enough details to be seen as the same as a
     patient from upstream then synch with upstream.
@@ -160,6 +161,7 @@ def for_hospital_number(hospital_number):
         return
 
     return result
+
 
 # not an invalid, name, its not a constant, seperate out
 # for testing purposes

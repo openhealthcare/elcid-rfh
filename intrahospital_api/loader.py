@@ -32,26 +32,18 @@ It loads in data for a single specific patient.
 4. any_loads_running()
 returns true if any, ie initial or batch, loads are running
 """
-
-import datetime
 import traceback
-import json
 from django.db import transaction
-from django.utils import timezone
-from django.db.models import Q
 from django.conf import settings
 from intrahospital_api import models
-from elcid import models as emodels
 from opal.models import Patient
 from elcid.utils import timing
-from intrahospital_api.exceptions import BatchLoadError
-from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.demographics import \
-service as demographics_service
+    service as demographics_service
 from intrahospital_api.services.lab_tests import \
-service as lab_tests_service
+    service as lab_tests_service
 from intrahospital_api.services.appointments import \
-service as appointments_service
+    service as appointments_service
 from intrahospital_api.services.base import service_utils
 from intrahospital_api import logger
 

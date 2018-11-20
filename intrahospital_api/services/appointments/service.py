@@ -1,11 +1,9 @@
 import datetime
-from django.utils import timezone
 from opal.models import Patient
 from opal.core import serialization
 from elcid import models as elcid_models
 from apps.tb.episode_categories import TbEpisode
 from intrahospital_api.services.base import service_utils, db
-from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.base import load_utils
 from apps.tb.episode_categories import TbEpisode
 from apps.tb.patient_lists import TbPatientList

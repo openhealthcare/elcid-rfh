@@ -4,7 +4,6 @@ from django.db import transaction
 from django.db.models import Q
 from opal.models import Patient
 from intrahospital_api import logger
-from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api import models
 
 MAX_ALLOWABLE_BATCH_RUN_TIME = 3600
@@ -56,10 +55,9 @@ def good_to_go(service_name):
             return False
         else:
             # The batch has been running for too long. Email us to look at it
+            msg = "Previous batch load for {} still running after {} seconds"
             logger.error(
-                "Previous batch load for {} still running after {} seconds".format(
-                    service_name, MAX_ALLOWABLE_BATCH_RUN_TIME
-                )
+                msg.format(service_name, MAX_ALLOWABLE_BATCH_RUN_TIME)
             )
             return False
 
@@ -111,7 +109,9 @@ def get_batch_start_time(service_name):
     ).order_by("started").last()
 
     if not last_successful_run:
-        return models.InitialPatientLoad.objects.order_by("started").first().started
+        return models.InitialPatientLoad.objects.order_by(
+            "started"
+        ).first().started
 
     long_patient_load = models.InitialPatientLoad.objects.filter(
         state=models.InitialPatientLoad.SUCCESS
@@ -171,7 +171,6 @@ def batch_load(service_name):
 
 
 def get_loaded_patients():
-    return Patient.objects.filter(initialpatientload__state=models.InitialPatientLoad.SUCCESS)
-
-
-
+    return Patient.objects.filter(
+        initialpatientload__state=models.InitialPatientLoad.SUCCESS
+    )

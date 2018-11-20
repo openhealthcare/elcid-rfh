@@ -14,5 +14,3 @@ def get_api(service):
 
 def get_user():
     return User.objects.get(username=settings.API_USER)
-
-

@@ -301,4 +301,3 @@ class Api(object):
         for hospital_number in hospital_numbers:
             result[hospital_number] = self.lab_tests_for_hospital_number(None)
         return result
-

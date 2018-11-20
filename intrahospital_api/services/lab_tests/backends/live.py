@@ -273,4 +273,3 @@ class Api(object):
             SUMMARY_RESULTS,
             since=since
         )
-
