@@ -78,11 +78,15 @@ class Backend(db.DatabaseBackend):
             })
         return result
 
-    def tb_appointments_for_hospital_number(self, hospital_number):
+    def fetch_for_identifier(self, identifier):
+        """
+        Given an IDENTIFIER - a hospital number, returns
+        all the upstream appointments for a particular person
+        """
         rows = self.raw_tb_appointments_for_hospital_number(
-            hospital_number
+            identifier
         )
-        return self.patient_to_appointments_dict(rows)[hospital_number]
+        return self.patient_to_appointments_dict(rows)[identifier]
 
     def raw_tb_appointments_for_hospital_number(
         self, hospital_number

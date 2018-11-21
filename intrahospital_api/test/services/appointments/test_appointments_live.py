@@ -68,10 +68,10 @@ class AppointmentsBackendTestCase(OpalTestCase):
             'appointment_type': 'Thoracic TB F/Up'
         }]
 
-    def test_tb_appointments_for_hospital_number(self):
+    def test_fetch_for_identifier(self):
         with mock.patch.object(self.backend.connection, "execute_query") as eq:
             eq.return_value = copy.copy(TEST_DATA)
-            result = self.backend.tb_appointments_for_hospital_number('111111')
+            result = self.backend.fetch_for_identifier('111111')
 
         self.assertEqual(
             result, self.expected

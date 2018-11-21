@@ -68,7 +68,7 @@ def _load_patient(patient):
     INTERNAL FUNCTION, NEVER CALLED EXTERNALLY
     """
     api = service_utils.get_backend("appointments")
-    appointments = api.tb_appointments_for_hospital_number(
+    appointments = api.fetch_for_identifier(
         patient.demographics_set.first().hospital_number
     )
     return _save_appointments(patient, appointments)
