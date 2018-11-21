@@ -5,7 +5,7 @@ from django.test import override_settings
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
 from intrahospital_api import constants
-from intrahospital_api.services.demographics.backends import live as demographics
+from intrahospital_api.services.demographics import live_backend as demographics
 
 FAKE_ROW_DATA = {
     u'Abnormal_Flag': u'',

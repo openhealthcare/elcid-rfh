@@ -1,7 +1,7 @@
 import datetime
 import mock
 from opal.core.test import OpalTestCase
-from intrahospital_api.services.demographics.backends import dev
+from intrahospital_api.services.demographics import dev_backend as dev
 from opal.core import serialization
 
 
@@ -34,7 +34,7 @@ class DevApiTestCase(OpalTestCase):
         for field in expected_fields:
             self.assertTrue(bool(demographics[field]))
 
-    @mock.patch("intrahospital_api.services.demographics.backends.dev.random.choice")
+    @mock.patch("intrahospital_api.services.demographics.dev_backend.random.choice")
     def test_demographics_male(self, choice):
         choice.side_effect = lambda x: x[0]
         demographics = self.api.demographics_for_hospital_number('some')
@@ -42,7 +42,7 @@ class DevApiTestCase(OpalTestCase):
         self.assertIn(demographics["first_name"], dev.MALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Dr")
 
-    @mock.patch("intrahospital_api.services.demographics.backends.dev.random.choice")
+    @mock.patch("intrahospital_api.services.demographics.dev_backend.random.choice")
     def test_demographics_female(self, choice):
         choice.side_effect = lambda x: x[1]
         demographics = self.api.demographics_for_hospital_number('some')

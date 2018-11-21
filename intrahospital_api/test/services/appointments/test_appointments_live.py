@@ -3,7 +3,7 @@ import mock
 import copy
 from django.test import override_settings
 from opal.core.test import OpalTestCase
-from intrahospital_api.services.appointments.backends import live
+from intrahospital_api.services.appointments import live_backend as live
 
 TEST_DATA = [{
     u'AIG_Resource_ID': u'RAL Davis, Dr David TB',

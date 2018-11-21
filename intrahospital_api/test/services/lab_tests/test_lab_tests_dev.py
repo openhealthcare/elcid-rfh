@@ -2,7 +2,7 @@ import datetime
 import mock
 from opal.core.test import OpalTestCase
 from opal.core import serialization
-from intrahospital_api.services.lab_tests.backends import dev
+from intrahospital_api.services.lab_tests import dev_backend as dev
 
 
 class DevApiTestCase(OpalTestCase):

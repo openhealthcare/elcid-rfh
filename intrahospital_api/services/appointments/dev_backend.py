@@ -1,7 +1,7 @@
 import datetime
 import random
 import copy
-from intrahospital_api.services.appointments.backends import live
+from intrahospital_api.services.appointments import live_backend as live
 
 TEST_DATA = {
     u'AIG_Resource_ID': u'RAL Davis, Dr David TB',
