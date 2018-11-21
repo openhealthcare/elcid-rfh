@@ -1,3 +1,6 @@
+"""
+Lab test service for elCID RFH
+"""
 import copy
 from collections import defaultdict
 from django.core.mail import send_mail as django_send_mail
@@ -12,13 +15,10 @@ from intrahospital_api import models as intrahospital_api_models
 SERVICE_NAME = "lab_tests"
 
 
-def lab_tests_for_hospital_number(hospital_number):
-    return service_utils.get_api(SERVICE_NAME).lab_tests_for_hospital_number(
-        hospital_number
-    )
-
-
 def get_model_for_lab_test_type(patient, lab_test):
+    """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+    """
     if lab_test["test_name"] == "BLOOD CULTURE":
         mod = elcid_models.UpstreamBloodCulture
     else:
@@ -47,27 +47,10 @@ def get_model_for_lab_test_type(patient, lab_test):
         return mod()
 
 
-def update_patient(patient, lab_tests=None):
-    """
-    Takes in all lab tests, saves those
-    that need saving updates those that need
-    updating.
-    """
-    api = service_utils.get_api(SERVICE_NAME)
-    user = service_utils.get_user()
-    if lab_tests is None:
-        lab_tests = api.lab_tests_for_hospital_number(
-            patient.demographics_set.first().hospital_number
-        )
-
-    for lab_test in lab_tests:
-        lab_model = get_model_for_lab_test_type(patient, lab_test)
-        lab_model.update_from_api_dict(patient, lab_test, user)
-    return len(lab_tests)
-
-
 def update_patients(patients, since):
     """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+
     Updates all the lab tests for a queryset of patients
     since a certain time.
     """
@@ -102,20 +85,18 @@ def update_patients(patients, since):
 
 
 def lab_test_batch_load():
+    """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+    """
     started = load_utils.get_batch_start_time(SERVICE_NAME)
     patients = load_utils.get_loaded_patients()
     return update_patients(patients, started)
 
 
-def refresh_patient(patient):
-    patient.labtest_set.filter(lab_test_type__in=[
-        elcid_models.UpstreamBloodCulture.get_display_name(),
-        elcid_models.UpstreamLabTest.get_display_name()
-    ]).delete()
-    return update_patient(patient)
-
-
 def _refresh_all():
+    """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+    """
     count = 0
     patients = load_utils.get_loaded_patients()
 
@@ -126,6 +107,8 @@ def _refresh_all():
 
 def clean_observations(observations, max_dt):
     """"
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+
     Takes in a list of tules (obs_value, last_updated)
 
     This filters out any dicts where the last_updated > max_dt
@@ -142,6 +125,9 @@ def clean_observations(observations, max_dt):
 
 
 def clean_lab_tests(lab_test_number_to_observations, max_dt):
+    """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+    """
     result = dict()
 
     for lab_test_number, observations in lab_test_number_to_observations.items():
@@ -153,6 +139,8 @@ def clean_lab_tests(lab_test_number_to_observations, max_dt):
 
 def diff_patient(patient, unclean_db_lab_tests, max_dt):
     """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+
     Missing lab tests are lab tests numbers that exist upstream but not locally
     Additional lab tests are lab test numbers that exist locally but not upstream
     Different observations is a dict
@@ -217,6 +205,8 @@ def diff_patient(patient, unclean_db_lab_tests, max_dt):
 
 def diff_patients(*patients_to_diff):
     """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+
     Returns a dictionary of hospital number to the output
     of diff_patient
     """
@@ -243,6 +233,9 @@ def diff_patients(*patients_to_diff):
 
 
 def send_smoke_check_results(patients_with_issues):
+    """
+    ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
+    """
     issues = [
         "{}#/patient/{}".format(
             settings.DEFAULT_DOMAIN, p.id
@@ -260,7 +253,54 @@ def send_smoke_check_results(patients_with_issues):
     )
 
 
+def lab_tests_for_hospital_number(hospital_number):
+    """
+    PUBLIC FUNCTION, CALLED EXTERNALLY
+    """
+    return service_utils.get_api(SERVICE_NAME).lab_tests_for_hospital_number(
+        hospital_number
+    )
+
+
+def update_patient(patient, lab_tests=None):
+    """
+    PUBLIC FUNCTION, CALLED EXTERNALLY
+    * Manage.py load_tests_from_json
+
+    Takes in all lab tests, saves those
+    that need saving updates those that need
+    updating.
+    """
+    api = service_utils.get_api(SERVICE_NAME)
+    user = service_utils.get_user()
+    if lab_tests is None:
+        lab_tests = api.lab_tests_for_hospital_number(
+            patient.demographics_set.first().hospital_number
+        )
+
+    for lab_test in lab_tests:
+        lab_model = get_model_for_lab_test_type(patient, lab_test)
+        lab_model.update_from_api_dict(patient, lab_test, user)
+    return len(lab_tests)
+
+
+def refresh_patient(patient):
+    """
+    PUBLIC FUNCTION, CALLED EXTERNALLY
+    """
+    patient.labtest_set.filter(lab_test_type__in=[
+        elcid_models.UpstreamBloodCulture.get_display_name(),
+        elcid_models.UpstreamLabTest.get_display_name()
+    ]).delete()
+    return update_patient(patient)
+
+
 def smoke_test():
+    """
+    PUBLIC FUNCTION, CALLED EXTERNALLY
+
+    (Management Command)
+    """
     patient_ids = intrahospital_api_models.InitialPatientLoad.objects.filter(
         state=intrahospital_api_models.InitialPatientLoad.SUCCESS
     ).values_list(
@@ -287,6 +327,9 @@ batch_load = load_utils.batch_load(
 )
 
 
+#
+# THIS FUNCTION NEVER CALLED INTERNALLY OR EXTERNALLY
+#
 # runs through each test individually and updates them as a
 # batch. Useful for when the last batch load ran a long
 # time ago
