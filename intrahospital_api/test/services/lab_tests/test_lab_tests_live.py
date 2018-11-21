@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.test import override_settings
 from opal.core.test import OpalTestCase
 from lab import models as lmodels
-from intrahospital_api.services.lab_tests.backends import live
+from intrahospital_api.services.lab_tests import live_backend as live
 
 FAKE_ROW_DATA = {
     u'Abnormal_Flag': u'',
@@ -228,7 +228,7 @@ class RowTestCase(BaseLabTestCase):
 )
 class LabTestApiTestCase(BaseLabTestCase):
     @mock.patch(
-        "intrahospital_api.services.lab_tests.backends.live.Api.data_delta_query"
+        "intrahospital_api.services.lab_tests.live_backend.Api.data_delta_query"
     )
     def test_lab_test_results_since_no_hospital_number(self, ddq):
         api = live.Api()
@@ -237,7 +237,7 @@ class LabTestApiTestCase(BaseLabTestCase):
         self.assertEqual(list(result), [])
 
     @mock.patch(
-        "intrahospital_api.services.lab_tests.backends.live.Api.data_delta_query"
+        "intrahospital_api.services.lab_tests.live_backend.Api.data_delta_query"
     )
     def test_lab_test_results_since_hospital_number(self, ddq):
         api = live.Api()
@@ -249,16 +249,16 @@ class LabTestApiTestCase(BaseLabTestCase):
             'site': u'^&                              ^',
             'test_code': u'ANNR',
             'observations': [{
-                'observation_name': u'Anti-CV2 (CRMP-5) antibodies', 
-                'observation_number': 20334311, 
+                'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
+                'observation_number': 20334311,
                 'observation_value': u'Negative',
                 'observation_datetime': '18/07/2015 16:18:00',
                 'units': u'',
                 'last_updated': '18/07/2015 17:00:02',
-                'reference_range': u' -'}], 
+                'reference_range': u' -'}],
             'test_name': u'ANTI NEURONAL AB REFERRAL',
-            'clinical_info': u'testing', 
-            'external_system': 'RFH Database', 
+            'clinical_info': u'testing',
+            'external_system': 'RFH Database',
             'datetime_ordered': '18/07/2015 16:18:00'
         }]
         self.assertEqual(result['20552710'], expected)
@@ -792,4 +792,3 @@ class LabTestApiTestCase(BaseLabTestCase):
             eq.return_value = []
             result = list(api.data_delta_query(since))
             self.assertEqual(result, [])
-

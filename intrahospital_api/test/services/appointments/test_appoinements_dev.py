@@ -1,10 +1,10 @@
 import mock
 import datetime
 from opal.core.test import OpalTestCase
-from intrahospital_api.services.appointments.backends import dev
+from intrahospital_api.services.appointments import dev_backend as dev
 
 PACKAGE_STRING = """
-intrahospital_api.services.appointments.backends.dev.{}
+intrahospital_api.services.appointments.dev_backend.{}
 """.strip()
 
 
