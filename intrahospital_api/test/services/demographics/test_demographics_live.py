@@ -176,7 +176,7 @@ class PathologyRowTestCase(OpalTestCase):
 class BackendTestCase(OpalTestCase):
     def test_main_demographics_success(self):
         backend = demographics.Backend()
-        with mock.patch.object(backend, "execute_query") as execute_query:
+        with mock.patch.object(backend.connection, "execute_query") as execute_query:
             execute_query.return_value = [FAKE_MAIN_DEMOGRAPHICS_ROW]
             result = backend.main_demographics("123")
 
@@ -214,7 +214,7 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
 
     def test_main_demographics_fail(self):
         backend = demographics.Backend()
-        with mock.patch.object(backend, "execute_query") as execute_query:
+        with mock.patch.object(backend.connection, "execute_query") as execute_query:
             execute_query.return_value = []
             result = backend.main_demographics("A1' 23")
 
@@ -259,7 +259,7 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
     def test_demographics_not_found_in_either(self):
         backend = demographics.Backend()
 
-        with mock.patch.object(backend, "execute_query") as execute_query:
+        with mock.patch.object(backend.connection, "execute_query") as execute_query:
             execute_query.return_value = []
             result = backend.demographics_for_hospital_number("123")
 
