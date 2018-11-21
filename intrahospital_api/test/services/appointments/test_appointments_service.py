@@ -75,11 +75,11 @@ class RefreshPatientTestCase(AbstractServiceTestCase):
 class LoadPatientTestCase(AbstractServiceTestCase):
     @mock.patch(
         SERVICE_STR.format(
-            "service_utils.get_api"
+            "service_utils.get_backend"
         )
     )
-    def test_load_patient(self, get_api):
-        api = get_api.return_value
+    def test_load_patient(self, get_backend):
+        api = get_backend.return_value
         api.tb_appointments_for_hospital_number.return_value = self.get_api_response()
         service._load_patient(self.patient)
         appointment = self.patient.appointment_set.get()

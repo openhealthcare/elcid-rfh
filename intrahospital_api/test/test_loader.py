@@ -204,7 +204,7 @@ class LogErrorTestCase(OpalTestCase):
         le.assert_called_once_with('unable to run boom \n None\n')
 
 
-@override_settings(API_STATE="dev")
+@override_settings(UPSTREAM_BACKEND_STATE="dev")
 class QueryPatientDemographicsTestCase(OpalTestCase):
     def test_query_patient_demographics(self):
         result = loader.query_patient_demographics("111")
@@ -212,10 +212,10 @@ class QueryPatientDemographicsTestCase(OpalTestCase):
             result["hospital_number"], "111"
         )
 
-    @mock.patch("intrahospital_api.loader.service_utils.get_api")
+    @mock.patch("intrahospital_api.loader.service_utils.get_backend")
     @mock.patch("intrahospital_api.loader.log_errors")
-    def test_query_patient_demographics_error(self, log_errors, get_api):
-        api = get_api.return_value
+    def test_query_patient_demographics_error(self, log_errors, get_backend):
+        api = get_backend.return_value
         api.demographics_for_hospital_number.side_effect = ValueError("Boom")
         result = loader.query_patient_demographics("111")
         self.assertIsNone(result)

@@ -56,9 +56,9 @@ TEST_DATA = [{
         PASSWORD="password",
     )
 )
-class AppointmentsApiTestCase(OpalTestCase):
+class AppointmentsBackendTestCase(OpalTestCase):
     def setUp(self, *args, **kwargs):
-        self.api = live.Api()
+        self.backend = live.Backend()
         self.expected = [{
             'clinic_resource': u'RAL Davis, Dr David TB',
             'end': '18/09/2018 14:10:00',
@@ -69,18 +69,18 @@ class AppointmentsApiTestCase(OpalTestCase):
         }]
 
     def test_tb_appointments_for_hospital_number(self):
-        with mock.patch.object(self.api.connection, "execute_query") as eq:
+        with mock.patch.object(self.backend.connection, "execute_query") as eq:
             eq.return_value = copy.copy(TEST_DATA)
-            result = self.api.tb_appointments_for_hospital_number('111111')
+            result = self.backend.tb_appointments_for_hospital_number('111111')
 
         self.assertEqual(
             result, self.expected
         )
 
     def test_raw_appointments_for_hospital_number(self):
-        with mock.patch.object(self.api.connection, "execute_query") as eq:
+        with mock.patch.object(self.backend.connection, "execute_query") as eq:
             eq.return_value = copy.copy(TEST_DATA)
-            result = self.api.raw_appointments_for_hospital_number('111111')
+            result = self.backend.raw_appointments_for_hospital_number('111111')
         self.assertEqual(
             result, TEST_DATA
         )

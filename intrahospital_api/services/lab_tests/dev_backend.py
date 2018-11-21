@@ -165,7 +165,8 @@ TEST_BASES = {
 }
 
 
-class Api(object):
+class Backend(object):
+
     def get_date_of_birth(self):
         some_date = date.today() - timedelta(random.randint(1, 365 * 70))
         some_dt = datetime.combine(

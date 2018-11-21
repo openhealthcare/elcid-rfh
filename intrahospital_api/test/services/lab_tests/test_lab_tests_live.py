@@ -226,23 +226,23 @@ class RowTestCase(BaseLabTestCase):
         PASSWORD="password",
     )
 )
-class LabTestApiTestCase(BaseLabTestCase):
+class LabTestBackendTestCase(BaseLabTestCase):
     @mock.patch(
-        "intrahospital_api.services.lab_tests.live_backend.Api.data_delta_query"
+        "intrahospital_api.services.lab_tests.live_backend.Backend.data_delta_query"
     )
     def test_lab_test_results_since_no_hospital_number(self, ddq):
-        api = live.Api()
+        backend = live.Backend()
         ddq.return_value = (i for i in [self.get_row()])
-        result = api.lab_test_results_since([], datetime.datetime.now())
+        result = backend.lab_test_results_since([], datetime.datetime.now())
         self.assertEqual(list(result), [])
 
     @mock.patch(
-        "intrahospital_api.services.lab_tests.live_backend.Api.data_delta_query"
+        "intrahospital_api.services.lab_tests.live_backend.Backend.data_delta_query"
     )
     def test_lab_test_results_since_hospital_number(self, ddq):
-        api = live.Api()
+        backend = live.Backend()
         ddq.return_value = (i for i in [self.get_row()])
-        result = api.lab_test_results_since(['20552710'], datetime.datetime.now())
+        result = backend.lab_test_results_since(['20552710'], datetime.datetime.now())
         expected = [{
             'status': 'complete',
             'external_identifier': u'0013I245895',
@@ -264,9 +264,9 @@ class LabTestApiTestCase(BaseLabTestCase):
         self.assertEqual(result['20552710'], expected)
 
     def test_cast_rows_to_lab_tests(self):
-        api = live.Api()
+        backend = live.Backend()
         rows = [self.get_row()]
-        result = api.cast_rows_to_lab_test(rows)
+        result = backend.cast_rows_to_lab_test(rows)
         self.assertEqual(
             result,
             [{
@@ -290,7 +290,7 @@ class LabTestApiTestCase(BaseLabTestCase):
         )
 
     def test_cast_rows_to_lab_tests_multiple(self):
-        api = live.Api()
+        backend = live.Backend()
         expected = [
             {
                 'clinical_info': u'urgent pre-chemo pancreas ca',
@@ -334,14 +334,14 @@ class LabTestApiTestCase(BaseLabTestCase):
         row_1 = self.get_row(**MULTIPLE_RESULTS_LAB_TEST[0])
         row_2 = self.get_row(**MULTIPLE_RESULTS_LAB_TEST[1])
         rows = [row_1, row_2]
-        result = api.cast_rows_to_lab_test(rows)
+        result = backend.cast_rows_to_lab_test(rows)
         self.assertEqual(
             result, expected
         )
 
     def test_data_deltas(self):
         self.maxDiff = None
-        api = live.Api()
+        backend = live.Backend()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='20552710'
@@ -369,11 +369,11 @@ class LabTestApiTestCase(BaseLabTestCase):
                 'datetime_ordered': '18/07/2015 16:18:00'
             }]
         }
-        with mock.patch.object(api, "data_delta_query") as execute_query:
+        with mock.patch.object(backend, "data_delta_query") as execute_query:
             expected = [self.get_row()]
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(['20552710'], since)
+            result = backend.lab_test_results_since(['20552710'], since)
         self.assertEqual(
             result, expected_result
         )
@@ -384,17 +384,17 @@ class LabTestApiTestCase(BaseLabTestCase):
         we should return an empty iterator
         """
 
-        api = live.Api()
+        backend = live.Backend()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='20552710'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
+        with mock.patch.object(backend, "data_delta_query") as execute_query:
             expected = []
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(['20552711'], since)
+            result = backend.lab_test_results_since(['20552711'], since)
         self.assertEqual(
             result, {}
         )
@@ -405,12 +405,12 @@ class LabTestApiTestCase(BaseLabTestCase):
         no patients, we should return an empty
         list
         """
-        api = live.Api()
-        with mock.patch.object(api, "data_delta_query") as execute_query:
+        backend = live.Backend()
+        with mock.patch.object(backend, "data_delta_query") as execute_query:
             expected = [self.get_row()]
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since([], since)
+            result = backend.lab_test_results_since([], since)
         self.assertEqual(
             result, {}
         )
@@ -472,16 +472,16 @@ class LabTestApiTestCase(BaseLabTestCase):
             ]
         }
 
-        api = live.Api()
+        backend = live.Backend()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='20552710'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
+        with mock.patch.object(backend, "data_delta_query") as execute_query:
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(["20552710"], since)
+            result = backend.lab_test_results_since(["20552710"], since)
         self.assertEqual(
             result, expected_result
         )
@@ -544,16 +544,16 @@ class LabTestApiTestCase(BaseLabTestCase):
             ]
         }
 
-        api = live.Api()
+        backend = live.Backend()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='20552710'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
+        with mock.patch.object(backend, "data_delta_query") as execute_query:
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(["20552710"], since)
+            result = backend.lab_test_results_since(["20552710"], since)
         self.assertEqual(
             result, expected_result
         )
@@ -603,16 +603,16 @@ class LabTestApiTestCase(BaseLabTestCase):
             ]
         }
 
-        api = live.Api()
+        backend = live.Backend()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='20552710'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
+        with mock.patch.object(backend, "data_delta_query") as execute_query:
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(["20552710"], since)
+            result = backend.lab_test_results_since(["20552710"], since)
         self.assertEqual(
             result, expected_result
         )
@@ -670,7 +670,7 @@ class LabTestApiTestCase(BaseLabTestCase):
             }]
         }
 
-        api = live.Api()
+        backend = live.Backend()
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             hospital_number='123'
@@ -681,10 +681,10 @@ class LabTestApiTestCase(BaseLabTestCase):
             hospital_number='125'
         )
 
-        with mock.patch.object(api, "data_delta_query") as execute_query:
+        with mock.patch.object(backend, "data_delta_query") as execute_query:
             execute_query.return_value = expected
             since = datetime.datetime.now()
-            result = api.lab_test_results_since(["123", "125"], since)
+            result = backend.lab_test_results_since(["123", "125"], since)
         self.assertEqual(
             result, expected_result
         )
@@ -695,8 +695,8 @@ class LabTestApiTestCase(BaseLabTestCase):
         one row
         """
         lab_test = self.get_row()
-        api = live.Api()
-        result = api.group_summaries([lab_test])
+        backend = live.Backend()
+        result = backend.group_summaries([lab_test])
         self.assertEqual(
             result, {
                 "20552710": {
@@ -717,8 +717,8 @@ class LabTestApiTestCase(BaseLabTestCase):
         """
         lab_test_1 = self.get_row()
         lab_test_2 = self.get_row(Result_ID="1231232")
-        api = live.Api()
-        result = api.group_summaries([
+        backend = live.Backend()
+        result = backend.group_summaries([
             lab_test_1, lab_test_2
         ])
         self.assertEqual(
@@ -747,8 +747,8 @@ class LabTestApiTestCase(BaseLabTestCase):
         """
         lab_test_1 = self.get_row()
         lab_test_2 = self.get_row(Patient_Number="1231232")
-        api = live.Api()
-        result = api.group_summaries([
+        backend = live.Backend()
+        result = backend.group_summaries([
             lab_test_1, lab_test_2
         ])
         self.assertEqual(
@@ -773,11 +773,11 @@ class LabTestApiTestCase(BaseLabTestCase):
         )
 
     def test_data_delta_query(self):
-        api = live.Api()
+        backend = live.Backend()
         since = timezone.now()
-        with mock.patch.object(api.connection, "execute_query") as eq:
+        with mock.patch.object(backend.connection, "execute_query") as eq:
             eq.return_value = [copy.copy(FAKE_ROW_DATA)]
-            result = next(api.data_delta_query(since))
+            result = next(backend.data_delta_query(since))
             eq.assert_called_once_with(
                 live.ALL_DATA_SINCE, since=since
             )
@@ -786,9 +786,9 @@ class LabTestApiTestCase(BaseLabTestCase):
             )
 
     def test_data_delta_query_no_result(self):
-        api = live.Api()
+        backend = live.Backend()
         since = timezone.now()
-        with mock.patch.object(api.connection, "execute_query") as eq:
+        with mock.patch.object(backend.connection, "execute_query") as eq:
             eq.return_value = []
-            result = list(api.data_delta_query(since))
+            result = list(backend.data_delta_query(since))
             self.assertEqual(result, [])

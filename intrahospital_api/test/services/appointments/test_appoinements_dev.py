@@ -8,10 +8,10 @@ intrahospital_api.services.appointments.dev_backend.{}
 """.strip()
 
 
-class DevApiTestCase(OpalTestCase):
+class DevBackendTestCase(OpalTestCase):
     def setUp(self):
-        super(DevApiTestCase, self).setUp()
-        self.api = dev.Api()
+        super(DevBackendTestCase, self).setUp()
+        self.backend = dev.Backend()
 
     @mock.patch(PACKAGE_STRING.format("random.randint"))
     @mock.patch(PACKAGE_STRING.format("datetime"))
@@ -20,7 +20,7 @@ class DevApiTestCase(OpalTestCase):
         dt.datetime.now.return_value = now
         dt.timedelta = datetime.timedelta
         randint.return_value = 1
-        appointment = self.api.raw_appointment("111")
+        appointment = self.backend.raw_appointment("111")
         self.assertEqual(
             appointment["Patient_Number"], "111"
         )
@@ -34,15 +34,15 @@ class DevApiTestCase(OpalTestCase):
         )
 
     def test_raw_appointements_for_hospital_number(self):
-        with mock.patch.object(self.api, "raw_appointment") as ra:
+        with mock.patch.object(self.backend, "raw_appointment") as ra:
             ra.return_value = "fake appointment"
-            result = self.api.raw_appointments_for_hospital_number("111")
+            result = self.backend.raw_appointments_for_hospital_number("111")
             self.assertEqual(result, ["fake appointment"])
             self.assertEqual(ra.call_count, 1)
 
     def test_raw_tb_appointments_for_hospital_number(self):
-        with mock.patch.object(self.api, "raw_appointment") as ra:
+        with mock.patch.object(self.backend, "raw_appointment") as ra:
             ra.return_value = "fake appointment"
-            result = self.api.raw_tb_appointments_for_hospital_number("111")
+            result = self.backend.raw_tb_appointments_for_hospital_number("111")
             self.assertEqual(result, ["fake appointment"])
             self.assertEqual(ra.call_count, 1)

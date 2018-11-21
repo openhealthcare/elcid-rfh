@@ -139,7 +139,8 @@ class SummaryRow(db.Row):
         return db.to_datetime_str(self.raw_data.get("last_updated"))
 
 
-class Api(object):
+class Backend(object):
+
     def __init__(self):
         self.connection = db.DBConnection()
 

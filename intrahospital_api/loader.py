@@ -85,7 +85,7 @@ def query_patient_demographics(hospital_number):
     Public function to pass through a query by hospital number to the
     demographics service API
     """
-    api = service_utils.get_api('demographics')
+    api = service_utils.get_backend('demographics')
     demographics = None
     try:
         demographics = api.demographics_for_hospital_number(hospital_number)

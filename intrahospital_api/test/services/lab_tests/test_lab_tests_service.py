@@ -16,14 +16,14 @@ LAB_TEST_BASE = "intrahospital_api.services.lab_tests.service"
 
 
 @mock.patch(
-    "{}.service_utils.get_api".format(LAB_TEST_BASE)
+    "{}.service_utils.get_backend".format(LAB_TEST_BASE)
 )
 class LabTestsForHospitalNumberTestCase(ApiTestCase):
-    def test_lab_tests_for_hospital_number(self, get_api):
-        api = get_api.return_value
+    def test_lab_tests_for_hospital_number(self, get_backend):
+        api = get_backend.return_value
         api.lab_tests_for_hospital_number.return_value = "result"
         result = service.lab_tests_for_hospital_number("111")
-        get_api.assert_called_once_with("lab_tests")
+        get_backend.assert_called_once_with("lab_tests")
         api.lab_tests_for_hospital_number.assert_called_once_with(
             "111"
         )
@@ -219,7 +219,7 @@ class UpdatePatientsTestCase(ApiTestCase):
     def test_multiple_patients(
         self, update_patient, service_utils
     ):
-        api = service_utils.get_api.return_value
+        api = service_utils.get_backend.return_value
         api.lab_test_results_since.return_value = {
             "111": ["some_lab_tests"],
             "112": ["some_other_lab_tests"],
@@ -536,7 +536,7 @@ class DiffPatientTestCase(OpalTestCase):
     "intrahospital_api.services.lab_tests.service.load_utils.get_batch_start_time"
 )
 @mock.patch(
-    "intrahospital_api.services.lab_tests.service.service_utils.get_api"
+    "intrahospital_api.services.lab_tests.service.service_utils.get_backend"
 )
 class DiffPatientsTestCase(OpalTestCase):
     def setUp(self):
@@ -557,8 +557,8 @@ class DiffPatientsTestCase(OpalTestCase):
             extras=dict(observations=observations_list)
         )
 
-    def test_diff_flow(self, get_api, get_batch_start_time):
-        api = get_api.return_value
+    def test_diff_flow(self, get_backend, get_batch_start_time):
+        api = get_backend.return_value
         get_batch_start_time.return_value = self.batch_start_time
         api.get_summaries.return_value = {
             "111": {
@@ -582,8 +582,8 @@ class DiffPatientsTestCase(OpalTestCase):
             }
         )
 
-    def test_no_diff_flow(self, get_api, get_batch_start_time):
-        api = get_api.return_value
+    def test_no_diff_flow(self, get_backend, get_batch_start_time):
+        api = get_backend.return_value
         get_batch_start_time.return_value = self.batch_start_time
         api.get_summaries.return_value = {
             "111": {
@@ -648,7 +648,7 @@ class SendMailTestCase(OpalTestCase):
     "intrahospital_api.services.lab_tests.service.send_smoke_check_results"
 )
 @mock.patch(
-    "intrahospital_api.services.lab_tests.service.service_utils.get_api"
+    "intrahospital_api.services.lab_tests.service.service_utils.get_backend"
 )
 class SmokeTestTestCase(OpalTestCase):
     def setUp(self):
@@ -669,8 +669,8 @@ class SmokeTestTestCase(OpalTestCase):
             extras=dict(observations=observations_list)
         )
 
-    def test_flow(self, get_api, send_mail):
-        api = get_api.return_value
+    def test_flow(self, get_backend, send_mail):
+        api = get_backend.return_value
         api.get_summaries.return_value = {
             "111": {
                 "113": [("0.11", '12/11/2018 07:07:28')]
@@ -688,8 +688,8 @@ class SmokeTestTestCase(OpalTestCase):
             patient_set.get(), self.patient
         )
 
-    def test_flow_no_issues(self, get_api, send_mail):
-        api = get_api.return_value
+    def test_flow_no_issues(self, get_backend, send_mail):
+        api = get_backend.return_value
         api.get_summaries.return_value = {
             "111": {
                 "113": [("0.11", '12/11/2018 07:07:28')]

@@ -173,12 +173,12 @@ class PathologyRowTestCase(OpalTestCase):
         PASSWORD="password",
     )
 )
-class ApiTestCase(OpalTestCase):
+class BackendTestCase(OpalTestCase):
     def test_main_demographics_success(self):
-        api = demographics.Api()
-        with mock.patch.object(api, "execute_query") as execute_query:
+        backend = demographics.Backend()
+        with mock.patch.object(backend, "execute_query") as execute_query:
             execute_query.return_value = [FAKE_MAIN_DEMOGRAPHICS_ROW]
-            result = api.main_demographics("123")
+            result = backend.main_demographics("123")
 
         self.assertEqual(
             result["first_name"], "TEST"
@@ -213,21 +213,21 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
         )
 
     def test_main_demographics_fail(self):
-        api = demographics.Api()
-        with mock.patch.object(api, "execute_query") as execute_query:
+        backend = demographics.Backend()
+        with mock.patch.object(backend, "execute_query") as execute_query:
             execute_query.return_value = []
-            result = api.main_demographics("A1' 23")
+            result = backend.main_demographics("A1' 23")
 
         self.assertIsNone(result)
 
     def test_demographics_found_in_main(self):
-        api = demographics.Api()
-        with mock.patch.object(api, "main_demographics") as main_demographics:
+        backend = demographics.Backend()
+        with mock.patch.object(backend, "main_demographics") as main_demographics:
             with mock.patch.object(
-               api, "pathology_demographics"
+               backend, "pathology_demographics"
             ) as pathology_demographics:
                 main_demographics.return_value = dict(first_name="Wilma")
-                result = api.demographics_for_hospital_number("111")
+                result = backend.demographics_for_hospital_number("111")
 
         self.assertEqual(
             result,
@@ -238,12 +238,12 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
         self.assertFalse(pathology_demographics.called)
 
     def test_demographics_found_in_pathology(self):
-        api = demographics.Api()
-        with mock.patch.object(api, "main_demographics") as main_demographics:
-            with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
+        backend = demographics.Backend()
+        with mock.patch.object(backend, "main_demographics") as main_demographics:
+            with mock.patch.object(backend, "pathology_demographics") as pathology_demographics:
                 main_demographics.return_value = None
                 pathology_demographics.return_value = dict(first_name="Wilma")
-                result = api.demographics_for_hospital_number("111")
+                result = backend.demographics_for_hospital_number("111")
 
         self.assertEqual(
             result,
@@ -257,10 +257,10 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
         pathology_demographics.assert_called_once_with("111")
 
     def test_demographics_not_found_in_either(self):
-        api = demographics.Api()
+        backend = demographics.Backend()
 
-        with mock.patch.object(api, "execute_query") as execute_query:
+        with mock.patch.object(backend, "execute_query") as execute_query:
             execute_query.return_value = []
-            result = api.demographics_for_hospital_number("123")
+            result = backend.demographics_for_hospital_number("123")
 
         self.assertIsNone(result)

@@ -100,7 +100,7 @@ def update_patient_demographics(patient, upstream_demographics_dict=None):
     Updates a patient with the upstream demographics, if they have changed.
     """
     if upstream_demographics_dict is None:
-        api = service_utils.get_api("demographics")
+        api = service_utils.get_backend("demographics")
         upstream_demographics_dict = api.demographics_for_hospital_number(
             patient.demographics_set.first().hospital_number
         )
@@ -135,7 +135,7 @@ def load_patient(patient):
     If not and the patient does not have enough details, then mark them
     for manual reconciliation
     """
-    api = service_utils.get_api("demographics")
+    api = service_utils.get_backend("demographics")
     demographics = patient.demographics_set.get()
     external_demographics_dict = api.demographics_for_hospital_number(
         demographics.hospital_number
@@ -164,7 +164,7 @@ def for_hospital_number(hospital_number):
     THIS FUNCTION NEVER CALLED INTERNALLY OR EXTERNALLY
     """
     started = timezone.now()
-    api = service_utils.get_api("demographics")
+    api = service_utils.get_backend("demographics")
 
     try:
         result = api.demographics_for_hospital_number(hospital_number)

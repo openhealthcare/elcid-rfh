@@ -116,7 +116,8 @@ class PathologyRow(db.Row):
         return result
 
 
-class Api(db.DBConnection):
+class Backend(db.DBConnection):
+
     @timing
     @db.db_retry
     def main_demographics(self, hospital_number):

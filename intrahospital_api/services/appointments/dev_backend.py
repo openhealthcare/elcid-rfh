@@ -46,7 +46,8 @@ TEST_DATA = {
 }
 
 
-class Api(live.Api):
+class Backend(live.Backend):
+
     def __init__(self):
         pass
 

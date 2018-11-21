@@ -74,9 +74,9 @@ class PivotTestCase(BaseViewTestcase):
         v.kwargs = dict(hospital_number=hospital_number)
         return v
 
-    @mock.patch("intrahospital_api.views.service_utils.get_api")
-    def test_intrahospital_raw_view(self, get_api):
-        get_api().raw_lab_tests.return_value = [
+    @mock.patch("intrahospital_api.views.service_utils.get_backend")
+    def test_intrahospital_raw_view(self, get_backend):
+        get_backend().raw_lab_tests.return_value = [
             dict(name="Wilma"),
             dict(name="Betty"),
         ]
@@ -89,9 +89,9 @@ class PivotTestCase(BaseViewTestcase):
             ctx["row_data"], [['name', 'Wilma', 'Betty']]
         )
 
-    @mock.patch("intrahospital_api.views.service_utils.get_api")
-    def test_intrahospital_cooked_view(self, get_api):
-        get_api().cooked_lab_tests.return_value = [
+    @mock.patch("intrahospital_api.views.service_utils.get_backend")
+    def test_intrahospital_cooked_view(self, get_backend):
+        get_backend().cooked_lab_tests.return_value = [
             dict(name="Wilma"),
             dict(name="Betty"),
         ]
