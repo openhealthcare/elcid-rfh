@@ -14,7 +14,7 @@ from apps.tb.patient_lists import TbPatientList
 
 def _get_or_create_appointment(patient, appointment_dict):
     """
-    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    INTERNAL FUNCTION, NEVER CALLED EXTERNALLY
     """
     start = serialization.deserialize_datetime(
             appointment_dict["start"]
@@ -33,7 +33,7 @@ def _has_changed(appointment, appointment_dict):
     """
     Returns True if an appointment has changed
 
-    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    INTERNAL FUNCTION, NEVER CALLED EXTERNALLY
     """
     for key in appointment_dict.keys():
         model_value = getattr(appointment, key)
@@ -49,7 +49,7 @@ def _has_changed(appointment, appointment_dict):
 
 def _save_appointments(patient, appointment_dicts):
     """
-    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    INTERNAL FUNCTION, NEVER CALLED EXTERNALLY
     """
     user = service_utils.get_user()
     count = 0
@@ -65,7 +65,7 @@ def _save_appointments(patient, appointment_dicts):
 
 def _load_patient(patient):
     """
-    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    INTERNAL FUNCTION, NEVER CALLED EXTERNALLY
     """
     api = service_utils.get_api("appointments")
     appointments = api.tb_appointments_for_hospital_number(
@@ -76,7 +76,7 @@ def _load_patient(patient):
 
 def refresh_patient(patient):
     """
-    PUBLIC METHOD, CALLED EXTERNALLY
+    PUBLIC FUNCTION, CALLED EXTERNALLY
     """
     if patient.episode_set.filter(
         category_name=TbEpisode.display_name
@@ -87,7 +87,7 @@ def refresh_patient(patient):
 
 def _load_patients():
     """
-    INTERNAL METHOD, NEVER CALLED EXTERNALLY
+    INTERNAL FUNCTION, NEVER CALLED EXTERNALLY
 
     Loads in all appointments for all patients with the category of tb
     """
