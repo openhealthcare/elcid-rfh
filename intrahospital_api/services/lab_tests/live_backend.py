@@ -262,7 +262,7 @@ class Backend(db.DatabaseBackend):
         Aggregated into labtest: observations([])
         """
 
-        raw_rows = self.raw_lab_tests(hospital_number)
+        raw_rows = self.raw_lab_tests(identifier)
         rows = (Row(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
 
