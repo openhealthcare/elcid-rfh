@@ -1,5 +1,3 @@
-import datetime
-import logging
 from collections import defaultdict
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.base import db

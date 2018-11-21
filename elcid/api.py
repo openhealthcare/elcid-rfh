@@ -13,9 +13,6 @@ from opal.core.views import json_response
 from opal.core import serialization
 from elcid import models as emodels
 from elcid.utils import timing
-from opal import models as omodels
-import os
-import json
 
 
 _LAB_TEST_TAGS = {

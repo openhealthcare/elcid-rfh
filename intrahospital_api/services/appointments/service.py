@@ -9,7 +9,6 @@ from apps.tb.episode_categories import TbEpisode
 from intrahospital_api.services.base import service_utils, db
 from intrahospital_api.services.base import load_utils
 from apps.tb.episode_categories import TbEpisode
-from apps.tb.patient_lists import TbPatientList
 
 
 def _get_or_create_appointment(patient, appointment_dict):

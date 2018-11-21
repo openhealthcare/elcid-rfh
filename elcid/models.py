@@ -2,8 +2,6 @@
 elCID implementation specific models!
 """
 import datetime
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -709,4 +707,3 @@ class Appointment(omodels.PatientSubrecord):
         verbose_name = "Appointments"
         verbose_name_plural = "Appointments"
         ordering = ["-start"]
-
