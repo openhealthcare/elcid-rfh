@@ -67,10 +67,7 @@ class Row(db.Row):
         )
 
 
-class Backend(object):
-
-    def __init__(self):
-        self.connection = db.DBConnection()
+class Backend(db.DatabaseBackend):
 
     def patient_to_appointments_dict(self, rows):
         result = defaultdict(list)

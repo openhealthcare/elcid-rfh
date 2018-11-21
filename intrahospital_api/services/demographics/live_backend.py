@@ -116,10 +116,7 @@ class PathologyRow(db.Row):
         return result
 
 
-class Backend(object):
-
-    def __init__(self):
-        self.connection = db.DBConnection()
+class Backend(db.DatabaseBackend):
 
     @timing
     @db.db_retry
