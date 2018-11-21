@@ -1360,7 +1360,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def test_status_found(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling test_status_found"
         is_load_running.return_value = None
         os.path.return_value = True
         fabfile.dump_database(self.prod_env, "db_name", "backup_name")
@@ -1373,7 +1372,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def test_timed_out(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling test_timed_out"
         is_load_running.return_value = True
         os.path.return_value = True
         first_call = datetime.datetime.now()
@@ -1389,7 +1387,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def test_fails_first_time_works_the_next(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling test_fails_first_time_works_the_next"
         dt.datetime.now.return_value = datetime.datetime.now()
         is_load_running.side_effect = [True, None]
         os.path.return_value = True
@@ -1407,7 +1404,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def no_cron_job(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling no_cron_job"
         os.path.return_value = False
         fabfile.dump_database("db_name", "backup_name")
         self.assertFalse(is_load_running.called)

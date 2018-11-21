@@ -2,6 +2,7 @@ import json
 import mock
 import datetime
 from opal.core.test import OpalTestCase
+from django.utils import timezone
 from rest_framework.reverse import reverse
 from elcid.api import (
     BloodCultureResultApi, UpstreamBloodCultureApi
@@ -169,7 +170,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             kwargs=dict(pk=1),
             request=request
         )
-        some_date = datetime.date(2017, 1, 1)
+        some_date = timezone.make_aware(datetime.datetime(2017, 1, 1))
         patient, _ = self.new_patient_and_episode_please()
 
         gram_stain = emodels.GramStain.objects.create(
@@ -187,7 +188,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         gram_stain.result.lab_test_id = gram_stain.id
         gram_stain.result.save()
 
-        some_other_date = datetime.date(2017, 1, 1)
+        some_other_date = timezone.make_aware(datetime.datetime(2017, 1, 1))
         quick_fish = emodels.QuickFISH.objects.create(
             datetime_ordered=some_other_date,
             patient=patient,
