@@ -159,3 +159,9 @@ class DBConnection(object):
                     result.extend(cur.fetchall())
         logger.debug(result)
         return result
+
+
+class DatabaseBackend(object):
+
+    def __init__(self):
+        self.connection = DBConnection()

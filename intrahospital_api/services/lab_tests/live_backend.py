@@ -139,10 +139,7 @@ class SummaryRow(db.Row):
         return db.to_datetime_str(self.raw_data.get("last_updated"))
 
 
-class Backend(object):
-
-    def __init__(self):
-        self.connection = db.DBConnection()
+class Backend(db.DatabaseBackend):
 
     def raw_lab_tests(self, hospital_number, test_type=None):
         if test_type:

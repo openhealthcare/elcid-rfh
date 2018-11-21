@@ -116,12 +116,12 @@ class PathologyRow(db.Row):
         return result
 
 
-class Backend(db.DBConnection):
+class Backend(db.DatabaseBackend):
 
     @timing
     @db.db_retry
     def main_demographics(self, hospital_number):
-        rows = list(self.execute_query(
+        rows = list(self.connection.execute_query(
             MAIN_DEMOGRAPHICS_QUERY,
             hospital_number=hospital_number
         ))
@@ -132,7 +132,7 @@ class Backend(db.DBConnection):
     @timing
     @db.db_retry
     def pathology_demographics(self, hospital_number):
-        rows = list(self.execute_query(
+        rows = list(self.connection.execute_query(
             PATHOLOGY_DEMOGRAPHICS_QUERY,
             hospital_number=hospital_number
         ))
