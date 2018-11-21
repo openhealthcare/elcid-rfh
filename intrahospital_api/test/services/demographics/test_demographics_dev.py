@@ -5,17 +5,17 @@ from intrahospital_api.services.demographics import dev_backend as dev
 from opal.core import serialization
 
 
-class DevApiTestCase(OpalTestCase):
+class DevBackendTestCase(OpalTestCase):
     def setUp(self):
-        self.api = dev.Api()
+        self.backend = dev.Backend()
 
     def test_get_date_of_birth(self):
-        dob_str = self.api.get_date_of_birth()
+        dob_str = self.backend.get_date_of_birth()
         dob = serialization.deserialize_date(dob_str)
         self.assertTrue(dob > datetime.date(1900, 1, 1))
 
     def test_demographics(self):
-        demographics = self.api.demographics_for_hospital_number('some')
+        demographics = self.backend.demographics_for_hospital_number('some')
         expected_fields = [
             "sex",
             "date_of_birth",
@@ -37,7 +37,7 @@ class DevApiTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.services.demographics.dev_backend.random.choice")
     def test_demographics_male(self, choice):
         choice.side_effect = lambda x: x[0]
-        demographics = self.api.demographics_for_hospital_number('some')
+        demographics = self.backend.demographics_for_hospital_number('some')
         self.assertEqual(demographics["sex"], "Male")
         self.assertIn(demographics["first_name"], dev.MALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Dr")
@@ -45,11 +45,11 @@ class DevApiTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.services.demographics.dev_backend.random.choice")
     def test_demographics_female(self, choice):
         choice.side_effect = lambda x: x[1]
-        demographics = self.api.demographics_for_hospital_number('some')
+        demographics = self.backend.demographics_for_hospital_number('some')
         self.assertEqual(demographics["sex"], "Female")
         self.assertIn(demographics["first_name"], dev.FEMALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Ms")
 
     def test_get_external_identifier(self):
-        external_identifier = self.api.get_external_identifier()
+        external_identifier = self.backend.get_external_identifier()
         self.assertEqual(len(external_identifier), 9)

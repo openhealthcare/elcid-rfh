@@ -32,7 +32,7 @@ class PivottedData(StaffRequiredMixin, TemplateView):
     service = ""
 
     def get_context_data(self, *args, **kwargs):
-        api = service_utils.get_api(self.service)
+        api = service_utils.get_backend(self.service)
         ctx = super(PivottedData, self).get_context_data(
             *args, **kwargs
         )
@@ -58,7 +58,7 @@ class IntrahospitalCookedLabTestView(PivottedData):
 
 @staff_member_required
 def results_as_json(request, *args, **kwargs):
-    api = service_utils.get_api("lab_tests")
+    api = service_utils.get_backend("lab_tests")
     results = api.lab_tests_for_hospital_number(
         kwargs["hospital_number"], **request.GET
     )

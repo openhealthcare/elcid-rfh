@@ -85,7 +85,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         demographics.save()
 
     def test_update_patient_demographics_have_changed(self, service_utils):
-        demographics = service_utils.get_api.return_value.demographics_for_hospital_number
+        demographics = service_utils.get_backend.return_value.demographics_for_hospital_number
         service_utils.get_user.return_value = self.user
         demographics.return_value = dict(first_name="Janey")
         service.update_patient_demographics(self.patient)
@@ -95,7 +95,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         )
 
     def test_demographics_passed_in(self, service_utils):
-        demographics = service_utils.get_api.return_value.demographics_for_hospital_number
+        demographics = service_utils.get_backend.return_value.demographics_for_hospital_number
         service_utils.get_user.return_value = self.user
         service.update_patient_demographics(
             self.patient, dict(first_name="Janey")
@@ -108,7 +108,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
 
     def test_no_patient_demographics(self, service_utils):
         # Tests the edge case of where no demographics are found
-        demographics = service_utils.get_api.return_value.demographics_for_hospital_number
+        demographics = service_utils.get_backend.return_value.demographics_for_hospital_number
         service_utils.get_user.return_value = self.user
         demographics.return_value = None
         service.update_patient_demographics(self.patient)
@@ -123,7 +123,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         )
 
     def test_update_patient_demographics_have_not_changed(self, service_utils):
-        demographics = service_utils.get_api.return_value.demographics_for_hospital_number
+        demographics = service_utils.get_backend.return_value.demographics_for_hospital_number
         demographics.return_value = dict(first_name="Jane")
         service.update_patient_demographics(self.patient)
         self.assertIsNone(self.patient.demographics_set.first().updated)
@@ -169,7 +169,7 @@ class SyncPatientDemographicsTestCase(ApiTestCase):
         )
 
     def test_external_demographics(self, service_utils):
-        dfh = service_utils.get_api.return_value.demographics_for_hospital_number
+        dfh = service_utils.get_backend.return_value.demographics_for_hospital_number
         dfh.return_value = self.external_demographics
         service_utils.get_user.return_value = self.user
         self.patient.demographics_set.update(
@@ -182,7 +182,7 @@ class SyncPatientDemographicsTestCase(ApiTestCase):
 
     def test_reconcilable_demographics(self, service_utils):
         service_utils.get_user.return_value = self.user
-        dfh = service_utils.get_api.return_value.demographics_for_hospital_number
+        dfh = service_utils.get_backend.return_value.demographics_for_hospital_number
         dfh.return_value = self.external_demographics
         self.patient.demographics_set.update(
             first_name="Wilma",
@@ -194,7 +194,7 @@ class SyncPatientDemographicsTestCase(ApiTestCase):
         self.check_updated(self.patient.demographics_set.first())
 
     def test_non_reconcilable_demographics(self, service_utils):
-        dfh = service_utils.get_api.return_value.demographics_for_hospital_number
+        dfh = service_utils.get_backend.return_value.demographics_for_hospital_number
         service_utils.get_user.return_value = self.user
         dfh.return_value = self.external_demographics
         self.patient.demographics_set.update(

@@ -67,7 +67,8 @@ class Row(db.Row):
         )
 
 
-class Api(object):
+class Backend(object):
+
     def __init__(self):
         self.connection = db.DBConnection()
 

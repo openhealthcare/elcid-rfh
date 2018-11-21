@@ -185,7 +185,7 @@ INSTALLED_APPS = (
 API_USER = "super"
 
 # Use the dev api by default, options are dev or live.
-API_STATE = "dev"
+UPSTREAM_BACKEND_STATE = "dev"
 
 # this needs to be set to true on prod
 ASYNC_API = False
