@@ -88,7 +88,7 @@ def query_patient_demographics(hospital_number):
     api = service_utils.get_backend('demographics')
     demographics = None
     try:
-        demographics = api.demographics_for_hospital_number(hospital_number)
+        demographics = api.fetch_for_identifier(hospital_number)
     except:
         log_errors("query_patient_demographics")
 

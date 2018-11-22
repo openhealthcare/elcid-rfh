@@ -252,14 +252,15 @@ class Backend(db.DatabaseBackend):
         return result
 
     @timing
-    def lab_tests_for_hospital_number(self, hospital_number):
+    def fetch_for_identifier(self, identifier):
         """
-        Returns all the results for a particular person
+        Given an IDENTIFIER - a hospital number, returns
+        all the upstream results for a particular person
 
         Aggregated into labtest: observations([])
         """
 
-        raw_rows = self.raw_lab_tests(hospital_number)
+        raw_rows = self.raw_lab_tests(identifier)
         rows = (Row(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
 

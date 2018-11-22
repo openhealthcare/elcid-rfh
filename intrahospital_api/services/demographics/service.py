@@ -100,8 +100,8 @@ def update_patient_demographics(patient, upstream_demographics_dict=None):
     Updates a patient with the upstream demographics, if they have changed.
     """
     if upstream_demographics_dict is None:
-        api = service_utils.get_backend("demographics")
-        upstream_demographics_dict = api.demographics_for_hospital_number(
+        backend = service_utils.get_backend("demographics")
+        upstream_demographics_dict = backend.fetch_for_identifier(
             patient.demographics_set.first().hospital_number
         )
         # this should never really happen but has..
@@ -137,7 +137,7 @@ def load_patient(patient):
     """
     api = service_utils.get_backend("demographics")
     demographics = patient.demographics_set.get()
-    external_demographics_dict = api.demographics_for_hospital_number(
+    external_demographics_dict = api.fetch_for_identifier(
         demographics.hospital_number
     )
     if not external_demographics_dict:
@@ -167,7 +167,7 @@ def for_hospital_number(hospital_number):
     api = service_utils.get_backend("demographics")
 
     try:
-        result = api.demographics_for_hospital_number(hospital_number)
+        result = api.fetch_for_identifier(hospital_number)
     except:
         stopped = timezone.now()
         logger.error("demographics for hospital number failed in {}".format(

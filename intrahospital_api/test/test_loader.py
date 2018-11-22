@@ -216,7 +216,7 @@ class QueryPatientDemographicsTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.loader.log_errors")
     def test_query_patient_demographics_error(self, log_errors, get_backend):
         api = get_backend.return_value
-        api.demographics_for_hospital_number.side_effect = ValueError("Boom")
+        api.fetch_for_identifier.side_effect = ValueError("Boom")
         result = loader.query_patient_demographics("111")
         self.assertIsNone(result)
         err = log_errors.assert_called_once_with("query_patient_demographics")
