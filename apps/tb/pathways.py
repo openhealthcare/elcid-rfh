@@ -83,20 +83,12 @@ class TBConsultationPathway(pathways.PagePathway):
             model=tb_models.ContactDetails,
             help_text_template="pathway/steps/help_text/contact_details.html"
         ),
-        # TODO: Enable this once we are pulling from cerner.
-        # In the meantime it's less useful to have the placeholder
-        #
-        # HelpTextStep(
-        #     model=tb_models.NextOfKin,
-        #     help_text="This will be pulled in from Cerner"
-        # ),
+        # A pathway that asks for place of birth,
+        # immigration concerns and communication concerns
         HelpTextStep(
-            model=tb_models.CommuninicationConsiderations,
-        ),
-        HelpTextStep(
-            template="pathway/steps/nationality.html",
-            help_text_template="pathway/steps/help_text/nationality.html",
-            model=tb_models.Nationality,
+            template="pathway/steps/nationality_and_language.html",
+            display_name="Nationality and Language",
+            icon="fa fa-file-image-o"
         ),
         HelpTextStep(
             model=tb_models.AccessConsiderations,
@@ -202,6 +194,10 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
 
 
 class NationalityAndLanguage(pathways.PagePathway):
+    """
+    A pathway that asks for place of birth,
+    immigration concerns and communication concerns
+    """
     slug = "nationality_and_language"
     display_name = "Nationality And Language"
     icon = "fa fa-map-signs"
