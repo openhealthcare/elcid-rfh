@@ -1,10 +1,10 @@
 angular.module('opal.controllers').controller('AddEpisodeHelperCtrl',
-    function($scope, FieldTranslater, $location, $http, ngProgressLite) {
+    function($scope, FieldTranslator, $location, $http, ngProgressLite) {
       "use strict";
       var DATE_FORMAT = 'DD/MM/YYYY';
       this.addEpisode = function(category){
         var toSave = {
-            demographics: FieldTranslater.jsToSubrecord(
+            demographics: FieldTranslator.jsToSubrecord(
                 $scope.patient.demographics[0].makeCopy(), "demographics"
             )
         }
