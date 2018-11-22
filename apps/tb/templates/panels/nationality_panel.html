@@ -1,0 +1,70 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+      <h3>
+        <i class="fa fa-map-signs"></i> Nationality and Language
+        {% if not request.user.profile.readonly %}
+          <i class="fa fa-pencil edit pull-right pointer"
+              open-pathway="nationality_and_language",
+              pathway-episode="episode"
+              pathway-callback="refresh()">
+          </i>
+        {% endif %}
+      </h3>
+    </div>
+    <ul class="list-group">
+      <li class="list-group-item">
+        <div class="row content-offset-below-10" ng-show="patient.demographics[0].birth_place">
+          <div class="col-md-3">
+            <strong>Birth place:</strong>
+          </div>
+          <div class="col-md-9">
+            [[ patient.demographics[0].birth_place ]]
+          </div>
+        </div>
+
+
+        <div class="row content-offset-below-10" ng-show="patient.nationality[0].arrival_in_the_uk">
+          <div class="col-md-3">
+            <strong>Arrival in the UK:</strong>
+          </div>
+          <div class="col-md-9">
+            [[ patient.nationality[0].arrival_in_the_uk ]]
+          </div>
+        </div>
+
+        <div class="row content-offset-below-10" ng-show="patient.nationality[0].immigration_details.length">
+          <div class="col-md-4">
+            <strong>Immigration Details:</strong>
+          </div>
+          <div class="col-md-9">
+            [[ patient.nationality[0].immigration_details ]]
+          </div>
+        </div>
+
+        <div class="row content-offset-below-10" ng-show="patient.nationality[0].immigration_support_officer.length">
+          <div class="col-md-9">
+            <strong>Immigration support officer:</strong>
+          </div>
+          <div class="col-md-3">
+            [[ patient.nationality[0].immigration_support_officer ]]
+          </div>
+        </div>
+        <div class="row content-offset-below-10" ng-show="patient.communinication_considerations[0].needs_an_interpreter">
+          <div class="col-md-3">
+            <strong>Interpreter:</strong>
+          </div>
+          <div ng-show="patient.communinication_considerations[0].language" class="col-md-8">
+            [[ patient.communinication_considerations[0].language ]]
+          </div>
+          <div ng-show="!patient.communinication_considerations[0].language" class="col-md-8">
+            Unknown
+          </div>
+        </div>
+        <div class="row" ng-show="patient.communinication_considerations[0].sensory_impairment">
+          <div class="col-md-12">
+            <strong>The patient is sensory impaired</strong>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
