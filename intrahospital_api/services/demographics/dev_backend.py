@@ -29,9 +29,9 @@ class Backend(object):
         random_str = str(random.randint(0, 100000000))
         return "{}{}".format("0" * (9-len(random_str)), random_str)
 
-    def demographics_for_hospital_number(self, hospital_number):
+    def fetch_for_identifier(self, identifier):
         # will always be found unless you prefix it with 'x'
-        if hospital_number.startswith('x'):
+        if identifier.startswith('x'):
             return
 
         sex = random.choice(["Male", "Female"])
@@ -47,7 +47,7 @@ class Backend(object):
             ethnicity="Other",
             external_system=constants.EXTERNAL_SYSTEM,
             first_name=first_name,
-            hospital_number=hospital_number,
+            hospital_number=identifier,
             nhs_number=self.get_external_identifier(),
             sex=sex,
             surname=random.choice(LAST_NAMES),

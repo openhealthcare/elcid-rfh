@@ -227,7 +227,7 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
                backend, "pathology_demographics"
             ) as pathology_demographics:
                 main_demographics.return_value = dict(first_name="Wilma")
-                result = backend.demographics_for_hospital_number("111")
+                result = backend.fetch_for_identifier("111")
 
         self.assertEqual(
             result,
@@ -243,7 +243,7 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
             with mock.patch.object(backend, "pathology_demographics") as pathology_demographics:
                 main_demographics.return_value = None
                 pathology_demographics.return_value = dict(first_name="Wilma")
-                result = backend.demographics_for_hospital_number("111")
+                result = backend.fetch_for_identifier("111")
 
         self.assertEqual(
             result,
@@ -261,6 +261,6 @@ WHERE Patient_Number = @hospital_number ORDER BY last_updated DESC;"
 
         with mock.patch.object(backend.connection, "execute_query") as execute_query:
             execute_query.return_value = []
-            result = backend.demographics_for_hospital_number("123")
+            result = backend.fetch_for_identifier("123")
 
         self.assertIsNone(result)

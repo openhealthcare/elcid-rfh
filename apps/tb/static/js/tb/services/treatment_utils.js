@@ -1,4 +1,4 @@
-angular.module('opal.services').service('treatmentUtils', function(FieldTranslater){
+angular.module('opal.services').service('treatmentUtils', function(FieldTranslator){
     "use strict";
     var self = this;
     self.getStopDate = function(treatment){
@@ -36,7 +36,7 @@ angular.module('opal.services').service('treatmentUtils', function(FieldTranslat
       var now = moment();
 
       _.each(treatments, function(treatment){
-        treatment = FieldTranslater.subRecordToJs(treatment, "treatment");
+        treatment = FieldTranslator.subRecordToJs(treatment, "treatment");
         var endDate = self.getStopDate(treatment);
         var start_date = treatment.start_date || treatment.created;
         if(!now.isBefore(start_date, "d")){

@@ -18,13 +18,13 @@ LAB_TEST_BASE = "intrahospital_api.services.lab_tests.service"
 @mock.patch(
     "{}.service_utils.get_backend".format(LAB_TEST_BASE)
 )
-class LabTestsForHospitalNumberTestCase(ApiTestCase):
-    def test_lab_tests_for_hospital_number(self, get_backend):
+class LabTestForHospitalNumberTestCase(ApiTestCase):
+    def lab_tests_for_hospital_number(self, get_backend):
         api = get_backend.return_value
-        api.lab_tests_for_hospital_number.return_value = "result"
+        api.fetch_for_identifier.return_value = "result"
         result = service.lab_tests_for_hospital_number("111")
         get_backend.assert_called_once_with("lab_tests")
-        api.lab_tests_for_hospital_number.assert_called_once_with(
+        api.fetch_for_identifier.assert_called_once_with(
             "111"
         )
         self.assertEqual(result, "result")
