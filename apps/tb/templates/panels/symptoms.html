@@ -1,0 +1,39 @@
+
+<div class="panel panel-default record-panel">
+    <div class="panel-heading">
+        <h3>
+        <i class="{{ models.SymptomComplex.get_icon }}"></i> {{ models.SymptomComplex.get_display_name }}
+            {% if not request.user.profile.readonly %}
+                <i
+                    class="fa fa-pencil edit pull-right pointer"
+                    open-pathway="symptom_complex_pathway",
+                    pathway-episode="episode"
+                    pathway-callback="refresh()">
+                </i>
+            {% endif %}
+        </h3>
+    </div>
+    <ul ng-show="episode.symptom_complex.length && episode.symptom_complex[0].consistency_token" class="list-group">
+        <li class="list-group-item" ng-repeat="item in episode.symptom_complex">
+            <div class="row">
+                <div class="col-md-12">
+                    {# awkward formatting stops spaces appearing after the commas #}
+                    <span ng-repeat="symptom in item.symptoms">[[ symptom ]]<span ng-show="symptom === 'Lymph node swelling' && episode.lymph_node_swelling_site[0].site">
+                        ([[ episode.lymph_node_swelling_site[0].site ]])
+                    </span><span ng-show="!$last">,</span>
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    [[ item.duration ]]
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    [[ item.details ]]
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
