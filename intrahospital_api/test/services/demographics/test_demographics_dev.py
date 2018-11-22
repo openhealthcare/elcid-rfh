@@ -15,7 +15,7 @@ class DevBackendTestCase(OpalTestCase):
         self.assertTrue(dob > datetime.date(1900, 1, 1))
 
     def test_demographics(self):
-        demographics = self.backend.demographics_for_hospital_number('some')
+        demographics = self.backend.fetch_for_identifier('some')
         expected_fields = [
             "sex",
             "date_of_birth",
@@ -37,7 +37,7 @@ class DevBackendTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.services.demographics.dev_backend.random.choice")
     def test_demographics_male(self, choice):
         choice.side_effect = lambda x: x[0]
-        demographics = self.backend.demographics_for_hospital_number('some')
+        demographics = self.backend.fetch_for_identifier('some')
         self.assertEqual(demographics["sex"], "Male")
         self.assertIn(demographics["first_name"], dev.MALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Dr")
@@ -45,7 +45,7 @@ class DevBackendTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.services.demographics.dev_backend.random.choice")
     def test_demographics_female(self, choice):
         choice.side_effect = lambda x: x[1]
-        demographics = self.backend.demographics_for_hospital_number('some')
+        demographics = self.backend.fetch_for_identifier('some')
         self.assertEqual(demographics["sex"], "Female")
         self.assertIn(demographics["first_name"], dev.FEMALE_FIRST_NAMES)
         self.assertEqual(demographics["title"], "Ms")

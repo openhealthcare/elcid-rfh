@@ -142,13 +142,17 @@ class Backend(db.DatabaseBackend):
         return PathologyRow(rows[0]).get_demographics_dict()
 
     @timing
-    def demographics_for_hospital_number(self, hospital_number):
-        hospital_number = hospital_number.strip()
+    def fetch_for_identifier(self, identifier):
+        """
+        Given an IDENTIFIER - a hospital number, return
+        upstream demographics
+        """
+        identifier = identifier.strip()
 
-        demographics_result = self.main_demographics(hospital_number)
+        demographics_result = self.main_demographics(identifier)
 
         if not demographics_result:
-            demographics_result = self.pathology_demographics(hospital_number)
+            demographics_result = self.pathology_demographics(identifier)
 
         if demographics_result:
             demographics_result["external_system"] = EXTERNAL_SYSTEM

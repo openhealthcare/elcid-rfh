@@ -198,7 +198,7 @@ class Backend(object):
 
     def cooked_lab_tests(self, hospital_number):
         rows = []
-        results = self.lab_tests_for_hospital_number(hospital_number)
+        results = self.fetch_for_identifier(hospital_number)
         for result in results:
             for obs in result["observations"]:
                 row = {
@@ -250,7 +250,7 @@ class Backend(object):
             units=test_base_observation_value["units"],
         )
 
-    def lab_tests_for_hospital_number(self, hospital_number, **filter_kwargs):
+    def fetch_for_identifier(self, hospital_number):
         """ We expect a return of something like
             {
                 clinical_info:  u'testing',
@@ -300,5 +300,5 @@ class Backend(object):
     def lab_test_results_since(self, hospital_numbers, some_datetime):
         result = {}
         for hospital_number in hospital_numbers:
-            result[hospital_number] = self.lab_tests_for_hospital_number(None)
+            result[hospital_number] = self.fetch_for_identifier(None)
         return result

@@ -80,7 +80,7 @@ class LoadPatientTestCase(AbstractServiceTestCase):
     )
     def test_load_patient(self, get_backend):
         api = get_backend.return_value
-        api.tb_appointments_for_hospital_number.return_value = self.get_api_response()
+        api.fetch_for_identifier.return_value = self.get_api_response()
         service._load_patient(self.patient)
         appointment = self.patient.appointment_set.get()
         for i, v in RESPONSE.items():

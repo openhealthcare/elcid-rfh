@@ -257,7 +257,7 @@ def lab_tests_for_hospital_number(hospital_number):
     """
     PUBLIC FUNCTION, CALLED EXTERNALLY
     """
-    return service_utils.get_backend(SERVICE_NAME).lab_tests_for_hospital_number(
+    return service_utils.get_backend(SERVICE_NAME).fetch_for_identifier(
         hospital_number
     )
 
@@ -274,7 +274,7 @@ def update_patient(patient, lab_tests=None):
     api = service_utils.get_backend(SERVICE_NAME)
     user = service_utils.get_user()
     if lab_tests is None:
-        lab_tests = api.lab_tests_for_hospital_number(
+        lab_tests = api.fetch_for_identifier(
             patient.demographics_set.first().hospital_number
         )
 
