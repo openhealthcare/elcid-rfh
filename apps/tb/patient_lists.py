@@ -1,4 +1,3 @@
-from opal.models import Episode
 from opal.core import patient_lists
 from elcid import models
 
