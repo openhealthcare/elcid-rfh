@@ -348,7 +348,7 @@ class TBHistory(models.PatientSubrecord):
         null=True,
         choices=TB_TYPES,
         max_length=256,
-        verbose_name="TB Type"
+        verbose_name="TB type"
     )
     site_of_tb = ForeignKeyOrFreeText(
         TBSite, verbose_name="Site of TB"
