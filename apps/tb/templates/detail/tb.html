@@ -5,8 +5,7 @@
     <div class="row">
       <div class="col-md-6">
         {% record_panel models.ReferralRoute %}
-        {% record_panel models.CommuninicationConsiderations %}
-        {% record_panel models.Nationality %}
+        {% include 'panels/nationality_panel.html' %}
         {% record_panel models.TBHistory %}
         {% include "panels/symptoms.html" %}
         {% record_panel models.Travel %}
