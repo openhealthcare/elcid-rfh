@@ -136,14 +136,6 @@ class Renal(RfhPatientList):
     schema = []
 
 
-class TB(RfhPatientList):
-    display_name = 'TB'
-    direct_add = True
-    tag = "tb"
-    template_name = 'episode_list.html'
-    schema = []
-
-
 class Sepsis(RfhPatientList):
     display_name = 'Sepsis Pathway'
     direct_add = True
