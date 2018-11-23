@@ -237,6 +237,7 @@ class AccessConsiderations(models.PatientSubrecord):
 
 
 class PatientConsultation(models.PatientConsultation):
+    assessment = fields.TextField(blank=True, default="")
     plan = fields.TextField(blank=True, default="")
 
 

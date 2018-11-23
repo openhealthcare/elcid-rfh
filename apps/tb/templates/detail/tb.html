@@ -71,6 +71,9 @@
                             <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
                           </p>
                         </span>
+                        <span ng-show="item.assessment">
+                            <b> Assessment: </b><div markdown="assessment"></div>
+                          </span>
                         <span ng-show="item.discussion">
                           <b> Discussion: </b><div markdown="discussion"></div>
                         </span>
