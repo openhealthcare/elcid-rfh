@@ -1,63 +1,68 @@
 {% load forms %}
-{% radio label="" field="TBHistory.previous_tb_contact" %}
-<div ng-show="editing.tb_history.previous_tb_contact === '{{ models.TBHistory.PREVIOUS_TB_DIAGNOSIS }}'">
 
-  <div class="row">
-    <div class="col-md-12">
-      <h5>For How Long Were You Treated?</h5>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-4">
-      {% input label="Years" field="TBHistory.how_long_treated_years" %}
-    </div>
-    <div class="col-md-4">
-      {% input label="Months" field="TBHistory.how_long_treated_months" %}
-    </div>
-    <div class="col-md-4">
-      {% input label="Days" field="TBHistory.how_long_treated_days" %}
-    </div>
-  </div>
+{% checkbox field="TBHistory.previous_tb_diagnosis" %}
+<div ng-show="editing.tb_history.previous_tb_diagnosis">
+	{% input field="TBHistory.tb_type" %}
+	{% input field="TBHistory.site_of_tb" %}
+	<div class="form-group">
+		<label class="control-label col-sm-3">
+			How long ago
+		</label>
+		<div class="col-sm-9">
+			<div class="row">
+				<div class="col-md-3">
+					<input placeholder="Years" class="form-control" type="number" ng-model="editing.tb_history.diagnosis_how_long_ago_years" autocomplete="off">
+				</div>
+				<div class="col-md-3">
+					<input placeholder="Months" class="form-control" type="number" ng-model="editing.tb_history.diagnosis_how_long_ago_months" autocomplete="off">
+				</div>
+				<div class="col-md-3">
+					<input placeholder="Days" class="form-control" type="number" ng-model="editing.tb_history.diagnosis_how_long_ago_days" autocomplete="off">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-3">
+			Treatment length
+		</label>
+		<div class="col-sm-9">
+			<div class="row">
+				<div class="col-md-3">
+					<input placeholder="Years" class="form-control" type="number" ng-model="editing.tb_history.how_long_treated_years" autocomplete="off">
+				</div>
+				<div class="col-md-3">
+					<input placeholder="Months" class="form-control" type="number" ng-model="editing.tb_history.how_long_treated_months" autocomplete="off">
+				</div>
+				<div class="col-md-3">
+					<input placeholder="Days" class="form-control" type="number" ng-model="editing.tb_history.how_long_treated_days" autocomplete="off">
+				</div>
+			</div>
+		</div>
+	</div>
+	{% textarea field="TBHistory.diagnosis_details" label="Details" %}
 </div>
 
-
-
-<div ng-hide="editing.tb_history.previous_tb_contact === '{{ models.TBHistory.NONE }}'">
-  <div class="row content-offset-below-10">
-    <div class="col-md-12" ng-show="editing.tb_history.previous_tb_contact === 'Personal'">
-      <h5>How Long Ago Did You Have TB?
-    </div>
-    <div class="col-md-12" ng-show="editing.tb_history.previous_tb_contact === 'Other'">
-      <h5>How Long Ago Did You Have Contact With Somone Who Had TB?
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
-      <h5>How Long Ago?</h5>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-4">
-      {% input label="Years" field="TBHistory.how_long_ago_years" %}
-    </div>
-    <div class="col-md-4">
-      {% input label="Months" field="TBHistory.how_long_ago_months" %}
-    </div>
-    <div class="col-md-4">
-      {% input label="Days" field="TBHistory.how_long_ago_days" %}
-    </div>
-  </div>
+<hr ng-show="editing.tb_history.previous_tb_contact && editing.tb_history.previous_tb_diagnosis" />
+{% checkbox field="TBHistory.previous_tb_contact" %}
+<div ng-show="editing.tb_history.previous_tb_contact">
+	<div class="form-group">
+			<label class="control-label col-sm-3">
+					How long ago
+			</label>
+			<div class="col-sm-9">
+				<div class="row">
+					<div class="col-md-3">
+						<input placeholder="Years" class="form-control" type="number" ng-model="editing.tb_history.contact_how_long_ago_years" autocomplete="off">
+					</div>
+					<div class="col-md-3">
+						<input placeholder="Months" class="form-control" type="number" ng-model="editing.tb_history.contact_how_long_ago_months" autocomplete="off">
+					</div>
+					<div class="col-md-3">
+						<input placeholder="Days" class="form-control" type="number" ng-model="editing.tb_history.contact_how_long_ago_days" autocomplete="off">
+					</div>
+				</div>
+			</div>
+		</div>
+	{% textarea field="TBHistory.contact_details" label="Details" %}
 </div>
-
-
-<div ng-show="editing.tb_history.previous_tb_contact === '{{ models.TBHistory.PREVIOUS_TB_DIAGNOSIS }}'">
-  {% input field="TBHistory.country_treated" %}
-  <div ng-show="editing.tb_history.country_treated === 'United Kingdom'">
-    {% input field="TBHistory.treatment_centre" %}
-  </div>
-  {% radio field="TBHistory.tb_type" %}
-  <div ng-show="editing.tb_history.tb_type === 'Active' || editing.tb_history.tb_type === 'Unknown'">
-    {% input field="TBHistory.site_of_tb" %}
-  </div>
-</div>
-{% textarea field="TBHistory.details" %}
