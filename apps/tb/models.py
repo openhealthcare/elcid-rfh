@@ -306,7 +306,8 @@ class TBHistory(models.PatientSubrecord):
     _is_singleton = True
 
     previous_tb_contact = fields.BooleanField(
-        default=False
+        default=False,
+        verbose_name="Previous TB contact"
     )
     contact_how_long_ago_years = fields.IntegerField(
         blank=True, null=True
@@ -320,7 +321,8 @@ class TBHistory(models.PatientSubrecord):
     contact_details = fields.TextField(default="")
 
     previous_tb_diagnosis = fields.BooleanField(
-        default=False
+        default=False,
+        verbose_name="Previous TB diagnosis"
     )
     diagnosis_how_long_ago_years = fields.IntegerField(
         blank=True, null=True
