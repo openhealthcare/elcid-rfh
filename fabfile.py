@@ -600,7 +600,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
         raise ValueError("unable to find backup {}".format(backup_name))
 
     # the new env that is going to be live
-    new_env = Env(new_branch, remove_existing=remove_existing)
+    new_env = Env(new_branch)
 
     # the private settings
     private_settings = get_private_settings()
