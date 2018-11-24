@@ -653,7 +653,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
 def infer_current_branch():
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    project_beginning = Env('', False).project_directory
+    project_beginning = Env('').project_directory
 
     if not current_dir.startswith(project_beginning):
         er_temp = 'we are in {0} but expect to be in a directory beginning \
