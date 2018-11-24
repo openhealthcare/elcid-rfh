@@ -57,7 +57,7 @@ UNIX_USER = "ohc"
 DB_USER = "ohc"
 RELEASE_NAME = "elcidrfh-{branch}"
 
-VIRTUAL_ENV_PATH = "/home/{unix_user}/.virtualenvs/{release_name}"
+VIRTUAL_ENV_PATH = "/home/{unix_user}/.virtualenvs/{env_name}"
 PROJECT_ROOT = "/usr/lib/{unix_user}".format(unix_user=UNIX_USER)
 PROJECT_DIRECTORY = "{project_root}/{release_name}"
 BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
@@ -87,9 +87,8 @@ class FabException(Exception):
 
 
 class Env(object):
-    def __init__(self, branch, remove_existing=False):
+    def __init__(self, branch):
         self.branch = branch
-        self.remove_existing = remove_existing
         self.now = datetime.datetime.now()
 
     @property
@@ -107,7 +106,18 @@ class Env(object):
     def virtual_env_path(self):
         return VIRTUAL_ENV_PATH.format(
             unix_user=UNIX_USER,
-            release_name=self.release_name
+            env_name=self.release_name
+        )
+
+    @property
+    def deployment_env_name(self):
+        return "{}-deployment".format(self.release_name)
+
+    @property
+    def deployment_env_path(self):
+        return VIRTUAL_ENV_PATH.format(
+            unix_user=UNIX_USER,
+            env_name=self.deployment_env_name
         )
 
     @property
@@ -155,23 +165,44 @@ def run_management_command(some_command, env):
     return result
 
 
-def pip_create_virtual_env(new_env):
+def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
     print("Creating new environment")
-    if new_env.remove_existing:
-        local("rm -rf {}".format(new_env.virtual_env_path))
+    if remove_existing:
+        local("rm -rf {}".format(virtual_env_path))
     else:
-        if os.path.isdir(new_env.virtual_env_path):
+        if os.path.isdir(virtual_env_path):
             raise ValueError(
-                "Directory {} already exists".format(new_env.virtual_env_path)
+                "Directory {} already exists".format(virtual_env_path)
             )
-    local("/usr/bin/virtualenv {}".format(new_env.virtual_env_path))
-    return
+
+    if python_path:
+        cmd = "/usr/bin/virtualenv -p {} {}".format(
+            python_path, virtual_env_path
+        )
+    else:
+        cmd = "/usr/bin/virtualenv {}".format(virtual_env_path)
+    local(cmd)
+
+
+@task
+def create_deployment_env(branch_name):
+    print("Creating new environment")
+    # private_settings = get_private_settings()
+    private_settings = dict(proxy='""')
+    new_env = Env(branch_name)
+    pip_create_virtual_env(
+        new_env.deployment_env_path, remove_existing=True
+    )
+    pip = "{}/bin/pip".format(new_env.deployment_env_name)
+    local("{0} install -r requirements-deployment.txt --proxy {1}".format(
+        pip, private_settings["proxy"]
+    ))
 
 
 def pip_install_requirements(new_env, proxy):
     print("Installing requirements")
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
-    local("{0} install pip==9.0.1 --proxy {1}".format(pip, proxy))
+    local("{0} install pip3==18.0 --proxy {1}".format(pip, proxy))
     local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
 
 
@@ -188,7 +219,7 @@ def postgres_command(command):
     )
 
 
-def postgres_create_database(some_env):
+def postgres_create_database(some_env, remove_existing):
     """ creates a database and user if they don't already exist.
         the db_name is created from the release name
     """
@@ -204,7 +235,7 @@ WHERE datname='{}'\"".format(some_env.database_name),
     print(select_result.stdout)
 
     if database_exists:
-        if some_env.remove_existing:
+        if remove_existing:
             postgres_command(
                 "DROP DATABASE {0}".format(some_env.database_name)
             )
@@ -560,6 +591,10 @@ def create_private_settings():
         )
 
 
+def get_python_3():
+    return local("which python3", capture=True)
+
+
 def _deploy(new_branch, backup_name=None, remove_existing=False):
     if backup_name and not os.path.isfile(backup_name):
         raise ValueError("unable to find backup {}".format(backup_name))
@@ -574,12 +609,16 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     kill_running_processes()
 
     # Setup environment
-    pip_create_virtual_env(new_env)
+    pip_create_virtual_env(
+        new_env.virtual_env_path,
+        remove_existing,
+        python_path=get_python_3()
+    )
     pip_set_project_directory(new_env)
     pip_install_requirements(new_env, private_settings["proxy"])
 
     # create a database
-    postgres_create_database(new_env)
+    postgres_create_database(new_env, remove_existing)
     create_pg_pass(new_env, private_settings)
 
     # load in a backup
@@ -625,6 +664,7 @@ with {1}'
 
 @task
 def deploy_test(backup_name=None):
+
     new_branch = infer_current_branch()
     _deploy(new_branch, backup_name, remove_existing=True)
     new_status = run_management_command("status_report", Env(new_branch))

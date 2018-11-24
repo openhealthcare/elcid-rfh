@@ -1,0 +1,2 @@
+Fabric==1.14.0
+supervisor==3.0
