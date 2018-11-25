@@ -187,6 +187,7 @@ def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
 @task
 def create_deployment_env(branch_name):
     print("Creating deployment environment")
+    local("sudo apt upgrade openssl=1.0.1f-1ubuntu2.26")
     private_settings = get_private_settings()
     proxy = private_settings["proxy"]
     new_env = Env(branch_name)
@@ -203,7 +204,7 @@ def create_deployment_env(branch_name):
 def pip_install_requirements(new_env, proxy):
     print("Installing requirements")
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
-    local("{0} install pip3==18.0 --proxy {1}".format(pip, proxy))
+    local("{0} install pip==18.0 --proxy {1}".format(pip, proxy))
     local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
 
 
