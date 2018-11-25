@@ -186,13 +186,14 @@ def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
 
 @task
 def create_deployment_env(branch_name):
-    print("Creating new environment")
+    print("Creating deployment environment")
     # private_settings = get_private_settings()
     private_settings = dict(proxy='""')
     new_env = Env(branch_name)
     pip_create_virtual_env(
         new_env.deployment_env_path, remove_existing=True
     )
+    local("{0} install pip==9.0.1 --proxy {1}".format(pip, proxy))
     pip = "{}/bin/pip".format(new_env.deployment_env_name)
     local("{0} install -r requirements-deployment.txt --proxy {1}".format(
         pip, private_settings["proxy"]

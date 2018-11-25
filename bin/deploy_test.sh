@@ -16,5 +16,4 @@ cd /usr/lib/ohc/elcidrfh-$1
 fab create_deployment_env:$1
 
 # run depout test
-workon elcidrfh-$1-deployment && fab deploy_test:$2
-
+/home/ohc/.virtualenvs/elcidrfh-$1-deployment/bin/fab deploy_test:$2
