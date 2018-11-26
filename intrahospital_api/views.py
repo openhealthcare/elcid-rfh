@@ -36,7 +36,9 @@ class PivottedData(StaffRequiredMixin, TemplateView):
         ctx = super(PivottedData, self).get_context_data(
             *args, **kwargs
         )
-        raw_lab_tests = getattr(api, self.api_method)(kwargs["hospital_number"])
+        raw_lab_tests = getattr(
+            api, self.api_method)(kwargs["hospital_number"]
+            )
         row_data = pivot_data(raw_lab_tests)
         row_data.sort(key=lambda x: x[0])
         ctx["row_data"] = row_data

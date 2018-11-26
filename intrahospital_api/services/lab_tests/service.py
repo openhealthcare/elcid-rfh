@@ -124,13 +124,13 @@ def clean_observations(observations, max_dt):
     return result
 
 
-def clean_lab_tests(lab_test_number_to_observations, max_dt):
+def clean_lab_tests(lab_number_to_observations, max_dt):
     """
     ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
     """
     result = dict()
 
-    for lab_test_number, observations in lab_test_number_to_observations.items():
+    for lab_test_number, observations in lab_number_to_observations.items():
         cleaned_observations = clean_observations(observations, max_dt)
         if cleaned_observations:
             result[lab_test_number] = cleaned_observations
@@ -142,11 +142,17 @@ def diff_patient(patient, unclean_db_lab_tests, max_dt):
     ITERNAL FUNCTION, NEVER CALLED EXTERNALLY
 
     Missing lab tests are lab tests numbers that exist upstream but not locally
-    Additional lab tests are lab test numbers that exist locally but not upstream
+    Additional lab tests are lab test numbers that exist locally but not
+    upstream
+
     Different observations is a dict
     {
-        {{ lab_number }}: missing_observations: set([{{ observation value }}, {{ last_updated}}]),
-                          additional_observations: set([{{ observation value }}, {{ last_updated}}])
+        {{ lab_number }}: missing_observations: set(
+                          [{{ observation value }}, {{ last_updated}}]
+                          ),
+                          additional_observations: set(
+                             [{{ observation value }}, {{ last_updated}}]
+                          )
     }
 
     """
