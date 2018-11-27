@@ -2,11 +2,15 @@
 source =
        elcid
        intrahospital_api
+       apps.tb
+       lab
 
 omit =
     */migrations/*
     elcid/test/*
     intrahospital_api/test/*
+    lab/tests/*
+    apps/tb/tests/*
     elcid/wsgi*
     elcid/settings.py
     elcid/local_settings.py
