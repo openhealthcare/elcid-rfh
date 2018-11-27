@@ -76,7 +76,9 @@ class UpstreamDataViewset(viewsets.ViewSet):
             omodels.Patient.objects.all(), pk=pk
         )
         hospital_number = patient.demographics_set.first().hospital_number
-        return json_response(lab_test_service.lab_tests_for_hospital_number(hospital_number))
+        return json_response(
+            lab_test_service.lab_tests_for_hospital_number(hospital_number)
+        )
 
 
 class PatientViewSet(viewsets.ViewSet):

@@ -251,7 +251,7 @@ class UpstreamBloodCulture(UpstreamLabTest):
     Observation types that have previously existed
     are...
 
-    	* Aerobic bottle culture
+        * Aerobic bottle culture
         * Aerobic Bottle: Microscopy
         * Anaerobic bottle culture
         * Anaerobic Bottle: Microscopy
@@ -304,7 +304,8 @@ class Procedure(EpisodeSubrecord):
         verbose_name = "Operation / Procedures"
 
 
-class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
+class PrimaryDiagnosisCondition(lookuplists.LookupList):
+    pass
 
 
 class PrimaryDiagnosis(EpisodeSubrecord):
@@ -465,7 +466,9 @@ class BloodCultureMixin(object):
             if self.id:
                 self.delete()
         else:
-            super(BloodCultureMixin, self).update_from_dict(data, *args, **kwargs)
+            super(BloodCultureMixin, self).update_from_dict(
+                data, *args, **kwargs
+            )
 
 
 class GramStainResult(lmodels.Observation, RfhObservation):

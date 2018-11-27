@@ -724,7 +724,9 @@ def dump_and_copy(branch_name):
         dump_database(env, env.database_name, env.backup_name)
         copy_backup(env)
     except Exception as e:
-        send_error_email("database backup failed with '{}'".format(str(e.message)), env)
+        send_error_email(
+            "database backup failed with '{}'".format(str(e.message)), env
+        )
 
 
 def is_load_running(env):

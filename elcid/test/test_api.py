@@ -1,17 +1,36 @@
+"""
+Unittests for elcid.api
+"""
 import json
 import mock
 import datetime
+
 from opal.core.test import OpalTestCase
 from django.utils import timezone
+from django.test import override_settings
 from rest_framework.reverse import reverse
+
+from elcid import models as emodels
+
 from elcid.api import (
     BloodCultureResultApi, UpstreamBloodCultureApi
 )
-from elcid import models as emodels
 from elcid import api
-from django.test import override_settings
 
+# generate_time_series()
+class GenerateTimeSeriesTestCase(OpalTestCase):
+    def test_generate_time_series(self):
+        data = [
+            dict(observation_value='1'),
+            dict(observation_value='1'),
+            dict(observation_value='2'),
+            dict(observation_value='3'),
+            dict(observation_value='1'),
+        ]
+        expected = [1, 1, 2, 3, 1]
+        self.assertEqual(expected, api.generate_time_series(data))
 
+# extract_observation_value()
 class ExtractObservationValueTestCase(OpalTestCase):
     def test_extract_observation_value(self):
         inputs_to_expected_results = (
@@ -28,6 +47,36 @@ class ExtractObservationValueTestCase(OpalTestCase):
         for input, expected in inputs_to_expected_results:
             self.assertEqual(api.extract_observation_value(input), expected)
 
+# get_observation_value() NOT EXPLICITLY TESTED
+
+# clean_ref_range() NOT EXPLICITLY TESTED
+
+# to_date_str()
+class ToDateStrTestCase(OpalTestCase):
+    def test_takes_first_ten_chars(self):
+        # This test written in part to suggest that the implementation /
+        # naming of this function may be flawed
+        self.assertEqual('First of A', api.to_date_str('First of April 1975'))
+
+# datetime_to_str()
+class DatetimeToStrTestCase(OpalTestCase):
+    def test_to_str(self):
+        dt = datetime.datetime(2017, 7, 4)
+        self.assertEqual('04/07/2017 00:00:00', api.datetime_to_str(dt))
+
+
+# observations_by_date()
+class ObservationsByDateTestCase(OpalTestCase):
+    def test_observations_by_date(self):
+        data = [
+            dict(observation_datetime='04/07/2017', value='pos'),
+            dict(observation_datetime='14/07/2017', value='neg')
+        ]
+        expected = [
+            dict(observation_datetime='14/07/2017', value='neg'),
+            dict(observation_datetime='04/07/2017', value='pos')
+        ]
+        self.assertEqual(expected, api.observations_by_date(data))
 
 class UpstreamBloodCultureApiTestCase(OpalTestCase):
     def setUp(self):

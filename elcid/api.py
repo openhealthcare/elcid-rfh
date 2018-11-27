@@ -183,11 +183,15 @@ class LabTestResultsView(LoginRequiredViewset):
                 )
 
             for observation in observations:
-                obs_result = extract_observation_value(observation["observation_value"])
+                obs_result = extract_observation_value(
+                    observation["observation_value"]
+                )
                 if obs_result:
                     observation["observation_value"] = obs_result
 
-                observation["reference_range"] = observation["reference_range"].replace("]", "").replace("[", "")
+                ref_range = observation["reference_range"]
+                ref_range = ref_range.replace("]", "").replace("[", "")
+                observation["reference_range"] = reference_range
 
                 if not len(observation["reference_range"].replace("-", "").strip()):
                     observation["reference_range"] = None
@@ -198,7 +202,8 @@ class LabTestResultsView(LoginRequiredViewset):
                     else:
                         if not len(range_min_max) == 2:
                             observation["reference_range"] = None
-                            # raise ValueError("unable to properly judge the range")
+                            # raise ValueError("unable to properly judge
+                            # the range")
                         else:
                             observation["reference_range"] = dict(
                                 min=float(range_min_max[0].strip()),
@@ -242,8 +247,12 @@ class LabTestResultsView(LoginRequiredViewset):
             ]):
                 continue
 
-            observations = sorted(observations, key=lambda x: x["datetime_ordered"])
-            observations = sorted(observations, key=lambda x: x["observation_name"])
+            observations = sorted(
+                observations, key=lambda x: x["datetime_ordered"]
+            )
+            observations = sorted(
+                observations, key=lambda x: x["observation_name"]
+            )
 
 
             # observation_time_series = defaultdict(list)
@@ -252,7 +261,8 @@ class LabTestResultsView(LoginRequiredViewset):
 
             observation_metadata = {}
             observation_date_range = {
-                to_date_str(observation["observation_datetime"]) for observation in observations
+                to_date_str(observation["observation_datetime"])
+                for observation in observations
             }
             observation_date_range = sorted(
                 list(observation_date_range),
@@ -276,16 +286,19 @@ class LabTestResultsView(LoginRequiredViewset):
                     pass
                 else:
                     if isinstance(observation["observation_value"], (str, unicode,)):
-                        if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
+                        value = observation["observation_value"]
+                        stripped_value = value.strip(">").strip("<")
+                        if extract_observation_value(stripped_value) is None:
                             long_form = True
 
                 if test_name not in by_observations:
                     obs_for_test_name = {
-                        to_date_str(i["observation_datetime"]): i for i in observations if i["observation_name"] == test_name
+                        to_date_str(i["observation_datetime"]): i
+                        for i in observations if i["observation_name"] == test_name
                     }
-                    # if its all None's for a certain observation name lets skip it
-                    # ie if WBC is all None, lets not waste the users' screen space
-                    # sometimes they just have '-' so lets skip these too
+                    # if its all None's for a certain observation name lets skip
+                    # it i.e. if WBC is all None, lets not waste the users' screen
+                    # space sometimes they just have '-' so lets skip these too
                     if not all(i for i in obs_for_test_name.values() if self.is_empty_value(i)):
                         continue
                     by_observations[test_name] = obs_for_test_name
@@ -335,8 +348,8 @@ class LabTestResultsView(LoginRequiredViewset):
 
 class LabTestSummaryApi(LoginRequiredViewset):
     """
-        The API View used in the card list. Returns the last 3 months (approixmately)
-        of the tests we care about the most.
+    The API View used in the card list. Returns the last 3 months
+    (approixmately) of the tests we care about the most.
     """
     base_name = 'lab_test_summary_api'
 
@@ -398,17 +411,25 @@ class LabTestSummaryApi(LoginRequiredViewset):
 
         for test_name, obs_collection in aggregated_data.items():
             for observation_name, observations in obs_collection.items():
+                latest_results={}
+                for i in observations:
+                    if get_observation_value(i):
+                        date_str = datetime_to_str(i["datetime_ordered"])
+                        key = to_date_str(date_str)
+                        value = get_observation_value(i)
+                        labtest_results[key] = value
+
+
                 serialised_obvs.append(dict(
                     name=observation_name,
                     graph_values=generate_time_series(observations),
                     units=observations[0]["units"],
                     reference_range=get_reference_range(observations[0]),
-                    latest_results={
-                        to_date_str(datetime_to_str(i["datetime_ordered"])): get_observation_value(i) for i in observations if get_observation_value(i)
-                    }
+                    labtest_results=labtest_results
                 ))
                 all_dates = all_dates.union(
-                    i["datetime_ordered"].date() for i in observations if get_observation_value(i)
+                    i["datetime_ordered"].date() for i in observations
+                    if get_observation_value(i)
                 )
 
         recent_dates = sorted(list(all_dates))
@@ -586,11 +607,11 @@ class BloodCultureResultApi(viewsets.ViewSet):
 
         for dt, lab_number in culture_order:
             dt_string = self.translate_date_to_string(dt)
-            by_date_lab_number = cultures[dt_string][lab_number]
+            by_date = cultures[dt_string][lab_number]
             for robic in [AEROBIC, ANAEROBIC]:
-                for isolate in by_date_lab_number[robic].keys():
-                    by_date_lab_number[robic][isolate] = self.sort_by_lab_test_order(
-                        by_date_lab_number[robic][isolate]
+                for isolate in by_date[robic].keys():
+                    by_date[robic][isolate] = self.sort_by_lab_test_order(
+                        by_date[robic][isolate]
                     )
 
         return json_response(dict(
@@ -621,7 +642,9 @@ class DemographicsSearch(LoginRequiredViewset):
             ))
         else:
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                demographics = loader.query_patient_demographics(hospital_number)
+                demographics = loader.query_patient_demographics(
+                    hospital_number
+                )
 
                 if demographics:
                     return json_response(dict(

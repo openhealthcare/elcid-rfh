@@ -1063,7 +1063,8 @@ _LAB_TEST_TAGS = {
         "ZINC",
     ],
     "SPECIALITY-ALLERGY": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one
+        # other top-level group (eg biochem, micro, viro)
         "ALMOND",
         "ALTERNARIA ALTERNATA",
         "ANA-O-3 CASHEW NUT",
@@ -1206,13 +1207,15 @@ _LAB_TEST_TAGS = {
         "YEAST",
     ],
     "SPECIALITY-ANTENATAL-CLINIC": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one
+        # other top-level group (eg biochem, micro, viro)
         "ANC HAEMOGLOBINOPATHY SCR",
         "ANTE-NATAL SCREEN",
         "SYPHILIS ANC REQUESTS",
     ],
     "SPECIALITY-CARDIOLOGY": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one
+        # other top-level group (eg biochem, micro, viro)
         "CARDIAC PROFILE",
         "CARDIAC TROPONIN T",
         "CK ISOENZYMES",
@@ -1223,7 +1226,8 @@ _LAB_TEST_TAGS = {
 
     ],
     "SPECIALITY-CRITICAL-CARE": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one
+        # other top-level group (eg biochem, micro, viro)
         "ARTERIAL BLOOD GASES",
         "ATYPICALPNEUMONIA PCR",
         "C REACTIVE PROTEIN",
@@ -1279,7 +1283,8 @@ _LAB_TEST_TAGS = {
         "VIP",
     ],
     "SPECIALITY-GASTROENTEROLOGY": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one
+        # other top-level group (eg biochem, micro, viro)
         "CEA",
         "ENDOMYSIAL IGA AB",
         "ENDOMYSIAL IGG ABS",
@@ -1293,8 +1298,10 @@ _LAB_TEST_TAGS = {
 
     ],
     "SPECIALITY-HAEMATOLOGY": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
-        # (clinical medical speciality, as distinct from the namesake lab discipline)
+        # all tests in a speciality group are also in at least
+        # one other top-level group (eg biochem, micro, viro)
+        # (clinical medical speciality, as distinct from the
+        # namesake lab discipline)
         "1HR DDAVP-HAEM A",
         "1HR POST DDAVP",
         "2HR DDAVP - HAEM A",
@@ -1322,7 +1329,8 @@ _LAB_TEST_TAGS = {
         "TOTAL IRON BINDING CAPACI",
     ],
     "SPECIALITY-NEPHROLOGY": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one other
+        # top-level group (eg biochem, micro, viro)
         "CREATININE CLEARANCE",
         "EGFR (C+G)",
         "EGFR (MDRD)",
@@ -1335,7 +1343,8 @@ _LAB_TEST_TAGS = {
         "URINE PROTEIN/CR RATIO",
     ],
     "SPECIALITY-RHEUMATOLOGY": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one
+        # other top-level group (eg biochem, micro, viro)
         " ANTI NUCLEAR AB",  # leading space is in source document
         "ANCA",
         "CCP ANTIBODY",
@@ -1352,7 +1361,8 @@ _LAB_TEST_TAGS = {
         "TISSUE BATTERY",  # Anti-Mito-Ab Anti-SM-Ab panel
     ],
     "SPECIALITY-SEXUAL-HEALTH": [
-        # all tests in a speciality group are also in at least one other top-level group (eg biochem, micro, viro)
+        # all tests in a speciality group are also in at least one
+        # other top-level group (eg biochem, micro, viro)
         "CHLAMYDIA / GC SDA ASSAY",
         "GENITAL SWAB",
         "HEPATITIS B SURFACE AG",
