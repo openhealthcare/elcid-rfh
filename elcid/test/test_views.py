@@ -4,14 +4,25 @@ Unittests for the UCLH eLCID OPAL implementation.
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 import ffs
+import mock
 
 from opal.core.test import OpalTestCase
 from opal.models import Patient
 from opal.core.subrecords import subrecords
 
+from elcid import views
 
 HERE = ffs.Path.here()
 TEST_DATA = HERE/'test_data'
+
+class Error500ViewTestCase(OpalTestCase):
+    def test_get(self):
+        mock_request = mock.MagicMock(name='Mock Request')
+        mock_request.META = {'HTTP_USER_AGENT': 'Googlebot'}
+        view = views.Error500View()
+        view.request = mock_request
+        resp = view.get()
+        self.assertEqual('No', resp.content)
 
 
 class ViewsTest(OpalTestCase):
