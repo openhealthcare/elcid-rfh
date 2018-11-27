@@ -187,7 +187,6 @@ def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
 @task
 def create_deployment_env(branch_name):
     print("Creating deployment environment")
-    local("sudo apt upgrade openssl=1.0.1f-1ubuntu2.26")
     private_settings = get_private_settings()
     proxy = private_settings["proxy"]
     new_env = Env(branch_name)
@@ -203,6 +202,7 @@ def create_deployment_env(branch_name):
 
 def pip_install_requirements(new_env, proxy):
     print("Installing requirements")
+    local("sudo apt-get install python3-dev")
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
     local("{0} install pip==18.0 --proxy {1}".format(pip, proxy))
     local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
@@ -646,7 +646,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
     # django setup
     run_management_command("collectstatic --noinput", new_env)
-    run_management_command("migrate --noinput", new_env)
+    run_management_command("migrate --no-input", new_env)
     run_management_command("create_singletons", new_env)
     run_management_command("load_lookup_lists", new_env)
     restart_supervisord(new_env)
