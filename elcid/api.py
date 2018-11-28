@@ -191,7 +191,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
                 ref_range = observation["reference_range"]
                 ref_range = ref_range.replace("]", "").replace("[", "")
-                observation["reference_range"] = reference_range
+                observation["reference_range"] = ref_range
 
                 if not len(observation["reference_range"].replace("-", "").strip()):
                     observation["reference_range"] = None
