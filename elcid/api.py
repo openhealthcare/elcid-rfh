@@ -411,14 +411,13 @@ class LabTestSummaryApi(LoginRequiredViewset):
 
         for test_name, obs_collection in aggregated_data.items():
             for observation_name, observations in obs_collection.items():
-                latest_results={}
+                labtest_results = {}
                 for i in observations:
                     if get_observation_value(i):
                         date_str = datetime_to_str(i["datetime_ordered"])
                         key = to_date_str(date_str)
                         value = get_observation_value(i)
                         labtest_results[key] = value
-
 
                 serialised_obvs.append(dict(
                     name=observation_name,
