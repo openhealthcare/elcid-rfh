@@ -12,6 +12,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterModelOptions(
+            name='tbmanagement',
+            options={'verbose_name': 'TB Management'},
+        ),
         migrations.AddField(
             model_name='lymphnodeswellingsiteoptions',
             name='code',

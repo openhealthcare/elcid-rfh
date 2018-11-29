@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tb', '0036_auto_20181101_1146'),
-        ('tb', '0035_auto_20181113_1056'),
     ]
 
     operations = [
