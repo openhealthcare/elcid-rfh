@@ -407,7 +407,7 @@ def restart_supervisord(new_env):
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
     local("{0}/bin/supervisord -c {1}/etc/production.conf".format(
-        new_env.virtual_env_path, new_env.project_directory
+        new_env.deployment_env_path, new_env.project_directory
     ))
 
 
