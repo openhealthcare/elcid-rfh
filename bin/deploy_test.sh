@@ -15,5 +15,5 @@ cd /usr/lib/ohc/elcidrfh-$1
 # create the deployment env of the new repo
 fab create_deployment_env:$1
 
-# run depout test
+# run deploy test
 /home/ohc/.virtualenvs/elcidrfh-$1-deployment/bin/fab deploy_test:$2

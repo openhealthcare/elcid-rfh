@@ -202,7 +202,7 @@ def create_deployment_env(branch_name):
 
 def pip_install_requirements(new_env, proxy):
     print("Installing requirements")
-    local("sudo apt-get install python3-dev")
+
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
     local("{0} install pip==18.0 --proxy {1}".format(pip, proxy))
     local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
@@ -617,6 +617,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
         python_path=get_python_3()
     )
     pip_set_project_directory(new_env)
+
+    install_apt_dependencies()
     pip_install_requirements(new_env, private_settings["proxy"])
 
     # create a database
@@ -717,6 +719,8 @@ def roll_back_prod(branch_name):
     write_cron_backup(roll_to_env)
     write_cron_lab_tests(roll_to_env)
 
+def install_apt_dependencies():
+    local("sudo apt-get install python3-dev=3.4.0-0ubuntu2")
 
 def create_pg_pass(env, additional_settings):
     pg_pass = os.path.join(os.environ["HOME"], ".pgpass")
