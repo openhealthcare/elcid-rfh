@@ -426,7 +426,7 @@ class GoodToGoTestCase(ApiTestCase):
             loader.good_to_go()
         self.assertEqual(
             str(ble.exception),
-            "Last load is still running and has been for 600 mins"
+            "Last load is still running and has been for 600.0 mins"
         )
 
     def test_previous_run_has_not_happened_for_sometime(self):

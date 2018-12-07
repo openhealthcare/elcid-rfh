@@ -45,7 +45,12 @@ import json
 import copy
 import time
 from jinja2 import Environment, FileSystemLoader
-from fabric.api import local, env
+
+try:
+    from fabric.api import local, env
+except ImportError:
+    from fabric import local, env
+
 from fabric.operations import put
 from fabric.context_managers import lcd, settings
 from fabric.decorators import task

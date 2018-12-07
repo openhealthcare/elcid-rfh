@@ -209,20 +209,11 @@ ADD_PATIENT_LAB_TESTS = True
 
 
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('opal.tests',)
+    # INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )
-    MIGRATION_MODULES = {
-        'opal': 'opal.nomigrations',
-        'elcid': 'elcid.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations',
-        'guidelines': 'guidelines.nomigrations',
-        'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations',
-        'tb': 'apps.tb.nomigrations',
-        'obs': 'obs.nomigrations',
-    }
+
 
 V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \
 %(levelname)s %(message)s'

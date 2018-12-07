@@ -71,7 +71,7 @@ class PatientToDict(OpalTestCase):
         patient, episode = self.new_patient_and_episode_please()
         result = api.patient_to_dict(patient, self.user)
         self.assertEqual(
-            result["house_owner"], []
+            result["next_of_kin"], []
         )
 
     @mock.patch("intrahospital_api.api.patient_to_dict")
