@@ -329,11 +329,11 @@ class PathologyRow(object):
 
 class ProdApi(base_api.BaseApi):
     def __init__(self):
-        self.ip_address = settings.HOSPITAL_DB.get("ip_address")
-        self.database = settings.HOSPITAL_DB.get("database")
-        self.username = settings.HOSPITAL_DB.get("username")
-        self.password = settings.HOSPITAL_DB.get("password")
-        self.view = settings.HOSPITAL_DB.get("view")
+        self.ip_address = settings.HOSPITAL_DB.get("IP_ADDRESS")
+        self.database = settings.HOSPITAL_DB.get("DATABASE")
+        self.username = settings.HOSPITAL_DB.get("USERNAME")
+        self.password = settings.HOSPITAL_DB.get("PASSWORD")
+        self.view = settings.HOSPITAL_DB.get("VIEW")
         if not all([
             self.ip_address,
             self.database,
