@@ -205,6 +205,11 @@ def pip_install_requirements(new_env, proxy):
 
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
     local("{0} install pip==18.0 --proxy {1}".format(pip, proxy))
+
+    # get's us round the connection pool
+    # from
+    # https://github.com/pypa/pip/issues/1805
+    local("{0} install requests==2.20.1 --proxy {1}".format(pip, proxy))
     local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
 
 

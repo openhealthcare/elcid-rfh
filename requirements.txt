@@ -20,8 +20,8 @@ requests==2.20.1
 python-dateutil==2.7.5
 celery==3.1.25
 django-celery==3.2.2
-rcssmin==1.0.6 --install-option="--without-c-extensions"
-rjsmin==1.0.12 --install-option="--without-c-extensions"
+rcssmin==1.0.6
+rjsmin==1.0.12
 django-compressor==2.2
 jsonfield==2.0.2
 pycrypto==2.6.1
