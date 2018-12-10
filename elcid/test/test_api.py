@@ -204,7 +204,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         quick_fish.result.save()
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
-        contents = json.loads(result.content)
+        contents = json.loads(result.content.decode('utf-8'))
         self.assertEqual(len(contents["cultures"]["01/01/2017"]), 1)
         results = contents["cultures"]["01/01/2017"][""]["anaerobic"]["1"]
         self.assertEqual(
@@ -247,7 +247,9 @@ class DemographicsSearchTestCase(OpalTestCase):
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=False)
     def test_without_demographics_add_patient_not_found(self):
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(
+            self.client.get(self.url).content.decode('utf-8')
+        )
         self.assertEqual(
             response["status"], "patient_not_found"
         )
@@ -262,7 +264,9 @@ class DemographicsSearchTestCase(OpalTestCase):
         self, load_demographics
     ):
         load_demographics.return_value = None
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(
+            self.client.get(self.url).content.decode('utf-8')
+        )
         self.assertEqual(
             response["status"], "patient_not_found"
         )
@@ -273,7 +277,9 @@ class DemographicsSearchTestCase(OpalTestCase):
         self, load_demographics
     ):
         load_demographics.return_value = dict(first_name="Wilma")
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(
+            self.client.get(self.url).content.decode('utf-8')
+        )
         self.assertEqual(
             response["status"], "patient_found_upstream"
         )
@@ -283,7 +289,7 @@ class DemographicsSearchTestCase(OpalTestCase):
 
     def test_patient_found(self):
         self.get_patient("Wilma", "1")
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(self.client.get(self.url).content.decode('utf-8'))
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
         )
@@ -294,7 +300,7 @@ class DemographicsSearchTestCase(OpalTestCase):
     def test_patient_found_with_full_stop(self):
         self.get_patient("Dot", "123.123")
         response = json.loads(
-            self.client.get(self.get_url("123.123")).content
+            self.client.get(self.get_url("123.123")).content.decode('utf-8')
         )
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
@@ -306,7 +312,7 @@ class DemographicsSearchTestCase(OpalTestCase):
     def test_patient_found_with_forward_slash(self):
         self.get_patient("Dot", "123/123")
         response = json.loads(
-            self.client.get(self.get_url("123%2F123")).content
+            self.client.get(self.get_url("123%2F123")).content.decode('utf-8')
         )
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
@@ -318,7 +324,7 @@ class DemographicsSearchTestCase(OpalTestCase):
     def test_patient_found_with_hash(self):
         self.get_patient("Dot", "123#123")
         response = json.loads(
-            self.client.get(self.get_url("123%23123")).content
+            self.client.get(self.get_url("123%23123")).content.decode('utf-8')
         )
         self.assertEqual(
             response["status"], "patient_found_in_elcid"

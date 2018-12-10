@@ -702,9 +702,10 @@ class ProdApiTestcase(OpalTestCase):
         If there are multiple tests for a patient
         we should see this in the output
         """
+
         expected = [
             self.get_row(Result_ID="122"),
-            self.get_row(Result_ID="123")
+            self.get_row(Result_ID="123"),
         ]
         expected_result = [{
             'demographics': {
@@ -773,6 +774,11 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.return_value = expected
             since = datetime.now()
             result = api.data_deltas(since)
+
+        result[0]["lab_tests"] = sorted(
+            result[0]["lab_tests"], key=lambda x: int(x["external_identifier"])
+        )
+
         self.assertEqual(
             result, expected_result
         )
@@ -855,6 +861,10 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.return_value = expected
             since = datetime.now()
             result = api.data_deltas(since)
+
+        result[0]["lab_tests"] = sorted(
+            result[0]["lab_tests"], key=lambda x: x["test_name"]
+        )
         self.assertEqual(
             result, expected_result
         )
@@ -931,10 +941,9 @@ class ProdApiTestcase(OpalTestCase):
         """
         Multiple patients with lab tests
         """
-        self.maxDiff = None
         expected = [
-            self.get_row(Patient_Number="123", Result_ID="124"),
             self.get_row(Patient_Number="125", Result_ID="126"),
+            self.get_row(Patient_Number="123", Result_ID="124"),
         ]
         expected_result = [
             {
@@ -1026,6 +1035,11 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.return_value = expected
             since = datetime.now()
             result = api.data_deltas(since)
+
+        result = sorted(
+            result, key=lambda x: int(x["demographics"]["hospital_number"])
+        )
+
         self.assertEqual(
             result, expected_result
         )
