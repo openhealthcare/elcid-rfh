@@ -10108,7 +10108,20 @@
       "name": "HBV Serology"
     }
   ],
-  "patientconsultationreasonforinteraction": [],
+  "patientconsultationreasonforinteraction": [
+    {
+      "name": "Initial assessment"
+    },
+    {
+      "name": "Follow up assessment"
+    },
+    {
+      "name": "MDT"
+    },
+    {
+      "name": "Other"
+    }
+  ],
   "micro_test_mcs": [
     {
       "synonyms": [

@@ -14,6 +14,7 @@ gunicorn==0.17.4
 psycopg2==2.7
 dj-static==0.0.6
 django-axes==1.7.0
+
 django-debug-toolbar==1.2.1
 mock==1.0.1
 requests==2.20.1
@@ -39,4 +40,3 @@ python-tds==1.8.2
 # Open Health Care repositories on GitHub
 -e git+https://github.com/openhealthcare/opal.git@django2#egg=opal
 -e git+https://github.com/openhealthcare/opal-observations.git@Django2/Python3#egg=opal_observations
--e git+https://github.com/openhealthcare/opal-lab.git@Django2/Python3#egg=opal_lab

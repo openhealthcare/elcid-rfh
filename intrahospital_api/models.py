@@ -4,11 +4,14 @@ from elcid.utils import model_method_logging
 import opal.models as omodels
 from opal.models import PatientSubrecord
 from opal.core.fields import ForeignKeyOrFreeText
+from intrahospital_api import exceptions
 
 
 class ExternalDemographics(PatientSubrecord):
     _is_singleton = True
     _icon = "fa fa-handshake-o"
+    _advanced_searchable = False
+    _exclude_from_extract = True
 
     hospital_number = models.CharField(max_length=255, blank=True)
     nhs_number = models.CharField(max_length=255, blank=True, null=True)
@@ -76,9 +79,12 @@ class PatientLoad(models.Model):
 
 
 class InitialPatientLoad(PatientLoad, PatientSubrecord):
-    """ This model is the initial load of a patient
-        future loads are done by the cron batch load
     """
+    This model is the initial load of a patient
+    future loads are done by the cron batch load
+    """
+    _advanced_searchable = False
+    _exclude_from_extract = True
 
     def __unicode__(self):
         hospital_number = self.patient.demographics_set.first().hospital_number
@@ -97,27 +103,52 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
             )
 
     def update_from_dict(self, data, *args, **kwargs):
-        """ For the purposes of the front end this model is read only.
+        """
+        For the purposes of the front end this model is read only.
         """
         pass
 
 
 class BatchPatientLoad(PatientLoad):
-    """ This is the batch load of all reconciled patients
-        every 5 mins
     """
+    This is a load that runs at a regular interval for a particular service.
+    """
+
+    service_name = models.CharField(
+        max_length=255, blank=True, default=""
+    )
 
     def __unicode__(self):
         if self.stopped:
-            return "{} {} {} {}".format(
+            return "{} {} {} {} {}".format(
+                self.service_name,
                 self.state,
                 self.started,
                 self.count,
                 self.duration
             )
         else:
-            return "{} {} {}".format(
+            return "{} {} {} {}".format(
+                self.service_name,
                 self.state,
                 self.started,
                 self.count
             )
+
+    def save(self, *args, **kwargs):
+        if self.state == self.RUNNING:
+            existing_batch_load = self.__class__.objects.filter(
+                service_name=self.service_name,
+                state=self.RUNNING
+            ).first()
+            if existing_batch_load:
+                err = "Trying to start a batch for {} when {} is still \
+running"
+                raise exceptions.BatchLoadError(err.format(
+                    self.service_name, existing_batch_load.id)
+                )
+
+        super(BatchPatientLoad, self).save(*args, **kwargs)
+
+
+

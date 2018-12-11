@@ -2,8 +2,6 @@
 elCID implementation specific models!
 """
 import datetime
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -253,7 +251,7 @@ class UpstreamBloodCulture(UpstreamLabTest):
     Observation types that have previously existed
     are...
 
-    	* Aerobic bottle culture
+        * Aerobic bottle culture
         * Aerobic Bottle: Microscopy
         * Anaerobic bottle culture
         * Anaerobic Bottle: Microscopy
@@ -306,7 +304,8 @@ class Procedure(EpisodeSubrecord):
         verbose_name = "Operation / Procedures"
 
 
-class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
+class PrimaryDiagnosisCondition(lookuplists.LookupList):
+    pass
 
 
 class PrimaryDiagnosis(EpisodeSubrecord):
@@ -467,7 +466,9 @@ class BloodCultureMixin(object):
             if self.id:
                 self.delete()
         else:
-            super(BloodCultureMixin, self).update_from_dict(data, *args, **kwargs)
+            super(BloodCultureMixin, self).update_from_dict(
+                data, *args, **kwargs
+            )
 
 
 class GramStainResult(lmodels.Observation, RfhObservation):
@@ -636,7 +637,7 @@ class ReferralRoute(omodels.EpisodeSubrecord):
         ("TB contact screening", "TB contact screening",),
         ("New entract screening", "New entract screening",),
         ("Transferred in TB Rx", "Transferred in TB Rx",),
-        ("Anti TNF Treatment", "Anti TNF Treatment",),
+        ("Immunosuppressant", "Immunosuppressant",),
         ("BCG Vaccination", "BCG Vaccination",),
         ("Other", "Other",),
     )
@@ -675,3 +676,37 @@ class GP(omodels.PatientSubrecord):
         max_length=256
     )
     contact_details = models.TextField()
+
+
+class Appointment(omodels.PatientSubrecord):
+    state = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+    start = models.DateTimeField(blank=True, null=True)
+    end = models.DateTimeField(blank=True, null=True)
+    clinic_resource = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+    appointment_type = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    location = models.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    def update_from_dict(self, *args, **kwargs):
+        """
+        This model is read only from the front end
+        """
+        pass
+
+    def update_from_api_dict(self, *args, **kwargs):
+        return super(Appointment, self).update_from_dict(
+            *args, force=True, **kwargs
+        )
+
+    class Meta:
+        verbose_name = "Appointments"
+        verbose_name_plural = "Appointments"
+        ordering = ["-start"]

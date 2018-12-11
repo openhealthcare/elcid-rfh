@@ -38,7 +38,8 @@ class SaveTaggingMixin(object):
         return patient, episode
 
 
-class RemovePatientPathway(IgnoreDemographicsMixin, SaveTaggingMixin, PagePathway):
+class RemovePatientPathway(IgnoreDemographicsMixin, SaveTaggingMixin,
+                           PagePathway):
     icon = "fa fa-sign-out"
     display_name = "Remove"
     finish_button_text = "Remove"
@@ -104,7 +105,8 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         return saved_patient, saved_episode
 
 
-class CernerDemoPathway(IgnoreDemographicsMixin, SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
+class CernerDemoPathway(IgnoreDemographicsMixin, SaveTaggingMixin,
+                        RedirectsToPatientMixin, PagePathway):
     display_name = 'Cerner Powerchart Template'
     slug = 'cernerdemo'
 

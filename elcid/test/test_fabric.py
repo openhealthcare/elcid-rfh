@@ -565,18 +565,26 @@ class RestartTestCase(FabfileTestCase):
 @mock.patch('fabfile.local')
 @mock.patch('fabfile.print', create=True)
 class CronTestCase(FabfileTestCase):
-    def test_write_cron_lab_tests(
-        self, print_function, local
+    @mock.patch('fabfile.glob.glob')
+    @mock.patch("fabfile.jinja_env.get_template")
+    def test_write_cron_jobs(
+        self, get_template, glob, print_function, local
     ):
-        fabfile.write_cron_lab_tests(self.prod_env)
-        local.assert_called_once_with("echo '0/5 * * * * ohc \
-/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/python \
-/usr/lib/ohc/elcidrfh-some_branch/manage.py \
-batch_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \
-/etc/cron.d/elcid_batch_test_load")
-        print_function.assert_called_once_with(
-            'Writing cron elcid_batch_test_load'
+
+        glob.return_value = [
+            'etc/cron_templates/cron_demographics_load.jinja2'
+        ]
+        fabfile.write_cron_jobs(self.prod_env)
+
+        self.assertEqual(
+            get_template.call_count, 1
         )
+
+        self.assertEqual(
+            get_template.call_args[0][0],
+            'etc/cron_templates/cron_demographics_load.jinja2'
+        )
+
 
     @mock.patch("fabfile.os")
     def test_write_cron_backup(self, os, print_function, local):
@@ -815,6 +823,14 @@ the address you want to sync to on prod in your private settings"
 
         self.assertEqual(result, expected)
 
+class GetCronOutputFileName(FabfileTestCase):
+    def test_get_cron_output_file_name(self):
+        result = fabfile.get_cron_output_file_name(
+            "etc/cron_templates/cron_demographics_load.jinja2"
+        )
+        self.assertEqual(
+            result, "/etc/cron.d/elcid_cron_demographics_load"
+        )
 
 class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.Env")
@@ -829,7 +845,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_celery_conf")
-    @mock.patch("fabfile.write_cron_lab_tests")
+    @mock.patch("fabfile.write_cron_jobs")
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -844,7 +860,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
-        write_cron_lab_tests,
+        write_cron_jobs,
         services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -941,7 +957,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_local_settings")
-    @mock.patch("fabfile.write_cron_lab_tests")
+    @mock.patch("fabfile.write_cron_jobs")
     @mock.patch("fabfile.services_create_celery_conf")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -956,7 +972,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_celery_conf,
-        write_cron_lab_tests,
+        write_cron_jobs,
         services_create_local_settings,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -1008,12 +1024,12 @@ class DeployTestCase(FabfileTestCase):
         services_create_local_settings.assert_called_once_with(
             self.prod_env, pv
         )
-        write_cron_lab_tests.assert_called_once_with(
+        write_cron_jobs.assert_called_once_with(
             self.prod_env
         )
         services_create_gunicorn_conf.assert_called_once_with(self.prod_env)
         services_create_upstart_conf.assert_called_once_with(self.prod_env)
-        write_cron_lab_tests.assert_called_once_with(self.prod_env)
+        write_cron_jobs.assert_called_once_with(self.prod_env)
         services_create_celery_conf.assert_called_once_with(self.prod_env)
         self.assertEqual(
             run_management_command.call_count, 4
@@ -1310,13 +1326,15 @@ class DiffStatusTestCase(FabfileTestCase):
 @mock.patch("fabfile.copy_backup")
 @mock.patch("fabfile.send_error_email")
 class DumpAndCopyTestCase(FabfileTestCase):
+    @mock.patch("fabfile.Env")
     def test_error_raised(
-        self, send_error_email, copy_backup, dump_database
+        self, Env, send_error_email, copy_backup, dump_database
     ):
+        env = Env.return_value
         dump_database.side_effect = ValueError("break")
         fabfile.dump_and_copy("some_env")
         send_error_email.assert_called_once_with(
-            "database backup failed with 'break'"
+            "database backup failed with 'break'", env
         )
         self.assertFalse(copy_backup.called)
 
@@ -1342,7 +1360,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def test_status_found(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling test_status_found"
         is_load_running.return_value = None
         os.path.return_value = True
         fabfile.dump_database(self.prod_env, "db_name", "backup_name")
@@ -1355,7 +1372,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def test_timed_out(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling test_timed_out"
         is_load_running.return_value = True
         os.path.return_value = True
         first_call = datetime.datetime.now()
@@ -1371,7 +1387,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def test_fails_first_time_works_the_next(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling test_fails_first_time_works_the_next"
         dt.datetime.now.return_value = datetime.datetime.now()
         is_load_running.side_effect = [True, None]
         os.path.return_value = True
@@ -1389,7 +1404,6 @@ class DumpDatabaseTestCase(FabfileTestCase):
     def no_cron_job(
         self, print_fun, os, dt, time, local, is_load_running
     ):
-        print "calling no_cron_job"
         os.path.return_value = False
         fabfile.dump_database("db_name", "backup_name")
         self.assertFalse(is_load_running.called)

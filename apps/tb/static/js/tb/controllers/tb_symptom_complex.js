@@ -10,6 +10,15 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
       }
     }
 
+    if(_.isArray(scope.editing.lymph_node_swelling_site)){
+      if(!scope.editing.lymph_node_swelling_site.length){
+        scope.editing.lymph_node_swelling_site = {}
+      }
+      else{
+        scope.editing.lymph_node_swelling_site = _.first(scope.editing.lymph_node_swelling_site);
+      }
+    }
+
     if(!scope.editing.symptom_complex){
       scope.editing.symptom_complex = {};
     }

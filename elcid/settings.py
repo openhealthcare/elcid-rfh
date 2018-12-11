@@ -26,6 +26,9 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 AUTOCOMPLETE_SEARCH = True
 
+# The intrahospital API is what we use to connect to the rest of the hospital.
+INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
+
 ADMINS = (
     ('Support', 'support@openhealthcare.org.uk',),
 )
@@ -178,24 +181,24 @@ INSTALLED_APPS = (
 
 #### API Settings
 
-# The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
-
 # when running the batch load, this user needs to be set
-API_USER = "needs to be set"
+API_USER = "super"
+
+# Use the dev api by default, options are dev or live.
+UPSTREAM_BACKEND_STATE = "dev"
 
 # this needs to be set to true on prod
 ASYNC_API = False
+
 
 # if the intrahospital api is prod, we need
 # an ip address, a database, a username and a password for
 # the hospital db
 HOSPITAL_DB = dict(
-    ip_address=None,
-    database=None,
-    username=None,
-    password=None,
-    view=None
+    IP_ADDRESS=None,
+    DATABASE=None,
+    USERNAME=None,
+    PASSWORD=None,
 )
 
 
@@ -209,20 +212,10 @@ ADD_PATIENT_LAB_TESTS = True
 
 
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )
-    MIGRATION_MODULES = {
-        'opal': 'opal.nomigrations',
-        'elcid': 'elcid.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations',
-        'guidelines': 'guidelines.nomigrations',
-        'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations',
-        'tb': 'apps.tb.nomigrations',
-        'obs': 'obs.nomigrations',
-    }
+
 
 V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \
 %(levelname)s %(message)s'
@@ -264,21 +257,12 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'elcid.requestLogger': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
+
         'error_emailer': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
-        },
-        'intrahospital_api': {
-            'handlers': ['console_detailed', 'mail_admins'],
-            'level': 'INFO',
-            'propagate': True,
-        },
+        }
     }
 }
 
@@ -287,6 +271,16 @@ if 'test' not in sys.argv:
         'handlers': ['console_detailed'],
         'level': 'INFO',
         'propagate': False,
+    }
+    LOGGING['loggers']['elcid.requestLogger'] = {
+        'handlers': ['console'],
+        'level': 'INFO',
+        'propagate': True,
+    }
+    LOGGING['loggers']['intrahospital_api'] = {
+        'handlers': ['console_detailed', 'mail_admins'],
+        'level': 'INFO',
+        'propagate': True,
     }
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
@@ -306,7 +300,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # New modular settings!
 # !!! TODO: Are these how we want to discover these ?
-OPAL_OPTIONS_MODULE = 'elcid.options'
 OPAL_BRAND_NAME = 'elCID Royal Free Hospital'
 OPAL_LOG_OUT_MINUTES = 15
 OPAL_LOG_OUT_DURATION = OPAL_LOG_OUT_MINUTES*60*1000
@@ -334,7 +327,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.3.6'
+VERSION_NUMBER = '0.3.7'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -346,9 +339,6 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.wsgi')
 
 
-
-# The intrahospital api is what we use to connect to the rest of the hospital
-INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
 # search with external demographics when adding a patient
 USE_UPSTREAM_DEMOGRAPHICS = True

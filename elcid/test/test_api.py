@@ -1,16 +1,36 @@
+"""
+Unittests for elcid.api
+"""
 import json
 import mock
 import datetime
+
 from opal.core.test import OpalTestCase
+from django.utils import timezone
+from django.test import override_settings
 from rest_framework.reverse import reverse
+
+from elcid import models as emodels
+
 from elcid.api import (
     BloodCultureResultApi, UpstreamBloodCultureApi
 )
-from elcid import models as emodels
 from elcid import api
-from django.test import override_settings
 
+# generate_time_series()
+class GenerateTimeSeriesTestCase(OpalTestCase):
+    def test_generate_time_series(self):
+        data = [
+            dict(observation_value='1'),
+            dict(observation_value='1'),
+            dict(observation_value='2'),
+            dict(observation_value='3'),
+            dict(observation_value='1'),
+        ]
+        expected = [1, 1, 2, 3, 1]
+        self.assertEqual(expected, api.generate_time_series(data))
 
+# extract_observation_value()
 class ExtractObservationValueTestCase(OpalTestCase):
     def test_extract_observation_value(self):
         inputs_to_expected_results = (
@@ -27,6 +47,36 @@ class ExtractObservationValueTestCase(OpalTestCase):
         for input, expected in inputs_to_expected_results:
             self.assertEqual(api.extract_observation_value(input), expected)
 
+# get_observation_value() NOT EXPLICITLY TESTED
+
+# clean_ref_range() NOT EXPLICITLY TESTED
+
+# to_date_str()
+class ToDateStrTestCase(OpalTestCase):
+    def test_takes_first_ten_chars(self):
+        # This test written in part to suggest that the implementation /
+        # naming of this function may be flawed
+        self.assertEqual('First of A', api.to_date_str('First of April 1975'))
+
+# datetime_to_str()
+class DatetimeToStrTestCase(OpalTestCase):
+    def test_to_str(self):
+        dt = datetime.datetime(2017, 7, 4)
+        self.assertEqual('04/07/2017 00:00:00', api.datetime_to_str(dt))
+
+
+# observations_by_date()
+class ObservationsByDateTestCase(OpalTestCase):
+    def test_observations_by_date(self):
+        data = [
+            dict(observation_datetime='04/07/2017', value='pos'),
+            dict(observation_datetime='14/07/2017', value='neg')
+        ]
+        expected = [
+            dict(observation_datetime='14/07/2017', value='neg'),
+            dict(observation_datetime='04/07/2017', value='pos')
+        ]
+        self.assertEqual(expected, api.observations_by_date(data))
 
 class UpstreamBloodCultureApiTestCase(OpalTestCase):
     def setUp(self):
@@ -169,7 +219,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             kwargs=dict(pk=1),
             request=request
         )
-        some_date = datetime.date(2017, 1, 1)
+        some_date = timezone.make_aware(datetime.datetime(2017, 1, 1))
         patient, _ = self.new_patient_and_episode_please()
 
         gram_stain = emodels.GramStain.objects.create(
@@ -187,7 +237,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         gram_stain.result.lab_test_id = gram_stain.id
         gram_stain.result.save()
 
-        some_other_date = datetime.date(2017, 1, 1)
+        some_other_date = timezone.make_aware(datetime.datetime(2017, 1, 1))
         quick_fish = emodels.QuickFISH.objects.create(
             datetime_ordered=some_other_date,
             patient=patient,
@@ -257,7 +307,7 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(self.client.get(self.raw_url).status_code, 400)
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.query_patient_demographics")
     def test_with_demographics_add_patient_not_found(
         self, load_demographics
     ):
@@ -268,7 +318,7 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.query_patient_demographics")
     def test_with_demographics_add_patient_found_upstream(
         self, load_demographics
     ):

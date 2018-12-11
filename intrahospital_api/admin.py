@@ -1,8 +1,7 @@
 """
-Admin for elcid fields
+Admin for elCID models
 """
 from django.contrib import admin
-from reversion import models as rmodels
 from django.utils.html import format_html
 from opal import models as omodels
 from opal.admin import PatientAdmin as OldPatientAdmin, PatientSubrecordAdmin
@@ -12,10 +11,17 @@ from intrahospital_api import models as imodels
 
 
 class TaggingListFilter(admin.SimpleListFilter):
-    title = 'team'
+    """
+    A Django Admin filter used by the Patient admin. It allows the user to
+    Filter patients by the teams they are, or have been on.
+    """
+    title          = 'team'
     parameter_name = 'team'
 
     def lookups(self, request, model_admin):
+        """
+        Return a list of filter options to display in the Django Admin sidebar
+        """
         tags = omodels.Tagging.objects.values_list(
             'value', flat=True
         ).distinct()
@@ -34,8 +40,6 @@ class TaggingListFilter(admin.SimpleListFilter):
         provided in the query string and retrievable via
         `self.value()`.
         """
-        # Compare the requested value (either '80s' or '90s')
-        # to decide how to filter the queryset.
         value = self.value()
         if value:
             if value.endswith("-current"):
@@ -64,30 +68,20 @@ class PatientAdmin(OldPatientAdmin):
         '__str__',
         'patient_detail_link',
         'upstream_lab_results',
-        'upstream_blood_culture_results',
     )
 
     def refresh_lab_tests(self, request, queryset):
         for patient in queryset:
             loader.load_patient(patient, run_async=False)
 
+    refresh_lab_tests.short_description = "Load in lab tests from upstream"
+
     def upstream_lab_results(self, obj):
         hospital_number = obj.demographics_set.first().hospital_number
         url = reverse(
-            'raw_results', kwargs=dict(hospital_number=hospital_number)
+            'raw_lab_tests', kwargs=dict(hospital_number=hospital_number)
         )
-        return format_html("<a href='{url}'>{url}</a>", url=url)
-
-    def upstream_blood_culture_results(self, obj):
-        hospital_number = obj.demographics_set.first().hospital_number
-        url = reverse(
-            'raw_results', kwargs=dict(
-                hospital_number=hospital_number, test_type="BLOOD CULTURE"
-            )
-        )
-        return format_html("<a href='{url}'>{url}</a>", url=url)
-
-    refresh_lab_tests.short_description = "Load in lab tests from upstream"
+        return format_html("<a href='{url}'>Raw Lab Tests</a>", url=url)
 
 
 class PatientLoadAdmin(admin.ModelAdmin):
@@ -96,7 +90,14 @@ class PatientLoadAdmin(admin.ModelAdmin):
 
 
 class BatchPatientLoadAdmin(PatientLoadAdmin):
-    list_display = ["__str__", "started", "stopped", "state"]
+    list_display = [
+        "__str__",
+        "service_name",
+        "started",
+        "stopped",
+        "state",
+        "count"
+    ]
 
 
 class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
@@ -114,8 +115,6 @@ class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
         )
 
 
-admin.site.register(rmodels.Version, admin.ModelAdmin)
-admin.site.register(rmodels.Revision, admin.ModelAdmin)
 admin.site.unregister(omodels.Patient)
 admin.site.unregister(imodels.InitialPatientLoad)
 admin.site.register(omodels.Patient, PatientAdmin)
