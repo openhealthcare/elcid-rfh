@@ -237,6 +237,7 @@ class AccessConsiderations(models.PatientSubrecord):
 
 
 class PatientConsultation(models.PatientConsultation):
+    assessment = fields.TextField(blank=True, default="")
     plan = fields.TextField(blank=True, default="")
 
 
@@ -303,32 +304,37 @@ class TBHistory(models.PatientSubrecord):
         ("Unknown", "Unknown",),
     )
 
-    NONE = "None"
-    PREVIOUS_TB_DIAGNOSIS = "Previous TB Diagnosis"
-    PREVIOUS_TB_CONTACT = "Previous TB Contact"
-
-    PREVIOUS_CONTACT = (
-        (PREVIOUS_TB_DIAGNOSIS, PREVIOUS_TB_DIAGNOSIS,),
-        (PREVIOUS_TB_CONTACT, PREVIOUS_TB_CONTACT,),
-        (NONE, NONE,),
-    )
-
     _is_singleton = True
-    previous_tb_contact = fields.CharField(
-        blank=True,
-        choices=PREVIOUS_CONTACT,
-        default=NONE,
-        max_length=100
+
+    previous_tb_contact = fields.BooleanField(
+        default=False,
+        verbose_name="Previous TB contact"
     )
-    how_long_ago_years = fields.IntegerField(
+    contact_how_long_ago_years = fields.IntegerField(
         blank=True, null=True
     )
-    how_long_ago_months = fields.IntegerField(
+    contact_how_long_ago_months = fields.IntegerField(
         blank=True, null=True
     )
-    how_long_ago_days = fields.IntegerField(
+    contact_how_long_ago_days = fields.IntegerField(
         blank=True, null=True
     )
+    contact_details = fields.TextField(default="")
+
+    previous_tb_diagnosis = fields.BooleanField(
+        default=False,
+        verbose_name="Previous TB diagnosis"
+    )
+    diagnosis_how_long_ago_years = fields.IntegerField(
+        blank=True, null=True
+    )
+    diagnosis_how_long_ago_months = fields.IntegerField(
+        blank=True, null=True
+    )
+    diagnosis_how_long_ago_days = fields.IntegerField(
+        blank=True, null=True
+    )
+
     how_long_treated_years = fields.IntegerField(
         blank=True, null=True
     )
@@ -350,7 +356,7 @@ class TBHistory(models.PatientSubrecord):
     )
     country_treated = ForeignKeyOrFreeText(models.Destination)
     treatment_centre = ForeignKeyOrFreeText(TBTreatmentCentre)
-    details = fields.TextField(default="")
+    diagnosis_details = fields.TextField(default="")
 
     class Meta:
         verbose_name = "History of TB"

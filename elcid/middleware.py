@@ -21,11 +21,16 @@ class LoggingMiddleware(MiddlewareMixin):
             req_time = time.time() - self.start_time
 
             if settings.DEBUG:
-                sql_time = sum(float(q['time']) for q in connection.queries) * 1000
-                extra_log += " (%s SQL queries, %s ms)" % (len(connection.queries), sql_time)
+                sql_time = sum(
+                    float(q['time']) for q in connection.queries
+                ) * 1000
+                extra_log += " (%s SQL queries, %s ms)" % (
+                    len(connection.queries), sql_time
+                )
 
             msg = "%s %s %s %s %s (%.02f seconds)%s" % (
-                datetime.now(), username, request.method, request.get_full_path(),
+                datetime.now(), username, request.method,
+                request.get_full_path(),
                 response.status_code, req_time, extra_log
             )
             logger.info(msg)

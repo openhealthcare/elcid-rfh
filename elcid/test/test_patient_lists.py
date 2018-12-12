@@ -3,6 +3,7 @@ import json
 
 from django.test import RequestFactory
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.reverse import reverse as drf_reverse
 
 from opal.core.patient_lists import PatientList
@@ -30,7 +31,7 @@ class AbstractPatientListTestCase(OpalTestCase):
         demographics.surname = "Flintstone"
         demographics.save()
         gram_stain = models.GramStain.objects.create(
-            datetime_ordered=datetime.datetime.now(),
+            datetime_ordered=timezone.make_aware(datetime.datetime.now()),
             patient=patient,
         )
 

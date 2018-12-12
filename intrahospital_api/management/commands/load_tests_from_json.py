@@ -8,7 +8,7 @@ from django.db import transaction
 from opal import models
 from elcid import models as emodels
 from lab import models as lmodels
-from intrahospital_api import update_lab_tests
+from intrahospital_api.services.lab_tests import service
 
 
 class Command(BaseCommand):
@@ -26,7 +26,7 @@ class Command(BaseCommand):
                 emodels.UpstreamBloodCulture.get_display_name(),
             ]
         ).delete()
-        update_lab_tests.update_tests(patient, results)
+        service.update_patient(patient, results)
 
     def handle(self, patient_id, file_name, *args, **options):
         # we assume that there is a user called super

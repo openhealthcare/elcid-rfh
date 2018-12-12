@@ -1,0 +1,4 @@
+# -*- mode: conf -*-
+[flake8]
+ignore  = E203,E221,E226,E124
+exclude = migrations,elcid/test,apps/tb/migrations,intrahospital_api/test,elcid/wsgi.py,elcid/settings.py,elcid/data/dummy_api_data.py,elcid/data/lookuplists/lookuplist_syncher.py

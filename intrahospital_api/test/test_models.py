@@ -1,6 +1,7 @@
 from mock import PropertyMock, patch
 from opal.core.test import OpalTestCase
 from intrahospital_api import models
+from intrahospital_api import exceptions
 
 
 class InitialPatientLoadTestCase(OpalTestCase):
@@ -33,10 +34,13 @@ class InitialPatientLoadTestCase(OpalTestCase):
 class BatchPatientLoadTestCase(OpalTestCase):
     def setUp(self):
         self.patient, _ = self.new_patient_and_episode_please()
-        self.bpl = models.BatchPatientLoad()
+        self.bpl = models.BatchPatientLoad(service_name="lab tests")
         self.bpl.start()
 
-    def test_str_running(self):
+    def test_service_name(self):
+        self.assertIn("lab tests", str(self.bpl))
+
+    def test_unicode_running(self):
         self.assertIn(self.bpl.RUNNING, str(self.bpl))
 
     def test_str_stopped(self):
@@ -48,3 +52,22 @@ class BatchPatientLoadTestCase(OpalTestCase):
             m.return_value = ""
             str(self.bpl)
             self.assertTrue(m.called)
+
+    def test_save_when_there_is_a_batch_load_running(self):
+        bpl2 = models.BatchPatientLoad(service_name="lab tests")
+        with self.assertRaises(exceptions.BatchLoadError) as e:
+            bpl2.start()
+        er = "Trying to start a batch for lab tests when {} is still running"
+        expected = er.format(
+            self.bpl.id
+        )
+        self.assertEqual(str(e.exception), expected)
+
+    def test_save_when_there_is_no_batch_load(self):
+        self.bpl.complete()
+        self.assertEqual(self.bpl.state, self.bpl.SUCCESS)
+        bpl2 = models.BatchPatientLoad(service_name="lab tests")
+        bpl2.start()
+        self.assertEqual(bpl2.state, self.bpl.RUNNING)
+
+

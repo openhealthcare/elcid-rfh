@@ -83,20 +83,12 @@ class TBConsultationPathway(pathways.PagePathway):
             model=tb_models.ContactDetails,
             help_text_template="pathway/steps/help_text/contact_details.html"
         ),
-        # TODO: Enable this once we are pulling from cerner.
-        # In the meantime it's less useful to have the placeholder
-        #
-        # HelpTextStep(
-        #     model=tb_models.NextOfKin,
-        #     help_text="This will be pulled in from Cerner"
-        # ),
+        # A pathway that asks for place of birth,
+        # immigration concerns and communication concerns
         HelpTextStep(
-            model=tb_models.CommuninicationConsiderations,
-        ),
-        HelpTextStep(
-            template="pathway/steps/nationality.html",
-            help_text_template="pathway/steps/help_text/nationality.html",
-            model=tb_models.Nationality,
+            template="pathway/steps/nationality_and_language.html",
+            display_name="Nationality and Language",
+            icon="fa fa-file-image-o"
         ),
         HelpTextStep(
             model=tb_models.AccessConsiderations,
@@ -199,3 +191,40 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
         episode.set_stage(stage, user, data)
         episode.save()
         return patient, episode
+
+
+class SymptomsPathway(pathways.PagePathway):
+    """
+    A pathway is essentially a wrapper for a singleton symptoms form
+    that is the same functionality as the symptoms step in the
+    initial assessment pathway
+    """
+    slug = "symptom_complex_pathway"
+    display_name = models.SymptomComplex.get_display_name()
+    icon = models.SymptomComplex.get_icon()
+    steps = (
+        pathways.Step(
+            model=models.SymptomComplex,
+            template="pathway/steps/symptom_complex.html",
+            help_text_template="pathway/steps/help_text/symptom_complex.html",
+            step_controller="TbSymptomComplexCrtl",
+            multiple=False,
+        ),
+    )
+
+
+class NationalityAndLanguage(pathways.PagePathway):
+    """
+    A pathway that asks for place of birth,
+    immigration concerns and communication concerns
+    """
+    slug = "nationality_and_language"
+    display_name = "Nationality And Language"
+    icon = "fa fa-map-signs"
+    steps = (
+        pathways.Step(
+            template="pathway/steps/nationality_and_language.html",
+            display_name="Nationality and Language",
+            icon="fa fa-file-image-o"
+        ),
+    )
