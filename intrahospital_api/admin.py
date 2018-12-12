@@ -2,6 +2,7 @@
 Admin for elCID models
 """
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
 from opal import models as omodels
 from opal.admin import PatientAdmin as OldPatientAdmin, PatientSubrecordAdmin

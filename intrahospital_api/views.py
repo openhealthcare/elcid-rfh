@@ -22,7 +22,7 @@ def pivot_data(raw_lab_tests):
 
     for key, row in row_data_dict.items():
         row.insert(0, key)
-    return row_data_dict.values()
+    return list(row_data_dict.values())
 
 
 class PivottedData(StaffRequiredMixin, TemplateView):

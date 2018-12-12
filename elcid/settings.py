@@ -209,12 +209,17 @@ ADD_PATIENT_DEMOGRAPHICS = True
 ADD_PATIENT_LAB_TESTS = True
 
 #### END API Settings
-
-
 if 'test' in sys.argv:
+    # INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )
+
+    # skip migrations if we're not on travis
+    # if 'TRAVIS' not in os.environ:
+    MIGRATION_MODULES = {
+        i.rsplit(".", 1)[-1]: None for i in INSTALLED_APPS
+    }
 
 
 V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \

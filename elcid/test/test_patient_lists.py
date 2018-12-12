@@ -103,7 +103,7 @@ class TestPatientList(AbstractPatientListTestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        contents = json.loads(response.content)
+        contents = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(contents), 1)
         episode_serialised = contents[0]
 

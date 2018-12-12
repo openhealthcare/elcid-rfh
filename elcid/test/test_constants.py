@@ -8,8 +8,8 @@ class ConstantsTestCase(OpalTestCase):
         We won't test everything, but spot check a simple one
         """
         self.assertEqual(
-            constants.LAB_TEST_TAGS["TITANIUM"],
-            ['ALL-TESTS', 'ALLERGY-TESTS', 'OTHER', 'SPECIALITY-ALLERGY']
+            set(constants.LAB_TEST_TAGS["TITANIUM"]),
+            set(['ALL-TESTS', 'ALLERGY-TESTS', 'OTHER', 'SPECIALITY-ALLERGY'])
         )
 
     def test_invert_lookups(self):
