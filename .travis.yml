@@ -35,7 +35,7 @@ jobs:
           - pip install --upgrade pip
           - pip install -r requirements-deployment.txt
         script:
-          - pytest -q deployment/tests/test_fabric.py
+          - pytest -q deployment_tests/fabric_tests.py
         notifications:
           slack: ohcuk:6spaME3CB7f2PGrMAcklYWqp
 
