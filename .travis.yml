@@ -1,5 +1,6 @@
 stages:
    - app_test
+   - deployment_tests
 jobs:
    include:
       - stage: app_test
@@ -24,5 +25,17 @@ jobs:
           - cat coverage/coverage.json
           - coveralls debug --merge=coverage/coverage.json
           - coveralls --merge=coverage/coverage.json
+        notificatios:
+          slack: ohcuk:6spaME3CB7f2PGrMAcklYWqp
+      - stage: deployment_tests
+        language: python
+        python:
+          - "2.7"
+        install:
+          - pip install --upgrade pip
+          - pip install -r requirements-deployment.txt
+        script:
+          - pytest -q deployment/tests/test_fabric.py
         notifications:
           slack: ohcuk:6spaME3CB7f2PGrMAcklYWqp
+
