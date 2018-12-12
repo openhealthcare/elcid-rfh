@@ -1,7 +1,7 @@
 describe('AddEpisodeHelperCtrl', function(){
     "use strict";
     var $rootScope, ngProgressLite, $location, $controller;
-    var  $httpBackend, FieldTranslator, controller, $scope;
+    var  $httpBackend, FieldTranslater, controller, $scope;
     var opalTestHelper;
 
     beforeEach(function(){
@@ -13,13 +13,13 @@ describe('AddEpisodeHelperCtrl', function(){
             $location  = $injector.get('$location');
             ngProgressLite  = $injector.get('ngProgressLite');
             $httpBackend  = $injector.get('$httpBackend');
-            FieldTranslator = $injector.get('FieldTranslator');
+            FieldTranslater = $injector.get('FieldTranslater');
             $scope = $rootScope.$new();
             opalTestHelper = $injector.get('opalTestHelper');
         });
 
         controller = $controller('AddEpisodeHelperCtrl', {
-            FieldTranslator: FieldTranslator,
+            FieldTranslater: FieldTranslater,
             $scope: $scope,
             $location: $location,
             ngProgressLite: ngProgressLite
