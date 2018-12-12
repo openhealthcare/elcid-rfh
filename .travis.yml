@@ -12,7 +12,7 @@ jobs:
           - pip install -r requirements.txt
           - pip install coveralls
           - gem install coveralls-lcov
-          - npm install npm install karma karma-coverage jasmine-core karma-jasmine karma-firefox-launcher karma-coveralls
+          - npm install karma karma-coverage jasmine-core karma-jasmine karma-firefox-launcher karma-coveralls
 
         before_script:
           - export DISPLAY=:99.0
