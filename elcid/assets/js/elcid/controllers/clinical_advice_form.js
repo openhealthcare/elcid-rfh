@@ -1,7 +1,7 @@
 angular.module('opal.controllers').controller(
     'ClinicalAdviceForm',
     function(
-        $rootScope, $scope, $window, recordLoader, ngProgressLite, $cookies,
+        $scope, recordLoader, ngProgressLite, $cookies,
         Referencedata, $q
       ){
         "use strict";
@@ -14,6 +14,24 @@ angular.module('opal.controllers').controller(
           self.changed = !!_.compact(_.filter(mi, function(val, key){
             return !(key == 'when' || key == '_client' || key == "initials");
           })).length;
+        };
+
+        this.getClinicalAdvice = function(){
+          var result = [];
+          _.each($scope.patient.episodes, function(episode){
+            _.each(episode.microbiology_input, function(input){
+              result.push(input)
+            });
+          });
+          this.clinicalAdvice = _.sortBy(result, "when").reverse();
+        };
+
+        this.getClinicalAdvice();
+
+        this.editItem = function(episode, item){
+          episode.recordEditor.openEditItemModal(item, 'microbiology_input').then(function(){
+            self.getClinicalAdvice();
+          });
         };
 
         $q.all([Referencedata.load(), recordLoader.load()]).then(function(datasets){
@@ -33,6 +51,7 @@ angular.module('opal.controllers').controller(
                   item = $scope.episode.newItem('microbiology_input');
                   self.editing.microbiology_input = item.makeCopy();
                   self.changed = false;
+                  self.getClinicalAdvice();
               });
             };
         });
