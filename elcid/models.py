@@ -273,10 +273,12 @@ class UpstreamBloodCulture(UpstreamLabTest):
 
 
 class InfectionSource(lookuplists.LookupList):
+    # TODO  This is deprecated and no longer used (can be removed)
     pass
 
 
 class Infection(EpisodeSubrecord):
+    # TODO  This is deprecated and no longer used (can be removed)
     _icon = 'fa fa-eyedropper'
     # this needs to be fixed
     source = ForeignKeyOrFreeText(InfectionSource)
