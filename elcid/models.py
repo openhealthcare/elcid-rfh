@@ -294,7 +294,6 @@ class Procedure(EpisodeSubrecord):
     class Meta:
         verbose_name = "Operation / Procedures"
 
-
 class PrimaryDiagnosisCondition(lookuplists.LookupList):
     pass
 
