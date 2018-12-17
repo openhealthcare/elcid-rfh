@@ -57,14 +57,4 @@ class Migration(migrations.Migration):
             name='diagnosis_how_long_ago_years',
             field=models.IntegerField(blank=True, null=True),
         ),
-        migrations.AddField(
-            model_name='tbhistory',
-            name='previous_tb_diagnosis',
-            field=models.BooleanField(default=False, verbose_name=b'Previous TB diagnosis'),
-        ),
-        migrations.AlterField(
-            model_name='tbhistory',
-            name='previous_tb_contact',
-            field=models.BooleanField(default=False, verbose_name=b'Previous TB contact'),
-        ),
     ]
