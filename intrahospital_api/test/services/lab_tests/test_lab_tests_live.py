@@ -335,6 +335,9 @@ class LabTestBackendTestCase(BaseLabTestCase):
         row_2 = self.get_row(**MULTIPLE_RESULTS_LAB_TEST[1])
         rows = [row_1, row_2]
         result = backend.cast_rows_to_lab_test(rows)
+        result = sorted(
+            result, key=lambda x: x["test_name"]
+        )
         self.assertEqual(
             result, expected
         )
@@ -482,6 +485,10 @@ class LabTestBackendTestCase(BaseLabTestCase):
             execute_query.return_value = expected
             since = datetime.datetime.now()
             result = backend.lab_test_results_since(["20552710"], since)
+
+        result["20552710"] = sorted(
+            result["20552710"], key=lambda x: int(x["external_identifier"])
+        )
         self.assertEqual(
             result, expected_result
         )
@@ -554,6 +561,10 @@ class LabTestBackendTestCase(BaseLabTestCase):
             execute_query.return_value = expected
             since = datetime.datetime.now()
             result = backend.lab_test_results_since(["20552710"], since)
+
+        result['20552710'] = sorted(
+            result['20552710'], key=lambda x: x["test_name"]
+        )
         self.assertEqual(
             result, expected_result
         )
@@ -685,6 +696,7 @@ class LabTestBackendTestCase(BaseLabTestCase):
             execute_query.return_value = expected
             since = datetime.datetime.now()
             result = backend.lab_test_results_since(["123", "125"], since)
+
         self.assertEqual(
             result, expected_result
         )

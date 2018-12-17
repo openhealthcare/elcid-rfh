@@ -109,7 +109,7 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'hq6wg27$1pnjvuesa-1%-wiqrpnms_kx+w4g&&o^wr$5@stjbu'
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'opal.middleware.AngularCSRFRename',
@@ -118,7 +118,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'opal.middleware.DjangoReversionWorkaround',
     'reversion.middleware.RevisionMiddleware',
-    'axes.middleware.FailedLoginMiddleware',
+#    'axes.middleware.FailedLoginMiddleware',
     'elcid.middleware.LoggingMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -209,23 +209,18 @@ ADD_PATIENT_DEMOGRAPHICS = True
 ADD_PATIENT_LAB_TESTS = True
 
 #### END API Settings
-
-
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('opal.tests',)
+    # INSTALLED_APPS += ('opal.tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )
+
+    # skip migrations if we're not on travis
+    # if 'TRAVIS' not in os.environ:
     MIGRATION_MODULES = {
-        'opal': 'opal.nomigrations',
-        'elcid': 'elcid.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations',
-        'guidelines': 'guidelines.nomigrations',
-        'lab': 'lab.nomigrations',
-        'intrahospital_api': 'intrahospital_api.nomigrations',
-        'tb': 'apps.tb.nomigrations',
-        'obs': 'obs.nomigrations',
+        i.rsplit(".", 1)[-1]: None for i in INSTALLED_APPS
     }
+
 
 V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \
 %(levelname)s %(message)s'
@@ -378,6 +373,7 @@ REST_FRAMEWORK = {
 
 if 'test' not in sys.argv:
     try:
-        from local_settings import *
+        from elcid.local_settings import *
     except ImportError:
+        raise
         pass

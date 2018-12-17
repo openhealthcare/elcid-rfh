@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, ChainMap
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api.services.base import db
 from elcid.utils import timing
@@ -58,8 +58,8 @@ class Row(db.Row):
         units="Result_Units"
     )
 
-    FIELD_MAPPINGS = dict(
-        OBSERVATION_MAPPING.items() + LAB_TEST_MAPPING.items() + DEMOGRAPHICS_MAPPING.items()
+    FIELD_MAPPINGS = ChainMap(
+        OBSERVATION_MAPPING, LAB_TEST_MAPPING, DEMOGRAPHICS_MAPPING
     )
 
     @property
@@ -99,7 +99,7 @@ class Row(db.Row):
     def get_results_dict(self):
         result = {}
         result_keys = self.OBSERVATION_MAPPING.keys()
-        result_keys = result_keys + self.LAB_TEST_MAPPING.keys()
+        result_keys = list(result_keys) + list(self.LAB_TEST_MAPPING.keys())
         for field in result_keys:
             result[field] = getattr(self, field)
 

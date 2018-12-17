@@ -211,7 +211,7 @@ class LoadPatientsTestCase(AbstractServiceTestCase):
         )
 
     def test_load_patients_multiple(self, load_patient):
-        for _ in xrange(3):
+        for _ in range(3):
             self.create_tb_patient()
 
         # 4 because another patient is created by the test setup

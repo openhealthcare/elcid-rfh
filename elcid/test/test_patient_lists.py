@@ -2,7 +2,7 @@ import datetime
 import json
 
 from django.test import RequestFactory
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework.reverse import reverse as drf_reverse
 
@@ -103,7 +103,7 @@ class TestPatientList(AbstractPatientListTestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        contents = json.loads(response.content)
+        contents = json.loads(response.content.decode('utf-8'))
         self.assertEqual(len(contents), 1)
         episode_serialised = contents[0]
 

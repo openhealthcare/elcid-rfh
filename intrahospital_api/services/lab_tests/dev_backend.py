@@ -93,6 +93,75 @@ RAW_DATA = {
 }
 
 
+MALE_FIRST_NAMES = [
+    'Werner',
+    'Scott',
+    'Fred',
+    'Irving',
+    'Donovan',
+    'Josef',
+    'Danial',
+    'Eli',
+    'Kermit',
+    'Sammy',
+    'Claude',
+    'Rueben',
+    'Trenton',
+    'Cliff',
+    'Sean',
+    'Rufus',
+    'Graham',
+    'Tracy',
+    'Neville',
+    'Dion'
+]
+
+FEMALE_FIRST_NAMES = [
+    'Wai',
+    'Mardell',
+    'Jodie',
+    'Edith',
+    'Ola',
+    'Geralyn',
+    'Delcie',
+    'Cathy',
+    'Mafalda',
+    'Mayme',
+    'Lanette',
+    'Heidi',
+    'Ana',
+    'Nydia',
+    'Rosalie',
+    'Rosann',
+    'Corrin',
+    'Janene',
+    'Kathlene',
+    'Irene'
+]
+
+LAST_NAMES = [
+    'Smith',
+    'Jones',
+    'Taylor',
+    'Brown',
+    'Williams',
+    'Wilson',
+    'Johnson',
+    'Davies',
+    'Robinson',
+    'Wright',
+    'Thompson',
+    'Evans',
+    'Walker',
+    'White',
+    'Roberts',
+    'Green',
+    'Hall',
+    'Wood',
+    'Jackson',
+    'Clarke'
+]
+
 # So this is basic meta information about some tests that come through
 # we will then use this to create mock results
 TEST_BASES = {
@@ -243,7 +312,7 @@ class Backend(object):
             ),
             observation_name=test_base_observation_name,
             observation_number=self.get_external_identifier(),
-            observation_value=str(self.get_observation_value(
+            observation_value="{0:.2f}".format(self.get_observation_value(
                 test_base_observation_value["reference_range"]
             )),
             reference_range=test_base_observation_value["reference_range"],

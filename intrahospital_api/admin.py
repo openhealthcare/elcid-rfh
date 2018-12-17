@@ -2,12 +2,11 @@
 Admin for elCID models
 """
 from django.contrib import admin
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.html import format_html
 from opal import models as omodels
 from opal.admin import PatientAdmin as OldPatientAdmin, PatientSubrecordAdmin
-from reversion import models as rmodels
-
+from django.urls import reverse
 from intrahospital_api import loader
 from intrahospital_api import models as imodels
 
@@ -117,8 +116,6 @@ class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
         )
 
 
-admin.site.register(rmodels.Version, admin.ModelAdmin)
-admin.site.register(rmodels.Revision, admin.ModelAdmin)
 admin.site.unregister(omodels.Patient)
 admin.site.unregister(imodels.InitialPatientLoad)
 admin.site.register(omodels.Patient, PatientAdmin)
