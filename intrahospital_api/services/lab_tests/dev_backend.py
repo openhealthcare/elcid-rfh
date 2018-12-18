@@ -3,6 +3,7 @@ from datetime import date, timedelta, datetime
 from intrahospital_api import constants
 from lab import models as lmodels
 
+
 RAW_DATA = {
     u'Abnormal_Flag': u'',
     u'Accession_number': u'73151060487',
@@ -92,75 +93,6 @@ RAW_DATA = {
     u'visible': u'Y'
 }
 
-
-MALE_FIRST_NAMES = [
-    'Werner',
-    'Scott',
-    'Fred',
-    'Irving',
-    'Donovan',
-    'Josef',
-    'Danial',
-    'Eli',
-    'Kermit',
-    'Sammy',
-    'Claude',
-    'Rueben',
-    'Trenton',
-    'Cliff',
-    'Sean',
-    'Rufus',
-    'Graham',
-    'Tracy',
-    'Neville',
-    'Dion'
-]
-
-FEMALE_FIRST_NAMES = [
-    'Wai',
-    'Mardell',
-    'Jodie',
-    'Edith',
-    'Ola',
-    'Geralyn',
-    'Delcie',
-    'Cathy',
-    'Mafalda',
-    'Mayme',
-    'Lanette',
-    'Heidi',
-    'Ana',
-    'Nydia',
-    'Rosalie',
-    'Rosann',
-    'Corrin',
-    'Janene',
-    'Kathlene',
-    'Irene'
-]
-
-LAST_NAMES = [
-    'Smith',
-    'Jones',
-    'Taylor',
-    'Brown',
-    'Williams',
-    'Wilson',
-    'Johnson',
-    'Davies',
-    'Robinson',
-    'Wright',
-    'Thompson',
-    'Evans',
-    'Walker',
-    'White',
-    'Roberts',
-    'Green',
-    'Hall',
-    'Wood',
-    'Jackson',
-    'Clarke'
-]
 
 # So this is basic meta information about some tests that come through
 # we will then use this to create mock results

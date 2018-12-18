@@ -3,16 +3,72 @@ from datetime import date, timedelta, datetime
 from intrahospital_api import constants
 
 MALE_FIRST_NAMES = [
-    'Harry', 'Ron', 'Tom', 'Albus', 'Severus', 'Rubeus', 'Draco',
+    'Werner',
+    'Scott',
+    'Fred',
+    'Irving',
+    'Donovan',
+    'Josef',
+    'Danial',
+    'Eli',
+    'Kermit',
+    'Sammy',
+    'Claude',
+    'Rueben',
+    'Trenton',
+    'Cliff',
+    'Sean',
+    'Rufus',
+    'Graham',
+    'Tracy',
+    'Neville',
+    'Dion'
 ]
 
 FEMALE_FIRST_NAMES = [
-    'Hermione', 'Minerva', 'Padma', 'Parvati', 'Lilly', 'Rita', 'Rowena'
+    'Wai',
+    'Mardell',
+    'Jodie',
+    'Edith',
+    'Ola',
+    'Geralyn',
+    'Delcie',
+    'Cathy',
+    'Mafalda',
+    'Mayme',
+    'Lanette',
+    'Heidi',
+    'Ana',
+    'Nydia',
+    'Rosalie',
+    'Rosann',
+    'Corrin',
+    'Janene',
+    'Kathlene',
+    'Irene'
 ]
 
 LAST_NAMES = [
-    'Potter', 'Granger', 'Weasley', 'Malfoy', 'Dumbledore', 'Gryffindor',
-    'Greyback', 'Filch', 'Diggory', 'McGonagall'
+    'Smith',
+    'Jones',
+    'Taylor',
+    'Brown',
+    'Williams',
+    'Wilson',
+    'Johnson',
+    'Davies',
+    'Robinson',
+    'Wright',
+    'Thompson',
+    'Evans',
+    'Walker',
+    'White',
+    'Roberts',
+    'Green',
+    'Hall',
+    'Wood',
+    'Jackson',
+    'Clarke'
 ]
 
 
