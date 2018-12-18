@@ -288,23 +288,13 @@ class Infection(EpisodeSubrecord):
         verbose_name = "Infection Related Issues"
 
 
-class MedicalProcedure(lookuplists.LookupList):
-    pass
-
-
-class SurgicalProcedure(lookuplists.LookupList):
-    pass
-
-
 class Procedure(EpisodeSubrecord):
     _icon = 'fa fa-sitemap'
     date = models.DateField(blank=True, null=True)
-    medical_procedure = ForeignKeyOrFreeText(MedicalProcedure)
-    surgical_procedure = ForeignKeyOrFreeText(SurgicalProcedure)
+    details = models.TextField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Operation / Procedures"
-
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList):
     pass
