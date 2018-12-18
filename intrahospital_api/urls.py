@@ -5,9 +5,15 @@ from django.conf.urls import url
 
 from intrahospital_api import views
 
+
 urlpatterns = [
     url(
         r'^intrahospital_api/raw/lab_tests/(?P<hospital_number>[0-9A-Za-z_\-]+)$',
+        views.IntrahospitalRawLabTestView.as_view(),
+        name="raw_lab_tests"
+    ),
+    url(
+        r'^intrahospital_api/raw/lab_tests/(?P<hospital_number>[0-9A-Za-z_\-]+)/type/(?P<test_type>[0-9A-Za-z_\-]+)$',
         views.IntrahospitalRawLabTestView.as_view(),
         name="raw_lab_tests"
     ),
