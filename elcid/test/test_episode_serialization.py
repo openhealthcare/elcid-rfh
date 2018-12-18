@@ -84,7 +84,7 @@ class SerialisedTestCase(OpalTestCase):
             ]
         )
 
-        s = serialize.values()[0]
+        s = list(serialize.values())[0]
 
         self.assertIn(models.Demographics.get_api_name(), s)
         self.assertNotIn(Tagging.get_api_name(), s)
@@ -106,7 +106,7 @@ class SerialisedTestCase(OpalTestCase):
             ]
         )
 
-        s = serialized.values()[0]
+        s = list(serialized.values())[0]
 
         self.assertIn(models.Diagnosis.get_api_name(), s)
         self.assertNotIn(models.Demographics.get_api_name(), s)

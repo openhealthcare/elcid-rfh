@@ -1,3 +1,4 @@
+from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 from django.db import connection
 from datetime import datetime
@@ -7,7 +8,7 @@ import time
 logger = logging.getLogger('elcid.requestLogger')
 
 
-class LoggingMiddleware(object):
+class LoggingMiddleware(MiddlewareMixin):
     def process_request(self, request):
         self.start_time = time.time()
 

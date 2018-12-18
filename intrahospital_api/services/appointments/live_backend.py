@@ -1,5 +1,5 @@
 import logging
-from collections import defaultdict
+from collections import defaultdict, ChainMap
 from intrahospital_api.services.base import db
 
 logger = logging.getLogger('intrahospital_api')
@@ -48,9 +48,7 @@ class Row(db.Row):
         hospital_number="Patient_Number"
     )
 
-    FIELD_MAPPINGS = dict(
-         APPOINTMENT_FIELDS.items() + DEMOGRAPHICS_FIELDS.items()
-    )
+    FIELD_MAPPINGS = ChainMap(APPOINTMENT_FIELDS, DEMOGRAPHICS_FIELDS)
 
     @property
     def start(self):

@@ -1,7 +1,7 @@
 import mock
 
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from opal.core.test import OpalTestCase
 from opal.models import UserProfile

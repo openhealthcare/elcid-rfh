@@ -239,13 +239,8 @@ class UpdatePatientsTestCase(ApiTestCase):
             datetime.datetime.now()
         )
 
-        call_args_list = update_patient.call_args_list
-        self.assertEqual(
-            call_args_list[0], mock.call(patient_1, ['some_lab_tests'])
-        )
-        self.assertEqual(
-            call_args_list[1], mock.call(patient_2, ['some_other_lab_tests'])
-        )
+        update_patient.assert_any_call(patient_1, ['some_lab_tests'])
+        update_patient.assert_any_call(patient_2, ['some_other_lab_tests'])
 
 
 @mock.patch('{}.update_patients'.format(LAB_TEST_BASE))
