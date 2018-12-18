@@ -37,5 +37,5 @@ python-tds==1.8.2
 
 
 # Open Health Care repositories on GitHub
--e git+https://github.com/openhealthcare/opal.git@django2#egg=opal
--e git+https://github.com/openhealthcare/opal-observations.git@Django2/Python3#egg=opal_observations
+-e git+https://github.com/openhealthcare/opal.git@v0.13.0#egg=opal
+-e git+https://github.com/openhealthcare/opal-observations.git@v0.5.0#egg=opal_observations
