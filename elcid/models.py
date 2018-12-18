@@ -273,10 +273,12 @@ class UpstreamBloodCulture(UpstreamLabTest):
 
 
 class InfectionSource(lookuplists.LookupList):
+    # TODO  This is deprecated and no longer used (can be removed)
     pass
 
 
 class Infection(EpisodeSubrecord):
+    # TODO  This is deprecated and no longer used (can be removed)
     _icon = 'fa fa-eyedropper'
     # this needs to be fixed
     source = ForeignKeyOrFreeText(InfectionSource)
@@ -286,23 +288,13 @@ class Infection(EpisodeSubrecord):
         verbose_name = "Infection Related Issues"
 
 
-class MedicalProcedure(lookuplists.LookupList):
-    pass
-
-
-class SurgicalProcedure(lookuplists.LookupList):
-    pass
-
-
 class Procedure(EpisodeSubrecord):
     _icon = 'fa fa-sitemap'
     date = models.DateField(blank=True, null=True)
-    medical_procedure = ForeignKeyOrFreeText(MedicalProcedure)
-    surgical_procedure = ForeignKeyOrFreeText(SurgicalProcedure)
+    details = models.TextField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Operation / Procedures"
-
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList):
     pass

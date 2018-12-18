@@ -67,14 +67,14 @@ class NoneStaffRequiredTest(BaseViewTestcase):
         self.assertEqual(expected, response.redirect_chain)
 
 
+@mock.patch("intrahospital_api.views.service_utils.get_backend")
 class PivotTestCase(BaseViewTestcase):
-    def setup_view(self, view, url, hospital_number):
+    def setup_view(self, view, url, hospital_number, **kwargs):
         v = view()
         v.request = self.rf.get(url)
-        v.kwargs = dict(hospital_number=hospital_number)
+        v.kwargs = dict(hospital_number=hospital_number, **kwargs)
         return v
 
-    @mock.patch("intrahospital_api.views.service_utils.get_backend")
     def test_intrahospital_raw_view(self, get_backend):
         get_backend().raw_lab_tests.return_value = [
             dict(name="Wilma"),
@@ -89,7 +89,48 @@ class PivotTestCase(BaseViewTestcase):
             ctx["row_data"], [['name', 'Wilma', 'Betty']]
         )
 
-    @mock.patch("intrahospital_api.views.service_utils.get_backend")
+    def test_intrahospital_raw_view_with_test_type(self, get_backend):
+        get_backend().raw_lab_tests.return_value = [
+            dict(name="Wilma"),
+            dict(name="Betty"),
+        ]
+        view = self.setup_view(
+            views.IntrahospitalRawLabTestView,
+            self.raw_url,
+            "123132123",
+            test_type="WBC"
+        )
+        ctx = view.get_context_data(hospital_number="123132123")
+        self.assertEqual(ctx["title"], "Raw Lab Test View")
+        self.assertEqual(
+            ctx["row_data"], [['name', 'Wilma', 'Betty']]
+        )
+
+    def test_raw_view_sorting(self, get_backend):
+        get_backend().raw_lab_tests.return_value = [
+            dict(
+                first_name="James",
+                surname="Watson",
+                address="22 Baker Street"
+            )
+        ]
+        view = self.setup_view(
+            views.IntrahospitalRawLabTestView, self.raw_url, "123132123"
+        )
+        ctx = view.get_context_data(hospital_number="123132123")
+        self.assertEqual(ctx["title"], "Raw Lab Test View")
+        expected = [
+            ["address", "22 Baker Street"],
+            ["first_name", "James"],
+            ["surname", "Watson"],
+        ]
+        self.assertEqual(
+            ctx["row_data"], expected
+        )
+        get_backend().raw_lab_tests.assert_called_once_with(
+            hospital_number="123132123"
+        )
+
     def test_intrahospital_cooked_view(self, get_backend):
         get_backend().cooked_lab_tests.return_value = [
             dict(name="Wilma"),
@@ -102,4 +143,8 @@ class PivotTestCase(BaseViewTestcase):
         self.assertEqual(ctx["title"], "Cooked Lab Test View")
         self.assertEqual(
             ctx["row_data"], [['name', 'Wilma', 'Betty']]
+        )
+
+        get_backend().cooked_lab_tests.assert_called_once_with(
+            hospital_number="123132123"
         )

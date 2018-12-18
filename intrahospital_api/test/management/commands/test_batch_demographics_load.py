@@ -16,6 +16,7 @@ class BatchDemographicsLoadTestCase(ApiTestCase):
         patient_1, _ = self.new_patient_and_episode_please()
         patient_1.demographics_set.update(
             first_name="Wilma",
+            hospital_number="111",
             surname="Flintstone",
             external_system=EXTERNAL_SYSTEM
         )
@@ -46,7 +47,8 @@ class BatchDemographicsLoadTestCase(ApiTestCase):
         patient_1, _ = self.new_patient_and_episode_please()
         patient_1.demographics_set.update(
             first_name="Wilma",
-            surname="Flintstone"
+            surname="Flintstone",
+            hospital_number="111",
         )
         self.handle()
         demographics = patient_1.demographics_set.first()

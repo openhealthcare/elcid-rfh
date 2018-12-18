@@ -1,8 +1,8 @@
-<b>Procedure:</b>
-<span ng-show="item.medical_procedure">
- [[ item.medical_procedure ]]
-</span>
-<span ng-show="item.surgical_procedure">
-  [[ item.surgical_procedure ]]
-</span>
-[[ item.date | fromNow ]]
+<div class="row">
+    <div class="col-md-3">
+        [[ item.date | displayDate ]]
+    </div>
+    <div class="col-md-9">
+        [[ item.details ]]
+    </div>
+</div>
