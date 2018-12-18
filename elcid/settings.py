@@ -323,7 +323,7 @@ OPAL_ANALYTICS_NODOMAIN = True
 
 CONTACT_EMAIL = ['david@openhealthcare.org.uk']
 DEFAULT_FROM_EMAIL = 'elcid@openhealthcare.org.uk'
-DEFAULT_DOMAIN = 'http://ELCIDL/'
+DEFAULT_DOMAIN = 'http://elcid-rfh/'
 
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 if not DEBUG:
