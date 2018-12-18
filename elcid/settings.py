@@ -216,10 +216,10 @@ if 'test' in sys.argv:
     )
 
     # skip migrations if we're not on travis
-    if 'TRAVIS' not in os.environ:
-        MIGRATION_MODULES = {
-            i.rsplit(".", 1)[-1]: None for i in INSTALLED_APPS
-        }
+    # if 'TRAVIS' not in os.environ:
+    MIGRATION_MODULES = {
+        i.rsplit(".", 1)[-1]: None for i in INSTALLED_APPS
+    }
 
 
 V_FORMAT = '%(asctime)s %(process)d %(thread)d %(filename)s %(funcName)s \
