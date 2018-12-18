@@ -32,7 +32,8 @@ describe('ClinicalAdviceFormTest', function() {
             Episode      = $injector.get('Episode');
         });
 
-        $scope.episode = new Episode(episodedata);
+        $scope.patient = opalTestHelper.newPatient($rootScope);
+        $scope.episode = $scope.patient.episodes[0];
 
         mkcontroller = function(){
             ctrl = $controller('ClinicalAdviceForm', {
@@ -57,12 +58,57 @@ describe('ClinicalAdviceFormTest', function() {
           expect(!!ctrl.editing.microbiology_input).toBe(true)
       });
 
-      it('should set chagned to false', function(){
+      it('should set changed to false', function(){
         mkcontroller();
         $rootScope.$apply();
         $httpBackend.flush();
         expect(ctrl.changed).toBe(false);
-      })
+      });
+
+      it('should set clinical advice to empty if there are no clinical advice', function(){
+        $scope.episode.microbiology_input = [];
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        expect(ctrl.clinicalAdvice).toEqual([]);
+      });
+
+      it("should combine clinical advice from multiple episodes in date order", function(){
+        var episodeData = opalTestHelper.getEpisodeData()
+        episodeData["id"] = 124;
+        $scope.patient.episodes.push(opalTestHelper.newEpisode(episodeData));
+        var advice1 = {
+          reason_for_interaction: "first date",
+          initials: "TTT",
+          when: moment(new Date(2018, 12, 1))
+        }
+
+        var advice2 = {
+          reason_for_interaction: "middle date",
+          initials: "TTT",
+          when: moment(new Date(2018, 13, 1))
+        }
+
+        var advice3 = {
+          reason_for_interaction: "last date",
+          initials: "TTT",
+          when: moment(new Date(2018, 14, 1))
+        }
+        $scope.patient.episodes[0].microbiology_input = [
+          advice1, advice3
+        ];
+
+        $scope.patient.episodes[1].microbiology_input = [
+          advice2
+        ];
+        mkcontroller();
+        $httpBackend.flush();
+        expect(ctrl.clinicalAdvice).toEqual(
+          [advice3, advice2, advice1]
+        )
+      });
+
+
     });
 
     describe('it should save', function(){
@@ -78,7 +124,7 @@ describe('ClinicalAdviceFormTest', function() {
             "/api/v0.1/microbiology_input/",
             {
               reason_for_interaction: "something",
-              episode_id: 1
+              episode_id: 123
             }
           ).respond({});
           ctrl.save();
@@ -92,7 +138,7 @@ describe('ClinicalAdviceFormTest', function() {
           "/api/v0.1/microbiology_input/",
           {
             reason_for_interaction: "something",
-            episode_id: 1
+            episode_id: 123
           }
         ).respond({});
         ctrl.changed = true;
@@ -101,6 +147,22 @@ describe('ClinicalAdviceFormTest', function() {
         $httpBackend.flush();
         expect(ctrl.changed).toBe(false);
       });
+
+      it('should call through to update the clinical advice', function(){
+        spyOn(ctrl, "getClinicalAdvice");
+        $httpBackend.expectPOST(
+          "/api/v0.1/microbiology_input/",
+          {
+            reason_for_interaction: "something",
+            episode_id: 123
+          }
+        ).respond({});
+        ctrl.changed = true;
+        ctrl.save();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        expect(ctrl.getClinicalAdvice).toHaveBeenCalledWith();
+      })
 
       it('should always save for the episode that is currently on scope', function(){
         var episode2 = new Episode(opalTestHelper.getEpisodeData());
@@ -143,5 +205,45 @@ describe('ClinicalAdviceFormTest', function() {
         expect(ctrl.changed).toBe(false);
       });
     });
+
+    describe("editItem", function(){
+      beforeEach(function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+      });
+
+      it("should update the clinical advice after edit item is called", function(){
+        var fakeEpisode = {
+          recordEditor: {
+            openEditItemModal: function(){
+              return {then: function(x){x()}}
+            }
+          }
+        }
+        spyOn(ctrl, "getClinicalAdvice");
+        ctrl.editItem(fakeEpisode, null);
+        expect(ctrl.getClinicalAdvice).toHaveBeenCalledWith();
+      });
+
+      it("should push the correct variables though to the record editor", function(){
+        var fakeEpisode = {
+          recordEditor: {
+            openEditItemModal: function(){
+              return {then: function(x){x()}}
+            }
+          }
+        }
+        spyOn(ctrl, "getClinicalAdvice");
+        spyOn(fakeEpisode.recordEditor, "openEditItemModal").and.callThrough();
+        var microInput = {
+          reason_for_interaction: "middle date",
+          initials: "TTT",
+          when: moment(new Date(2018, 13, 1))
+        }
+        ctrl.editItem(fakeEpisode, microInput);
+        expect(fakeEpisode.recordEditor.openEditItemModal).toHaveBeenCalledWith(microInput, "microbiology_input");
+      });
+    })
 
 });

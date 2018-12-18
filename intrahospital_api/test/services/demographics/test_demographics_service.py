@@ -130,6 +130,153 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         self.assertIsNone(self.patient.demographics_set.first().updated)
 
 
+@mock.patch(
+    "intrahospital_api.services.demographics.service.logger"
+)
+@mock.patch(
+    "intrahospital_api.services.demographics.service.update_patient_demographics"
+)
+@mock.patch(
+    "intrahospital_api.services.demographics.service.update_external_demographics"
+)
+@mock.patch(
+    "intrahospital_api.services.demographics.service.service_utils.get_backend"
+)
+class LoadPatientTestCase(ApiTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.patient.demographics_set.update(
+            first_name="Jane",
+            hospital_number="111",
+            surname="Doe",
+            date_of_birth=datetime.date(1995, 12, 1),
+            external_system=service.EXTERNAL_SYSTEM
+        )
+        self.api_response = dict(
+
+            first_name="Jane",
+            hospital_number="111",
+            surname="Doe",
+            date_of_birth="1/12/1995"
+        )
+        self.api_mock = mock.MagicMock()
+        self.api_mock.fetch_for_identifier.return_value = self.api_response
+
+    def replace_existing(
+        self,
+        get_backend,
+        update_external_demographics,
+        update_patient_demographics,
+        logger
+    ):
+        self.api_response["first_name"] = "James"
+        get_backend.return_value = self.api_mock
+        service.load_patient(self.patient)
+        update_patient_demographics.assert_called_once_with(
+            self.patient, self.api_response
+        )
+        self.assertFalse(update_external_demographics.called)
+
+    def test_can_reconcile(
+        self,
+        get_backend,
+        update_external_demographics,
+        update_patient_demographics,
+        logger
+    ):
+        get_backend.return_value = self.api_mock
+        self.api_mock.fetch_for_identifier.return_value = self.api_response
+        self.patient.demographics_set.update(
+            external_system=None
+        )
+        service.load_patient(self.patient)
+        update_patient_demographics.assert_called_once_with(
+            self.patient, self.api_response
+        )
+        self.assertFalse(update_external_demographics.called)
+
+    def test_cant_reconcile(
+        self,
+        get_backend,
+        update_external_demographics,
+        update_patient_demographics,
+        logger
+    ):
+        get_backend.return_value = self.api_mock
+        self.api_response["first_name"] = "James"
+        self.patient.demographics_set.update(
+            external_system=None
+        )
+        api_dict = dict(
+            hospital_number="111",
+            first_name="Sally",
+            surname="Wilson",
+            date_of_birth=datetime.date(2000, 12, 1)
+        )
+        service.load_patient(self.patient)
+        update_external_demographics.assert_called_once_with(
+            self.patient, self.api_response
+        )
+        self.assertFalse(update_patient_demographics.called)
+
+    def test_empty_hospital_number(
+        self,
+        get_backend,
+        update_external_demographics,
+        update_patient_demographics,
+        logger
+    ):
+        self.patient.demographics_set.update(
+            hospital_number=""
+        )
+        service.load_patient(self.patient)
+        logger.info.assert_called_once_with(
+            "unable to find a hospital number for patient id {}".format(
+                self.patient.id
+            )
+        )
+        self.assertFalse(get_backend.called)
+        self.assertFalse(update_external_demographics.called)
+        self.assertFalse(update_patient_demographics.called)
+
+    def test_hospital_number_with_a_space(
+        self,
+        get_backend,
+        update_external_demographics,
+        update_patient_demographics,
+        logger
+    ):
+        self.patient.demographics_set.update(
+            hospital_number=" "
+        )
+        service.load_patient(self.patient)
+        logger.info.assert_called_once_with(
+            "unable to find a hospital number for patient id {}".format(
+                self.patient.id
+            )
+        )
+        self.assertFalse(get_backend.called)
+        self.assertFalse(update_external_demographics.called)
+        self.assertFalse(update_patient_demographics.called)
+
+    def test_unable_to_find_patient(
+        self,
+        get_backend,
+        update_external_demographics,
+        update_patient_demographics,
+        logger
+    ):
+        self.api_mock.fetch_for_identifier.return_value = None
+        get_backend.return_value = self.api_mock
+        service.load_patient(self.patient)
+        logger.info.assert_called_once_with(
+            "unable to find 111 with the demographic api"
+        )
+        self.assertFalse(update_external_demographics.called)
+        self.assertFalse(update_patient_demographics.called)
+
+
+
 @mock.patch("intrahospital_api.services.demographics.service.load_patient")
 class SyncDemographicsTestCase(ApiTestCase):
     def test_sync_demographics(self, load_patient):
@@ -176,6 +323,7 @@ class SyncPatientDemographicsTestCase(ApiTestCase):
         self.patient.demographics_set.update(
             first_name="Betty",
             surname="Flintstone",
+            hospital_number="111",
             external_system=EXTERNAL_SYSTEM
         )
         service.load_patient(self.patient)
