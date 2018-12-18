@@ -86,7 +86,7 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
     _advanced_searchable = False
     _exclude_from_extract = True
 
-    def __unicode__(self):
+    def __str__(self):
         hospital_number = self.patient.demographics_set.first().hospital_number
         if self.stopped:
             return "{} {} {} {}".format(
@@ -118,7 +118,7 @@ class BatchPatientLoad(PatientLoad):
         max_length=255, blank=True, default=""
     )
 
-    def __unicode__(self):
+    def __str__(self):
         if self.stopped:
             return "{} {} {} {} {}".format(
                 self.service_name,

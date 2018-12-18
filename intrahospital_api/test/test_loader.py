@@ -200,8 +200,14 @@ class AsyncLoadPatientTestCase(ApiTestCase):
 class LogErrorTestCase(OpalTestCase):
     def test_log_error(self):
         with mock.patch.object(loader.logger, "error") as le:
-            loader.log_errors("boom")
-        le.assert_called_once_with('unable to run boom \n None\n')
+            try:
+                raise ValueError("Bam!")
+            except:
+                loader.log_errors("boom")
+
+        calls = le.call_args
+        self.assertIn("unable to run boom", calls[0][0])
+        self.assertIn("ValueError: Bam!", calls[0][0])
 
 
 @override_settings(UPSTREAM_BACKEND_STATE="dev")

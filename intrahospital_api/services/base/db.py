@@ -104,10 +104,10 @@ class Row(object):
                 translated_field[0], translated_field[1]
             )
 
-        # used by properties
-        if hasattr(self, translated_field):
+        # if we've defined the translated field as a property
+        # use that
+        if hasattr(self.__class__, translated_field):
             return getattr(self, translated_field)
-
         return self.raw_data[translated_field]
 
 

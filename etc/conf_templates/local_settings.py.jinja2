@@ -11,7 +11,7 @@ DATABASES = {
 
 DEBUG = False
 
-{% for k, v in additional_settings.iteritems() %}
+{% for k, v in additional_settings.items() %}
 {{ k }} = {{ v }}
 {% endfor %}
 
