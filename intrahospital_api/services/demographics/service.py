@@ -135,14 +135,24 @@ def load_patient(patient):
     If not and the patient does not have enough details, then mark them
     for manual reconciliation
     """
-    api = service_utils.get_backend("demographics")
     demographics = patient.demographics_set.get()
+    hospital_number = demographics.hospital_number
+
+    if not hospital_number or not hospital_number.strip():
+        logger.info(
+            "unable to find a hospital number for patient id {}".format(
+                patient.id
+            )
+        )
+        return
+
+    api = service_utils.get_backend("demographics")
     external_demographics_dict = api.fetch_for_identifier(
-        demographics.hospital_number
+        hospital_number
     )
     if not external_demographics_dict:
-        logger.info("unable to find {}".format(
-            demographics.hospital_number
+        logger.info("unable to find {} with the demographic api".format(
+            hospital_number
         ))
         return
     if demographics.external_system == EXTERNAL_SYSTEM:
