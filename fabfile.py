@@ -751,8 +751,10 @@ def roll_back_prod(branch_name):
     write_cron_backup(roll_to_env)
     write_cron_jobs(roll_to_env)
 
+
 def install_apt_dependencies():
     local("sudo apt-get install python3-dev=3.4.0-0ubuntu2")
+
 
 def create_pg_pass(env, additional_settings):
     pg_pass = os.path.join(os.environ["HOME"], ".pgpass")
@@ -781,7 +783,7 @@ def dump_and_copy(branch_name):
         copy_backup(env)
     except Exception as e:
         send_error_email(
-            "database backup failed with '{}'".format(str(e.message)), env
+            "database backup failed with '{}'".format(str(e)), env
         )
 
 
