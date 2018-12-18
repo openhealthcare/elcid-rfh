@@ -39,7 +39,6 @@ class Application(application.OpalApplication):
         'js/elcid/services/records/microbiology_input.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/welcome.js',
-        'js/elcid/controllers/procedure_form.js',
         'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/lab_test_json_dump_view.js',
         'js/elcid/controllers/result_view.js',
