@@ -279,6 +279,9 @@ class InfectionSource(lookuplists.LookupList):
 
 
 class Infection(EpisodeSubrecord):
+    """
+    This model is deprecated
+    """
     _icon = 'fa fa-eyedropper'
     # this needs to be fixed
     source = ForeignKeyOrFreeText(InfectionSource)
