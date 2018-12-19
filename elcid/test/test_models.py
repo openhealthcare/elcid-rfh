@@ -412,7 +412,17 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
         upstream_lab_test.save()
 
-        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(
+            patient, [
+                "C REACTIVE PROTEIN",
+                "FULL BLOOD COUNT",
+                "UREA AND ELECTROLYTES",
+                "LIVER FUNCTION",
+                "LIVER PROFILE",
+                "GENTAMICIN LEVEL",
+                "CLOTTING SCREEN"
+            ]
+        )
         self.assertEqual(
             len(relevant), 1
         )
@@ -433,7 +443,16 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         upstream_lab_test.extras = dict(test_name="C REACTIVE PROTEIN")
         upstream_lab_test.save()
 
-        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(
+            patient, [
+                "C REACTIVE PROTEIN",
+                "FULL BLOOD COUNT",
+                "UREA AND ELECTROLYTES",
+                "LIVER FUNCTION",
+                "LIVER PROFILE",
+                "GENTAMICIN LEVEL",
+                "CLOTTING SCREEN"
+            ])
         self.assertEqual(
             len(relevant), 0
         )
@@ -448,7 +467,16 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
         upstream_lab_test.extras = dict(test_name="SOME OTHER TEST")
         upstream_lab_test.save()
 
-        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        relevant = emodels.UpstreamLabTest.get_relevant_tests(
+            patient, [
+                "C REACTIVE PROTEIN",
+                "FULL BLOOD COUNT",
+                "UREA AND ELECTROLYTES",
+                "LIVER FUNCTION",
+                "LIVER PROFILE",
+                "GENTAMICIN LEVEL",
+                "CLOTTING SCREEN"
+            ])
         self.assertEqual(
             len(relevant), 0
         )

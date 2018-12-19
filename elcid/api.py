@@ -369,7 +369,17 @@ class LabTestSummaryApi(LoginRequiredViewset):
             adds the lab test datetime ordered to the observation dict
             sorts the observations by datetime ordered
         """
-        test_data = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        test_data = emodels.UpstreamLabTest.get_relevant_tests(
+            patient, [
+                "C REACTIVE PROTEIN",
+                "FULL BLOOD COUNT",
+                "UREA AND ELECTROLYTES",
+                "LIVER FUNCTION",
+                "LIVER PROFILE",
+                "GENTAMICIN LEVEL",
+                "CLOTTING SCREEN"
+            ]
+        )
         result = defaultdict(lambda: defaultdict(list))
         relevant_tests = {
             "C REACTIVE PROTEIN": ["C Reactive Protein"],
