@@ -210,7 +210,7 @@ ADD_PATIENT_LAB_TESTS = True
 
 
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('opal.tests',)
+    INSTALLED_APPS += ('lab.tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )
