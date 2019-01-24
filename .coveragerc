@@ -2,6 +2,7 @@
 source =
        elcid
        intrahospital_api
+       lab
 
 omit =
     */migrations/*
