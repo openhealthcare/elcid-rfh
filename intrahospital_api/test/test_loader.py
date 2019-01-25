@@ -202,17 +202,17 @@ class AnyLoadsRunningTestCase(ApiTestCase):
     def test_any_loads_running_none(self):
         self.assertFalse(loader.any_loads_running())
 
-    def test_any_loads_running_false(self):
-        imodels.InitialPatientLoad.objects.create(
-            state=imodels.InitialPatientLoad.SUCCESS,
-            patient=self.patient,
-            started=timezone.now()
-        )
-        imodels.BatchPatientLoad.objects.create(
-            state=imodels.BatchPatientLoad.SUCCESS,
-            started=timezone.now()
-        )
-        self.assertFalse(loader.any_loads_running())
+    # def test_any_loads_running_false(self):
+    #     imodels.InitialPatientLoad.objects.create(
+    #         state=imodels.InitialPatientLoad.SUCCESS,
+    #         patient=self.patient,
+    #         started=timezone.now()
+    #     )
+    #     imodels.BatchPatientLoad.objects.create(
+    #         state=imodels.BatchPatientLoad.SUCCESS,
+    #         started=timezone.now()
+    #     )
+    #     self.assertFalse(loader.any_loads_running())
 
 
 class LoadDemographicsTestCase(ApiTestCase):
