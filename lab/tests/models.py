@@ -15,8 +15,10 @@ class SampleTest(models.LabTest):
 
 class SomeTestWithSynonyms(models.LabTest):
     _synonyms = ["Also known as"]
-    _title = "Some Test With Synonyms"
     some_other_observation = models.PosNeg(verbose_name="Verbose Name")
+
+    class Meta:
+        verbose_name = "Some Test With Synonyms"
 
 
 class SomeTestWithARequiredObservation(models.LabTest):
