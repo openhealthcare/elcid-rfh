@@ -582,7 +582,6 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
 
 class AnyLoadsRunningTestCase(ApiTestCase):
     def test_any_loads_running_initial_patient_load(self):
-        patient, _ = self.new_patient_and_episode_please()
         imodels.InitialPatientLoad.objects.create(
             state=imodels.InitialPatientLoad.RUNNING,
             patient=patient,
@@ -601,6 +600,7 @@ class AnyLoadsRunningTestCase(ApiTestCase):
         self.assertFalse(loader.any_loads_running())
 
     def test_any_loads_running_false(self):
+        patient, _ = self.new_patient_and_episode_please()
         imodels.InitialPatientLoad.objects.create(
             state=imodels.InitialPatientLoad.SUCCESS,
             patient=self.patient,
