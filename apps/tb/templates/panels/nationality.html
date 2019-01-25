@@ -1,0 +1,48 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+      <h3>
+        <i class="fa fa-map-signs"></i> Nationality and Language
+        {% if not request.user.profile.readonly %}
+          <i class="fa fa-pencil edit pull-right pointer"
+              open-pathway="nationality_and_language",
+              pathway-episode="episode"
+              pathway-callback="refresh()">
+          </i>
+        {% endif %}
+      </h3>
+    </div>
+    <ul class="list-group">
+      <li class="list-group-item">
+        <div ng-show="patient.demographics[0].birth_place">
+					<strong>Birth place:</strong>
+					[[ patient.demographics[0].birth_place ]]
+        </div>
+        <div ng-show="patient.nationality[0].arrival_in_the_uk">
+            <strong>Arrival in the UK:</strong>
+            [[ patient.nationality[0].arrival_in_the_uk ]]
+        </div>
+
+        <div ng-show="patient.nationality[0].immigration_details.length">
+            <strong>Immigration Details:</strong>
+            [[ patient.nationality[0].immigration_details ]]
+        </div>
+
+        <div ng-show="patient.nationality[0].immigration_support_officer.length">
+					<strong>Immigration support officer:</strong>
+					[[ patient.nationality[0].immigration_support_officer ]]
+        </div>
+        <div ng-show="patient.communinication_considerations[0].needs_an_interpreter">
+            <strong>Interpreter:</strong>
+          <span ng-show="patient.communinication_considerations[0].language">
+            [[ patient.communinication_considerations[0].language ]]
+					</span>
+          <span ng-show="!patient.communinication_considerations[0].language">
+						Unknown
+					</span>
+        </span>
+        <div ng-show="patient.communinication_considerations[0].sensory_impairment">
+					The patient is sensory impaired
+        </div>
+      </li>
+    </ul>
+  </div>

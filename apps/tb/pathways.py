@@ -199,3 +199,20 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
         episode.set_stage(stage, user, data)
         episode.save()
         return patient, episode
+
+
+class NationalityAndLanguage(pathways.PagePathway):
+    """
+    A pathway that asks for place of birth,
+    immigration concerns and communication concerns
+    """
+    slug = "nationality_and_language"
+    display_name = "Nationality And Language"
+    icon = "fa fa-map-signs"
+    steps = (
+        pathways.Step(
+            template="pathway/steps/nationality_and_language.html",
+            display_name="Nationality and Language",
+            icon="fa fa-file-image-o"
+        ),
+    )
