@@ -3642,20 +3642,6 @@
       "name": "MRSA PCR"
     }
   ],
-  "surgicalprocedure": [
-    {
-      "synonyms": [],
-      "name": "Hip Replacement"
-    },
-    {
-      "synonyms": [],
-      "name": "Liver Transplant"
-    },
-    {
-      "synonyms": [],
-      "name": "Lung Transplant"
-    }
-  ],
   "micro_test_other": [
     {
       "synonyms": [],
@@ -7051,7 +7037,6 @@
       "name": "Three times a week"
     }
   ],
-  "medicalprocedure": [],
   "drug_delivered": [
     {
       "synonyms": [],
