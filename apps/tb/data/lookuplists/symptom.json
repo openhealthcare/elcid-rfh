@@ -1,0 +1,44 @@
+{
+  "symptoms": [
+    {
+        "synonyms": [],
+        "name": "Cough (Dry)"
+      },
+      {
+        "synonyms": [],
+        "name": "Cough (Productive)"
+      },
+      {
+        "synonyms": [],
+        "name": "Coughing up blood"
+      },
+      {
+        "synonyms": [],
+        "name": "Breathlessness"
+      },
+      {
+        "synonyms": [],
+        "name": "Fatigue"
+      },
+      {
+        "synonyms": [],
+        "name": "Fever"
+      },
+      {
+        "synonyms": [],
+        "name": "Loss of Appetite"
+      },
+      {
+        "synonyms": [],
+        "name": "Night Sweats"
+      },
+      {
+        "synonyms": [],
+        "name": "Lymph node swelling"
+      },
+      {
+        "synonyms": [],
+        "name": "Weight Loss"
+      }
+    ]
+  }
