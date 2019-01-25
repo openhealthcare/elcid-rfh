@@ -22,6 +22,7 @@
           {% record_panel models.MantouxTest %}
           {% record_panel models.Treatment %}
         </div>
+        {% include 'panels/nationality.html' %}
         {% include "panels/symptoms.html" %}
         <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
           <div class="panel-body">

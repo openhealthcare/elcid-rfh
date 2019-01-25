@@ -1,0 +1,7 @@
+{% load forms %}
+
+{% input field="Demographics.birth_place" %}
+<div ng-show="editing.demographics.birth_place.length && editing.demographics.birth_place !== 'United Kingdom'">
+  {% include models.Nationality.get_form_template %}
+</div>
+{% include models.CommuninicationConsiderations.get_form_template %}
