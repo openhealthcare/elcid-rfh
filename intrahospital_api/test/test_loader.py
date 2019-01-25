@@ -581,14 +581,11 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
 
 
 class AnyLoadsRunningTestCase(ApiTestCase):
-    def setUp(self):
-        super(AnyLoadsRunningTestCase, self).setUp()
-        self.patient, _ = self.new_patient_and_episode_please()
-
     def test_any_loads_running_initial_patient_load(self):
+        patient, _ = self.new_patient_and_episode_please()
         imodels.InitialPatientLoad.objects.create(
             state=imodels.InitialPatientLoad.RUNNING,
-            patient=self.patient,
+            patient=patient,
             started=timezone.now()
         )
         self.assertTrue(loader.any_loads_running())
