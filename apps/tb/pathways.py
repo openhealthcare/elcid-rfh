@@ -199,3 +199,23 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
         episode.set_stage(stage, user, data)
         episode.save()
         return patient, episode
+
+
+class SymptomsPathway(pathways.PagePathway):
+    """
+    A pathway is essentially a wrapper for a singleton symptoms form
+    that is the same functionality as the symptoms step in the
+    initial assessment pathway
+    """
+    slug = "symptom_complex_pathway"
+    display_name = models.SymptomComplex.get_display_name()
+    icon = models.SymptomComplex.get_icon()
+    steps = (
+        pathways.Step(
+            model=models.SymptomComplex,
+            template="pathway/steps/symptom_complex.html",
+            help_text_template="pathway/steps/help_text/symptom_complex.html",
+            step_controller="TbSymptomComplexCrtl",
+            multiple=False,
+        ),
+    )
