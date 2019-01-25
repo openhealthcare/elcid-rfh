@@ -1,0 +1,13 @@
+{% load forms %}
+<div ng-repeat="parent in [episode]">
+  <div class="panel panel-default record-panel">
+    <div class="panel-heading">
+      <h3>
+       {% icon "fa-book" %} Documents
+      </h3>
+    </div>
+    <div class="panel-footer">
+        <a target="_blank" href="http://rfh-edrm-live:18080/horus/api/visual/record/[[ episode.demographics[0].hospital_number ]]"></i>EDRM <i class="fa fa-external-link" aria-hidden="true"></i></a>
+    </div>
+  </div>
+</div>
