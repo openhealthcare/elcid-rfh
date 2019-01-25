@@ -179,42 +179,6 @@ class LogErrorsTestCase(ApiTestCase):
         err.assert_called_once_with("blah")
 
 
-class AnyLoadsRunningTestCase(ApiTestCase):
-    def setUp(self):
-        super(AnyLoadsRunningTestCase, self).setUp()
-        self.patient, _ = self.new_patient_and_episode_please()
-
-    def test_any_loads_running_initial_patient_load(self):
-        imodels.InitialPatientLoad.objects.create(
-            state=imodels.InitialPatientLoad.RUNNING,
-            patient=self.patient,
-            started=timezone.now()
-        )
-        self.assertTrue(loader.any_loads_running())
-
-    def test_any_loads_running_batch_patient_load(self):
-        imodels.BatchPatientLoad.objects.create(
-            state=imodels.BatchPatientLoad.RUNNING,
-            started=timezone.now()
-        )
-        self.assertTrue(loader.any_loads_running())
-
-    def test_any_loads_running_none(self):
-        self.assertFalse(loader.any_loads_running())
-
-    def test_any_loads_running_false(self):
-        imodels.InitialPatientLoad.objects.create(
-            state=imodels.InitialPatientLoad.SUCCESS,
-            patient=self.patient,
-            started=timezone.now()
-        )
-        imodels.BatchPatientLoad.objects.create(
-            state=imodels.BatchPatientLoad.SUCCESS,
-            started=timezone.now()
-        )
-        self.assertFalse(loader.any_loads_running())
-
-
 class LoadDemographicsTestCase(ApiTestCase):
 
     @mock.patch.object(loader.api, 'demographics')
@@ -614,3 +578,37 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         self.assertEqual(
             observation["result"], "Positive"
         )
+
+
+class AnyLoadsRunningTestCase(ApiTestCase):
+    def test_any_loads_running_initial_patient_load(self):
+        patient, _ = self.new_patient_and_episode_please()
+        imodels.InitialPatientLoad.objects.create(
+            state=imodels.InitialPatientLoad.RUNNING,
+            patient=patient,
+            started=timezone.now()
+        )
+        self.assertTrue(loader.any_loads_running())
+
+    def test_any_loads_running_batch_patient_load(self):
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.RUNNING,
+            started=timezone.now()
+        )
+        self.assertTrue(loader.any_loads_running())
+
+    def test_any_loads_running_none(self):
+        self.assertFalse(loader.any_loads_running())
+
+    def test_any_loads_running_false(self):
+        patient, _ = self.new_patient_and_episode_please()
+        imodels.InitialPatientLoad.objects.create(
+            state=imodels.InitialPatientLoad.SUCCESS,
+            patient=patient,
+            started=timezone.now()
+        )
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.SUCCESS,
+            started=timezone.now()
+        )
+        self.assertFalse(loader.any_loads_running())
