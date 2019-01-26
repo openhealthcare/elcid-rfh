@@ -3,28 +3,34 @@
 <div class="row">
   <div class="col-md-12">
     <div class="row">
-      <div class="col-md-8">
-        <div ng-show="episode.stage !== 'New Referral'">
-          {% record_panel models.ReferralRoute %}
-          {% record_panel models.TBManagement %}
-          {% record_panel models.PastMedicalHistory %}
-          {% record_panel models.CommuninicationConsiderations %}
-          {% record_panel models.Nationality %}
-          {% record_panel models.AccessConsiderations %}
-          {% record_panel models.Employment %}
-          {% record_panel models.SymptomComplex %}
-          {% record_panel models.SocialHistory %}
-          {% record_panel models.BCG %}
-          {% record_panel models.TBHistory %}
-          {% record_panel models.Travel %}
-          {% record_panel models.Observation %}
-          {% record_panel models.MantouxTest %}
-          {% record_panel models.Treatment %}
-        </div>
+      <div class="col-md-6">
+        {% record_panel models.ReferralRoute %}
         {% include 'panels/nationality.html' %}
         {% record_panel models.TBHistory %}
         {% include "panels/symptoms.html" %}
+        {% record_panel models.Travel %}
+        {% record_panel models.PastMedicalHistory %}
         {% record_panel models.Antimicrobial title="Medication History" %}
+        {% record_panel models.Allergies %}
+        {% record_panel models.SocialHistory %}
+        {% record_panel models.Diagnosis %}
+        {% record_panel models.Treatment %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3>
+              <i class="fa fa-file-image-o"></i> Imaging
+            </h3>
+          </div>
+          <div class="panel-footer">
+            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i class="fa fa-external-link" aria-hidden="true"></i></a>
+          </div>
+        </div>
+        {% include "partials/edrm_panel.html" %}
+        {% include 'tb/obs_panel.html' %}
+      </div>
+
+      <div class="col-md-6">
+
         <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
           <div class="panel-body">
             <div class="patient-timeline-container">
@@ -68,8 +74,8 @@
                           </p>
                         </span>
                         <span ng-show="item.assessment">
-                          <b> Assessment: </b><div markdown="assessment"></div>
-                        </span>
+                            <b> Assessment: </b><div markdown="assessment"></div>
+                          </span>
                         <span ng-show="item.discussion">
                           <b> Discussion: </b><div markdown="discussion"></div>
                         </span>
@@ -102,40 +108,7 @@
           </div>
         </div>
         {% include "inline_forms/patient_consultation.html" %}
-      </div>
 
-      <div class="col-md-4">
-        {% if request.user.is_superuser %}
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3>
-                Forms
-              </h3>
-            </div>
-            <div class="list-group">
-              <a href="/pathway/#initial_assessment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
-                Initial Assessment
-                <div ng-show="episode.stage == 'New Referral'" class="pull-right star">{% icon "fa-certificate" %}</div>
-              </a>
-              <a href="/pathway/#activate_tb_treatment/[[ patient.id ]]/[[ episode.id ]]" class="list-group-item pointer">
-                Active TB Treatment
-                <div ng-show="episode.stage == 'Assessed'" class="pull-right star">{% icon "fa-certificate" %}</div>
-              </a>
-            </div>
-          </div>
-        {% endif %}
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3>
-              <i class="fa fa-file-image-o"></i> Imaging
-            </h3>
-          </div>
-          <div class="panel-body">
-            <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i class="fa fa-external-link" aria-hidden="true"></i></a>
-          </div>
-        </div>
-        {% include 'tb/obs_panel.html' %}
       </div>
     </div>
   </div>
-</div>
