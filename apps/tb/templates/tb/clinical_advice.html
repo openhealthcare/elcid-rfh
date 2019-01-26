@@ -54,6 +54,26 @@
             </div>
           </div>
         {% endif %}
+        {% if object.reason_for_interaction %}
+          <div class="row">
+            <div class="col-xs-12">
+              <strong>Reason for interaction:</strong>
+            </div>
+            <div class="col-xs-12">
+              {{ object.reason_for_interaction }}
+            </div>
+          </div>
+        {% endif %}
+        {% if object.assessment %}
+          <div class="row">
+            <div class="col-xs-12">
+              <strong>Assessment:</strong>
+            </div>
+            <div class="col-xs-12">
+              {{ object.assessment }}
+            </div>
+          </div>
+        {% endif %}
         {% if object.discussion %}
           <div class="row">
             <div class="col-xs-12">
