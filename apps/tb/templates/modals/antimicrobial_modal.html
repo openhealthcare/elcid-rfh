@@ -1,0 +1,12 @@
+{% extends "base_templates/form_modal_base.html" %}
+{% block title %}
+	<span ng-show="episode.category_name === 'TB'">
+		Medication History
+		<span ng-show="profile.can_see_pid() && editingName">
+			([[ editingName]])
+		</span>
+	</span>
+	<span ng-show="episode.category_name !== 'TB'">
+		{{ block.super }}
+	</span>
+{% endblock %} 
