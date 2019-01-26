@@ -17,7 +17,6 @@
           {% record_panel models.BCG %}
           {% record_panel models.TBHistory %}
           {% record_panel models.Travel %}
-          {% record_panel models.Antimicrobial title="Medication History" %}
           {% record_panel models.Observation %}
           {% record_panel models.MantouxTest %}
           {% record_panel models.Treatment %}
@@ -25,6 +24,7 @@
         {% include 'panels/nationality.html' %}
         {% record_panel models.TBHistory %}
         {% include "panels/symptoms.html" %}
+        {% record_panel models.Antimicrobial title="Medication History" %}
         <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
           <div class="panel-body">
             <div class="patient-timeline-container">
