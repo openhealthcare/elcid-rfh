@@ -201,6 +201,26 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
         return patient, episode
 
 
+class SymptomsPathway(pathways.PagePathway):
+    """
+    This pathway is used as a modal to edit symptoms for TB episodes.
+    It uses the same template and controller as the symptoms step in the
+    Initial Assessment pathway.
+    """
+    slug = "symptom_complex_pathway"
+    display_name = models.SymptomComplex.get_display_name()
+    icon = models.SymptomComplex.get_icon()
+    steps = (
+        pathways.Step(
+            model=models.SymptomComplex,
+            template="pathway/steps/symptom_complex.html",
+            help_text_template="pathway/steps/help_text/symptom_complex.html",
+            step_controller="TbSymptomComplexCrtl",
+            multiple=False,
+        ),
+    )
+
+
 class NationalityAndLanguage(pathways.PagePathway):
     """
     A pathway that asks for place of birth,
