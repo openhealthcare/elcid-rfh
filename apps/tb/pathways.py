@@ -204,7 +204,7 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
 class SymptomsPathway(pathways.PagePathway):
     """
     This pathway is used as a modal to edit symptoms for TB episodes.
-    It re-uses the template and controller from the symptoms step in the
+    It uses the same template and controller as the symptoms step in the
     Initial Assessment pathway.
     """
     slug = "symptom_complex_pathway"
