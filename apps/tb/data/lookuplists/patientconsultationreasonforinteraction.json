@@ -1,0 +1,12 @@
+{
+    "patientconsultationreasonforinteraction": [
+        {
+            "synonyms": [],
+            "name": "LTBI follow up"
+        },
+        {
+            "synonyms": [],
+            "name": "LTBI initial assessment"
+        }
+    ]
+}
