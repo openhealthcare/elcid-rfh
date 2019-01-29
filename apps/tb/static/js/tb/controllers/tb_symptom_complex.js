@@ -30,9 +30,9 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
        "Cough (Dry)",
        "Cough (Productive)",
        "Coughing up blood",
-       "Breathlessness",
-       "Fatigue",
+       "Shortness of Breath",
        "Fever",
+       "Malaise",
        "Loss of Appetite",
        "Night Sweats",
        "Lymph node swelling",
@@ -68,13 +68,7 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
 
       _.each(scope.tbSymptomFields, function(v, k){
         var toAdd = _.contains(relevent, v);
-
-        if(scope.tbSymptom[k]){
-          scope.tbSymptom[k] = toAdd;
-        }
-        else if(!scope.tbSymptom[k] && toAdd){
-          scope.tbSymptom[k] = toAdd;
-        }
+        scope.tbSymptom[k] = toAdd;
       });
     };
 
