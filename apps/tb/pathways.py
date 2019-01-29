@@ -203,9 +203,9 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
 
 class SymptomsPathway(pathways.PagePathway):
     """
-    A pathway is essentially a wrapper for a singleton symptoms form
-    that is the same functionality as the symptoms step in the
-    initial assessment pathway
+    This pathway is used as a modal to edit symptoms for TB episodes.
+    It uses the same template and controller as the symptoms step in the
+    Initial Assessment pathway.
     """
     slug = "symptom_complex_pathway"
     display_name = models.SymptomComplex.get_display_name()
