@@ -27,7 +27,7 @@ paramiko==1.16.0
 pyasn1==0.1.9
 pycparser==2.14
 pytz==2015.7
-sqlparse==0.1.16
+sqlparse==0.2.4
 static3==0.6.1
 Fabric==1.14.0
 
