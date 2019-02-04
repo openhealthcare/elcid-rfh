@@ -179,11 +179,11 @@ class LabTestResultsView(LoginRequiredViewset):
                 "test_name", lab_test.lab_test_type
             )
             if lab_test_type == "FULL BLOOD COUNT" and observations:
-                print "id {} name {} result {}".format(
+                print("id {} name {} result {}".format(
                     lab_test.id,
                     observations[0]["observation_name"],
                     observations[0]["observation_value"]
-                )
+                ))
 
             for observation in observations:
                 obs_result = extract_observation_value(observation["observation_value"])
@@ -278,7 +278,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
                     pass
                 else:
-                    if isinstance(observation["observation_value"], (str, unicode,)):
+                    if isinstance(observation["observation_value"], str):
                         if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
                             long_form = True
 
@@ -326,7 +326,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 ).toordinal()
             )
 
-        all_tags = _LAB_TEST_TAGS.keys()
+        all_tags = list(_LAB_TEST_TAGS.keys())
 
         return json_response(
             dict(

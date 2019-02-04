@@ -36,4 +36,4 @@ class Command(BaseCommand):
             results = json.load(f)
         patient = models.Patient.objects.get(id=patient_id)
         self.process(patient, results)
-        print "success"
+        print("success")
