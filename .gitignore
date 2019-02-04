@@ -19,3 +19,4 @@ opal.sqlite.*
 .project
 .dir-locals.el
 node_modules
+.vscode
