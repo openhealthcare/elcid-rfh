@@ -36,7 +36,7 @@ class PivottedData(StaffRequiredMixin, TemplateView):
         )
         raw_data = getattr(api, self.api_method)(kwargs["hospital_number"])
         row_data = pivot_data(raw_data)
-        row_data.sort(key=lambda x: x[0])
+        row_data = sorted(list(row_data), key=lambda x: x[0])
         ctx["row_data"] = row_data
         return ctx
 

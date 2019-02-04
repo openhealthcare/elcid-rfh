@@ -10,19 +10,19 @@ class InitialPatientLoadTestCase(OpalTestCase):
         self.ipl = models.InitialPatientLoad(patient=self.patient)
         self.ipl.start()
 
-    def test_unicode_running(self):
-        self.assertIn(self.ipl.RUNNING, unicode(self.ipl))
-        self.assertIn("AAA", unicode(self.ipl))
+    def test_str_running(self):
+        self.assertIn(self.ipl.RUNNING, str(self.ipl))
+        self.assertIn("AAA", str(self.ipl))
 
-    def test_unicode_stopped(self):
+    def test_str_stopped(self):
         self.ipl.complete()
-        self.assertIn(self.ipl.SUCCESS, unicode(self.ipl))
-        self.assertIn("AAA", unicode(self.ipl))
+        self.assertIn(self.ipl.SUCCESS, str(self.ipl))
+        self.assertIn("AAA", str(self.ipl))
         with patch.object(
             models.InitialPatientLoad, 'duration', new_callable=PropertyMock
         ) as m:
             m.return_value = ""
-            unicode(self.ipl)
+            str(self.ipl)
             self.assertTrue(m.called)
 
     def test_update_from_dict(self):
@@ -36,15 +36,15 @@ class BatchPatientLoadTestCase(OpalTestCase):
         self.bpl = models.BatchPatientLoad()
         self.bpl.start()
 
-    def test_unicode_running(self):
-        self.assertIn(self.bpl.RUNNING, unicode(self.bpl))
+    def test_str_running(self):
+        self.assertIn(self.bpl.RUNNING, str(self.bpl))
 
-    def test_unicode_stopped(self):
+    def test_str_stopped(self):
         self.bpl.complete()
-        self.assertIn(self.bpl.SUCCESS, unicode(self.bpl))
+        self.assertIn(self.bpl.SUCCESS, str(self.bpl))
         with patch.object(
             models.BatchPatientLoad, 'duration', new_callable=PropertyMock
         ) as m:
             m.return_value = ""
-            unicode(self.bpl)
+            str(self.bpl)
             self.assertTrue(m.called)

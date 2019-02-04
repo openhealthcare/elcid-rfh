@@ -3,7 +3,7 @@ from opal.core.patient_lists import TaggedPatientList
 from elcid import models
 from opal import models as omodels
 from intrahospital_api.models import InitialPatientLoad
-from episode_serialization import serialize
+from elcid.episode_serialization import serialize
 
 PATIENT_LIST_SUBRECORDS = [
     models.PrimaryDiagnosis,
