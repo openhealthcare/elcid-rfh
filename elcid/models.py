@@ -76,7 +76,7 @@ class Location(EpisodeSubrecord):
     ward = ForeignKeyOrFreeText(omodels.Ward)
     bed = models.CharField(max_length=255, blank=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             demographics = self.episode.patient.demographics_set.get()
             return u'Location for {0}({1}) {2} {3} {4} {5}'.format(
@@ -417,7 +417,7 @@ class BloodCultureSource(lookuplists.LookupList):
 
 
 class RfhObservation(object):
-    def __unicode__(self):
+    def __str__(self):
         return "{} for {}".format(
             self.observation_type, self.lab_test
         )
