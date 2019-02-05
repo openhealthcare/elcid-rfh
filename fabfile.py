@@ -188,7 +188,7 @@ def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
 
 
 @task
-def create_deployment_env(branch_name):
+def pip_create_deployment_env(branch_name):
     print("Creating deployment environment")
     private_settings = get_private_settings()
     proxy = private_settings["proxy"]
@@ -380,14 +380,10 @@ def services_create_gunicorn_conf(new_env):
         f.write(output)
 
 
-
 def services_create_upstart_conf(new_env):
     print("Creating upstart conf")
     template = jinja_env.get_template('etc/conf_templates/upstart.conf.jinja2')
-    output = template.render(
-        env_name=new_env.virtual_env_path,
-        project_directory=new_env.project_directory
-    )
+    output = template.render(env=new_env)
     upstart_conf = '{0}/etc/upstart.conf'.format(
         new_env.project_directory
     )
@@ -629,6 +625,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
         python_path=get_python_3()
     )
     pip_set_project_directory(new_env)
+    pip_create_deployment_env(new_branch)
 
     install_apt_dependencies()
     pip_install_requirements(new_env, private_settings["proxy"])

@@ -104,12 +104,12 @@ class FabfileTestCase(unittest.TestCase):
 @mock.patch("fabfile.pip_create_virtual_env")
 @mock.patch("fabfile.get_private_settings")
 class TestCreateDeploymentEnv(unittest.TestCase):
-    def test_create_deployment_env(
+    def test_pip_create_deployment_env(
         self, get_private_settings, pip_create_virtual_env, local
     ):
         env = fabfile.Env("some_branch")
         get_private_settings.return_value = dict(proxy="blah")
-        fabfile.create_deployment_env("some_branch")
+        fabfile.pip_create_deployment_env("some_branch")
         pip_create_virtual_env.assert_called_once_with(
             env.deployment_env_path, remove_existing=True
         )
@@ -568,7 +568,7 @@ class ServicesTestCase(FabfileTestCase):
             output_file = l.read()
         print_function.assert_called_once_with('Creating upstart conf')
         # make sure we're executing gunicorn with our project directory
-        self.assertIn("elcidrfh-some_branch/bin/activate;", output_file)
+        self.assertIn("elcidrfh-some_branch-deployment/bin/activate;", output_file)
         local.assert_called_once_with(
             "rm -f {}".format(upstart_conf_file)
         )
@@ -854,6 +854,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.get_private_settings")
     @mock.patch("fabfile.get_python_3")
     @mock.patch("fabfile.pip_create_virtual_env")
+    @mock.patch("fabfile.pip_create_deployment_env")
     @mock.patch("fabfile.kill_running_processes")
     @mock.patch("fabfile.pip_set_project_directory")
     @mock.patch("fabfile.install_apt_dependencies")
@@ -890,6 +891,7 @@ class DeployTestCase(FabfileTestCase):
         install_apt_dependencies,
         pip_set_project_directory,
         kill_running_processes,
+        pip_create_deployment_env,
         pip_create_virtual_env,
         get_python_3,
         get_private_settings,
@@ -915,6 +917,9 @@ class DeployTestCase(FabfileTestCase):
         )
         pip_create_virtual_env.assert_called_once_with(
             self.env.virtual_env_path, False, python_path="python3"
+        )
+        pip_create_deployment_env.assert_called_once_with(
+            "some_branch"
         )
         pip_set_project_directory.assert_called_once_with(self.env)
         pip_install_requirements.assert_called_once_with(self.env, "1.2.3")
@@ -975,6 +980,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.get_private_settings")
     @mock.patch("fabfile.get_python_3")
     @mock.patch("fabfile.pip_create_virtual_env")
+    @mock.patch("fabfile.pip_create_deployment_env")
     @mock.patch("fabfile.kill_running_processes")
     @mock.patch("fabfile.pip_set_project_directory")
     @mock.patch("fabfile.install_apt_dependencies")
@@ -1011,6 +1017,7 @@ class DeployTestCase(FabfileTestCase):
         install_apt_dependencies,
         pip_set_project_directory,
         kill_running_processes,
+        pip_create_deployment_env,
         pip_create_virtual_env,
         get_python_3,
         get_private_settings,
@@ -1040,6 +1047,7 @@ class DeployTestCase(FabfileTestCase):
         pip_create_virtual_env.assert_called_once_with(
             self.env.virtual_env_path, False, python_path="python3"
         )
+        pip_create_deployment_env.assert_called_once_with("some_branch")
         pip_set_project_directory.assert_called_once_with(self.env)
         pip_install_requirements.assert_called_once_with(
             self.env, "1.2.3"
