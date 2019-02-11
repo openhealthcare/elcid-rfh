@@ -538,5 +538,5 @@ class ReversionTestCase(OpalTestCase):
             deleted.field_dict['observation_type'], 'PosNegUnknown'
         )
         self.assertEqual(
-            deleted.field_dict['lab_test'], 1
+            deleted.field_dict["name"], 'pathology'
         )
