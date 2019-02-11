@@ -1,14 +1,34 @@
+"""
+Unittests for elcid.api
+"""
 import json
 import mock
 import datetime
+
 from opal.core.test import OpalTestCase
+from django.utils import timezone
+from django.test import override_settings
 from rest_framework.reverse import reverse
+
+from elcid import models as emodels
+
 from elcid.api import (
     BloodCultureResultApi, UpstreamBloodCultureApi
 )
-from elcid import models as emodels
 from elcid import api
-from django.test import override_settings
+
+
+class GenerateTimeSeriesTestCase(OpalTestCase):
+    def test_generate_time_series(self):
+        data = [
+            dict(observation_value='1'),
+            dict(observation_value='1'),
+            dict(observation_value='2'),
+            dict(observation_value='3'),
+            dict(observation_value='1'),
+        ]
+        expected = [1, 1, 2, 3, 1]
+        self.assertEqual(expected, api.generate_time_series(data))
 
 
 class ExtractObservationValueTestCase(OpalTestCase):
@@ -26,6 +46,30 @@ class ExtractObservationValueTestCase(OpalTestCase):
         )
         for input, expected in inputs_to_expected_results:
             self.assertEqual(api.extract_observation_value(input), expected)
+
+
+class ToDateStrTestCase(OpalTestCase):
+    def test_takes_first_ten_chars(self):
+        self.assertEqual('First of A', api.to_date_str('First of April 1975'))
+
+
+class DatetimeToStrTestCase(OpalTestCase):
+    def test_to_str(self):
+        dt = datetime.datetime(2017, 7, 4)
+        self.assertEqual('04/07/2017 00:00:00', api.datetime_to_str(dt))
+
+
+class ObservationsByDateTestCase(OpalTestCase):
+    def test_observations_by_date(self):
+        data = [
+            dict(observation_datetime='04/07/2017', value='pos'),
+            dict(observation_datetime='14/07/2017', value='neg')
+        ]
+        expected = [
+            dict(observation_datetime='14/07/2017', value='neg'),
+            dict(observation_datetime='04/07/2017', value='pos')
+        ]
+        self.assertEqual(expected, api.observations_by_date(data))
 
 
 class UpstreamBloodCultureApiTestCase(OpalTestCase):
@@ -169,7 +213,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
             kwargs=dict(pk=1),
             request=request
         )
-        some_date = datetime.date(2017, 1, 1)
+        some_date = timezone.make_aware(datetime.datetime(2017, 1, 1))
         patient, _ = self.new_patient_and_episode_please()
 
         gram_stain = emodels.GramStain.objects.create(
@@ -187,7 +231,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         gram_stain.result.lab_test_id = gram_stain.id
         gram_stain.result.save()
 
-        some_other_date = datetime.date(2017, 1, 1)
+        some_other_date = timezone.make_aware(datetime.datetime(2017, 1, 1))
         quick_fish = emodels.QuickFISH.objects.create(
             datetime_ordered=some_other_date,
             patient=patient,
@@ -204,7 +248,7 @@ class BloodCultureResultApiTestCase(OpalTestCase):
         quick_fish.result.save()
         result = self.client.get(url)
         self.assertEqual(result.status_code, 200)
-        contents = json.loads(result.content)
+        contents = json.loads(result.content.decode('utf-8'))
         self.assertEqual(len(contents["cultures"]["01/01/2017"]), 1)
         results = contents["cultures"]["01/01/2017"][""]["anaerobic"]["1"]
         self.assertEqual(
@@ -247,7 +291,9 @@ class DemographicsSearchTestCase(OpalTestCase):
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=False)
     def test_without_demographics_add_patient_not_found(self):
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(
+            self.client.get(self.url).content.decode('utf-8')
+        )
         self.assertEqual(
             response["status"], "patient_not_found"
         )
@@ -262,7 +308,9 @@ class DemographicsSearchTestCase(OpalTestCase):
         self, load_demographics
     ):
         load_demographics.return_value = None
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(
+            self.client.get(self.url).content.decode('utf-8')
+        )
         self.assertEqual(
             response["status"], "patient_not_found"
         )
@@ -273,7 +321,9 @@ class DemographicsSearchTestCase(OpalTestCase):
         self, load_demographics
     ):
         load_demographics.return_value = dict(first_name="Wilma")
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(
+            self.client.get(self.url).content.decode('utf-8')
+        )
         self.assertEqual(
             response["status"], "patient_found_upstream"
         )
@@ -283,7 +333,7 @@ class DemographicsSearchTestCase(OpalTestCase):
 
     def test_patient_found(self):
         self.get_patient("Wilma", "1")
-        response = json.loads(self.client.get(self.url).content)
+        response = json.loads(self.client.get(self.url).content.decode('utf-8'))
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
         )
@@ -294,7 +344,7 @@ class DemographicsSearchTestCase(OpalTestCase):
     def test_patient_found_with_full_stop(self):
         self.get_patient("Dot", "123.123")
         response = json.loads(
-            self.client.get(self.get_url("123.123")).content
+            self.client.get(self.get_url("123.123")).content.decode('utf-8')
         )
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
@@ -306,7 +356,7 @@ class DemographicsSearchTestCase(OpalTestCase):
     def test_patient_found_with_forward_slash(self):
         self.get_patient("Dot", "123/123")
         response = json.loads(
-            self.client.get(self.get_url("123%2F123")).content
+            self.client.get(self.get_url("123%2F123")).content.decode('utf-8')
         )
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
@@ -318,11 +368,38 @@ class DemographicsSearchTestCase(OpalTestCase):
     def test_patient_found_with_hash(self):
         self.get_patient("Dot", "123#123")
         response = json.loads(
-            self.client.get(self.get_url("123%23123")).content
+            self.client.get(self.get_url("123%23123")).content.decode('utf-8')
         )
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
         )
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Dot"
+        )
+
+
+class GetReferenceRangeTestCase(OpalTestCase):
+    def to_obs(self, something):
+        return dict(reference_range=something)
+
+    def test_clean_ref_range(self):
+        self.assertEqual(
+            api.get_reference_range(self.to_obs("[ 2 - 3 ]")),
+            dict(min="2", max="3")
+        )
+
+    def test_return_none_if_only_dash(self):
+        self.assertIsNone(
+            api.get_reference_range(self.to_obs(" - "))
+        )
+
+    def test_return_none_if_more_than_one_dash(self):
+        self.assertIsNone(
+            api.get_reference_range(self.to_obs("else -something - or"))
+        )
+
+    def test_return_stripped_max_min(self):
+        self.assertEqual(
+            api.get_reference_range(self.to_obs("2-3")),
+            dict(min="2", max="3")
         )

@@ -1,5 +1,4 @@
 # Django settings for elcid project.
-import commands
 import os
 import sys
 
@@ -379,6 +378,6 @@ REST_FRAMEWORK = {
 
 if 'test' not in sys.argv:
     try:
-        from local_settings import *
+        from elcid.local_settings import *
     except ImportError:
         pass

@@ -45,7 +45,9 @@ import json
 import copy
 import time
 from jinja2 import Environment, FileSystemLoader
+
 from fabric.api import local, env
+
 from fabric.operations import put
 from fabric.context_managers import lcd, settings
 from fabric.decorators import task
@@ -57,7 +59,7 @@ UNIX_USER = "ohc"
 DB_USER = "ohc"
 RELEASE_NAME = "elcidrfh-{branch}"
 
-VIRTUAL_ENV_PATH = "/home/{unix_user}/.virtualenvs/{release_name}"
+VIRTUAL_ENV_PATH = "/home/{unix_user}/.virtualenvs/{env_name}"
 PROJECT_ROOT = "/usr/lib/{unix_user}".format(unix_user=UNIX_USER)
 PROJECT_DIRECTORY = "{project_root}/{release_name}"
 BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
@@ -87,9 +89,8 @@ class FabException(Exception):
 
 
 class Env(object):
-    def __init__(self, branch, remove_existing=False):
+    def __init__(self, branch):
         self.branch = branch
-        self.remove_existing = remove_existing
 
     @property
     def project_directory(self):
@@ -106,7 +107,18 @@ class Env(object):
     def virtual_env_path(self):
         return VIRTUAL_ENV_PATH.format(
             unix_user=UNIX_USER,
-            release_name=self.release_name
+            env_name=self.release_name
+        )
+
+    @property
+    def deployment_env_name(self):
+        return "{}-deployment".format(self.release_name)
+
+    @property
+    def deployment_env_path(self):
+        return VIRTUAL_ENV_PATH.format(
+            unix_user=UNIX_USER,
+            env_name=self.deployment_env_name
         )
 
     @property
@@ -156,23 +168,51 @@ def run_management_command(some_command, env):
     return result
 
 
-def pip_create_virtual_env(new_env):
+def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
     print("Creating new environment")
-    if new_env.remove_existing:
-        local("rm -rf {}".format(new_env.virtual_env_path))
+    if remove_existing:
+        local("rm -rf {}".format(virtual_env_path))
     else:
-        if os.path.isdir(new_env.virtual_env_path):
+        if os.path.isdir(virtual_env_path):
             raise ValueError(
-                "Directory {} already exists".format(new_env.virtual_env_path)
+                "Directory {} already exists".format(virtual_env_path)
             )
-    local("/usr/bin/virtualenv {}".format(new_env.virtual_env_path))
-    return
+
+    if python_path:
+        cmd = "/usr/bin/virtualenv -p {} {}".format(
+            python_path, virtual_env_path
+        )
+    else:
+        cmd = "/usr/bin/virtualenv {}".format(virtual_env_path)
+    local(cmd)
+
+
+@task
+def pip_create_deployment_env(branch_name):
+    print("Creating deployment environment")
+    private_settings = get_private_settings()
+    proxy = private_settings["proxy"]
+    new_env = Env(branch_name)
+    pip_create_virtual_env(
+        new_env.deployment_env_path, remove_existing=True
+    )
+    pip = "{}/bin/pip".format(new_env.deployment_env_path)
+    local("{0} install pip==9.0.1 --proxy {1}".format(pip, proxy))
+    local("{0} install -r requirements-deployment.txt --proxy {1}".format(
+        pip, private_settings["proxy"]
+    ))
 
 
 def pip_install_requirements(new_env, proxy):
     print("Installing requirements")
+
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
-    local("{0} install pip==9.0.1 --proxy {1}".format(pip, proxy))
+    local("{0} install pip==18.0 --proxy {1}".format(pip, proxy))
+
+    # get's us round the connection pool
+    # from
+    # https://github.com/pypa/pip/issues/1805
+    local("{0} install requests==2.20.1 --proxy {1}".format(pip, proxy))
     local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
 
 
@@ -189,7 +229,7 @@ def postgres_command(command):
     )
 
 
-def postgres_create_database(some_env):
+def postgres_create_database(some_env, remove_existing):
     """ creates a database and user if they don't already exist.
         the db_name is created from the release name
     """
@@ -205,7 +245,7 @@ WHERE datname='{}'\"".format(some_env.database_name),
     print(select_result.stdout)
 
     if database_exists:
-        if some_env.remove_existing:
+        if remove_existing:
             postgres_command(
                 "DROP DATABASE {0}".format(some_env.database_name)
             )
@@ -343,10 +383,7 @@ def services_create_gunicorn_conf(new_env):
 def services_create_upstart_conf(new_env):
     print("Creating upstart conf")
     template = jinja_env.get_template('etc/conf_templates/upstart.conf.jinja2')
-    output = template.render(
-        env_name=new_env.virtual_env_path,
-        project_directory=new_env.project_directory
-    )
+    output = template.render(env=new_env)
     upstart_conf = '{0}/etc/upstart.conf'.format(
         new_env.project_directory
     )
@@ -375,7 +412,7 @@ def restart_supervisord(new_env):
     # don't restart supervisorctl as we need to be running the correct
     # supervisord
     local("{0}/bin/supervisord -c {1}/etc/production.conf".format(
-        new_env.virtual_env_path, new_env.project_directory
+        new_env.deployment_env_path, new_env.project_directory
     ))
 
 
@@ -385,7 +422,10 @@ def restart_nginx():
 
 
 def write_cron_backup(new_env):
-    """ Creates a cron job that copies a file to a remote server
+    """
+    Creates a cron job that copies a file to a remote server
+
+    This is not like other cron jobs as it does not run on test
     """
     print("Writing cron {}_backup".format(PROJECT_NAME))
     template = jinja_env.get_template('etc/conf_templates/cron_backup.jinja2')
@@ -561,12 +601,16 @@ def create_private_settings():
         )
 
 
+def get_python_3():
+    return local("which python3", capture=True)
+
+
 def _deploy(new_branch, backup_name=None, remove_existing=False):
     if backup_name and not os.path.isfile(backup_name):
         raise ValueError("unable to find backup {}".format(backup_name))
 
     # the new env that is going to be live
-    new_env = Env(new_branch, remove_existing=remove_existing)
+    new_env = Env(new_branch)
 
     # the private settings
     private_settings = get_private_settings()
@@ -575,12 +619,19 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     kill_running_processes()
 
     # Setup environment
-    pip_create_virtual_env(new_env)
+    pip_create_virtual_env(
+        new_env.virtual_env_path,
+        remove_existing,
+        python_path=get_python_3()
+    )
     pip_set_project_directory(new_env)
+    pip_create_deployment_env(new_branch)
+
+    install_apt_dependencies()
     pip_install_requirements(new_env, private_settings["proxy"])
 
     # create a database
-    postgres_create_database(new_env)
+    postgres_create_database(new_env, remove_existing)
     create_pg_pass(new_env, private_settings)
 
     # load in a backup
@@ -615,7 +666,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
 def infer_current_branch():
     current_dir = os.path.abspath(os.path.dirname(__file__))
-    project_beginning = Env('', False).project_directory
+    project_beginning = Env('').project_directory
 
     if not current_dir.startswith(project_beginning):
         er_temp = 'we are in {0} but expect to be in a directory beginning \
@@ -626,6 +677,7 @@ with {1}'
 
 @task
 def deploy_test(backup_name=None):
+
     new_branch = infer_current_branch()
     _deploy(new_branch, backup_name, remove_existing=True)
     new_status = run_management_command("status_report", Env(new_branch))
@@ -677,6 +729,10 @@ def roll_back_prod(branch_name):
     write_cron_lab_tests(roll_to_env)
 
 
+def install_apt_dependencies():
+    local("sudo apt-get install python3-dev=3.4.0-0ubuntu2")
+
+
 def create_pg_pass(env, additional_settings):
     pg_pass = os.path.join(os.environ["HOME"], ".pgpass")
 
@@ -703,14 +759,14 @@ def dump_and_copy(branch_name):
         dump_database(env, env.database_name, env.backup_name)
         copy_backup(env)
     except Exception as e:
-        send_error_email("database backup failed with '{}'".format(
-            str(e.message))
+        send_error_email(
+            "database backup failed with '{}'".format(str(e)), env
         )
 
 
 def is_load_running(env):
     return json.loads(
-        run_management_command("batch_load_running", env)
+        run_management_command("batch_test_load_running", env)
     )["status"]
 
 
