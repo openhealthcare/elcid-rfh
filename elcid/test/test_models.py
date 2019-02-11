@@ -133,7 +133,7 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'created_by_id': None,
             'provenance': '',
             }
-        result = {str(k): v for k, v in self.location.to_dict(self.user).iteritems()}
+        result = {str(k): v for k, v in self.location.to_dict(self.user).items()}
         self.assertEqual(expected_data, result)
 
     def test_update_from_dict(self):
@@ -289,7 +289,7 @@ class BloodCultureMixinTestCase(OpalTestCase):
 
 
 class RfhObservationMixinTestCase(OpalTestCase):
-    def test_to_unicode(self):
+    def test_to_str(self):
         patient, _ = self.new_patient_and_episode_please()
         gram_stain = emodels.GramStain(patient=patient)
         gram_stain.update_from_dict(dict(
@@ -298,9 +298,11 @@ class RfhObservationMixinTestCase(OpalTestCase):
         ), self.user)
         self.assertEqual(gram_stain.observations.count(), 1)
         observation = gram_stain.observations.get()
+
+        # this will get changed when we move to opal 0.13
         self.assertTrue(
-            observation.__unicode__().startswith(
-                "GramStainResult for gram_stain: 1"
+            str(observation).startswith(
+                "GramStainResult object"
             )
         )
 
@@ -497,7 +499,7 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
             'date_of_diagnosis': datetime.date(2013, 7, 25),
             }
 
-        result = {str(k): v for k, v in self.diagnosis.to_dict(self.user).iteritems()}
+        result = {str(k): v for k, v in self.diagnosis.to_dict(self.user).items()}
         self.assertEqual(expected_data, result)
 
     def test_update_from_dict_with_existing_condition(self):

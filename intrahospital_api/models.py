@@ -80,7 +80,7 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
         future loads are done by the cron batch load
     """
 
-    def __unicode__(self):
+    def __str__(self):
         hospital_number = self.patient.demographics_set.first().hospital_number
         if self.stopped:
             return "{} {} {} {}".format(
@@ -107,7 +107,7 @@ class BatchPatientLoad(PatientLoad):
         every 5 mins
     """
 
-    def __unicode__(self):
+    def __str__(self):
         if self.stopped:
             return "{} {} {} {}".format(
                 self.state,

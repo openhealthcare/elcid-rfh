@@ -773,6 +773,8 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.return_value = expected
             since = datetime.now()
             result = api.data_deltas(since)
+            # we don't care about lab test ordering
+            result[0]["lab_tests"] = sorted(result[0]["lab_tests"], key=lambda x: int(x["external_identifier"]))
         self.assertEqual(
             result, expected_result
         )
@@ -786,7 +788,7 @@ class ProdApiTestcase(OpalTestCase):
         """
         expected = [
             self.get_row(Result_ID="122", OBR_exam_code_Text="Blood"),
-            self.get_row(Result_ID="122", OBR_exam_code_Text="Commentry")
+            self.get_row(Result_ID="122", OBR_exam_code_Text="Commentry"),
         ]
         expected_result = [{
             'demographics': {
@@ -816,7 +818,7 @@ class ProdApiTestcase(OpalTestCase):
                             'reference_range': u' -'
                         }
                     ],
-                    'test_name': u'Blood',
+                    'test_name': u'Commentry',
                     'clinical_info': u'testing',
                     'external_system': 'RFH Database',
                     'datetime_ordered': '18/07/2015 16:18:00'
@@ -837,7 +839,7 @@ class ProdApiTestcase(OpalTestCase):
                             'reference_range': u' -'
                         }
                     ],
-                    'test_name': u'Commentry',
+                    'test_name': u'Blood',
                     'clinical_info': u'testing',
                     'external_system': 'RFH Database',
                     'datetime_ordered': '18/07/2015 16:18:00'
@@ -855,6 +857,15 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.return_value = expected
             since = datetime.now()
             result = api.data_deltas(since)
+
+        result[0]["lab_tests"] = sorted(
+            result[0]["lab_tests"], key=lambda x: x["test_name"]
+        )
+
+        expected_result[0]["lab_tests"] = sorted(
+            expected_result[0]["lab_tests"], key=lambda x: x["test_name"]
+        )
+
         self.assertEqual(
             result, expected_result
         )
@@ -1026,6 +1037,9 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.return_value = expected
             since = datetime.now()
             result = api.data_deltas(since)
+            result = sorted(
+                result, key=lambda x: int(x["demographics"]["hospital_number"])
+            )
         self.assertEqual(
             result, expected_result
         )

@@ -21,7 +21,6 @@ def patient_to_dict(patient, user):
     )
     d = {
         'id': patient.id,
-        'active_episode_id': active_episode.id if active_episode else None
     }
     for model in subrecords.patient_subrecords():
         if model == lmodels.LabTest:

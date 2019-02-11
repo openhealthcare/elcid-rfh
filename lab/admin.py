@@ -14,9 +14,10 @@ def register_lab_tests():
         if not getattr(lab_test, "_no_admin", False):
             admin.site.register(lab_test, LabTestAdmin)
 
-        for obs in _itersubclasses(Observation):
-            if not reversion.is_registered(obs):
-                admin.site.register(obs, LabTestAdmin)
+    admin.site.register(Observation, LabTestAdmin)
+    for obs in _itersubclasses(Observation):
+        if not reversion.is_registered(obs):
+            admin.site.register(obs, LabTestAdmin)
 
 
 register_lab_tests()
