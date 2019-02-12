@@ -766,7 +766,7 @@ def dump_and_copy(branch_name):
 
 def is_load_running(env):
     return json.loads(
-        run_management_command("batch_test_load_running", env)
+        run_management_command("batch_load_running", env)
     )["status"]
 
 
