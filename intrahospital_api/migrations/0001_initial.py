@@ -29,10 +29,10 @@ class Migration(migrations.Migration):
                 ('date_of_birth', models.DateField(null=True, blank=True)),
                 ('reconciled', models.BooleanField(default=False)),
                 ('title_ft', models.CharField(default=b'', max_length=255, null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='created_intrahospital_api_externaldemographics_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)),
+                ('created_by', models.ForeignKey(related_name='created_intrahospital_api_externaldemographics_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
                 ('patient', models.ForeignKey(to='opal.Patient', on_delete=models.CASCADE)),
                 ('title_fk', models.ForeignKey(blank=True, to='opal.Title', null=True, on_delete=models.CASCADE)),
-                ('updated_by', models.ForeignKey(related_name='updated_intrahospital_api_externaldemographics_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)),
+                ('updated_by', models.ForeignKey(related_name='updated_intrahospital_api_externaldemographics_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,

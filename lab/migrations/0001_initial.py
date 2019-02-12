@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                         related_name='created_lab_labtest_subrecords',
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
-                        on_delete=models.SET_NULL,
+                        on_delete=models.CASCADE,
                         null=True
                     )
                 ),
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                         related_name='updated_lab_labtest_subrecords',
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
-                        on_delete=models.SET_NULL,
+                        on_delete=models.CASCADE,
                         null=True
                     )
                 ),
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                         related_name='created_lab_observation_subrecords',
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
-                        on_delete=models.SET_NULL,
+                        on_delete=models.CASCADE,
                         null=True
                     )
                 ),
@@ -91,7 +91,7 @@ class Migration(migrations.Migration):
                         related_name='updated_lab_observation_subrecords',
                         blank=True,
                         to=settings.AUTH_USER_MODEL,
-                        on_delete=models.SET_NULL,
+                        on_delete=models.CASCADE,
                         null=True
                     )
                 ),
