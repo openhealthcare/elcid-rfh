@@ -27,11 +27,29 @@ class Migration(migrations.Migration):
                 ('date_ordered', models.DateField(null=True, blank=True)),
                 ('date_received', models.DateField(null=True, blank=True)),
                 ('extras', jsonfield.fields.JSONField(null=True, blank=True)),
-                ('created_by', models.ForeignKey(related_name='created_lab_labtest_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('patient', models.ForeignKey(to='opal.Patient')),
+                (
+                    'created_by',
+                    models.ForeignKey(
+                        related_name='created_lab_labtest_subrecords',
+                        blank=True,
+                        to=settings.AUTH_USER_MODEL,
+                        on_delete=models.CASCADE,
+                        null=True
+                    )
+                ),
+                ('patient', models.ForeignKey(to='opal.Patient', on_delete=models.CASCADE)),
                 ('resistant_antibiotics', models.ManyToManyField(related_name='test_resistant', to='opal.Antimicrobial')),
                 ('sensitive_antibiotics', models.ManyToManyField(related_name='test_sensitive', to='opal.Antimicrobial')),
-                ('updated_by', models.ForeignKey(related_name='updated_lab_labtest_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                (
+                    'updated_by',
+                    models.ForeignKey(
+                        related_name='updated_lab_labtest_subrecords',
+                        blank=True,
+                        to=settings.AUTH_USER_MODEL,
+                        on_delete=models.CASCADE,
+                        null=True
+                    )
+                ),
             ],
             options={
                 'abstract': False,
@@ -49,9 +67,34 @@ class Migration(migrations.Migration):
                 ('extras', jsonfield.fields.JSONField(null=True, blank=True)),
                 ('result', models.CharField(max_length=256, null=True, blank=True)),
                 ('name', models.CharField(max_length=255)),
-                ('created_by', models.ForeignKey(related_name='created_lab_observation_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('lab_test', models.ForeignKey(related_name='observations', to='lab.LabTest')),
-                ('updated_by', models.ForeignKey(related_name='updated_lab_observation_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                (
+                    'created_by',
+                    models.ForeignKey(
+                        related_name='created_lab_observation_subrecords',
+                        blank=True,
+                        to=settings.AUTH_USER_MODEL,
+                        on_delete=models.CASCADE,
+                        null=True
+                    )
+                ),
+                (
+                    'lab_test',
+                    models.ForeignKey(
+                        related_name='observations',
+                        to='lab.LabTest',
+                        on_delete=models.CASCADE
+                    )
+                ),
+                (
+                    'updated_by',
+                    models.ForeignKey(
+                        related_name='updated_lab_observation_subrecords',
+                        blank=True,
+                        to=settings.AUTH_USER_MODEL,
+                        on_delete=models.CASCADE,
+                        null=True
+                    )
+                ),
             ],
             options={
                 'abstract': False,

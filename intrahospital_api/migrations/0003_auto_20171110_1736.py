@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='externaldemographics',
             name='ethnicity_fk',
-            field=models.ForeignKey(blank=True, to='opal.Ethnicity', null=True),
+            field=models.ForeignKey(blank=True, to='opal.Ethnicity', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='externaldemographics',

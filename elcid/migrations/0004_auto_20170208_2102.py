@@ -23,9 +23,9 @@ class Migration(migrations.Migration):
                 ('updated', models.DateTimeField(null=True, blank=True)),
                 ('consistency_token', models.CharField(max_length=8)),
                 ('when', models.DateTimeField(auto_now=True)),
-                ('created_by', models.ForeignKey(related_name='created_elcid_positivebloodculturehistory_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('patient', models.ForeignKey(to='opal.Patient')),
-                ('updated_by', models.ForeignKey(related_name='updated_elcid_positivebloodculturehistory_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('created_by', models.ForeignKey(related_name='created_elcid_positivebloodculturehistory_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('patient', models.ForeignKey(to='opal.Patient', on_delete=models.CASCADE)),
+                ('updated_by', models.ForeignKey(related_name='updated_elcid_positivebloodculturehistory_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,

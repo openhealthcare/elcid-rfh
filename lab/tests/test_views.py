@@ -1,6 +1,6 @@
 from opal.core.test import OpalTestCase
 from lab.tests import models as test_models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 
 class TestAllLabTests(OpalTestCase):

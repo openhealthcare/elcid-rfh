@@ -131,7 +131,7 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'updated': None,
             'updated_by_id': None,
             'created_by_id': None,
-            'provenance': b'',
+            'provenance': '',
             }
         result = {str(k): v for k, v in self.location.to_dict(self.user).items()}
         self.assertEqual(expected_data, result)
