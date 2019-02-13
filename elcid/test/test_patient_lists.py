@@ -2,7 +2,7 @@ import datetime
 import json
 
 from django.test import RequestFactory
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework.reverse import reverse as drf_reverse
 
 from opal.core.patient_lists import PatientList

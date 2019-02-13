@@ -11,7 +11,7 @@ from elcid import episode_categories
 class StandardAddPatientMenuItem(menus.MenuItem):
     def for_user(self, user):
         from opal.models import UserProfile
-        if user.is_superuser:
+        if user and user.is_superuser:
             return True
         return not UserProfile.objects.filter(
             user=user,

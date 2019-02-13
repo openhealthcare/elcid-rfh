@@ -100,11 +100,11 @@ def extract_observation_value(observation_value):
         if its >12 return >12
         else return None
     """
-    regex = r'^[0-9][0-9.]*$'
+    regex = r'^[-0-9][0-9.]*$'
     obs_result = observation_value.strip()
     obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
     if re.match(regex, obs_result):
-        return float(obs_result)
+        return round(float(obs_result), 3)
 
 
 def get_observation_value(observation):
