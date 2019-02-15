@@ -610,7 +610,7 @@ batch_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \
         prod_env = fabfile.Env("some_branch")
         fabfile.write_cron_backup(prod_env)
         local.assert_called_once_with("echo '0 3 * * * ohc \
-/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/fab -f \
+/home/ohc/.virtualenvs/elcidrfh-some_branch-deployment/bin/fab -f \
 /somthing/somewhere/fabfile.py dump_and_copy:some_branch >> \
 /usr/lib/ohc/log/cron.log 2>&1' | sudo tee /etc/cron.d/elcid_backup")
         print_function.assert_called_once_with(

@@ -430,7 +430,7 @@ def write_cron_backup(new_env):
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(
         fabric_file=fabfile,
-        virtualenv=new_env.virtual_env_path,
+        virtualenv=new_env.deployment_env_path,
         branch=new_env.branch,
         unix_user=UNIX_USER
     )
