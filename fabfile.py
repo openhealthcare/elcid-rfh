@@ -48,7 +48,6 @@ from jinja2 import Environment, FileSystemLoader
 
 from fabric.api import local, env
 
-from fabric.operations import put
 from fabric.context_managers import lcd, settings
 from fabric.decorators import task
 import os
@@ -66,8 +65,8 @@ BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
 GIT_URL = "https://github.com/openhealthcare/elcid-rfh"
 LOG_DIR = "/usr/lib/{}/log/".format(UNIX_USER)
 # the daily back up
-BACKUP_NAME = "{backup_dir}/back.{dt}.{db_name}.sql"
-REMOTE_BACKUP_NAME = "{backup_dir}/live/back.{dt}.{db_name}.sql"
+BACKUP_FILE_NAME = "back.{dt}.{db_name}.sql"
+BACKUP_NAME = "{backup_dir}/{backup_file_name}"
 
 # the release back up is take just before the release, and then restored
 RELEASE_BACKUP_NAME = "{backup_dir}/release.{dt}.{db_name}.sql"
@@ -75,6 +74,7 @@ RELEASE_BACKUP_NAME = "{backup_dir}/release.{dt}.{db_name}.sql"
 MODULE_NAME = "elcid"
 PROJECT_NAME = MODULE_NAME
 CRON_TEST_LOAD = "/etc/cron.d/{0}_batch_test_load".format(PROJECT_NAME)
+BACKUP_DT_FORMAT = "%d.%m.%Y"
 
 DB_COMMAND_PREFIX = "sudo -u postgres psql --command"
 TEMPLATE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -126,21 +126,19 @@ class Env(object):
         return self.release_name.replace("-", "_").replace(".", "")
 
     @property
-    def backup_name(self):
+    def backup_file_name(self):
         now = datetime.datetime.now()
-        return BACKUP_NAME.format(
-            backup_dir=BACKUP_DIR,
-            dt=now.strftime("%d.%m.%Y"),
+        return BACKUP_FILE_NAME.format(
+            dt=now.strftime(BACKUP_DT_FORMAT),
             db_name=self.database_name
         )
 
     @property
-    def remote_backup_name(self):
+    def backup_name(self):
         now = datetime.datetime.now()
-        return REMOTE_BACKUP_NAME.format(
+        return BACKUP_NAME.format(
             backup_dir=BACKUP_DIR,
-            dt=now.strftime("%d.%m.%Y"),
-            db_name=self.database_name
+            backup_file_name=self.backup_file_name
         )
 
     @property
@@ -471,10 +469,30 @@ def send_error_email(error, some_env):
     )
 
 
+def clean_old_backups():
+    now = datetime.datetime.now()
+    dates = []
+    for i in xrange(3):
+        dates.append(
+            (now - datetime.timedelta(i)).strftime(BACKUP_DT_FORMAT)
+        )
+    for f in os.listdir(BACKUP_DIR):
+        if f.startswith("back") and f.endswith("sql"):
+            if not any(i for i in dates if i in f):
+                os.remove(os.path.join(BACKUP_DIR, f))
+
+
 def copy_backup(current_env):
     private_settings = get_private_settings()
-    env.host_string = private_settings["host_string"]
-    env.password = private_settings["remote_password"]
+    string_args = {}
+    string_args["remote_address"] = private_settings["remote_address"]
+    string_args["remote_password"] = private_settings["remote_password"]
+    string_args["remote_username"] = private_settings["remote_username"]
+    string_args["remote_directory"] = private_settings["remote_directory"]
+    string_args["dump_location"] = current_env.backup_name
+    string_args["dump_name"] = current_env.backup_file_name
+    cmd = "smbclient '{remote_address}' {remote_password} -U {remote_username} -D {remote_directory} -c 'put {dump_location} {dump_name}'"
+    cmd = cmd.format(**string_args)
 
     if not os.path.isfile(current_env.backup_name):
         send_error_email(
@@ -485,10 +503,7 @@ def copy_backup(current_env):
         )
     else:
         with settings(warn_only=True):
-            failed = put(
-                local_path=current_env.backup_name,
-                remote_path=current_env.remote_backup_name
-            ).failed
+            failed = local(cmd).failed
 
         if failed:
             send_error_email(
@@ -510,21 +525,25 @@ def get_private_settings():
     with open(PRIVATE_SETTINGS) as privado:
         result = json.load(privado)
         err_template = "we require '{}' in your private settings"
-        if "db_password" not in result:
-            raise ValueError(err_template.format("db_password"))
-        if "additional_settings" not in result:
-            raise ValueError(err_template.format(
-                "additional_settings dict (even if its empty)"
-            ))
-        if "proxy" not in result:
-            raise ValueError(err_template.format("proxy"))
-        if "remote_password" not in result:
-            raise ValueError(err_template.format("remote_password"))
-        if "host_string" not in result:
-            e = "we expect host string to be set, this should be 127.0.0.1 on test, \
-or the address you want to sync to on prod in your private settings"
-            raise ValueError(e)
 
+        required_fields = [
+            "db_password",
+            "proxy",
+            "additional_settings",  # required even if its just an empty dict
+
+            # the details of the network drive we putting the backups on
+            "remote_address",
+            "remote_password",
+            "remote_username",
+            "remote_directory",
+        ]
+        for field in required_fields:
+            if field not in result:
+                raise ValueError(err_template.format(field))
+
+        if not result["remote_address"].startswith("\\"):
+            e = "We expect the remote adddress to be a network drive address"
+            raise ValueError(e)
     return result
 
 
@@ -593,7 +612,10 @@ def create_private_settings():
                 proxy="",
                 db_password="",
                 host_string="",
+                remote_address="",
+                remote_username="",
                 remote_password="",
+                remote_directory="",
                 additional_settings={}
             ),
             privado,
@@ -730,7 +752,13 @@ def roll_back_prod(branch_name):
 
 
 def install_apt_dependencies():
-    local("sudo apt-get install python3-dev=3.4.0-0ubuntu2")
+    dependences = [
+        ("smbclient", "2:4.3.11+dfsg-0ubuntu0.14.04.17"),
+        ("python3-dev", "3.4.0-0ubuntu2"),
+    ]
+
+    for dependency in dependences:
+        local("sudo apt-get install {}={}".format(*dependency))
 
 
 def create_pg_pass(env, additional_settings):
@@ -758,6 +786,7 @@ def dump_and_copy(branch_name):
     try:
         dump_database(env, env.database_name, env.backup_name)
         copy_backup(env)
+        clean_old_backups()
     except Exception as e:
         send_error_email(
             "database backup failed with '{}'".format(str(e)), env

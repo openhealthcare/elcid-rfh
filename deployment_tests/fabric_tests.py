@@ -75,7 +75,10 @@ class CreatePrivateSettingsTestCase(unittest.TestCase):
                 db_password="",
                 host_string="",
                 additional_settings={},
-                remote_password=""
+                remote_address="",
+                remote_password="",
+                remote_username="",
+                remote_directory=""
             )
         )
         m.assert_called_once_with('/usr/lib/ohc/private_settings.json', 'w')
@@ -133,15 +136,6 @@ class EnvTestCase(FabfileTestCase):
         self.assertEqual(
             self.env.project_directory,
             "/usr/lib/ohc/elcidrfh-some_branch"
-        )
-
-    @mock.patch("fabfile.datetime")
-    def test_remote_backup_name(self, dt):
-        dt.datetime.now.return_value = datetime.datetime(2017, 9, 21)
-        prod_env = fabfile.Env("some_branch")
-        self.assertEqual(
-            prod_env.remote_backup_name,
-            "/usr/lib/ohc/var/live/back.21.09.2017.elcidrfh_some_branch.sql"
         )
 
     def test_release_name(self):
@@ -627,7 +621,7 @@ batch_load >> /usr/lib/ohc/log/cron_synch.log 2>&1' | sudo tee \
 @mock.patch("fabfile.print", create=True)
 @mock.patch("fabfile.get_private_settings")
 @mock.patch("fabfile.run_management_command")
-@mock.patch("fabfile.put")
+@mock.patch("fabfile.local")
 @mock.patch("fabfile.env")
 @mock.patch("fabfile.os")
 @mock.patch("fabfile.datetime")
@@ -637,28 +631,37 @@ class CopyBackupTestCase(FabfileTestCase):
         dt,
         os,
         env,
-        put,
+        local,
         run_management_command,
         get_private_settings,
         print_function
     ):
-        get_private_settings.return_value(dict(
-            host_string="121.1.1.1",
-            remote_passwordpassword="some_password"
-        ))
+
+        correct_dict = {
+            "db_password": "something",
+            "proxy": "someproxy",
+            "additional_settings": {},
+            "remote_address": "\\some_address",
+            "remote_username": "some_user",
+            "remote_password": "some_password",
+            "remote_directory": "some_directory"
+        }
+        get_private_settings.return_value = correct_dict
         dt.datetime.now.return_value = datetime.datetime(
             2017, 9, 7
         )
         os.path.isfile.return_value = True
         prod_env = fabfile.Env("some_branch")
 
+        expected = "".join([
+            "smbclient '\\some_address' some_password -U some_user -D",
+            " some_directory -c 'put /usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql",
+            " back.07.09.2017.elcidrfh_some_branch.sql'"
+        ])
         fabfile.copy_backup(prod_env)
 
-        lp = "/usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql"
-        rp = "/usr/lib/ohc/var/live/back.07.09.2017.elcidrfh_some_branch.sql"
-        put.assert_called_once_with(
-            local_path=lp,
-            remote_path=rp
+        local.assert_called_once_with(
+            expected
         )
 
     def test_copy_backup_no_backup(
@@ -735,9 +738,53 @@ class SendErrorEmailTestCase(FabfileTestCase):
         print_function.assert_called_once_with('Sending error email')
 
 
+@mock.patch("fabfile.print", create=True)
+@mock.patch("fabfile.os.listdir")
+@mock.patch("fabfile.os.remove")
+@mock.patch("fabfile.datetime")
+class CleanOldBackupsTestCase(FabfileTestCase):
+    def test_matches_old_backups(self, dt, remove, list_dir, print_function):
+        dt.datetime.now.return_value = datetime.datetime(2019, 2, 15)
+        dt.timedelta = datetime.timedelta
+        list_dir.return_value = [
+            "back.10.02.2019.elcid05.sql"
+        ]
+        fabfile.clean_old_backups()
+        remove.assert_called_once_with("/usr/lib/ohc/var/back.10.02.2019.elcid05.sql")
+
+    def test_ignores_others(self, dt, remove, list_dir, print_function):
+        dt.datetime.now.return_value = datetime.datetime(2019, 2, 15)
+        dt.timedelta = datetime.timedelta
+        list_dir.return_value = [
+            "release.10.02.2019.elcid05.sql"
+        ]
+        fabfile.clean_old_backups()
+        self.assertFalse(remove.called)
+
+    def test_ignores_recent_backups(self, dt, remove, list_dir, print_function):
+        dt.datetime.now.return_value = datetime.datetime(2019, 2, 15)
+        dt.timedelta = datetime.timedelta
+        list_dir.return_value = [
+            "back.14.02.2019.elcid05.sql"
+        ]
+        fabfile.clean_old_backups()
+        self.assertFalse(remove.called)
+
+
 @mock.patch("fabfile.json")
 @mock.patch("fabfile.os")
 class GetPrivateSettingsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.correct_dict = {
+            "db_password": "something",
+            "proxy": "someproxy",
+            "additional_settings": {},
+            "remote_address": "\\some_address",
+            "remote_username": "some_user",
+            "remote_password": "remote_password",
+            "remote_directory": "remote_directory",
+        }
+
     def test_unable_to_find_file(self, os, json):
         os.path.isfile.return_value = False
 
@@ -750,103 +797,49 @@ class GetPrivateSettingsTestCase(unittest.TestCase):
 /usr/lib/ohc/private_settings.json"
         )
 
-    def test_db_password_not_present(self, os, json):
-        m = mock.mock_open()
-        fab_open = "fabfile.open"
-        json.load.return_value = {}
-        with mock.patch(fab_open, m, create=True):
-            with self.assertRaises(ValueError) as e:
-                fabfile.get_private_settings()
+    def test_fields_present(self, os, json):
+        required_field_names = self.correct_dict.keys()
 
-        self.assertEqual(
-            str(e.exception),
-            "we require 'db_password' in your private settings"
-        )
+        for required_field_name in required_field_names:
+            self.correct_dict.pop(required_field_name)
+            fab_open = "fabfile.open"
+            json.load.return_value = self.correct_dict
+            m = mock.mock_open()
+            with mock.patch(fab_open, m, create=True):
+                with self.assertRaises(ValueError) as e:
+                    fabfile.get_private_settings()
 
-    def test_additional_settings_present(self, os, json):
-        m = mock.mock_open()
-        fab_open = "fabfile.open"
-        json.load.return_value = dict(
-            db_password="something"
-        )
-        with mock.patch(fab_open, m, create=True):
-            with self.assertRaises(ValueError) as e:
-                fabfile.get_private_settings()
-
-        self.assertEqual(
-            str(e.exception),
-            "we require 'additional_settings dict (even if its empty)' in \
-your private settings"
-        )
-
-    def test_proxy_present(self, os, json):
-        m = mock.mock_open()
-        fab_open = "fabfile.open"
-        json.load.return_value = dict(
-            db_password="something",
-            additional_settings={}
-        )
-        with mock.patch(fab_open, m, create=True):
-            with self.assertRaises(ValueError) as e:
-                fabfile.get_private_settings()
-
-        self.assertEqual(
-            str(e.exception),
-            "we require 'proxy' in your private settings"
-        )
-
-    def test_host_string(self, os, json):
-        m = mock.mock_open()
-        fab_open = "fabfile.open"
-        json.load.return_value = dict(
-            db_password="something",
-            additional_settings={},
-            proxy="127.0.0.1",
-            remote_password=None
-        )
-        with mock.patch(fab_open, m, create=True):
-            with self.assertRaises(ValueError) as e:
-                fabfile.get_private_settings()
-
-        self.assertEqual(
-            str(e.exception),
-            "we expect host string to be set, this should be 127.0.0.1 on test, or \
-the address you want to sync to on prod in your private settings"
-        )
-
-    def test_remote_password(self, os, json):
-        m = mock.mock_open()
-        fab_open = "fabfile.open"
-        json.load.return_value = dict(
-            db_password="something",
-            additional_settings={},
-            proxy="127.0.0.1",
-            host_string="some_str"
-        )
-        with mock.patch(fab_open, m, create=True):
-            with self.assertRaises(ValueError) as e:
-                fabfile.get_private_settings()
-
-        self.assertEqual(
-            str(e.exception),
-            "we require 'remote_password' in your private settings"
-        )
+                    self.assertEqual(
+                        str(e.exception),
+                        "we require '{}' in your private settings".format(
+                            required_field_name
+                        )
+                    )
 
     def test_get_private_settings(self, os, json):
         m = mock.mock_open()
         fab_open = "fabfile.open"
-        expected = dict(
-            db_password="something",
-            additional_settings={},
-            proxy="127.0.0.1",
-            host_string="some_str",
-            remote_password=None
-        )
+        expected = self.correct_dict
         json.load.return_value = expected
         with mock.patch(fab_open, m, create=True):
             result = fabfile.get_private_settings()
 
         self.assertEqual(result, expected)
+
+    def test_network_address_startswith(self, os, json):
+        m = mock.mock_open()
+        fab_open = "fabfile.open"
+        self.correct_dict["remote_address"] = "blah"
+        expected = self.correct_dict
+        json.load.return_value = expected
+        with mock.patch(fab_open, m, create=True):
+            with self.assertRaises(ValueError) as e:
+                result = fabfile.get_private_settings()
+
+                self.assertEqual(
+                    str(e.exception),
+                    "We expect the remote adddress to be a network drive address"
+                )
 
 
 class DeployTestCase(FabfileTestCase):
@@ -1367,11 +1360,17 @@ class DiffStatusTestCase(FabfileTestCase):
 
 @mock.patch("fabfile.dump_database")
 @mock.patch("fabfile.copy_backup")
+@mock.patch("fabfile.clean_old_backups")
 @mock.patch("fabfile.send_error_email")
 class DumpAndCopyTestCase(FabfileTestCase):
     @mock.patch("fabfile.Env")
     def test_error_raised(
-        self, Env, send_error_email, copy_backup, dump_database
+        self,
+        Env,
+        send_error_email,
+        clean_old_backups,
+        copy_backup,
+        dump_database
     ):
         env = Env.return_value
         dump_database.side_effect = ValueError("break")
@@ -1380,10 +1379,16 @@ class DumpAndCopyTestCase(FabfileTestCase):
             "database backup failed with 'break'", env
         )
         self.assertFalse(copy_backup.called)
+        self.assertFalse(clean_old_backups.called)
 
     @mock.patch("fabfile.Env")
     def test_error_not_raised(
-        self, Env, send_error_email, copy_backup, dump_database
+        self,
+        Env,
+        send_error_email,
+        clean_old_backups,
+        copy_backup,
+        dump_database
     ):
         Env.return_value = self.env
         fabfile.dump_and_copy("some_env")
@@ -1391,6 +1396,7 @@ class DumpAndCopyTestCase(FabfileTestCase):
             self.env, self.env.database_name, self.env.backup_name
         )
         copy_backup.assert_called_once_with(self.env)
+        clean_old_backups.assert_called_once_with()
 
 
 @mock.patch("fabfile.is_load_running")
