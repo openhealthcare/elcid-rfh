@@ -434,7 +434,7 @@ class AbstractLabTestSummaryApi(LoginRequiredViewset):
 
 
 class InfectionServiceTestSummary(AbstractLabTestSummaryApi):
-    base_name = 'infection_service_test_summary_api'
+    base_name = 'infection_service_test_summary'
 
 
 class UpstreamBloodCultureApi(viewsets.ViewSet):
