@@ -93,18 +93,24 @@ directives.directive("sparkLine", function () {
 });
 
 
+/*
+* takes in the list version of the url and appends the patient id
+* from the episode.
+*
+* E.g.
+*
+*/
 directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader){
   "use strict";
   return {
     restrict: 'A',
     scope: true,
-    link: function(scope){
-      // TODO: this is wrong, well maybe not wrong, but not right
-      var episode = scope.row || scope.episode;
-      var patientId = episode.demographics[0].patient_id;
+    link: function(scope, element, attrs){
       var patientLoadStatus = new InitialPatientTestLoadStatus(
-          episode
+          scope.episode
       );
+
+      var apiUrl = attrs.apiRoute + scope.episode.demographics[0].patient_id + "/"
 
       // make sure we are using the correct
       // js object scope(ie this)
@@ -114,7 +120,7 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
       if(!scope.patientLoadStatus.isAbsent()){
         scope.patientLoadStatus.promise.then(function(){
             // success
-            LabTestSummaryLoader.load(patientId).then(function(result){
+            LabTestSummaryLoader.load(apiUrl).then(function(result){
               scope.data = result;
             });
         });
