@@ -75,10 +75,10 @@ class CreatePrivateSettingsTestCase(unittest.TestCase):
                 db_password="",
                 host_string="",
                 additional_settings={},
-                remote_address="",
-                remote_password="",
-                remote_username="",
-                remote_directory=""
+                backup_storage_address="",
+                backup_storage_password="",
+                backup_storage_username="",
+                backup_storage_directory=""
             )
         )
         m.assert_called_once_with('/usr/lib/ohc/private_settings.json', 'w')
@@ -641,10 +641,10 @@ class CopyBackupTestCase(FabfileTestCase):
             "db_password": "something",
             "proxy": "someproxy",
             "additional_settings": {},
-            "remote_address": "\\some_address",
-            "remote_username": "some_user",
-            "remote_password": "some_password",
-            "remote_directory": "some_directory"
+            "backup_storage_address": "\\some_address",
+            "backup_storage_username": "some_user",
+            "backup_storage_password": "some_password",
+            "backup_storage_directory": "some_directory"
         }
         get_private_settings.return_value = correct_dict
         dt.datetime.now.return_value = datetime.datetime(
@@ -761,6 +761,15 @@ class CleanOldBackupsTestCase(FabfileTestCase):
         fabfile.clean_old_backups()
         self.assertFalse(remove.called)
 
+    def test_ignores_non_sql(self, dt, remove, list_dir, print_function):
+        dt.datetime.now.return_value = datetime.datetime(2019, 2, 15)
+        dt.timedelta = datetime.timedelta
+        list_dir.return_value = [
+            "back.10.02.2019.elcid05.sqa"
+        ]
+        fabfile.clean_old_backups()
+        self.assertFalse(remove.called)
+
     def test_ignores_recent_backups(self, dt, remove, list_dir, print_function):
         dt.datetime.now.return_value = datetime.datetime(2019, 2, 15)
         dt.timedelta = datetime.timedelta
@@ -779,10 +788,10 @@ class GetPrivateSettingsTestCase(unittest.TestCase):
             "db_password": "something",
             "proxy": "someproxy",
             "additional_settings": {},
-            "remote_address": "\\some_address",
-            "remote_username": "some_user",
-            "remote_password": "remote_password",
-            "remote_directory": "remote_directory",
+            "backup_storage_address": "\\some_address",
+            "backup_storage_username": "some_user",
+            "backup_storage_password": "remote_password",
+            "backup_storage_directory": "remote_directory",
         }
 
     def test_unable_to_find_file(self, os, json):
@@ -829,7 +838,7 @@ class GetPrivateSettingsTestCase(unittest.TestCase):
     def test_network_address_startswith(self, os, json):
         m = mock.mock_open()
         fab_open = "fabfile.open"
-        self.correct_dict["remote_address"] = "blah"
+        self.correct_dict["backup_storage_address"] = "blah"
         expected = self.correct_dict
         json.load.return_value = expected
         with mock.patch(fab_open, m, create=True):
@@ -838,7 +847,7 @@ class GetPrivateSettingsTestCase(unittest.TestCase):
 
                 self.assertEqual(
                     str(e.exception),
-                    "We expect the remote adddress to be a network drive address"
+                    "We expect the backup storage address to be a network drive address"
                 )
 
 

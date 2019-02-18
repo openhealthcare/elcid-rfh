@@ -485,13 +485,13 @@ def clean_old_backups():
 def copy_backup(current_env):
     private_settings = get_private_settings()
     string_args = {}
-    string_args["remote_address"] = private_settings["remote_address"]
-    string_args["remote_password"] = private_settings["remote_password"]
-    string_args["remote_username"] = private_settings["remote_username"]
-    string_args["remote_directory"] = private_settings["remote_directory"]
+    string_args["backup_storage_address"] = private_settings["backup_storage_address"]
+    string_args["backup_storage_password"] = private_settings["backup_storage_password"]
+    string_args["backup_storage_username"] = private_settings["backup_storage_username"]
+    string_args["backup_storage_directory"] = private_settings["backup_storage_directory"]
     string_args["dump_location"] = current_env.backup_name
     string_args["dump_name"] = current_env.backup_file_name
-    cmd = "smbclient '{remote_address}' {remote_password} -U {remote_username} -D {remote_directory} -c 'put {dump_location} {dump_name}'"
+    cmd = "smbclient '{backup_storage_address}' {backup_storage_password} -U {backup_storage_username} -D {backup_storage_directory} -c 'put {dump_location} {dump_name}'"
     cmd = cmd.format(**string_args)
 
     if not os.path.isfile(current_env.backup_name):
@@ -532,17 +532,17 @@ def get_private_settings():
             "additional_settings",  # required even if its just an empty dict
 
             # the details of the network drive we putting the backups on
-            "remote_address",
-            "remote_password",
-            "remote_username",
-            "remote_directory",
+            "backup_storage_address",
+            "backup_storage_password",
+            "backup_storage_username",
+            "backup_storage_directory",
         ]
         for field in required_fields:
             if field not in result:
                 raise ValueError(err_template.format(field))
 
-        if not result["remote_address"].startswith("\\"):
-            e = "We expect the remote adddress to be a network drive address"
+        if not result["backup_storage_address"].startswith("\\"):
+            e = "We expect the backup storage address to be a network drive address"
             raise ValueError(e)
     return result
 
@@ -612,10 +612,10 @@ def create_private_settings():
                 proxy="",
                 db_password="",
                 host_string="",
-                remote_address="",
-                remote_username="",
-                remote_password="",
-                remote_directory="",
+                backup_storage_address="",
+                backup_storage_username="",
+                backup_storage_password="",
+                backup_storage_directory="",
                 additional_settings={}
             ),
             privado,
@@ -716,7 +716,7 @@ def validate_private_settings():
             'we need a host string inorder to scp data to a backup server'
         )
 
-    if "remote_password" not in private_settings:
+    if "backup_storage_password" not in private_settings:
         raise ValueError(
             'we need the password of the backup server inorder to scp data to \
 a backup server'
