@@ -342,13 +342,6 @@ class AbstractLabTestSummaryApi(LoginRequiredViewset):
         It returns the last 3 weeks of lab tests in the preferred order.
     """
 
-    RELEVANT_TESTS = OrderedDict((
-        ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"]),
-        ("CLOTTING SCREEN", ["INR"]),
-        ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
-        ("LIVER PROFILE", ["ALT", "AST", "Alkaline Phosphatase"]),
-    ),)
-
     def observation_index(self, obv):
         """
         This method returns the index of the observation that
@@ -435,6 +428,13 @@ class AbstractLabTestSummaryApi(LoginRequiredViewset):
 
 class InfectionServiceTestSummary(AbstractLabTestSummaryApi):
     base_name = 'infection_service_test_summary'
+
+    RELEVANT_TESTS = OrderedDict((
+        ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"]),
+        ("CLOTTING SCREEN", ["INR"]),
+        ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
+        ("LIVER PROFILE", ["ALT", "AST", "Alkaline Phosphatase"]),
+    ),)
 
 
 class UpstreamBloodCultureApi(viewsets.ViewSet):

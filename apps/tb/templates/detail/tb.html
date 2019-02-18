@@ -6,6 +6,16 @@
     {% include 'panels/nationality.html' %}
     {% record_panel models.TBHistory %}
     {% include "panels/symptoms.html" %}
+    <div class="panel panel-default">
+      <div class="panel-heading"><h3>
+        {% icon 'fa fa-crosshairs' %} Results
+      </h3></div>
+      <div class="panel-body overflow-x-auto">
+        {% include "tb/tb_sparklines.html" %}
+      </div>
+    </div>
+
+
     {% record_panel models.Travel %}
     {% record_panel models.PastMedicalHistory %}
     {% record_panel models.Antimicrobial title="Medication History" %}
