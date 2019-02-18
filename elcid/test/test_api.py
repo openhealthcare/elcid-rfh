@@ -4,6 +4,7 @@ Unittests for elcid.api
 import json
 import mock
 import datetime
+from collections import OrderedDict
 
 from opal.core.test import OpalTestCase
 from django.utils import timezone
@@ -402,4 +403,34 @@ class GetReferenceRangeTestCase(OpalTestCase):
         self.assertEqual(
             api.get_reference_range(self.to_obs("2-3")),
             dict(min="2", max="3")
+        )
+
+
+class AbstractLabTestSummaryApiTestCase(OpalTestCase):
+    def test_observation_index(self):
+        class TestApi(api.AbstractLabTestSummaryApi):
+            RELEVANT_TESTS = OrderedDict((
+                ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"]),
+                ("CLOTTING SCREEN", ["INR"]),
+            ))
+
+        test_api = TestApi()
+        self.assertEqual(
+            test_api.observation_index(dict(name="WBC")), 0
+        )
+
+        self.assertEqual(
+            test_api.observation_index(dict(name="Lymphocytes")), 1
+        )
+
+        self.assertEqual(
+            test_api.observation_index(dict(name="Neutrophils")), 2
+        )
+
+        self.assertEqual(
+            test_api.observation_index(dict(name="INR")), 3
+        )
+
+        self.assertEqual(
+            test_api.observation_index(dict(name="something")), 4
         )

@@ -1,7 +1,7 @@
 import datetime
 import re
 from operator import itemgetter
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
@@ -342,29 +342,30 @@ class AbstractLabTestSummaryApi(LoginRequiredViewset):
         It returns the last 3 weeks of lab tests in the preferred order.
     """
 
-    PREFERRED_ORDER = [
-        "WBC",
-        "Lymphocytes",
-        "Neutrophils",
-        "INR",
-        "C Reactive Protein",
-        "ALT",
-        "AST",
-        "Alkaline Phosphatase"
-    ]
+    RELEVANT_TESTS = OrderedDict((
+        ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"]),
+        ("CLOTTING SCREEN", ["INR"]),
+        ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
+        ("LIVER PROFILE", ["ALT", "AST", "Alkaline Phosphatase"]),
+    ),)
 
-    RELEVANT_TESTS = {
-        "C REACTIVE PROTEIN": ["C Reactive Protein"],
-        "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
-        "LIVER PROFILE": ["ALT", "AST", "Alkaline Phosphatase"],
-        "CLOTTING SCREEN": ["INR"]
-    }
+    def observation_index(self, obv):
+        """
+        This method returns the index of the observation that
+        should be used for ordering the lab tests.
 
-    def sort_observations(self, obv):
-        if obv["name"] in self.PREFERRED_ORDER:
-            return self.PREFERRED_ORDER.index(obv["name"])
-        else:
-            return len(self.PREFERRED_ORDER)
+        Relevent Tests is an ordered dicts of test name to lists of observations
+        the idx is the flattened version of this datastructure
+        """
+        idx = 0
+        for key in self.RELEVANT_TESTS:
+            for obs_name in self.RELEVANT_TESTS[key]:
+                if obv["name"] == obs_name:
+                    return idx
+                idx += 1
+
+        return idx
+
 
     def aggregate_observations(self, patient):
         """
@@ -375,6 +376,7 @@ class AbstractLabTestSummaryApi(LoginRequiredViewset):
         """
         test_data = emodels.UpstreamLabTest.get_relevant_tests(patient)
         result = defaultdict(lambda: defaultdict(list))
+        relevant_tests = set(i[0] for i in self.RELEVANT_TESTS)
 
         for test in test_data:
             test_name = test.extras.get("test_name")
@@ -417,7 +419,7 @@ class AbstractLabTestSummaryApi(LoginRequiredViewset):
         recent_dates = sorted(list(all_dates))
         recent_dates.reverse()
         recent_dates = recent_dates[:3]
-        obs_values = sorted(serialised_obvs, key=self.sort_observations)
+        obs_values = sorted(serialised_obvs, key=self.observation_index)
         result = dict(
             obs_values=obs_values,
             recent_dates=recent_dates
