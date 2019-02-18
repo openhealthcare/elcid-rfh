@@ -440,21 +440,6 @@ class UpstreamLabTestTestCase(OpalTestCase, AbstractEpisodeTestCase):
             len(relevant), 0
         )
 
-    def test_get_not_relevant_tests(self):
-        patient, _ = self.new_patient_and_episode_please()
-        upstream_lab_test = emodels.UpstreamLabTest(patient=patient)
-        yesterday = timezone.now() - datetime.timedelta(
-            1
-        )
-        upstream_lab_test.datetime_ordered = yesterday
-        upstream_lab_test.extras = dict(test_name="SOME OTHER TEST")
-        upstream_lab_test.save()
-
-        relevant = emodels.UpstreamLabTest.get_relevant_tests(patient)
-        self.assertEqual(
-            len(relevant), 0
-        )
-
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
 

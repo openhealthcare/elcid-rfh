@@ -230,21 +230,11 @@ class UpstreamLabTest(lmodels.LabTest):
 
     @classmethod
     def get_relevant_tests(self, patient):
-        relevent_tests = [
-            "C REACTIVE PROTEIN",
-            "FULL BLOOD COUNT",
-            "UREA AND ELECTROLYTES",
-            "LIVER FUNCTION",
-            "LIVER PROFILE",
-            "GENTAMICIN LEVEL",
-            "CLOTTING SCREEN"
-        ]
         three_weeks_ago = timezone.now() - datetime.timedelta(3*7)
-        qs = UpstreamLabTest.objects.filter(
+        return UpstreamLabTest.objects.filter(
             patient=patient,
             datetime_ordered__gt=three_weeks_ago
         ).order_by("datetime_ordered")
-        return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
 
 class UpstreamBloodCulture(UpstreamLabTest):

@@ -336,12 +336,11 @@ class LabTestResultsView(LoginRequiredViewset):
         )
 
 
-class LabTestSummaryApi(LoginRequiredViewset):
+class AbstractLabTestSummaryApi(LoginRequiredViewset):
     """
-        The API View used in the card list. Returns the last 3 months (approixmately)
-        of the tests we care about the most.
+        An api view the provides json to be consumed by spark list panels.
+        It returns the last 3 weeks of lab tests in the preferred order.
     """
-    base_name = 'lab_test_summary_api'
 
     PREFERRED_ORDER = [
         "WBC",
@@ -353,6 +352,13 @@ class LabTestSummaryApi(LoginRequiredViewset):
         "AST",
         "Alkaline Phosphatase"
     ]
+
+    RELEVANT_TESTS = {
+        "C REACTIVE PROTEIN": ["C Reactive Protein"],
+        "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
+        "LIVER PROFILE": ["ALT", "AST", "Alkaline Phosphatase"],
+        "CLOTTING SCREEN": ["INR"]
+    }
 
     def sort_observations(self, obv):
         if obv["name"] in self.PREFERRED_ORDER:
@@ -369,17 +375,11 @@ class LabTestSummaryApi(LoginRequiredViewset):
         """
         test_data = emodels.UpstreamLabTest.get_relevant_tests(patient)
         result = defaultdict(lambda: defaultdict(list))
-        relevant_tests = {
-            "C REACTIVE PROTEIN": ["C Reactive Protein"],
-            "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
-            "LIVER PROFILE": ["ALT", "AST", "Alkaline Phosphatase"],
-            "CLOTTING SCREEN": ["INR"]
-        }
 
         for test in test_data:
             test_name = test.extras.get("test_name")
-            if test_name in relevant_tests:
-                relevent_observations = relevant_tests[test_name]
+            if test_name in self.RELEVANT_TESTS:
+                relevent_observations = self.RELEVANT_TESTS[test_name]
 
                 for observation in test.extras["observations"]:
                     observation_name = observation["observation_name"]
@@ -429,6 +429,10 @@ class LabTestSummaryApi(LoginRequiredViewset):
     def retrieve(self, request, patient):
         result = self.serialise_lab_tests(patient)
         return json_response(result)
+
+
+class InfectionServiceSummary(AbstractLabTestSummaryApi):
+    base_name = 'infection_service_summary_api'
 
 
 class UpstreamBloodCultureApi(viewsets.ViewSet):
@@ -642,5 +646,5 @@ elcid_router.register(
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 
 lab_test_router = OPALRouter()
-lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)
+lab_test_router.register('infection_service_summary', InfectionServiceSummary)
 lab_test_router.register('lab_test_results_view', LabTestResultsView)
