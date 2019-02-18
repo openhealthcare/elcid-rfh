@@ -433,8 +433,8 @@ class AbstractLabTestSummaryApi(LoginRequiredViewset):
         return json_response(result)
 
 
-class InfectionServiceSummary(AbstractLabTestSummaryApi):
-    base_name = 'infection_service_summary_api'
+class InfectionServiceTestSummary(AbstractLabTestSummaryApi):
+    base_name = 'infection_service_test_summary_api'
 
 
 class UpstreamBloodCultureApi(viewsets.ViewSet):
@@ -648,5 +648,5 @@ elcid_router.register(
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 
 lab_test_router = OPALRouter()
-lab_test_router.register('infection_service_summary', InfectionServiceSummary)
+lab_test_router.register('infection_service_test_summary', InfectionServiceTestSummary)
 lab_test_router.register('lab_test_results_view', LabTestResultsView)
