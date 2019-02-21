@@ -13,6 +13,7 @@ omit =
     elcid/local_settings.py
     elcid/templates/acceptance/*
     lab/tests/*
+    fabfile.py
 
 
 [report]
