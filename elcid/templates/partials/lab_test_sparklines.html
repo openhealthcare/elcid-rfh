@@ -22,9 +22,11 @@
           <th class="text-center hidden-xs" ng-repeat="date in data.recent_dates">
             [[ date | shortDate ]]
           </th>
+          {% comment %}
           <th class="text-center">
             3 week trend
           </th>
+          {% endcomment %}
         </tr>
       </thead>
       <tbody>
@@ -34,9 +36,11 @@
           <td class="text-center hidden-xs" ng-repeat="date in data.recent_dates">
             [[ item.latest_results[date] ]]
           </td>
+          {% comment %}
           <td class="text-center">
             <div spark-line="item.graph_values"></div>
           </td>
+          {% endcomment %}
         </tr>
       </tbody>
     </table>
