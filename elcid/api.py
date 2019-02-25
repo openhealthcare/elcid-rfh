@@ -415,7 +415,7 @@ class LabTestSummaryApi(LoginRequiredViewset):
                 )
 
         recent_dates = sorted(list(all_dates))
-        recent_dates = recent_dates[:-5]
+        recent_dates = recent_dates[-5:]
         obs_values = sorted(serialised_obvs, key=self.sort_observations)
         result = dict(
             obs_values=obs_values,
