@@ -54,7 +54,6 @@ class Antifungal(RfhPatientList):
     tag = 'antifungal'
     template_name = 'episode_list.html'
     schema = []
-    comparator_service = "WardComparator"
 
 
 class RnohWardround(RfhPatientList):

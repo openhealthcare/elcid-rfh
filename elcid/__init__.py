@@ -62,7 +62,6 @@ class Application(application.OpalApplication):
         'js/elcid/services/lab_test_json_dump.js',
         'js/elcid/services/observation_detail.js',
         'js/elcid/services/episode_added_comparator.js',
-        'js/elcid/services/ward_comparator.js',
     ]
 
     styles = [
