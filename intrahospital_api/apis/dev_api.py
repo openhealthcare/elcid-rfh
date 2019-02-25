@@ -95,16 +95,42 @@ RAW_DATA = {
 
 
 MALE_FIRST_NAMES = [
-    'Harry', 'Ron', 'Tom', 'Albus', 'Severus', 'Rubeus', 'Draco',
+    "Oliver",
+    "George",
+    "Harry",
+    "Jack",
+    "Jacob",
+    "Noah",
+    "Charlie",
+    "Muhammad",
+    "Thomas",
+    "Oscar",
 ]
 
 FEMALE_FIRST_NAMES = [
-    'Hermione', 'Minerva', 'Padma', 'Parvati', 'Lilly', 'Rita', 'Rowena'
+    "Olivia",
+    "Amelia",
+    "Isla",
+    "Ava",
+    "Emily",
+    "Isabella",
+    "Mia",
+    "Poppy",
+    "Ella",
+    "Lily",
 ]
 
 LAST_NAMES = [
-    'Potter', 'Granger', 'Weasley', 'Malfoy', 'Dumbledore', 'Gryffindor',
-    'Greyback', 'Filch', 'Diggory', 'McGonagall'
+    "Smith",
+    "Jones",
+    "Patel",
+    "Brown",
+    "Singh",
+    "Williams",
+    "Taylor",
+    "Wilson",
+    "Davies",
+    "Evans",
 ]
 
 # So this is basic meta information about some tests that come through
