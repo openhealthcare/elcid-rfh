@@ -342,6 +342,7 @@ class LabTestSummaryApi(LoginRequiredViewset):
         of the tests we care about the most.
     """
     base_name = 'lab_test_summary_api'
+    NUM_RESULTS = 5
 
     PREFERRED_ORDER = [
         "WBC",
@@ -415,7 +416,15 @@ class LabTestSummaryApi(LoginRequiredViewset):
                 )
 
         recent_dates = sorted(list(all_dates))
-        recent_dates = recent_dates[-5:]
+        last_results = self.NUM_RESULTS * -1
+        recent_dates = recent_dates[last_results:]
+
+        # if we have less than the required results add empty values
+        num_missing_results = self.NUM_RESULTS - len(recent_dates)
+
+        for i in range(num_missing_results):
+            recent_dates.append(None)
+
         obs_values = sorted(serialised_obvs, key=self.sort_observations)
         result = dict(
             obs_values=obs_values,
