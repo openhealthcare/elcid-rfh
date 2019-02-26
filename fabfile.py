@@ -753,7 +753,7 @@ def roll_back_prod(branch_name):
 
 def install_apt_dependencies():
     dependences = [
-        ("smbclient", "2:4.3.11+dfsg-0ubuntu0.14.04.17"),
+        ("smbclient", "2:4.3.11+dfsg-0ubuntu0.14.04.19"),
         ("python3-dev", "3.4.0-0ubuntu2"),
     ]
 
