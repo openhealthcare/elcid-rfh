@@ -1,0 +1,16 @@
+{% load forms %}
+<div class="container headed-content-offset detail">
+{% block content %}
+  {% block copy_button %}
+    <div class="pull-right">
+      <button clipboard data-clipboard-target=".letter" class="btn btn-primary">
+        {% icon "fa-clipboard" %}
+      </button>
+    </div>
+  {% endblock %}
+  <div class="letter">
+    {% block letter_content %}
+    {% endblock %}
+  </div>
+{% endblock %}
+</div>
