@@ -18,6 +18,10 @@ class LettersPlugin(plugins.OpalPlugin):
         ]
     }
 
+    stylesheets = [
+        "css/letters.css"
+    ]
+
     def list_schemas(self):
         """
         Return any patient list schemas that our plugin may define.
