@@ -77,9 +77,8 @@
         {{ past_medication.drug }} &nbsp;
         {{ past_medication.dose }}
         {{ past_medication.start_date | date }}
-        {% if past_medication.start_date %} - {% endif %}
         {% if past_medication.end_date and past_medication.start_date %}
-        {{ past_medication.end_date | date }}
+        - {{ past_medication.end_date | date }}
         {% endif %}
       </li>
       {% endfor %}

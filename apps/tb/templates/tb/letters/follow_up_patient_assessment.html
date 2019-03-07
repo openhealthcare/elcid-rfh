@@ -49,9 +49,8 @@
             {{ current_treatment.drug }} &nbsp;
             {{ current_treatment.dose }}
             {{ current_treatment.start_date | date }}
-            {% if current_treatment.start_date %} - {% endif %}
-            {% if current_treatment.end_date and past_medication.end_date %}
-            {{ current_treatment.end_date | date }}
+            {% if current_treatment.start_date and current_treatment.end_date %}
+             - {{ current_treatment.end_date | date }}
             {% endif %}
             {% if current_treatment.planned_end_date %}
             <br />planned end date: {{ current_treatment.planned_end_date }}
