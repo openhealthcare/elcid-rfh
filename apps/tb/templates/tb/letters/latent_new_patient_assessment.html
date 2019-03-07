@@ -114,6 +114,15 @@
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
+    <p>
+      <b>Social history:</b><br />
+      {{ social_history.notes }}
+    </p>
+  </div>
+</div>
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
     <b>Alcohol:</b><br />
     {% if social_history.drinking %}
     {{ social_history.drinking }}
@@ -154,11 +163,7 @@
 </div>
 
 <div class="row content-offset-below-10">
-    <div class="col-md-12"><b>Weight:</b><br />{{ weight }}</div>
-</div>
-
-<div class="row content-offset-below-10">
-    <div class="col-md-12"><b> Clinical assessment:</b><br />{{ object.assessment }}</div>
+    <div class="col-md-12"><b>Clinical assessment:</b><br />{{ object.assessment }}</div>
 </div>
 
 <div class="row content-offset-below-10">
