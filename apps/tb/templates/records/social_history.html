@@ -1,21 +1,21 @@
 <span ng-show="item.consistency_token">
   <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Smoking
+    <div>
+      <label class="control-label col-sm-5">
+        Smoking:
       </label>
-      <p class="form-control-static col-sm-8">
+      <p class="form-control-static col-sm-7">
         [[ item.smoking ]]
       </p>
     </div>
   </div>
 
   <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Alcohol
+    <div>
+      <label class="control-label col-sm-5">
+        Alcohol:
       </label>
-      <p class="form-control-static col-sm-8">
+      <p class="form-control-static col-sm-7">
         [[ item.drinking ]]
         <span ng-show="item.history_of_alocohol_dependence">
           (history of alochol dependence)
@@ -25,11 +25,11 @@
   </div>
 
   <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Recreational Drug Use
+    <div>
+      <label class="control-label col-sm-5">
+        Recreational Drug Use:
       </label>
-      <p class="form-control-static col-sm-8">
+      <p class="form-control-static col-sm-7">
         [[ item.recreational_drug_use ]]
         <span ng-show="item.recreational_drug_type">
           ([[ item.recreational_drug_type ]])
@@ -46,22 +46,22 @@
   </div>
 
   <div ng-show="item.drug_community_worker.length" class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Alcohol/Drug Community Worker
+    <div>
+      <label class="control-label col-sm-5">
+        Alcohol/Drug Community Worker:
       </label>
-      <p class="form-control-static col-sm-8">
+      <p class="form-control-static col-sm-7">
         [[ item.drug_community_worker ]]
       </p>
     </div>
   </div>
 
   <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Homelessness
+    <div>
+      <label class="control-label col-sm-5">
+        Homelessness:
       </label>
-      <p class="form-control-static col-sm-8">
+      <p class="form-control-static col-sm-7">
         [[ item.homelessness ]]
         <span ng-show="item.homelessness_type.length">
           ([[ item.homelessness_type ]])
@@ -71,11 +71,11 @@
   </div>
 
   <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Prison History
+    <div>
+      <label class="control-label col-sm-5">
+        Prison History:
       </label>
-      <p class="form-control-static col-sm-8">
+      <p class="form-control-static col-sm-7">
         [[ item.prison_history ]]
       </p>
       <p ng-show="item.prison_history_details.length">
@@ -88,15 +88,30 @@
   </div>
 
   <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Mental health issues
+    <div>
+      <label class="control-label col-sm-5">
+        Mental health issues:
       </label>
-      <p class="form-control-static col-sm-8">
-        [[ item.mental_health_issues ]]
+      <p class="form-control-static col-sm-7">
+        <span ng-show="item.mental_health_issues">
+          Yes
+        </span>
+        <span ng-hide="item.mental_health_issues">
+          No
+        </span>,
+        <span ng-show="item.community_nurse">
+          CPN/CMHT: [[ item.community_nurse ]]
+        </span>
       </p>
-      <p ng-show="item.community_nurse.length">
-        CPN/CMHT: [[ item.community_nurse ]]
+    </div>
+  </div>
+  <div class="row">
+    <div>
+      <label class="control-label col-sm-5">
+        Notes:
+      </label>
+      <p class="form-control-static col-sm-7">
+        [[ item.notes ]]
       </p>
     </div>
   </div>
