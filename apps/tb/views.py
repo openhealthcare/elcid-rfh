@@ -37,3 +37,22 @@ class LatentNewPatientAssessment(LoginRequiredMixin, DetailView):
         ctx["tb_history"] = patient.tbhistory_set.get()
         return ctx
 
+class FollowUpPatientAssessment(LoginRequiredMixin, DetailView):
+    template_name = "tb/letters/follow_up_patient_assessment.html"
+    model = PatientConsultation
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        episode = self.object.episode
+        patient = self.object.episode.patient
+        ctx["demographics"] = patient.demographics()
+        ctx["current_teatment_list"] = episode.treatment_set.all()
+        ctx["diagnosis_list"] = episode.diagnosis_set.order_by("-date_of_diagnosis")
+        ctx["past_medical_history_list"] = episode.pastmedicalhistory_set.all()
+
+        obs = episode.observation_set.order_by("-datetime").last()
+        if obs:
+            ctx["weight"] = obs.weight
+
+        return ctx
+
