@@ -1,0 +1,8 @@
+{% load forms %}
+{% input field="Treatment.drug" lookuplist="drug_list" %}
+{% input field="Treatment.dose" %}
+{% input field="Treatment.route" %}
+{% input field="Treatment.frequency" %}
+{% datepicker field="Treatment.start_date" user_options=True %}
+{% datepicker field="Treatment.planned_end_date" %}
+{% datepicker field="Treatment.end_date" user_options=True %}
