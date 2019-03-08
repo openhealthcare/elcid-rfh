@@ -1,0 +1,36 @@
+{% load forms %}
+<div class="panel panel-default">
+    <div class="panel-heading"><h3>
+      {% icon 'fa fa-crosshairs' %} Results
+    </h3></div>
+    <div class="panel-body overflow-x-auto">
+      <div class="tb-summary-panel" tb-summary-tests>
+        <div ng-show="patientLoadStatus.isLoading()">
+          <h2 class="text-center no-results">Lab tests loading please wait</h2>
+        </div>
+        <div ng-show="patientLoadStatus.isAbsent()">
+          <h2 class="text-center no-results">Unable to get lab tests for this patient</h2>
+        </div>
+        <div ng-show="patientLoadStatus.isFailed()">
+          <h2 class="text-center no-results">Failed To load lab tests for this patient</h2>
+        </div>
+        <div ng-show="patientLoadStatus.isLoaded()">
+          <div ng-repeat="result in data.results" class="row">
+            <div class="col-xs-12">
+              <div class="row">
+                <div class="col-xs-1">
+                    [[ result.date | shortDate ]]
+                </div>
+                <div class="col-xs-5">
+                  [[ result.name ]]
+                </div>
+                <div class="col-xs-6">
+                  [[ result.result ]]
+                </div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

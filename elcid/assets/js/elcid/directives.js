@@ -123,6 +123,8 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
   };
 });
 
+
+
 directives.directive('printPage', function () {
   function closePrint () {
     document.body.removeChild(this.__container__);

@@ -6,6 +6,7 @@ from opal.core import menus
 from opal.models import UserProfile
 from apps.tb.urls import urlpatterns
 from apps.tb import constants as tb_constants
+from apps.tb import api
 
 
 class TbPlugin(plugins.OpalPlugin):
@@ -25,13 +26,20 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/tb_treatment.js',
             'js/tb/controllers/mantoux_test.js',
             'js/tb/controllers/add_episode_helper.js',
+            'js/tb/directives.js'
             # 'js/tb/services/larry.js',
         ],
         'opal.services': [
             'js/tb/services/treatment_utils.js',
             'js/tb/services/treatment_record.js',
+            'js/tb/services/test_summary_loader.js',
         ],
     }
+
+    apis = [
+        ('tb_test_summary', api.TbTestSummary,),
+    ]
+
 
     @classmethod
     def get_menu_items(self, user):
