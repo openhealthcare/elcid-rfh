@@ -1,7 +1,7 @@
-from collections import OrderedDict
 from django.utils import timezone
 from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
+from apps.tb.utils import get_tb_summary_information
 
 
 
@@ -25,53 +25,14 @@ class TbTestSummary(LoginRequiredViewset):
     """
     @patient_from_pk
     def retrieve(self, request, patient):
-
-        result = [
-            {
-                "name":  'QFT TB interpretation' ,
-                "result":  'Positive'
-            },
-            {
-                "name":  'QFT IFN gamma result (TB1)',
-                "result": '2.11'
-            },
-            {
-                "name":  'QFT IFN gamma result (TB2)',
-                "result": '2.11'
-            },
-            {
-                "name": 'C REACTIVE PROTEIN',
-                "result": '1.76'
-            },
-            {
-                "name": 'ALT',
-                "result": '1'
-            },
-            {
-                "name": 'AST',
-                "result": '2',
-            },
-            {
-                "name": 'Bilirubin',
-                "result": '2',
-            },
-            {
-                "name": "Hepatitis B 's'Antigen",
-                "result": "Positive"
-            },
-            {
-                "name": "Hepatitis C IgG Antibody",
-                "result": "Negative"
-            },
-            {
-                "name": "HIV 1 + 2 Antibodies",
-                "result": "Positive"
-            }
-        ]
-
-        dt = timezone.now()
-        for i in result:
-            i["date"] = dt
+        tb_summary_information = get_tb_summary_information(patient)
+        result = []
+        for obs_name, summary in tb_summary_information.items():
+            result.append({
+                "name": obs_name,
+                "date": summary["observation_datetime"],
+                "result": summary["observation_value"]
+            })
 
         return json_response(dict(results=result))
 

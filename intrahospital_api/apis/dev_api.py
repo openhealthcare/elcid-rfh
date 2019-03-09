@@ -200,6 +200,45 @@ TEST_BASES = {
         "Alkaline Phosphatase": {
             "units": "U/L",
             "reference_range": "0 - 129"
+        },
+        "Total Bilirubin": {
+            "units": "umol/L",
+            "reference_range": '0 - 21'
+        }
+    },
+    "QUANTIFERON TB GOLD IT": {
+        "QFT IFN gamma result (TB1)": {
+            "units": "IU/mL",
+            "reference_range": " -",
+
+        },
+        "QFT IFN gamme result (TB2)": {
+            "units": "IU/mL",
+            "reference_range": " -",
+
+        },
+        "QFT TB interpretation": {
+             "units": "",
+             "reference_range": " -",
+        },
+
+    },
+    "HEPATITIS B SURFACE AG": {
+        "Hepatitis B 's'Antigen........": {
+            "units": "",
+            "reference_range": ""
+        }
+    },
+    "HEPATITIS C ANTIBODY": {
+        "Hepatitis C IgG Antibody......": {
+            "units": "",
+            "reference_range": ""
+        }
+    },
+    "HIV 1 + 2 ANTIBODIES": {
+        "HIV 1 + 2 Antibodies..........": {
+            "units": "",
+            "reference_range": ""
         }
     }
 }
