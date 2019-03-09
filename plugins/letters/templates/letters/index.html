@@ -1,0 +1,9 @@
+{% extends 'opal.html' %}
+
+{% load plugins %}
+
+{% block ngapp %}opal.letters{% endblock %}
+{% block angularapp %}
+  {{ block.super }}
+  {% plugin_javascripts 'opal.letters' %}
+{% endblock %}

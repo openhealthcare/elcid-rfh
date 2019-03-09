@@ -1,0 +1,109 @@
+{% extends 'letters/base.html' %} {% block letter_content %}
+<h2>
+  Latent TB medical clinic – follow up patient assessment
+  <br />
+  <small>
+    {{ demographics.name }}
+    {% if demographics.date_of_birth %}
+      ({{ demographics.date_of_birth }})
+    {% endif %}
+  </small>
+</h2>
+
+<div class="row content-offset-below-10 content-offset">
+  <div class="col-md-12">
+    <b>Clinic date:</b><br />
+    {{ object.when|date:"j M Y" }}
+  </div>
+</div>
+
+<div class="row content-offset-below-10">
+    <div class="col-md-12">
+      <b>Diagnosis: </b><br />
+      {% if diagnosis_list.exists %}
+      <ul>
+          {% for diagnosis in diagnosis_list %}
+          <li>
+            <div class="row">
+              <div class="col-sm-12">
+                {{ diagnosis.drug }}
+                {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
+                {{ diagnosis.date_of_diagnosis }}
+                &nbsp;
+                {{ diagnosis.details }}
+              </div>
+            </div>
+          </li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row content-offset-below-10">
+      <div class="col-md-12">
+        <b>Current treatment: </b><br />
+        <ul>
+          {% for current_treatment in current_treatment_list %}
+          <li>
+            {{ current_treatment.drug }} &nbsp;
+            {{ current_treatment.dose }}
+            {{ current_treatment.start_date | date }}
+            {% if current_treatment.start_date and current_treatment.end_date %}
+             - {{ current_treatment.end_date | date }}
+            {% endif %}
+            {% if current_treatment.planned_end_date %}
+            <br />planned end date: {{ current_treatment.planned_end_date }}
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <div class="row content-offset-below-10">
+        <div class="col-md-12">
+          <b>Adverse reactions:</b><br />
+        </div>
+      </div>
+
+    <div class="row content-offset-below-10">
+        <div class="col-md-12">
+          <b>Past medical history: </b><br />
+          <ul>
+            {% for pmh in past_medical_history_list %}
+            <li>
+              {{ pmh.condition }}{% if pmh.year %}({{ pmh.year }}) {% endif %} &nbsp;
+              {{ pmh.details }}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <div class="row content-offset-below-10">
+          <div class="col-md-12">
+            <b>Progress:</b><br />
+          </div>
+        </div>
+      <div class="row content-offset-below-10">
+          <div class="col-md-12">
+            <b>Weight:</b><br />
+            {{ weight }}
+          </div>
+        </div>
+        <div class="row content-offset-below-10">
+            <div class="col-md-12"><b>Clinical assessment:</b><br />{{ object.assessment }}</div>
+        </div>
+        <div class="row content-offset-below-10">
+            <div class="col-md-12"><b>Recent investigations:</b><br /></div>
+        </div>
+        <div class="row content-offset-below-10">
+            <div class="col-md-12"><b>Impression:</b><br /></div>
+        </div>
+        <div class="row content-offset-below-10">
+            <div class="col-md-12"><b>Plan:</b><br />{{ object.plan }}</div>
+        </div>
+
+
+
+{% endblock %}
