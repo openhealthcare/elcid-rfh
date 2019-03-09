@@ -161,6 +161,22 @@
   <div class="col-md-12"><b>Other Investigations:</b><br /></div>
 </div>
 
+{% if results %}
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <b>Results: </b><br />
+    <ul>
+      {% for obs_name, summary in results.items %}
+      <li>
+        {{ obs_name }}&nbsp;
+        {{ summary.observation_value }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
+
 <div class="row content-offset-below-10">
     <div class="col-md-12"><b>Clinical assessment:</b><br />{{ object.assessment }}</div>
 </div>
