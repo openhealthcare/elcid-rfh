@@ -210,35 +210,41 @@ TEST_BASES = {
         "QFT IFN gamma result (TB1)": {
             "units": "IU/mL",
             "reference_range": " -",
+            "observation_value": "0.00"
 
         },
         "QFT IFN gamme result (TB2)": {
             "units": "IU/mL",
             "reference_range": " -",
+            "observation_value": "0.00"
 
         },
         "QFT TB interpretation": {
              "units": "",
              "reference_range": " -",
+             "observation_value": "INDETERMINATE"
         },
 
     },
     "HEPATITIS B SURFACE AG": {
         "Hepatitis B 's'Antigen........": {
             "units": "",
-            "reference_range": ""
+            "reference_range": " -",
+            "observation_value": "Negative"
         }
     },
     "HEPATITIS C ANTIBODY": {
         "Hepatitis C IgG Antibody......": {
             "units": "",
-            "reference_range": ""
+            "reference_range": " -",
+            "observation_value": "Negative"
         }
     },
     "HIV 1 + 2 ANTIBODIES": {
         "HIV 1 + 2 Antibodies..........": {
             "units": "",
-            "reference_range": ""
+            "reference_range": " -",
+            "observation_value": "Negative"
         }
     }
 }
@@ -336,6 +342,13 @@ class DevApi(base_api.BaseApi):
         if base_datetime is None:
             base_datetime = datetime.now()
 
+        if "observation_value" in test_base_observation_value:
+            obvs_value = test_base_observation_value["observation_value"]
+        else:
+            obvs_value = str(self.get_observation_value(
+                test_base_observation_value["reference_range"]
+            ))
+
         return dict(
             last_updated=(base_datetime - timedelta(minutes=20)).strftime(
                 '%d/%m/%Y %H:%M:%S'
@@ -345,9 +358,7 @@ class DevApi(base_api.BaseApi):
             ),
             observation_name=test_base_observation_name,
             observation_number=self.get_external_identifier(),
-            observation_value=str(self.get_observation_value(
-                test_base_observation_value["reference_range"]
-            )),
+            observation_value=obvs_value,
             reference_range=test_base_observation_value["reference_range"],
             units=test_base_observation_value["units"],
         )
