@@ -2,6 +2,9 @@
 {% input field="PatientConsultation.initials" %}
 {% select field="PatientConsultation.reason_for_interaction" %}
 {% datetimepicker field="PatientConsultation.when" %}
+<div ng-show="editing.patient_consultation.reason_for_interaction == 'LTBI follow up'">
+  {% textarea field="PatientConsultation.progress" %}
+</div>
 {% textarea field="PatientConsultation.assessment" %}
 {% textarea field="PatientConsultation.discussion" %}
 {% textarea field="PatientConsultation.plan" %}

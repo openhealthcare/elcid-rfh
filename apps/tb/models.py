@@ -241,6 +241,9 @@ class PatientConsultation(models.PatientConsultation):
     assessment = fields.TextField(
         blank=True, default="", verbose_name="Clinical Assessment"
     )
+    progress = fields.TextField(
+        blank=True, default=""
+    )
 
 
 class ContactDetails(models.PatientSubrecord):
