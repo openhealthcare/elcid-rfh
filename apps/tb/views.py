@@ -5,6 +5,7 @@ Views for the TB Opal Plugin
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.tb.models import PatientConsultation
+from apps.tb.utils import get_tb_summary_information
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
@@ -35,6 +36,7 @@ class LatentNewPatientAssessment(LoginRequiredMixin, DetailView):
             ctx["weight"] = obs.weight
         ctx["patient"] = patient
         ctx["tb_history"] = patient.tbhistory_set.get()
+        ctx["results"] = get_tb_summary_information(patient)
         return ctx
 
 class FollowUpPatientAssessment(LoginRequiredMixin, DetailView):
@@ -49,6 +51,7 @@ class FollowUpPatientAssessment(LoginRequiredMixin, DetailView):
         ctx["current_teatment_list"] = episode.treatment_set.all()
         ctx["diagnosis_list"] = episode.diagnosis_set.order_by("-date_of_diagnosis")
         ctx["past_medical_history_list"] = episode.pastmedicalhistory_set.all()
+        ctx["results"] = get_tb_summary_information(patient)
 
         obs = episode.observation_set.order_by("-datetime").last()
         if obs:
