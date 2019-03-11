@@ -463,3 +463,16 @@ class TBManagement(models.EpisodeSubrecord):
         max_length=200, blank=True, null=True,
         verbose_name = "LTBR Number"
     )
+
+
+class AdverseReaction(models.EpisodeSubrecord):
+    details = fields.TextField(blank=True, default='')
+
+
+class OtherInvestigation(models.EpisodeSubrecord):
+    name = fields.CharField(max_length=256, blank=True, default="")
+    date = fields.DateField(blank=True, null=True)
+    details = fields.TextField(blank=True, default='')
+
+
+
