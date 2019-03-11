@@ -4,7 +4,6 @@ angular.module('opal.services').service(
 
     return function(item){
         var now = moment();
-        item.formController = "TreatmentFormCtrl";
 
         // the actual date we stopped if it exists
         item.stoppedDate = item.end_date || item.planned_end_date;
