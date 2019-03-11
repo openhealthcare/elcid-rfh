@@ -238,7 +238,9 @@ class AccessConsiderations(models.PatientSubrecord):
 
 class PatientConsultation(models.PatientConsultation):
     plan = fields.TextField(blank=True, default="")
-    assessment = fields.TextField(blank=True, default="")
+    assessment = fields.TextField(
+        blank=True, default="", verbose_name="Clinical Assessment"
+    )
 
 
 class ContactDetails(models.PatientSubrecord):
