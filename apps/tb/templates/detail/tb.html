@@ -2,10 +2,11 @@
 {% load forms %}
 <div class="row">
   <div class="col-md-6">
+    {% include "panels/external_links.html" %}
+    {% include "partials/tb_summary_tests.html" %}
     {% record_panel models.ReferralRoute %}
     {% include 'panels/nationality.html' %}
     {% record_panel models.TBHistory %}
-    {% include "partials/tb_summary_tests.html" %}
     {% include "panels/symptoms.html" %}
     {% record_panel models.Travel %}
     {% record_panel models.PastMedicalHistory %}
@@ -14,18 +15,6 @@
     {% record_panel models.SocialHistory %}
     {% record_panel models.Diagnosis %}
     {% record_panel models.Treatment %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3>
-          <i class="fa fa-file-image-o"></i> Imaging
-        </h3>
-      </div>
-      <div class="panel-footer">
-        <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i
-            class="fa fa-external-link" aria-hidden="true"></i></a>
-      </div>
-    </div>
-    {% include "partials/edrm_panel.html" %}
     {% include 'tb/obs_panel.html' %}
   </div>
 
