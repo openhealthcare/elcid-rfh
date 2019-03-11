@@ -97,9 +97,16 @@
                       </div>
                     </div>
                     <div class="row content-offset-10">
-                      <div class="col-md-12">
-                        <i print-page="/tb/clinical_advice/[[ item.id ]]" class="fa fa-print edit pull-right pointer"></i>
+                      <div ng-show="item.reason_for_interaction == 'LTBI initial assessment'" class="col-md-12">
+                        <a target="_blank" href="/letters/#/tb/latent_new_patient_assessment/[[ item.id ]]/">
+                          <i class="fa fa-envelope edit pull-right pointer"></i>
+                        </a>
                       </div>
+                      <div ng-show="item.reason_for_interaction == 'LTBI follow up'" class="col-md-12">
+                          <a target="_blank" href="/letters/#/tb/follow_up_patient_assessment/[[ item.id ]]/">
+                            <i class="fa fa-envelope edit pull-right pointer"></i>
+                          </a>
+                        </div>
                     </div>
                   </div>
                 </div>
