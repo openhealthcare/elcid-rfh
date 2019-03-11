@@ -637,7 +637,7 @@ class ReferralRoute(omodels.EpisodeSubrecord):
     REFERRAL_REASON = (
         ("Symptomatic", "Symptomatic",),
         ("TB contact screening", "TB contact screening",),
-        ("New entract screening", "New entract screening",),
+        ("New entrant screening", "New entrant screening",),
         ("Transferred in TB Rx", "Transferred in TB Rx",),
         ("Immunosuppressant", "Immunosuppressant",),
         ("BCG Vaccination", "BCG Vaccination",),
