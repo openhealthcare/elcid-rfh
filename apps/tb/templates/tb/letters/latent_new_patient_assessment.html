@@ -47,7 +47,10 @@
       </li>
       {% endfor %}
       <li>
-        Previous TB Diagnosis: {{ tb_history.tb_type }}
+        Previous TB Diagnosis:
+        {% if history.tb_type %}
+        {{ tb_history.tb_type }}
+        {% endif %}
       </li>
       <li>
         Previous TB Contact: {{ tb_history.contact_details }}
