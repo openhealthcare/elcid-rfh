@@ -83,6 +83,7 @@
       <div class="row content-offset-below-10">
           <div class="col-md-12">
             <b>Progress:</b><br />
+            {{ object.progress }}
           </div>
         </div>
       <div class="row content-offset-below-10">
@@ -94,13 +95,10 @@
         <div class="row content-offset-below-10">
             <div class="col-md-12"><b>Clinical assessment:</b><br />{{ object.assessment }}</div>
         </div>
-        <div class="row content-offset-below-10">
-            <div class="col-md-12"><b>Recent investigations:</b><br /></div>
-        </div>
         {% if results %}
         <div class="row content-offset-below-10">
           <div class="col-md-12">
-            <b>Results: </b><br />
+            <b>Recent Investigations: </b><br />
             <ul>
               {% for obs_name, summary in results.items %}
               <li>
@@ -112,9 +110,6 @@
           </div>
         </div>
         {% endif %}
-        <div class="row content-offset-below-10">
-            <div class="col-md-12"><b>Impression:</b><br /></div>
-        </div>
         <div class="row content-offset-below-10">
             <div class="col-md-12"><b>Plan:</b><br />{{ object.plan }}</div>
         </div>

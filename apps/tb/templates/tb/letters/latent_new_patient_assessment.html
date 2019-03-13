@@ -39,32 +39,46 @@
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
-    <b>Previous TB Diagnosis: </b><br />
-    {{ tb_history.tb_type }}
-  </div>
-</div>
-
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <b>Previous TB Contact: </b><br />
-    {% if tb_history.previous_tb_contact %} Previous TB contact recorded. {% endif %}
-    {% if tb_history.contact_details %} &nbsp;
-    {{ tb_history.contact_details }}
-    {% endif %}
-  </div>
-</div>
-
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <b>Past medical history: </b><br />
+    <b>Exposure:</b><br />
     <ul>
-      {% for pmh in past_medical_history_list %}
+      {% for travel in travel_list %}
       <li>
-        {{ pmh.condition }}{% if pmh.year %}({{ pmh.year }}) {% endif %} &nbsp;
-        {{ pmh.details }}
+        Travel: {{ travel.country }}
+      </li>
+      {% endfor %}
+      <li>
+        Previous TB Diagnosis:
+        {% if history.tb_type %}
+        {{ tb_history.tb_type }}
+        {% endif %}
+      </li>
+      <li>
+        Previous TB Contact: {{ tb_history.contact_details }}
+      </li>
+      {% if demographics.birth_place %}
+        {% if not demographics.birth_place == 'United Kingdom' %}
+          <li>
+            Place Of Birth: {{ demographics.birth_place }}
+          </li>
+        {% endif %}
+      {% endif %}
+    </ul>
+  </div>
+</div>
+
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <b>History: </b><br />
+    {% for symptom_complex in symptom_complex_list %}
+    <ul>
+      {% for symptom in symptom_complex.symptoms.all %}
+      <li>
+        {{ symptom.name }}
       </li>
       {% endfor %}
     </ul>
+    {% endfor %}
   </div>
 </div>
 
@@ -115,7 +129,9 @@
   <div class="col-md-12">
     <p>
       <b>Social history:</b><br />
-      {{ social_history.notes }}
+      {% if social_history.notes %}
+        {{ social_history.notes }}
+      {% endif %}
     </p>
   </div>
 </div>
@@ -149,17 +165,17 @@
   </div>
 </div>
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12"><b>IGRA:</b><br /></div>
-</div>
+{% for imaging in imaging_list %}
+ <div class="row content-offset-below-10">
+    <div class="col-md-12"><b>{{ imaging.imaging_type }}:</b><br /> {{ imaging.details }}<br /></div>
+  </div>
+{% endfor %}
 
+{% for other_investigation in other_investigation_list %}
 <div class="row content-offset-below-10">
-  <div class="col-md-12"><b>Chest radiograph:</b><br /></div>
-</div>
-
-<div class="row content-offset-below-10">
-  <div class="col-md-12"><b>Other Investigations:</b><br /></div>
-</div>
+    <div class="col-md-12"><b>{{ other_investigation.name }}:</b><br /> {{ other_investigation.details }}</div>
+  </div>
+{% endfor %}
 
 {% if results %}
 <div class="row content-offset-below-10">
@@ -187,17 +203,19 @@
     {% if diagnosis_list.exists %}
     <ul>
         {% for diagnosis in diagnosis_list %}
-        <li>
-          <div class="row">
-            <div class="col-sm-12">
-              {{ diagnosis.drug }}
-              {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
-              {{ diagnosis.date_of_diagnosis }}
-              &nbsp;
-              {{ diagnosis.details }}
-            </div>
-          </div>
-        </li>
+          {% if diagnosis.drug %}
+            <li>
+              <div class="row">
+                <div class="col-sm-12">
+                  {{ diagnosis.drug }}
+                  {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
+                  {{ diagnosis.date_of_diagnosis }}
+                  &nbsp;
+                  {{ diagnosis.details }}
+                </div>
+              </div>
+            </li>
+          {% endif %}
         {% endfor %}
     </ul>
     {% endif %}
