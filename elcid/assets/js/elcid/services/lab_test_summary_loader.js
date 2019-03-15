@@ -2,7 +2,8 @@ angular.module('opal.services').factory('LabTestSummaryLoader', function($q, $ht
 
     "use strict";
 
-    var url = '/labtest/v0.1/lab_test_summary_api/';
+    // var url = '/labtest/v0.1/lab_test_summary_api/';
+    var url = '/api/v0.1/infection_test_summary/';
 
     var load = function(patientId){
       var deferred = $q.defer();
