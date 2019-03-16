@@ -170,6 +170,7 @@ INSTALLED_APPS = (
     'opal.core.search',
     'lab',
     'plugins.letters',
+    'plugins.labtests',
     'intrahospital_api',
     'elcid',
     'django.contrib.admin',
@@ -364,7 +365,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
-
 
 if 'test' not in sys.argv:
     try:
