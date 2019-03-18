@@ -9,7 +9,7 @@ class LabTestTestCase(OpalTestCase):
             "clinical_info":  'testing',
             "datetime_ordered": "17/07/2015 04:15:10",
             "external_identifier": "11111",
-            "site": u'^&                              ^',
+            "site": u'^&        ^',
             "status": "Sucess",
             "test_code": "AN12",
             "test_name": "Anti-CV2 (CRMP-5) antibodies",
@@ -18,6 +18,7 @@ class LabTestTestCase(OpalTestCase):
                 "observation_datetime": "19/07/2015 04:15:10",
                 "observation_name": "Aerobic bottle culture",
                 "observation_number": "12312",
+                "observation_value": "123",
                 "reference_range": "3.5 - 11",
                 "units": "g"
             }]
@@ -26,9 +27,7 @@ class LabTestTestCase(OpalTestCase):
 
     def test_update_from_api_dict_simple(self):
         lt = models.LabTest()
-        lt.update_from_api_dict(
-            self.patient, self.api_dict, self.user
-        )
+        lt.update_from_api_dict(self.patient, self.api_dict)
         self.assertEqual(
             lt.patient, self.patient
         )
@@ -54,6 +53,10 @@ class LabTestTestCase(OpalTestCase):
             lt.test_name, 'Anti-CV2 (CRMP-5) antibodies'
         )
 
+        self.assertEqual(
+            lt.site, '^&        ^'
+        )
+
         obs = lt.observation_set.get()
         self.assertEqual(
             obs.last_updated,
@@ -67,6 +70,58 @@ class LabTestTestCase(OpalTestCase):
                 2015, 7, 19, 4, 15, 10
             ))
         )
+        self.assertEqual(
+            obs.observation_name,
+            "Aerobic bottle culture"
+        )
+        self.assertEqual(
+            obs.observation_number,
+            "12312"
+        )
+        self.assertEqual(
+            obs.reference_range,
+            "3.5 - 11"
+        )
+        self.assertEqual(
+            obs.units,
+            "g"
+        )
+        self.assertEqual(
+            obs.observation_value,
+            "123"
+        )
+
+    def test_update_from_api_dict_replaces_observation(self):
+        lt = self.patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
+
+        lt.observation_set.create(
+            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234"
+        )
+
+        lt.update_from_api_dict(self.patient, self.api_dict)
+
+        obs = lt.observation_set.get()
+
+        # this should have changed
+        self.assertEqual(
+            obs.observation_value,
+            "123"
+        )
+
+        # the below stay the same
         self.assertEqual(
             obs.observation_name,
             "Aerobic bottle culture"

@@ -22,6 +22,8 @@ class LabTest(models.Model):
     test_code = models.CharField(max_length=256, blank=True, null=True)
     test_name = models.CharField(max_length=256, blank=True, null=True)
     lab_number = models.CharField(max_length=256, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     @classmethod
     def create_from_old_test(cls, lt):
@@ -41,7 +43,8 @@ class LabTest(models.Model):
         s.lab_number = lt.external_identifier
         s.save()
         for i in extras["observations"]:
-            Obs.create(s, i)
+            obs = s.observation_set.create()
+            obs.create(i)
         return s
 
     def deserialse_datetime(self, some_dt):
@@ -49,7 +52,7 @@ class LabTest(models.Model):
             some_dt, '%d/%m/%Y %H:%M:%S'
         )
 
-    def update_from_api_dict(self, patient, data, user):
+    def update_from_api_dict(self, patient, data):
         """
             This is the updateFromDict of the the UpstreamLabTest
 
@@ -79,6 +82,7 @@ class LabTest(models.Model):
         self.lab_number = data["external_identifier"]
         self.status = data["status"]
         self.test_code = data["test_code"]
+        self.site = data["site"]
         self.test_name = data["test_name"]
         self.save()
         for obs_dict in data["observations"]:
@@ -87,16 +91,9 @@ class LabTest(models.Model):
             )
             if obs.exists():
                 obs.delete()
-            self.observation_set.create(
-                last_updated=self.deserialse_datetime(obs_dict["last_updated"]),
-                observation_datetime=self.deserialse_datetime(
-                    obs_dict["observation_datetime"]
-                ),
-                observation_name=obs_dict["observation_name"],
-                observation_number=obs_dict["observation_number"],
-                reference_range=obs_dict["reference_range"],
-                units=obs_dict["units"]
-            )
+
+            obs = self.observation_set.create()
+            obs.create(obs_dict)
 
 
     @property
@@ -137,6 +134,7 @@ class LabTest(models.Model):
 
 
 class Observation(models.Model):
+    # as created in the upstream db
     last_updated = models.DateTimeField(blank=True, null=True)
     observation_datetime = models.DateTimeField(blank=True, null=True)
     observation_name = models.CharField(max_length=256, blank=True, null=True)
@@ -146,14 +144,14 @@ class Observation(models.Model):
     units = models.CharField(max_length=256, blank=True, null=True)
     test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
 
-    @classmethod
-    def create(cls, test, observation_dict):
-        o = cls()
-        o.test = test
-        o.last_updated = serialization.deserialize_datetime(
+    # as defined by us
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def create(self, observation_dict):
+        self.last_updated = serialization.deserialize_datetime(
             observation_dict["last_updated"]
         )
-        o.observation_datetime = serialization.deserialize_datetime(
+        self.observation_datetime = serialization.deserialize_datetime(
             observation_dict["observation_datetime"]
         )
         fields = [
@@ -164,9 +162,9 @@ class Observation(models.Model):
             "units"
         ]
         for f in fields:
-            setattr(o, f, observation_dict.get(f))
-        o.save()
-        return o
+            setattr(self, f, observation_dict.get(f))
+        self.save()
+        return self
 
     def to_dict(self):
         fields = self._meta.get_fields()
