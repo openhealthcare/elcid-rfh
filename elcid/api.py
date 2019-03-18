@@ -83,15 +83,11 @@ for tag, test_names in _LAB_TEST_TAGS.items():
 
 def get_upstream_lab_tests_for_patient(user, patient):
     if user.profile.roles.filter(name=constants.USE_NEW_API).exists():
-        if not patient.lab_tests.exists():
-            lab_test_models.create_from_old_tests(patient)
         return patient.lab_tests.all()
     return emodels.UpstreamLabTest.objects.filter(patient=patient)
 
 def get_upstream_blood_tests_for_patient(user, patient):
     if user.profile.roles.filter(name=constants.USE_NEW_API).exists():
-        if not patient.lab_tests.exists():
-            lab_test_models.create_from_old_tests(patient)
         return patient.lab_tests.filter(
             test_name="BLOOD CULTURE"
         )
@@ -101,8 +97,6 @@ def get_upstream_blood_tests_for_patient(user, patient):
 
 def get_relevant_tests(user, patient):
     if user.profile.roles.filter(name=constants.USE_NEW_API).exists():
-        if not patient.lab_tests.exists():
-            lab_test_models.create_from_old_tests(patient)
         return lab_test_models.LabTest.get_relevant_tests(patient)
     return emodels.UpstreamLabTest.get_relevant_tests(patient)
 
