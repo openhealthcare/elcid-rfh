@@ -27,15 +27,11 @@
       <ul>
           {% for diagnosis in diagnosis_list %}
           <li>
-            <div class="row">
-              <div class="col-sm-12">
-                {{ diagnosis.drug }}
-                {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
-                {{ diagnosis.date_of_diagnosis }}
-                &nbsp;
-                {{ diagnosis.details }}
-              </div>
-            </div>
+            {{ diagnosis.condition }}
+            {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
+            {{ diagnosis.date_of_diagnosis }}
+            &nbsp;
+            {{ diagnosis.details }}
           </li>
           {% endfor %}
       </ul>
