@@ -238,8 +238,8 @@ class AccessConsiderations(models.PatientSubrecord):
 
 class PatientConsultation(models.PatientConsultation):
     plan = fields.TextField(blank=True, default="")
-    assessment = fields.TextField(
-        blank=True, default="", verbose_name="Clinical Assessment"
+    examination_findings = fields.TextField(
+        blank=True, default=""
     )
     progress = fields.TextField(
         blank=True, default=""
@@ -367,7 +367,7 @@ class TBHistory(models.PatientSubrecord):
     diagnosis_details = fields.TextField(default="")
 
     class Meta:
-        verbose_name = "History of TB"
+        verbose_name = "History Of TB Or TB Contact"
         verbose_name_plural = "History of TB"
 
 
