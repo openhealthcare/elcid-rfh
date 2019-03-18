@@ -20,200 +20,197 @@
 </div>
 
 <div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>TB diagnoses: </b><br />
-        {% if diagnosis_list.exists %}
-        <ul>
-            {% for diagnosis in diagnosis_list %}
-            <li>
-              <div class="row">
-                <div class="col-sm-12">
-                  {{ diagnosis.drug }}
-                  {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
-                  {{ diagnosis.date_of_diagnosis }}
-                  &nbsp;
-                  {{ diagnosis.details }}
-                </div>
-              </div>
-            </li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-      </p>
-    </div>
-  </div>
-
-  <div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>Co-morbidities: </b><br />
-        <ul>
-          {% for pmh in past_medical_history_list %}
+  <div class="col-md-12">
+    <p>
+      <b>TB diagnoses: </b><br />
+      {% if diagnosis_list.exists %}
+      <ul>
+          {% for diagnosis in diagnosis_list %}
           <li>
-            {{ pmh.condition }}{% if pmh.year %}({{ pmh.year }}) {% endif %} &nbsp;
-            {{ pmh.details }}
+            <div class="row">
+              <div class="col-sm-12">
+                {{ diagnosis.drug }}
+                {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
+                {{ diagnosis.date_of_diagnosis }}
+                &nbsp;
+                {{ diagnosis.details }}
+              </div>
+            </div>
           </li>
           {% endfor %}
-        </ul>
-      </p>
-    </div>
+      </ul>
+      {% endif %}
+    </p>
   </div>
+</div>
 
-  <div class="row content-offset-below-10">
-      <div class="col-md-12">
-        <p>
-          <b>TB treatment: </b><br />
-          <ul>
-            {% for tb_treatment in tb_teatment_list %}
-            <li>
-              {{ tb_treatment.drug }} &nbsp;
-              {{ tb_treatment.dose }}
-              {{ tb_treatment.start_date | date }}
-              {% if tb_treatment.start_date and tb_treatment.end_date %}
-              - {{ tb_treatment.end_date | date }}
-              {% endif %}
-              {% if tb_treatment.planned_end_date %}
-              <br />planned end date: {{ tb_treatment.planned_end_date }}
-              {% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-        </p>
-      </div>
-    </div>
-    <div class="row content-offset-below-10">
-      <div class="col-md-12">
-        <p>
-          <b>Other medication: </b><br />
-          <ul>
-            {% for past_medication in past_medication_list %}
-            <li>
-              {{ past_medication.drug }} &nbsp;
-              {{ past_medication.dose }}
-              {{ past_medication.start_date | date }}
-              {% if past_medication.end_date and past_medication.start_date %}
-              - {{ past_medication.end_date | date }}
-              {% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-        </p>
-      </div>
-    </div>
-    <div class="row content-offset-below-10">
-      <div class="col-md-12">
-        <p>
-          <b>Adverse reactions:</b><br />
-          <ul>
-            {% for adverse_reaction in adverse_reaction_list %}
-            <li>
-              {{ adverse_reaction.details }}
-            </li>
-            {% endfor %}
-          </ul>
-        </p>
-      </div>
-    </div>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Co-morbidities: </b><br />
+      <ul>
+        {% for pmh in past_medical_history_list %}
+        <li>
+          {{ pmh.condition }}{% if pmh.year %}({{ pmh.year }}) {% endif %} &nbsp;
+          {{ pmh.details }}
+        </li>
+        {% endfor %}
+      </ul>
+    </p>
+  </div>
+</div>
 
-    <div class="row content-offset-below-10">
-      <div class="col-md-12">
-        <p>
-          <b>Allergies: </b><br />
-          {% if allergies_list.exists %}
-          <ul>
-            {% for allergy in allergies_list %}
-            <li>
-              {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-              {{ allergy.details }}
-            </li>
-            {% endfor %}
-          </ul>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>TB treatment: </b><br />
+      <ul>
+        {% for tb_treatment in tb_teatment_list %}
+        <li>
+          {{ tb_treatment.drug }} &nbsp;
+          {{ tb_treatment.dose }}
+          {{ tb_treatment.start_date | date }}
+          {% if tb_treatment.start_date and tb_treatment.end_date %}
+          - {{ tb_treatment.end_date | date }}
           {% endif %}
-        </p>
-      </div>
-    </div>
+          {% if tb_treatment.planned_end_date %}
+          <br />planned end date: {{ tb_treatment.planned_end_date }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </p>
+  </div>
+</div>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Other medication: </b><br />
+      <ul>
+        {% for past_medication in past_medication_list %}
+        <li>
+          {{ past_medication.drug }} &nbsp;
+          {{ past_medication.dose }}
+          {{ past_medication.start_date | date }}
+          {% if past_medication.end_date and past_medication.start_date %}
+          - {{ past_medication.end_date | date }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </p>
+  </div>
+</div>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Adverse reactions:</b><br />
+      <ul>
+        {% for adverse_reaction in adverse_reaction_list %}
+        <li>
+          {{ adverse_reaction.details }}
+        </li>
+        {% endfor %}
+      </ul>
+    </p>
+  </div>
+</div>
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Allergies: </b><br />
+      {% if allergies_list.exists %}
+      <ul>
+        {% for allergy in allergies_list %}
+        <li>
+          {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
+          {{ allergy.details }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </p>
+  </div>
+</div>
 
 
-      <div class="row content-offset-below-10">
-          <div class="col-md-12">
-            <p>
-              <b>Progress:</b><br />
-              {{ object.progress }}
-            </p>
-          </div>
-        </div>
-      <div class="row content-offset-below-10">
-          <div class="col-md-12">
-            <p>
-              <b>Weight:</b><br />
-              {{ weight }}
-            </p>
-          </div>
-        </div>
-        <div class="row content-offset-below-10">
-            <div class="col-md-12">
-              <p>
-                <b>Examination findings:</b><br />
-                {{ object.examination_findings }}
-              </p>
-            </div>
-        </div>
-        {% if results %}
-        <div class="row content-offset-below-10">
-          <div class="col-md-12">
-            <p>
-              <b>Recent Investigations: </b><br />
-              <ul>
-                {% for obs_name, summary in results.items %}
-                <li>
-                  {{ obs_name }}&nbsp;
-                  {{ summary.observation_value }} ({{ summary.observation_datetime|slice:":10" }})
-                </li>
-                {% endfor %}
-              </ul>
-            </p>
-          </div>
-        </div>
-        {% endif %}
-        {% for imaging in imaging_list %}
-        <div class="row content-offset-below-10">
-           <div class="col-md-12">
-             <p>
-              <b>{{ imaging.imaging_type }}:</b><br />
-              {{ imaging.details }}<br />
-             </p>
-            </div>
-         </div>
-       {% endfor %}
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Progress:</b><br />
+      {{ object.progress }}
+    </p>
+  </div>
+</div>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Weight:</b><br />
+      {{ weight }}
+    </p>
+  </div>
+</div>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Examination findings:</b><br />
+      {{ object.examination_findings }}
+    </p>
+  </div>
+</div>
+{% if results %}
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Recent Investigations: </b><br />
+      <ul>
+        {% for obs_name, summary in results.items %}
+        <li>
+          {{ obs_name }}&nbsp;
+          {{ summary.observation_value }} ({{ summary.observation_datetime|slice:":10" }})
+        </li>
+        {% endfor %}
+      </ul>
+    </p>
+  </div>
+</div>
+{% endif %}
+{% for imaging in imaging_list %}
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+    <b>{{ imaging.imaging_type }}:</b><br />
+    {{ imaging.details }}<br />
+    </p>
+  </div>
+</div>
+{% endfor %}
 
-       {% for other_investigation in other_investigation_list %}
-       <div class="row content-offset-below-10">
-           <div class="col-md-12">
-             <p>
-              <b>{{ other_investigation.name }}:</b><br />
-              {{ other_investigation.details }}
-             </p>
-           </div>
-         </div>
-       {% endfor %}
+{% for other_investigation in other_investigation_list %}
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+    <b>{{ other_investigation.name }}:</b><br />
+    {{ other_investigation.details }}
+    </p>
+  </div>
+</div>
+{% endfor %}
 
-       <div class="row content-offset-below-10">
-        <div class="col-md-12">
-          <p>
-            <b>Discussion:</b><br />{{ object.discussion }}
-          </p>
-        </div>
-      </div>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Discussion:</b><br />{{ object.discussion }}
+    </p>
+  </div>
+</div>
 
-        <div class="row content-offset-below-10">
-          <div class="col-md-12">
-            <p>
-              <b>Plan:</b><br />{{ object.plan }}
-            </p>
-          </div>
-        </div>
-
-
-
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Plan:</b><br />{{ object.plan }}
+    </p>
+  </div>
+</div>
 {% endblock %}
