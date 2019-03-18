@@ -264,20 +264,25 @@
 </div>
 
 {% for imaging in imaging_list %}
- <div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>{{ imaging.imaging_type }}:</b><br /> {{ imaging.details }}
-      </p>
-    </div>
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+    <b>
+      {{ imaging.imaging_type }}
+      {% if imaging.site %}({{ imaging.site }}){% endif %}:
+    </b><br />
+    {{ imaging.date | date }} {{ imaging.details }}<br />
+    </p>
   </div>
+</div>
 {% endfor %}
 
 {% for other_investigation in other_investigation_list %}
 <div class="row content-offset-below-10">
     <div class="col-md-12">
       <p>
-        <b>{{ other_investigation.name }}:</b><br /> {{ other_investigation.details }}
+        <b>{{ other_investigation.name }}:</b><br />
+        {{ other_investigation.date | date }} {{ other_investigation.details }}
       </p>
     </div>
   </div>

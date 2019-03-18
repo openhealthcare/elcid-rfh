@@ -25,6 +25,11 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
         ctx["allergies_list"] = patient.allergies_set.all()
+        ctx["imaging_list"] = episode.imaging_set.all()
+        ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
+        obs = episode.observation_set.order_by("-datetime").last()
+        if obs:
+            ctx["weight"] = obs.weight
         return ctx
 
 
@@ -44,11 +49,6 @@ class LTBIInitialAssessment(AbstractLetterView):
         ctx["symptom_complex_list"] = episode.symptomcomplex_set.all()
         # TODO this has to change
 
-        ctx["imaging_list"] = episode.imaging_set.all()
-        ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
-        obs = episode.observation_set.order_by("-datetime").last()
-        if obs:
-            ctx["weight"] = obs.weight
         ctx["patient"] = patient
         ctx["tb_history"] = patient.tbhistory_set.get()
         ctx["results"] = get_tb_summary_information(patient)
