@@ -639,7 +639,7 @@ class ReferralRoute(omodels.EpisodeSubrecord):
         ("TB contact screening", "TB contact screening",),
         ("New entrant screening", "New entrant screening",),
         ("Transferred in TB Rx", "Transferred in TB Rx",),
-        ("Immunosuppressant", "Immunosuppressant",),
+        ("Pre-immunosuppression screening", "Pre-immunosuppression screening",),
         ("BCG Vaccination", "BCG Vaccination",),
         ("Other", "Other",),
     )
