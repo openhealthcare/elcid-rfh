@@ -42,18 +42,18 @@
 
   <div class="row content-offset-below-10">
       <div class="col-md-12">
-        <b>Current treatment: </b><br />
+        <b>TB treatment: </b><br />
         <ul>
-          {% for current_treatment in current_treatment_list %}
+          {% for tb_treatment in tb_teatment_list %}
           <li>
-            {{ current_treatment.drug }} &nbsp;
-            {{ current_treatment.dose }}
-            {{ current_treatment.start_date | date }}
-            {% if current_treatment.start_date and current_treatment.end_date %}
-             - {{ current_treatment.end_date | date }}
+            {{ tb_treatment.drug }} &nbsp;
+            {{ tb_treatment.dose }}
+            {{ tb_treatment.start_date | date }}
+            {% if tb_treatment.start_date and tb_treatment.end_date %}
+             - {{ tb_treatment.end_date | date }}
             {% endif %}
-            {% if current_treatment.planned_end_date %}
-            <br />planned end date: {{ current_treatment.planned_end_date }}
+            {% if tb_treatment.planned_end_date %}
+            <br />planned end date: {{ tb_treatment.planned_end_date }}
             {% endif %}
           </li>
           {% endfor %}

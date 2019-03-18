@@ -52,7 +52,7 @@ class FollowUpPatientAssessment(LoginRequiredMixin, DetailView):
         episode = self.object.episode
         patient = self.object.episode.patient
         ctx["demographics"] = patient.demographics()
-        ctx["current_teatment_list"] = episode.treatment_set.all()
+        ctx["tb_teatment_list"] = episode.treatment_set.all()
         ctx["diagnosis_list"] = episode.diagnosis_set.order_by("-date_of_diagnosis")
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medical_history_list"] = episode.pastmedicalhistory_set.all()
