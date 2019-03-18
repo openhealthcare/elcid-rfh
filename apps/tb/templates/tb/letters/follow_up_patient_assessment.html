@@ -94,6 +94,13 @@
     <div class="row content-offset-below-10">
       <div class="col-md-12">
         <b>Adverse reactions:</b><br />
+        <ul>
+          {% for adverse_reaction in adverse_reaction_list %}
+          <li>
+            {{ adverse_reaction.details }}
+          </li>
+          {% endfor %}
+        </ul>
       </div>
     </div>
 

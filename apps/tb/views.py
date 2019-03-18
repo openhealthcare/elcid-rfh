@@ -64,6 +64,7 @@ class FollowUpPatientAssessment(AbstractLetterView):
         episode = self.object.episode
         patient = self.object.episode.patient
         ctx["results"] = get_tb_summary_information(patient)
+        ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
 
         obs = episode.observation_set.order_by("-datetime").last()
         if obs:
