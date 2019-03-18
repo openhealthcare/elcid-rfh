@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from opal.core import serialization
 from opal import models as omodels
@@ -20,10 +21,10 @@ class LabTest(models.Model):
     status = models.CharField(max_length=256, blank=True, null=True)
     test_code = models.CharField(max_length=256, blank=True, null=True)
     test_name = models.CharField(max_length=256, blank=True, null=True)
-    result_id = models.CharField(max_length=256, blank=True, null=True)
+    lab_number = models.CharField(max_length=256, blank=True, null=True)
 
     @classmethod
-    def create(cls, lt):
+    def create_from_old_test(cls, lt):
         s = cls()
         s.patient = lt.patient
         extras = lt.extras
@@ -37,11 +38,66 @@ class LabTest(models.Model):
         for f in fields:
             setattr(s, f, extras.get(f, None))
         s.datetime_ordered = lt.datetime_ordered
-        s.result_id = lt.external_identifier
+        s.lab_number = lt.external_identifier
         s.save()
         for i in extras["observations"]:
             Obs.create(s, i)
         return s
+
+    def deserialse_datetime(self, some_dt):
+        return datetime.datetime.strptime(
+            some_dt, '%d/%m/%Y %H:%M:%S'
+        )
+
+    def update_from_api_dict(self, patient, data, user):
+        """
+            This is the updateFromDict of the the UpstreamLabTest
+
+            We expect something like the following
+
+            {
+                clinical_info:  u'testing',
+                datetime_ordered: "18/07/2015, 04:15",
+                external_identifier: "11111",
+                site: u'^&                              ^',
+                status: "Sucess",
+                test_code: "AN12"
+                test_name: "Anti-CV2 (CRMP-5) antibodies",
+                observations: [{
+                    "last_updated": "18/07/2015, 04:15",
+                    "observation_datetime": "18/07/2015, 04:15"
+                    "observation_name": "Aerobic bottle culture",
+                    "observation_number": "12312",
+                    "reference_range": "3.5 - 11",
+                    "units": "g"
+                }]
+            }
+        """
+        self.patient = patient
+        self.clinical_info = data["clinical_info"]
+        self.datetime_ordered = self.deserialse_datetime(data["datetime_ordered"])
+        self.lab_number = data["external_identifier"]
+        self.status = data["status"]
+        self.test_code = data["test_code"]
+        self.test_name = data["test_name"]
+        self.save()
+        for obs_dict in data["observations"]:
+            obs = self.observation_set.filter(
+                observation_number=obs_dict["observation_number"]
+            )
+            if obs.exists():
+                obs.delete()
+            self.observation_set.create(
+                last_updated=self.deserialse_datetime(obs_dict["last_updated"]),
+                observation_datetime=self.deserialse_datetime(
+                    obs_dict["observation_datetime"]
+                ),
+                observation_name=obs_dict["observation_name"],
+                observation_number=obs_dict["observation_number"],
+                reference_range=obs_dict["reference_range"],
+                units=obs_dict["units"]
+            )
+
 
     @property
     def extras(self):
@@ -122,4 +178,4 @@ def create_from_old_tests(patient):
     for ut in patient.labtest_set.filter(
         lab_test_type__istartswith="up"
     ):
-        LabTest.create(ut)
+        LabTest.create_from_old_test(ut)

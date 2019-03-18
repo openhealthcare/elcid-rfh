@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(blank=True, max_length=256, null=True)),
                 ('test_code', models.CharField(blank=True, max_length=256, null=True)),
                 ('test_name', models.CharField(blank=True, max_length=256, null=True)),
-                ('result_id', models.CharField(blank=True, max_length=256, null=True)),
+                ('lab_number', models.CharField(blank=True, max_length=256, null=True)),
                 ('patient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lab_tests', to='opal.Patient')),
             ],
         ),
