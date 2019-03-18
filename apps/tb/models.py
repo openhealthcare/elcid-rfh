@@ -294,6 +294,9 @@ class Treatment(models.Treatment):
     _angular_service = 'TreatmentRecord'
     planned_end_date = fields.DateField(blank=True, null=True)
 
+    class Meta:
+        verbose_name = "TB Treatment"
+
 
 class TBHistory(models.PatientSubrecord):
     """ Used if the person has clicked that they
