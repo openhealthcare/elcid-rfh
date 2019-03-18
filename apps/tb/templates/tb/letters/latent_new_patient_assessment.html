@@ -9,6 +9,7 @@
     {% endif %}
   </small>
 </h2>
+
 <div class="row content-offset-below-10 content-offset">
   <div class="col-md-12">
     <b>Clinic date:</b><br />
@@ -18,15 +19,90 @@
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
-    <b>Referred by:</b><br />
-    {{ referral.referral_type }}
+    <b>TB diagnoses: </b><br />
+    {% if diagnosis_list.exists %}
+    <ul>
+        {% for diagnosis in diagnosis_list %}
+        <li>
+          <div class="row">
+            <div class="col-sm-12">
+              {{ diagnosis.drug }}
+              {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
+              {{ diagnosis.date_of_diagnosis }}
+              &nbsp;
+              {{ diagnosis.details }}
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
   </div>
 </div>
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
-    <b>Language:</b><br />
-    {{ communication_considerations.language }}
+    <b>Co-morbidities: </b><br />
+    <ul>
+      {% for pmh in past_medical_history_list %}
+      <li>
+        {{ pmh.condition }}{% if pmh.year %}({{ pmh.year }}) {% endif %} &nbsp;
+        {{ pmh.details }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="row content-offset-below-10">
+    <div class="col-md-12">
+      <b>TB treatment: </b><br />
+      <ul>
+        {% for tb_treatment in tb_teatment_list %}
+        <li>
+          {{ tb_treatment.drug }} &nbsp;
+          {{ tb_treatment.dose }}
+          {{ tb_treatment.start_date | date }}
+          {% if tb_treatment.start_date and tb_treatment.end_date %}
+           - {{ tb_treatment.end_date | date }}
+          {% endif %}
+          {% if tb_treatment.planned_end_date %}
+          <br />planned end date: {{ tb_treatment.planned_end_date }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="row content-offset-below-10">
+    <div class="col-md-12">
+      <b>Other medication: </b><br />
+      <ul>
+        {% for past_medication in past_medication_list %}
+        <li>
+          {{ past_medication.drug }} &nbsp;
+          {{ past_medication.dose }}
+          {{ past_medication.start_date | date }}
+          {% if past_medication.end_date and past_medication.start_date %}
+          - {{ past_medication.end_date | date }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="row content-offset-below-10">
+    <div class="col-md-12">
+      <b>Language:</b><br />
+      {{ communication_considerations.language }}
+    </div>
+  </div>
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <b>Referred by:</b><br />
+    {{ referral.referral_type }}
   </div>
 </div>
 
@@ -69,7 +145,7 @@
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
-    <b>History: </b><br />
+    <b>Symptoms: </b><br />
     {% for symptom_complex in symptom_complex_list %}
     <ul>
       {% for symptom in symptom_complex.symptoms.all %}
@@ -79,49 +155,9 @@
       {% endfor %}
     </ul>
     {% endfor %}
-  </div>
-</div>
-
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <b>Other medication: </b><br />
-    <ul>
-      {% for past_medication in past_medication_list %}
-      <li>
-        {{ past_medication.drug }} &nbsp;
-        {{ past_medication.dose }}
-        {{ past_medication.start_date | date }}
-        {% if past_medication.end_date and past_medication.start_date %}
-        - {{ past_medication.end_date | date }}
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-  </div>
-</div>
-
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <b>Allergies: </b><br />
-    {% if allergies_list.exists %}
-    <ul>
-      {% for allergy in allergies_list %}
-      <li>
-        {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-        {{ allergy.details }}
-      </li>
-      {% endfor %}
-    </ul>
+    {% if not symptoms_complex_list %}
+      No respiratory or systemic TB symptoms
     {% endif %}
-  </div>
-</div>
-
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Smoking:</b><br />
-      {{ social_history.smoking }}
-    </p>
   </div>
 </div>
 
@@ -135,6 +171,16 @@
     </p>
   </div>
 </div>
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Smoking:</b><br />
+      {{ social_history.smoking }}
+    </p>
+  </div>
+</div>
+
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
@@ -160,9 +206,29 @@
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
+    <b>Allergies: </b><br />
+    {% if allergies_list.exists %}
+    <ul>
+      {% for allergy in allergies_list %}
+      <li>
+        {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
+        {{ allergy.details }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
     <b>Weight:</b><br />
     {{ weight }}
   </div>
+</div>
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12"><b>Examination findings:</b><br />{{ object.examination_findings }}</div>
 </div>
 
 {% for imaging in imaging_list %}
@@ -194,36 +260,11 @@
 {% endif %}
 
 <div class="row content-offset-below-10">
-    <div class="col-md-12"><b>Clinical assessment:</b><br />{{ object.assessment }}</div>
+  <div class="col-md-12"><b>Discussion:</b><br />{{ object.discussion }}</div>
 </div>
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <b>TB diagnosis: </b><br />
-    {% if diagnosis_list.exists %}
-    <ul>
-        {% for diagnosis in diagnosis_list %}
-          {% if diagnosis.drug %}
-            <li>
-              <div class="row">
-                <div class="col-sm-12">
-                  {{ diagnosis.drug }}
-                  {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
-                  {{ diagnosis.date_of_diagnosis }}
-                  &nbsp;
-                  {{ diagnosis.details }}
-                </div>
-              </div>
-            </li>
-          {% endif %}
-        {% endfor %}
-    </ul>
-    {% endif %}
-  </div>
-</div>
 <div class="row content-offset-below-10">
     <div class="col-md-12"><b>Plan:</b><br />{{ object.plan }}</div>
 </div>
-
 
 {% endblock %}
