@@ -11,11 +11,11 @@ urlpatterns = [
         views.ClinicalAdvicePrintView.as_view()
     ),
     url(
-        r'^tb/latent_new_patient_assessment/(?P<pk>\d+)/?$',
-        views.LatentNewPatientAssessment.as_view()
+        r'^tb/ltbi_initial_assessment/(?P<pk>\d+)/?$',
+        views.LTBIInitialAssessment.as_view()
     ),
     url(
-        r'^tb/follow_up_patient_assessment/(?P<pk>\d+)/?$',
-        views.FollowUpPatientAssessment.as_view()
+        r'^tb/ltbi_followup_assessment/(?P<pk>\d+)/?$',
+        views.LTBIFollowUp.as_view()
     ),
 ]

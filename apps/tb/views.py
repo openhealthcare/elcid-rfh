@@ -28,8 +28,8 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class LatentNewPatientAssessment(AbstractLetterView):
-    template_name = "tb/letters/latent_new_patient_assessment.html"
+class LTBIInitialAssessment(AbstractLetterView):
+    template_name = "tb/letters/ltbi_initial_assessment.html"
     model = PatientConsultation
 
     def get_context_data(self, *args, **kwargs):
@@ -55,8 +55,8 @@ class LatentNewPatientAssessment(AbstractLetterView):
         return ctx
 
 
-class FollowUpPatientAssessment(AbstractLetterView):
-    template_name = "tb/letters/follow_up_patient_assessment.html"
+class LTBIFollowUp(AbstractLetterView):
+    template_name = "tb/letters/ltbi_follow_up.html"
     model = PatientConsultation
 
     def get_context_data(self, *args, **kwargs):
