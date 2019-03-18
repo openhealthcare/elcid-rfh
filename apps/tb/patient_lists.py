@@ -1,3 +1,4 @@
+from apps.tb.constants import TB_ROLE
 from opal.models import Episode
 from opal.core import patient_lists
 from elcid import models
@@ -13,7 +14,7 @@ class TbPatientList(patient_lists.TaggedPatientList):
 
     @classmethod
     def visible_to(cls, user):
-        return user.is_superuser
+        return user.is_superuser or user.profile.roles.filter(name=TB_ROLE)
 
     schema = [
         patient_lists.Column(
