@@ -138,7 +138,9 @@ class LabTest(models.Model):
         return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
     def dict_for_view(self, user):
-        return self.extras
+        result = self.extras
+        result["extras"] = self.extras
+        return result
 
 
 class Observation(models.Model):

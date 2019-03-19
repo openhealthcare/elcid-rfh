@@ -198,7 +198,7 @@ class LabTestResultsView(LoginRequiredViewset):
         for lab_test in lab_tests:
             as_dict = lab_test.dict_for_view(None)
             observations = as_dict.get("observations", [])
-            lab_test_type = as_dict["test_name"]
+            lab_test_type = as_dict["extras"].get("test_name")
             if lab_test_type == "FULL BLOOD COUNT" and observations:
                 print("id {} name {} result {}".format(
                     lab_test.id,
@@ -511,10 +511,10 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
             lab_test["observations"] = sorted(
                 observations, key=lambda x: x["observation_name"]
             )
-            if lab_test["clinical_info"]:
-                lab_test["clinical_info"] = "{}{}".format(
-                    lab_test["clinical_info"][0].upper(),
-                    lab_test["clinical_info"][1:]
+            if lab_test["extras"]["clinical_info"]:
+                lab_test["extras"]["clinical_info"] = "{}{}".format(
+                    lab_test["extras"]["clinical_info"][0].upper(),
+                    lab_test["extras"]["clinical_info"][1:]
                 )
 
         return json_response(dict(
