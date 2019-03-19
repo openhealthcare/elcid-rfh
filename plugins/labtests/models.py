@@ -1,5 +1,6 @@
 import datetime
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
 from opal.core import serialization
 from opal import models as omodels
@@ -136,6 +137,9 @@ class LabTest(models.Model):
         ).order_by("datetime_ordered")
         return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
+    def dict_for_view(self, user):
+        return self.extras
+
 
 class Observation(models.Model):
     # as created in the upstream db
@@ -176,7 +180,13 @@ class Observation(models.Model):
             "id", "test", "created_at"
         }
         fields = [i.name for i in fields if i.name not in ignored_fields]
-        return {i: getattr(self, i) for i in fields}
+        as_dict = {i: getattr(self, i) for i in fields}
+        for k, v in as_dict.items():
+            if isinstance(v, datetime.datetime):
+                as_dict[k] = v.strftime(
+                    settings.DATETIME_INPUT_FORMATS[0]
+                )
+        return as_dict
 
 
 def create_from_old_tests(patient):

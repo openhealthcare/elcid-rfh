@@ -198,9 +198,7 @@ class LabTestResultsView(LoginRequiredViewset):
         for lab_test in lab_tests:
             as_dict = lab_test.dict_for_view(None)
             observations = as_dict.get("observations", [])
-            lab_test_type = as_dict["extras"].get(
-                "test_name", lab_test.lab_test_type
-            )
+            lab_test_type = as_dict["test_name"]
             if lab_test_type == "FULL BLOOD COUNT" and observations:
                 print("id {} name {} result {}".format(
                     lab_test.id,
