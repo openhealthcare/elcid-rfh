@@ -1,5 +1,6 @@
 import datetime
 from django.db import models
+from django.utils import timezone
 from opal.core import serialization
 from opal import models as omodels
 from opal.core.exceptions import APIError
