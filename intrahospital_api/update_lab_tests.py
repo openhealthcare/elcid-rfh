@@ -14,6 +14,7 @@ def update_tests(patient, lab_tests):
     """
     for lab_test in lab_tests:
         lab_model = get_model_for_lab_test_type(patient, lab_test)
+        get_or_create_lab_test(patient, lab_test)
         lab_model.update_from_api_dict(patient, lab_test, api.user)
 
 
