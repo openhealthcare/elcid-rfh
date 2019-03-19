@@ -3,6 +3,7 @@ from django.utils import timezone
 from opal.core.test import OpalTestCase
 from plugins.labtests import models
 
+
 class LabTestTestCase(OpalTestCase):
     def setUp(self):
         self.api_dict = {
@@ -138,3 +139,48 @@ class LabTestTestCase(OpalTestCase):
             obs.units,
             "g"
         )
+
+    def test_extras(self):
+        lt = self.patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
+
+        lt.observation_set.create(
+            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234",
+            observation_name="Aerobic bottle culture"
+        )
+
+        expected = {
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+            "observations": [{
+                "last_updated": timezone.make_aware(
+                    datetime.datetime(2015, 6, 18, 4, 15, 10),
+                ),
+                "observation_datetime": timezone.make_aware(
+                    datetime.datetime(2015, 4, 15, 4, 15, 10),
+                ),
+                "observation_name": "Aerobic bottle culture",
+                "observation_number": "12312",
+                "observation_value": "234",
+                "reference_range": "3.5 - 11",
+                "units": "g"
+            }]
+        }
+        self.assertEqual(lt.extras, expected)

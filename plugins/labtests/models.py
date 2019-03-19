@@ -3,8 +3,6 @@ from django.db import models
 from django.utils import timezone
 from opal.core import serialization
 from opal import models as omodels
-from opal.core.exceptions import APIError
-from lab import models as lab_models
 
 
 """
@@ -37,6 +35,7 @@ class LabTest(models.Model):
             "status",
             "test_code",
             "test_name",
+            "lab_number",
         ]
         for f in fields:
             setattr(s, f, extras.get(f, None))
@@ -79,7 +78,9 @@ class LabTest(models.Model):
         """
         self.patient = patient
         self.clinical_info = data["clinical_info"]
-        self.datetime_ordered = self.deserialse_datetime(data["datetime_ordered"])
+        self.datetime_ordered = self.deserialse_datetime(
+            data["datetime_ordered"]
+        )
         self.lab_number = data["external_identifier"]
         self.status = data["status"]
         self.test_code = data["test_code"]
@@ -105,14 +106,16 @@ class LabTest(models.Model):
             "status",
             "test_code",
             "test_name",
+            "lab_number",
+            "datetime_ordered",
         ]
         result = {}
         for field in fields:
             result[field] = getattr(self, field)
 
-        result["observations"] = {
+        result["observations"] = [
             i.to_dict() for i in self.observation_set.all()
-        }
+        ]
         return result
 
     @classmethod
@@ -169,7 +172,10 @@ class Observation(models.Model):
 
     def to_dict(self):
         fields = self._meta.get_fields()
-        fields = [i for i in fields if i not in {"id", "test"}]
+        ignored_fields = {
+            "id", "test", "created_at"
+        }
+        fields = [i.name for i in fields if i.name not in ignored_fields]
         return {i: getattr(self, i) for i in fields}
 
 
