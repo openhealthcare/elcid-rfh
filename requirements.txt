@@ -28,7 +28,7 @@ pycparser==2.14
 pytz==2015.7
 sqlparse==0.1.16
 static3==0.6.1
-Fabric==1.14.0
+Fabric==2.4.0
 
 # intrahospital_api
 python-tds==1.8.2
