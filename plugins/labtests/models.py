@@ -48,11 +48,6 @@ class LabTest(models.Model):
             obs.create(i)
         return s
 
-    def deserialse_datetime(self, some_dt):
-        return datetime.datetime.strptime(
-            some_dt, '%d/%m/%Y %H:%M:%S'
-        )
-
     def update_from_api_dict(self, patient, data):
         """
             This is the updateFromDict of the the UpstreamLabTest
@@ -79,7 +74,7 @@ class LabTest(models.Model):
         """
         self.patient = patient
         self.clinical_info = data["clinical_info"]
-        self.datetime_ordered = self.deserialse_datetime(
+        self.datetime_ordered = serialization.deserialize_datetime(
             data["datetime_ordered"]
         )
         self.lab_number = data["external_identifier"]
