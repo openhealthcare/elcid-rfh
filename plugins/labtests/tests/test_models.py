@@ -217,7 +217,7 @@ class LabTestTestCase(OpalTestCase):
             'test_code': 'AN12',
             'status': 'Sucess',
             'site': '^&        ^',
-            'clinical_info': 'testing'
+            'clinical_info': 'testing',
             'extras': {
                 'observations': [{
                     'last_updated': '18/06/2015 04:15:10',

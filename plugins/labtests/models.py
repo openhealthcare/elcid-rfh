@@ -193,7 +193,12 @@ class Observation(models.Model):
 
 
 def create_from_old_tests(patient):
+    """
+    Create old lab tests for all patients that do not
+    already have lab tests
+    """
     for ut in patient.labtest_set.filter(
         lab_test_type__istartswith="up"
     ):
-        LabTest.create_from_old_test(ut)
+        if not patient.lab_tests.exist():
+            LabTest.create_from_old_test(ut)
