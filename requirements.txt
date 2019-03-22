@@ -15,7 +15,7 @@ dj-static==0.0.6
 django-axes==1.7.0
 django-debug-toolbar==1.2.1
 mock==1.0.1
-requests==2.20.1
+requests==2.21.0
 python-dateutil==2.7.5
 celery==3.1.25
 django-celery==3.2.2
