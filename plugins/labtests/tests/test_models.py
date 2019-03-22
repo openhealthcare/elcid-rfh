@@ -170,12 +170,8 @@ class LabTestTestCase(OpalTestCase):
             "test_code": "AN12",
             "test_name": "Anti-CV2 (CRMP-5) antibodies",
             "observations": [{
-                "last_updated": timezone.make_aware(
-                    datetime.datetime(2015, 6, 18, 4, 15, 10),
-                ),
-                "observation_datetime": timezone.make_aware(
-                    datetime.datetime(2015, 4, 15, 4, 15, 10),
-                ),
+                "last_updated": '18/06/2015 04:15:10',
+                "observation_datetime": '15/04/2015 04:15:10',
                 "observation_name": "Aerobic bottle culture",
                 "observation_number": "12312",
                 "observation_value": "234",
