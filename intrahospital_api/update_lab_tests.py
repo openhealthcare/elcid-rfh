@@ -51,20 +51,13 @@ def get_or_create_lab_test(patient, lab_test):
     Updates the plugins.labtest lab test if it exists
     otherwise it creates it.
     """
-    lts = patient.lab_tests.filter(
-        lab_number=lab_test["external_identifier"]
-    ).filter(
-        test_name=lab_test["test_name"]
+
+    test, created = lab_test_models.LabTest.objects.get_or_create(
+        lab_number=lab_test["external_identifier"],
+        test_name=lab_test["test_name"],
+        patient=patient
     )
+    test.update_from_api_dict(patient, lab_test)
+    return test, created
 
-    lt = lts.first()
-
-    exists = bool(lt)
-
-    if not exists:
-        lt = lab_test_models.LabTest()
-
-    lt.update_from_api_dict(patient, lab_test)
-
-    return lt, not exists
 
