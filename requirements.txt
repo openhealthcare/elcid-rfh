@@ -7,7 +7,7 @@ djangorestframework==3.7.4
 letter==0.5
 
 cffi==1.7.0
-coverage==3.6
+coverage==4.5.3
 dj-database-url==0.2.1
 gunicorn==0.17.4
 psycopg2==2.7
