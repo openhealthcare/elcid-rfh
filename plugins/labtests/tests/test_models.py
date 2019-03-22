@@ -37,9 +37,9 @@ class LabTestTestCase(OpalTestCase):
         )
         self.assertEqual(
             lt.datetime_ordered,
-            datetime.datetime(
+            timezone.make_aware(datetime.datetime(
                 2015, 7, 17, 4, 15, 10
-            )
+            ))
         )
         self.assertEqual(
             lt.lab_number, '11111'
@@ -163,7 +163,6 @@ class LabTestTestCase(OpalTestCase):
 
         expected = {
             "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
             "lab_number": "11111",
             "site": u'^&        ^',
             "status": "Sucess",
@@ -180,3 +179,60 @@ class LabTestTestCase(OpalTestCase):
             }]
         }
         self.assertEqual(lt.extras, expected)
+
+    def test_to_dict(self):
+        lt = self.patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
+
+        lt.observation_set.create(
+            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234",
+            observation_name="Aerobic bottle culture"
+        )
+        result = lt.dict_for_view(None)
+        expected = {
+            'observations': [{
+                'last_updated': '18/06/2015 04:15:10',
+                'observation_value': '234',
+                'units': 'g',
+                'reference_range': '3.5 - 11',
+                'observation_name': 'Aerobic bottle culture',
+                'observation_datetime': '15/04/2015 04:15:10',
+                'observation_number': '12312'
+            }],
+            'test_name': 'Anti-CV2 (CRMP-5) antibodies',
+            'lab_number': '11111',
+            'datetime_ordered': datetime.datetime(2015, 6, 17, 4, 15, 10),
+            'test_code': 'AN12',
+            'status': 'Sucess',
+            'site': '^&        ^',
+            'clinical_info': 'testing'
+            'extras': {
+                'observations': [{
+                    'last_updated': '18/06/2015 04:15:10',
+                    'observation_value': '234', 'units': 'g',
+                    'reference_range': '3.5 - 11',
+                    'observation_name': 'Aerobic bottle culture',
+                    'observation_datetime': '15/04/2015 04:15:10',
+                    'observation_number': '12312'
+                }],
+                'test_name': 'Anti-CV2 (CRMP-5) antibodies',
+                'lab_number': '11111',
+                'test_code': 'AN12',
+                'status': 'Sucess',
+                'site': '^&        ^',
+                'clinical_info': 'testing'
+            },
+        }
+        self.assertEqual(result, expected)

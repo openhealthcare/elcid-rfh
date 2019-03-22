@@ -1,9 +1,14 @@
 import datetime
+from django.utils.dateformat import format as dt_format
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 from opal.core import serialization
 from opal import models as omodels
+
+
+def format_dt(some_dt):
+    return dt_format(some_dt, settings.DATETIME_FORMAT)
 
 
 """
@@ -103,7 +108,6 @@ class LabTest(models.Model):
             "test_code",
             "test_name",
             "lab_number",
-            "datetime_ordered",
         ]
         result = {}
         for field in fields:
@@ -134,6 +138,7 @@ class LabTest(models.Model):
 
     def dict_for_view(self, user):
         result = self.extras
+        result["datetime_ordered"] = self.datetime_ordered
         result["extras"] = self.extras
         return result
 
@@ -172,17 +177,18 @@ class Observation(models.Model):
         return self
 
     def to_dict(self):
-        fields = self._meta.get_fields()
-        ignored_fields = {
-            "id", "test", "created_at"
-        }
-        fields = [i.name for i in fields if i.name not in ignored_fields]
-        as_dict = {i: getattr(self, i) for i in fields}
-        for k, v in as_dict.items():
-            if isinstance(v, datetime.datetime):
-                as_dict[k] = v.strftime(
-                    settings.DATETIME_INPUT_FORMATS[0]
-                )
+        as_dict = {}
+        as_dict["last_updated"] = format_dt(self.last_updated)
+        as_dict["observation_datetime"] = format_dt(self.observation_datetime)
+        fields = [
+            "observation_number",
+            "observation_name",
+            "observation_value",
+            "reference_range",
+            "units"
+        ]
+        for field in fields:
+            as_dict[field] = getattr(self, field)
         return as_dict
 
 

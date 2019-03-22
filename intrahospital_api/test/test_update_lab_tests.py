@@ -42,9 +42,9 @@ class TestGetOrCreateLabTest(OpalTestCase):
         )
         self.assertEqual(
             lt.datetime_ordered,
-            datetime.datetime(
+            timezone.make_aware(datetime.datetime(
                 2015, 7, 17, 4, 15, 10
-            )
+            ))
         )
         self.assertEqual(
             lt.lab_number, '11111'
