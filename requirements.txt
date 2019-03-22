@@ -13,7 +13,7 @@ gunicorn==0.17.4
 psycopg2==2.7
 dj-static==0.0.6
 django-axes==1.7.0
-django-debug-toolbar==1.2.1
+django-debug-toolbar==1.11
 mock==1.0.1
 requests==2.20.1
 python-dateutil==2.7.5
