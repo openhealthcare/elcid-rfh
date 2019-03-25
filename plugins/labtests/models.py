@@ -31,10 +31,10 @@ class LabTest(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     @classmethod
-    def create_from_old_test(cls, lt):
-        s = cls()
-        s.patient = lt.patient
-        extras = lt.extras
+    def create_from_old_test(cls, old_lab_test):
+        new_lab_test = cls()
+        new_lab_test.patient = old_lab_test.patient
+        extras = old_lab_test.extras
         fields = [
             "clinical_info",
             "site",
@@ -45,13 +45,13 @@ class LabTest(models.Model):
         ]
         for f in fields:
             setattr(s, f, extras.get(f, None))
-        s.datetime_ordered = lt.datetime_ordered
-        s.lab_number = lt.external_identifier
-        s.save()
-        for i in extras["observations"]:
-            obs = s.observation_set.create()
-            obs.create(i)
-        return s
+        new_lab_test.datetime_ordered = old_lab_test.datetime_ordered
+        new_lab_test.lab_number = old_lab_test.external_identifier
+        new_lab_test.save()
+        for ob in extras["observations"]:
+            obs = old_lab_test.observation_set.create()
+            obs.create(ob)
+        return new_lab_test
 
     def update_from_api_dict(self, patient, data):
         """
@@ -191,14 +191,3 @@ class Observation(models.Model):
             as_dict[field] = getattr(self, field)
         return as_dict
 
-
-def create_from_old_tests(patient):
-    """
-    Create old lab tests for all patients that do not
-    already have lab tests
-    """
-    for ut in patient.labtest_set.filter(
-        lab_test_type__istartswith="up"
-    ):
-        if not patient.lab_tests.exist():
-            LabTest.create_from_old_test(ut)

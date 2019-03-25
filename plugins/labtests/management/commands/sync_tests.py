@@ -9,5 +9,8 @@ from opal.models import Patient
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        for p in Patient.objects.all():
-            models.create_from_old_tests(p)
+        for ut in patient.labtest_set.filter(
+            lab_test_type__istartswith="up"
+        ):
+            if not patient.lab_tests.exist():
+                LabTest.create_from_old_test(ut)
