@@ -1,24 +1,4 @@
 {% extends 'letters/base.html' %} {% block letter_content %}
-<h2>
-  Latent TB medical clinic – follow up patient assessment
-  <br />
-  <small>
-    {{ demographics.name }}
-    {% if demographics.date_of_birth %}
-      ({{ demographics.date_of_birth }})
-    {% endif %}
-  </small>
-</h2>
-
-<div class="row content-offset-below-10 content-offset">
-  <div class="col-md-12">
-    <p>
-      <b>Clinic date:</b><br />
-      {{ object.when|date:"j M Y" }}
-    </p>
-  </div>
-</div>
-
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
@@ -159,7 +139,7 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Recent Investigations: </b><br />
+      <b>Key Investigations: </b><br />
       <ul>
         {% for obs_name, summary in results.items %}
         <li>
