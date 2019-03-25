@@ -367,8 +367,8 @@ class TBHistory(models.PatientSubrecord):
     diagnosis_details = fields.TextField(default="")
 
     class Meta:
-        verbose_name = "History Of TB Or TB Contact"
-        verbose_name_plural = "History of TB"
+        verbose_name = "TB Exposure"
+        verbose_name_plural = "TB Exposures"
 
 
 class Allergies(models.Allergies):
