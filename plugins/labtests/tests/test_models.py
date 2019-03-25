@@ -1,6 +1,7 @@
 import datetime
 from django.utils import timezone
 from opal.core.test import OpalTestCase
+from opal.models import Patient
 from plugins.labtests import models
 
 
@@ -25,6 +26,28 @@ class LabTestTestCase(OpalTestCase):
             }]
         }
         self.patient, _ = self.new_patient_and_episode_please()
+
+    def create_lab_test(self):
+        lt = self.patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
+
+        lt.observation_set.create(
+            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234",
+            observation_name="Aerobic bottle culture"
+        )
+        return lt
 
     def test_update_from_api_dict_simple(self):
         lt = models.LabTest()
@@ -181,25 +204,7 @@ class LabTestTestCase(OpalTestCase):
         self.assertEqual(lt.extras, expected)
 
     def test_to_dict(self):
-        lt = self.patient.lab_tests.create(**{
-            "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
-            "lab_number": "11111",
-            "site": u'^&        ^',
-            "status": "Sucess",
-            "test_code": "AN12",
-            "test_name": "Anti-CV2 (CRMP-5) antibodies",
-        })
-
-        lt.observation_set.create(
-            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
-            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="234",
-            observation_name="Aerobic bottle culture"
-        )
+        lt = self.create_lab_test()
         result = lt.dict_for_view(None)
         expected = {
             'observations': [{
@@ -236,3 +241,26 @@ class LabTestTestCase(OpalTestCase):
             },
         }
         self.assertEqual(result, expected)
+
+    def test_patient_deletion_behaviour(self):
+        self.create_lab_test()
+        self.patient.delete()
+        self.assertFalse(
+            models.LabTest.objects.all().exists()
+        )
+
+    def test_lab_test_deletion_behaviour(self):
+        lt = self.create_lab_test()
+        lt.delete()
+        self.assertEqual(
+            Patient.objects.get().id, self.patient.id
+        )
+
+    def test_observation_deletion_behaviour(self):
+        lt = self.create_lab_test()
+        obs = lt.observation_set.get()
+        obs.delete()
+        self.assertEqual(
+            models.LabTest.objects.get().id,
+            lt.id
+        )
