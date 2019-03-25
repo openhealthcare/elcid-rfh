@@ -15,6 +15,25 @@ RELEVANT_TESTS = OrderedDict((
 ),)
 
 
+def clean_observation_name(obs_name):
+    """
+    Some obs names have trailing... as can be seen above
+    so we remove them
+    """
+    return obs_name.rstrip(".")
+
+
+def clean_observation_value(value):
+    """
+    We remove all results that have a New method effective,
+    these methods came into effect years ago and are just noise
+    """
+    TO_REMOVE = "~Please note: New method effective"
+    if TO_REMOVE in value:
+        return value[:value.find(TO_REMOVE)]
+    else:
+        return value
+
 
 def get_tb_summary_information(patient):
     """
@@ -32,7 +51,9 @@ def get_tb_summary_information(patient):
                 on = o["observation_name"]
                 if on in RELEVANT_TESTS[tn]:
                     by_observation[on]["observation_datetime"] = o["observation_datetime"]
-                    by_observation[on]["observation_value"] = o["observation_value"]
+                    by_observation[on]["observation_value"] = clean_observation_value(
+                        o["observation_value"]
+                    )
                     if len(by_observation) == len(RELEVANT_TESTS):
                         break
 
@@ -46,6 +67,7 @@ def get_tb_summary_information(patient):
 
     for on in results_order:
         if on in by_observation:
-            result[on] = by_observation[on]
+            obs_name = clean_observation_name(on)
+            result[obs_name] = by_observation[on]
     return result
 
