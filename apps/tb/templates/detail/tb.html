@@ -4,10 +4,10 @@
   <div class="col-md-6">
     {% include "panels/external_links.html" %}
     {% include "partials/tb_summary_tests.html" %}
-    {% record_panel models.Diagnosis title="TB Diagnoses" %}
-    {% record_panel models.PastMedicalHistory title="Co-morbidities" %}
-    {% record_panel models.Treatment %}
-    {% record_panel models.Antimicrobial title="Other Medication" %}
+    {% include 'panels/primary_diagnosis.html' %}
+    {% include 'panels/co_morbidities.html' %}
+    {% include 'panels/tb_medication.html' %}
+    {% include 'panels/other_medication.html' %}
     {% record_panel models.AdverseReaction %}
 
     {% record_panel models.ReferralRoute %}

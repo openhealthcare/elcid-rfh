@@ -293,9 +293,10 @@ class LymphNodeSwellingSite(models.EpisodeSubrecord):
 class Treatment(models.Treatment):
     _angular_service = 'TreatmentRecord'
     planned_end_date = fields.DateField(blank=True, null=True)
+    category = fields.CharField(blank=True, null=True, max_length=255)
 
-    class Meta:
-        verbose_name = "TB Treatment"
+    TB = "tb"
+
 
 
 class TBHistory(models.PatientSubrecord):
@@ -382,6 +383,7 @@ class Travel(models.EpisodeSubrecord):
     when = fields.CharField(max_length=255, blank=True)
     duration = fields.CharField(max_length=255, blank=True)
     reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
+    not_travelled = fields.NullBooleanField()
 
     class Meta:
         verbose_name = "Travel History"

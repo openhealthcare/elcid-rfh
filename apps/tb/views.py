@@ -5,7 +5,12 @@ Views for the TB Opal Plugin
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.tb.models import PatientConsultation
+from django.views.generic import TemplateView
 from apps.tb.utils import get_tb_summary_information
+
+from apps.tb.models import Treatment
+from elcid.models import Diagnosis
+from opal import views
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
@@ -19,9 +24,21 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         episode = self.object.episode
         patient = self.object.episode.patient
         ctx["demographics"] = patient.demographics()
-        ctx["diagnosis_list"] = episode.diagnosis_set.order_by("-date_of_diagnosis")
-        ctx["past_medical_history_list"] = episode.pastmedicalhistory_set.all()
-        ctx["tb_teatment_list"] = episode.treatment_set.all()
+        ctx["primary_diagnosis_list"] = episode.diagnosis_set.filter(
+            category=Diagnosis.PRIMARY
+        ).order_by("-date_of_diagnosis")
+
+        ctx["co_morbidites_list"] = episode.diagnosis_set.exclude(
+            category=Diagnosis.PRIMARY
+        ).order_by("-date_of_diagnosis")
+
+        ctx["tb_medication_list"] = episode.treatment_set.filter(
+            category=Treatment.TB
+        )
+        ctx["other_medication_list"] = episode.treatment_set.exclude(
+            category=Treatment.TB
+        )
+
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
         ctx["allergies_list"] = patient.allergies_set.all()
@@ -72,3 +89,29 @@ class LTBIFollowUp(AbstractLetterView):
 
         return ctx
 
+
+class AbstractModalView(LoginRequiredMixin, TemplateView):
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx["column"] = self.model
+        return ctx
+
+
+class PrimaryDiagnosisModal(AbstractModalView):
+    template_name="modals/primary_diagnosis.html"
+    model = Diagnosis
+
+
+class CoMorbiditiesModal(AbstractModalView):
+    template_name="modals/co_morbidities.html"
+    model = Diagnosis
+
+
+class TbMedicationModal(AbstractModalView):
+    template_name="modals/tb_medication.html"
+    model = Treatment
+
+
+class OtherMedicationModal(AbstractModalView):
+    template_name = "modals/other_medication.html"
+    model = Treatment

@@ -2,14 +2,17 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>TB diagnoses: </b><br />
-      {% if diagnosis_list.exists %}
+      <b>Primary diagnoses: </b><br />
+      {% if primary_diagnosis_list.exists %}
       <ul>
-          {% for diagnosis in diagnosis_list %}
+          {% for diagnosis in primary_diagnosis_list %}
           <li>
             {{ diagnosis.condition }}
             {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
+            {% if diagnosis.date_of_diagnosis %}
+            date_of_diagnosis
             {{ diagnosis.date_of_diagnosis }}
+            {% endif %}
             &nbsp;
             {{ diagnosis.details }}
           </li>
@@ -24,11 +27,43 @@
   <div class="col-md-12">
     <p>
       <b>Co-morbidities: </b><br />
+      {% if co_morbidites_list.exists %}
       <ul>
-        {% for pmh in past_medical_history_list %}
+          {% for diagnosis in co_morbidites_list %}
+          <li>
+            {{ diagnosis.condition }}
+            {% if diagnosis.provisional %}?{% endif %}
+            {% if diagnosis.date_of_diagnosis %}
+            date_of_diagnosis
+            {{ diagnosis.date_of_diagnosis }}
+            {% endif %}
+            &nbsp;
+            {{ diagnosis.details }}
+          </li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>TB medication: </b><br />
+      <ul>
+        {% for tb_treatment in tb_medication_list %}
         <li>
-          {{ pmh.condition }}{% if pmh.year %}({{ pmh.year }}) {% endif %} &nbsp;
-          {{ pmh.details }}
+          {{ tb_treatment.drug }} &nbsp;
+          {{ tb_treatment.dose }}
+          {{ tb_treatment.start_date | date }}
+          {% if tb_treatment.start_date and tb_treatment.end_date %}
+          - {{ tb_treatment.end_date | date }}
+          {% endif %}
+          {% if tb_treatment.planned_end_date %}
+          <br />planned end date: {{ tb_treatment.planned_end_date }}
+          {% endif %}
         </li>
         {% endfor %}
       </ul>
@@ -37,55 +72,38 @@
 </div>
 
 <div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>TB treatment: </b><br />
-        <ul>
-          {% for tb_treatment in tb_teatment_list %}
-          <li>
-            {{ tb_treatment.drug }} &nbsp;
-            {{ tb_treatment.dose }}
-            {{ tb_treatment.start_date | date }}
-            {% if tb_treatment.start_date and tb_treatment.end_date %}
-            - {{ tb_treatment.end_date | date }}
-            {% endif %}
-            {% if tb_treatment.planned_end_date %}
-            <br />planned end date: {{ tb_treatment.planned_end_date }}
-            {% endif %}
-          </li>
-          {% endfor %}
-        </ul>
-      </p>
-    </div>
+  <div class="col-md-12">
+    <p>
+      <b>Other medication: </b><br />
+      <ul>
+        {% for tb_treatment in other_medication_list %}
+        <li>
+          {{ tb_treatment.drug }} &nbsp;
+          {{ tb_treatment.dose }}
+          {{ tb_treatment.start_date | date }}
+          {% if tb_treatment.start_date and tb_treatment.end_date %}
+          - {{ tb_treatment.end_date | date }}
+          {% endif %}
+          {% if tb_treatment.planned_end_date %}
+          <br />planned end date: {{ tb_treatment.planned_end_date }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </p>
   </div>
-  <div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>Other medication: </b><br />
-        <ul>
-          {% for past_medication in past_medication_list %}
-          <li>
-            {{ past_medication.drug }} &nbsp;
-            {{ past_medication.dose }}
-            {{ past_medication.start_date | date }}
-            {% if past_medication.end_date and past_medication.start_date %}
-            - {{ past_medication.end_date | date }}
-            {% endif %}
-          </li>
-          {% endfor %}
-        </ul>
-      </p>
-    </div>
-  </div>
+</div>
 
-  <div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>Language:</b><br />
-        {{ communication_considerations.language }}
-      </p>
-    </div>
+
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Language:</b><br />
+      {{ communication_considerations.language }}
+    </p>
   </div>
+</div>
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
@@ -112,7 +130,7 @@
       <ul>
         {% for travel in travel_list %}
         <li>
-          Travel: {{ travel.country }}
+          Travel: {% if travel.not_travelled %}Not travelled{% else %}{{ travel.country }}{% endif %}
         </li>
         {% endfor %}
         <li>

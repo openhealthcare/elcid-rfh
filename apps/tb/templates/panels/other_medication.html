@@ -1,0 +1,31 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3>
+      <i class="{{ models.Treatment.get_icon }}"></i>
+      Other Medication
+      {% if not request.user.profile.readonly %}
+        <i
+           class="fa fa-plus-circle edit pull-right pointer"
+           ng-click="episode.recordEditor.newItem('treatment', '{% url 'other_medication_modal' %}')">
+        </i>
+      {% endif %}
+    </h3>
+  </div>
+  <ul class="list-group">
+    <li ng-show="item.category !== '{{ models.Treatment.TB }}'" ng-repeat="item in episode.treatment" class="list-group-item">
+      <div class="row">
+        <div class="col-md-9">
+          {% include models.Treatment.get_detail_template %}
+        </div>
+        <div class="col-md-3">
+          <span>
+              {% if not request.user.profile.readonly %}
+              <i class="fa fa-pencil edit pull-right pointer"
+                  ng-click="episode.recordEditor.editItem('treatment', $index, '{% url 'other_medication_modal' %}')"></i>
+              {% endif %}
+          </span>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>

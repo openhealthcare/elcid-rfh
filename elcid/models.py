@@ -323,7 +323,9 @@ class Consultant(lookuplists.LookupList):
 
 
 class Diagnosis(omodels.Diagnosis):
-    pass
+    category = models.CharField(max_length=256, blank=True, null=True)
+
+    PRIMARY = "primary"
 
 
 class Iv_stop(lookuplists.LookupList):

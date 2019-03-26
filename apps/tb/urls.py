@@ -18,4 +18,24 @@ urlpatterns = [
         r'^tb/ltbi_followup_assessment/(?P<pk>\d+)/?$',
         views.LTBIFollowUp.as_view()
     ),
+    url(
+        r'^tb/primary_diagnosis/$',
+        views.PrimaryDiagnosisModal.as_view(),
+        name="primary_diagnosis_modal"
+    ),
+    url(
+        r'^tb/co_morbidities/$',
+        views.CoMorbiditiesModal.as_view(),
+        name="co_morbidities_modal"
+    ),
+    url(
+        r'^tb/tb_medication/$',
+        views.TbMedicationModal.as_view(),
+        name="tb_medication_modal"
+    ),
+    url(
+        r'^tb/other_medication/$',
+        views.OtherMedicationModal.as_view(),
+        name="other_medication_modal"
+    )
 ]
