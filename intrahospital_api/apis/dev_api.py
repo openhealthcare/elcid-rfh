@@ -367,15 +367,15 @@ class DevApi(base_api.BaseApi):
         """ We expect a return of something like
             {
                 clinical_info:  u'testing',
-                datetime_ordered: "18 Jul 2015, 4:15 p.m.",
-                external_identifier: "ANTI NEURONAL AB REFERRAL",
+                datetime_ordered: "18/07/2015 04:15",
+                external_identifier: "1111",
                 site: u'^&                              ^',
                 status: "Sucess",
                 test_code: "AN12"
                 test_name: "Anti-CV2 (CRMP-5) antibodies",
                 observations: [{
-                    "last_updated": "18 Jul 2019, 4:18 p.m.",
-                    "observation_datetime": "18 Jul 2015, 4:18 p.m."
+                    "last_updated": "18/07/2015 04:15",
+                    "observation_datetime": "18/07/2015 04:15"
                     "observation_name": "Aerobic bottle culture",
                     "observation_number": "12312",
                     "reference_range": "3.5 - 11",
