@@ -104,7 +104,6 @@ describe('TbSymptomComplexCrtl', function(){
         var symptomField = 'Fever'
         scope.tbSymptom[symptomField] = true;
         scope.updateSymptoms(symptomField);
-        console.error(scope.editing.symptom_complex.symptoms);
         expect(_.contains(scope.editing.symptom_complex.symptoms, "Fever")).toBe(true);
     });
 
