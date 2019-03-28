@@ -708,7 +708,7 @@ class GNROutcome(lookuplists.LookupList):
 class BloodCultureIsolate(omodels.PatientSubrecord):
     date_ordered = models.DateField(blank=True, null=True)
     source = ForeignKeyOrFreeText(BloodCultureSource)
-    aerobic = models.BooleanField(default=True)
+    aerobic = models.NullBooleanField(default=True)
     lab_number = models.CharField(blank=True, null=True, max_length=256)
     gram_stains = models.ManyToManyField(GramStainOutcome, blank=True)
     quick_fish = ForeignKeyOrFreeText(
