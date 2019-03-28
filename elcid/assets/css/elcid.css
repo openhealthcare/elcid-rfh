@@ -247,4 +247,12 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   min-height: 160px;
 }
 
+.form-group .radio-inline input {
+  margin-top: 1px;
+}
+
+.radio-inline {
+  min-width: 15%;
+}
+
 /*# sourceMappingURL=elcid.css.map */

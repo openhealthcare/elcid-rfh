@@ -1,0 +1,45 @@
+{% load forms %}
+{% datepicker field="BloodCultureIsolate.date_ordered" %}
+{% input field="BloodCultureIsolate.lab_number" %}
+<div class="form-group">
+  <div class="row">
+    <label class="control-label col-sm-3">Bottle</label>
+    <div class="col-sm-8">
+      <label class="radio-inline">
+        <input type="radio" ng-model="editing.blood_culture_isolate.aerobic" ng-value="true">
+        Aerobic
+      </label>
+      <label class="radio-inline">
+        <input type="radio" ng-model="editing.blood_culture_isolate.aerobic" ng-value="false">
+        Anaerobic
+      </label>
+    </div>
+  </div>
+</div>
+{% input field="BloodCultureIsolate.source" %}
+<div class="row">
+  <div checkbox-multi-select="editing.blood_culture_isolate.gram_stains" options="gramstainoutcome_list" class="col-md-10 col-md-push-1">
+    <div ng-repeat="stain in options | orderBy:'-toString()'" class="col-md-3 text-center">
+        <label class="btn btn-default btn-text-wrap content-offset-below-20 multilined-btn" ng-change="updatecheckboxMultiSelect()" ng-model="checkbox[ stain ]" btn-checkbox>
+            [[ stain ]]
+        </label>
+    </div>
+  </div>
+</div>
+<span ng-show="editing.blood_culture_isolate.gram_stains.indexOf('Yeast') !== -1">
+  {% radio field="BloodCultureIsolate.quick_fish" %}
+</span>
+<span ng-show="editing.blood_culture_isolate.gram_stains.indexOf('Gram +ve Cocci Cluster') !== -1">
+  {% radio field="BloodCultureIsolate.gpc_staph" %}
+</span>
+<span ng-show="editing.blood_culture_isolate.gram_stains.indexOf('Gram +ve Cocci Chains') !== -1">
+  {% radio field="BloodCultureIsolate.gpc_strep" %}
+</span>
+<span ng-show="editing.blood_culture_isolate.gram_stains.indexOf('Gram -ve Rods') !== -1">
+  {% radio field="BloodCultureIsolate.gnr" %}
+</span>
+{% input field="BloodCultureIsolate.organism" %}
+{% select field="BloodCultureIsolate.sensitivities" required=False multiple=True tagging=False label="Sensitivies" %}
+{% select field="BloodCultureIsolate.resistances" required=False multiple=True tagging=False label="Resistances" %}
+{% textarea field="BloodCultureIsolate.notes" %}
+

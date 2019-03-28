@@ -1,0 +1,30 @@
+<span ng-show="item.gram_stains.length || item.organism.length">
+    <h5>
+	[[ item.date_ordered|shortDate ]] - [[ item.lab_number ]]
+	<span ng-show="item.aerobic">Aerobic</span>
+	<span ng-hide="item.aerobic">Anaerobic</span>
+    </h5>
+    <div ng-show="item.gram_stains">
+        Gram Stain: [[ item.gram_stains.join(", ")]]
+    </div>
+    <div ng-show="item.quick_fish && item.quick_fish.length">
+        QuickFish: [[ item.quick_fish ]]
+    </div>
+    <div ng-show="item.gpc_staph && item.gpc_staph.length">
+        GPC Staph: [[ item.gpc_staph ]]
+    </div>
+    <div ng-show="item.gpc_strep && item.gpc_strep.length">
+        GPC Strep: [[ item.gpc_strep ]]
+    </div>
+    <div ng-show="item.gnr && item.gnr.length">
+        GNR: [[ item.gnr ]]
+    </div>
+    <div ng-show="item.organism && item.organism.length">
+        Organism: [[ item.organism ]]
+    </div>
+    <div class="push-left-12" ng-show="item.sensitivities.length">- Sensitive: [[ item.sensitivities.join(", ") ]]</div>
+    <div class="push-left-12" ng-show="item.resistances.length">- Resistant: [[ item.resistances.join(", ") ]]</div>
+    <div ng-show="item.notes">
+        Notes: [[ item.notes ]]
+    </div>
+</span>

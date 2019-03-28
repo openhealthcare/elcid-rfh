@@ -157,3 +157,75 @@ directives.directive('printPage', function () {
     }
   }
 });
+
+directives.directive('checkboxMultiSelect', function($parse){
+  /*
+  * Takes in an array which we're saving to and a list
+  * of options.
+  *
+  * input:
+  *    checkboxMultiSelect: The list we're adding/removing from
+  *    options: The checkbox options available
+  *
+  * exposes:
+  *    checkbox: an object of {value: boolean}
+  *
+  */
+  "use strict";
+  return {
+    scope: true,
+    link: function(scope, element, attrs){
+      // if the parent variable has not been defined as an empty array yet then set it
+      var getter = $parse(attrs.checkboxMultiSelect)
+      if(!getter(scope.$parent)){
+        var checkboxMultiSelect = [];
+        getter.assign(scope.$parent, checkboxMultiSelect);
+        scope.checkboxMultiSelect = checkboxMultiSelect;
+      }
+      else{
+        scope.checkboxMultiSelect = getter(scope);
+      }
+
+      scope.options = $parse(attrs.options)(scope);
+      scope.checkbox = {};
+
+      var remove = function(option){
+        if(contains(option)){
+          var index = scope.checkboxMultiSelect.indexOf(option);
+          scope.checkboxMultiSelect.splice(index, 1);
+        }
+      }
+
+      var add = function(option){
+        if(!contains(option)){
+          scope.checkboxMultiSelect.push(option);
+        }
+      }
+
+      var contains = function(option){
+        return scope.checkboxMultiSelect.indexOf(option) !== -1;
+      };
+
+      scope.updatecheckboxMultiSelect = () => {
+        // updates checkboxMultiSelect based on checkbox
+        scope.options.forEach(option => {
+          if(scope.checkbox[option]){
+            add(option);
+          }
+          else{
+            remove(option);
+          }
+        });
+      }
+
+      var updateCheckbox = () =>{
+        // updates checkbox based on checkboxMultiSelect
+        scope.options.forEach(option => {
+          scope.checkbox[option] = contains(option);
+        });
+      }
+
+      updateCheckbox();
+    }
+  }
+});

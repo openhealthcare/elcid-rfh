@@ -1,0 +1,20 @@
+{
+  "gnroutcome": [
+    {
+      "name": "E.coli",
+      "synonyms": []
+    },
+    {
+      "name": "K. pneumoniae",
+      "synonyms": []
+    },
+    {
+      "name": "Negative",
+      "synonyms": []
+    },
+    {
+      "name": "P. aeruginosa",
+      "synonyms": []
+    }
+  ]
+}
