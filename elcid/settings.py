@@ -170,6 +170,7 @@ INSTALLED_APPS = (
     'opal.core.search',
     'lab',
     'plugins.letters',
+    'plugins.labtests',
     'intrahospital_api',
     'elcid',
     'django.contrib.admin',
@@ -357,6 +358,8 @@ HOSPITAL_DB = dict(
 
 EXTRACT_ASYNC = False
 
+USE_NEW_API = True
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -364,7 +367,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
-
 
 if 'test' not in sys.argv:
     try:

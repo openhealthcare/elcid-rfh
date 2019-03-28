@@ -1,5 +1,6 @@
 import datetime
 import re
+from django.conf import settings
 from operator import itemgetter
 from collections import defaultdict
 from django.conf import settings
@@ -14,6 +15,7 @@ from opal.core import serialization
 from elcid import models as emodels
 from elcid.utils import timing
 from opal import models as omodels
+from plugins.labtests import models as lab_test_models
 import os
 import json
 
@@ -76,6 +78,26 @@ LAB_TEST_TAGS = defaultdict(list)
 for tag, test_names in _LAB_TEST_TAGS.items():
     for test_name in test_names:
         LAB_TEST_TAGS[test_name].append(tag)
+
+
+def get_upstream_lab_tests_for_patient(patient):
+    if settings.USE_NEW_API:
+        return patient.lab_tests.all()
+    return emodels.UpstreamLabTest.objects.filter(patient=patient)
+
+def get_upstream_blood_tests_for_patient(patient):
+    if settings.USE_NEW_API:
+        return patient.lab_tests.filter(
+            test_name="BLOOD CULTURE"
+        )
+    return patient.labtest_set.filter(
+        lab_test_type=emodels.UpstreamBloodCulture.get_display_name()
+    ).order_by("external_identifier").order_by("-datetime_ordered")
+
+def get_relevant_tests(patient):
+    if settings.USE_NEW_API:
+        return lab_test_models.LabTest.get_relevant_tests(patient)
+    return emodels.UpstreamLabTest.get_relevant_tests(patient)
 
 
 def generate_time_series(observations):
@@ -175,9 +197,7 @@ class LabTestResultsView(LoginRequiredViewset):
         for lab_test in lab_tests:
             as_dict = lab_test.dict_for_view(None)
             observations = as_dict.get("observations", [])
-            lab_test_type = as_dict["extras"].get(
-                "test_name", lab_test.lab_test_type
-            )
+            lab_test_type = as_dict["extras"].get("test_name")
             if lab_test_type == "FULL BLOOD COUNT" and observations:
                 print("id {} name {} result {}".format(
                     lab_test.id,
@@ -229,7 +249,7 @@ class LabTestResultsView(LoginRequiredViewset):
         # name with the lab test properties on the observation
 
         a_year_ago = datetime.date.today() - datetime.timedelta(365)
-        lab_tests = emodels.UpstreamLabTest.objects.filter(patient=patient)
+        lab_tests = get_upstream_lab_tests_for_patient(patient)
         lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
         lab_tests = [l for l in lab_tests if l.extras]
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
@@ -368,7 +388,7 @@ class LabTestSummaryApi(LoginRequiredViewset):
             adds the lab test datetime ordered to the observation dict
             sorts the observations by datetime ordered
         """
-        test_data = emodels.UpstreamLabTest.get_relevant_tests(patient)
+        test_data = get_relevant_tests(patient)
         result = defaultdict(lambda: defaultdict(list))
         relevant_tests = {
             "C REACTIVE PROTEIN": ["C Reactive Protein"],
@@ -473,9 +493,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         """
             returns any observations with Aerobic or Anaerobic in their name
         """
-        lab_tests = patient.labtest_set.filter(
-            lab_test_type=emodels.UpstreamBloodCulture.get_display_name()
-        ).order_by("external_identifier").order_by("-datetime_ordered")
+        lab_tests = get_upstream_blood_tests_for_patient(patient)
         lab_tests = [i.dict_for_view(request.user) for i in lab_tests]
         for lab_test in lab_tests:
             observations = []
