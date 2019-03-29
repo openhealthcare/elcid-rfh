@@ -26,10 +26,6 @@ class BaseViewTestcase(OpalTestCase):
         user.set_password("fake")
         user.save()
 
-        profile, _ = UserProfile.objects.get_or_create(
-            user=user,
-            can_extract=True
-        )
         self.assertTrue(
             self.client.login(
                 username="Wilma", password="fake"

@@ -72,7 +72,6 @@ describe('AddEpisodeHelperCtrl', function(){
 
         it("should return false when episode category is now found", function(){
             $scope.patient.episodes = [{category_name: "TB"}]
-            console.error(controller);
             expect(controller.hasEpisodeCategory("else")).toBe(false);
         });
     })

@@ -18,7 +18,6 @@ class ApplicationTestCase(OpalTestCase):
         tb_user = User.objects.create(username="tb")
         tb_user.set_password(self.PASSWORD)
         tb_user.save()
-        opal_models.UserProfile.objects.create(user=tb_user)
         tb_user.profile.roles.create(
             name=tb_constants.TB_ROLE
         )

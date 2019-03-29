@@ -557,10 +557,20 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
             "lab_tests": [{
                 "external_identifier": "234",
                 "test_name": "some_test",
+                "test_code": "AN12",
+                "clinical_info":  'testing',
+                "datetime_ordered": "17/07/2015 04:15:10",
+                "site": u'^&        ^',
+                "status": "Sucess",
                 "observations": [{
+                    "last_updated": "18/07/2015 04:15:10",
+                    "observation_datetime": "19/07/2015 04:15:10",
+                    "observation_name": "Aerobic bottle culture",
                     "observation_number": "345",
+                    "observation_value": "123",
+                    "reference_range": "3.5 - 11",
                     "result": "Positive"
-                }]
+                }],
             }]
         }
 

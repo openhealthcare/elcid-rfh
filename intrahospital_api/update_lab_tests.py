@@ -1,4 +1,5 @@
 from elcid import models as emodels
+from plugins.labtests import models as lab_test_models
 from elcid.utils import timing
 from intrahospital_api import get_api
 
@@ -7,12 +8,13 @@ api = get_api()
 
 def update_tests(patient, lab_tests):
     """
-        takes in all lab tests, saves those
-        that need saving updates those that need
-        updating.
+    takes in all lab tests, saves those
+    that need saving updates those that need
+    updating.
     """
     for lab_test in lab_tests:
         lab_model = get_model_for_lab_test_type(patient, lab_test)
+        get_or_create_lab_test(patient, lab_test)
         lab_model.update_from_api_dict(patient, lab_test, api.user)
 
 
@@ -43,3 +45,19 @@ def get_model_for_lab_test_type(patient, lab_test):
         return by_test_type[0]
     else:
         return mod()
+
+def get_or_create_lab_test(patient, lab_test):
+    """"
+    Updates the plugins.labtest lab test if it exists
+    otherwise it creates it.
+    """
+
+    test, created = lab_test_models.LabTest.objects.get_or_create(
+        lab_number=lab_test["external_identifier"],
+        test_name=lab_test["test_name"],
+        patient=patient
+    )
+    test.update_from_api_dict(patient, lab_test)
+    return test, created
+
+

@@ -6,6 +6,7 @@ import mock
 import datetime
 
 from opal.core.test import OpalTestCase
+from elcid import models as elcid_models
 from django.utils import timezone
 from django.test import override_settings
 from rest_framework.reverse import reverse
@@ -403,3 +404,89 @@ class GetReferenceRangeTestCase(OpalTestCase):
             api.get_reference_range(self.to_obs("2-3")),
             dict(min="2", max="3")
         )
+
+class QuerysetApiSwitchTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.old_lt = elcid_models.UpstreamLabTest.objects.create(
+            patient=self.patient,
+            external_identifier="1",
+            status=emodels.UpstreamLabTest.PENDING
+        )
+
+        self.new_lt = self.patient.lab_tests.create(
+            clinical_info='testing',
+            datetime_ordered=datetime.datetime(2015, 6, 17, 4, 15, 10),
+            lab_number="11111",
+            site='^&        ^',
+            status="Sucess",
+            test_code="AN12",
+            test_name="Anti-CV2 (CRMP-5) antibodies",
+        )
+
+    @override_settings(USE_NEW_API=True)
+    def upstream_lab_tests_with_new_api(self):
+        result = api.get_upstream_lab_tests_for_patient(self.patient)
+        self.assertEqual(
+            result, self.patient.lab_tests.all()
+        )
+
+    @override_settings(USE_NEW_API=False)
+    def upstream_lab_tests_without_new_api(self):
+        result = api.get_upstream_lab_tests_for_patient(self.patient)
+        self.assertEqual(
+            result,
+            elcid_models.UpstreamLabTest.objects.all()
+        )
+
+    @override_settings(USE_NEW_API=True)
+    def upstream_blood_tests_with_new_api(self):
+        self.patient.lab_tests.create(
+            clinical_info='testing',
+            datetime_ordered=datetime.datetime(2015, 6, 17, 4, 15, 10),
+            lab_number="11111",
+            site='^&        ^',
+            status="Sucess",
+            test_code="BLOOD CULTURE",
+            test_name="BLOOD CULTURE",
+        )
+        result = api.get_upstream_blood_tests_for_patient(self.patient)
+        self.assertEqual(
+            result,
+            self.patient.lab_tests.filter(
+                test_name="BLOOD CULTURE"
+            )
+        )
+
+    @override_settings(USE_NEW_API=False)
+    def upstream_blood_tests_without_new_api(self):
+        old_bc = elcid_models.UpstreamBloodCulture.objects.create(
+            patient=self.patient,
+            external_identifier="1",
+            status=emodels.UpstreamLabTest.PENDING
+        )
+        result = api.get_upstream_blood_tests_for_patient(self.patient)
+        self.assertEqual(
+            result.get(),
+            old_bc
+        )
+
+    @override_settings(USE_NEW_API=True)
+    @mock.patch("elcid.api.lab_test_models.LabTest.get_relevant_tests")
+    @mock.patch("elcid.api.emodels.UpstreamLabTest.get_relevant_tests")
+    def upstream_relevant_tests_with_new_api(self, old_method, new_method):
+        old_method.return_value = "old method"
+        new_method.return_value = "new method"
+        result = api.get_relevant_tests(self.patient)
+        self.assertFalse(old_method.called)
+        self.assertTrue(new_method.called)
+        self.assertEqual(result, "new method")
+
+    @override_settings(USE_NEW_API=False)
+    def upstream_relevant_tests_without_new_api(self, old_method, new_method):
+        old_method.return_value = "old method"
+        new_method.return_value = "new method"
+        result = api.get_relevant_tests(self.patient)
+        self.assertFalse(new_method.called)
+        self.assertTrue(old_method.called)
+        self.assertEqual(result, "old method")
