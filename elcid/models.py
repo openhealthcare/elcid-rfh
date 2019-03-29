@@ -620,6 +620,10 @@ class PositiveBloodCultureHistory(PatientSubrecord):
         return None
 
 
+class ReferralReason(lookuplists.LookupList):
+    pass
+
+
 class ReferralRoute(omodels.EpisodeSubrecord):
     _icon = 'fa fa-level-up'
     _is_singleton = True
@@ -649,19 +653,9 @@ class ReferralRoute(omodels.EpisodeSubrecord):
     # date_of_referral
     date_of_referral = models.DateField(null=True, blank=True)
 
-    referral_type = models.CharField(
-        max_length=256,
-        blank=True,
-        default="",
-        choices=REFERAL_TYPES
-    )
+    referral_type = ForeignKeyOrFreeText(omodels.ReferralType)
 
-    referral_reason = models.CharField(
-        max_length=256,
-        blank=True,
-        default="",
-        choices=REFERRAL_REASON
-    )
+    referral_reason = ForeignKeyOrFreeText(ReferralReason)
 
     class Meta:
         verbose_name = "Referral Route"

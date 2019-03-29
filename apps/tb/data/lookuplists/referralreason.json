@@ -1,0 +1,32 @@
+{
+  "referralreason": [
+    {
+      "synonyms": [],
+      "name": "Symptomatic"
+    },
+    {
+      "synonyms": [],
+      "name": "TB contact screening"
+    },
+    {
+      "synonyms": [],
+      "name": "New entrant screening"
+    },
+    {
+      "synonyms": [],
+      "name": "Transferred in TB Rx"
+    },
+    {
+      "synonyms": [],
+      "name": "Pre-immunosuppression screening"
+    },
+    {
+      "synonyms": [],
+      "name": "BCG Vaccination"
+    },
+    {
+      "synonyms": [],
+      "name": "Other"
+    }
+  ]
+}

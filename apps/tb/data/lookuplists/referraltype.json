@@ -1,0 +1,40 @@
+{
+  "referraltype": [
+    {
+      "synonyms": [],
+      "name": "Primary care (GP)"
+    },
+    {
+      "synonyms": [],
+      "name": "Primary care (other)"
+    },
+    {
+      "synonyms": [],
+      "name": "Secondary care"
+    },
+    {
+      "synonyms": [],
+      "name": "TB service"
+    },
+    {
+      "synonyms": [],
+      "name": "A&E"
+    },
+    {
+      "synonyms": [],
+      "name": "Find & treat"
+    },
+    {
+      "synonyms": [],
+      "name": "Prison screening"
+    },
+    {
+      "synonyms": [],
+      "name": "Port Health/HPA"
+    },
+    {
+      "synonyms": [],
+      "name": "Private"
+    }
+  ]
+}
