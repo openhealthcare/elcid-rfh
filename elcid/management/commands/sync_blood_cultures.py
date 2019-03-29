@@ -21,7 +21,7 @@ def save_blood_culture_isolate(patient, lab_tests):
         models.GramStain.get_display_name(): "gram_stains",
         models.QuickFISH.get_display_name(): "quick_fish",
         models.GPCStaph.get_display_name(): "gpc_staph",
-        models.GPCStrep.get_display_name(): "gpd_strep",
+        models.GPCStrep.get_display_name(): "gpc_strep",
         models.GNR.get_display_name(): "gnr"
     }
 
@@ -73,6 +73,4 @@ class Command(BaseCommand):
         for patient in Patient.objects.all():
             if not patient.bloodcultureisolate_set.exists():
                 sync_blood_cultures(patient)
-
-
 
