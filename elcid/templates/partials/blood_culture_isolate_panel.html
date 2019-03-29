@@ -1,0 +1,30 @@
+{% with subrecord=models.BloodCultureIsolate name=models.BloodCultureIsolate.get_api_name %}
+  <div ng-repeat="parent in [patient]">
+    <div class="panel panel-default record-panel">
+      <div class="panel-heading">
+        <h3>
+          <i class="{{ subrecord.get_icon }}"></i> {{ subrecord.get_display_name }}
+          <span>
+              <i class="fa fa-plus-circle edit pull-right pointer"
+                 ng-click="parent.recordEditor.newItem('{{ name }}')"></i>
+         </span>
+        </h3>
+      </div>
+      <ul class="list-group">
+        <li class="list-group-item" ng-repeat="item in parent.{{ name }} | orderBy:['-date_ordered', 'lab_number', '-aerobic']">
+          <div class="row">
+            <div class="col-md-9">
+              {% include subrecord.get_display_template %}
+            </div>
+            <div class="col-md-3">
+              <span>
+                  <i class="fa fa-pencil edit pull-right pointer"
+                     ng-click="parent.recordEditor.editItem('{{ name }}', item)"></i>
+              </span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+{% endwith %}

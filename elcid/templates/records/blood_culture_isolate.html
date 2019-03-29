@@ -4,7 +4,7 @@
 	<span ng-show="item.aerobic">Aerobic</span>
 	<span ng-hide="item.aerobic">Anaerobic</span>
     </h5>
-    <div ng-show="item.gram_stains">
+    <div ng-show="item.gram_stains && item.gram_stains.length">
         Gram Stain: [[ item.gram_stains.join(", ")]]
     </div>
     <div ng-show="item.quick_fish && item.quick_fish.length">

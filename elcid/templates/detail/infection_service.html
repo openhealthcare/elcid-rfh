@@ -28,7 +28,7 @@
   {% include "partials/imaging_panel.html" %}
   {% include "partials/edrm_panel.html" %}
   {% include "partials/blood_culture_result_display.html" %}
-  {% record_panel models.BloodCultureIsolate %}
+  {% include "partials/blood_culture_isolate_panel.html" %}
   {% if permissions.view_lab_test_trends %}
     {% include "partials/upstream_blood_culture_result_display.html" %}
   {% endif %}
