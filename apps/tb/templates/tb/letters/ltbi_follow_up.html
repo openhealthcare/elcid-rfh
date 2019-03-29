@@ -8,9 +8,8 @@
           {% for diagnosis in primary_diagnosis_list %}
           <li>
             {{ diagnosis.condition }}
-            {% if diagnosis.provisional %}?{% endif %} date_of_diagnosis
+            {% if diagnosis.provisional %}?{% endif %}
             {% if diagnosis.date_of_diagnosis %}
-            date_of_diagnosis
             {{ diagnosis.date_of_diagnosis }}
             {% endif %}
             &nbsp;
@@ -34,7 +33,6 @@
             {{ diagnosis.condition }}
             {% if diagnosis.provisional %}?{% endif %}
             {% if diagnosis.date_of_diagnosis %}
-            date_of_diagnosis
             {{ diagnosis.date_of_diagnosis }}
             {% endif %}
             &nbsp;
