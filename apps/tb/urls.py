@@ -25,8 +25,8 @@ urlpatterns = [
     ),
     url(
         r'^tb/co_morbidities/$',
-        views.CoMorbiditiesModal.as_view(),
-        name="co_morbidities_modal"
+        views.SecondaryDiagnosisModal.as_view(),
+        name="secondary_diagnosis_modal"
     ),
     url(
         r'^tb/tb_medication/$',

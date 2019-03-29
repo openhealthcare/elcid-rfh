@@ -25,10 +25,10 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Co-morbidities: </b><br />
-      {% if co_morbidites_list.exists %}
+      <b>Secondary diagnosis: </b><br />
+      {% if secondary_diagnosis_list.exists %}
       <ul>
-          {% for diagnosis in co_morbidites_list %}
+          {% for diagnosis in secondary_diagnosis_list %}
           <li>
             {{ diagnosis.condition }}
             {% if diagnosis.provisional %}?{% endif %}

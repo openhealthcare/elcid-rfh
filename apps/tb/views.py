@@ -28,7 +28,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
             category=Diagnosis.PRIMARY
         ).order_by("-date_of_diagnosis")
 
-        ctx["co_morbidites_list"] = episode.diagnosis_set.exclude(
+        ctx["secondary_diagnosis_list"] = episode.diagnosis_set.exclude(
             category=Diagnosis.PRIMARY
         ).order_by("-date_of_diagnosis")
 
@@ -98,12 +98,12 @@ class AbstractModalView(LoginRequiredMixin, TemplateView):
 
 
 class PrimaryDiagnosisModal(AbstractModalView):
-    template_name="modals/primary_diagnosis.html"
+    template_name = "modals/primary_diagnosis.html"
     model = Diagnosis
 
 
-class CoMorbiditiesModal(AbstractModalView):
-    template_name="modals/co_morbidities.html"
+class SecondaryDiagnosisModal(AbstractModalView):
+    template_name = "modals/secondary_diagnosis.html"
     model = Diagnosis
 
 
