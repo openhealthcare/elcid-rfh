@@ -6,7 +6,7 @@ from django.conf import settings
 from opal.core.pathway import pathways, HelpTextStep
 
 from elcid import models
-from elcid.pathways import AddPatientPathway
+from elcid.pathways import AddPatientPathway, IgnoreDemographicsMixin
 
 from obs import models as obs_models
 from intrahospital_api import loader
@@ -201,7 +201,7 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
         return patient, episode
 
 
-class SymptomsPathway(pathways.PagePathway):
+class SymptomsPathway(IgnoreDemographicsMixin, pathways.PagePathway):
     """
     This pathway is used as a modal to edit symptoms for TB episodes.
     It uses the same template and controller as the symptoms step in the
@@ -221,7 +221,7 @@ class SymptomsPathway(pathways.PagePathway):
     )
 
 
-class NationalityAndLanguage(pathways.PagePathway):
+class NationalityAndLanguage(IgnoreDemographicsMixin, pathways.PagePathway):
     """
     A pathway that asks for place of birth,
     immigration concerns and communication concerns
