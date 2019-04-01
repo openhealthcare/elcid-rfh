@@ -131,10 +131,17 @@
         Previous TB Diagnosis:
         {% if history.tb_type %}
         {{ tb_history.tb_type }}
+        {% else %}
+        None recorded
         {% endif %}
       </div>
       <div>
-        Previous TB Contact: {{ tb_history.contact_details }}
+        Previous TB Contact:
+        {% if tb_history.contact_details %}
+        {{ tb_history.contact_details }}
+        {% else %}
+        None recorded
+        {% endif %}
       </div>
       {% if demographics.birth_place %}
         {% if not demographics.birth_place == 'United Kingdom' %}
@@ -158,10 +165,12 @@
         {{ symptom.name }}
       </div>
       {% endfor %}
-      {% endfor %}
-      {% if not symptoms_complex_list %}
+      {% if not symptom_complex.symptoms.exists %}
+      <div>
         No recorded respiratory or systemic TB symptoms
+      </div>
       {% endif %}
+      {% endfor %}
     </p>
   </div>
 </div>
