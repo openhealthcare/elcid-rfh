@@ -4,19 +4,17 @@
     <p>
       <b>Primary diagnoses: </b><br />
       {% if primary_diagnosis_list.exists %}
-      <ul>
-          {% for diagnosis in primary_diagnosis_list %}
-          <li>
-            {{ diagnosis.condition }}
-            {% if diagnosis.provisional %}?{% endif %}
-            {% if diagnosis.date_of_diagnosis %}
-              {{ diagnosis.date_of_diagnosis }}
-            {% endif %}
-            &nbsp;
-            {{ diagnosis.details }}
-          </li>
-          {% endfor %}
-      </ul>
+        {% for diagnosis in primary_diagnosis_list %}
+        <div>
+          {{ diagnosis.condition }}
+          {% if diagnosis.provisional %}?{% endif %}
+          {% if diagnosis.date_of_diagnosis %}
+            {{ diagnosis.date_of_diagnosis }}
+          {% endif %}
+          &nbsp;
+          {{ diagnosis.details }}
+        </div>
+        {% endfor %}
       {% endif %}
     </p>
   </div>
@@ -27,19 +25,17 @@
     <p>
       <b>Secondary diagnosis: </b><br />
       {% if secondary_diagnosis_list.exists %}
-      <ul>
-          {% for diagnosis in secondary_diagnosis_list %}
-          <li>
-            {{ diagnosis.condition }}
-            {% if diagnosis.provisional %}?{% endif %}
-            {% if diagnosis.date_of_diagnosis %}
-            {{ diagnosis.date_of_diagnosis }}
-            {% endif %}
-            &nbsp;
-            {{ diagnosis.details }}
-          </li>
-          {% endfor %}
-      </ul>
+        {% for diagnosis in secondary_diagnosis_list %}
+        <div>
+        {{ diagnosis.condition }}
+        {% if diagnosis.provisional %}?{% endif %}
+        {% if diagnosis.date_of_diagnosis %}
+        {{ diagnosis.date_of_diagnosis }}
+        {% endif %}
+        &nbsp;
+        {{ diagnosis.details }}
+        </div>
+        {% endfor %}
       {% endif %}
     </p>
   </div>
@@ -50,21 +46,19 @@
   <div class="col-md-12">
     <p>
       <b>TB medication: </b><br />
-      <ul>
-        {% for tb_treatment in tb_medication_list %}
-        <li>
-          {{ tb_treatment.drug }} &nbsp;
-          {{ tb_treatment.dose }}
-          {{ tb_treatment.start_date | date }}
-          {% if tb_treatment.start_date and tb_treatment.end_date %}
-          - {{ tb_treatment.end_date | date }}
-          {% endif %}
-          {% if tb_treatment.planned_end_date %}
-          <br />planned end date: {{ tb_treatment.planned_end_date }}
-          {% endif %}
-        </li>
-        {% endfor %}
-      </ul>
+      {% for tb_treatment in tb_medication_list %}
+      <div>
+        {{ tb_treatment.drug }} &nbsp;
+        {{ tb_treatment.dose }}
+        {{ tb_treatment.start_date | date }}
+        {% if tb_treatment.start_date and tb_treatment.end_date %}
+        - {{ tb_treatment.end_date | date }}
+        {% endif %}
+        {% if tb_treatment.planned_end_date %}
+        <br />planned end date: {{ tb_treatment.planned_end_date }}
+        {% endif %}
+      </div>
+      {% endfor %}
     </p>
   </div>
 </div>
@@ -73,21 +67,19 @@
   <div class="col-md-12">
     <p>
       <b>Other medication: </b><br />
-      <ul>
-        {% for tb_treatment in other_medication_list %}
-        <li>
-          {{ tb_treatment.drug }} &nbsp;
-          {{ tb_treatment.dose }}
-          {{ tb_treatment.start_date | date }}
-          {% if tb_treatment.start_date and tb_treatment.end_date %}
-          - {{ tb_treatment.end_date | date }}
-          {% endif %}
-          {% if tb_treatment.planned_end_date %}
-          <br />planned end date: {{ tb_treatment.planned_end_date }}
-          {% endif %}
-        </li>
-        {% endfor %}
-      </ul>
+      {% for tb_treatment in other_medication_list %}
+      <div>
+        {{ tb_treatment.drug }} &nbsp;
+        {{ tb_treatment.dose }}
+        {{ tb_treatment.start_date | date }}
+        {% if tb_treatment.start_date and tb_treatment.end_date %}
+        - {{ tb_treatment.end_date | date }}
+        {% endif %}
+        {% if tb_treatment.planned_end_date %}
+        <br />planned end date: {{ tb_treatment.planned_end_date }}
+        {% endif %}
+      </div>
+      {% endfor %}
     </p>
   </div>
 </div>
@@ -125,29 +117,32 @@
   <div class="col-md-12">
     <p>
       <b>Exposure:</b><br />
-      <ul>
-        {% for travel in travel_list %}
-        <li>
-          Travel: {% if travel.not_travelled %}Not travelled{% else %}{{ travel.country }}{% endif %}
-        </li>
-        {% endfor %}
-        <li>
-          Previous TB Diagnosis:
-          {% if history.tb_type %}
-          {{ tb_history.tb_type }}
-          {% endif %}
-        </li>
-        <li>
-          Previous TB Contact: {{ tb_history.contact_details }}
-        </li>
-        {% if demographics.birth_place %}
-          {% if not demographics.birth_place == 'United Kingdom' %}
-            <li>
-              Place Of Birth: {{ demographics.birth_place }}
-            </li>
-          {% endif %}
+      {% for travel in travel_list %}
+      <div>
+        Travel: {{ travel.country }}
+      </div>
+      {% endfor %}
+      {% if not travel_list.exists %}
+      <div>
+        Travel: No recorded travel
+      </div>
+      {% endif %}
+      <div>
+        Previous TB Diagnosis:
+        {% if history.tb_type %}
+        {{ tb_history.tb_type }}
         {% endif %}
-      </ul>
+      </div>
+      <div>
+        Previous TB Contact: {{ tb_history.contact_details }}
+      </div>
+      {% if demographics.birth_place %}
+        {% if not demographics.birth_place == 'United Kingdom' %}
+        <div>
+          Place Of Birth: {{ demographics.birth_place }}
+        </div>
+        {% endif %}
+      {% endif %}
     </p>
   </div>
 </div>
@@ -158,16 +153,14 @@
     <p>
       <b>Symptoms: </b><br />
       {% for symptom_complex in symptom_complex_list %}
-      <ul>
-        {% for symptom in symptom_complex.symptoms.all %}
-        <li>
-          {{ symptom.name }}
-        </li>
-        {% endfor %}
-      </ul>
+      {% for symptom in symptom_complex.symptoms.all %}
+      <div>
+        {{ symptom.name }}
+      </div>
+      {% endfor %}
       {% endfor %}
       {% if not symptoms_complex_list %}
-        No respiratory or systemic TB symptoms
+        No recorded respiratory or systemic TB symptoms
       {% endif %}
     </p>
   </div>
@@ -225,14 +218,16 @@
     <p>
     <b>Allergies: </b><br />
     {% if allergies_list.exists %}
-    <ul>
-      {% for allergy in allergies_list %}
-      <li>
-        {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-        {{ allergy.details }}
-      </li>
-      {% endfor %}
-    </ul>
+    {% for allergy in allergies_list %}
+    <div>
+      {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
+      {{ allergy.details }}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div>
+      No recorded allergies
+    </div>
     {% endif %}
   </p>
   </div>
@@ -285,14 +280,12 @@
   <div class="col-md-12">
     <p>
       <b>Results: </b><br />
-      <ul>
-        {% for obs_name, summary in results.items %}
-        <li>
-          {{ obs_name }}&nbsp;
-          {{ summary.observation_value }}
-        </li>
-        {% endfor %}
-      </ul>
+      {% for obs_name, summary in results.items %}
+      <div>
+        {{ obs_name }}&nbsp;
+        {{ summary.observation_value }}
+      </div>
+      {% endfor %}
     </p>
   </div>
 </div>

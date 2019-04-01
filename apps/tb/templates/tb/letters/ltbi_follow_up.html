@@ -4,19 +4,17 @@
     <p>
       <b>Primary diagnoses: </b><br />
       {% if primary_diagnosis_list.exists %}
-      <ul>
-          {% for diagnosis in primary_diagnosis_list %}
-          <li>
-            {{ diagnosis.condition }}
-            {% if diagnosis.provisional %}?{% endif %}
-            {% if diagnosis.date_of_diagnosis %}
-            {{ diagnosis.date_of_diagnosis }}
-            {% endif %}
-            &nbsp;
-            {{ diagnosis.details }}
-          </li>
-          {% endfor %}
-      </ul>
+        {% for diagnosis in primary_diagnosis_list %}
+        <div>
+          {{ diagnosis.condition }}
+          {% if diagnosis.provisional %}?{% endif %}
+          {% if diagnosis.date_of_diagnosis %}
+          {{ diagnosis.date_of_diagnosis }}
+          {% endif %}
+          &nbsp;
+          {{ diagnosis.details }}
+        </div>
+        {% endfor %}
       {% endif %}
     </p>
   </div>
@@ -27,19 +25,17 @@
     <p>
       <b>Secondary diagnosis: </b><br />
       {% if secondary_diagnosis_list.exists %}
-      <ul>
-          {% for diagnosis in secondary_diagnosis_list %}
-          <li>
-            {{ diagnosis.condition }}
-            {% if diagnosis.provisional %}?{% endif %}
-            {% if diagnosis.date_of_diagnosis %}
-            {{ diagnosis.date_of_diagnosis }}
-            {% endif %}
-            &nbsp;
-            {{ diagnosis.details }}
-          </li>
-          {% endfor %}
-      </ul>
+        {% for diagnosis in secondary_diagnosis_list %}
+        <div>
+          {{ diagnosis.condition }}
+          {% if diagnosis.provisional %}?{% endif %}
+          {% if diagnosis.date_of_diagnosis %}
+          {{ diagnosis.date_of_diagnosis }}
+          {% endif %}
+          &nbsp;
+          {{ diagnosis.details }}
+        </div>
+        {% endfor %}
       {% endif %}
     </p>
   </div>
@@ -50,21 +46,19 @@
   <div class="col-md-12">
     <p>
       <b>TB medication: </b><br />
-      <ul>
-        {% for tb_treatment in tb_medication_list %}
-        <li>
-          {{ tb_treatment.drug }} &nbsp;
-          {{ tb_treatment.dose }}
-          {{ tb_treatment.start_date | date }}
-          {% if tb_treatment.start_date and tb_treatment.end_date %}
-          - {{ tb_treatment.end_date | date }}
-          {% endif %}
-          {% if tb_treatment.planned_end_date %}
-          <br />planned end date: {{ tb_treatment.planned_end_date }}
-          {% endif %}
-        </li>
-        {% endfor %}
-      </ul>
+      {% for tb_treatment in tb_medication_list %}
+      <div>
+        {{ tb_treatment.drug }} &nbsp;
+        {{ tb_treatment.dose }}
+        {{ tb_treatment.start_date | date }}
+        {% if tb_treatment.start_date and tb_treatment.end_date %}
+        - {{ tb_treatment.end_date | date }}
+        {% endif %}
+        {% if tb_treatment.planned_end_date %}
+        <br />planned end date: {{ tb_treatment.planned_end_date }}
+        {% endif %}
+      </div>
+      {% endfor %}
     </p>
   </div>
 </div>
@@ -73,35 +67,31 @@
   <div class="col-md-12">
     <p>
       <b>Other medication: </b><br />
-      <ul>
-        {% for tb_treatment in other_medication_list %}
-        <li>
-          {{ tb_treatment.drug }} &nbsp;
-          {{ tb_treatment.dose }}
-          {{ tb_treatment.start_date | date }}
-          {% if tb_treatment.start_date and tb_treatment.end_date %}
-          - {{ tb_treatment.end_date | date }}
-          {% endif %}
-          {% if tb_treatment.planned_end_date %}
-          <br />planned end date: {{ tb_treatment.planned_end_date }}
-          {% endif %}
-        </li>
-        {% endfor %}
-      </ul>
+      {% for tb_treatment in other_medication_list %}
+      <div>
+        {{ tb_treatment.drug }} &nbsp;
+        {{ tb_treatment.dose }}
+        {{ tb_treatment.start_date | date }}
+        {% if tb_treatment.start_date and tb_treatment.end_date %}
+        - {{ tb_treatment.end_date | date }}
+        {% endif %}
+        {% if tb_treatment.planned_end_date %}
+        <br />planned end date: {{ tb_treatment.planned_end_date }}
+        {% endif %}
+      </div>
+      {% endfor %}
     </p>
   </div>
 </div>
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Adverse reactions:</b><br />
-      <ul>
-        {% for adverse_reaction in adverse_reaction_list %}
-        <li>
-          {{ adverse_reaction.details }}
-        </li>
-        {% endfor %}
-      </ul>
+    <b>Adverse reactions:</b><br />
+    {% for adverse_reaction in adverse_reaction_list %}
+    <div>
+      {{ adverse_reaction.details }}
+    </div>
+    {% endfor %}
     </p>
   </div>
 </div>
@@ -111,14 +101,16 @@
     <p>
       <b>Allergies: </b><br />
       {% if allergies_list.exists %}
-      <ul>
-        {% for allergy in allergies_list %}
-        <li>
-          {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-          {{ allergy.details }}
-        </li>
-        {% endfor %}
-      </ul>
+      {% for allergy in allergies_list %}
+      <div>
+        {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
+        {{ allergy.details }}
+      </div>
+      {% endfor %}
+      {% else %}
+      <div>
+        No recorded allergies
+      </div>
       {% endif %}
     </p>
   </div>
@@ -153,15 +145,13 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Key Investigations: </b><br />
-      <ul>
-        {% for obs_name, summary in results.items %}
-        <li>
-          {{ obs_name }}&nbsp;
-          {{ summary.observation_value }} ({{ summary.observation_datetime|slice:":10" }})
-        </li>
-        {% endfor %}
-      </ul>
+      <b>Key investigations: </b><br />
+      {% for obs_name, summary in results.items %}
+      <div>
+        {{ obs_name }}&nbsp;
+        {{ summary.observation_value }} ({{ summary.observation_datetime|slice:":10" }})
+      </div>
+      {% endfor %}
     </p>
   </div>
 </div>
@@ -171,8 +161,8 @@
   <div class="col-md-12">
     <p>
     <b>
-      {{ imaging.imaging_type }}
-      {% if imaging.site %}({{ imaging.site }}){% endif %}:
+    {{ imaging.imaging_type }}
+    {% if imaging.site %}({{ imaging.site }}){% endif %}:
     </b><br />
     {{ imaging.date | date }} {{ imaging.details }}<br />
     </p>
