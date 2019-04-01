@@ -384,6 +384,7 @@ class Travel(models.EpisodeSubrecord):
     duration = fields.CharField(max_length=255, blank=True)
     reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
     not_travelled = fields.NullBooleanField()
+    additional_exposures = fields.TextField(default="")
 
     class Meta:
         verbose_name = "Travel History"
