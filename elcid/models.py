@@ -657,6 +657,8 @@ class ReferralRoute(omodels.EpisodeSubrecord):
 
     referral_reason = ForeignKeyOrFreeText(ReferralReason)
 
+    details = models.TextField()
+
     class Meta:
         verbose_name = "Referral Route"
 
