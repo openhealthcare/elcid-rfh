@@ -26,7 +26,7 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Secondary diagnoses: </b><br />
+      <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
       {% if secondary_diagnosis_list.exists %}
         {% for diagnosis in secondary_diagnosis_list %}
         <div>
@@ -146,7 +146,11 @@
   <div class="col-md-12">
     <p>
       <b>Weight:</b><br />
-      {{ weight }}
+      {% if weight %}
+        {{ weight|floatformat }}kg
+      {% else %}
+        No weight recorded today.
+      {% endif %}
     </p>
   </div>
 </div>

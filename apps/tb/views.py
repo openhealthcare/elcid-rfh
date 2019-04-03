@@ -1,7 +1,7 @@
 """
 Views for the TB Opal Plugin
 """
-
+import datetime
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.tb.models import PatientConsultation
@@ -44,7 +44,9 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["allergies_list"] = patient.allergies_set.all()
         ctx["imaging_list"] = episode.imaging_set.all()
         ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
-        obs = episode.observation_set.order_by("-datetime").last()
+        obs = episode.observation_set.filter(
+            datetime__date=datetime.date.today()
+        ).last()
         if obs:
             ctx["weight"] = obs.weight
         return ctx
