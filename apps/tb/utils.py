@@ -11,7 +11,8 @@ RELEVANT_TESTS = OrderedDict((
     ]),
     ('HEPATITIS B SURFACE AG', ["Hepatitis B 's'Antigen........"]),
     ('HEPATITIS C ANTIBODY', ["Hepatitis C IgG Antibody......"]),
-    ('HIV 1 + 2 ANTIBODIES', ['HIV 1 + 2 Antibodies..........'])
+    ('HIV 1 + 2 ANTIBODIES', ['HIV 1 + 2 Antibodies..........']),
+    ("25-OH Vitamin D", ["25-OH Vitamin D"]),
 ),)
 
 
@@ -25,12 +26,13 @@ def clean_observation_name(obs_name):
 
 def clean_observation_value(value):
     """
-    We remove all results that have a New method effective,
-    these methods came into effect years ago and are just noise
+    "~" are used as new line charecters. They add in additional
+    information that is just repeated in all lts of the type.
+
+    Ie its just noise, e.g. ~Please note: New method effective.
     """
-    TO_REMOVE = "~Please note: New method effective"
-    if TO_REMOVE in value:
-        return value[:value.find(TO_REMOVE)]
+    if "~" in value:
+        return value[:value.find("~")]
     else:
         return value
 
@@ -50,10 +52,13 @@ def get_tb_summary_information(patient):
             for o in t.extras["observations"]:
                 on = o["observation_name"]
                 if on in RELEVANT_TESTS[tn]:
-                    by_observation[on]["observation_datetime"] = o["observation_datetime"]
-                    by_observation[on]["observation_value"] = clean_observation_value(
+                    by_observation[on]["observation_datetime"] = o[
+                        "observation_datetime"
+                    ]
+                    obs_value = clean_observation_value(
                         o["observation_value"]
                     )
+                    by_observation[on]["observation_value"] = obs_value
                     if len(by_observation) == len(RELEVANT_TESTS):
                         break
 
@@ -61,7 +66,6 @@ def get_tb_summary_information(patient):
     for ons in RELEVANT_TESTS.values():
         for on in ons:
             results_order.append(on)
-
 
     result = OrderedDict()
 

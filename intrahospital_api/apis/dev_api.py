@@ -226,6 +226,18 @@ TEST_BASES = {
         },
 
     },
+    "25-OH Vitamin D": {
+        "25-OH Vitamin D": {
+            "units": "nmol/L",
+            "reference_range": "",
+            "observation_value": "".join([
+                "43~Deficient if < 25 nmol/L~Insufficent if 25 - 75 nmol/L~",
+                "Possible Toxicity if > 250 nmol/L~Note assay change to ",
+                "Roche Gen II from 26/2/18.~Results >75 nmol/L average approx ",
+                "20% lower"
+            ])
+        }
+    },
     "HEPATITIS B SURFACE AG": {
         "Hepatitis B 's'Antigen........": {
             "units": "",
