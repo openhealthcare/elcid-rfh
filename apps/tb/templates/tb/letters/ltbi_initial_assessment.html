@@ -292,26 +292,21 @@
 </div>
 {% endfor %}
 
-{% for other_investigation in other_investigation_list %}
-<div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>{{ other_investigation.name }}:</b><br />
-        {{ other_investigation.date | date }} {{ other_investigation.details }}
-      </p>
-    </div>
-  </div>
-{% endfor %}
-
-{% if results %}
+{% if results or other_investigation_list %}
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Results: </b><br />
+      <b>Key investigations: </b><br />
       {% for obs_name, summary in results.items %}
       <div>
-        {{ obs_name }}&nbsp;
-        {{ summary.observation_value }}
+        {{ obs_name }}:&nbsp;
+        {{ summary.observation_value }} {% if summary.observation_datetime %}({{ summary.observation_datetime.date }}){% endif %}
+      </div>
+      {% endfor %}
+      {% for other_investigation in other_investigation_list %}
+      <div>
+        {{ other_investigation.name }}:&nbsp;
+        {{ other_investigation.details }} {% if other_investigation.date %}({{ other_investigation.date }}){% endif %}
       </div>
       {% endfor %}
     </p>

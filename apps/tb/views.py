@@ -6,6 +6,7 @@ from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.tb.models import PatientConsultation
 from django.views.generic import TemplateView
+from opal.core.serialization import deserialize_datetime
 from apps.tb.utils import get_tb_summary_information
 
 from apps.tb.models import Treatment
@@ -38,7 +39,11 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["other_medication_list"] = episode.treatment_set.exclude(
             category=Treatment.TB
         )
-
+        ctx["results"] = get_tb_summary_information(patient)
+        for result in ctx["results"].values():
+            result["observation_datetime"] = deserialize_datetime(
+                result["observation_datetime"]
+            )
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
         ctx["allergies_list"] = patient.allergies_set.all()
@@ -70,7 +75,6 @@ class LTBIInitialAssessment(AbstractLetterView):
 
         ctx["patient"] = patient
         ctx["tb_history"] = patient.tbhistory_set.get()
-        ctx["results"] = get_tb_summary_information(patient)
         return ctx
 
 
@@ -82,13 +86,7 @@ class LTBIFollowUp(AbstractLetterView):
         ctx = super().get_context_data(*args, **kwargs)
         episode = self.object.episode
         patient = self.object.episode.patient
-        ctx["results"] = get_tb_summary_information(patient)
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
-
-        obs = episode.observation_set.order_by("-datetime").last()
-        if obs:
-            ctx["weight"] = obs.weight
-
         return ctx
 
 
