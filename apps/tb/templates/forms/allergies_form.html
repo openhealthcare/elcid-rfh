@@ -1,0 +1,4 @@
+{% load forms %}
+{% input field="Allergies.drug" lookuplist="antimicrobial_list" required=True %}
+{% checkbox field="Allergies.provisional" %}
+{% input field="Allergies.details" %}
