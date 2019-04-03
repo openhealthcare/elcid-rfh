@@ -15,6 +15,7 @@ class LettersPlugin(plugins.OpalPlugin):
         'opal.letters': [
             'js/letters/app.js',
             'js/letters/controllers/blank_controller.js',
+            'js/letters/controllers/redirect_controller.js',
         ]
     }
 
