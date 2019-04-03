@@ -2,19 +2,22 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Primary diagnoses: </b><br />
+      <b>Primary diagnosis: </b><br />
       {% if primary_diagnosis_list.exists %}
         {% for diagnosis in primary_diagnosis_list %}
         <div>
           {{ diagnosis.condition }}
           {% if diagnosis.provisional %}?{% endif %}
-          {% if diagnosis.date_of_diagnosis %}
-          {{ diagnosis.date_of_diagnosis }}
+          {% if diagnosis.details %}
+            <br />
+            {{ diagnosis.details }}
           {% endif %}
-          &nbsp;
-          {{ diagnosis.details }}
         </div>
         {% endfor %}
+      {% else %}
+      <div>
+        No recorded primary diagnoses
+      </div>
       {% endif %}
     </p>
   </div>
@@ -23,19 +26,22 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
-      <b>Secondary diagnosis: </b><br />
+      <b>Secondary diagnoses: </b><br />
       {% if secondary_diagnosis_list.exists %}
         {% for diagnosis in secondary_diagnosis_list %}
         <div>
           {{ diagnosis.condition }}
           {% if diagnosis.provisional %}?{% endif %}
-          {% if diagnosis.date_of_diagnosis %}
-          {{ diagnosis.date_of_diagnosis }}
+          {% if diagnosis.details %}
+            <br />
+            {{ diagnosis.details }}
           {% endif %}
-          &nbsp;
-          {{ diagnosis.details }}
         </div>
         {% endfor %}
+      {% else %}
+      <div>
+        No recorded secondary diagnoses
+      </div>
       {% endif %}
     </p>
   </div>
@@ -46,6 +52,7 @@
   <div class="col-md-12">
     <p>
       <b>TB medication: </b><br />
+      {% if tb_medication_list.exists %}
       {% for tb_treatment in tb_medication_list %}
       <div>
         {{ tb_treatment.drug }} &nbsp;
@@ -59,10 +66,15 @@
         {% endif %}
       </div>
       {% endfor %}
+      {% else %}
+      <div>
+        No recorded medications
+      </div>
+      {% endif %}
     </p>
   </div>
 </div>
-  
+
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
@@ -80,9 +92,13 @@
         {% endif %}
       </div>
       {% endfor %}
+      {% if not other_medication_list.exists %}
+      <div>No recorded medications</div>
+      {% endif %}
     </p>
   </div>
 </div>
+{% if adverse_reaction_list.exists %}
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <p>
@@ -95,6 +111,7 @@
     </p>
   </div>
 </div>
+{% endif %}
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
