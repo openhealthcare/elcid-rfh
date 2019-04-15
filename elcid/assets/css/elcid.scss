@@ -292,3 +292,15 @@ a.list-group-item {
 .tb-summary-panel{
   min-height: 160px;
 }
+
+.table-edit{
+  i.edit{
+    visibility: hidden;
+  }
+
+  &:hover{
+    i.edit{
+      visibility: visible;
+    }
+  }
+}

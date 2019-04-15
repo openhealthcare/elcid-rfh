@@ -247,4 +247,11 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   min-height: 160px;
 }
 
+.table-edit i.edit {
+  visibility: hidden;
+}
+.table-edit:hover i.edit {
+  visibility: visible;
+}
+
 /*# sourceMappingURL=elcid.css.map */
