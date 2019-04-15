@@ -495,6 +495,7 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
             'id': self.diagnosis.id,
             'condition': 'Some condition',
             'provisional': False,
+            'category': None,
             'details': u'',
             'date_of_diagnosis': datetime.date(2013, 7, 25),
             }
