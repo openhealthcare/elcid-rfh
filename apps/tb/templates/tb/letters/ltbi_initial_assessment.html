@@ -52,25 +52,7 @@
   <div class="col-md-12">
     <p>
       <b>TB medication: </b><br />
-      {% if tb_medication_list.exists %}
-      {% for tb_treatment in tb_medication_list %}
-      <div>
-        {{ tb_treatment.drug }} &nbsp;
-        {{ tb_treatment.dose }}
-        {{ tb_treatment.start_date | date }}
-        {% if tb_treatment.start_date and tb_treatment.end_date %}
-        - {{ tb_treatment.end_date | date }}
-        {% endif %}
-        {% if tb_treatment.planned_end_date %}
-        <br />planned end date: {{ tb_treatment.planned_end_date }}
-        {% endif %}
-      </div>
-      {% endfor %}
-      {% else %}
-      <div>
-        No recorded medications
-      </div>
-      {% endif %}
+      {% include "tb/letters/partials/medication.html" with medication_list=tb_medication_list %}
     </p>
   </div>
 </div>
@@ -79,22 +61,7 @@
   <div class="col-md-12">
     <p>
       <b>Other medication: </b><br />
-      {% for tb_treatment in other_medication_list %}
-      <div>
-        {{ tb_treatment.drug }} &nbsp;
-        {{ tb_treatment.dose }}
-        {{ tb_treatment.start_date | date }}
-        {% if tb_treatment.start_date and tb_treatment.end_date %}
-        - {{ tb_treatment.end_date | date }}
-        {% endif %}
-        {% if tb_treatment.planned_end_date %}
-        <br />planned end date: {{ tb_treatment.planned_end_date }}
-        {% endif %}
-      </div>
-      {% endfor %}
-      {% if not other_medication_list.exists %}
-      <div>No recorded medications</div>
-      {% endif %}
+      {% include "tb/letters/partials/medication.html" with medication_list=other_medication_list %}
     </p>
   </div>
 </div>
