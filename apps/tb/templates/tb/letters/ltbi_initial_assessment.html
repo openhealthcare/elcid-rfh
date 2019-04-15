@@ -266,14 +266,17 @@
       <b>Key investigations: </b><br />
       {% for obs_name, summary in results.items %}
       <div>
+        {{ summary.observation_datetime.date | date }}
+        &nbsp;
         {{ obs_name }}:&nbsp;
-        {{ summary.observation_value }} {% if summary.observation_datetime %}({{ summary.observation_datetime.date }}){% endif %}
+        {{ summary.observation_value }}
       </div>
       {% endfor %}
       {% for other_investigation in other_investigation_list %}
       <div>
+        {{ other_investigation.date | date }}
         {{ other_investigation.name }}:&nbsp;
-        {{ other_investigation.details }} {% if other_investigation.date %}({{ other_investigation.date }}){% endif %}
+        {{ other_investigation.details }}
       </div>
       {% endfor %}
     </p>
