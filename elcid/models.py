@@ -628,29 +628,6 @@ class ReferralRoute(omodels.EpisodeSubrecord):
     _icon = 'fa fa-level-up'
     _is_singleton = True
 
-    REFERAL_TYPES = (
-        ("Primary care (GP)", "Primary care (GP)",),
-        ("Primary care (other)", "Primary care (other)",),
-        ("Secondary care", "Secondary care",),
-        ("TB service", "TB service",),
-        ("A&E", "A&E",),
-        ("Find & treat", "Find & treat",),
-        ("Prison screening", "Prison screening",),
-        ("Port Health/HPA", "Port Health/HPA",),
-        ("Private", "Private")
-    )
-
-    REFERRAL_REASON = (
-        ("Symptomatic", "Symptomatic",),
-        ("TB contact screening", "TB contact screening",),
-        ("New entrant screening", "New entrant screening",),
-        ("Transferred in TB Rx", "Transferred in TB Rx",),
-        ("Pre-immunosuppression screening", "Pre-immunosuppression screening",),
-        ("BCG Vaccination", "BCG Vaccination",),
-        ("Other", "Other",),
-    )
-
-    # date_of_referral
     date_of_referral = models.DateField(null=True, blank=True)
 
     referral_type = ForeignKeyOrFreeText(omodels.ReferralType)
