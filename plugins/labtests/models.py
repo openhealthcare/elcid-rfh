@@ -30,6 +30,9 @@ class LabTest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-datetime_ordered']
+
     @classmethod
     def create_from_old_test(cls, old_lab_test):
         new_lab_test = cls()
