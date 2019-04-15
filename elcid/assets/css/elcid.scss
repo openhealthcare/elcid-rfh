@@ -293,7 +293,11 @@ a.list-group-item {
   min-height: 160px;
 }
 
-.table-edit{
+.panel tr.table-edit{
+  td {
+    vertical-align: middle;
+  }
+
   i.edit{
     visibility: hidden;
   }

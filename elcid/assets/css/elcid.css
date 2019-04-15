@@ -247,10 +247,13 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   min-height: 160px;
 }
 
-.table-edit i.edit {
+.panel tr.table-edit td {
+  vertical-align: middle;
+}
+.panel tr.table-edit i.edit {
   visibility: hidden;
 }
-.table-edit:hover i.edit {
+.panel tr.table-edit:hover i.edit {
   visibility: visible;
 }
 
