@@ -472,6 +472,7 @@ class TBManagement(models.EpisodeSubrecord):
 
 
 class AdverseReaction(models.EpisodeSubrecord):
+    _icon = 'fa fa-stop-circle-o'
     details = fields.TextField(blank=True, default='')
 
 
