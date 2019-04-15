@@ -1,4 +1,5 @@
 from collections import OrderedDict, defaultdict
+from django.conf import settings
 
 
 RELEVANT_TESTS = OrderedDict((
@@ -35,6 +36,16 @@ def clean_observation_value(value):
         return value[:value.find("~")]
     else:
         return value
+
+
+def get_tests(patient):
+    if settings.USE_NEW_API:
+        tests = patient.lab_tests.all()
+    else:
+        tests = patient.labtest_set.filter(
+            lab_test_type__istartswith="upstream"
+        )
+    return tests.order_by("-datetime_ordered")
 
 
 def get_tb_summary_information(patient):
