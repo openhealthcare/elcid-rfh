@@ -48,6 +48,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
         ctx["allergies_list"] = patient.allergies_set.all()
         ctx["imaging_list"] = episode.imaging_set.all()
+        ctx["tb_history"] = patient.tbhistory_set.get()
         ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
         obs = episode.observation_set.filter(
             datetime__date=datetime.date.today()
@@ -74,7 +75,6 @@ class LTBIInitialAssessment(AbstractLetterView):
         # TODO this has to change
 
         ctx["patient"] = patient
-        ctx["tb_history"] = patient.tbhistory_set.get()
         return ctx
 
 

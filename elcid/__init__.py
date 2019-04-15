@@ -79,7 +79,5 @@ class Application(application.OpalApplication):
         menu_items = super(Application, cls).get_menu_items(user)
         if standard_add_patient_menu_item.for_user(user):
             menu_items.append(standard_add_patient_menu_item)
-        else:
-            menu_items = [i for i in menu_items if not i.href == "/"]
 
         return menu_items

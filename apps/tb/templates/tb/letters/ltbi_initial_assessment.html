@@ -110,17 +110,17 @@
       </div>
       {% endif %}
       <div>
-        Previous TB Diagnosis:
-        {% if history.tb_type %}
+        Previous TB diagnosis:
+        {% if tb_history.tb_type %}
         {{ tb_history.tb_type }}
         {% else %}
         None recorded
         {% endif %}
       </div>
       <div>
-        Previous TB Contact:
-        {% if tb_history.contact_details %}
-        {{ tb_history.contact_details }}
+        Previous TB contact:
+        {% if tb_history.previous_tb_contact_details %}
+        {{ tb_history.previous_tb_contact_details }}
         {% else %}
         None recorded
         {% endif %}
@@ -128,7 +128,7 @@
       {% if demographics.birth_place %}
         {% if not demographics.birth_place == 'United Kingdom' %}
         <div>
-          Place Of Birth: {{ demographics.birth_place }}
+          Place Of birth: {{ demographics.birth_place }}
         </div>
         {% endif %}
       {% endif %}

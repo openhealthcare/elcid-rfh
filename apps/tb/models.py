@@ -328,7 +328,7 @@ class TBHistory(models.PatientSubrecord):
     contact_how_long_ago_days = fields.IntegerField(
         blank=True, null=True
     )
-    contact_details = fields.TextField(default="")
+    previous_tb_contact_details = fields.TextField(default="")
 
     previous_tb_diagnosis = fields.BooleanField(
         default=False,
