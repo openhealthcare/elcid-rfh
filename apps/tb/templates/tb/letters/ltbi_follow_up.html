@@ -133,6 +133,56 @@
   </div>
 </div>
 
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Language:</b><br />
+      {{ communication_considerations.language }}
+    </p>
+  </div>
+</div>
+
+
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <p>
+      <b>Exposure:</b><br />
+      {% for travel in travel_list %}
+      <div>
+        Travel: {{ travel.country }}
+      </div>
+      {% endfor %}
+      {% if not travel_list.exists %}
+      <div>
+        Travel: No recorded travel
+      </div>
+      {% endif %}
+      <div>
+        Previous TB Diagnosis:
+        {% if history.tb_type %}
+        {{ tb_history.tb_type }}
+        {% else %}
+        None recorded
+        {% endif %}
+      </div>
+      <div>
+        Previous TB Contact:
+        {% if tb_history.contact_details %}
+        {{ tb_history.contact_details }}
+        {% else %}
+        None recorded
+        {% endif %}
+      </div>
+      {% if demographics.birth_place %}
+        {% if not demographics.birth_place == 'United Kingdom' %}
+        <div>
+          Place Of Birth: {{ demographics.birth_place }}
+        </div>
+        {% endif %}
+      {% endif %}
+    </p>
+  </div>
+</div>
 
 <div class="row content-offset-below-10">
   <div class="col-md-12">
