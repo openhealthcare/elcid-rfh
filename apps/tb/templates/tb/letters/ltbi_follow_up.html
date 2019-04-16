@@ -105,6 +105,9 @@
     <p>
       <b>Language:</b><br />
       {{ communication_considerations.language }}
+      {% if communication_considerations.needs_an_interpreter %}
+      (needs an interpreter)
+      {% endif %}
     </p>
   </div>
 </div>

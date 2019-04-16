@@ -23,6 +23,9 @@
           <span ng-show="!patient.communinication_considerations[0].language">
             Unknown
           </span>
+          <span ng-show="patient.communinication_considerations[0].needs_an_interpreter">
+            (needs an interpreter)
+          </span>
         </div>
         <div ng-show="patient.nationality[0].arrival_in_the_uk">
             <strong>Arrival in the UK:</strong>
@@ -37,9 +40,6 @@
 					<strong>Immigration support officer:</strong>
 					[[ patient.nationality[0].immigration_support_officer ]]
         </div>
-        <div ng-show="patient.communinication_considerations[0].needs_an_interpreter">
-          <strong>Needs an interpreter:</strong>
-        </span>
         <div ng-show="patient.communinication_considerations[0].sensory_impairment">
 					The patient is sensory impaired
         </div>
