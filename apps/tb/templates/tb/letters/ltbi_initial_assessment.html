@@ -125,13 +125,9 @@
         None recorded
         {% endif %}
       </div>
-      {% if demographics.birth_place %}
-        {% if not demographics.birth_place == 'United Kingdom' %}
-        <div>
-          Place Of birth: {{ demographics.birth_place }}
-        </div>
-        {% endif %}
-      {% endif %}
+      <div>
+        Place of birth: {{ demographics.birth_place }}
+      </div>
     </p>
   </div>
 </div>
