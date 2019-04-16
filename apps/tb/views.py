@@ -50,11 +50,13 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["imaging_list"] = episode.imaging_set.all()
         ctx["tb_history"] = patient.tbhistory_set.get()
         ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
-        obs = episode.observation_set.filter(
-            datetime__date=datetime.date.today()
-        ).last()
-        if obs:
-            ctx["weight"] = obs.weight
+        consultation_datetime = self.object.when
+        if consultation_datetime:
+            obs = episode.observation_set.filter(
+                datetime__date=consultation_datetime.date()
+            ).last()
+            if obs:
+                ctx["weight"] = obs.weight
         return ctx
 
 

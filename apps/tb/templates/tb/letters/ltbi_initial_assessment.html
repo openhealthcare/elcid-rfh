@@ -229,9 +229,9 @@
     <p>
       <b>Weight:</b><br />
       {% if weight %}
-        {{ weight }}kg
+        {{ weight|floatformat }}kg
       {% else %}
-        No weight recorded today
+        No weight recorded for {{ object.when | date }}
       {% endif %}
     </p>
   </div>
