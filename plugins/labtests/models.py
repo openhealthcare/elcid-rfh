@@ -8,7 +8,8 @@ from opal import models as omodels
 
 
 def format_dt(some_dt):
-    return dt_format(some_dt, settings.DATETIME_FORMAT)
+    if some_dt:
+        return dt_format(some_dt, settings.DATETIME_FORMAT)
 
 
 """
