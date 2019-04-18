@@ -1,6 +1,6 @@
 describe('ReconcilePatientCtrl', function(){
   "use strict";
-  var $rootScope, scope, $controller, shortDateFilter, controller;
+  var $rootScope, scope, $controller, displayDateFilter, controller;
 
   beforeEach(function(){
       module('opal');
@@ -8,7 +8,7 @@ describe('ReconcilePatientCtrl', function(){
         $rootScope = $injector.get('$rootScope');
         scope = $rootScope.$new();
         $controller = $injector.get('$controller');
-        shortDateFilter = $injector.get('shortDateFilter');
+        displayDateFilter = $injector.get('displayDateFilter');
         scope.editing.demographics = {
           first_name: "Wilma",
           surname: "Flintstone",
@@ -22,7 +22,7 @@ describe('ReconcilePatientCtrl', function(){
         }
         controller = $controller("ReconcilePatientCtrl", {
           scope: scope,
-          shortDateFilter: shortDateFilter
+          displayDateFilter: displayDateFilter
         });
       });
   });

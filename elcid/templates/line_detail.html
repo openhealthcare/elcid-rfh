@@ -1,6 +1,6 @@
 [[item.line_type]] [[item.site]] ([[item.inserted_by]])<br />
 
-Inserted [[item.insertion_datetime| shortDate]]
+Inserted [[item.insertion_datetime| displayDate]]
 <br />
 <span ng-show="item.external_length">
   External Length [[item.external_length]] cm <br />
@@ -9,7 +9,7 @@ Inserted [[item.insertion_datetime| shortDate]]
   [[ item.insertion_date | daysSince:1 ]] since insertion
 </span>
 <span ng-show="item.removal_datetime" >
-  Removed [[item.removal_datetime | shortDate]] ([[item.removal_reason]])
+  Removed [[item.removal_datetime | displayDate]] ([[item.removal_reason]])
   <br />
   In place for [[ item.insertion_datetime |daysTo:item.removal_datetime ]]
 </span>

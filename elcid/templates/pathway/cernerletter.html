@@ -21,7 +21,7 @@
 <div ng-show="editing.procedure.date">
   <p><b>Procedures</b><br /></p>
   <p>
-[[ editing.procedure.date | shortDate ]]
+[[ editing.procedure.date | displayDate ]]
 [[ editing.procedure.medical_procedure ]] [[ editing.procedure.surgical_procedure]]
 </p>
 </div>
@@ -38,15 +38,15 @@
 <div show="editing.antimicrobials.drug">
   <p><b>Antibiotic history:</b></p>
 <p>
-  [[ editing.antimicrobial.start_date | shortDate]]
-  <span ng-show="editing.antimicrobial.end_date"> - [[ editing.antimicrobial.end_date | shortDate ]]</span>
+  [[ editing.antimicrobial.start_date | displayDate]]
+  <span ng-show="editing.antimicrobial.end_date"> - [[ editing.antimicrobial.end_date | displayDate ]]</span>
   [[ editing.antimicrobial.drug ]]
 </p>
 </div>
 
 <p><b>We would advise:</b></p>
 <p>
-[[ editing.microbiology_input.date | shortDate ]]
+[[ editing.microbiology_input.date | displayDate ]]
 [[ editing.microbiology_input.clinical_discussion ]]<br />
 [[ editing.microbiology_input.agreed_plan ]]<br />
 </p>

@@ -3,12 +3,12 @@
 [[ item.first_name ]] [[ item.surname ]]<br />
 <div class="col-md-6">
   <span ng-show="item.date_of_birth">
-    [[item.date_of_birth | shortDate]] ([[ item.date_of_birth | age ]])
+    [[item.date_of_birth | displayDate]] ([[ item.date_of_birth | age ]])
   </span>
 </div>
 <div class="col-md-6">
   [[ item.birth_place ]] [[ item.ethnicity ]]
 </div>
 <span ng-show="item.date_of_birth">
-  <div class="col-md-6">[[item.date_of_birth | shortDate]] ([[ item.date_of_birth | age ]])</div>
+  <div class="col-md-6">[[item.date_of_birth | displayDate]] ([[ item.date_of_birth | age ]])</div>
 </span>

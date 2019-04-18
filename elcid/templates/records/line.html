@@ -3,14 +3,14 @@
 <span ng-show="item.Fistula">Fistula <br /></span>
 <span ng-show="item.graft">Graft<br /></span>
 [[ item.tunnelled_or_temp ]]<br />
-<span ng-show="item.insertion_datetime"  >Inserted <span class="nowrap">[[item.insertion_datetime| shortDate]]
+<span ng-show="item.insertion_datetime"  >Inserted <span class="nowrap">[[item.insertion_datetime| displayDate]]
 <span ng-show="item.line_type === 'Peripheral cannula'"> [[item.insertion_datetime| hhmm]]</span></span>
 <br />
 <span ng-hide="item.removal_datetime">
   ([[ item.insertion_datetime | daysSince:1 ]] since insertion)
 </span>
 <span ng-show="item.removal_datetime" >
-  Removed [[item.removal_datetime | shortDate]]
+  Removed [[item.removal_datetime | displayDate]]
   <span ng-show="item.removal_reason">due to [[item.removal_reason]]</span>
   <br />
   (in place for [[ item.insertion_datetime |daysTo:item.removal_datetime ]])

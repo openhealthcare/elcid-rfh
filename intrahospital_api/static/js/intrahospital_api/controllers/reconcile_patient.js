@@ -1,8 +1,8 @@
 angular.module('opal.controllers').controller('ReconcilePatientCtrl',
-  function(shortDateFilter, scope, step, episode) {
+  function(displayDateFilter, scope, step, episode) {
     "use strict";
     scope.demographics = angular.copy(scope.editing.demographics);
-    scope.demographics.date_of_birth = shortDateFilter(scope.demographics.date_of_birth);
+    scope.demographics.date_of_birth = displayDateFilter(scope.demographics.date_of_birth);
 
     var external_demographics = angular.copy(scope.editing.external_demographics);
 
