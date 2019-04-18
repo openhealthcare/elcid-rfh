@@ -1,221 +1,161 @@
 {% extends 'letters/base.html' %} {% block letter_content %}
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Primary diagnosis: </b><br />
-      {% if primary_diagnosis_list.exists %}
-        {% for diagnosis in primary_diagnosis_list %}
-        {{ diagnosis.condition }}
-        {% if diagnosis.provisional %}?{% endif %}
-        {% if diagnosis.details %}
-          {{ diagnosis.details }}
-        {% endif %}
-        <br />
-        {% endfor %}
-      {% else %}
-        No recorded primary diagnoses
-        <br />
+<p>
+  <b>Primary diagnosis: </b><br />
+  {% if primary_diagnosis_list.exists %}
+    {% for diagnosis in primary_diagnosis_list %}
+    {{ diagnosis.condition }}
+    {% if diagnosis.provisional %}?{% endif %}
+    {% if diagnosis.details %}
+      {{ diagnosis.details }}
+    {% endif %}
+    <br />
+    {% endfor %}
+  {% else %}
+    No recorded primary diagnoses
+    <br />
+  {% endif %}
+</p>
+
+<p>
+  <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
+  {% if secondary_diagnosis_list.exists %}
+    {% for diagnosis in secondary_diagnosis_list %}
+      {{ diagnosis.condition }}
+      {% if diagnosis.provisional %}?{% endif %}
+      {% if diagnosis.details %}
+        {{ diagnosis.details }}
       {% endif %}
-    </p>
-  </div>
-</div>
-
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
-      {% if secondary_diagnosis_list.exists %}
-        {% for diagnosis in secondary_diagnosis_list %}
-          {{ diagnosis.condition }}
-          {% if diagnosis.provisional %}?{% endif %}
-          {% if diagnosis.details %}
-            {{ diagnosis.details }}
-          {% endif %}
-          <br />
-        {% endfor %}
-      {% else %}
-        No recorded secondary diagnoses
-        <br />
-      {% endif %}
-    </p>
-  </div>
-</div>
+      <br />
+    {% endfor %}
+  {% else %}
+    No recorded secondary diagnoses
+    <br />
+  {% endif %}
+</p>
 
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>TB medication: </b><br />
-      {% include "tb/letters/partials/medication.html" with medication_list=tb_medication_list %}
-    </p>
-  </div>
-</div>
+<p>
+  <b>TB medication: </b><br />
+  {% include "tb/letters/partials/medication.html" with medication_list=tb_medication_list %}
+</p>
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Other medication: </b><br />
-      {% include "tb/letters/partials/medication.html" with medication_list=other_medication_list %}
-    </p>
-  </div>
-</div>
+<p>
+  <b>Other medication: </b><br />
+  {% include "tb/letters/partials/medication.html" with medication_list=other_medication_list %}
+</p>
 {% if adverse_reaction_list.exists %}
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
+  <p>
     <b>Adverse reactions:</b><br />
     {% for adverse_reaction in adverse_reaction_list %}
       {{ adverse_reaction.details }}
       <br />
     {% endfor %}
-    </p>
-  </div>
-</div>
+  </p>
 {% endif %}
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Allergies: </b><br />
-      {% if allergies_list.exists %}
-      {% for allergy in allergies_list %}
-        {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-        {{ allergy.details }}
-        <br />
-      {% endfor %}
-      {% else %}
-        No recorded allergies
-        <br />
-      {% endif %}
-    </p>
-  </div>
-</div>
+<p>
+  <b>Allergies: </b><br />
+  {% if allergies_list.exists %}
+  {% for allergy in allergies_list %}
+    {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
+    {{ allergy.details }}
+    <br />
+  {% endfor %}
+  {% else %}
+    No recorded allergies
+    <br />
+  {% endif %}
+</p>
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Language:</b><br />
-      {{ communication_considerations.language }}
-      {% if communication_considerations.needs_an_interpreter %}
-      (needs an interpreter)
-      {% endif %}
-    </p>
-  </div>
-</div>
+<p>
+  <b>Language:</b><br />
+  {{ communication_considerations.language }}
+  {% if communication_considerations.needs_an_interpreter %}
+  (needs an interpreter)
+  {% endif %}
+</p>
 
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Exposure:</b><br />
-      {% for travel in travel_list %}
-      Travel: {{ travel.country }}
-      <br />
-      {% endfor %}
-      {% if not travel_list.exists %}
-      Travel: No recorded travel
-      <br />
-      {% endif %}
-      Previous TB diagnosis:
-      {% if tb_history.tb_type %}
-      {{ tb_history.tb_type }}
-      {% else %}
-      None recorded
-      {% endif %}
-      <br />
-      Previous TB contact:
-      {% if tb_history.previous_tb_contact_details %}
-      {{ tb_history.previous_tb_contact_details }}
-      {% else %}
-      None recorded
-      {% endif %}
-      <br />
-      Place of birth: {{ demographics.birth_place }}
-      <br />
-    </p>
-  </div>
-</div>
+<p>
+  <b>Exposure:</b><br />
+  {% for travel in travel_list %}
+  Travel: {{ travel.country }}
+  <br />
+  {% endfor %}
+  {% if not travel_list.exists %}
+  Travel: No recorded travel
+  <br />
+  {% endif %}
+  Previous TB diagnosis:
+  {% if tb_history.tb_type %}
+  {{ tb_history.tb_type }}
+  {% else %}
+  None recorded
+  {% endif %}
+  <br />
+  Previous TB contact:
+  {% if tb_history.previous_tb_contact_details %}
+  {{ tb_history.previous_tb_contact_details }}
+  {% else %}
+  None recorded
+  {% endif %}
+  <br />
+  Place of birth: {{ demographics.birth_place }}
+  <br />
+</p>
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Progress:</b><br />
-      {{ object.progress }}
-    </p>
-  </div>
-</div>
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Weight:</b><br />
-      {% if weight %}
-        {{ weight|floatformat }}kg
-      {% else %}
-        No weight recorded for {{ object.when | date }}
-      {% endif %}
-    </p>
-  </div>
-</div>
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Examination findings:</b><br />
-      {{ object.examination_findings }}
-    </p>
-  </div>
-</div>
+<p>
+  <b>Progress:</b><br />
+  {{ object.progress }}
+</p>
+<p>
+  <b>Weight:</b><br />
+  {% if weight %}
+    {{ weight|floatformat }}kg
+  {% else %}
+    No weight recorded for {{ object.when | date }}
+  {% endif %}
+</p>
+<p>
+  <b>Examination findings:</b><br />
+  {{ object.examination_findings }}
+</p>
 {% if results or other_investigation_list %}
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Key investigations: </b><br />
-      {% for obs_name, summary in results.items %}
-        {{ summary.observation_datetime.date | date:view.'d M Y' }}
-        &nbsp;
-        {{ obs_name }}:&nbsp;
-        {{ summary.observation_value }}
-        <br />
-      {% endfor %}
-      {% for other_investigation in other_investigation_list %}
-        {{ other_investigation.date | date:view.'d M Y' }}
-        {{ other_investigation.name }}:&nbsp;
-        {{ other_investigation.details }}
-        <br />
-      {% endfor %}
-    </p>
-  </div>
-</div>
+<p>
+  <b>Key investigations: </b><br />
+  {% for obs_name, summary in results.items %}
+    {{ summary.observation_datetime.date | date:'d M Y' }}
+    &nbsp;
+    {{ obs_name }}:&nbsp;
+    {{ summary.observation_value }}
+    <br />
+  {% endfor %}
+  {% for other_investigation in other_investigation_list %}
+    {{ other_investigation.date | date:'d M Y' }}
+    {{ other_investigation.name }}:&nbsp;
+    {{ other_investigation.details }}
+    <br />
+  {% endfor %}
+</p>
 {% endif %}
 
 {% for imaging in imaging_list %}
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-    <b>
-    {{ imaging.imaging_type }}
-    {% if imaging.site %}({{ imaging.site }}){% endif %}:
-    </b><br />
-    {{ imaging.date | date }} {{ imaging.details }}<br />
-    </p>
-  </div>
-</div>
+<p>
+<b>
+{{ imaging.imaging_type }}
+{% if imaging.site %}({{ imaging.site }}){% endif %}:
+</b><br />
+{{ imaging.date | date }} {{ imaging.details }}<br />
+</p>
 {% endfor %}
 
-<div class="row content-offset-below-10">
-  <div class="col-md-12">
-    <p>
-      <b>Discussion:</b><br />
-      <span ng-bind-html="'{{ object.discussion }}'|markdown"></span>
-    </p>
-  </div>
-</div>
+<p>
+  <b>Discussion:</b><br />
+  <span ng-bind-html="'{{ object.discussion }}'|markdown"></span>
+</p>
 
-<div class="row content-offset-below-10">
-    <div class="col-md-12">
-      <p>
-        <b>Plan:</b><br /><span ng-bind-html="'{{ object.plan }}'|markdown"></span>
-      </p>
-    </div>
-</div>
+<p>
+  <b>Plan:</b><br /><span ng-bind-html="'{{ object.plan }}'|markdown"></span>
+</p>
 
 {% endblock %}
