@@ -5,18 +5,16 @@
       <b>Primary diagnosis: </b><br />
       {% if primary_diagnosis_list.exists %}
         {% for diagnosis in primary_diagnosis_list %}
-        <div>
           {{ diagnosis.condition }}
           {% if diagnosis.provisional %}?{% endif %}
           {% if diagnosis.details %}
             {{ diagnosis.details }}
           {% endif %}
-        </div>
+        <br />
         {% endfor %}
       {% else %}
-      <div>
         No recorded primary diagnoses
-      </div>
+        <br />
       {% endif %}
     </p>
   </div>
@@ -28,18 +26,16 @@
       <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
       {% if secondary_diagnosis_list.exists %}
         {% for diagnosis in secondary_diagnosis_list %}
-        <div>
           {{ diagnosis.condition }}
           {% if diagnosis.provisional %}?{% endif %}
           {% if diagnosis.details %}
             {{ diagnosis.details }}
           {% endif %}
-        </div>
+          <br />
         {% endfor %}
       {% else %}
-      <div>
         No recorded secondary diagnoses
-      </div>
+        <br />
       {% endif %}
     </p>
   </div>
@@ -101,34 +97,29 @@
     <p>
       <b>Exposure:</b><br />
       {% for travel in travel_list %}
-      <div>
-        Travel: {{ travel.country }}
-      </div>
+      Travel: {{ travel.country }}
+      <br />
       {% endfor %}
       {% if not travel_list.exists %}
-      <div>
-        Travel: No recorded travel
-      </div>
+      Travel: No recorded travel
+      <br />
       {% endif %}
-      <div>
-        Previous TB diagnosis:
-        {% if tb_history.tb_type %}
-        {{ tb_history.tb_type }}
-        {% else %}
-        None recorded
-        {% endif %}
-      </div>
-      <div>
-        Previous TB contact:
-        {% if tb_history.previous_tb_contact_details %}
-        {{ tb_history.previous_tb_contact_details }}
-        {% else %}
-        None recorded
-        {% endif %}
-      </div>
-      <div>
-        Place of birth: {{ demographics.birth_place }}
-      </div>
+      Previous TB diagnosis:
+      {% if tb_history.tb_type %}
+      {{ tb_history.tb_type }}
+      {% else %}
+      None recorded
+      {% endif %}
+      <br />
+      Previous TB contact:
+      {% if tb_history.previous_tb_contact_details %}
+      {{ tb_history.previous_tb_contact_details }}
+      {% else %}
+      None recorded
+      {% endif %}
+      <br />
+      Place of birth: {{ demographics.birth_place }}
+      <br />
     </p>
   </div>
 </div>
@@ -140,14 +131,12 @@
       <b>Symptoms: </b><br />
       {% for symptom_complex in symptom_complex_list %}
       {% for symptom in symptom_complex.symptoms.all %}
-      <div>
-        {{ symptom.name }}
-      </div>
+      {{ symptom.name }}
+      <br />
       {% endfor %}
       {% if not symptom_complex.symptoms.exists %}
-      <div>
-        No recorded respiratory or systemic TB symptoms
-      </div>
+      No recorded respiratory or systemic TB symptoms
+      <br />
       {% endif %}
       {% endfor %}
     </p>
@@ -207,15 +196,13 @@
     <b>Allergies: </b><br />
     {% if allergies_list.exists %}
     {% for allergy in allergies_list %}
-    <div>
-      {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-      {{ allergy.details }}
-    </div>
+    {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
+    {{ allergy.details }}
+    <br />
     {% endfor %}
     {% else %}
-    <div>
-      No recorded allergies
-    </div>
+    No recorded allergies
+    <br />
     {% endif %}
   </p>
   </div>
@@ -262,19 +249,17 @@
     <p>
       <b>Key investigations: </b><br />
       {% for obs_name, summary in results.items %}
-      <div>
-        {{ summary.observation_datetime.date | date }}
+        {{ summary.observation_datetime.date | date:view.'d M Y' }}
         &nbsp;
         {{ obs_name }}:&nbsp;
         {{ summary.observation_value }}
-      </div>
+        <br />
       {% endfor %}
       {% for other_investigation in other_investigation_list %}
-      <div>
-        {{ other_investigation.date | date }}
+        {{ other_investigation.date | date:view.'d M Y' }}
         {{ other_investigation.name }}:&nbsp;
         {{ other_investigation.details }}
-      </div>
+        <br />
       {% endfor %}
     </p>
   </div>
