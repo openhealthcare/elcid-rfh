@@ -104,42 +104,6 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         return saved_patient, saved_episode
 
 
-class CernerDemoPathway(IgnoreDemographicsMixin, SaveTaggingMixin, RedirectsToPatientMixin, PagePathway):
-    display_name = 'Cerner Powerchart Template'
-    slug = 'cernerdemo'
-
-    steps = (
-        models.Demographics,
-        models.Location,
-        Step(
-            template="pathway/blood_culture.html",
-            display_name="Blood Culture",
-            icon="fa fa-crosshairs",
-            step_controller="BloodCulturePathwayFormCtrl",
-            model=lmodels.LabTest
-        ),
-        models.Procedure,
-        models.Diagnosis,
-        models.Infection,
-        models.Line,
-        models.Antimicrobial,
-        models.Imaging,
-        models.FinalDiagnosis,
-        models.MicrobiologyInput,
-        Step(
-            template="pathway/cernerletter.html",
-            display_name="Clinical note",
-            icon="fa fa-envelope"
-        )
-    )
-
-    @transaction.atomic
-    def save(self, data, user=None, episode=None, patient=None):
-        return super(CernerDemoPathway, self).save(
-            data, user=user, patient=patient, episode=episode
-        )
-
-
 class BloodCultureStep(Step):
     template = "pathway/blood_culture.html"
     display_name = "Blood Culture"

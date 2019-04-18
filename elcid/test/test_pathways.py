@@ -7,8 +7,7 @@ from opal import models
 from opal.core.test import OpalTestCase
 from intrahospital_api import constants
 from elcid.pathways import (
-    AddPatientPathway, CernerDemoPathway, BloodCulturePathway,
-    IgnoreDemographicsMixin
+    AddPatientPathway, BloodCulturePathway, IgnoreDemographicsMixin
 )
 from apps.tb.pathways import AddTbPatientPathway
 from elcid import models as emodels
@@ -254,40 +253,6 @@ class TestBloodCulturePathway(OpalTestCase):
             expected_upstream_blood_culture.lab_test_type,
             upstream_blood_culture.lab_test_type
         )
-
-
-class TestCernerDemoPathway(OpalTestCase):
-    data = dict(
-        demographics=[dict(hospital_number="234", nhs_number="12312")],
-        procedure=[dict(date=date.today())],
-        tagging=[{u'antifungal': True}]
-    )
-
-    def setUp(self):
-        super(TestCernerDemoPathway, self).setUp()
-
-        self.assertTrue(
-            self.client.login(
-                username=self.user.username, password=self.PASSWORD
-            )
-        )
-
-    def test_post_existing_pathway(self):
-        patient, episode = self.new_patient_and_episode_please()
-        patient.demographics_set.update(hospital_number="234")
-        test_data = dict(
-            demographics=[dict(
-                hospital_number="234",
-                nhs_number="12312",
-                patient_id=patient.id
-            )],
-        )
-        pathway = CernerDemoPathway()
-        url = pathway.save_url(patient=patient, episode=episode)
-        result = self.post_json(url, test_data)
-        self.assertEqual(result.status_code, 200)
-        demographics = models.Patient.objects.get().demographics_set.first()
-        self.assertEqual(demographics.nhs_number, "12312")
 
 
 class TestAddPatientPathway(OpalTestCase):
