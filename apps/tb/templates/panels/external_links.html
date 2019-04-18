@@ -1,0 +1,42 @@
+{% load forms %}
+<div class="row">
+  <div class="col-md-6">
+    <div class="panel panel-default ">
+      <div class="panel-heading">
+        <div class="row">
+          <h3 class="col-md-12">
+            <i class="fa fa-file-image-o"></i> Imaging
+          </h3>
+        </div>
+        </div>
+        <div class="panel-footer">
+          <div class="row">
+            <div class="col-md-12">
+              <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i
+              class="fa fa-external-link" aria-hidden="true"></i></a>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-6">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="row">
+        <h3 class="col-md-12">
+            {% icon "fa-book" %} Documents
+        </h3>
+      </div>
+    </div>
+    <div class="panel-footer">
+        <div class="row">
+          <div class="col-md-12">
+                <a target="_blank" href="http://rfh-edrm-live:18080/horus/api/visual/record/[[ episode.demographics[0].hospital_number ]]"></i>EDRM <i class="fa fa-external-link" aria-hidden="true"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

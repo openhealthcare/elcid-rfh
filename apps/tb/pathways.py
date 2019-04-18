@@ -6,7 +6,7 @@ from django.conf import settings
 from opal.core.pathway import pathways, HelpTextStep
 
 from elcid import models
-from elcid.pathways import AddPatientPathway
+from elcid.pathways import AddPatientPathway, IgnoreDemographicsMixin
 
 from obs import models as obs_models
 from intrahospital_api import loader
@@ -201,7 +201,7 @@ class ActiveTBTreatmentPathway(pathways.PagePathway):
         return patient, episode
 
 
-class SymptomsPathway(pathways.PagePathway):
+class SymptomsPathway(IgnoreDemographicsMixin, pathways.PagePathway):
     """
     This pathway is used as a modal to edit symptoms for TB episodes.
     It uses the same template and controller as the symptoms step in the
@@ -236,3 +236,20 @@ class NationalityAndLanguage(pathways.PagePathway):
             icon="fa fa-file-image-o"
         ),
     )
+
+    @transaction.atomic
+    def save(self, data, user=None, episode=None, patient=None):
+        # Demographics are loaded asynchronously on the backend
+        # this does not update the client demographics (unlike lab tests)
+        # as the demographics should not have changed.
+        # however pathways throws an error on save for consistency tokens.
+        # to get around this we need to update the demographics?
+
+        if patient:
+            our_demographics = patient.demographics_set.get()
+            client_demographics = data.pop("demographics")
+            our_demographics.birth_place = client_demographics[0]["birth_place"]
+            our_demographics.save()
+        return super().save(
+            data, user=user, episode=episode, patient=patient
+        )

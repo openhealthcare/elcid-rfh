@@ -17,13 +17,19 @@
 					<strong>Birth place:</strong>
 					[[ patient.demographics[0].birth_place ]]
         </div>
+        <div ng-show="patient.communinication_considerations[0].language">
+					<strong>Language:</strong>
+          [[ patient.communinication_considerations[0].language ]]
+          <span ng-show="!patient.communinication_considerations[0].language">
+            Unknown
+          </span>
+        </div>
         <div ng-show="patient.nationality[0].arrival_in_the_uk">
             <strong>Arrival in the UK:</strong>
             [[ patient.nationality[0].arrival_in_the_uk ]]
         </div>
-
         <div ng-show="patient.nationality[0].immigration_details.length">
-            <strong>Immigration Details:</strong>
+            <strong>Immigration details:</strong>
             [[ patient.nationality[0].immigration_details ]]
         </div>
 
@@ -32,13 +38,7 @@
 					[[ patient.nationality[0].immigration_support_officer ]]
         </div>
         <div ng-show="patient.communinication_considerations[0].needs_an_interpreter">
-            <strong>Interpreter:</strong>
-          <span ng-show="patient.communinication_considerations[0].language">
-            [[ patient.communinication_considerations[0].language ]]
-					</span>
-          <span ng-show="!patient.communinication_considerations[0].language">
-						Unknown
-					</span>
+          <strong>Needs an interpreter:</strong>
         </span>
         <div ng-show="patient.communinication_considerations[0].sensory_impairment">
 					The patient is sensory impaired

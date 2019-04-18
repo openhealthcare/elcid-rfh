@@ -28,5 +28,6 @@ angular.module('opal.services').service(
 
         // we have a planned end date but we finished early
         item.stoppedEarly = !item.completed && item.planned_end_date && item.end_date && item.planned_end_date.isAfter(item.end_date, "d");
+        item.stoppedEarly = item.stoppedEarly && item.start_date;
     };
 });

@@ -1,0 +1,22 @@
+{# expects the medication modal to be included as medication_list #}
+{% if medication_list.exists %}
+{% for treatment in medication_list %}
+<div>
+  {{ treatment.drug }}
+  {{ treatment.dose }}{% if treatment.start_date or treatment.planned_end_date %},{% endif %}
+  {% if treatment.start_date and not treatment.end_date %}
+  start {{ treatment.start_date | date }}{% if treatment.planned_end_date %},{% endif %}
+  {% endif %}
+  {% if treatment.start_date and treatment.end_date %}
+  {{ treatment.start_date | date }} - {{ treatment.end_date | date }}{% if treatment.planned_end_date %},{% endif %}
+  {% endif %}
+  {% if treatment.planned_end_date %}
+  planned end: {{ treatment.planned_end_date }}
+  {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<div>
+  No recorded medications
+</div>
+{% endif %}

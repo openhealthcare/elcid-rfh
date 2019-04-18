@@ -36,12 +36,6 @@ class ApplicationTestCase(OpalTestCase):
         self.assertIn("/pathway/#/add_patient", expected_hrefs)
         self.assertIn("/#/list/", expected_hrefs)
 
-    def test_get_menu_items_for_tb_user(self):
-        menu_items = Application.get_menu_items(self.tb_user)
-        expected_hrefs = [menu_item.href for menu_item in menu_items]
-        self.assertNotIn("/pathway/#/add_patient", expected_hrefs)
-        self.assertNotIn("/#/list/", expected_hrefs)
-
     def test_get_menu_items_for_normal_user(self):
         menu_items = Application.get_menu_items(self.normal_user)
         expected_hrefs = [menu_item.href for menu_item in menu_items]

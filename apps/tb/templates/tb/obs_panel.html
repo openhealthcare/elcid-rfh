@@ -8,7 +8,9 @@
   </div>
   <table
      class="table table-striped table-hover search pointer"
+    {% comment %}
      ng-click="open_modal('ObsChartCtrl', '/obs/chart/'+episode.id, {episode: episode})"
+    {% endcomment %}
      >
     <thead>
       <tr>
@@ -20,12 +22,17 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="ob in episode.observation|limitTo:5">
+      <tr class="table-edit" ng-repeat="ob in episode.observation|limitTo:5">
         <td>[[ob.datetime | shortDate ]]</td>
       	<td>[[ob.weight]]</td>
       	<td>[[ob.height]]</td>
         <td>[[ob.resp_rate]]</td>
-      	<td>[[ob.sp02]]</td>
+        <td>[[ob.sp02]]</td>
+        <td>
+          <i
+            class="fa fa-pencil edit pull-right pointer"
+            ng-click="episode.recordEditor.editItem('observation', $index)"></i>
+        </td>
       </tr>
     </tbody>
   </table>

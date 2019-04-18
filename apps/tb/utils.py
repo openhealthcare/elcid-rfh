@@ -1,4 +1,5 @@
 from collections import OrderedDict, defaultdict
+from django.conf import settings
 
 
 RELEVANT_TESTS = OrderedDict((
@@ -11,9 +12,40 @@ RELEVANT_TESTS = OrderedDict((
     ]),
     ('HEPATITIS B SURFACE AG', ["Hepatitis B 's'Antigen........"]),
     ('HEPATITIS C ANTIBODY', ["Hepatitis C IgG Antibody......"]),
-    ('HIV 1 + 2 ANTIBODIES', ['HIV 1 + 2 Antibodies..........'])
+    ('HIV 1 + 2 ANTIBODIES', ['HIV 1 + 2 Antibodies..........']),
+    ("25-OH Vitamin D", ["25-OH Vitamin D"]),
 ),)
 
+
+def clean_observation_name(obs_name):
+    """
+    Some obs names have trailing... as can be seen above
+    so we remove them
+    """
+    return obs_name.rstrip(".")
+
+
+def clean_observation_value(value):
+    """
+    "~" are used as new line charecters. They add in additional
+    information that is just repeated in all lts of the type.
+
+    Ie its just noise, e.g. ~Please note: New method effective.
+    """
+    if "~" in value:
+        return value[:value.find("~")]
+    else:
+        return value
+
+
+def get_tests(patient):
+    if settings.USE_NEW_API:
+        tests = patient.lab_tests.all()
+    else:
+        tests = patient.labtest_set.filter(
+            lab_test_type__istartswith="upstream"
+        )
+    return tests.order_by("-datetime_ordered")
 
 
 def get_tb_summary_information(patient):
@@ -31,8 +63,13 @@ def get_tb_summary_information(patient):
             for o in t.extras["observations"]:
                 on = o["observation_name"]
                 if on in RELEVANT_TESTS[tn]:
-                    by_observation[on]["observation_datetime"] = o["observation_datetime"]
-                    by_observation[on]["observation_value"] = o["observation_value"]
+                    by_observation[on]["observation_datetime"] = o[
+                        "observation_datetime"
+                    ]
+                    obs_value = clean_observation_value(
+                        o["observation_value"]
+                    )
+                    by_observation[on]["observation_value"] = obs_value
                     if len(by_observation) == len(RELEVANT_TESTS):
                         break
 
@@ -41,11 +78,11 @@ def get_tb_summary_information(patient):
         for on in ons:
             results_order.append(on)
 
-
     result = OrderedDict()
 
     for on in results_order:
         if on in by_observation:
-            result[on] = by_observation[on]
+            obs_name = clean_observation_name(on)
+            result[obs_name] = by_observation[on]
     return result
 

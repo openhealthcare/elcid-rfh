@@ -1,3 +1,10 @@
-<span ng-show="item.date_of_referral">[[ item.date_of_referral  | shortDate ]]</span>
-<span ng-show="item.referral_type">[[ item.referral_type ]] <br /></span>
-<span ng-show="item.referral_reason">[[ item.referral_reason ]] <br /></span>
+<span ng-show="item.date_of_referral">
+  <strong>Date:</strong> [[ item.date_of_referral  | shortDate ]] <br />
+</span>
+<span ng-show="item.referral_type">
+  <strong>Referral type:</strong> [[ item.referral_type ]] <br />
+</span>
+<span ng-show="item.referral_reason">
+  <strong>Referral reason:</strong> [[ item.referral_reason ]] <br />
+</span>
+[[ item.details ]]

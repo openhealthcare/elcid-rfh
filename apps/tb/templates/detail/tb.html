@@ -2,31 +2,24 @@
 {% load forms %}
 <div class="row">
   <div class="col-md-6">
+    {% include "panels/external_links.html" %}
+    {% include "partials/tb_summary_tests.html" %}
+    {% include 'panels/primary_diagnosis.html' %}
+    {% include 'panels/secondary_diagnosis.html' %}
+    {% include 'panels/tb_medication.html' %}
+    {% include 'panels/other_medication.html' %}
+    {% record_panel models.AdverseReaction %}
+
     {% record_panel models.ReferralRoute %}
     {% include 'panels/nationality.html' %}
-    {% record_panel models.TBHistory %}
-    {% include "partials/tb_summary_tests.html" %}
-    {% include "panels/symptoms.html" %}
     {% record_panel models.Travel %}
-    {% record_panel models.PastMedicalHistory %}
-    {% record_panel models.Antimicrobial title="Medication History" %}
+    {% record_panel models.TBHistory %}
+    {% include "panels/symptoms.html" %}
     {% record_panel models.Allergies %}
     {% record_panel models.SocialHistory %}
-    {% record_panel models.Diagnosis %}
-    {% record_panel models.Treatment %}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3>
-          <i class="fa fa-file-image-o"></i> Imaging
-        </h3>
-      </div>
-      <div class="panel-footer">
-        <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i
-            class="fa fa-external-link" aria-hidden="true"></i></a>
-      </div>
-    </div>
-    {% include "partials/edrm_panel.html" %}
     {% include 'tb/obs_panel.html' %}
+    {% record_panel models.Imaging %}
+    {% record_panel models.OtherInvestigation title="Other Investigations"%}
   </div>
 
   <div class="col-md-6">
@@ -73,16 +66,16 @@
                         <b>Reason For Interaction: </b>[[item.reason_for_interaction]]
                       </p>
                     </span>
-                    <span ng-show="item.assessment">
-                      <b> Assessment: </b>
-                      <div markdown="assessment"></div>
+                    <span ng-show="item.examination_findings">
+                      <b>Examination Findings: </b>
+                      <div markdown="examination_findings"></div>
                     </span>
                     <span ng-show="item.discussion">
-                      <b> Discussion: </b>
+                      <b>Discussion: </b>
                       <div markdown="discussion"></div>
                     </span>
                     <span ng-show="item.plan">
-                      <b> Plan: </b>
+                      <b>Plan: </b>
                       <div markdown="plan"></div>
                     </span>
                   </div>
@@ -99,12 +92,12 @@
                     </div>
                     <div class="row content-offset-10">
                       <div ng-show="item.reason_for_interaction == 'LTBI initial assessment'" class="col-md-12">
-                        <a target="_blank" href="/letters/#/tb/latent_new_patient_assessment/[[ item.id ]]/">
+                        <a target="_blank" href="/letters/#/tb/ltbi_initial_assessment/[[ item.id ]]/">
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
                       <div ng-show="item.reason_for_interaction == 'LTBI follow up'" class="col-md-12">
-                          <a target="_blank" href="/letters/#/tb/follow_up_patient_assessment/[[ item.id ]]/">
+                          <a target="_blank" href="/letters/#/tb/ltbi_followup_assessment/[[ item.id ]]/">
                             <i class="fa fa-envelope edit pull-right pointer"></i>
                           </a>
                         </div>

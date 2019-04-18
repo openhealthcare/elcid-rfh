@@ -238,7 +238,12 @@ class AccessConsiderations(models.PatientSubrecord):
 
 class PatientConsultation(models.PatientConsultation):
     plan = fields.TextField(blank=True, default="")
-    assessment = fields.TextField(blank=True, default="")
+    examination_findings = fields.TextField(
+        blank=True, default=""
+    )
+    progress = fields.TextField(
+        blank=True, default=""
+    )
 
 
 class ContactDetails(models.PatientSubrecord):
@@ -288,6 +293,10 @@ class LymphNodeSwellingSite(models.EpisodeSubrecord):
 class Treatment(models.Treatment):
     _angular_service = 'TreatmentRecord'
     planned_end_date = fields.DateField(blank=True, null=True)
+    category = fields.CharField(blank=True, null=True, max_length=255)
+
+    TB = "tb"
+
 
 
 class TBHistory(models.PatientSubrecord):
@@ -319,7 +328,7 @@ class TBHistory(models.PatientSubrecord):
     contact_how_long_ago_days = fields.IntegerField(
         blank=True, null=True
     )
-    contact_details = fields.TextField(default="")
+    previous_tb_contact_details = fields.TextField(default="")
 
     previous_tb_diagnosis = fields.BooleanField(
         default=False,
@@ -359,8 +368,8 @@ class TBHistory(models.PatientSubrecord):
     diagnosis_details = fields.TextField(default="")
 
     class Meta:
-        verbose_name = "History of TB"
-        verbose_name_plural = "History of TB"
+        verbose_name = "TB Exposure"
+        verbose_name_plural = "TB Exposures"
 
 
 class Allergies(models.Allergies):
@@ -374,6 +383,7 @@ class Travel(models.EpisodeSubrecord):
     when = fields.CharField(max_length=255, blank=True)
     duration = fields.CharField(max_length=255, blank=True)
     reason_for_travel = ForeignKeyOrFreeText(models.Travel_reason)
+    additional_exposures = fields.TextField(default="")
 
     class Meta:
         verbose_name = "Travel History"
@@ -458,3 +468,17 @@ class TBManagement(models.EpisodeSubrecord):
         max_length=200, blank=True, null=True,
         verbose_name = "LTBR Number"
     )
+
+
+class AdverseReaction(models.EpisodeSubrecord):
+    _icon = 'fa fa-stop-circle-o'
+    details = fields.TextField(blank=True, default='')
+
+
+class OtherInvestigation(models.EpisodeSubrecord):
+    name = fields.CharField(max_length=256, blank=True, default="")
+    date = fields.DateField(blank=True, null=True)
+    details = fields.TextField(blank=True, default='')
+
+
+

@@ -4,7 +4,6 @@ from opal.core.api import patient_from_pk, LoginRequiredViewset
 from apps.tb.utils import get_tb_summary_information
 
 
-
 class TbTestSummary(LoginRequiredViewset):
     base_name = 'tb_test_summary'
     """"

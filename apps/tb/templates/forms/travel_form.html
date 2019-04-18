@@ -1,5 +1,8 @@
 {% load forms %}
-{% input field="Travel.country" %}
+{% input field="Travel.country" required=True %}
 {% input field="Travel.when" %}
 {% input field="Travel.duration" %}
 {% input field="Travel.reason_for_travel" %}
+{% textarea field="Travel.additional_exposures" %}
+
+

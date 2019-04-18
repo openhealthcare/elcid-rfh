@@ -13,7 +13,12 @@
   OPAL.run(app);
 
   app.config(function($routeProvider) {
-    $routeProvider.when("/:template_name*", {
+    $routeProvider
+    .when('/', {
+      controller: 'PathwayRedirectCtrl',
+      resolve: {},
+      templateUrl: '/templates/loading_page.html'
+    }).when("/:template_name*", {
       controller: "BlankCtrl",
       templateUrl: function(params) {
         return "/" + params.template_name;

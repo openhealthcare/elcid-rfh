@@ -94,10 +94,4 @@ angular.module('opal.controllers').controller('TbSymptomComplexCrtl',
         scope.editing.symptom_complex.symptoms = symptoms;
       }
     };
-
-    scope.preSave = function(editing){
-      if(!editing.symptom_complex.symptoms.length){
-         delete editing.symptom_complex;
-      }
-    }
 });
