@@ -1,6 +1,6 @@
 <span ng-class="{'text-muted': item.end_date && (item.end_date | past) }">
   <span ng-show="item.start_date">
-    [[ item|totalDays ]]D [[item.start_date|shortDate]]<span ng-show="item.end_date">&ndash;[[item.end_date|shortDate]]</span>
+    [[ item|totalDays ]]D [[item.start_date|displayDate]]<span ng-show="item.end_date">&ndash;[[item.end_date|displayDate]]</span>
   </span>
   [[item.drug]] [[item.dose]] [[item.route]] [[ item.frequency ]] [[item.delivered_by]]
 </span>

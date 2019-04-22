@@ -11,13 +11,13 @@
   <ul class="list-group">
     <li class="list-group-item" ng-repeat="key in culture_order">
       <div ng-repeat="(isolate, items) in cultures[key[0]][key[1]].aerobic">
-        <h5 ng-show="$first">[[ key[0]|shortDate ]] - [[ key[1] ]] Aerobic</h5>
+        <h5 ng-show="$first">[[ key[0]|displayDate ]] - [[ key[1] ]] Aerobic</h5>
         <div ng-repeat="item in items">
           <span ng-include src="metadata.lab_tests[item.lab_test_type].record_url"></span>
         </div>
       </div>
       <div ng-repeat="(isolate, items) in cultures[key[0]][key[1]].anaerobic">
-       <h5 ng-show="$first">[[ key[0]|shortDate ]] - [[ key[1] ]] Anaerobic</h5>
+       <h5 ng-show="$first">[[ key[0]|displayDate ]] - [[ key[1] ]] Anaerobic</h5>
        <div ng-repeat="item in items">
          <span ng-include src="metadata.lab_tests[item.lab_test_type].record_url"></span>
        </div>

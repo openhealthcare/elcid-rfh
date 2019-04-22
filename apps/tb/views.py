@@ -39,6 +39,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["other_medication_list"] = episode.treatment_set.exclude(
             category=Treatment.TB
         )
+        ctx["communication_considerations"] = patient.communinicationconsiderations_set.get()
         ctx["results"] = get_tb_summary_information(patient)
         for result in ctx["results"].values():
             result["observation_datetime"] = deserialize_datetime(
@@ -69,7 +70,6 @@ class LTBIInitialAssessment(AbstractLetterView):
         episode = self.object.episode
         patient = self.object.episode.patient
         ctx["referral"] = episode.referralroute_set.get()
-        ctx["communication_considerations"] = patient.communinicationconsiderations_set.get()
         ctx["social_history"] = episode.socialhistory_set.get()
         ctx["travel_list"] = episode.travel_set.all()
 

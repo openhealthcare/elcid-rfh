@@ -641,7 +641,8 @@ class ReferralRoute(omodels.EpisodeSubrecord):
 
 
 class SymptomComplex(omodels.SymptomComplex):
-    pass
+    class Meta:
+        verbose_name = "Presenting Symptoms"
 
 
 class PastMedicalHistory(omodels.PastMedicalHistory):

@@ -1,6 +1,6 @@
 [[ item.extras.profile_description ]]<br />
-ordered: [[ item.datetime_ordered | shortDate ]]<br />
-tested: [[ item.extras.observation_datetime | shortDateTime ]]<br />
+ordered: [[ item.datetime_ordered | displayDate ]]<br />
+tested: [[ item.extras.observation_datetime | displayDateTime ]]<br />
 observations:
 <ul>
   <li ng-repeat="observation in item.observations">

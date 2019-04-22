@@ -1,6 +1,6 @@
 <span ng-class="{'text-muted': (item.end_date && (item.end_date | past)) || (item.planned_end_date && (item.planned_end_date | past)) }">
-  <span ng-show="item.start_date">[[item.start_date | shortDate]]</span>
-  <span ng-show="item.stoppedDate && item.start_date">-[[item.stoppedDate | shortDate]]</span>
+  <span ng-show="item.start_date">[[item.start_date | displayDate]]</span>
+  <span ng-show="item.stoppedDate && item.start_date">-[[item.stoppedDate | displayDate]]</span>
   [[item.drug]]
   <span ng-show="item.dose"> [[item.dose]]</span>
   <span ng-show="item.route"> [[ item.route ]]</span>

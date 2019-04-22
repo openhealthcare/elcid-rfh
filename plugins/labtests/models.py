@@ -8,7 +8,8 @@ from opal import models as omodels
 
 
 def format_dt(some_dt):
-    return dt_format(some_dt, settings.DATETIME_FORMAT)
+    if some_dt:
+        return dt_format(some_dt, settings.DATETIME_FORMAT)
 
 
 """
@@ -47,12 +48,12 @@ class LabTest(models.Model):
             "lab_number",
         ]
         for f in fields:
-            setattr(s, f, extras.get(f, None))
+            setattr(new_lab_test, f, extras.get(f, None))
         new_lab_test.datetime_ordered = old_lab_test.datetime_ordered
         new_lab_test.lab_number = old_lab_test.external_identifier
         new_lab_test.save()
         for ob in extras["observations"]:
-            obs = old_lab_test.observation_set.create()
+            obs = new_lab_test.observation_set.create()
             obs.create(ob)
         return new_lab_test
 

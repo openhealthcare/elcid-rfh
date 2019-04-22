@@ -15,7 +15,7 @@
         [[patient.hospital_number]]
         <small>
           <span class="white-text" ng-show="patient.date_of_birth">
-              ([[patient.date_of_birth | shortDate]])
+              ([[patient.date_of_birth | displayDate]])
           </span>
         </small>
         <div class="float-right">
@@ -44,8 +44,8 @@
                             <span ng-show="episode.category_name === 'inpatient'">Inpatient Admission</span>
                             <span ng-show="episode.category_name !== 'inpatient'">[[ episode.category_name | title ]] Episode</span>
                             <span ng-show="episode.start">
-                                [[ episode.start | shortDate ]]
-                                <span ng-show="episode.start"> - [[ episode.end | shortDate ]]</span>
+                                [[ episode.start | displayDate ]]
+                                <span ng-show="episode.start"> - [[ episode.end | displayDate ]]</span>
                             </span>
                         </a>
                     </div>

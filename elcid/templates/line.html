@@ -5,7 +5,7 @@
   since insertion
 </span>
 <span ng-show="item.removal_datetime" >
-  Removed [[item.removal_datetime | shortDate]] ([[item.removal_reason]])
+  Removed [[item.removal_datetime | displayDate]] ([[item.removal_reason]])
   <br />
   In place for [[ item.insertion_datetime |daysTo:item.removal_datetime ]]
 </span>

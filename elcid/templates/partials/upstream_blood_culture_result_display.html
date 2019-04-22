@@ -13,7 +13,7 @@
   </div>
   <ul ng-show="patientLoadStatus.isLoaded()" class="list-group">
     <li ng-class="{'text-muted': lab_test.no_growth}" class="list-group-item" ng-repeat="lab_test in bc_results">
-      <h5>[[ lab_test.datetime_ordered | shortDate ]]  - [[ lab_test.extras.site ]] [[ lab_test.external_identifier ]]</h5>
+      <h5>[[ lab_test.datetime_ordered | displayDate ]]  - [[ lab_test.extras.site ]] [[ lab_test.external_identifier ]]</h5>
       <div ng-repeat="observation in lab_test.observations">
           <div>[[ observation.observation_name ]]: &nbsp; [[ observation.observation_value ]]</div>
       </div>
