@@ -656,6 +656,56 @@ class GP(omodels.PatientSubrecord):
     contact_details = models.TextField()
 
 
+class BloodCultureSet(omodels.PatientSubrecord):
+    date_ordered = models.DateField(blank=True, null=True)
+    source = ForeignKeyOrFreeText(BloodCultureSource)
+    lab_number = models.CharField(blank=True, null=True, max_length=256)
+
+
+class GramStainOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class QuickFishOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class GPCStaphOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class GPCStrepOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class GNROutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class BloodCulture(models.Model):
+    aerobic = models.NullBooleanField(default=True)
+    gram_stains = models.ManyToManyField(GramStainOutcome, blank=True)
+    quick_fish = ForeignKeyOrFreeText(
+        QuickFishOutcome, verbose_name="QuickFISH"
+    )
+    gpc_staph = ForeignKeyOrFreeText(GPCStaphOutcome, verbose_name="GPC Staph")
+    gpc_strep = ForeignKeyOrFreeText(GPCStrepOutcome, verbose_name="GPC Strep")
+    gnr = ForeignKeyOrFreeText(GNROutcome, verbose_name="GNR")
+    organism = ForeignKeyOrFreeText(omodels.Microbiology_organism)
+    sensitivities = models.ManyToManyField(
+        omodels.Antimicrobial, related_name="sensitive_isolates"
+    )
+    resistances = models.ManyToManyField(
+        omodels.Antimicrobial, related_name="resistant_isolates"
+    )
+    notes = models.TextField()
+
+
 # method for updating
 @receiver(post_save, sender=omodels.Tagging)
 def record_positive_blood_culture(sender, instance, **kwargs):
