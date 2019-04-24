@@ -1,0 +1,35 @@
+{% with name=models.BloodCultureSet.get_api_name %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3>
+      {% if models.BloodCultureSet.get_icon %}
+        <i class="{{ models.BloodCultureSet.get_icon }}"></i>
+      {% endif %}
+      {{ models.BloodCultureSet.get_display_name }}
+      {% if not request.user.profile.readonly %}
+        <i
+           class="fa fa-plus-circle edit pull-right pointer"
+           ng-click="episode.recordEditor.newItem('{{ name }}')">
+        </i>
+      {% endif %}
+    </h3>
+  </div>
+  <ul class="list-group">
+    <li ng-repeat="item in episode.{{ name }}" class="list-group-item">
+      <div class="row">
+        <div class="col-md-9">
+          {% include models.BloodCultureSet.get_detail_template %}
+        </div>
+        <div class="col-md-3">
+          <span>
+              {% if not request.user.profile.readonly %}
+              <i class="fa fa-pencil edit pull-right pointer"
+                  ng-click="episode.recordEditor.editItem('{{ name }}', item)"></i>
+              {% endif %}
+          </span>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+{% endwith %}

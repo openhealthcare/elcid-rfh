@@ -658,8 +658,23 @@ class GP(omodels.PatientSubrecord):
 
 class BloodCultureSet(omodels.PatientSubrecord):
     date_ordered = models.DateField(blank=True, null=True)
+    date_positive = models.DateField(blank=True, null=True)
     source = ForeignKeyOrFreeText(BloodCultureSource)
     lab_number = models.CharField(blank=True, null=True, max_length=256)
+
+    @classmethod
+    def _get_fieldnames_to_serialize(cls, *args, **kwargs):
+        field_names = super()._get_fieldnames_to_serialize(*args, **kwargs)
+        field_names.append("isolates")
+        return field_names
+
+    def get_isolates(self, user, *args, **kwargs):
+        return [
+            i.to_dict(user) for i in self.isolates.all()
+        ]
+
+    def set_isolates(self, *args, **kwargs):
+        pass
 
 
 class GramStainOutcome(lookuplists.LookupList):
@@ -687,15 +702,25 @@ class GNROutcome(lookuplists.LookupList):
         return self.name
 
 
-class BloodCulture(models.Model):
+class BloodCultureIsolate(
+    omodels.UpdatesFromDictMixin,
+    omodels.ToDictMixin,
+    models.Model
+):
     aerobic = models.NullBooleanField(default=True)
-    gram_stains = models.ManyToManyField(GramStainOutcome, blank=True)
+    blood_culture_set = models.ForeignKey(
+        "BloodCultureSet",
+        on_delete=models.CASCADE,
+        related_name="isolates",
+        blank=True,
+        null=True
+    )
+    gram_stains = ForeignKeyOrFreeText(GramStainOutcome)
     quick_fish = ForeignKeyOrFreeText(
         QuickFishOutcome, verbose_name="QuickFISH"
     )
     gpc_staph = ForeignKeyOrFreeText(GPCStaphOutcome, verbose_name="GPC Staph")
     gpc_strep = ForeignKeyOrFreeText(GPCStrepOutcome, verbose_name="GPC Strep")
-    gnr = ForeignKeyOrFreeText(GNROutcome, verbose_name="GNR")
     organism = ForeignKeyOrFreeText(omodels.Microbiology_organism)
     sensitivities = models.ManyToManyField(
         omodels.Antimicrobial, related_name="sensitive_isolates"
@@ -703,7 +728,8 @@ class BloodCulture(models.Model):
     resistances = models.ManyToManyField(
         omodels.Antimicrobial, related_name="resistant_isolates"
     )
-    notes = models.TextField()
+    notes = models.TextField(blank=True)
+
 
 
 # method for updating

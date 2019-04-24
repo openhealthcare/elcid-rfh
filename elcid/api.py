@@ -660,6 +660,14 @@ class DemographicsSearch(LoginRequiredViewset):
         return json_response(dict(status=self.PATIENT_NOT_FOUND))
 
 
+class BloodCultureIsolateApi(LoginRequiredViewset):
+    def create(self, request):
+        pass
+
+    def update(self, request, pk=None):
+        pass
+
+
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
 elcid_router.register(

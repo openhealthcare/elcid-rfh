@@ -1,0 +1,15 @@
+[[ item.date_ordered | displayDate ]]
+[[ item.lab_number ]]
+[[ item.source ]]
+<span ng-show="item.date_positive">
+<br />
+Positive: [[ item.date_positive | displayDate ]]
+</span>
+<br />
+<ul>
+    <li ng-repeat="isolate in item.bloodcultureisolate_set" class="list-group-item">
+        {% include "partials/blood_culture_isolate.html" %}
+    </li>
+</ul>
+
+
