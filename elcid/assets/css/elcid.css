@@ -257,4 +257,19 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   visibility: visible;
 }
 
+.no-touchevents .panel-heading i.blood-culture-edit,
+.list-group-item i.blood-culture-edit,
+.list-group-item i.blood-culture-delete {
+  display: none;
+}
+
+.touchevents .panel-heading i.blood-culture-edit,
+.touchevents .panel-heading i.blood-culture-delete,
+.panel-heading:hover i.blood-culture-edit,
+.list-group-item .row:hover i.blood-culture-edit,
+.list-group-item .row:hover i.blood-culture-delete {
+  display: inline-block;
+  font-size: 28px;
+}
+
 /*# sourceMappingURL=elcid.css.map */

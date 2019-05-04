@@ -1,0 +1,40 @@
+<strong ng-show="isolate.aerobic">
+  Aerobic
+</strong>
+<strong ng-hide="isolate.aerobic">
+  Anaerobic
+</strong>
+<br />
+
+<span ng-show="isolate.quick_fish">
+  QuickFISH: [[ isolate.quick_fish ]]
+  <br />
+</span>
+
+<span ng-show="isolate.gpc_staph">
+  QuickFISH: [[ isolate.gpc_staph ]]
+  <br />
+</span>
+
+<span ng-show="isolate.gpc_strep">
+  QuickFISH: [[ isolate.gpc_strep ]]
+  <br />
+</span>
+
+<span ng-show="isolate.gram_stain">
+  Gram Stain: [[ isolate.gram_stain ]]
+  <br />
+</span>
+
+<span ng-show="isolate.organism">
+  Organism: [[ isolate.organism ]]
+  <div class="push-left-12" ng-show="isolate.sensitivities.length">
+    - Sensitive: [[ isolate.sensitivities.join(", ") ]]
+  </div>
+  <div class="push-left-12" ng-show="isolate.resistances.length">
+    - Resistant: [[ isolate.resistances.join(", ") ]]
+  </div>
+</span>
+<span>
+[[ isolate.notes ]]
+</span>

@@ -23,10 +23,36 @@
         <div class="col-md-3">
           <span>
               {% if not request.user.profile.readonly %}
-              <i class="fa fa-pencil edit pull-right pointer"
+              <i class="fa fa-pencil blood-culture-edit pull-right pointer"
                   ng-click="episode.recordEditor.editItem('{{ name }}', item)"></i>
               {% endif %}
           </span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-9">
+            <ul>
+                <li ng-repeat="isolate in item.isolates" class="list-group-item">
+                  <div class="row">
+                    <div class="col-xs-10">
+                      {% include "partials/blood_culture_isolate.html" %}
+                    </div>
+                    <div class="col-xs-2">
+                        <i class="fa fa-pencil blood-culture-edit pull-right pointer"
+                        ng-click="episode.recordEditor.editItem('{{ name }}', item)"></i>
+                    </div>
+                  </div>
+                </li>
+                <li class="list-group-item pointer">
+                  <span>
+                    <i
+                      class="fa fa-plus-circle pointer"
+                      ng-click="episode.recordEditor.newItem('{{ name }}')">
+                    </i>
+                    Add isolate
+                  </span>
+                </li>
+            </ul>
         </div>
       </div>
     </li>

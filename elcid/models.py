@@ -715,7 +715,7 @@ class BloodCultureIsolate(
         blank=True,
         null=True
     )
-    gram_stains = ForeignKeyOrFreeText(GramStainOutcome)
+    gram_stain = ForeignKeyOrFreeText(GramStainOutcome)
     quick_fish = ForeignKeyOrFreeText(
         QuickFishOutcome, verbose_name="QuickFISH"
     )
@@ -723,10 +723,10 @@ class BloodCultureIsolate(
     gpc_strep = ForeignKeyOrFreeText(GPCStrepOutcome, verbose_name="GPC Strep")
     organism = ForeignKeyOrFreeText(omodels.Microbiology_organism)
     sensitivities = models.ManyToManyField(
-        omodels.Antimicrobial, related_name="sensitive_isolates"
+        omodels.Antimicrobial, blank=True, related_name="sensitive_isolates"
     )
     resistances = models.ManyToManyField(
-        omodels.Antimicrobial, related_name="resistant_isolates"
+        omodels.Antimicrobial, blank=True, related_name="resistant_isolates"
     )
     notes = models.TextField(blank=True)
 
