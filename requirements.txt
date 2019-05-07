@@ -35,7 +35,7 @@ python-tds==1.8.2
 
 
 # Open Health Care packages on PyPi
-opal==v0.14.0
+opal==v0.14.2
 
 
 # Open Health Care repositories on GitHub
