@@ -311,17 +311,16 @@ a.list-group-item {
 
 
 // blood cultues
-.no-touchevents .panel-heading i.blood-culture-edit,
-.list-group-item i.blood-culture-edit,
-.list-group-item i.blood-culture-delete{
+.no-touchevents div.blood-culture-edit i,
+i.blood-culture-edit{
   display:none
 }
 
-.touchevents .panel-heading i.blood-culture-edit,
-.touchevents .panel-heading i.blood-culture-delete,
-.panel-heading:hover i.blood-culture-edit,
-.list-group-item .row:hover i.blood-culture-edit,
-.list-group-item .row:hover i.blood-culture-delete{
+div.blood-culture-edit:hover i{
   display: inline-block;
   font-size: 28px;
+}
+
+div.add-isolate:hover{
+  color: $primary-background;
 }

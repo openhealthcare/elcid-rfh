@@ -7,9 +7,11 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from intrahospital_api import loader
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from opal.core.api import OPALRouter
-from opal.core.api import patient_from_pk, LoginRequiredViewset
+from opal.core.api import (
+    patient_from_pk, LoginRequiredViewset, SubrecordViewSet
+)
 from opal.core.views import json_response
 from opal.core import serialization
 from elcid import models as emodels
@@ -660,12 +662,17 @@ class DemographicsSearch(LoginRequiredViewset):
         return json_response(dict(status=self.PATIENT_NOT_FOUND))
 
 
-class BloodCultureIsolateApi(LoginRequiredViewset):
-    def create(self, request):
-        pass
+class BloodCultureIsolateApi(SubrecordViewSet):
+    model = emodels.BloodCultureIsolate
+    base_name = "blood_culture_isolate"
 
-    def update(self, request, pk=None):
-        pass
+    def create(self, request):
+        bc = self.model()
+        bc.update_from_dict(request.data, request.user)
+        return json_response(
+            bc.to_dict(request.user),
+            status_code=status.HTTP_201_CREATED
+        )
 
 
 elcid_router = OPALRouter()
@@ -674,6 +681,7 @@ elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
+elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
 lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)

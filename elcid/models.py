@@ -657,10 +657,15 @@ class GP(omodels.PatientSubrecord):
 
 
 class BloodCultureSet(omodels.PatientSubrecord):
+    _icon = "fa fa-crosshairs"
+
     date_ordered = models.DateField(blank=True, null=True)
     date_positive = models.DateField(blank=True, null=True)
     source = ForeignKeyOrFreeText(BloodCultureSource)
     lab_number = models.CharField(blank=True, null=True, max_length=256)
+
+    class Meta:
+        verbose_name = "Blood Culture"
 
     @classmethod
     def _get_fieldnames_to_serialize(cls, *args, **kwargs):
@@ -705,15 +710,15 @@ class GNROutcome(lookuplists.LookupList):
 class BloodCultureIsolate(
     omodels.UpdatesFromDictMixin,
     omodels.ToDictMixin,
+    omodels.TrackedModel,
     models.Model
 ):
+    consistency_token = models.CharField(max_length=8)
     aerobic = models.NullBooleanField(default=True)
     blood_culture_set = models.ForeignKey(
         "BloodCultureSet",
         on_delete=models.CASCADE,
-        related_name="isolates",
-        blank=True,
-        null=True
+        related_name="isolates"
     )
     gram_stain = ForeignKeyOrFreeText(GramStainOutcome)
     quick_fish = ForeignKeyOrFreeText(

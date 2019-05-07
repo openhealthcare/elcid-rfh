@@ -1,11 +1,13 @@
 [[ item.date_ordered | displayDate ]]
 [[ item.lab_number ]]
-[[ item.source ]]
 <span ng-show="item.date_positive">
-<br />
-Positive: [[ item.date_positive | displayDate ]]
+  <br />
+  Positive: [[ item.date_positive | displayDate ]]
 </span>
-<br />
+<span ng-show="item.source">
+  <br />
+  Source: [[ item.source ]]
+</span>
 
 
 
