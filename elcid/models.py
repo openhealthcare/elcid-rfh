@@ -8,6 +8,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from opal.utils import camelcase_to_underscore
 from lab import models as lmodels
 import opal.models as omodels
 
@@ -713,8 +714,21 @@ class BloodCultureIsolate(
     omodels.TrackedModel,
     models.Model
 ):
+    AEROBIC = "Aerobic"
+    ANAEROBIC = "Anaerobic"
+
+    AEROBIC_OR_ANAEROBIC = (
+        (AEROBIC, AEROBIC,),
+        (ANAEROBIC, ANAEROBIC,),
+    )
+
     consistency_token = models.CharField(max_length=8)
-    aerobic = models.NullBooleanField(default=True)
+    aerobic_or_anaerobic = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        choices=AEROBIC_OR_ANAEROBIC
+    )
     blood_culture_set = models.ForeignKey(
         "BloodCultureSet",
         on_delete=models.CASCADE,
@@ -734,6 +748,10 @@ class BloodCultureIsolate(
         omodels.Antimicrobial, blank=True, related_name="resistant_isolates"
     )
     notes = models.TextField(blank=True)
+
+    @classmethod
+    def get_api_name(cls):
+        return camelcase_to_underscore(cls._meta.object_name)
 
 
 

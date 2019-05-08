@@ -7,7 +7,7 @@ fa fa-crosshairs
 Blood Culture Isolate
 {% endblock %}
 {% block form %}
-  {% radio model="isolate.editing.aerobic" label="Type" lookuplist="['Aerobic', 'Anaerobic']" %}
+  {% radio model="isolate.editing.aerobic_or_anaerobic" label="Type" lookuplist="['Aerobic', 'Anaerobic']" %}
   {% radio model="isolate.editing.gram_stain" label="Gram stain" lookuplist="gramstainoutcome_list" %}
   {% radio model="isolate.editing.quick_fish" label="Quick FiSH" lookuplist="quickfishoutcome_list" %}
   {% radio model="isolate.editing.gpc_staph" label="GPC Staph" lookuplist="gpcstaphoutcome_list" %}

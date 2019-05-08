@@ -8,17 +8,10 @@ angular.module('opal.services').service(
       if(item){
         this.isolateUrl = baseUrl + item.id + "/"
         this.editing = _.clone(item);
-        if(item.aerobic){
-          this.editing.aerobic = "Aerobic";
-        }
-        else{
-          this.editing.aerobic = "Anaerobic";
-        }
       }
       else{
         this.isolateUrl = baseUrl;
         this.editing = {
-          aerobic: "Aerobic",
           consistency_token: "",
           blood_culture_set_id: blood_culture_set.id
         }
@@ -29,12 +22,6 @@ angular.module('opal.services').service(
       var deferred = $q.defer();
       var method = "post";
       var toSave = _.clone(this.editing);
-      if(this.editing.aerobic === 'Aerobic'){
-        toSave.aerobic = true;
-      }
-      else{
-        toSave.aerobic = false;
-      }
 
       if(this.editing.id){
         method = "put";

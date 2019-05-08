@@ -664,7 +664,7 @@ class DemographicsSearch(LoginRequiredViewset):
 
 class BloodCultureIsolateApi(SubrecordViewSet):
     model = emodels.BloodCultureIsolate
-    base_name = "blood_culture_isolate"
+    base_name = emodels.BloodCultureIsolate.get_api_name()
 
     def create(self, request):
         bc = self.model()
