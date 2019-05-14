@@ -1,0 +1,60 @@
+<span ng-show="item.ltbr_number">
+  <strong>
+    LTBR number:
+  </strong>
+  [[ item.ltbr_number ]]
+  <br />
+</span>
+<span ng-show="item.hospital_number">
+  <strong>
+    Hospital number:
+  </strong>
+  [[ item.hospital_number ]]
+  <br />
+</span>
+<span ng-show="item.relationship">
+    <strong>
+      Relationship:
+    </strong>
+    [[ item.relationship ]]
+    [[ item.relationship_other ]]
+    <br />
+  </span>
+<span ng-show="item.sputum_smear">
+  <strong>
+    Sputum smear:
+  </strong>
+  [[ item.sputum_smear ]]
+   <br />
+</span>
+<span ng-show="item.culture">
+  <strong>
+    Culture:
+  </strong>
+  [[ item.culture ]]
+   <br />
+</span>
+<span ng-show="item.drug_susceptibility">
+  <strong>
+    Drug suceptablity:
+  </strong>
+  [[ item.drug_susceptibility ]]
+  <br />
+</span>
+<span ng-show="item.how_long_ago_years || item.how_long_ago_months || item.how_long_ago_days">
+  <span ng-show="item.how_long_ago_years">
+        [[ item.how_long_ago_years ]] [[ 'year'|plural:item.contact_how_long_ago_years ]]
+  </span>
+  <span ng-show="item.how_long_ago_months">
+        [[ item.how_long_ago_months ]] [[ 'month'|plural:item.contact_how_long_ago_months ]]
+  </span>
+  <span ng-show="item.how_long_ago_days">
+        [[ item.how_long_ago_days ]] [[ 'day'|plural:item.how_long_ago_days ]]
+  </span>
+  ago
+  <br />
+</span>
+<span ng-show="item.details">
+    [[ item.details ]]
+   <br />
+</span>

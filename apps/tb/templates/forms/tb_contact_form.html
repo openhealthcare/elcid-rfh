@@ -1,0 +1,27 @@
+{% load forms %}
+{% load elcid_forms %}
+{% input field="TBContact.ltbr_number" %}
+{% input field="TBContact.hospital_number" %}
+{% radio_columns field="TBContact.relationship" %}
+{% radio field="TBContact.sputum_smear" %}
+{% radio field="TBContact.culture" %}
+{% radio field="TBContact.drug_susceptibility" %}
+<div class="form-group">
+  <label class="control-label col-sm-3">
+      How long ago
+  </label>
+  <div class="col-sm-9">
+    <div class="row">
+      <div class="col-md-3">
+        <input placeholder="Years" class="form-control" type="number" ng-model="editing.tb_contact.how_long_ago_years" autocomplete="off">
+      </div>
+      <div class="col-md-3">
+        <input placeholder="Months" class="form-control" type="number" ng-model="editing.tb_contact.how_long_ago_months" autocomplete="off">
+      </div>
+      <div class="col-md-3">
+        <input placeholder="Days" class="form-control" type="number" ng-model="editing.tb_contact.how_long_ago_days" autocomplete="off">
+      </div>
+    </div>
+  </div>
+</div>
+{% textarea field="TBContact.details" %}
