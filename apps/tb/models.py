@@ -298,7 +298,6 @@ class Treatment(models.Treatment):
     TB = "tb"
 
 
-
 class TBHistory(models.PatientSubrecord):
     """ Used if the person has clicked that they
         have a personal history of TB in the
@@ -315,6 +314,8 @@ class TBHistory(models.PatientSubrecord):
 
     _is_singleton = True
 
+    # TODO After we get sign off from the doctors the below
+    # fields can be removed
     previous_tb_contact = fields.BooleanField(
         default=False,
         verbose_name="Previous TB contact"
@@ -334,6 +335,8 @@ class TBHistory(models.PatientSubrecord):
         default=False,
         verbose_name="Previous TB diagnosis"
     )
+    # end todo
+
     diagnosis_how_long_ago_years = fields.IntegerField(
         blank=True, null=True
     )
@@ -370,6 +373,97 @@ class TBHistory(models.PatientSubrecord):
     class Meta:
         verbose_name = "TB Exposure"
         verbose_name_plural = "TB Exposures"
+
+
+class TBContact(models.PatientSubrecord):
+    _icon = 'fa fa-chain'
+
+    POS_NEG = (
+        ("+ve", "+ve"),
+        ("-ve", "-ve"),
+    )
+
+    DRUG_susceptibility = (
+        ("Fully sensitive", "Fully sensitive",),
+        ("Not fully sensitive", "Not fully sensitive",),
+    )
+
+    RELATIONSHIP = (
+        ("Household", "Household",),
+        ("Healthcare (workor)", "Healthcare (worker)",),
+        ("Healthcare (patient)", "Healthcare (patient)",),
+        (
+            "Workplace (non healthcare)",
+            "Workplace (non healthcare)",
+        ),
+        (
+            "Education",
+            "Education",
+        ),
+        (
+            "Prison",
+            "Prison",
+        ),
+    )
+
+    ltbr_number = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="LTBR Number"
+    )
+    hospital_number = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+    )
+    sputum_smear = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=POS_NEG
+    )
+    culture = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=POS_NEG
+    )
+    drug_susceptibility = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=DRUG_susceptibility
+    )
+
+    how_long_ago_years = fields.IntegerField(
+        blank=True, null=True
+    )
+
+    how_long_ago_months = fields.IntegerField(
+        blank=True, null=True
+    )
+
+    how_long_ago_days = fields.IntegerField(
+        blank=True, null=True
+    )
+
+    relationship = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=RELATIONSHIP
+    )
+
+    relationship_other = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+    )
+
+    details = fields.TextField(
+        blank=True
+    )
 
 
 class Allergies(models.Allergies):

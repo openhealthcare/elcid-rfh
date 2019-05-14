@@ -78,13 +78,19 @@
   None recorded
   {% endif %}
   <br />
-  Previous TB contact:
-  {% if tb_history.previous_tb_contact_details %}
-  {{ tb_history.previous_tb_contact_details }}
-  {% else %}
-  None recorded
+  {% for tb_contact in tb_contact_list %}
+  TB contact:
+  {% if tb_contact.ltbr_number %}
+  {{ tb_contact.ltbr_number }}
+  {% endif %}
+  {% if tb_contact.hospital_number %}
+    {{ tb_contact.hospital_number }}
+  {% endif %}
+  {{ tb_contact.details }}{% if tb_contact.drug_susceptibility %},
+  susceptability: {{ tb_contact.drug_susceptibility.lower }}
   {% endif %}
   <br />
+  {% endfor %}
   Place of birth: {{ demographics.birth_place }}
   <br />
 </p>
