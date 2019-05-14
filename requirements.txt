@@ -34,9 +34,6 @@ Fabric==1.14.0
 python-tds==1.8.2
 
 
-# Open Health Care packages on PyPi
-opal==v0.14.2
-
-
 # Open Health Care repositories on GitHub
+-e git+https://github.com/openhealthcare/opal.git@blood-culture-isolates#egg=opal
 -e git+https://github.com/openhealthcare/opal-observations.git@v0.5.0#egg=opal_observations

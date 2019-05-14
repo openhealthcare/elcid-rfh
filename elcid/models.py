@@ -8,6 +8,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
+from opal.utils import camelcase_to_underscore
 from lab import models as lmodels
 import opal.models as omodels
 
@@ -654,6 +655,104 @@ class GP(omodels.PatientSubrecord):
         max_length=256
     )
     contact_details = models.TextField()
+
+
+class BloodCultureSet(omodels.PatientSubrecord):
+    _icon = "fa fa-crosshairs"
+
+    date_ordered = models.DateField(blank=True, null=True)
+    date_positive = models.DateField(blank=True, null=True)
+    source = ForeignKeyOrFreeText(BloodCultureSource)
+    lab_number = models.CharField(blank=True, null=True, max_length=256)
+
+    class Meta:
+        verbose_name = "Blood Culture"
+
+    @classmethod
+    def _get_fieldnames_to_serialize(cls, *args, **kwargs):
+        field_names = super()._get_fieldnames_to_serialize(*args, **kwargs)
+        field_names.append("isolates")
+        return field_names
+
+    def get_isolates(self, user, *args, **kwargs):
+        return [
+            i.to_dict(user) for i in self.isolates.all()
+        ]
+
+    def set_isolates(self, *args, **kwargs):
+        pass
+
+
+class GramStainOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class QuickFishOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class GPCStaphOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class GPCStrepOutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class GNROutcome(lookuplists.LookupList):
+    def __str__(self):
+        return self.name
+
+
+class BloodCultureIsolate(
+    omodels.UpdatesFromDictMixin,
+    omodels.ToDictMixin,
+    omodels.TrackedModel,
+    models.Model
+):
+    AEROBIC = "Aerobic"
+    ANAEROBIC = "Anaerobic"
+
+    AEROBIC_OR_ANAEROBIC = (
+        (AEROBIC, AEROBIC,),
+        (ANAEROBIC, ANAEROBIC,),
+    )
+
+    consistency_token = models.CharField(max_length=8)
+    aerobic_or_anaerobic = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True,
+        choices=AEROBIC_OR_ANAEROBIC
+    )
+    blood_culture_set = models.ForeignKey(
+        "BloodCultureSet",
+        on_delete=models.CASCADE,
+        related_name="isolates"
+    )
+    gram_stain = ForeignKeyOrFreeText(GramStainOutcome)
+    quick_fish = ForeignKeyOrFreeText(
+        QuickFishOutcome, verbose_name="QuickFISH"
+    )
+    gpc_staph = ForeignKeyOrFreeText(GPCStaphOutcome, verbose_name="GPC Staph")
+    gpc_strep = ForeignKeyOrFreeText(GPCStrepOutcome, verbose_name="GPC Strep")
+    organism = ForeignKeyOrFreeText(omodels.Microbiology_organism)
+    sensitivities = models.ManyToManyField(
+        omodels.Antimicrobial, blank=True, related_name="sensitive_isolates"
+    )
+    resistances = models.ManyToManyField(
+        omodels.Antimicrobial, blank=True, related_name="resistant_isolates"
+    )
+    notes = models.TextField(blank=True)
+
+    @classmethod
+    def get_api_name(cls):
+        return camelcase_to_underscore(cls._meta.object_name)
+
 
 
 # method for updating

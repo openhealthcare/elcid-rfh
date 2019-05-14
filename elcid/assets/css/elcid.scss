@@ -308,3 +308,19 @@ a.list-group-item {
     }
   }
 }
+
+
+// blood cultues
+.no-touchevents div.blood-culture-edit i,
+i.blood-culture-edit{
+  display:none
+}
+
+div.blood-culture-edit:hover i{
+  display: inline-block;
+  font-size: 28px;
+}
+
+div.add-isolate:hover{
+  color: $primary-background;
+}

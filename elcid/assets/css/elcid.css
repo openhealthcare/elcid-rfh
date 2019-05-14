@@ -257,4 +257,18 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   visibility: visible;
 }
 
+.no-touchevents div.blood-culture-edit i,
+i.blood-culture-edit {
+  display: none;
+}
+
+div.blood-culture-edit:hover i {
+  display: inline-block;
+  font-size: 28px;
+}
+
+div.add-isolate:hover {
+  color: #006c96;
+}
+
 /*# sourceMappingURL=elcid.css.map */

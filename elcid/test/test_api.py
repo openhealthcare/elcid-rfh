@@ -405,6 +405,7 @@ class GetReferenceRangeTestCase(OpalTestCase):
             dict(min="2", max="3")
         )
 
+
 class QuerysetApiSwitchTestCase(OpalTestCase):
     def setUp(self):
         self.patient, _ = self.new_patient_and_episode_please()
@@ -490,3 +491,352 @@ class QuerysetApiSwitchTestCase(OpalTestCase):
         self.assertFalse(new_method.called)
         self.assertTrue(old_method.called)
         self.assertEqual(result, "old method")
+
+
+class BloodCultureSetTestCase(OpalTestCase):
+    def setUp(self):
+        positive = datetime.date(2019, 5, 9)
+        yesterday = positive - datetime.timedelta(1)
+        patient, _ = self.new_patient_and_episode_please()
+        self.bcs = emodels.BloodCultureSet.objects.create(
+            date_ordered=yesterday,
+            date_positive=positive,
+            source="Hickman",
+            lab_number="111",
+            patient=patient
+        )
+        isolate = self.bcs.isolates.create(
+            aerobic_or_anaerobic=emodels.BloodCultureIsolate.AEROBIC,
+            consistency_token="111",
+        )
+        isolate.gram_stain = "Gram -ve Rods"
+        isolate.quick_fish = "Negative"
+        isolate.save()
+        request = self.rf.get("/")
+        self.url = reverse(
+            "blood_culture_set-detail",
+            kwargs=dict(pk=self.bcs.id),
+            request=request
+        )
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+
+    def test_retrieve_with_isolates(self):
+        """
+        Retrieve requests should return the isolates
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.status_code, 200
+        )
+        expected = {
+            'consistency_token': '',
+            'created': None,
+            'created_by_id': None,
+            'date_ordered': datetime.date(2019, 5, 8),
+            'date_positive': datetime.date(2019, 5, 9),
+            'id': 1,
+            'isolates': [{
+                'aerobic_or_anaerobic': 'Aerobic',
+                'blood_culture_set_id': 1,
+                'consistency_token': '111',
+                'created': None,
+                'created_by_id': None,
+                'gpc_staph': '',
+                'gpc_strep': '',
+                'gram_stain': 'Gram -ve Rods',
+                'id': 1,
+                'notes': '',
+                'organism': '',
+                'quick_fish': 'Negative',
+                'resistances': [],
+                'sensitivities': [],
+                'updated': None,
+                'updated_by_id': None
+            }],
+            'lab_number': '111',
+            'patient_id': 1,
+            'source': 'Hickman',
+            'updated': None,
+            'updated_by_id': None
+        }
+        self.assertEqual(response.data, expected)
+
+    def test_retrieve_without_isolates(self):
+        """
+        Retrieve requests should return empty lists
+        if there are no isolates
+        """
+        self.bcs.isolates.all().delete()
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.status_code, 200
+        )
+        expected = {
+            'consistency_token': '',
+            'created': None,
+            'created_by_id': None,
+            'date_ordered': datetime.date(2019, 5, 8),
+            'date_positive': datetime.date(2019, 5, 9),
+            'id': 1,
+            'isolates': [],
+            'lab_number': '111',
+            'patient_id': 1,
+            'source': 'Hickman',
+            'updated': None,
+            'updated_by_id': None
+        }
+        self.assertEqual(response.data, expected)
+
+    def test_update_with_isolates(self):
+        """
+        Updates should update normally but not change isolates
+        """
+        data = {
+            'consistency_token': '',
+            'created': None,
+            'created_by_id': None,
+            'date_ordered': "08/05/2019",
+            # Note we are changing date positive so its 10th
+            'date_positive': "10/05/2019",
+            'id': 1,
+            'isolates': [{
+                # Note we are changing aerobic to anaerobic
+                'aerobic_or_anaerobic': 'Anerobic',
+                'blood_culture_set_id': 1,
+                'consistency_token': '111',
+                'created': None,
+                'created_by_id': None,
+                'gpc_staph': '',
+                'gpc_strep': '',
+                'gram_stain': 'Gram -ve Rods',
+                'id': 1,
+                'notes': '',
+                'organism': '',
+                'quick_fish': 'Negative',
+                'resistances': [],
+                'sensitivities': [],
+                'updated': None,
+                'updated_by_id': None
+            }],
+            'lab_number': '111',
+            'patient_id': 1,
+            'source': 'Hickman',
+            'updated': None,
+            'updated_by_id': None
+        }
+        response = self.client.put(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+
+        self.assertEqual(
+            response.status_code, 202
+        )
+        bcs = emodels.BloodCultureSet.objects.get(id=1)
+        self.assertEqual(
+            bcs.date_positive, datetime.date(2019, 5, 10)
+        )
+        isolate = bcs.isolates.get()
+        self.assertEqual(
+            isolate.aerobic_or_anaerobic, isolate.AEROBIC
+        )
+
+    def test_update_with_empty_isolates(self):
+        """
+        Updates with no isolates should not remove isolates
+        """
+        data = {
+            'consistency_token': '',
+            'created': None,
+            'created_by_id': None,
+            'date_ordered': "08/05/2019",
+            # Note we are changing date positive so its 10th
+            'date_positive': "10/05/2019",
+            'id': 1,
+            'isolates': [],
+            'lab_number': '111',
+            'patient_id': 1,
+            'source': 'Hickman',
+            'updated': None,
+            'updated_by_id': None
+        }
+        response = self.client.put(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+        self.assertEqual(
+            response.status_code, 202
+        )
+        bcs = emodels.BloodCultureSet.objects.get(id=1)
+        self.assertEqual(
+            bcs.date_positive, datetime.date(2019, 5, 10)
+        )
+        self.assertTrue(
+            bcs.isolates.exists()
+        )
+
+
+class BloodCultureIsolateTestCase(OpalTestCase):
+    def setUp(self):
+        positive = datetime.date(2019, 5, 8)
+        yesterday = positive - datetime.timedelta(1)
+        patient, _ = self.new_patient_and_episode_please()
+        self.bcs = emodels.BloodCultureSet.objects.create(
+            date_ordered=yesterday,
+            date_positive=positive,
+            source="Hickman",
+            lab_number="111",
+            patient=patient
+        )
+        self.isolate = self.bcs.isolates.create(
+            aerobic_or_anaerobic=emodels.BloodCultureIsolate.AEROBIC,
+            consistency_token="111",
+        )
+        self.isolate.gram_stain = "Gram -ve Rods"
+        self.isolate.quick_fish = "Negative"
+        self.isolate.save()
+        request = self.rf.get("/")
+        self.detail_url = reverse(
+            "blood_culture_isolate-detail",
+            kwargs=dict(pk=1),
+            request=request
+        )
+        self.list_url = reverse(
+            "blood_culture_isolate-list",
+            request=request
+        )
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+
+    def test_retrieve(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(
+            response.status_code, 200
+        )
+        expected = {
+            'notes': '',
+            'resistances': [],
+            'gpc_strep': '',
+            'created_by_id': None,
+            'updated': None,
+            'id': self.isolate.id,
+            'gram_stain': 'Gram -ve Rods',
+            'sensitivities': [],
+            'updated_by_id': None,
+            'quick_fish': 'Negative',
+            'blood_culture_set_id': 1,
+            'gpc_staph': '',
+            'created': None,
+            'organism': '',
+            'consistency_token': '111',
+            'aerobic_or_anaerobic': 'Aerobic'
+        }
+        self.assertEqual(
+            response.data, expected
+        )
+
+    def test_list(self):
+        response = self.client.get(self.list_url)
+        self.assertEqual(
+            response.status_code, 200
+        )
+        expected = [{
+            'notes': '',
+            'resistances': [],
+            'gpc_strep': '',
+            'created_by_id': None,
+            'updated': None,
+            'id': self.isolate.id,
+            'gram_stain': 'Gram -ve Rods',
+            'sensitivities': [],
+            'updated_by_id': None,
+            'quick_fish': 'Negative',
+            'blood_culture_set_id': 1,
+            'gpc_staph': '',
+            'created': None,
+            'organism': '',
+            'consistency_token': '111',
+            'aerobic_or_anaerobic': 'Aerobic'
+        }]
+        self.assertEqual(
+            response.data, expected
+        )
+
+    def test_create(self):
+        data = {
+            'notes': '',
+            'resistances': [],
+            'gpc_strep': '',
+            'created_by_id': None,
+            'updated': None,
+            'gram_stain': 'Gram -ve Rods',
+            'sensitivities': [],
+            'updated_by_id': None,
+            'quick_fish': 'Negative',
+            'blood_culture_set_id': 1,
+            'gpc_staph': '',
+            'created': None,
+            'organism': '',
+            'consistency_token': '111',
+            'aerobic_or_anaerobic': 'Anerobic'
+        }
+        response = self.client.post(
+            self.list_url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+        self.assertEqual(
+            response.status_code, 201
+        )
+        self.assertEqual(
+            self.bcs.isolates.count(), 2
+        )
+        new_isolate = self.bcs.isolates.exclude(id=self.isolate.id).get()
+        self.assertEqual(
+            new_isolate.aerobic_or_anaerobic, 'Anerobic'
+        )
+
+    def test_update(self):
+        data = {
+            'id': self.isolate.id,
+            'notes': '',
+            'resistances': [],
+            'gpc_strep': '',
+            'created_by_id': None,
+            'updated': None,
+            'gram_stain': 'Gram -ve Rods',
+            'sensitivities': [],
+            'updated_by_id': None,
+            'quick_fish': 'Negative',
+            'blood_culture_set_id': 1,
+            'gpc_staph': '',
+            'created': None,
+            'organism': '',
+            'consistency_token': '111',
+            'aerobic_or_anaerobic': 'Anerobic'
+        }
+        response = self.client.put(
+            self.detail_url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+        self.assertEqual(
+            response.status_code, 202
+        )
+        reloaded_isolate = self.bcs.isolates.get()
+        self.assertEqual(
+            reloaded_isolate.aerobic_or_anaerobic, 'Anerobic'
+        )

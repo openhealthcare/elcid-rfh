@@ -1,0 +1,53 @@
+{% with name=models.BloodCultureSet.get_api_name %}
+<div ng-controller="BloodCulturePanelCtrl as bloodCulturePanelCtrl" class="panel panel-default">
+  <div class="panel-heading">
+    <h3>
+      {% if models.BloodCultureSet.get_icon %}
+        <i class="{{ models.BloodCultureSet.get_icon }}"></i>
+      {% endif %}
+      {{ models.BloodCultureSet.get_display_name }}
+      {% if not request.user.profile.readonly %}
+        <i
+           class="fa fa-plus-circle edit pull-right pointer"
+           ng-click="patient.recordEditor.newItem('{{ name }}')">
+        </i>
+      {% endif %}
+    </h3>
+  </div>
+  <ul class="list-group">
+    <li ng-repeat="item in patient.{{ name }} | orderBy:'-date_ordered'" class="list-group-item">
+      <div class="row blood-culture-edit">
+        <div class="col-md-9">
+          {% include models.BloodCultureSet.get_detail_template %}
+        </div>
+        <div class="col-md-3">
+          <span>
+              {% if not request.user.profile.readonly %}
+              <i class="fa fa-pencil blood-culture-edit pull-right pointer"
+                  ng-click="patient.recordEditor.editItem('{{ name }}', item)"></i>
+              {% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="row content-offset-10 blood-culture-edit" ng-repeat="isolate in item.isolates" >
+        <div class="col-xs-10">
+          {% include "partials/blood_culture_isolate.html" %}
+        </div>
+        <div class="col-xs-2">
+            {% if not request.user.profile.readonly %}
+            <i class="fa fa-pencil pull-right pointer"
+            ng-click="bloodCulturePanelCtrl.open(item, isolate)"></i>
+            {% endif %}
+        </div>
+      </div>
+      {% if not request.user.profile.readonly %}
+      <div class="content-offset-10 pointer add-isolate" ng-click="bloodCulturePanelCtrl.open(item)" >
+        <i class="fa fa-plus-circle">
+        </i>
+        Add isolate
+      </div>
+      {% endif %}
+    </li>
+  </ul>
+</div>
+{% endwith %}
