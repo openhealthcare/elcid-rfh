@@ -262,13 +262,17 @@ i.blood-culture-edit {
   display: none;
 }
 
+div.blood-culture-edit:hover {
+  background-color: #f4f8fc;
+}
 div.blood-culture-edit:hover i {
   display: inline-block;
   font-size: 28px;
+  padding-top: 5px;
 }
 
 div.add-isolate:hover {
-  color: #006c96;
+  background-color: #f4f8fc;
 }
 
 /*# sourceMappingURL=elcid.css.map */

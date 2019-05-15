@@ -16,27 +16,23 @@
   </div>
   <ul class="list-group">
     <li ng-repeat="item in patient.{{ name }} | orderBy:'-date_ordered'" class="list-group-item">
-      <div class="row blood-culture-edit">
-        <div class="col-md-9">
+      <div {% if not request.user.profile.readonly %}ng-click="patient.recordEditor.editItem('{{ name }}', item)"{% endif %} class="row pointer blood-culture-edit">
+        <div   class="col-md-9">
           {% include models.BloodCultureSet.get_detail_template %}
         </div>
         <div class="col-md-3">
           <span>
-              {% if not request.user.profile.readonly %}
-              <i class="fa fa-pencil blood-culture-edit pull-right pointer"
-                  ng-click="patient.recordEditor.editItem('{{ name }}', item)"></i>
-              {% endif %}
+              <i class="fa fa-pencil blood-culture-edit pull-right pointer"></i>
           </span>
         </div>
       </div>
-      <div class="row content-offset-10 blood-culture-edit" ng-repeat="isolate in item.isolates" >
+      <div ng-click="bloodCulturePanelCtrl.open(item, isolate)" class="row pointer blood-culture-edit" ng-repeat="isolate in item.isolates" >
         <div class="col-xs-10">
           {% include "partials/blood_culture_isolate.html" %}
         </div>
         <div class="col-xs-2">
             {% if not request.user.profile.readonly %}
-            <i class="fa fa-pencil pull-right pointer"
-            ng-click="bloodCulturePanelCtrl.open(item, isolate)"></i>
+            <i class="fa fa-pencil pull-right"></i>
             {% endif %}
         </div>
       </div>
