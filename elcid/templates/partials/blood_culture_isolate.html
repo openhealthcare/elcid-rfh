@@ -4,6 +4,10 @@
   </strong>
   <br />
 </span>
+<span ng-show="isolate.gram_stain">
+  Gram Stain: [[ isolate.gram_stain ]]
+  <br />
+</span>
 <span ng-show="isolate.quick_fish">
   QuickFISH: [[ isolate.quick_fish ]]
   <br />
@@ -19,9 +23,8 @@
   <br />
 </span>
 
-<span ng-show="isolate.gram_stain">
-  Gram Stain: [[ isolate.gram_stain ]]
-  <br />
+<span ng-show="isolate.sepsityper_organism">
+  Sepsityper organism: [[ isolate.sepsityper_organism ]]
 </span>
 
 <span ng-show="isolate.organism">

@@ -7,14 +7,15 @@ fa fa-crosshairs
 Blood Culture Isolate
 {% endblock %}
 {% block form %}
-  {% radio model="isolate.editing.aerobic_or_anaerobic" label="Type" lookuplist="['Aerobic', 'Anaerobic']" %}
+  {% radio model="isolate.editing.aerobic_or_anaerobic" label="Blood culture bottle type" lookuplist="['Aerobic', 'Anaerobic']" %}
   {% radio model="isolate.editing.gram_stain" label="Gram stain" lookuplist="gramstainoutcome_list" %}
-  {% radio model="isolate.editing.quick_fish" label="Quick FiSH" lookuplist="quickfishoutcome_list" %}
-  {% radio model="isolate.editing.gpc_staph" label="GPC Staph" lookuplist="gpcstaphoutcome_list" %}
-  {% radio model="isolate.editing.gpc_strep" label="GPC Staph" lookuplist="gpcstrepoutcome_list" %}
+  {% radio model="isolate.editing.quick_fish" label="Candida QuickFISH" lookuplist="quickfishoutcome_list" %}
+  {% radio model="isolate.editing.gpc_staph" label="Staph QuickFISH" lookuplist="gpcstaphoutcome_list" %}
+  {% radio model="isolate.editing.gpc_strep" label="Strep QuickFISH" lookuplist="gpcstrepoutcome_list" %}
+  {% input model="isolate.editing.sepsityper_organism" label="Sepsityper organism" lookuplist="microbiology_organism_list" %}
   {% input model="isolate.editing.organism" label="Organism" lookuplist="microbiology_organism_list" %}
   {% select model="isolate.editing.sensitivities" label="Sensitivities" multiple=True tagging=False lookuplist="antimicrobial_list" %}
-  {% select model="isolate.editing.resistances" label="Resistances" multiple=True tagging=False lookuplist="antimicrobial_list" %}
+  {% select model="isolate.editing.resistance" label="Resistance" multiple=True tagging=False lookuplist="antimicrobial_list" %}
   {% textarea model="isolate.editing.notes" label="Notes" %}
 {% endblock %}
 

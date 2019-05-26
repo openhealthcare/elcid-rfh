@@ -77,6 +77,23 @@ _ALWAYS_SHOW_AS_TABULAR = [
 
 LAB_TEST_TAGS = defaultdict(list)
 
+from plugins.labtests.models import LabTest, Observation
+from collections import defaultdict
+
+
+def get_observations():
+    result = defaultdict(lambda: defaultdict(int))
+    result_count = defaultdict(int)
+    observations = Observation.objects.filter(test__test_name="BLOOD CULTURE")
+    for observation in observations:
+        result[observation.observation_name][observation.observation_value] += 1
+        result_count[observation.observation_name] += 1
+    return result, result_count
+
+
+def print_obs(i):
+    print("{} {} {} {} {}".format(i.observation_number, i.observation_name, i.last_updated, i.observation_datetime, i.observation_value))
+
 for tag, test_names in _LAB_TEST_TAGS.items():
     for test_name in test_names:
         LAB_TEST_TAGS[test_name].append(tag)
