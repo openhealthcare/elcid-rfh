@@ -8,7 +8,25 @@ Blood Culture Isolate
 {% endblock %}
 {% block form %}
   {% radio model="isolate.editing.aerobic_or_anaerobic" label="Blood culture bottle type" lookuplist="['Aerobic', 'Anaerobic']" %}
-  {% radio model="isolate.editing.gram_stain" label="Gram stain" lookuplist="gramstainoutcome_list" %}
+  <div class="form-group">
+  <label class="control-label col-sm-3">Gram stain</label>
+    <div class="col-sm-8">
+      <div class="row" >
+        <div ng-repeat="item in gramstainoutcome_list">
+          <div class="clearfix" ng-if="$index % 2 == 0"></div>
+          <div class="col-sm-6">
+            <label class="radio-inline">
+              <input class="" type="radio" name="gramstainoutcome" value="[[ item ]]" ng-model="isolate.editing.gram_stain">
+              [[ item ]]
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
   {% radio model="isolate.editing.quick_fish" label="Candida QuickFISH" lookuplist="quickfishoutcome_list" %}
   {% radio model="isolate.editing.gpc_staph" label="Staph QuickFISH" lookuplist="gpcstaphoutcome_list" %}
   {% radio model="isolate.editing.gpc_strep" label="Strep QuickFISH" lookuplist="gpcstrepoutcome_list" %}
