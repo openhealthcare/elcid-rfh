@@ -8,8 +8,8 @@ from elcid import models
 def get_key(lab_test):
     extras = lab_test.extras
     return (
-        extras["lab_number"],
-        extras["isolate"],
+        extras.get("lab_number"),
+        extras.get("isolate"),
         extras.get("aerobic"),
         lab_test.datetime_ordered,
     )
