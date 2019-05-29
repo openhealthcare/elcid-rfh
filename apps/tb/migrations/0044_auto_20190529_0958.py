@@ -14,11 +14,17 @@ def forwards(apps, schema_editor):
     for tb_history in tb_histories:
         IndexCase.objects.get_or_create(
             patient=tb_history.patient,
-            details=previous_tb_contact_details
+            details=tb_history.previous_tb_contact_details,
+            created_by_id=tb_history.updated_by_id
         )
 
+
 def backwards(apps, schema_editor):
-    pass
+    IndexCase = apps.get_model(
+        'tb', 'IndexCase'
+    )
+    IndexCase.objects.all().delete()
+
 
 class Migration(migrations.Migration):
 
