@@ -666,7 +666,7 @@ class BloodCultureSet(omodels.PatientSubrecord):
     lab_number = models.CharField(blank=True, null=True, max_length=256)
 
     class Meta:
-        verbose_name = "Blood Culture"
+        verbose_name = "Blood Cultures"
 
     @classmethod
     def _get_fieldnames_to_serialize(cls, *args, **kwargs):
