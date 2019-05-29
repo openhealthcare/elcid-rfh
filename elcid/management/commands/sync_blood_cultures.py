@@ -74,7 +74,7 @@ def save_blood_culture_isolates(patient, old_lab_tests):
         isolate.sensitivities.add(
             *old_lab_test.sensitive_antibiotics.all()
         )
-        isolate.resistances.add(
+        isolate.resistance.add(
             *old_lab_test.resistant_antibiotics.all()
         )
         isolate.save()
