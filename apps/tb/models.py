@@ -371,21 +371,23 @@ class TBHistory(models.PatientSubrecord):
     diagnosis_details = fields.TextField(default="")
 
     class Meta:
-        verbose_name = "TB Exposure"
-        verbose_name_plural = "TB Exposures"
+        verbose_name = "Personal history of TB"
+        verbose_name_plural = "Personal histories of TB"
 
 
-class TBContact(models.PatientSubrecord):
+class IndexCase(models.PatientSubrecord):
     _icon = 'fa fa-chain'
 
     POS_NEG = (
         ("+ve", "+ve"),
         ("-ve", "-ve"),
+        ("Unknown", "Unknown"),
     )
 
     DRUG_susceptibility = (
         ("Fully sensitive", "Fully sensitive",),
         ("Not fully sensitive", "Not fully sensitive",),
+        ("Unknown", "Unknown"),
     )
 
     RELATIONSHIP = (
@@ -436,23 +438,28 @@ class TBContact(models.PatientSubrecord):
         choices=DRUG_susceptibility
     )
 
-    how_long_ago_years = fields.IntegerField(
+    index_case_diagnosis_years = fields.IntegerField(
         blank=True, null=True
     )
 
-    how_long_ago_months = fields.IntegerField(
+    index_case_diagnosis_months = fields.IntegerField(
         blank=True, null=True
     )
 
-    how_long_ago_days = fields.IntegerField(
+    index_case_diagnosis_days = fields.IntegerField(
         blank=True, null=True
+    )
+
+    index_case_site_of_tb = ForeignKeyOrFreeText(
+        TBSite, verbose_name="Site of TB"
     )
 
     relationship = fields.CharField(
         max_length=200,
         blank=True,
         null=True,
-        choices=RELATIONSHIP
+        choices=RELATIONSHIP,
+        verbose_name="Relationship to index case"
     )
 
     relationship_other = fields.CharField(
