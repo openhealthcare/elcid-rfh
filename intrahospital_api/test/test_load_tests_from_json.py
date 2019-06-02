@@ -56,29 +56,21 @@ class LoadTestsFromJson(OpalTestCase):
         patient, _ = self.new_patient_and_episode_please()
         command.process(patient, test_results)
         self.assertEqual(
-            patient.labtest_set.count(), 1
+            patient.lab_tests.count(), 1
         )
+        lab_test = patient.lab_tests.get()
         self.assertEqual(
-            patient.labtest_set.first().extras["test_code"],
-            "b12_and_folate_screen"
+            lab_test.test_code, "b12_and_folate_screen"
         )
         expected_ordered = datetime.datetime(2018, 7, 19, 15, 4, 22)
         self.assertEqual(
-            timezone.make_naive(patient.labtest_set.first().datetime_ordered),
+            timezone.make_naive(lab_test.datetime_ordered),
             expected_ordered
         )
 
     def test_deletes_existing_tests(self, json_load):
         command = load_tests_from_json.Command()
         patient, _ = self.new_patient_and_episode_please()
-        patient.labtest_set.create(
-            lab_test_type=emodels.UpstreamLabTest.get_display_name()
-        )
-        patient.labtest_set.create(
-            lab_test_type=emodels.GramStain.get_display_name()
-        )
+        patient.lab_tests.create()
         command.process(patient, [])
-        self.assertEqual(
-            patient.labtest_set.get().lab_test_type,
-            emodels.GramStain.get_display_name()
-        )
+        self.assertFalse(patient.lab_tests.exists())

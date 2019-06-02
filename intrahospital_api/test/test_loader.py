@@ -5,6 +5,7 @@ from django.test import override_settings
 from django.utils import timezone
 from opal.core.test import OpalTestCase
 from elcid import models as emodels
+from plugins.labtests import models as lab_test_models
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
 from intrahospital_api.exceptions import BatchLoadError
@@ -124,7 +125,7 @@ class _InitialLoadTestCase(ApiTestCase):
                 self.patient_2.id
             )
 
-            upstream_patients = emodels.UpstreamLabTest.objects.values_list(
+            upstream_patients = lab_test_models.LabTest.objects.values_list(
                 "patient_id", flat=True
             ).distinct()
             self.assertEqual(
@@ -538,16 +539,14 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         demographics = self.patient.demographics_set.first()
         demographics.hospital_number = "123"
         demographics.save()
-        emodels.UpstreamLabTest.objects.create(
-            patient=self.patient,
-            external_identifier="234",
-            extras=dict(
-                observations=[{
-                    "observation_number": "345",
-                    "result": "Pending"
-                }],
-                test_name="some_test"
-            )
+        lab_test = self.patient.lab_tests.create(
+            lab_number="234",
+            test_name="some_test"
+        )
+        lab_test.observation_set.create(
+            observation_value="Pending",
+            observation_number="345",
+
         )
         self.data_deltas = {
             "demographics": {
@@ -567,14 +566,18 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
                     "observation_datetime": "19/07/2015 04:15:10",
                     "observation_name": "Aerobic bottle culture",
                     "observation_number": "345",
-                    "observation_value": "123",
-                    "reference_range": "3.5 - 11",
-                    "result": "Positive"
+                    "observation_value": "Positive"
                 }],
             }]
         }
 
     def test_update_patient_from_batch_integration(self):
+        # check before its pending
+        observation = self.patient.lab_tests.get().observation_set.get()
+        self.assertEqual(
+            observation.observation_value, "Pending"
+        )
+
         loader.update_patient_from_batch(
             emodels.Demographics.objects.all(),
             self.data_deltas
@@ -582,11 +585,11 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         self.assertEqual(
             self.patient.demographics_set.first().first_name, "Jane"
         )
-        observation = self.patient.labtest_set.first().extras[
-            "observations"
-        ][0]
+
+        # Confirm its been updated
+        observation = self.patient.lab_tests.get().observation_set.get()
         self.assertEqual(
-            observation["result"], "Positive"
+            observation.observation_value, "Positive"
         )
 
 
