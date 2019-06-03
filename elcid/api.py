@@ -7,9 +7,11 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from intrahospital_api import loader
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from opal.core.api import OPALRouter
-from opal.core.api import patient_from_pk, LoginRequiredViewset
+from opal.core.api import (
+    patient_from_pk, LoginRequiredViewset, SubrecordViewSet
+)
 from opal.core.views import json_response
 from opal.core import serialization
 from elcid import models as emodels
@@ -74,6 +76,23 @@ _ALWAYS_SHOW_AS_TABULAR = [
 ]
 
 LAB_TEST_TAGS = defaultdict(list)
+
+from plugins.labtests.models import LabTest, Observation
+from collections import defaultdict
+
+
+def get_observations():
+    result = defaultdict(lambda: defaultdict(int))
+    result_count = defaultdict(int)
+    observations = Observation.objects.filter(test__test_name="BLOOD CULTURE")
+    for observation in observations:
+        result[observation.observation_name][observation.observation_value] += 1
+        result_count[observation.observation_name] += 1
+    return result, result_count
+
+
+def print_obs(i):
+    print("{} {} {} {} {}".format(i.observation_number, i.observation_name, i.last_updated, i.observation_datetime, i.observation_value))
 
 for tag, test_names in _LAB_TEST_TAGS.items():
     for test_name in test_names:
@@ -660,12 +679,26 @@ class DemographicsSearch(LoginRequiredViewset):
         return json_response(dict(status=self.PATIENT_NOT_FOUND))
 
 
+class BloodCultureIsolateApi(SubrecordViewSet):
+    model = emodels.BloodCultureIsolate
+    base_name = emodels.BloodCultureIsolate.get_api_name()
+
+    def create(self, request):
+        bc = self.model()
+        bc.update_from_dict(request.data, request.user)
+        return json_response(
+            bc.to_dict(request.user),
+            status_code=status.HTTP_201_CREATED
+        )
+
+
 elcid_router = OPALRouter()
 elcid_router.register(BloodCultureResultApi.base_name, BloodCultureResultApi)
 elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
+elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
 lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)
