@@ -603,11 +603,11 @@ class BloodCultureSetTestCase(OpalTestCase):
             'created_by_id': None,
             'date_ordered': "08/05/2019",
             # Note we are changing date positive so its 10th
-            'date_positive': "10/05/2019",
             'id': 1,
             'isolates': [{
                 # Note we are changing aerobic to anaerobic
                 'aerobic_or_anaerobic': 'Anerobic',
+                'date_positive': "10/05/2019",
                 'blood_culture_set_id': 1,
                 'consistency_token': '111',
                 'created': None,
@@ -640,12 +640,12 @@ class BloodCultureSetTestCase(OpalTestCase):
             response.status_code, 202
         )
         bcs = emodels.BloodCultureSet.objects.get(id=1)
-        self.assertEqual(
-            bcs.date_positive, datetime.date(2019, 5, 10)
-        )
         isolate = bcs.isolates.get()
         self.assertEqual(
             isolate.aerobic_or_anaerobic, isolate.AEROBIC
+        )
+        self.assertEqual(
+            isolate.date_positive, datetime.date(2019, 5, 10)
         )
 
     def test_update_with_empty_isolates(self):
@@ -656,9 +656,8 @@ class BloodCultureSetTestCase(OpalTestCase):
             'consistency_token': '',
             'created': None,
             'created_by_id': None,
-            'date_ordered': "08/05/2019",
-            # Note we are changing date positive so its 10th
-            'date_positive': "10/05/2019",
+            # Note we have changed the date ordered
+            'date_ordered': "10/05/2019",
             'id': 1,
             'isolates': [],
             'lab_number': '111',
@@ -677,7 +676,7 @@ class BloodCultureSetTestCase(OpalTestCase):
         )
         bcs = emodels.BloodCultureSet.objects.get(id=1)
         self.assertEqual(
-            bcs.date_positive, datetime.date(2019, 5, 10)
+            bcs.date_ordered, datetime.date(2019, 5, 10)
         )
         self.assertTrue(
             bcs.isolates.exists()

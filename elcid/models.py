@@ -661,7 +661,6 @@ class BloodCultureSet(omodels.PatientSubrecord):
     _icon = "fa fa-crosshairs"
 
     date_ordered = models.DateField(blank=True, null=True)
-    date_positive = models.DateField(blank=True, null=True)
     source = ForeignKeyOrFreeText(BloodCultureSource)
     lab_number = models.CharField(blank=True, null=True, max_length=256)
 
@@ -730,6 +729,7 @@ class BloodCultureIsolate(
         choices=AEROBIC_OR_ANAEROBIC,
         verbose_name="Blood culture bottle type"
     )
+    date_positive = models.DateField(blank=True, null=True)
     blood_culture_set = models.ForeignKey(
         "BloodCultureSet",
         on_delete=models.CASCADE,

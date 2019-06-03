@@ -1,13 +1,21 @@
 angular.module('opal.services').service(
   'BloodCultureIsolate', function($http, $q, $window){
+  var DATE_FORMAT = 'DD/MM/YYYY'
 
   const baseUrl = "/elcid/v0.1/blood_culture_isolate/";
+
+  var dateFields = ["date_positive"];
 
   class BloodCultureIsolate{
     constructor(blood_culture_set, item){
       if(item){
         this.isolateUrl = baseUrl + item.id + "/"
         this.editing = _.clone(item);
+        _.each(dateFields, dateField => {
+          if(this.editing[dateField]){
+            this.editing[dateField] = moment(this.editing[dateField], DATE_FORMAT).toDate();
+          }
+        });
       }
       else{
         this.isolateUrl = baseUrl;
@@ -22,6 +30,9 @@ angular.module('opal.services').service(
       var deferred = $q.defer();
       var method = "post";
       var toSave = _.clone(this.editing);
+      _.each(dateFields, dateField => {
+        toSave[dateField] = moment(this.editing[dateField]).format(DATE_FORMAT);
+      });
 
       if(this.editing.id){
         method = "put";

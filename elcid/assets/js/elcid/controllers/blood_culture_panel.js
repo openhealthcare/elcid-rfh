@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
-  $rootScope, $scope, $modal, $http
+  $rootScope, $scope, $modal, $http, toMomentFilter
 ) {
   /*
   * open a panel when the user clicks on it and close and refresh when they are done

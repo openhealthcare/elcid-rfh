@@ -26,7 +26,7 @@
           </span>
         </div>
       </div>
-      <div ng-click="bloodCulturePanelCtrl.open(item, isolate)" class="row pointer blood-culture-edit" ng-repeat="isolate in item.isolates" >
+      <div ng-click="bloodCulturePanelCtrl.open(item, isolate)" class="row pointer blood-culture-edit" ng-repeat="isolate in item.isolates | orderBy: ['aerobic_or_anaerobic', 'date_positive']" >
         <div class="col-xs-10">
           {% include "partials/blood_culture_isolate.html" %}
         </div>

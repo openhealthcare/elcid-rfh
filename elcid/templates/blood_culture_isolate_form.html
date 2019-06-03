@@ -8,6 +8,7 @@ Blood Culture Isolate
 {% endblock %}
 {% block form %}
   {% radio model="isolate.editing.aerobic_or_anaerobic" label="Blood culture bottle type" lookuplist="['Aerobic', 'Anaerobic']" %}
+  {% datepicker model="isolate.editing.date_positive" label="Date positive" %}
   <div class="form-group">
   <label class="control-label col-sm-3">Gram stain</label>
     <div class="col-sm-8">
