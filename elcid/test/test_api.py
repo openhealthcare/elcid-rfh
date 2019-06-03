@@ -500,7 +500,6 @@ class BloodCultureSetTestCase(OpalTestCase):
         patient, _ = self.new_patient_and_episode_please()
         self.bcs = emodels.BloodCultureSet.objects.create(
             date_ordered=yesterday,
-            date_positive=positive,
             source="Hickman",
             lab_number="111",
             patient=patient
@@ -508,6 +507,7 @@ class BloodCultureSetTestCase(OpalTestCase):
         isolate = self.bcs.isolates.create(
             aerobic_or_anaerobic=emodels.BloodCultureIsolate.AEROBIC,
             consistency_token="111",
+            date_positive=positive
         )
         isolate.gram_stain = "Gram -ve Rods"
         isolate.quick_fish = "Negative"
@@ -539,10 +539,10 @@ class BloodCultureSetTestCase(OpalTestCase):
             'created': None,
             'created_by_id': None,
             'date_ordered': datetime.date(2019, 5, 8),
-            'date_positive': datetime.date(2019, 5, 9),
             'id': 1,
             'isolates': [{
                 'aerobic_or_anaerobic': 'Aerobic',
+                'date_positive': datetime.date(2019, 5, 9),
                 'blood_culture_set_id': 1,
                 'consistency_token': '111',
                 'created': None,
@@ -554,7 +554,8 @@ class BloodCultureSetTestCase(OpalTestCase):
                 'notes': '',
                 'organism': '',
                 'quick_fish': 'Negative',
-                'resistances': [],
+                'sepsityper_organism': '',
+                'resistance': [],
                 'sensitivities': [],
                 'updated': None,
                 'updated_by_id': None
@@ -582,7 +583,6 @@ class BloodCultureSetTestCase(OpalTestCase):
             'created': None,
             'created_by_id': None,
             'date_ordered': datetime.date(2019, 5, 8),
-            'date_positive': datetime.date(2019, 5, 9),
             'id': 1,
             'isolates': [],
             'lab_number': '111',
@@ -601,8 +601,8 @@ class BloodCultureSetTestCase(OpalTestCase):
             'consistency_token': '',
             'created': None,
             'created_by_id': None,
-            'date_ordered': "08/05/2019",
-            # Note we are changing date positive so its 10th
+            # Note we are changing date ordered so its 10th
+            'date_ordered': "10/05/2019",
             'id': 1,
             'isolates': [{
                 # Note we are changing aerobic to anaerobic
@@ -619,7 +619,8 @@ class BloodCultureSetTestCase(OpalTestCase):
                 'notes': '',
                 'organism': '',
                 'quick_fish': 'Negative',
-                'resistances': [],
+                'sepsityper_organism': '',
+                'resistance': [],
                 'sensitivities': [],
                 'updated': None,
                 'updated_by_id': None
@@ -645,7 +646,7 @@ class BloodCultureSetTestCase(OpalTestCase):
             isolate.aerobic_or_anaerobic, isolate.AEROBIC
         )
         self.assertEqual(
-            isolate.date_positive, datetime.date(2019, 5, 10)
+            isolate.date_positive, datetime.date(2019, 5, 9)
         )
 
     def test_update_with_empty_isolates(self):
@@ -690,7 +691,6 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         patient, _ = self.new_patient_and_episode_please()
         self.bcs = emodels.BloodCultureSet.objects.create(
             date_ordered=yesterday,
-            date_positive=positive,
             source="Hickman",
             lab_number="111",
             patient=patient
@@ -698,6 +698,7 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         self.isolate = self.bcs.isolates.create(
             aerobic_or_anaerobic=emodels.BloodCultureIsolate.AEROBIC,
             consistency_token="111",
+            date_positive=positive,
         )
         self.isolate.gram_stain = "Gram -ve Rods"
         self.isolate.quick_fish = "Negative"
@@ -727,12 +728,14 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         )
         expected = {
             'notes': '',
-            'resistances': [],
+            'resistance': [],
+            'sepsityper_organism': '',
             'gpc_strep': '',
             'created_by_id': None,
             'updated': None,
             'id': self.isolate.id,
             'gram_stain': 'Gram -ve Rods',
+            'date_positive': datetime.date(2019, 5, 8),
             'sensitivities': [],
             'updated_by_id': None,
             'quick_fish': 'Negative',
@@ -754,13 +757,15 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         )
         expected = [{
             'notes': '',
-            'resistances': [],
+            'resistance': [],
+            'date_positive': datetime.date(2019, 5, 8),
             'gpc_strep': '',
             'created_by_id': None,
             'updated': None,
             'id': self.isolate.id,
             'gram_stain': 'Gram -ve Rods',
             'sensitivities': [],
+            'sepsityper_organism': '',
             'updated_by_id': None,
             'quick_fish': 'Negative',
             'blood_culture_set_id': 1,
@@ -777,7 +782,8 @@ class BloodCultureIsolateTestCase(OpalTestCase):
     def test_create(self):
         data = {
             'notes': '',
-            'resistances': [],
+            'resistance': [],
+            'sepsityper_organism': '',
             'gpc_strep': '',
             'created_by_id': None,
             'updated': None,
@@ -812,7 +818,7 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         data = {
             'id': self.isolate.id,
             'notes': '',
-            'resistances': [],
+            'resistance': [],
             'gpc_strep': '',
             'created_by_id': None,
             'updated': None,
@@ -820,6 +826,7 @@ class BloodCultureIsolateTestCase(OpalTestCase):
             'sensitivities': [],
             'updated_by_id': None,
             'quick_fish': 'Negative',
+            'sepsityper_organism': '',
             'blood_culture_set_id': 1,
             'gpc_staph': '',
             'created': None,
