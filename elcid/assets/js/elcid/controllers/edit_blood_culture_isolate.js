@@ -1,5 +1,14 @@
 angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', function(
-  $scope, item, blood_culture_set, referencedata, $modal, $modalInstance, BloodCultureIsolate, $q, ngProgressLite
+  $scope,
+  item,
+  blood_culture_set,
+  referencedata,
+  $modal,
+  $modalInstance,
+  BloodCultureIsolate,
+  $q,
+  ngProgressLite,
+  callBack
 ){
 
   $scope.initialize = function(){
@@ -57,8 +66,10 @@ angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', fun
     ngProgressLite.set(0);
     ngProgressLite.start();
     $scope.isolate.save().then(function(result){
-      ngProgressLite.done();
-      $modalInstance.close(result);
+      callBack().then(function(){
+        ngProgressLite.done();
+        $modalInstance.close(result);
+      });
     });
   }
 
