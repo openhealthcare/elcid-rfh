@@ -31,7 +31,9 @@ angular.module('opal.services').service(
       var method = "post";
       var toSave = _.clone(this.editing);
       _.each(dateFields, dateField => {
-        toSave[dateField] = moment(this.editing[dateField]).format(DATE_FORMAT);
+        if(toSave[dateField]){
+          toSave[dateField] = moment(this.editing[dateField]).format(DATE_FORMAT);
+        }
       });
 
       if(this.editing.id){
