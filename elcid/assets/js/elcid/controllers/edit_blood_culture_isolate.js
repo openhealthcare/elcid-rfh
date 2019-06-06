@@ -58,7 +58,9 @@ angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', fun
     });
 
     deleteModal.result.then(function(result){
-      deferred.resolve(result)
+      callBack().then(function(){
+        deferred.resolve(result);
+      });
     });
   };
 
