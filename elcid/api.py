@@ -94,29 +94,10 @@ def get_observations():
 def print_obs(i):
     print("{} {} {} {} {}".format(i.observation_number, i.observation_name, i.last_updated, i.observation_datetime, i.observation_value))
 
+
 for tag, test_names in _LAB_TEST_TAGS.items():
     for test_name in test_names:
         LAB_TEST_TAGS[test_name].append(tag)
-
-
-def get_upstream_lab_tests_for_patient(patient):
-    if settings.USE_NEW_API:
-        return patient.lab_tests.all()
-    return emodels.UpstreamLabTest.objects.filter(patient=patient)
-
-def get_upstream_blood_tests_for_patient(patient):
-    if settings.USE_NEW_API:
-        return patient.lab_tests.filter(
-            test_name="BLOOD CULTURE"
-        )
-    return patient.labtest_set.filter(
-        lab_test_type=emodels.UpstreamBloodCulture.get_display_name()
-    ).order_by("external_identifier").order_by("-datetime_ordered")
-
-def get_relevant_tests(patient):
-    if settings.USE_NEW_API:
-        return lab_test_models.LabTest.get_relevant_tests(patient)
-    return emodels.UpstreamLabTest.get_relevant_tests(patient)
 
 
 def generate_time_series(observations):
@@ -268,7 +249,7 @@ class LabTestResultsView(LoginRequiredViewset):
         # name with the lab test properties on the observation
 
         a_year_ago = datetime.date.today() - datetime.timedelta(365)
-        lab_tests = get_upstream_lab_tests_for_patient(patient)
+        lab_tests = patient.lab_tests.all()
         lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
         lab_tests = [l for l in lab_tests if l.extras]
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
@@ -407,7 +388,7 @@ class LabTestSummaryApi(LoginRequiredViewset):
             adds the lab test datetime ordered to the observation dict
             sorts the observations by datetime ordered
         """
-        test_data = get_relevant_tests(patient)
+        test_data = lab_test_models.LabTest.get_relevant_tests(patient)
         result = defaultdict(lambda: defaultdict(list))
         relevant_tests = {
             "C REACTIVE PROTEIN": ["C Reactive Protein"],
@@ -512,7 +493,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         """
             returns any observations with Aerobic or Anaerobic in their name
         """
-        lab_tests = get_upstream_blood_tests_for_patient(patient)
+        lab_tests = patient.lab_tests.filter(test_name="BLOOD CULTURE")
         lab_tests = [i.dict_for_view(request.user) for i in lab_tests]
         for lab_test in lab_tests:
             observations = []

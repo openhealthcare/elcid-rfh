@@ -18,14 +18,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def process(self, patient, results):
-        lmodels.LabTest.objects.filter(
-            patient=patient
-        ).filter(
-            lab_test_type__in=[
-                emodels.UpstreamLabTest.get_display_name(),
-                emodels.UpstreamBloodCulture.get_display_name(),
-            ]
-        ).delete()
+        patient.lab_tests.all().delete()
         update_lab_tests.update_tests(patient, results)
 
     def handle(self, patient_id, file_name, *args, **options):

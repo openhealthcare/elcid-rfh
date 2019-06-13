@@ -38,23 +38,13 @@ def clean_observation_value(value):
         return value
 
 
-def get_tests(patient):
-    if settings.USE_NEW_API:
-        tests = patient.lab_tests.filter(
-            test_name__in=RELEVANT_TESTS.keys()
-        )
-    else:
-        tests = patient.labtest_set.filter(
-            lab_test_type__istartswith="upstream"
-        )
-    return tests.order_by("-datetime_ordered")
-
-
 def get_tb_summary_information(patient):
     """
     Returns and ordered dict of observations in the order declared above.
     """
-    tests = get_tests(patient)
+    tests = patient.lab_tests.filter(
+        test_name__in=RELEVANT_TESTS.keys()
+    ).order_by("-datetime_ordered")
     by_observation = defaultdict(dict)
 
     for t in tests:
