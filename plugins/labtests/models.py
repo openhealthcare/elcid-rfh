@@ -1,4 +1,5 @@
 import datetime
+import re
 from django.utils.dateformat import format as dt_format
 from django.db import models
 from django.conf import settings
@@ -102,7 +103,6 @@ class LabTest(models.Model):
             obs = self.observation_set.create()
             obs.create(obs_dict)
 
-
     @property
     def extras(self):
         fields = [
@@ -160,6 +160,19 @@ class Observation(models.Model):
 
     # as defined by us
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def value_numeric(self):
+        """
+        if an observation is numeric, return it as a float
+        if its >12 return >12
+        else return None
+        """
+        regex = r'^[-0-9][0-9.]*$'
+        obs_result = self.observation_value.strip()
+        obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
+        if re.match(regex, obs_result):
+            return round(float(obs_result), 3)
 
     def create(self, observation_dict):
         self.last_updated = serialization.deserialize_datetime(
