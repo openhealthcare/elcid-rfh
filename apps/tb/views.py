@@ -50,7 +50,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["allergies_list"] = patient.allergies_set.all()
         ctx["imaging_list"] = episode.imaging_set.all()
         ctx["tb_history"] = patient.tbhistory_set.get()
-        ctx["tb_contact_list"] = patient.tbcontact_set.all()
+        ctx["index_case_list"] = patient.indexcase_set.all()
         ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
         consultation_datetime = self.object.when
         if consultation_datetime:

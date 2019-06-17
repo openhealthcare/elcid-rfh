@@ -45,9 +45,11 @@
 
 <p>
   <b>Language:</b><br />
-  {{ communication_considerations.language }}
-  {% if communication_considerations.needs_an_interpreter %}
-  (needs an interpreter)
+  {% if not communication_considerations.language == "English" %}
+    {{ communication_considerations.language }}
+    {% if communication_considerations.needs_an_interpreter %}
+    (needs an interpreter)
+    {% endif %}
   {% endif %}
 </p>
 
@@ -71,31 +73,15 @@
   Travel: No recorded travel
   <br />
   {% endif %}
-  Previous TB diagnosis:
-  {% if tb_history.tb_type %}
-  {{ tb_history.tb_type }}
-  {% else %}
-  None recorded
-  {% endif %}
-  <br />
-  {% for tb_contact in tb_contact_list %}
-  TB contact:
-  {% if tb_contact.ltbr_number %}
-  {{ tb_contact.ltbr_number }}
-  {% endif %}
-  {% if tb_contact.hospital_number %}
-    {{ tb_contact.hospital_number }}
-  {% endif %}
-  {{ tb_contact.details }}{% if tb_contact.drug_susceptibility %},
-  susceptability: {{ tb_contact.drug_susceptibility.lower }}
-  {% endif %}
-  <br />
-  {% endfor %}
   Place of birth: {{ demographics.birth_place }}
   <br />
 </p>
-
-
+<p>
+  {% include "tb/letters/partials/tb_history.html" %}
+</p>
+<p>
+  {% include "tb/letters/partials/index_case.html" %}
+</p>
 <p>
   <b>Symptoms: </b><br />
   {% for symptom_complex in symptom_complex_list %}
@@ -197,7 +183,7 @@
 {% endif %}
 
 <p>
-  <b>Discussion:</b><br />
+  <b>Discussion:</b>
   <span ng-bind-html="'{{ object.discussion }}'|markdown"></span>
 </p>
 

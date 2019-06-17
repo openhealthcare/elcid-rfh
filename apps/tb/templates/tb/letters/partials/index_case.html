@@ -1,0 +1,33 @@
+{% load elcid_utils %}
+{% if index_case_list.exists %}
+  <b>
+    {{ models.IndexCase.get_display_name }}{{ index_case_list|pluralize}}:
+  </b>
+  {% for index_case in index_case_list %}
+  <br />
+    {% if index_case.ltbr_number %}
+    LTBI: {{ index_case.ltbr_number }}
+    {% endif %}
+    {% if index_case.hospital_number %}
+    # {{ index_case.hospital_number }}
+    {% endif %}
+    {% if index_case.diagnosis_day or index_case.diagnosis_month or index_case.diagnosis_year %}
+      {{ index_case.diagnosis_day }} {{ index_case.diagnosis_month|month }} {{ index_case.diagnosis_year }}
+    {% endif %}
+    <br />
+    {% if index_case.sputum_smear %}
+      Sputum smear: +ve
+      &nbsp;
+    {% endif %}
+    {% if index_case.culture %}
+      Culture: +ve
+      &nbsp;
+    {% endif %}
+    {% if index_case.drug_susceptibility %}
+      Susceptability: {{ index_case.drug_susceptibility }}
+    {% endif %}
+    <br />
+    {{ index_case.details }}
+    <br />
+  {% endfor %}
+{% endif %}

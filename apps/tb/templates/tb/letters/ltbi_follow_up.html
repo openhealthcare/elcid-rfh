@@ -1,4 +1,5 @@
-{% extends 'letters/base.html' %} {% block letter_content %}
+{% extends 'letters/base.html' %}
+{% block letter_content %}
 <p>
   <b>Primary diagnosis: </b><br />
   {% if primary_diagnosis_list.exists %}
@@ -86,29 +87,16 @@
   Travel: No recorded travel
   <br />
   {% endif %}
-  Previous TB diagnosis:
-  {% if tb_history.tb_type %}
-  {{ tb_history.tb_type }}
-  {% else %}
-  None recorded
-  {% endif %}
-  <br />
-  {% for tb_contact in tb_contact_list %}
-  TB contact:
-  {% if tb_contact.ltbr_number %}
-  {{ tb_contact.ltbr_number }}
-  {% endif %}
-  {% if tb_contact.hospital_number %}
-    {{ tb_contact.hospital_number }}
-  {% endif %}
-  {{ tb_contact.details }}{% if tb_contact.drug_susceptibility %},
-  susceptability: {{ tb_contact.drug_susceptibility }}
-  {% endif %}
-  <br />
-  {% endfor %}
   Place of birth: {{ demographics.birth_place }}
   <br />
 </p>
+<p>
+  {% include "tb/letters/partials/tb_history.html" %}
+</p>
+<p>
+  {% include "tb/letters/partials/index_case.html" %}
+</p>
+
 
 <p>
   <b>Progress:</b><br />
