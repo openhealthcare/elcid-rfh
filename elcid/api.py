@@ -434,6 +434,11 @@ if settings.NEW_LAB_TEST_SUMMARY_DISPLAY:
             all_dates = list(date_set)
             all_dates.sort()
             recent_dates = all_dates[-self.NUM_RESULTS:]
+
+            # flush out the recent dates with nulls if
+            # the patient does not have a lot of results
+            while len(recent_dates) < self.NUM_RESULTS:
+                recent_dates.append(None)
             obs_values = []
 
             for obs_set in obs:

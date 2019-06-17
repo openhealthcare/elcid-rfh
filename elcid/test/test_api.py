@@ -896,7 +896,13 @@ class LabTestSummaryTestCase(OpalTestCase):
                     'units': 'mg/L'
                 }
             ],
-            'recent_dates': [datetime.date(2019, 6, 4), datetime.date(2019, 6, 5)]
+            'recent_dates': [
+                datetime.date(2019, 6, 4),
+                datetime.date(2019, 6, 5),
+                None,
+                None,
+                None,
+            ]
         }
         self.assertEqual(result.data, expected)
 
@@ -920,7 +926,7 @@ class LabTestSummaryTestCase(OpalTestCase):
                     'units': 'Ratio'
                 }
             ],
-            'recent_dates': [datetime.date(2019, 6, 4)]
+            'recent_dates': [datetime.date(2019, 6, 4), None, None, None, None]
         }
         self.assertEqual(result.data, expected)
 
@@ -1002,7 +1008,7 @@ class LabTestSummaryTestCase(OpalTestCase):
         result = self.client.get(self.url)
         expected = {
              'obs_values': [],
-             'recent_dates': []
+             'recent_dates': [None, None, None, None, None]
         }
         self.assertEqual(result.data, expected)
 
@@ -1017,7 +1023,7 @@ class LabTestSummaryTestCase(OpalTestCase):
         result = self.client.get(self.url)
         expected = {
              'obs_values': [],
-             'recent_dates': []
+             'recent_dates': [None, None, None, None, None]
         }
         self.assertEqual(result.data, expected)
 
