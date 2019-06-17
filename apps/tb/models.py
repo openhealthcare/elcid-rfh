@@ -335,8 +335,6 @@ class TBHistory(models.PatientSubrecord):
         default=False,
         verbose_name="Previous TB diagnosis"
     )
-    # end todo
-
     diagnosis_how_long_ago_years = fields.IntegerField(
         blank=True, null=True
     )
@@ -344,6 +342,17 @@ class TBHistory(models.PatientSubrecord):
         blank=True, null=True
     )
     diagnosis_how_long_ago_days = fields.IntegerField(
+        blank=True, null=True
+    )
+    # end todo
+
+    diagnosis_date_year = fields.IntegerField(
+        blank=True, null=True
+    )
+    diagnosis_date_month = fields.IntegerField(
+        blank=True, null=True
+    )
+    diagnosis_date_day = fields.IntegerField(
         blank=True, null=True
     )
 
@@ -438,15 +447,15 @@ class IndexCase(models.PatientSubrecord):
         choices=DRUG_susceptibility
     )
 
-    index_case_diagnosis_years = fields.IntegerField(
+    index_case_diagnosis_year = fields.IntegerField(
         blank=True, null=True
     )
 
-    index_case_diagnosis_months = fields.IntegerField(
+    index_case_diagnosis_month = fields.IntegerField(
         blank=True, null=True
     )
 
-    index_case_diagnosis_days = fields.IntegerField(
+    index_case_diagnosis_day = fields.IntegerField(
         blank=True, null=True
     )
 

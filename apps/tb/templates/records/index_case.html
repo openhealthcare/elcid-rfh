@@ -43,22 +43,16 @@
 </span>
 <span ng-show="item.index_case_site_of_tb">
   <strong>
-    Site of TB
+    Site of TB:
   </strong>
   [[ item.index_case_site_of_tb ]]
   <br />
 </span>
-<span ng-show="item.index_case_diagnosis_years || item.index_case_diagnosis_months || item.index_case_diagnosis_days">
-  <span ng-show="item.index_case_diagnosis_years">
-        [[ item.index_case_diagnosis_years ]] [[ 'year'|plural:item.index_case_diagnosis_years ]]
-  </span>
-  <span ng-show="item.index_case_diagnosis_months">
-        [[ item.index_case_diagnosis_months ]] [[ 'month'|plural:item.index_case_diagnosis_months ]]
-  </span>
-  <span ng-show="item.index_case_diagnosis_days">
-        [[ item.index_case_diagnosis_days ]] [[ 'day'|plural:item.index_case_diagnosis_days ]]
-  </span>
-  ago
+<span ng-show="item.index_case_diagnosis_year || item.index_case_diagnosis_month || item.index_case_diagnosis_day">
+  <strong>
+    Diagnosis date:
+  </strong>
+  [[ item.index_case_diagnosis_day ]] [[ item.index_case_diagnosis_month|month ]] [[ item.index_case_diagnosis_year ]]
   <br />
 </span>
 <span ng-show="item.details">
