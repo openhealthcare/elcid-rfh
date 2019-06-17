@@ -182,7 +182,7 @@ TEST_BASES = {
             "reference_range": "1.7 - 7.5"
         }
     },
-    "CLOTTING_SCREEN": {
+    "CLOTTING SCREEN": {
         "INR": {
             "units": "Ratio",
             "reference_range": "0.9 - 1.12"

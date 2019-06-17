@@ -12,6 +12,7 @@ from django.test import override_settings
 from rest_framework.reverse import reverse
 
 from elcid import models as emodels
+from plugins.labtests.models import LabTest
 
 from elcid.api import (
     BloodCultureResultApi, UpstreamBloodCultureApi
@@ -380,28 +381,25 @@ class DemographicsSearchTestCase(OpalTestCase):
 
 
 class GetReferenceRangeTestCase(OpalTestCase):
-    def to_obs(self, something):
-        return dict(reference_range=something)
-
     def test_clean_ref_range(self):
         self.assertEqual(
-            api.get_reference_range(self.to_obs("[ 2 - 3 ]")),
+            api.get_reference_range("[ 2 - 3 ]"),
             dict(min="2", max="3")
         )
 
     def test_return_none_if_only_dash(self):
         self.assertIsNone(
-            api.get_reference_range(self.to_obs(" - "))
+            api.get_reference_range(" - ")
         )
 
     def test_return_none_if_more_than_one_dash(self):
         self.assertIsNone(
-            api.get_reference_range(self.to_obs("else -something - or"))
+            api.get_reference_range("else -something - or")
         )
 
     def test_return_stripped_max_min(self):
         self.assertEqual(
-            api.get_reference_range(self.to_obs("2-3")),
+            api.get_reference_range("2-3"),
             dict(min="2", max="3")
         )
 
@@ -759,3 +757,267 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         self.assertEqual(
             reloaded_isolate.aerobic_or_anaerobic, 'Anerobic'
         )
+
+@override_settings(NEW_LAB_TEST_SUMMARY_DISPLAY=True)
+class LabTestSummaryTestCase(OpalTestCase):
+
+    def setUp(self, *args, **kwargs):
+        super().setUp(*args, **kwargs)
+        self.patient, _ = self.new_patient_and_episode_please()
+        self._lab_number = 0
+        self.url = ""
+        request = self.rf.get("/")
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+        self.url = reverse(
+            "lab_test_summary_api-detail",
+            kwargs=dict(pk=self.patient.id),
+            request=request
+        )
+
+    def get_lab_number(self):
+        self._lab_number += 1
+        return str(self._lab_number)
+
+    def create_blood_count(self, *some_dts, patient=None):
+        if patient is None:
+            patient = self.patient
+
+        for some_dt in some_dts:
+            lab_test = patient.lab_tests.create(
+                datetime_ordered=some_dt,
+                test_name="FULL BLOOD COUNT",
+                lab_number=self.get_lab_number()
+            )
+            lab_test.observation_set.create(
+                observation_datetime=some_dt,
+                observation_name="WBC",
+                reference_range="1.7 - 7.5",
+                observation_value="1.8",
+                units="g/l",
+            )
+            lab_test.observation_set.create(
+                observation_datetime=some_dt,
+                observation_name="Lymphocytes",
+                reference_range="1 - 4",
+                observation_value="1",
+                units="10",
+            )
+            lab_test.observation_set.create(
+                observation_datetime=some_dt,
+                observation_name="Neutrophils",
+                reference_range="1.7 - 7.5",
+                observation_value="2",
+                units="10",
+            )
+
+    def create_clotting_screen(self, dt_to_value, patient=None):
+        if patient is None:
+            patient = self.patient
+
+        for some_dt, value in dt_to_value.items():
+            lab_test = patient.lab_tests.create(
+                datetime_ordered=some_dt,
+                test_name="CLOTTING SCREEN",
+                lab_number=self.get_lab_number()
+            )
+            lab_test.observation_set.create(
+                observation_datetime=some_dt,
+                observation_name="INR",
+                reference_range="0.9 - 1.12",
+                observation_value=value,
+                units="Ratio",
+            )
+
+    def create_c_reactive_protein(self, dt_to_value, patient=None):
+        if patient is None:
+            patient = self.patient
+        for some_dt, value in dt_to_value.items():
+            lab_test = patient.lab_tests.create(
+                datetime_ordered=some_dt,
+                test_name="C REACTIVE PROTEIN",
+                lab_number=self.get_lab_number()
+            )
+            lab_test.observation_set.create(
+                observation_datetime=some_dt,
+                observation_name="C Reactive Protein",
+                reference_range="0 - 5",
+                observation_value=value,
+                units="mg/L",
+            )
+
+    def test_vanilla_check(self):
+        dt_1 = datetime.datetime(2019, 6, 5, 10, 10)
+        dt_2 = datetime.datetime(2019, 6, 4, 10, 10)
+        self.create_blood_count(dt_1, dt_2)
+        self.create_clotting_screen({
+            dt_1: "1.2", dt_2: "1.2"
+        })
+        self.create_c_reactive_protein({
+            dt_1: "1.0", dt_2: "1.0"
+        })
+
+        result = self.client.get(self.url)
+        expected = {
+            'obs_values': [
+                {
+                    'latest_results': {'04/06/2019': 1.8, '05/06/2019': 1.8},
+                    'name': 'WBC',
+                    'reference_range': {'max': '7.5', 'min': '1.7'},
+                    'units': 'g/l'
+                },
+                {
+                    'latest_results': {'04/06/2019': 1.0, '05/06/2019': 1.0},
+                    'name': 'Lymphocytes',
+                    'reference_range': {'max': '4', 'min': '1'},
+                    'units': '10'
+                },
+                {
+                    'latest_results': {'04/06/2019': 2.0, '05/06/2019': 2.0},
+                    'name': 'Neutrophils',
+                    'reference_range': {'max': '7.5', 'min': '1.7'},
+                    'units': '10'
+                },
+                {
+                    'latest_results': {'04/06/2019': 1.2, '05/06/2019': 1.2},
+                    'name': 'INR',
+                    'reference_range': {'max': '1.12', 'min': '0.9'},
+                    'units': 'Ratio'
+                },
+                {
+                    'latest_results': {'04/06/2019': 1.0, '05/06/2019': 1.0},
+                    'name': 'C Reactive Protein',
+                    'reference_range': {'max': '5', 'min': '0'},
+                    'units': 'mg/L'
+                }
+            ],
+            'recent_dates': [datetime.date(2019, 6, 4), datetime.date(2019, 6, 5)]
+        }
+        self.assertEqual(result.data, expected)
+
+    def test_multiple_results_on_the_same_day(self):
+        """
+        We should use the latest date
+        """
+        dt_1 = datetime.datetime(2019, 6, 4, 10, 10)
+        dt_2 = datetime.datetime(2019, 6, 4, 12, 10)
+        dt_3 = datetime.datetime(2019, 6, 4, 11, 10)
+        self.create_clotting_screen({
+            dt_1: "1.1", dt_2: "1.3", dt_3: "1.2"
+        })
+        result = self.client.get(self.url)
+        expected = {
+            'obs_values': [
+                {
+                    'latest_results': {'04/06/2019': 1.3},
+                    'name': 'INR',
+                    'reference_range': {'max': '1.12', 'min': '0.9'},
+                    'units': 'Ratio'
+                }
+            ],
+            'recent_dates': [datetime.date(2019, 6, 4)]
+        }
+        self.assertEqual(result.data, expected)
+
+    def test_results_date_crunching(self):
+        """
+        we should get the last 5 results for all lab tests
+        then the last 5 dates of all dates related to lab tests
+        e.g.
+        CS 1 Jan, 2 Jan, 9 Jan, 10 Jan, 11 Jan
+        CRP 5 Jan, 6 Jan, 7 Jan, 8 Jan, 9 Jan
+
+        that we should display those tests but with recent dates
+        of 7 Jan, 8 Jan, 9 Jan, 10 Jan , 11 Jan in that order
+        """
+
+        dt_1 = datetime.datetime(2019, 6, 1)
+        dt_2 = datetime.datetime(2019, 6, 2)
+        dt_3 = datetime.datetime(2019, 6, 5)
+        dt_4 = datetime.datetime(2019, 6, 6)
+        dt_5 = datetime.datetime(2019, 6, 7)
+        dt_6 = datetime.datetime(2019, 6, 8)
+        dt_7 = datetime.datetime(2019, 6, 9)
+        dt_8 = datetime.datetime(2019, 6, 10)
+        dt_9 = datetime.datetime(2019, 6, 11)
+
+        self.create_clotting_screen({
+            dt_1: "1.1", dt_2: "1.2", dt_3: "1.3", dt_8: "1.8", dt_9: "1.9"
+        })
+        self.create_c_reactive_protein({
+            dt_4: "1.4", dt_5: "1.5", dt_6: "1.6", dt_7: "1.7", dt_8: "1.8"
+        })
+        expected = {
+            'obs_values':
+                [
+                    {
+                        'latest_results': {
+                            '01/06/2019': 1.1,
+                            '02/06/2019': 1.2,
+                            '05/06/2019': 1.3,
+                            '10/06/2019': 1.8,
+                            '11/06/2019': 1.9
+                        },
+                        'name': 'INR',
+                        'reference_range': {
+                            'max': '1.12', 'min': '0.9'
+                        },
+                        'units': 'Ratio'
+                    },
+                    {
+                        'latest_results': {
+                            '06/06/2019': 1.4,
+                            '07/06/2019': 1.5,
+                            '08/06/2019': 1.6,
+                            '09/06/2019': 1.7,
+                            '10/06/2019': 1.8
+                        },
+                        'name': 'C Reactive Protein',
+                        'reference_range': {
+                            'max': '5', 'min': '0'
+                        },
+                        'units': 'mg/L'
+                    }
+                ],
+                'recent_dates': [
+                    datetime.date(2019, 6, 7),
+                    datetime.date(2019, 6, 8),
+                    datetime.date(2019, 6, 9),
+                    datetime.date(2019, 6, 10),
+                    datetime.date(2019, 6, 11),
+                ]}
+
+        result = self.client.get(self.url)
+        self.assertEqual(result.data, expected)
+
+    def test_ignores_strings(self):
+        self.create_clotting_screen({
+            datetime.datetime(2019, 6, 4, 12, 10): "Pending"
+        })
+        result = self.client.get(self.url)
+        expected = {
+             'obs_values': [],
+             'recent_dates': []
+        }
+        self.assertEqual(result.data, expected)
+
+    def test_ignore_strings_same_date(self):
+        dt_1 = datetime.datetime(2019, 6, 4, 12, 10)
+        dt_2 = datetime.datetime(2019, 6, 4, 11, 10)
+        self.create_clotting_screen({
+            dt_1: "Pending", dt_2: "1.3"
+        })
+
+    def test_handles_no_tests(self):
+        result = self.client.get(self.url)
+        expected = {
+             'obs_values': [],
+             'recent_dates': []
+        }
+        self.assertEqual(result.data, expected)
+
