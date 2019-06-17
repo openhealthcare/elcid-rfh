@@ -1,13 +1,15 @@
-{% extends 'letters/base.html' %} {% block letter_content %}
+{% extends 'letters/base.html' %}
+{% block letter_content %}
 <p>
   <b>Primary diagnosis: </b><br />
   {% if primary_diagnosis_list.exists %}
     {% for diagnosis in primary_diagnosis_list %}
-    {{ diagnosis.condition }}
-    {% if diagnosis.provisional %}?{% endif %}
-    {% if diagnosis.details %}
-      {{ diagnosis.details }}
-    {% endif %}
+      {{ diagnosis.condition }}
+      {% if diagnosis.provisional %}?{% endif %}
+      {% if diagnosis.details %}
+        <br />
+        {{ diagnosis.details }}
+      {% endif %}
     <br />
     {% endfor %}
   {% else %}
@@ -20,9 +22,10 @@
   <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
   {% if secondary_diagnosis_list.exists %}
     {% for diagnosis in secondary_diagnosis_list %}
-      {{ diagnosis.condition }}
+      - {{ diagnosis.condition }}
       {% if diagnosis.provisional %}?{% endif %}
       {% if diagnosis.details %}
+        <br />
         {{ diagnosis.details }}
       {% endif %}
       <br />
@@ -86,23 +89,16 @@
   Travel: No recorded travel
   <br />
   {% endif %}
-  Previous TB diagnosis:
-  {% if tb_history.tb_type %}
-  {{ tb_history.tb_type }}
-  {% else %}
-  None recorded
-  {% endif %}
-  <br />
-  Previous TB contact:
-  {% if tb_history.previous_tb_contact_details %}
-  {{ tb_history.previous_tb_contact_details }}
-  {% else %}
-  None recorded
-  {% endif %}
-  <br />
   Place of birth: {{ demographics.birth_place }}
   <br />
 </p>
+<p>
+  {% include "tb/letters/partials/tb_history.html" %}
+</p>
+<p>
+  {% include "tb/letters/partials/index_case.html" %}
+</p>
+
 
 <p>
   <b>Progress:</b><br />

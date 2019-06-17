@@ -298,7 +298,6 @@ class Treatment(models.Treatment):
     TB = "tb"
 
 
-
 class TBHistory(models.PatientSubrecord):
     """ Used if the person has clicked that they
         have a personal history of TB in the
@@ -315,6 +314,8 @@ class TBHistory(models.PatientSubrecord):
 
     _is_singleton = True
 
+    # TODO After we get sign off from the doctors the below
+    # fields can be removed
     previous_tb_contact = fields.BooleanField(
         default=False,
         verbose_name="Previous TB contact"
@@ -343,6 +344,17 @@ class TBHistory(models.PatientSubrecord):
     diagnosis_how_long_ago_days = fields.IntegerField(
         blank=True, null=True
     )
+    # end todo
+
+    diagnosis_date_year = fields.IntegerField(
+        blank=True, null=True
+    )
+    diagnosis_date_month = fields.IntegerField(
+        blank=True, null=True
+    )
+    diagnosis_date_day = fields.IntegerField(
+        blank=True, null=True
+    )
 
     how_long_treated_years = fields.IntegerField(
         blank=True, null=True
@@ -368,8 +380,106 @@ class TBHistory(models.PatientSubrecord):
     diagnosis_details = fields.TextField(default="")
 
     class Meta:
-        verbose_name = "TB Exposure"
-        verbose_name_plural = "TB Exposures"
+        verbose_name = "Personal history of TB"
+        verbose_name_plural = "Personal histories of TB"
+
+
+class IndexCase(models.PatientSubrecord):
+    _icon = 'fa fa-chain'
+
+    POS_NEG = (
+        ("+ve", "+ve"),
+        ("-ve", "-ve"),
+        ("Unknown", "Unknown"),
+    )
+
+    DRUG_susceptibility = (
+        ("Fully sensitive", "Fully sensitive",),
+        ("Not fully sensitive", "Not fully sensitive",),
+        ("Unknown", "Unknown"),
+    )
+
+    RELATIONSHIP = (
+        ("Household", "Household",),
+        ("Healthcare (workor)", "Healthcare (worker)",),
+        ("Healthcare (patient)", "Healthcare (patient)",),
+        (
+            "Workplace (non healthcare)",
+            "Workplace (non healthcare)",
+        ),
+        (
+            "Education",
+            "Education",
+        ),
+        (
+            "Prison",
+            "Prison",
+        ),
+    )
+
+    ltbr_number = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name="LTBR Number"
+    )
+    hospital_number = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+    )
+    sputum_smear = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=POS_NEG
+    )
+    culture = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=POS_NEG
+    )
+    drug_susceptibility = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=DRUG_susceptibility
+    )
+
+    diagnosis_year = fields.IntegerField(
+        blank=True, null=True
+    )
+
+    diagnosis_month = fields.IntegerField(
+        blank=True, null=True
+    )
+
+    diagnosis_day = fields.IntegerField(
+        blank=True, null=True
+    )
+
+    index_case_site_of_tb = ForeignKeyOrFreeText(
+        TBSite, verbose_name="Site of TB"
+    )
+
+    relationship = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        choices=RELATIONSHIP,
+        verbose_name="Relationship to index case"
+    )
+
+    relationship_other = fields.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+    )
+
+    details = fields.TextField(
+        blank=True
+    )
 
 
 class Allergies(models.Allergies):
