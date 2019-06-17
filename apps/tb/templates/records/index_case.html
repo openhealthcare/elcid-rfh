@@ -48,11 +48,11 @@
   [[ item.index_case_site_of_tb ]]
   <br />
 </span>
-<span ng-show="item.index_case_diagnosis_year || item.index_case_diagnosis_month || item.index_case_diagnosis_day">
+<span ng-show="item.index_case_diagnosis_year || item.diagnosis_month || item.diagnosis_day">
   <strong>
     Diagnosis date:
   </strong>
-  [[ item.index_case_diagnosis_day ]] [[ item.index_case_diagnosis_month|month ]] [[ item.index_case_diagnosis_year ]]
+  [[ item.diagnosis_day ]] [[ item.diagnosis_month|month ]] [[ item.diagnosis_year ]]
   <br />
 </span>
 <span ng-show="item.details">

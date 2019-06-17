@@ -447,15 +447,15 @@ class IndexCase(models.PatientSubrecord):
         choices=DRUG_susceptibility
     )
 
-    index_case_diagnosis_year = fields.IntegerField(
+    diagnosis_year = fields.IntegerField(
         blank=True, null=True
     )
 
-    index_case_diagnosis_month = fields.IntegerField(
+    diagnosis_month = fields.IntegerField(
         blank=True, null=True
     )
 
-    index_case_diagnosis_day = fields.IntegerField(
+    diagnosis_day = fields.IntegerField(
         blank=True, null=True
     )
 
