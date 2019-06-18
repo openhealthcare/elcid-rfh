@@ -264,3 +264,25 @@ class LabTestTestCase(OpalTestCase):
             models.LabTest.objects.get().id,
             lt.id
         )
+
+
+class ObservationTestCase(OpalTestCase):
+    def test_value_numeric(self):
+        patient, _ = self.new_patient_and_episode_please()
+        observation = models.Observation()
+
+        inputs_to_expected_results = (
+            ("<1", float(1),),
+            ("1>", float(1),),
+            (" 1 ", float(1),),
+            ("< 1", float(1),),
+            (" < 1", float(1),),
+            ("1 ~ some other things", float(1),),
+            (".1 ", None),
+            ("0.1 ", 0.1),
+            ("1E", None),
+            ("'1'", None),
+        )
+        for input_value, expected in inputs_to_expected_results:
+            observation.observation_value = input_value
+            self.assertEqual(observation.value_numeric, expected)

@@ -381,7 +381,7 @@ class LabTestSummaryApi(LoginRequiredViewset):
         # we don't create the data so cater for it
         qs = qs.exclude(observation_datetime=None)
         for i in qs.order_by("-observation_datetime"):
-            if i.value_numeric:
+            if i.value_numeric is not None:
                 dt = i.observation_datetime
                 obs_date = dt.date()
                 if obs_date in date_to_observation:

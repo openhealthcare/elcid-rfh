@@ -165,8 +165,11 @@ class Observation(models.Model):
     def value_numeric(self):
         """
         if an observation is numeric, return it as a float
-        if its >12 return >12
-        else return None
+        some of the inputted values are messy, but essentially
+        integers for example
+        ' 12 ~ using new systyem as of Sep 2014
+        If possible we clean this up and return a number
+        otherwise return None
         """
         regex = r'^[-0-9][0-9.]*$'
         obs_result = self.observation_value.strip()
