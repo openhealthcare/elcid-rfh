@@ -2,7 +2,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from intrahospital_api.apis import get_api
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from opal.core.views import json_response
 
 
@@ -22,7 +22,8 @@ def pivot_data(raw_data):
 
     for key, row in row_data_dict.items():
         row.insert(0, key)
-    return row_data_dict.values()
+    pivotted = row_data_dict.values()
+    return sorted(pivotted, key=lambda x: x[0].upper())
 
 
 class PivottedData(StaffRequiredMixin, TemplateView):
@@ -65,8 +66,8 @@ class IntrahospitalCookedView(PivottedData):
 
 class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
     """
-        Provides the raw results grouped by lab number, observation
-        id
+        Provides the raw results, remove cerner fields as these are demographics
+         grouped by lab number, observation id
     """
     template_name = "intrahospital_api/raw_result_view.html"
 
@@ -85,7 +86,9 @@ class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
         ctx["lab_results"] = defaultdict(list)
 
         for result in results:
-            ctx["lab_results"][result["Result_ID"]].append(result)
+            row = ((i, v,) for i, v in result.items() if not i.startswith("CRS_"))
+            row = OrderedDict(sorted(row, key=lambda x: x[0]))
+            ctx["lab_results"][result["Result_ID"]].append(row)
 
         for lab_number, result in ctx["lab_results"].items():
             ctx["lab_results"][lab_number] = pivot_data(
