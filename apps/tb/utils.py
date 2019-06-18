@@ -52,7 +52,7 @@ def get_tests(patient):
 
 def get_tb_summary_information(patient):
     """
-    Returns and ordered dict of observations in the order declared above.
+    Returns an ordered dict of observations in the order declared above.
     """
     tests = get_tests(patient)
     by_observation = defaultdict(dict)
