@@ -51,14 +51,13 @@ def get_tb_summary_information(patient):
         tn = t.test_name
         for obs in t.observation_set.all():
             obs_name = obs.observation_name
-            if obs_name in RELEVANT_TESTS[tn] :
-                if obs_name in by_observation:
-                    continue
-                by_observation[obs_name][
-                    "observation_datetime"
-                ] = obs.observation_datetime
-                obs_value = clean_observation_value(obs.observation_value)
-                by_observation[obs_name]["observation_value"] = obs_value
+            if obs_name in RELEVANT_TESTS[tn]:
+                if obs_name not in by_observation or by_observation[obs_name]["observation_value"] == "Pending":
+                    by_observation[obs_name][
+                        "observation_datetime"
+                    ] = obs.observation_datetime
+                    obs_value = clean_observation_value(obs.observation_value)
+                    by_observation[obs_name]["observation_value"] = obs_value
 
     results_order = []
     for ons in RELEVANT_TESTS.values():
