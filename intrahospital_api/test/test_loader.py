@@ -9,6 +9,7 @@ from intrahospital_api import models as imodels
 from intrahospital_api import loader
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
+from plugins.labtests import models as lab_test_models
 
 
 @override_settings(API_USER="ohc")
@@ -123,8 +124,7 @@ class _InitialLoadTestCase(ApiTestCase):
                 imodels.InitialPatientLoad.objects.last().patient.id,
                 self.patient_2.id
             )
-
-            upstream_patients = emodels.UpstreamLabTest.objects.values_list(
+            upstream_patients = lab_test_models.LabTest.objects.values_list(
                 "patient_id", flat=True
             ).distinct()
             self.assertEqual(
@@ -538,17 +538,17 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         demographics = self.patient.demographics_set.first()
         demographics.hospital_number = "123"
         demographics.save()
-        emodels.UpstreamLabTest.objects.create(
+        lt = lab_test_models.LabTest.objects.create(
             patient=self.patient,
-            external_identifier="234",
-            extras=dict(
-                observations=[{
-                    "observation_number": "345",
-                    "result": "Pending"
-                }],
-                test_name="some_test"
-            )
+            lab_number="234",
+            test_name="some_test"
         )
+        lab_test_models.Observation.objects.create(
+            observation_number="345",
+            observation_value="Pending",
+            test=lt
+        )
+
         self.data_deltas = {
             "demographics": {
                 "hospital_number": "123",
@@ -567,9 +567,8 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
                     "observation_datetime": "19/07/2015 04:15:10",
                     "observation_name": "Aerobic bottle culture",
                     "observation_number": "345",
-                    "observation_value": "123",
+                    "observation_value": "Positive",
                     "reference_range": "3.5 - 11",
-                    "result": "Positive"
                 }],
             }]
         }
@@ -582,11 +581,9 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         self.assertEqual(
             self.patient.demographics_set.first().first_name, "Jane"
         )
-        observation = self.patient.labtest_set.first().extras[
-            "observations"
-        ][0]
+        obs = self.patient.lab_tests.get().observation_set.first()
         self.assertEqual(
-            observation["result"], "Positive"
+            obs.observation_value, "Positive"
         )
 
 

@@ -38,51 +38,38 @@ def clean_observation_value(value):
         return value
 
 
-def get_tests(patient):
-    if settings.USE_NEW_API:
-        tests = patient.lab_tests.filter(
-            test_name__in=RELEVANT_TESTS.keys()
-        )
-    else:
-        tests = patient.labtest_set.filter(
-            lab_test_type__istartswith="upstream"
-        )
-    return tests.order_by("-datetime_ordered")
-
-
 def get_tb_summary_information(patient):
     """
     Returns an ordered dict of observations in the order declared above.
     """
-    tests = get_tests(patient)
+    tests = patient.lab_tests.filter(
+        test_name__in=RELEVANT_TESTS.keys()
+    ).order_by("-datetime_ordered")
     by_observation = defaultdict(dict)
 
     for t in tests:
-        tn = t.extras["test_name"]
-        if tn in RELEVANT_TESTS:
-            for o in t.extras["observations"]:
-                on = o["observation_name"]
-                if on in RELEVANT_TESTS[tn] and on not in by_observation:
-                    if on in by_observation:
-                        continue
-                    by_observation[on]["observation_datetime"] = o[
+        tn = t.test_name
+        for obs in t.observation_set.all():
+            obs_name = obs.observation_name
+            if obs_name in RELEVANT_TESTS[tn]:
+                if obs_name not in by_observation or by_observation[obs_name][
+                    "observation_value"
+                ] == "Pending":
+                    by_observation[obs_name][
                         "observation_datetime"
-                    ]
-                    obs_value = clean_observation_value(
-                        o["observation_value"]
-                    )
-                    by_observation[on]["observation_value"] = obs_value
+                    ] = obs.observation_datetime
+                    obs_value = clean_observation_value(obs.observation_value)
+                    by_observation[obs_name]["observation_value"] = obs_value
 
     results_order = []
-    for ons in RELEVANT_TESTS.values():
-        for on in ons:
-            results_order.append(on)
+    for observation_names in RELEVANT_TESTS.values():
+        for observation_name in observation_names:
+            results_order.append(observation_name)
 
     result = OrderedDict()
 
-    for on in results_order:
-        if on in by_observation:
-            obs_name = clean_observation_name(on)
-            result[obs_name] = by_observation[on]
+    for observation_name in results_order:
+        if observation_name in by_observation:
+            result[observation_name] = by_observation[observation_name]
     return result
 
