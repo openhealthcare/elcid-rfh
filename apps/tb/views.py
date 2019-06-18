@@ -36,6 +36,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["tb_medication_list"] = episode.treatment_set.filter(
             category=Treatment.TB
         )
+        ctx["nationality"] = patient.nationality_set.first()
         ctx["other_medication_list"] = episode.treatment_set.exclude(
             category=Treatment.TB
         )

@@ -1,0 +1,9 @@
+{% for imaging in imaging_list %}
+<p>
+  <b>
+    {{ imaging.imaging_type }}
+    {% if imaging.site %}({{ imaging.site }}){% endif %}:
+  </b><br />
+  {{ imaging.date | date }} {{ imaging.details }}<br />
+</p>
+{% endfor %}

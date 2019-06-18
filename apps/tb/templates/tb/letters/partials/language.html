@@ -1,0 +1,9 @@
+{% if not communication_considerations.language == "English" %}
+<p>
+  <b>Language:</b><br />
+    {{ communication_considerations.language }}
+    {% if communication_considerations.needs_an_interpreter %}
+    (needs an interpreter)
+    {% endif %}
+</p>
+{% endif %}

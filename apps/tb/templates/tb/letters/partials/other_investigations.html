@@ -1,0 +1,18 @@
+{% if results or other_investigation_list %}
+<p>
+  <b>Key investigations: </b><br />
+  {% for obs_name, summary in results.items %}
+    {{ summary.observation_datetime.date | date:'d M Y' }}
+    &nbsp;
+    {{ obs_name }}:&nbsp;
+    {{ summary.observation_value }}
+    <br />
+  {% endfor %}
+  {% for other_investigation in other_investigation_list %}
+    {{ other_investigation.date | date:'d M Y' }}
+    {{ other_investigation.name }}:&nbsp;
+    {{ other_investigation.details }}
+    <br />
+  {% endfor %}
+</p>
+{% endif %}

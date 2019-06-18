@@ -1,0 +1,13 @@
+<p>
+  <b>Allergies: </b><br />
+  {% if allergies_list.exists %}
+  {% for allergy in allergies_list %}
+  {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
+  {{ allergy.details }}
+  <br />
+  {% endfor %}
+  {% else %}
+  No recorded allergies
+  <br />
+  {% endif %}
+</p>

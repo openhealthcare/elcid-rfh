@@ -1,0 +1,17 @@
+<p>
+<b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
+{% if secondary_diagnosis_list.exists %}
+  {% for diagnosis in secondary_diagnosis_list %}
+    {{ diagnosis.condition }}
+    {% if diagnosis.provisional %}?{% endif %}
+    {% if diagnosis.details %}
+      <br />
+      - {{ diagnosis.details }}
+    {% endif %}
+    <br />
+  {% endfor %}
+{% else %}
+  No recorded secondary diagnoses
+  <br />
+{% endif %}
+</p>

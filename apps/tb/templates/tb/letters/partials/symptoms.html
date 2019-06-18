@@ -1,0 +1,23 @@
+<p>
+<b>Symptoms: </b><br />
+{% for symptom_complex in symptom_complex_list %}
+{% for symptom in symptom_complex.symptoms.all %}
+{{ symptom.name }}
+{% endfor %}
+{% if symptom_complex.duration or symptom_complex.details %}
+{{ symptom_complex.duration }}
+{% if symptom_complex.duration %}
+- {{ symptom_complex.details }}
+{% endif %}
+{% endif %}
+
+{% if not symptom_complex.symptoms.exists %}
+No recorded respiratory or systemic TB symptoms
+<br />
+{% endif %}
+{% endfor %}
+{% if not symptom_complex_list.exists %}
+No recorded respiratory or systemic TB symptoms
+<br />
+{% endif %}
+</p>

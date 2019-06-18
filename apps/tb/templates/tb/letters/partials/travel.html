@@ -1,0 +1,12 @@
+<p>
+{% if travel_list.exists %}
+<b>Travel:</b><br />
+{% for travel in travel_list %}
+{{ travel.country }}, {{ travel.when }} ({{ travel.duration}})
+<br />
+{% endfor %}
+{% else %}
+No recorded travel
+<br />
+{% endif %}
+</p>

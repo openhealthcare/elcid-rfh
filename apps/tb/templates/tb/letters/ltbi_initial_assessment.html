@@ -1,39 +1,6 @@
 {% extends 'letters/base.html' %} {% block letter_content %}
-<p>
-  <b>Primary diagnosis: </b><br />
-  {% if primary_diagnosis_list.exists %}
-    {% for diagnosis in primary_diagnosis_list %}
-      {{ diagnosis.condition }}
-      {% if diagnosis.provisional %}?{% endif %}
-      {% if diagnosis.details %}
-        <br />
-        {{ diagnosis.details }}
-      {% endif %}
-    <br />
-    {% endfor %}
-  {% else %}
-    No recorded primary diagnoses
-    <br />
-  {% endif %}
-</p>
-
-<p>
-  <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
-  {% if secondary_diagnosis_list.exists %}
-    {% for diagnosis in secondary_diagnosis_list %}
-      - {{ diagnosis.condition }}
-      {% if diagnosis.provisional %}?{% endif %}
-      {% if diagnosis.details %}
-        <br />
-        {{ diagnosis.details }}
-      {% endif %}
-      <br />
-    {% endfor %}
-  {% else %}
-    No recorded secondary diagnoses
-    <br />
-  {% endif %}
-</p>
+{% include "tb/letters/partials/primary_diagnosis.html" %}
+{% include "tb/letters/partials/secondary_diagnosis.html" %}
 
 <p>
   <b>TB medication: </b><br />
@@ -45,15 +12,8 @@
   {% include "tb/letters/partials/medication.html" with medication_list=other_medication_list %}
 </p>
 
-{% if not communication_considerations.language == "English" %}
-<p>
-  <b>Language:</b><br />
-    {{ communication_considerations.language }}
-    {% if communication_considerations.needs_an_interpreter %}
-    (needs an interpreter)
-    {% endif %}
-</p>
-{% endif %}
+{% include "tb/letters/partials/language.html" with medication_list=other_medication_list %}
+
 
 <p>
   <b>Referred by:</b><br />
@@ -65,82 +25,13 @@
   {{ referral.referral_reason }}
 </p>
 
-<p>
-  <b>Exposure:</b><br />
-  {% for travel in travel_list %}
-  Travel: {{ travel.country }}
-  <br />
-  {% endfor %}
-  {% if not travel_list.exists %}
-  Travel: No recorded travel
-  <br />
-  {% endif %}
-  Place of birth: {{ demographics.birth_place }}
-  <br />
-</p>
-<p>
-  {% include "tb/letters/partials/tb_history.html" %}
-</p>
-<p>
-  {% include "tb/letters/partials/index_case.html" %}
-</p>
-<p>
-  <b>Symptoms: </b><br />
-  {% for symptom_complex in symptom_complex_list %}
-  {% for symptom in symptom_complex.symptoms.all %}
-  {{ symptom.name }}
-  <br />
-  {% endfor %}
-  {% if not symptom_complex.symptoms.exists %}
-  No recorded respiratory or systemic TB symptoms
-  <br />
-  {% endif %}
-  {% endfor %}
-</p>
+{% include "tb/letters/partials/travel.html" %}
+{% include "tb/letters/partials/tb_history.html" %}
+{% include "tb/letters/partials/index_case.html" %}
+{% include "tb/letters/partials/symptoms.html" %}
+{% include "tb/letters/partials/social_history.html" %}
+{% include "tb/letters/partials/allergies.html" %}
 
-<p>
-  <b>Social history:</b><br />
-  {% if social_history.notes %}
-    {{ social_history.notes }}
-  {% endif %}
-</p>
-
-<p>
-  <b>Smoking:</b><br />
-  {{ social_history.smoking }}
-</p>
-
-<p>
-  <b>Alcohol:</b><br />
-  {% if social_history.drinking %}
-  {{ social_history.drinking }}
-  {% endif %}
-  {% if social_history.history_of_alocohol_dependence %}
-  (history of dependence)
-  {% endif %}
-</p>
-
-<p>
-  <b>Recreational drug use:</b><br />
-  {{ social_history.recreational_drug_use }}
-  {% if social_history.recreational_drug_type %}
-  ({{ social_history.recreational_drug_type }})
-  {% endif %}
-</p>
-
-<p>
-  <b>Allergies: </b><br />
-  {% if allergies_list.exists %}
-  {% for allergy in allergies_list %}
-  {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-  {{ allergy.details }}
-  <br />
-  {% endfor %}
-  {% else %}
-  No recorded allergies
-  <br />
-  {% endif %}
-</p>
 
 <p>
   <b>Weight:</b><br />
@@ -152,37 +43,13 @@
 </p>
 
 <p>
-  <b>Examination findings:</b><br />{{ object.examination_findings }}
+  <b>Examination findings:</b><br />
+  <span ng-bind-html="'{{ object.examination_findings }}'|markdown">
+  </span>
 </p>
 
-{% for imaging in imaging_list %}
-<p>
-  <b>
-    {{ imaging.imaging_type }}
-    {% if imaging.site %}({{ imaging.site }}){% endif %}:
-  </b><br />
-  {{ imaging.date | date }} {{ imaging.details }}<br />
-</p>
-{% endfor %}
-
-{% if results or other_investigation_list %}
-<p>
-  <b>Key investigations: </b><br />
-  {% for obs_name, summary in results.items %}
-    {{ summary.observation_datetime.date | date:'d M Y' }}
-    &nbsp;
-    {{ obs_name }}:&nbsp;
-    {{ summary.observation_value }}
-    <br />
-  {% endfor %}
-  {% for other_investigation in other_investigation_list %}
-    {{ other_investigation.date | date:'d M Y' }}
-    {{ other_investigation.name }}:&nbsp;
-    {{ other_investigation.details }}
-    <br />
-  {% endfor %}
-</p>
-{% endif %}
+{% include 'tb/letters/partials/imaging.html' %}
+{% include 'tb/letters/partials/other_investigations.html' %}
 
 <p>
   <b>Discussion:</b>

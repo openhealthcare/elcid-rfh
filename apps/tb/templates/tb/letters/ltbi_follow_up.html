@@ -1,41 +1,6 @@
-{% extends 'letters/base.html' %}
-{% block letter_content %}
-<p>
-  <b>Primary diagnosis: </b><br />
-  {% if primary_diagnosis_list.exists %}
-    {% for diagnosis in primary_diagnosis_list %}
-      {{ diagnosis.condition }}
-      {% if diagnosis.provisional %}?{% endif %}
-      {% if diagnosis.details %}
-        <br />
-        {{ diagnosis.details }}
-      {% endif %}
-    <br />
-    {% endfor %}
-  {% else %}
-    No recorded primary diagnoses
-    <br />
-  {% endif %}
-</p>
-
-<p>
-  <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
-  {% if secondary_diagnosis_list.exists %}
-    {% for diagnosis in secondary_diagnosis_list %}
-      - {{ diagnosis.condition }}
-      {% if diagnosis.provisional %}?{% endif %}
-      {% if diagnosis.details %}
-        <br />
-        {{ diagnosis.details }}
-      {% endif %}
-      <br />
-    {% endfor %}
-  {% else %}
-    No recorded secondary diagnoses
-    <br />
-  {% endif %}
-</p>
-
+{% extends 'letters/base.html' %} {% block letter_content %}
+{% include "tb/letters/partials/primary_diagnosis.html" %}
+{% include "tb/letters/partials/secondary_diagnosis.html" %}
 
 <p>
   <b>TB medication: </b><br />
@@ -46,66 +11,16 @@
   <b>Other medication: </b><br />
   {% include "tb/letters/partials/medication.html" with medication_list=other_medication_list %}
 </p>
-{% if adverse_reaction_list.exists %}
-  <p>
-    <b>Adverse reactions:</b><br />
-    {% for adverse_reaction in adverse_reaction_list %}
-      {{ adverse_reaction.details }}
-      <br />
-    {% endfor %}
-  </p>
-{% endif %}
 
-<p>
-  <b>Allergies: </b><br />
-  {% if allergies_list.exists %}
-  {% for allergy in allergies_list %}
-    {{ allergy.drug }}{% if allergy.provisional %}? {% endif %} &nbsp;
-    {{ allergy.details }}
-    <br />
-  {% endfor %}
-  {% else %}
-    No recorded allergies
-    <br />
-  {% endif %}
-</p>
-
-{% if not communication_considerations.language == "English" %}
-<p>
-  <b>Language:</b><br />
-  {{ communication_considerations.language }}
-  {% if communication_considerations.needs_an_interpreter %}
-  (needs an interpreter)
-  {% endif %}
-</p>
-{% endif %}
+{% include "tb/letters/partials/language.html" with medication_list=other_medication_list %}
 
 
-<p>
-  <b>Exposure:</b><br />
-  {% for travel in travel_list %}
-  Travel: {{ travel.country }}
-  <br />
-  {% endfor %}
-  {% if not travel_list.exists %}
-  Travel: No recorded travel
-  <br />
-  {% endif %}
-  Place of birth: {{ demographics.birth_place }}
-  <br />
-</p>
-<p>
-  {% include "tb/letters/partials/tb_history.html" %}
-</p>
-<p>
-  {% include "tb/letters/partials/index_case.html" %}
-</p>
+{% include "tb/letters/partials/travel.html" %}
+{% include "tb/letters/partials/tb_history.html" %}
+{% include "tb/letters/partials/index_case.html" %}
+{% include "tb/letters/partials/allergies.html" %}
 
 
-<p>
-  <b>Progress:</b><br />
-  {{ object.progress }}
-</p>
 <p>
   <b>Weight:</b><br />
   {% if weight %}
@@ -114,41 +29,24 @@
     No weight recorded for {{ object.when | date }}
   {% endif %}
 </p>
+
 <p>
   <b>Examination findings:</b><br />
-  {{ object.examination_findings }}
+  <span ng-bind-html="'{{ object.examination_findings }}'|markdown">
+  </span>
 </p>
-{% if results or other_investigation_list %}
-<p>
-  <b>Key investigations: </b><br />
-  {% for obs_name, summary in results.items %}
-    {{ summary.observation_datetime.date | date:'d M Y' }}
-    &nbsp;
-    {{ obs_name }}:&nbsp;
-    {{ summary.observation_value }}
-    <br />
-  {% endfor %}
-  {% for other_investigation in other_investigation_list %}
-    {{ other_investigation.date | date:'d M Y' }}
-    {{ other_investigation.name }}:&nbsp;
-    {{ other_investigation.details }}
-    <br />
-  {% endfor %}
-</p>
-{% endif %}
 
-{% for imaging in imaging_list %}
-<p>
-<b>
-{{ imaging.imaging_type }}
-{% if imaging.site %}({{ imaging.site }}){% endif %}:
-</b><br />
-{{ imaging.date | date }} {{ imaging.details }}<br />
-</p>
-{% endfor %}
+{% include 'tb/letters/partials/imaging.html' %}
+{% include 'tb/letters/partials/other_investigations.html' %}
+
 
 <p>
-  <b>Discussion:</b><br />
+  <b>Progress:</b>
+  <span ng-bind-html="'{{ object.progress }}'|markdown"></span>
+</p>
+
+<p>
+  <b>Discussion:</b>
   <span ng-bind-html="'{{ object.discussion }}'|markdown"></span>
 </p>
 

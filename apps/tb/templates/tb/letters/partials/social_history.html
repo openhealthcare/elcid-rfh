@@ -1,0 +1,39 @@
+{% if social_history.notes %}
+<p>
+  <b>Social history:</b><br />
+  {% if social_history.notes %}
+    {{ social_history.notes }}
+  {% endif %}
+</p>
+{% endif %}
+
+{% if social_history.smoking %}
+<p>
+  <b>Smoking:</b><br />
+  {% if social_history.smoking %}
+    {{ social_history.smoking }}
+  {% endif %}
+</p>
+{% endif %}
+
+{% if social_history.drinking %}
+<p>
+  <b>Alcohol:</b><br />
+  {% if social_history.drinking %}
+  {{ social_history.drinking }}
+  {% endif %}
+  {% if social_history.history_of_alocohol_dependence %}
+  (history of dependence)
+  {% endif %}
+</p>
+{% endif %}
+
+{% if social_history.recreational_drug_use %}
+<p>
+  <b>Recreational drug use:</b><br />
+  {{ social_history.recreational_drug_use }}
+  {% if social_history.recreational_drug_type %}
+  ({{ social_history.recreational_drug_type }})
+  {% endif %}
+</p>
+{% endif %}

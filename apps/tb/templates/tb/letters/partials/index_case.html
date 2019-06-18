@@ -1,10 +1,10 @@
+<p>
 {% if index_case_list.exists %}
   <b>
     {{ models.IndexCase.get_display_name }}{{ index_case_list|pluralize}}:
   </b>
   {% for index_case in index_case_list %}
   <br />
-    -
     {% if index_case.ltbr_number or index_case.hospital_number or index_case.diagnosis_day or index_case.diagnosis_month or index_case.diagnosis_year %}
     {% if index_case.ltbr_number %}
     LTBI: {{ index_case.ltbr_number }}
@@ -31,7 +31,10 @@
     {% endif %}
     <br />
     {% endif %}
-    {{ index_case.details }}
+    {% if index_case.details %}
+    - {{ index_case.details }}
     <br />
+    {% endif %}
   {% endfor %}
 {% endif %}
+</p>
