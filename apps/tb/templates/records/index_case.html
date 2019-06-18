@@ -1,0 +1,61 @@
+<span ng-show="item.ltbr_number">
+  <strong>
+    LTBR number:
+  </strong>
+  [[ item.ltbr_number ]]
+  <br />
+</span>
+<span ng-show="item.hospital_number">
+  <strong>
+    Hospital number:
+  </strong>
+  [[ item.hospital_number ]]
+  <br />
+</span>
+<span ng-show="item.relationship">
+    <strong>
+      Relationship:
+    </strong>
+    [[ item.relationship ]]
+    [[ item.relationship_other ]]
+    <br />
+  </span>
+<span ng-show="item.sputum_smear">
+  <strong>
+    Sputum smear:
+  </strong>
+  [[ item.sputum_smear ]]
+   <br />
+</span>
+<span ng-show="item.culture">
+  <strong>
+    Culture:
+  </strong>
+  [[ item.culture ]]
+   <br />
+</span>
+<span ng-show="item.drug_susceptibility">
+  <strong>
+    Drug suceptablity:
+  </strong>
+  [[ item.drug_susceptibility ]]
+  <br />
+</span>
+<span ng-show="item.index_case_site_of_tb">
+  <strong>
+    Site of TB:
+  </strong>
+  [[ item.index_case_site_of_tb ]]
+  <br />
+</span>
+<span ng-show="item.index_case_diagnosis_year || item.diagnosis_month || item.diagnosis_day">
+  <strong>
+    Diagnosis date:
+  </strong>
+  [[ item.diagnosis_day ]] [[ item.diagnosis_month|month ]] [[ item.diagnosis_year ]]
+  <br />
+</span>
+<span ng-show="item.details">
+    [[ item.details ]]
+   <br />
+</span>

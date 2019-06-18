@@ -6,6 +6,7 @@
       {{ diagnosis.condition }}
       {% if diagnosis.provisional %}?{% endif %}
       {% if diagnosis.details %}
+        <br />
         {{ diagnosis.details }}
       {% endif %}
     <br />
@@ -20,9 +21,10 @@
   <b>Secondary diagnos{{ secondary_diagnosis_list|pluralize:"is,es" }}: </b><br />
   {% if secondary_diagnosis_list.exists %}
     {% for diagnosis in secondary_diagnosis_list %}
-      {{ diagnosis.condition }}
+      - {{ diagnosis.condition }}
       {% if diagnosis.provisional %}?{% endif %}
       {% if diagnosis.details %}
+        <br />
         {{ diagnosis.details }}
       {% endif %}
       <br />
@@ -45,9 +47,11 @@
 
 <p>
   <b>Language:</b><br />
-  {{ communication_considerations.language }}
-  {% if communication_considerations.needs_an_interpreter %}
-  (needs an interpreter)
+  {% if not communication_considerations.language == "English" %}
+    {{ communication_considerations.language }}
+    {% if communication_considerations.needs_an_interpreter %}
+    (needs an interpreter)
+    {% endif %}
   {% endif %}
 </p>
 
@@ -71,25 +75,15 @@
   Travel: No recorded travel
   <br />
   {% endif %}
-  Previous TB diagnosis:
-  {% if tb_history.tb_type %}
-  {{ tb_history.tb_type }}
-  {% else %}
-  None recorded
-  {% endif %}
-  <br />
-  Previous TB contact:
-  {% if tb_history.previous_tb_contact_details %}
-  {{ tb_history.previous_tb_contact_details }}
-  {% else %}
-  None recorded
-  {% endif %}
-  <br />
   Place of birth: {{ demographics.birth_place }}
   <br />
 </p>
-
-
+<p>
+  {% include "tb/letters/partials/tb_history.html" %}
+</p>
+<p>
+  {% include "tb/letters/partials/index_case.html" %}
+</p>
 <p>
   <b>Symptoms: </b><br />
   {% for symptom_complex in symptom_complex_list %}
@@ -191,7 +185,7 @@
 {% endif %}
 
 <p>
-  <b>Discussion:</b><br />
+  <b>Discussion:</b>
   <span ng-bind-html="'{{ object.discussion }}'|markdown"></span>
 </p>
 

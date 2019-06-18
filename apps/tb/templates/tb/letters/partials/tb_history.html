@@ -1,0 +1,36 @@
+<b>
+  Previous TB Diagnosis:
+</b>
+<br />
+{% if tb_history.tb_type %}
+  {{ tb_history.tb_type }} {{ tb_history.site_of_tb }}
+  {% if tb_history.diagnosis_date_year or tb_history.diagnosis_date_month or tb_history.diagnosis_date_day %}
+    -
+  {{ tb_history.diagnosis_date_day }} [[ {{ tb_history.diagnosis_date_month }}|month ]] {{ tb_history.diagnosis_date_year }}
+  {% endif %}
+  <br />
+
+  {% if tb_history.how_long_treated_years or tb_history.how_long_treated_months or tb_history.how_long_treated_days %}
+    Treated for
+    {% if tb_history.how_long_treated_years %}
+    {{ tb_history.how_long_treated_years }} year{{ tb_history.how_long_treated_years|pluralize }}
+    {% endif %}
+    {% if tb_history.how_long_treated_months %}
+          {{ tb_history.how_long_treated_months }} month{{ tb_history.how_long_treated_months|pluralize }}
+    {% endif %}
+    {% if tb_history.how_long_treated_days %}
+          {{ tb_history.how_long_treated_days }} day{{ tb_history.how_long_treated_days|pluralize }}
+    {% endif %}
+    <br />
+  {% endif %}
+  </span>
+  {% if tb_history.country_treated or tb_history.treatment_centre %}
+    In {{ tb_history.country_treated }} {{ tb_history.treatment_centre }}
+  {% endif %}
+  {% if tb_history.diagnosis_details %}
+      {{ tb_history.diagnosis_details }}
+      <br />
+  {% endif %}
+{% else %}
+  None recorded
+{% endif %}

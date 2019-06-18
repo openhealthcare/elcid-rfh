@@ -1,60 +1,31 @@
-<div class="content-offset-below-10" ng-show="item.previous_tb_diagnosis">
-  Previous [[ item.tb_type ]] [[ item.site_of_tb ]] TB Diagnosis
-  <span ng-show="item.diagnosis_how_long_ago_years || item.diagnosis_how_long_ago_months || item.diangosis_how_long_ago_days">
-     -
-     <span ng-show="item.contact_how_long_ago_years">
-           [[ item.contact_how_long_ago_years ]] [[ 'year'|plural:item.contact_how_long_ago_years ]]
-     </span>
-     <span ng-show="item.contact_how_long_ago_months">
-           [[ item.contact_how_long_ago_months ]] [[ 'month'|plural:item.contact_how_long_ago_months ]]
-     </span>
-     <span ng-show="item.contact_how_long_ago_days">
-           [[ item.contact_how_long_ago_days ]] [[ 'day'|plural:item.contact_how_long_ago_days ]]
-     </span>
-     ago
-     <br />
-  </span>
-  <span ng-show="item.how_long_treated_years || item.how_long_treated_months || item.how_long_treated_days">
-     Treated for
-     <span ng-show="item.how_long_treated_years">
-           [[ item.how_long_treated_years ]] [[ 'year'|plural:item.how_long_treated_years ]]
-     </span>
-     <span ng-show="item.how_long_treated_months">
-           [[ item.how_long_treated_months ]] [[ 'month'|plural:item.how_long_treated_months ]]
-     </span>
-     <span ng-show="item.how_long_treated_days">
-           [[ item.how_long_treated_days ]] [[ 'day'|plural:item.how_long_treated_days ]]
-     </span>
-     <br />
-  </span>
-  <span ng-show="item.country_treated || item.treatment_centre">
-     In [[ item.country_treated ]] [[ item.treatment_centre ]]
-  </span>
-  <span ng-show="item.diagnosis_details">
-        [[ item.diagnosis_details ]]
-        <br />
-  </span>
-</div>
+Previous [[ item.tb_type ]] [[ item.site_of_tb ]] TB Diagnosis
+<span ng-show="item.diagnosis_date_year || item.diagnosis_date_month || item.diagnosis_date_day">
+    -
+    [[ item.diagnosis_date_day ]] [[ item.diagnosis_date_month|month ]] [[ item.diagnosis_date_year ]]
+    <br />
+</span>
 
 
-<div ng-show="item.previous_tb_contact">
-  Previous TB Contact
-  <span ng-show="item.contact_how_long_ago_years || item.contact_how_long_ago_months || item.contact_how_long_ago_days">
-     -
-     <span ng-show="item.contact_how_long_ago_years">
-           [[ item.contact_how_long_ago_years ]] [[ 'year'|plural:item.contact_how_long_ago_years ]]
-     </span>
-     <span ng-show="item.contact_how_long_ago_months">
-           [[ item.contact_how_long_ago_months ]] [[ 'month'|plural:item.contact_how_long_ago_months ]]
-     </span>
-     <span ng-show="item.contact_how_long_ago_days">
-           [[ item.contact_how_long_ago_days ]] [[ 'day'|plural:item.contact_how_long_ago_days ]]
-     </span>
-     ago
-     <br />
-  </span>
-  <span ng-show="item.previous_tb_contact_details">
-        [[ item.previous_tb_contact_details ]]
-       <br />
-  </span>
-</div>
+
+
+<span ng-show="item.how_long_treated_years || item.how_long_treated_months || item.how_long_treated_days">
+    Treated for
+    <span ng-show="item.how_long_treated_years">
+          [[ item.how_long_treated_years ]] [[ 'year'|plural:item.how_long_treated_years ]]
+    </span>
+    <span ng-show="item.how_long_treated_months">
+          [[ item.how_long_treated_months ]] [[ 'month'|plural:item.how_long_treated_months ]]
+    </span>
+    <span ng-show="item.how_long_treated_days">
+          [[ item.how_long_treated_days ]] [[ 'day'|plural:item.how_long_treated_days ]]
+    </span>
+    <br />
+</span>
+<span ng-show="item.country_treated || item.treatment_centre">
+    In [[ item.country_treated ]] [[ item.treatment_centre ]]
+</span>
+<span ng-show="item.diagnosis_details">
+      [[ item.diagnosis_details ]]
+      <br />
+</span>
+

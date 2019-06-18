@@ -1,0 +1,28 @@
+{% load forms %}
+{% load elcid_forms %}
+{% input field="IndexCase.ltbr_number" %}
+{% input field="IndexCase.hospital_number" %}
+{% radio_columns field="IndexCase.relationship" %}
+{% radio field="IndexCase.sputum_smear" %}
+{% radio field="IndexCase.culture" %}
+{% radio field="IndexCase.drug_susceptibility" %}
+<div class="form-group">
+  <label class="control-label col-sm-3">
+    Diagnosis date
+  </label>
+  <div class="col-sm-9">
+    <div class="row">
+      <div class="col-md-3">
+        <input placeholder="Day" class="form-control" type="number" ng-model="editing.index_case.diagnosis_day" autocomplete="off">
+      </div>
+      <div class="col-md-3">
+        <input placeholder="Month" class="form-control" type="number" ng-model="editing.index_case.diagnosis_month" autocomplete="off">
+      </div>
+      <div class="col-md-3">
+        <input placeholder="Year" class="form-control" type="number" ng-model="editing.index_case.diagnosis_year" autocomplete="off">
+      </div>
+    </div>
+  </div>
+</div>
+{% input field="IndexCase.index_case_site_of_tb" %}
+{% textarea field="IndexCase.details" %}
