@@ -395,7 +395,7 @@ if settings.NEW_LAB_TEST_SUMMARY_DISPLAY:
 
             return date_to_observation
 
-        def get_obs_qs(self, patient, lab_test_name, observation_name):
+        def get_obs_queryset(self, patient, lab_test_name, observation_name):
             return lab_test_models.Observation.objects.filter(
                 test__patient=patient
             ).filter(
@@ -424,7 +424,7 @@ if settings.NEW_LAB_TEST_SUMMARY_DISPLAY:
 
             for test_name, observation_names in self.RELEVANT_TESTS.items():
                 for obs_name in observation_names:
-                    qs = self.get_obs_qs(patient, test_name, obs_name)
+                    qs = self.get_obs_queryset(patient, test_name, obs_name)
                     if qs:
                         date_to_obs = self.get_recent_dates_to_observations(qs)
                         if date_to_obs:
