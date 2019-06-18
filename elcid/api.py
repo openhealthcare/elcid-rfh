@@ -355,8 +355,8 @@ class LabTestResultsView(LoginRequiredViewset):
         )
 
 
-class LabTestSummaryApi(LoginRequiredViewset):
-    base_name = 'lab_test_summary_api'
+class InfectionServiceTestSummaryApi(LoginRequiredViewset):
+    base_name = 'infection_service_summary_api'
     RELEVANT_TESTS = OrderedDict((
         ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
         ("CLOTTING SCREEN", ["INR"],),
@@ -678,5 +678,7 @@ elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
-lab_test_router.register('lab_test_summary_api', LabTestSummaryApi)
+lab_test_router.register(
+    'infection_service_summary_api', InfectionServiceTestSummaryApi
+)
 lab_test_router.register('lab_test_results_view', LabTestResultsView)

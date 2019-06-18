@@ -775,7 +775,7 @@ class LabTestSummaryTestCase(OpalTestCase):
             )
         )
         self.url = reverse(
-            "lab_test_summary_api-detail",
+            "infection_service_summary_api-detail",
             kwargs=dict(pk=self.patient.id),
             request=request
         )

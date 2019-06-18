@@ -2,7 +2,7 @@ angular.module('opal.services').factory('LabTestSummaryLoader', function($q, $ht
 
     "use strict";
 
-    var url = '/labtest/v0.1/lab_test_summary_api/';
+    var url = '/labtest/v0.1/infection_service_summary_api/';
 
     var load = function(patientId){
       var deferred = $q.defer();
@@ -10,7 +10,7 @@ angular.module('opal.services').factory('LabTestSummaryLoader', function($q, $ht
       $http({ cache: true, url: patientUrl, method: 'GET'}).then(function(response) {
           deferred.resolve(response.data);
       }, function() {
-          console.error("unable to load in the lab_test_summary_api");
+          console.error("unable to load in the infection_service_summary_api");
       });
       return deferred.promise;
     };
