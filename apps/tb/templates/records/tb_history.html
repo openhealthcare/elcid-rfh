@@ -1,4 +1,6 @@
+<span ng-show="item.tb_type || item.site_of_tb || item.diagnosis_details || item.treatment_centre || item.country_treated">
 Previous [[ item.tb_type ]] [[ item.site_of_tb ]] TB Diagnosis
+</span>
 <span ng-show="item.diagnosis_date_year || item.diagnosis_date_month || item.diagnosis_date_day">
     -
     [[ item.diagnosis_date_day ]] [[ item.diagnosis_date_month|month ]] [[ item.diagnosis_date_year ]]
