@@ -355,205 +355,102 @@ class LabTestResultsView(LoginRequiredViewset):
         )
 
 
-if settings.NEW_LAB_TEST_SUMMARY_DISPLAY:
-    class LabTestSummaryApi(LoginRequiredViewset):
-        base_name = 'lab_test_summary_api'
-        RELEVANT_TESTS = OrderedDict((
-            ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
-            ("CLOTTING SCREEN", ["INR"],),
-            ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
-            ("LIVER PROFILE", ["ALT", "AST", "Alkaline Phosphatase"]),
-        ),)
+class LabTestSummaryApi(LoginRequiredViewset):
+    base_name = 'lab_test_summary_api'
+    RELEVANT_TESTS = OrderedDict((
+        ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
+        ("CLOTTING SCREEN", ["INR"],),
+        ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
+        ("LIVER PROFILE", ["ALT", "AST", "Alkaline Phosphatase"]),
+    ),)
 
-        NUM_RESULTS = 5
+    NUM_RESULTS = 5
 
-        def get_recent_dates_to_observations(self, qs):
-            """
-            We are looking for the last 5 dates
-            where we have any observation that
-            can be cast to a number.
+    def get_recent_dates_to_observations(self, qs):
+        """
+        We are looking for the last 5 dates
+        where we have any observation that
+        can be cast to a number.
 
-            If a patient has multiple observations
-            on the same date take the most recent
-            that can be cast into a number
-            """
-            date_to_observation = {}
-            # this should never be the case, but
-            # we don't create the data so cater for it
-            qs = qs.exclude(observation_datetime=None)
-            for i in qs.order_by("-observation_datetime"):
-                if i.value_numeric:
-                    dt = i.observation_datetime
-                    obs_date = dt.date()
-                    if obs_date in date_to_observation:
-                        if date_to_observation[obs_date].observation_datetime < dt:
-                            date_to_observation[obs_date] = i
-                    else:
+        If a patient has multiple observations
+        on the same date take the most recent
+        that can be cast into a number
+        """
+        date_to_observation = {}
+        # this should never be the case, but
+        # we don't create the data so cater for it
+        qs = qs.exclude(observation_datetime=None)
+        for i in qs.order_by("-observation_datetime"):
+            if i.value_numeric:
+                dt = i.observation_datetime
+                obs_date = dt.date()
+                if obs_date in date_to_observation:
+                    if date_to_observation[obs_date].observation_datetime < dt:
                         date_to_observation[obs_date] = i
-                if len(date_to_observation.keys()) == self.NUM_RESULTS:
-                    break
+                else:
+                    date_to_observation[obs_date] = i
+            if len(date_to_observation.keys()) == self.NUM_RESULTS:
+                break
 
-            return date_to_observation
+        return date_to_observation
 
-        def get_obs_qs(self, patient, lab_test_name, observation_name):
-            return lab_test_models.Observation.objects.filter(
-                test__patient=patient
-            ).filter(
-                test__test_name=lab_test_name
-            ).filter(
-                observation_name=observation_name
-            )
+    def get_obs_queryset(self, patient, lab_test_name, observation_name):
+        return lab_test_models.Observation.objects.filter(
+            test__patient=patient
+        ).filter(
+            test__test_name=lab_test_name
+        ).filter(
+            observation_name=observation_name
+        )
 
-        def serialize_observations(self, observations):
-            latest_results = {
-                serialization.serialize_date(i.observation_datetime.date()): i.value_numeric
-                for i in observations
-            }
-            return dict(
-                name=observations[0].observation_name,
-                units=observations[0].units,
-                reference_range=get_reference_range(
-                    observations[0].reference_range
-                ),
-                latest_results=latest_results
-            )
+    def serialize_observations(self, observations):
+        latest_results = {
+            serialization.serialize_date(i.observation_datetime.date()): i.value_numeric
+            for i in observations
+        }
+        return dict(
+            name=observations[0].observation_name,
+            units=observations[0].units,
+            reference_range=get_reference_range(
+                observations[0].reference_range
+            ),
+            latest_results=latest_results
+        )
 
-        def serialise_lab_tests(self, patient):
-            obs = []
-            date_set = set()
+    def serialise_lab_tests(self, patient):
+        obs = []
+        date_set = set()
 
-            for test_name, observation_names in self.RELEVANT_TESTS.items():
-                for obs_name in observation_names:
-                    qs = self.get_obs_qs(patient, test_name, obs_name)
-                    if qs:
-                        date_to_obs = self.get_recent_dates_to_observations(qs)
-                        if date_to_obs:
-                            date_set.update(date_to_obs.keys())
-                            obs.append(list(date_to_obs.values()))
+        for test_name, observation_names in self.RELEVANT_TESTS.items():
+            for obs_name in observation_names:
+                qs = self.get_obs_queryset(patient, test_name, obs_name)
+                if qs:
+                    date_to_obs = self.get_recent_dates_to_observations(qs)
+                    if date_to_obs:
+                        date_set.update(date_to_obs.keys())
+                        obs.append(list(date_to_obs.values()))
 
-            all_dates = list(date_set)
-            all_dates.sort()
-            recent_dates = all_dates[-self.NUM_RESULTS:]
+        all_dates = list(date_set)
+        all_dates.sort()
+        recent_dates = all_dates[-self.NUM_RESULTS:]
 
-            # flush out the recent dates with nulls if
-            # the patient does not have a lot of results
-            while len(recent_dates) < self.NUM_RESULTS:
-                recent_dates.append(None)
-            obs_values = []
+        # flush out the recent dates with nulls if
+        # the patient does not have a lot of results
+        while len(recent_dates) < self.NUM_RESULTS:
+            recent_dates.append(None)
+        obs_values = []
 
-            for obs_set in obs:
-                obs_values.append(self.serialize_observations(obs_set))
-            return dict(
-                obs_values=obs_values,
-                recent_dates=recent_dates
-            )
+        for obs_set in obs:
+            obs_values.append(self.serialize_observations(obs_set))
+        return dict(
+            obs_values=obs_values,
+            recent_dates=recent_dates
+        )
 
-        @patient_from_pk
-        def retrieve(self, request, patient):
-            result = self.serialise_lab_tests(patient)
-            return json_response(result)
-else:
-    class LabTestSummaryApi(LoginRequiredViewset):
-        """
-            The API View used in the card list. Returns the last 3 months (approixmately)
-            of the tests we care about the most.
-        """
-        base_name = 'lab_test_summary_api'
-        NUM_RESULTS = 5
-
-        PREFERRED_ORDER = [
-            "WBC",
-            "Lymphocytes",
-            "Neutrophils",
-            "INR",
-            "C Reactive Protein",
-            "ALT",
-            "AST",
-            "Alkaline Phosphatase"
-        ]
-
-        def sort_observations(self, obv):
-            if obv["name"] in self.PREFERRED_ORDER:
-                return self.PREFERRED_ORDER.index(obv["name"])
-            else:
-                return len(self.PREFERRED_ORDER)
-
-        def aggregate_observations(self, patient):
-            """
-                takes the specific test/observations
-                aggregates them by lab test, observation name
-                adds the lab test datetime ordered to the observation dict
-                sorts the observations by datetime ordered
-            """
-            test_data = lab_test_models.LabTest.get_relevant_tests(patient)
-            result = defaultdict(lambda: defaultdict(list))
-            relevant_tests = {
-                "C REACTIVE PROTEIN": ["C Reactive Protein"],
-                "FULL BLOOD COUNT": ["WBC", "Lymphocytes", "Neutrophils"],
-                "LIVER PROFILE": ["ALT", "AST", "Alkaline Phosphatase"],
-                "CLOTTING SCREEN": ["INR"]
-            }
-
-            for test in test_data:
-                test_name = test.extras.get("test_name")
-                if test_name in relevant_tests:
-                    relevent_observations = relevant_tests[test_name]
-
-                    for observation in test.extras["observations"]:
-                        observation_name = observation["observation_name"]
-                        if observation_name in relevent_observations:
-                            observation["datetime_ordered"] = test.datetime_ordered
-                            result[test_name][observation_name].append(observation)
-
-            for test, obs_collection in result.items():
-                for obs_name, obs in obs_collection.items():
-                    result[test][obs_name] = observations_by_date(obs)
-            return result
-
-        @timing
-        def serialise_lab_tests(self, patient):
-            aggregated_data = self.aggregate_observations(patient)
-
-            serialised_obvs = []
-            all_dates = set()
-
-            for test_name, obs_collection in aggregated_data.items():
-                for observation_name, observations in obs_collection.items():
-                    serialised_obvs.append(dict(
-                        name=observation_name,
-                        graph_values=generate_time_series(observations),
-                        units=observations[0]["units"],
-                        reference_range=get_reference_range(observation["reference_range"]),
-                        latest_results={
-                            to_date_str(datetime_to_str(i["datetime_ordered"])): get_observation_value(i) for i in observations if get_observation_value(i)
-                        }
-                    ))
-                    all_dates = all_dates.union(
-                        i["datetime_ordered"].date() for i in observations if get_observation_value(i)
-                    )
-
-            recent_dates = sorted(list(all_dates))
-            last_results = self.NUM_RESULTS * -1
-            recent_dates = recent_dates[last_results:]
-
-            # if we have less than the required results add empty values
-            num_missing_results = self.NUM_RESULTS - len(recent_dates)
-
-            for i in range(num_missing_results):
-                recent_dates.append(None)
-
-            obs_values = sorted(serialised_obvs, key=self.sort_observations)
-            result = dict(
-                obs_values=obs_values,
-                recent_dates=recent_dates
-            )
-
-            return result
-
-        @patient_from_pk
-        def retrieve(self, request, patient):
-            result = self.serialise_lab_tests(patient)
-            return json_response(result)
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        result = self.serialise_lab_tests(patient)
+        return json_response(result)
 
 
 class UpstreamBloodCultureApi(viewsets.ViewSet):
