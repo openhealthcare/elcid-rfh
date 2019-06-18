@@ -401,8 +401,7 @@ class IndexCase(models.PatientSubrecord):
 
     RELATIONSHIP = (
         ("Household", "Household",),
-        ("Healthcare (workor)", "Healthcare (worker)",),
-        ("Healthcare (patient)", "Healthcare (patient)",),
+        ("Healthcare", "Healthcare",),
         (
             "Workplace (non healthcare)",
             "Workplace (non healthcare)",
