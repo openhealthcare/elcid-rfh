@@ -359,7 +359,7 @@ class ProdApi(base_api.BaseApi):
                 )
                 cur.execute(query, params)
                 result = cur.fetchall()
-        logger.info(result)
+        logger.debug(result)
         return result
 
     @property
