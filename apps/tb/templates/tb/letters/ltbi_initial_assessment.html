@@ -45,15 +45,15 @@
   {% include "tb/letters/partials/medication.html" with medication_list=other_medication_list %}
 </p>
 
+{% if not communication_considerations.language == "English" %}
 <p>
   <b>Language:</b><br />
-  {% if not communication_considerations.language == "English" %}
     {{ communication_considerations.language }}
     {% if communication_considerations.needs_an_interpreter %}
     (needs an interpreter)
     {% endif %}
-  {% endif %}
 </p>
+{% endif %}
 
 <p>
   <b>Referred by:</b><br />

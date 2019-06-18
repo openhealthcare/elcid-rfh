@@ -70,6 +70,7 @@
   {% endif %}
 </p>
 
+{% if not communication_considerations.language == "English" %}
 <p>
   <b>Language:</b><br />
   {{ communication_considerations.language }}
@@ -77,6 +78,7 @@
   (needs an interpreter)
   {% endif %}
 </p>
+{% endif %}
 
 
 <p>
