@@ -1,6 +1,6 @@
 <p>
-{% if travel_list.exists %}
 <b>Travel:</b><br />
+{% if travel_list.exists %}
 {% for travel in travel_list %}
 {{ travel.country }}, {{ travel.when }} ({{ travel.duration}})
 <br />
