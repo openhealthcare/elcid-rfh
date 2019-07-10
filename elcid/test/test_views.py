@@ -9,6 +9,8 @@ from opal.core.test import OpalTestCase
 from opal.models import Patient
 from opal.core.subrecords import subrecords
 
+from elcid import views
+
 
 HERE = ffs.Path.here()
 TEST_DATA = HERE/'test_data'
@@ -78,3 +80,53 @@ class ExtractSchemaViewTest(OpalTestCase):
     def assertStatusCode(self, path, expected_status_code):
         response = self.client.get(path)
         self.assertEqual(expected_status_code, response.status_code)
+
+
+class WardSortTestCase(OpalTestCase):
+    def test_ward_sort(self):
+        wards = [
+            "8 West",
+            "PITU",
+            "ICU 4 East",
+            "9 East",
+            "8 South",
+            "9 North",
+            "ICU 4 West",
+            "12 West",
+            "Outpatients",
+        ]
+
+        expected = [
+            "8 South",
+            "8 West",
+            "9 East",
+            "9 North",
+            "12 West",
+            "ICU 4 East",
+            "ICU 4 West",
+            "Outpatients",
+            "PITU",
+        ]
+        self.assertEqual(
+            expected, sorted(wards, key=views.ward_sort_key)
+        )
+
+    def test_grouping(self):
+        wards = [
+            "8 West",
+            "8 West",
+            "9 East",
+            "8 South",
+            "9 North",
+        ]
+
+        expected = [
+            "8 South",
+            "8 West",
+            "8 West",
+            "9 East",
+            "9 North",
+        ]
+        self.assertEqual(
+            expected, sorted(wards, key=views.ward_sort_key)
+        )

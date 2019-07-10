@@ -3,16 +3,20 @@ eLCID specific views.
 """
 import csv
 import random
+from collections import defaultdict, OrderedDict
 
-from django import forms
 from django.apps import apps
-from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
-from django.views.generic import TemplateView, FormView, View
+from django.views.generic import (
+    TemplateView, FormView, View, ListView
+)
 
 from opal.core import application
-
+from opal.models import Ward
+from elcid.patient_lists import Renal
+from elcid import models
 from elcid.forms import BulkCreateUsersForm
 
 app = application.get_app()
@@ -100,3 +104,70 @@ class ElcidTemplateView(TemplateView):
             pass
 
         return ctd
+
+
+def ward_sort_key(ward):
+    start = ward[:2].strip()
+    rest = ward[2:]
+    return (len(start), start, rest)
+
+
+class RenalHandover(LoginRequiredMixin, TemplateView):
+    template_name = "elcid/renal_handover.html"
+
+    def get_unit_ward(self, location):
+        if location.ward and location.bed:
+            return "{}/{}".format(
+                location.ward, location.bed
+            )
+
+    def sort_data(self, rows):
+        wards = Ward.objects.exclude(
+            name__iexact="Outpatients"
+        ).order_by("name").values_list("name")
+        wards.append("Outpatients")
+
+    def get_context_data(self, *args, **kwargs):
+        """
+        An ordered dictionary of ward to patient
+
+        patient here is...
+        their name
+        their hospital number
+        their unit/ward
+        that episodes diagnosis
+        all of the clinical advice related to the patients infection service
+        """
+        ctx = super().get_context_data(*args, **kwargs)
+        episodes = Renal().get_queryset()
+        episodes = episodes.prefetch_related(
+            "location_set", "diagnosis_set"
+        )
+        by_ward = defaultdict(list)
+        for episode in episodes:
+            location = episode.location_set.all()[0]
+            diagnosis = episode.diagnosis_set.all()[0]
+            demographics = models.Demographics.objects.filter(
+                patient__episode=episode
+            )
+            microbiology_input = models.MicrobiologyInput.objects.filter(
+                episode__patient__episode=episode
+            ).order_by("-when")
+            by_ward[location.ward].append({
+                "name": demographics.name,
+                "hospital_number": demographics.hospital_number,
+                "unit/ward": self.get_unit_ward(location),
+                "diagnosis": diagnosis,
+                "clinical_advice": microbiology_input
+            })
+
+        result = OrderedDict()
+        wards = by_ward.keys()
+        wards = sorted(wards, key=lambda x: x.split(" "))
+
+        for ward in wards:
+            result[ward] = by_ward[ward]
+
+        ctx["episodes"] = result
+        return ctx
+
