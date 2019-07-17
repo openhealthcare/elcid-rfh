@@ -107,6 +107,22 @@ class ElcidTemplateView(TemplateView):
 
 
 def ward_sort_key(ward):
+    """"
+    Example wards are
+            "8 West",
+            "PITU",
+            "ICU 4 East",
+            "9 East",
+            "8 South",
+            "9 North",
+            "ICU 4 West",
+            "12 West",
+
+    We want to order them first by number
+    then with the wards that are strings.
+    e.g. ICU
+    """
+
     start = ward[:2].strip()
     rest = ward[2:]
     return (len(start), start, rest)
@@ -146,19 +162,21 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         by_ward = defaultdict(list)
         for episode in episodes:
             location = episode.location_set.all()[0]
-            diagnosis = episode.diagnosis_set.all()[0]
+            diagnosis = ", ".join(
+                i.condition for i in episode.diagnosis_set.all()
+            )
             demographics = models.Demographics.objects.filter(
                 patient__episode=episode
-            )
-            microbiology_input = models.MicrobiologyInput.objects.filter(
+            ).get()
+            microbiology_inputs = models.MicrobiologyInput.objects.filter(
                 episode__patient__episode=episode
             ).order_by("-when")
             by_ward[location.ward].append({
                 "name": demographics.name,
                 "hospital_number": demographics.hospital_number,
-                "unit/ward": self.get_unit_ward(location),
+                "unit_ward": self.get_unit_ward(location),
                 "diagnosis": diagnosis,
-                "clinical_advice": microbiology_input
+                "clinical_advices": microbiology_inputs
             })
 
         result = OrderedDict()
@@ -166,8 +184,13 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         wards = sorted(wards, key=lambda x: x.split(" "))
 
         for ward in wards:
-            result[ward] = by_ward[ward]
+            if not ward:
+                other = by_ward[ward]
+            else:
+                result[ward] = by_ward[ward]
 
-        ctx["episodes"] = result
+        result["Other"] = other
+
+        ctx["episodes_by_ward"] = result
         return ctx
 
