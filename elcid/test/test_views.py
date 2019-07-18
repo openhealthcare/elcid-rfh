@@ -130,3 +130,23 @@ class WardSortTestCase(OpalTestCase):
         self.assertEqual(
             expected, sorted(wards, key=views.ward_sort_key)
         )
+
+    def test_numerical_ordering(self):
+        wards = [
+            "10 North",
+            "10 East",
+            "11 West",
+            "8 North",
+            "5 South",
+        ]
+
+        expected = [
+            "5 South",
+            "8 North",
+            "10 East",
+            "10 North",
+            "11 West",
+        ]
+        self.assertEqual(
+            expected, sorted(wards, key=views.ward_sort_key)
+        )
