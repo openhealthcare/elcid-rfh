@@ -3,12 +3,12 @@
 {% for ward, episodes in episodes_by_ward.items %}
 <h2>{{ ward }}</h2>
 {% for episode in episodes %}
-<table class="content-offset-below-20 table table-bordered">
+<table class="table table-bordered">
   <tr>
-    <td>
+    <td class="col-xs-4">
       <strong>Name</strong>
     </td>
-    <td>
+    <td class="col-xs-8">
       {{ episode.name }}
     </td>
   </tr>
@@ -92,6 +92,7 @@
   </tr>
   {% endif %}
 </table>
+&nbsp;
 {% endfor %}
 {% endfor %}
 {% endblock %}
