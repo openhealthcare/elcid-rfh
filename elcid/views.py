@@ -15,7 +15,7 @@ from django.views.generic import (
 
 from opal.core import application
 from opal.models import Ward
-from elcid.patient_lists import Renal
+from elcid.patient_lists import Bacteraemia
 from elcid import models
 from elcid.forms import BulkCreateUsersForm
 
@@ -155,7 +155,7 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         all of the clinical advice related to the patients infection service
         """
         ctx = super().get_context_data(*args, **kwargs)
-        episodes = Renal().get_queryset()
+        episodes = Bacteraemia().get_queryset()
         episodes = episodes.prefetch_related(
             "location_set", "diagnosis_set"
         )
