@@ -183,13 +183,17 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         wards = by_ward.keys()
         wards = sorted(wards, key=lambda x: x.split(" "))
 
+        other = None
+
         for ward in wards:
             if not ward:
                 other = by_ward[ward]
             else:
                 result[ward] = by_ward[ward]
 
-        result["Other"] = other
+        # add `other` last to the ordered dict
+        if other:
+            result["Other"] = other
 
         ctx["episodes_by_ward"] = result
         return ctx
