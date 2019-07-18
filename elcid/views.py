@@ -181,7 +181,7 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
 
         result = OrderedDict()
         wards = by_ward.keys()
-        wards = sorted(wards, key=lambda x: x.split(" "))
+        wards = sorted(wards, key=ward_sort_key)
 
         other = None
 
