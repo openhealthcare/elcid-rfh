@@ -44,7 +44,7 @@
 
 <p>
   <b>Examination findings:</b><br />
-  <span ng-bind-html="'{{ object.examination_findings }}'|markdown">
+  <span ng-bind-html="'{{ object.examination_findings|addslashes }}'|markdown">
   </span>
 </p>
 
@@ -53,11 +53,11 @@
 
 <p>
   <b>Discussion:</b>
-  <span ng-bind-html="'{{ object.discussion }}'|markdown"></span>
+  <span ng-bind-html="'{{ object.discussion|addslashes }}'|markdown"></span>
 </p>
 
 <p>
-  <b>Plan:</b><br /><span ng-bind-html="'{{ object.plan }}'|markdown"></span>
+  <b>Plan:</b><br /><span ng-bind-html="'{{ object.plan|addslashes }}'|markdown"></span>
 </p>
 
 {% endblock %}
