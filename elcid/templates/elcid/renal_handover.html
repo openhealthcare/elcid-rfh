@@ -53,23 +53,6 @@
           </h3>
         </div>
       </div>
-
-      {% if clinical_advice.clinical_discussion %}
-      <div class="row">
-        <div class="col-md-12">
-          <strong>Clinical discussion:</strong>
-          {{ clinical_advice.clinical_discussion }}
-        </div>
-      </div>
-      {% endif %}
-      {% if clinical_advice.infection_control %}
-      <div class="row">
-        <div class="col-md-12">
-          <strong>Infection control:</strong>
-          {{ clinical_advice.infection_control }}
-        </div>
-      </div>
-      {% endif %}
       {% if clinical_advice.discussed_with %}
       <div class="row">
         <div class="col-md-12">
@@ -78,11 +61,27 @@
         </div>
       </div>
       {% endif %}
+      {% if clinical_advice.clinical_discussion %}
+      <div class="row">
+        <div class="col-md-12">
+          <strong>Clinical discussion:</strong>
+          <span ng-bind-html="'{{ clinical_advice.clinical_discussion|addslashes }}'|markdown"></span>
+        </div>
+      </div>
+      {% endif %}
+      {% if clinical_advice.infection_control %}
+      <div class="row">
+        <div class="col-md-12">
+          <strong>Infection control:</strong>
+          <span ng-bind-html="'{{ clinical_advice.infection_control|addslashes }}'|markdown"></span>
+        </div>
+      </div>
+      {% endif %}
       {% if clinical_advice.agreed_plan %}
       <div class="row">
         <div class="col-md-12">
           <strong>Agreed plan:</strong>
-          {{ clinical_advice.agreed_plan }}
+          <span ng-bind-html="'{{ clinical_advice.agreed_plan|addslashes }}'|markdown"></span>
         </div>
       </div>
       {% endif %}
