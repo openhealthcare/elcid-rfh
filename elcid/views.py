@@ -137,12 +137,6 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
                 location.ward, location.bed
             )
 
-    def sort_data(self, rows):
-        wards = Ward.objects.exclude(
-            name__iexact="Outpatients"
-        ).order_by("name").values_list("name")
-        wards.append("Outpatients")
-
     def get_context_data(self, *args, **kwargs):
         """
         An ordered dictionary of ward to patient

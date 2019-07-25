@@ -3,7 +3,8 @@
 {% for ward, episodes in episodes_by_ward.items %}
 <h2>{{ ward }}</h2>
 {% for episode in episodes %}
-<table class="table table-bordered">
+{# we need to set width in html so cut and paste to word works #}
+<table width="100%" class="table table-bordered">
   <tr>
     <td class="col-xs-4">
       <strong>Name</strong>
