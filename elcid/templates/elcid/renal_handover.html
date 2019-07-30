@@ -142,10 +142,10 @@
 
           {% if line.insertion_datetime %}
             Inserted: <span class="nowrap">{{ line.insertion_datetime | date }}
-          {% endif %}
-
           {% if line.line_type == 'Peripheral cannula' %}
             {{ line.insertion_datetime | date:"GH" }}
+          {% endif %}
+          <br />
           {% endif %}
 
           {% if not line.removal_datetime %}
@@ -155,7 +155,6 @@
             {% endif %}
             <br />
           {% endif %}
-          <br />
           {% if line.complications %}
             Complications: {{ line.complications }}
           {% endif %}
