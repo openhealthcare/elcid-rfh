@@ -142,10 +142,10 @@
 
           {% if line.insertion_datetime %}
             Inserted: <span class="nowrap">{{ line.insertion_datetime | date }}
-          {% endif %}
-
           {% if line.line_type == 'Peripheral cannula' %}
             {{ line.insertion_datetime | date:"GH" }}
+          {% endif %}
+          <br />
           {% endif %}
 
           {% if not line.removal_datetime %}
@@ -155,7 +155,6 @@
             {% endif %}
             <br />
           {% endif %}
-          <br />
           {% if line.complications %}
             Complications: {{ line.complications }}
           {% endif %}
@@ -187,7 +186,7 @@
       <div class="row">
         <div class="col-md-12">
           <strong>Discussed with:</strong>
-          {{ clinical_advice.discussed_with }}
+          {{ clinical_advice.discussed_with.strip }}
         </div>
       </div>
       {% endif %}
@@ -195,7 +194,7 @@
       <div class="row">
         <div class="col-md-12">
           <strong>Clinical discussion:</strong>
-          <span ng-bind-html="'{{ clinical_advice.clinical_discussion|addslashes }}'|markdown"></span>
+          <span ng-bind-html="'{{ clinical_advice.clinical_discussion.strip|addslashes }}'|markdown"></span>
         </div>
       </div>
       {% endif %}
@@ -203,7 +202,7 @@
       <div class="row">
         <div class="col-md-12">
           <strong>Infection control:</strong>
-          <span ng-bind-html="'{{ clinical_advice.infection_control|addslashes }}'|markdown"></span>
+          <span ng-bind-html="'{{ clinical_advice.infection_control.strip|addslashes }}'|markdown"></span>
         </div>
       </div>
       {% endif %}
@@ -211,7 +210,7 @@
       <div class="row">
         <div class="col-md-12">
           <strong>Agreed plan:</strong>
-          <span ng-bind-html="'{{ clinical_advice.agreed_plan|addslashes }}'|markdown"></span>
+          <span ng-bind-html="'{{ clinical_advice.agreed_plan.strip|addslashes }}'|markdown"></span>
         </div>
       </div>
       {% endif %}
