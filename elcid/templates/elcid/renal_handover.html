@@ -34,12 +34,142 @@
       <strong>Issue</strong>
     </td>
     <td>
+      {% if episode.primary_diagnosis %}
+      <strong>{{ episode.primary_diagnosis }}{% if episode.diagnosis %},{% endif %}</strong>
+      {% endif %}
       {{ episode.diagnosis }}
     </td>
   </tr>
-  {% if episode.clinical_advices %}
   <tr>
     <td colspan="2">
+      {% if episode.blood_culture_sets %}
+      <h3>Blood Cultures</h3>
+      {% endif %}
+      {% for blood_culture_set in episode.blood_culture_sets %}
+      <strong>{{ blood_culture_set.date_ordered | date }}</strong>
+      <br />
+      {% if blood_culture_set.source %}
+      Source: {{ blood_culture_set.source }}
+      <br />
+      <br />
+      {% endif %}
+      {% for isolate in blood_culture_set.isolates.all %}
+      {% if isolate.aerobic_or_anaerobic %}
+        <strong>
+          {{ isolate.aerobic_or_anaerobic }}
+        </strong>
+        <br />
+      {% endif %}
+      {% if isolate.date_positive %}
+        Positive: {{ isolate.date_positive | date }}
+        <br />
+      {% endif %}
+      {% if isolate.gram_stain %}
+        Gram Stain: {{ isolate.gram_stain }}
+        <br />
+      {% endif %}
+      {% if isolate.quick_fish %}
+        QuickFISH: {{ isolate.quick_fish }}
+        <br />
+      {% endif %}
+
+      {% if isolate.gpc_staph %}
+        QuickFISH: {{ isolate.gpc_staph }}
+        <br />
+      {% endif %}
+
+      {% if isolate.gpc_strep %}
+        QuickFISH: {{ isolate.gpc_strep }}
+        <br />
+      {% endif %}
+
+      {% if isolate.sepsityper_organism %}
+        Sepsityper organism: {{ isolate.sepsityper_organism }}
+        <br />
+      {% endif %}
+
+      {% if isolate.organism %}
+        Organism: {{ isolate.organism }}
+        {% if isolate.sensitivities.all %}
+        <div>
+          Sensitive:
+          {% for sensitiviy in isolate.sensitivities.all %}
+           {{ sensitiviy }}
+          {% if not forloop.last %},{% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if isolate.resistance.all %}
+        <div>
+          Resistant:
+          {% for resistance in isolate.resistance.all %}
+           {{ resistance }}
+          {% if not forloop.last %},{% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+        <br />
+      {% endif %}
+      {{ isolate.notes }}
+
+      {% endfor %}
+      <br />
+      {% endfor %}
+
+
+      {% if episode.lines %}
+      <h3>Line</h3>
+      {% endif %}
+      {% for line in episode.lines %}
+      <div class="row">
+        <div class="col-md-12">
+          {{ line.line_type }}, {{ line.site }}
+          {% if line.external_length %}
+          ({{ line.external_length }}cm)
+          {% endif %}
+          <br />
+          {% if line.button_hole %}
+          Button Hole <br />
+          {% endif %}
+          {% if line.fistula %}
+          Fistula <br />
+          {% endif %}
+          {% if line.graft %}
+          Graft <br />
+          {% endif %}
+          {% if line.tunnelled_or_temp %}
+          {{ line.tunnelled_or_temp }}<br />
+          {% endif %}
+
+          {% if line.insertion_datetime %}
+            Inserted: <span class="nowrap">{{ line.insertion_datetime | date }}
+          {% endif %}
+
+          {% if line.line_type == 'Peripheral cannula' %}
+            {{ line.insertion_datetime | date:"GH" }}
+          {% endif %}
+
+          {% if not line.removal_datetime %}
+            Removed {{ line.removal_datetime | date }}
+            {% if line.removal_reason %}
+            due to {{ line.removal_reason }}
+            {% endif %}
+            <br />
+          {% endif %}
+          <br />
+          {% if line.complications %}
+            Complications: {{ line.complications }}
+          {% endif %}
+        </div>
+      </div>
+      <br />
+      {% endfor %}
+
+
+
+      {% if episode.clinical_advices %}
+      <h3>Clinical Advice</h3>
+      {% endif %}
       {% for clinical_advice in episode.clinical_advices %}
       <div class="row">
         <div class="col-md-12">
@@ -90,7 +220,6 @@
       {% endfor %}
     </td>
   </tr>
-  {% endif %}
 </table>
 &nbsp;
 {% endfor %}

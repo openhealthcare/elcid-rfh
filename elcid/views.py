@@ -137,12 +137,6 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
                 location.ward, location.bed
             )
 
-    def sort_data(self, rows):
-        wards = Ward.objects.exclude(
-            name__iexact="Outpatients"
-        ).order_by("name").values_list("name")
-        wards.append("Outpatients")
-
     def get_context_data(self, *args, **kwargs):
         """
         An ordered dictionary of ward to patient
@@ -156,11 +150,21 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         """
         ctx = super().get_context_data(*args, **kwargs)
         episodes = Bacteraemia().get_queryset()
+        episodes = episodes.order_by("-start")
         episodes = episodes.prefetch_related(
             "location_set", "diagnosis_set"
         )
         by_ward = defaultdict(list)
+
+        # We don't want to show duplicate episodes in the case of
+        # multiple episodes of the same patient added to the renal list.
+        #
+        # So we just show the most recent episode per patient.
+        patient_ids = set()
         for episode in episodes:
+            if episode.patient_id in patient_ids:
+                continue
+            patient_ids.add(episode.patient_id)
             location = episode.location_set.all()[0]
             diagnosis = ", ".join(
                 i.condition for i in episode.diagnosis_set.all()
@@ -171,12 +175,16 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
             microbiology_inputs = models.MicrobiologyInput.objects.filter(
                 episode__patient__episode=episode
             ).order_by("-when")
+            primary_diagnosis = episode.primarydiagnosis_set.get().condition
             by_ward[location.ward].append({
                 "name": demographics.name,
                 "hospital_number": demographics.hospital_number,
                 "unit_ward": self.get_unit_ward(location),
+                "primary_diagnosis": primary_diagnosis,
                 "diagnosis": diagnosis,
-                "clinical_advices": microbiology_inputs
+                "lines": episode.line_set.all(),
+                "clinical_advices": microbiology_inputs,
+                "blood_culture_sets": episode.patient.bloodcultureset_set.all()
             })
 
         result = OrderedDict()

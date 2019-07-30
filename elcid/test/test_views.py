@@ -1,8 +1,10 @@
 """
 Unittests for the UCLH eLCID OPAL implementation.
 """
+import datetime
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils import timezone
 import ffs
 
 from opal.core.test import OpalTestCase
@@ -149,4 +151,135 @@ class WardSortTestCase(OpalTestCase):
         ]
         self.assertEqual(
             expected, sorted(wards, key=views.ward_sort_key)
+        )
+
+
+class RenalHandoverTestCase(OpalTestCase):
+    def test_vanilla(self):
+        patient_1, episode_1 = self.new_patient_and_episode_please()
+        episode_1.set_tag_names(["renal"], None)
+        patient_1.demographics_set.update(
+            first_name="Wilma",
+            surname="Flintstone",
+            hospital_number="123"
+        )
+        location = episode_1.location_set.get()
+        location.ward = "10 East"
+        location.bed = "1"
+        location.save()
+        microinput = episode_1.microbiologyinput_set.create(
+            clinical_discussion=["some_discussion"]
+        )
+        diagnosis = episode_1.diagnosis_set.create()
+        diagnosis.condition = "Cough"
+        diagnosis.save()
+        ctx = views.RenalHandover().get_context_data()
+        ctx["episodes_by_ward"]["10 East"][0]['clinical_advices'] = list(
+            ctx["episodes_by_ward"]["10 East"][0]['clinical_advices']
+        )
+        self.assertEqual(
+            ctx["episodes_by_ward"]["10 East"], [{
+                'name': 'Wilma Flintstone',
+                'hospital_number': '123',
+                'diagnosis': 'Cough',
+                'clinical_advices': [microinput],
+                'unit_ward': '10 East/1'
+            }]
+        )
+
+    def test_aggregate_by_ward(self):
+        patient_1, episode_1 = self.new_patient_and_episode_please()
+        patient_1.demographics_set.update(
+            first_name="Wilma",
+            surname="Flintstone"
+        )
+        patient_2, episode_2 = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(
+            first_name="Betty",
+            surname="Rubble"
+        )
+        episode_1.set_tag_names(["renal"], None)
+        episode_2.set_tag_names(["renal"], None)
+
+        location_1 = episode_1.location_set.get()
+        location_1.ward = "10 East"
+        location_1.bed = "1"
+        location_1.save()
+        location_2 = episode_2.location_set.get()
+        location_2.ward = "10 East"
+        location_2.bed = "2"
+        location_2.save()
+        ctx = views.RenalHandover().get_context_data()
+        self.assertEqual(len(ctx["episodes_by_ward"]["10 East"]), 2)
+
+    def test_split_by_ward(self):
+        patient_1, episode_1 = self.new_patient_and_episode_please()
+        patient_1.demographics_set.update(
+            first_name="Wilma",
+            surname="Flintstone"
+        )
+        patient_2, episode_2 = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(
+            first_name="Betty",
+            surname="Rubble"
+        )
+        episode_1.set_tag_names(["renal"], None)
+        episode_2.set_tag_names(["renal"], None)
+
+        location_1 = episode_1.location_set.get()
+        location_1.ward = "10 East"
+        location_1.bed = "1"
+        location_1.save()
+        location_2 = episode_2.location_set.get()
+        location_2.ward = "10 West"
+        location_2.bed = "2"
+        location_2.save()
+        ctx = views.RenalHandover().get_context_data()
+        self.assertEqual(len(ctx["episodes_by_ward"]["10 East"]), 1)
+        self.assertEqual(len(ctx["episodes_by_ward"]["10 West"]), 1)
+
+    def test_aggregate_clinical_advice(self):
+        patient, episode_1 = self.new_patient_and_episode_please()
+
+        episode_2 = patient.episode_set.create()
+        episode_3 = patient.episode_set.create()
+
+        location = episode_2.location_set.get()
+        location.ward = "10 East"
+        location.bed = "1"
+        location.save()
+
+        episode_2.set_tag_names(["renal"], None)
+
+        first = timezone.now() - datetime.timedelta(4)
+        second = timezone.now() - datetime.timedelta(2)
+        third = timezone.now() - datetime.timedelta(1)
+
+        episode_1.microbiologyinput_set.create(
+            clinical_discussion="second",
+            when=second
+        )
+
+        episode_2.microbiologyinput_set.create(
+            clinical_discussion="first",
+            when=first
+        )
+
+        episode_3.microbiologyinput_set.create(
+            clinical_discussion="third",
+            when=third
+        )
+
+        ctx = views.RenalHandover().get_context_data()
+        self.assertEqual(
+            len(ctx["episodes_by_ward"]["10 East"]), 1
+        )
+        micro_inputs = ctx["episodes_by_ward"]["10 East"][0][
+            "clinical_advices"
+        ]
+        discussion = list(micro_inputs.values_list(
+            "clinical_discussion", flat=True
+        ))
+        self.assertEqual(
+            discussion, ["third", "second", "first"]
         )
