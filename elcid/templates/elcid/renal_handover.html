@@ -171,21 +171,21 @@
       {% for clinical_advice in episode.clinical_advices %}
       <div class="row">
         <div class="col-md-12">
-          <h3>
+          <strong>
             {% if clinical_advice.when %}
-              {{ clinical_advice.when }}
+              {{ clinical_advice.when | date:"DATETIME_FORMAT" }}
             {% endif %}
             {{ clinical_advice.initials }}
             {% if clinical_advice.reason_for_interaction %}
             {{ reason_for_interaction }}
             {% endif %}
-          </h3>
+          </strong>
         </div>
       </div>
       {% if clinical_advice.discussed_with %}
       <div class="row">
         <div class="col-md-12">
-          <strong>Discussed with:</strong>
+          Discussed with:
           {{ clinical_advice.discussed_with.strip }}
         </div>
       </div>
@@ -193,7 +193,7 @@
       {% if clinical_advice.clinical_discussion %}
       <div class="row">
         <div class="col-md-12">
-          <strong>Clinical discussion:</strong>
+          Clinical discussion:
           <span ng-bind-html="'{{ clinical_advice.clinical_discussion.strip|addslashes }}'|markdown"></span>
         </div>
       </div>
@@ -201,7 +201,7 @@
       {% if clinical_advice.infection_control %}
       <div class="row">
         <div class="col-md-12">
-          <strong>Infection control:</strong>
+          Infection control:
           <span ng-bind-html="'{{ clinical_advice.infection_control.strip|addslashes }}'|markdown"></span>
         </div>
       </div>
@@ -209,7 +209,7 @@
       {% if clinical_advice.agreed_plan %}
       <div class="row">
         <div class="col-md-12">
-          <strong>Agreed plan:</strong>
+          Agreed plan:
           <span ng-bind-html="'{{ clinical_advice.agreed_plan.strip|addslashes }}'|markdown"></span>
         </div>
       </div>
