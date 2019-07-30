@@ -174,7 +174,7 @@
             {% if clinical_advice.when %}
               {{ clinical_advice.when | date:"DATETIME_FORMAT" }}
             {% endif %}
-            {{ clinical_advice.initials }}
+            {{ clinical_advice.initials }},
             {% if clinical_advice.reason_for_interaction %}
             {{ clinical_advice.reason_for_interaction }}
             {% endif %}
