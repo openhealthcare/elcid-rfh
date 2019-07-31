@@ -173,17 +173,38 @@ class RenalHandoverTestCase(OpalTestCase):
         diagnosis = episode_1.diagnosis_set.create()
         diagnosis.condition = "Cough"
         diagnosis.save()
+
+        primary_diagnosis = episode_1.primarydiagnosis_set.get()
+        primary_diagnosis.condition = "Fever"
+        primary_diagnosis.save()
+
+        line = episode_1.line_set.create()
+        line.line_type = "Hickman"
+        line.save()
+
+        bcs = episode_1.patient.bloodcultureset_set.create(lab_number="123")
+
         ctx = views.RenalHandover().get_context_data()
         ctx["episodes_by_ward"]["10 East"][0]['clinical_advices'] = list(
             ctx["episodes_by_ward"]["10 East"][0]['clinical_advices']
         )
+        ctx["episodes_by_ward"]["10 East"][0]['lines'] = list(
+            ctx["episodes_by_ward"]["10 East"][0]['lines']
+        )
+        ctx["episodes_by_ward"]["10 East"][0]['blood_culture_sets'] = list(
+            ctx["episodes_by_ward"]["10 East"][0]['blood_culture_sets']
+        )
+
         self.assertEqual(
             ctx["episodes_by_ward"]["10 East"], [{
                 'name': 'Wilma Flintstone',
                 'hospital_number': '123',
                 'diagnosis': 'Cough',
                 'clinical_advices': [microinput],
-                'unit_ward': '10 East/1'
+                'unit_ward': '10 East/1',
+                'primary_diagnosis': 'Fever',
+                'lines': [line],
+                "blood_culture_sets": [bcs]
             }]
         )
 
@@ -282,4 +303,49 @@ class RenalHandoverTestCase(OpalTestCase):
         ))
         self.assertEqual(
             discussion, ["third", "second", "first"]
+        )
+
+    def test_other(self):
+        # if the patient has no ward we should just put them in `other`
+        patient_1, episode_1 = self.new_patient_and_episode_please()
+        patient_1.demographics_set.update(
+            first_name="Wilma",
+            surname="Flintstone"
+        )
+        episode_1.set_tag_names(["renal"], None)
+
+        location_1 = episode_1.location_set.get()
+        location_1.bed = "1"
+        location_1.save()
+        ctx = views.RenalHandover().get_context_data()
+        self.assertEqual(len(ctx["episodes_by_ward"]["Other"]), 1)
+        self.assertEqual(len(ctx["episodes_by_ward"]), 1)
+
+    def test_single_patient_with_multiple_episodes(self):
+        # if the patient has multiple renal episodes we should just use
+        # the most recent
+        # if the patient has no ward we should just put them in `other`
+        patient_1, episode_1 = self.new_patient_and_episode_please()
+        episode_1.start = timezone.now() - datetime.timedelta(2)
+        episode_2 = patient_1.episode_set.create(
+            start=timezone.now() - datetime.timedelta(1)
+        )
+
+        primary_diagnosis = episode_1.primarydiagnosis_set.get()
+        primary_diagnosis.condition = "Should not appear"
+        primary_diagnosis.save()
+
+        primary_diagnosis = episode_2.primarydiagnosis_set.get()
+        primary_diagnosis.condition = "Should appear"
+        primary_diagnosis.save()
+
+        episode_1.set_tag_names(["renal"], None)
+        episode_2.set_tag_names(["renal"], None)
+
+        ctx = views.RenalHandover().get_context_data()
+        self.assertEqual(len(ctx["episodes_by_ward"]), 1)
+        self.assertEqual(len(ctx["episodes_by_ward"]["Other"]), 1)
+        self.assertEqual(
+            ctx["episodes_by_ward"]["Other"][0]["primary_diagnosis"],
+            "Should appear"
         )
