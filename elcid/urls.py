@@ -18,6 +18,11 @@ urlpatterns = [
     url(r'stories/$', views.TemplateView.as_view(template_name='stories.html')),
     url(r'elcid/v0.1/', include(api.elcid_router.urls)),
     url(r'labtest/v0.1/', include(api.lab_test_router.urls)),
+    url(
+        r'^elcid/renal_handover',
+        views.RenalHandover.as_view(),
+        name="renal_handover"
+    )
 ]
 
 urlpatterns += opatterns

@@ -31,10 +31,14 @@
                   {% endfor %}
                 </ul>
               </div>
+              <a ng-show="currentTag === 'renal'" href="/letters/#{% url 'renal_handover' %}" target="_blank" class="btn btn-secondary pull-left left-offset-10">
+                Renal handover list
+              </a>
               <div class="btn-group pull-right">
                   <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
                   <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
               </div>
+
             </h1>
           </div>
           </form>
