@@ -1,8 +1,8 @@
 {% extends 'letters/base.html' %}
 {% block letter_content %}
-{% for ward, episodes in episodes_by_ward.items %}
-<h2>{{ ward }}</h2>
-{% for episode in episodes %}
+{% for ward_and_episode in ward_and_episodes %}
+<h2>{{ ward_and_episode.ward }}</h2>
+{% for episode in ward_and_episode.episodes %}
 {# we need to set width in html so cut and paste to word works #}
 <table width="100%" class="table table-bordered">
   <tr>

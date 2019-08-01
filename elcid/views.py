@@ -122,7 +122,8 @@ def ward_sort_key(ward):
     then with the wards that are strings.
     e.g. ICU
     """
-
+    if ward == 'Other':
+        return (1000, 0, 0)
     start = ward[:2].strip()
     rest = ward[2:]
     return (len(start), start, rest)
@@ -176,7 +177,11 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
                 episode__patient__episode=episode
             ).order_by("-when")
             primary_diagnosis = episode.primarydiagnosis_set.get().condition
-            by_ward[location.ward].append({
+            ward = location.ward
+            if not ward:
+                ward = "Other"
+
+            by_ward[ward].append({
                 "name": demographics.name,
                 "hospital_number": demographics.hospital_number,
                 "unit_ward": self.get_unit_ward(location),
@@ -187,22 +192,8 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
                 "blood_culture_sets": episode.patient.bloodcultureset_set.all()
             })
 
-        result = OrderedDict()
-        wards = by_ward.keys()
-        wards = sorted(wards, key=ward_sort_key)
-
-        other = None
-
-        for ward in wards:
-            if not ward:
-                other = by_ward[ward]
-            else:
-                result[ward] = by_ward[ward]
-
-        # add `other` last to the ordered dict
-        if other:
-            result["Other"] = other
-
-        ctx["episodes_by_ward"] = result
+        ward_names = sorted(by_ward.keys())
+        result = [{'ward': w, 'episodes': by_ward[w]} for w in ward_names]
+        ctx["ward_and_episodes"] = result
         return ctx
 

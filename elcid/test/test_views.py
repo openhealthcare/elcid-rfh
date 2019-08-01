@@ -92,6 +92,7 @@ class WardSortTestCase(OpalTestCase):
             "ICU 4 East",
             "9 East",
             "8 South",
+            "Other",
             "9 North",
             "ICU 4 West",
             "12 West",
@@ -108,6 +109,7 @@ class WardSortTestCase(OpalTestCase):
             "ICU 4 West",
             "Outpatients",
             "PITU",
+            "Other"
         ]
         self.assertEqual(
             expected, sorted(wards, key=views.ward_sort_key)
@@ -128,26 +130,6 @@ class WardSortTestCase(OpalTestCase):
             "8 West",
             "9 East",
             "9 North",
-        ]
-        self.assertEqual(
-            expected, sorted(wards, key=views.ward_sort_key)
-        )
-
-    def test_numerical_ordering(self):
-        wards = [
-            "10 North",
-            "10 East",
-            "11 West",
-            "8 North",
-            "5 South",
-        ]
-
-        expected = [
-            "5 South",
-            "8 North",
-            "10 East",
-            "10 North",
-            "11 West",
         ]
         self.assertEqual(
             expected, sorted(wards, key=views.ward_sort_key)
@@ -185,18 +167,17 @@ class RenalHandoverTestCase(OpalTestCase):
         bcs = episode_1.patient.bloodcultureset_set.create(lab_number="123")
 
         ctx = views.RenalHandover().get_context_data()
-        ctx["episodes_by_ward"]["10 East"][0]['clinical_advices'] = list(
-            ctx["episodes_by_ward"]["10 East"][0]['clinical_advices']
-        )
-        ctx["episodes_by_ward"]["10 East"][0]['lines'] = list(
-            ctx["episodes_by_ward"]["10 East"][0]['lines']
-        )
-        ctx["episodes_by_ward"]["10 East"][0]['blood_culture_sets'] = list(
-            ctx["episodes_by_ward"]["10 East"][0]['blood_culture_sets']
+        episode = ctx["ward_and_episodes"][0]["episodes"][0]
+        episode['clinical_advices'] = list(episode['clinical_advices'])
+        episode['lines'] = list(episode['lines'])
+        episode['blood_culture_sets'] = list(episode['blood_culture_sets'])
+
+        self.assertEqual(
+            ctx["ward_and_episodes"][0]["ward"], "10 East"
         )
 
         self.assertEqual(
-            ctx["episodes_by_ward"]["10 East"], [{
+            ctx["ward_and_episodes"][0]["episodes"], [{
                 'name': 'Wilma Flintstone',
                 'hospital_number': '123',
                 'diagnosis': 'Cough',
@@ -231,7 +212,13 @@ class RenalHandoverTestCase(OpalTestCase):
         location_2.bed = "2"
         location_2.save()
         ctx = views.RenalHandover().get_context_data()
-        self.assertEqual(len(ctx["episodes_by_ward"]["10 East"]), 2)
+        result = ctx["ward_and_episodes"][0]
+        self.assertEqual(
+            result["ward"], "10 East"
+        )
+        self.assertEqual(
+            len(result["episodes"]), 2
+        )
 
     def test_split_by_ward(self):
         patient_1, episode_1 = self.new_patient_and_episode_please()
@@ -256,8 +243,20 @@ class RenalHandoverTestCase(OpalTestCase):
         location_2.bed = "2"
         location_2.save()
         ctx = views.RenalHandover().get_context_data()
-        self.assertEqual(len(ctx["episodes_by_ward"]["10 East"]), 1)
-        self.assertEqual(len(ctx["episodes_by_ward"]["10 West"]), 1)
+        east_10 = ctx["ward_and_episodes"][0]
+        self.assertEqual(
+            east_10["ward"], "10 East"
+        )
+        self.assertEqual(
+            len(east_10["episodes"]), 1
+        )
+        west_10 = ctx["ward_and_episodes"][1]
+        self.assertEqual(
+            west_10["ward"], "10 West"
+        )
+        self.assertEqual(
+            len(west_10["episodes"]), 1
+        )
 
     def test_aggregate_clinical_advice(self):
         patient, episode_1 = self.new_patient_and_episode_please()
@@ -292,10 +291,15 @@ class RenalHandoverTestCase(OpalTestCase):
         )
 
         ctx = views.RenalHandover().get_context_data()
+
         self.assertEqual(
-            len(ctx["episodes_by_ward"]["10 East"]), 1
+            len(ctx["ward_and_episodes"]), 1
         )
-        micro_inputs = ctx["episodes_by_ward"]["10 East"][0][
+
+        self.assertEqual(
+            len(ctx["ward_and_episodes"][0]["episodes"]), 1
+        )
+        micro_inputs = ctx["ward_and_episodes"][0]["episodes"][0][
             "clinical_advices"
         ]
         discussion = list(micro_inputs.values_list(
@@ -318,8 +322,8 @@ class RenalHandoverTestCase(OpalTestCase):
         location_1.bed = "1"
         location_1.save()
         ctx = views.RenalHandover().get_context_data()
-        self.assertEqual(len(ctx["episodes_by_ward"]["Other"]), 1)
-        self.assertEqual(len(ctx["episodes_by_ward"]), 1)
+        self.assertEqual(ctx["ward_and_episodes"][0]["ward"], "Other")
+        self.assertEqual(len(ctx["ward_and_episodes"][0]["episodes"]), 1)
 
     def test_single_patient_with_multiple_episodes(self):
         # if the patient has multiple renal episodes we should just use
@@ -343,9 +347,12 @@ class RenalHandoverTestCase(OpalTestCase):
         episode_2.set_tag_names(["renal"], None)
 
         ctx = views.RenalHandover().get_context_data()
-        self.assertEqual(len(ctx["episodes_by_ward"]), 1)
-        self.assertEqual(len(ctx["episodes_by_ward"]["Other"]), 1)
+        self.assertEqual(len(ctx["ward_and_episodes"][0]["episodes"]), 1)
+
+        self.assertEqual(len(ctx["ward_and_episodes"]), 1)
+        self.assertEqual(ctx["ward_and_episodes"][0]["ward"], "Other")
+        self.assertEqual(len(ctx["ward_and_episodes"][0]["episodes"]), 1)
         self.assertEqual(
-            ctx["episodes_by_ward"]["Other"][0]["primary_diagnosis"],
+            ctx["ward_and_episodes"][0]["episodes"][0]["primary_diagnosis"],
             "Should appear"
         )
