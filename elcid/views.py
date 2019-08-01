@@ -148,14 +148,15 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         their name
         their hospital number
         their unit/ward
-        that episodes diagnosis
+        the episodes diagnosis and primary diagnosis
+        the episodes lines and blooc cultures
         all of the clinical advice related to the patients infection service
         """
         ctx = super().get_context_data(*args, **kwargs)
         episodes = Renal().get_queryset().order_by("-episode_id")
         episodes = episodes.order_by("-start")
         episodes = episodes.prefetch_related(
-            "location_set", "diagnosis_set"
+            "location_set", "diagnosis_set", "primarydiagnosis_set", "line_set"
         )
         by_ward = defaultdict(list)
 
@@ -175,10 +176,15 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
             demographics = models.Demographics.objects.filter(
                 patient__episode=episode
             ).get()
+
+            # we want all micro biology input for that patient
+            # regardless as to whether it is on that specific episode
+            # this is because from the user perspective micro input
+            # is shown which ever episode the medical professional is viewing
             microbiology_inputs = models.MicrobiologyInput.objects.filter(
-                episode__patient__episode=episode
+                episode__patient_id=episode.patient_id
             ).order_by("-when")
-            primary_diagnosis = episode.primarydiagnosis_set.get().condition
+            primary_diagnosis = episode.primarydiagnosis_set.all()[0].condition
             ward = location.ward
             if not ward:
                 ward = "Other"
