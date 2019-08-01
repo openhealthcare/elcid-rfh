@@ -137,6 +137,8 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
             return "{}/{}".format(
                 location.ward, location.bed
             )
+        else:
+            return location.ward
 
     def get_context_data(self, *args, **kwargs):
         """
