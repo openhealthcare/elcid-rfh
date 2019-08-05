@@ -86,7 +86,7 @@ def _initial_load():
 
     for iterator, patient in enumerate(patients.all()):
         logger.info("running {}/{}".format(iterator+1, total))
-        load_patient(patient, async=False)
+        load_patient(patient, run_async=False)
 
 
 def log_errors(name):
@@ -127,7 +127,7 @@ def load_demographics(hospital_number):
     return result
 
 
-def load_patient(patient, async=None):
+def load_patient(patient, run_async=None):
     """
         Load all the things for a patient.
 
@@ -139,14 +139,14 @@ def load_patient(patient, async=None):
         it will default to settings.ASYNC_API.
     """
     logger.info("starting to load patient {}".format(patient.id))
-    if async is None:
-        async = settings.ASYNC_API
+    if run_async is None:
+        run_async = settings.ASYNC_API
 
     patient_load = models.InitialPatientLoad(
         patient=patient,
     )
     patient_load.start()
-    if async:
+    if run_async:
         logger.info("loading patient {} asynchronously".format(patient.id))
         async_task(patient, patient_load)
     else:
