@@ -91,6 +91,7 @@ class FabException(Exception):
 class Env(object):
     def __init__(self, branch):
         self.branch = branch
+        self.release_backup_name = self.get_release_backup_name()
 
     @property
     def project_directory(self):
@@ -135,14 +136,12 @@ class Env(object):
 
     @property
     def backup_name(self):
-        now = datetime.datetime.now()
         return BACKUP_NAME.format(
             backup_dir=BACKUP_DIR,
             backup_file_name=self.backup_file_name
         )
 
-    @property
-    def release_backup_name(self):
+    def get_release_backup_name(self):
         return RELEASE_BACKUP_NAME.format(
             backup_dir=BACKUP_DIR,
             dt=datetime.datetime.now().strftime("%d.%m.%Y.%H.%M"),
