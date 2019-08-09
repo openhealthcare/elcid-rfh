@@ -219,8 +219,8 @@ load".format(time_ago.seconds)
                     )
                 )
 
-    one_hour_ago = timezone.now() - datetime.timedelta(seconds=60 * 60)
-    if models.BatchPatientLoad.objects.last().stopped < one_hour_ago:
+    three_hours_ago = timezone.now() - datetime.timedelta(seconds=60 * 180)
+    if models.BatchPatientLoad.objects.last().stopped < three_hours_ago:
         raise BatchLoadError("Last load has not run since {}".format(
             models.BatchPatientLoad.objects.last().stopped
         ))
