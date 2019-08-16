@@ -624,7 +624,7 @@ def create_private_settings():
 
 
 def get_python_3():
-    return local("which python3", capture=True)
+    return local("which python3.5", capture=True)
 
 
 def _deploy(new_branch, backup_name=None, remove_existing=False):
@@ -639,6 +639,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     env.host_string = private_settings["host_string"]
 
     kill_running_processes()
+    
+    install_apt_dependencies()
 
     # Setup environment
     pip_create_virtual_env(
@@ -649,7 +651,6 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     pip_set_project_directory(new_env)
     pip_create_deployment_env(new_branch)
 
-    install_apt_dependencies()
     pip_install_requirements(new_env, private_settings["proxy"])
 
     # create a database
@@ -754,7 +755,8 @@ def roll_back_prod(branch_name):
 def install_apt_dependencies():
     dependences = [
         ("smbclient", "2:4.3.11+dfsg-0ubuntu0.14.04.19"),
-        ("python3-dev", "3.4.0-0ubuntu2"),
+        ("python3.5", "3.5.2-2ubuntu0~16.04.4~14.04.1"),
+        ("python3.5-dev", "3.5.2-2ubuntu0~16.04.4~14.04.1"),
     ]
 
     for dependency in dependences:
