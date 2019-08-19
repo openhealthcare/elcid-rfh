@@ -85,13 +85,13 @@ class _InitialLoadTestCase(ApiTestCase):
                 call_args_list[0][0], (self.patient_1,)
             )
             self.assertEqual(
-                call_args_list[0][1], dict(async=False)
+                call_args_list[0][1], dict(run_async=False)
             )
             self.assertEqual(
                 call_args_list[1][0], (self.patient_2,)
             )
             self.assertEqual(
-                call_args_list[1][1], dict(async=False)
+                call_args_list[1][1], dict(run_async=False)
             )
             call_args_list = info.call_args_list
             self.assertEqual(
@@ -217,7 +217,7 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
     def test_load_patient_arg_override_settings_True(
         self, load_lab_tests, async
     ):
-        loader.load_patient(self.patient, async=False)
+        loader.load_patient(self.patient, run_async=False)
         self.assertTrue(load_lab_tests.called)
         self.assertFalse(async.called)
 
@@ -225,7 +225,7 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
     def test_load_patient_arg_override_settings_False(
         self, load_lab_tests, async
     ):
-        loader.load_patient(self.patient, async=True)
+        loader.load_patient(self.patient, run_async=True)
         self.assertFalse(load_lab_tests.called)
         self.assertTrue(async.called)
 
@@ -248,7 +248,7 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
     def test_load_patient_async(
         self, load_lab_tests, async
     ):
-        loader.load_patient(self.patient, async=True)
+        loader.load_patient(self.patient, run_async=True)
         self.assertFalse(load_lab_tests.called)
         self.assertTrue(async.called)
         call_args_list = async.call_args_list
@@ -263,7 +263,7 @@ class LoadLabTestsForPatientTestCase(ApiTestCase):
     def test_load_patient_async_false(
         self, load_lab_tests, async
     ):
-        loader.load_patient(self.patient, async=False)
+        loader.load_patient(self.patient, run_async=False)
         self.assertFalse(async.called)
         self.assertTrue(load_lab_tests.called)
         call_args_list = load_lab_tests.call_args_list
