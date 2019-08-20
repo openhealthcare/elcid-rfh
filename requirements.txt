@@ -10,12 +10,12 @@ cffi==1.7.0
 coverage==3.6
 dj-database-url==0.2.1
 gunicorn==0.17.4
-psycopg2==2.7
+psycopg2==2.8.3
 dj-static==0.0.6
 django-axes==1.7.0
 django-debug-toolbar==1.2.1
 mock==1.0.1
-requests==2.20.1
+requests==2.22.0
 python-dateutil==2.7.5
 celery==3.1.25
 django-celery==3.2.2
@@ -32,7 +32,7 @@ Fabric==1.14.0
 
 # intrahospital_api
 python-tds==1.8.2
+opal==v0.17.0
 
 # Open Health Care repositories on GitHub
--e git+https://github.com/openhealthcare/opal.git@v0.16.0#egg=opal
 -e git+https://github.com/openhealthcare/opal-observations.git@v0.5.0#egg=opal_observations
