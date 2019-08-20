@@ -183,7 +183,7 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
             # is shown which ever episode the medical professional is viewing
             microbiology_inputs = models.MicrobiologyInput.objects.filter(
                 episode__patient_id=episode.patient_id
-            ).order_by("-when")
+            ).order_by("when")
             primary_diagnosis = episode.primarydiagnosis_set.all()[0].condition
             ward = location.ward
             if not ward:

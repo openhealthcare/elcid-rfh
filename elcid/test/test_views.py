@@ -306,7 +306,7 @@ class RenalHandoverTestCase(OpalTestCase):
             "clinical_discussion", flat=True
         ))
         self.assertEqual(
-            discussion, ["third", "second", "first"]
+            discussion, ["first", "second", "third"]
         )
 
     def test_other(self):
