@@ -130,16 +130,17 @@ class MalboroughClinic(RfhPatientList):
 
 
 class Renal(RfhPatientList):
+    comparator_service = None
     display_name = 'Renal'
     direct_add = True
     tag = "renal"
     template_name = 'episode_list.html'
     schema = []
 
-    def get_queryset(self, *args, **kwargs):
-        qs = super().get_queryset(*args, **kwargs).order_by("-id")
+    def to_dict(self, *args, **kwargs):
+        as_dict = super().to_dict(*args, **kwargs)
         return sorted(
-            qs, key=lambda x: ward_sort_key(x.location_set.get().ward)
+            as_dict, key=lambda x: ward_sort_key(x["location"][0]["ward"])
         )
 
 

@@ -34,3 +34,55 @@ class ModelMethodLoggingTestCase(OpalTestCase):
         self.assertEqual(
             result, "some_var"
         )
+
+
+class WardSortTestCase(OpalTestCase):
+    def test_ward_sort(self):
+        wards = [
+            "8 West",
+            "PITU",
+            "ICU 4 East",
+            "9 East",
+            "8 South",
+            "Other",
+            "9 North",
+            "ICU 4 West",
+            "12 West",
+            "Outpatients",
+        ]
+
+        expected = [
+            "8 South",
+            "8 West",
+            "9 East",
+            "9 North",
+            "12 West",
+            "ICU 4 East",
+            "ICU 4 West",
+            "Outpatients",
+            "PITU",
+            "Other"
+        ]
+        self.assertEqual(
+            expected, sorted(wards, key=utils.ward_sort_key)
+        )
+
+    def test_grouping(self):
+        wards = [
+            "8 West",
+            "8 West",
+            "9 East",
+            "8 South",
+            "9 North",
+        ]
+
+        expected = [
+            "8 South",
+            "8 West",
+            "8 West",
+            "9 East",
+            "9 North",
+        ]
+        self.assertEqual(
+            expected, sorted(wards, key=utils.ward_sort_key)
+        )

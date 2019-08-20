@@ -10,7 +10,7 @@ from opal.core.test import OpalTestCase
 from opal.models import Patient
 
 from elcid import models
-from elcid.patient_lists import RfhPatientList
+from elcid.patient_lists import RfhPatientList, Renal
 
 
 class AbstractPatientListTestCase(OpalTestCase):
@@ -129,3 +129,41 @@ class TestPatientList(AbstractPatientListTestCase):
         self.assertTrue(all(
             i.comparator_service for i in pls if issubclass(i, RfhPatientList)
         ))
+
+
+class RenalListTestCase(AbstractPatientListTestCase):
+    def test_renal_to_dict(self):
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        self.factory = RequestFactory()
+        request = self.factory.get("/")
+
+        pl = Renal()
+        ep_1 = self.create_episode()
+        ep_1.set_tag_names([pl.tag], None)
+        loc_1 = ep_1.location_set.get()
+        loc_1.ward = "12 East"
+        loc_1.save()
+        ep_2 = self.create_episode()
+        ep_2.set_tag_names([pl.tag], None)
+        loc_2 = ep_2.location_set.get()
+        loc_2.ward = "6 West"
+        loc_2.save()
+        slug = pl.get_slug()
+        url = drf_reverse(
+            "patientlist-detail", kwargs={"pk": slug}, request=request
+        )
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertEqual(
+            response_json[0]["id"], ep_2.id
+        )
+        self.assertEqual(
+            response_json[1]["id"], ep_1.id
+        )
+

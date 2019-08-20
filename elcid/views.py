@@ -14,6 +14,7 @@ from django.views.generic import (
 )
 
 from opal.core import application
+from opal.models import Ward
 from elcid.patient_lists import Renal
 from elcid import models
 from elcid.forms import BulkCreateUsersForm
@@ -130,7 +131,11 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         all of the clinical advice related to the patients infection service
         """
         ctx = super().get_context_data(*args, **kwargs)
-        episodes = Renal().get_queryset()
+        episodes = Renal().get_queryset().order_by("-episode_id")
+        episodes = episodes.order_by("-start")
+        episodes = episodes.prefetch_related(
+            "location_set", "diagnosis_set", "primarydiagnosis_set", "line_set"
+        )
         by_ward = defaultdict(list)
 
         # We don't want to show duplicate episodes in the case of
@@ -170,9 +175,7 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
                 "diagnosis": diagnosis,
                 "lines": episode.line_set.all(),
                 "clinical_advices": microbiology_inputs,
-                "blood_culture_sets": episode.patient.bloodcultureset_set.all(),
-                "start": episode.start,
-                "id": episode.id
+                "blood_culture_sets": episode.patient.bloodcultureset_set.all()
             })
 
         ward_names = sorted(by_ward.keys(), key=lambda x: ward_sort_key(x))
