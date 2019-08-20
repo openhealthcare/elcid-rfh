@@ -4,6 +4,7 @@ from elcid import models
 from opal import models as omodels
 from intrahospital_api.models import InitialPatientLoad
 from elcid.episode_serialization import serialize
+from elcid.utils import ward_sort_key
 
 PATIENT_LIST_SUBRECORDS = [
     models.PrimaryDiagnosis,
@@ -134,6 +135,12 @@ class Renal(RfhPatientList):
     tag = "renal"
     template_name = 'episode_list.html'
     schema = []
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs).order_by("-id")
+        return sorted(
+            qs, key=lambda x: ward_sort_key(x.location_set.get().ward)
+        )
 
 
 class TB(RfhPatientList):

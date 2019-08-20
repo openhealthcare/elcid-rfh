@@ -14,10 +14,10 @@ from django.views.generic import (
 )
 
 from opal.core import application
-from opal.models import Ward
 from elcid.patient_lists import Renal
 from elcid import models
 from elcid.forms import BulkCreateUsersForm
+from elcid.utils import ward_sort_key
 
 app = application.get_app()
 
@@ -106,29 +106,6 @@ class ElcidTemplateView(TemplateView):
         return ctd
 
 
-def ward_sort_key(ward):
-    """"
-    Example wards are
-            "8 West",
-            "PITU",
-            "ICU 4 East",
-            "9 East",
-            "8 South",
-            "9 North",
-            "ICU 4 West",
-            "12 West",
-
-    We want to order them first by number
-    then with the wards that are strings.
-    e.g. ICU
-    """
-    if ward == 'Other':
-        return (1000, 0, 0)
-    start = ward[:2].strip()
-    rest = ward[2:]
-    return (len(start), start, rest)
-
-
 class RenalHandover(LoginRequiredMixin, TemplateView):
     template_name = "elcid/renal_handover.html"
 
@@ -153,11 +130,7 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         all of the clinical advice related to the patients infection service
         """
         ctx = super().get_context_data(*args, **kwargs)
-        episodes = Renal().get_queryset().order_by("-episode_id")
-        episodes = episodes.order_by("-start")
-        episodes = episodes.prefetch_related(
-            "location_set", "diagnosis_set", "primarydiagnosis_set", "line_set"
-        )
+        episodes = Renal().get_queryset()
         by_ward = defaultdict(list)
 
         # We don't want to show duplicate episodes in the case of
@@ -197,11 +170,12 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
                 "diagnosis": diagnosis,
                 "lines": episode.line_set.all(),
                 "clinical_advices": microbiology_inputs,
-                "blood_culture_sets": episode.patient.bloodcultureset_set.all()
+                "blood_culture_sets": episode.patient.bloodcultureset_set.all(),
+                "start": episode.start,
+                "id": episode.id
             })
 
-        ward_names = sorted(by_ward.keys())
+        ward_names = sorted(by_ward.keys(), key=lambda x: ward_sort_key(x))
         result = [{'ward': w, 'episodes': by_ward[w]} for w in ward_names]
         ctx["ward_and_episodes"] = result
         return ctx
-
