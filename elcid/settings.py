@@ -325,7 +325,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.14'
+VERSION_NUMBER = '0.15'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
