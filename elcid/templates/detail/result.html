@@ -26,7 +26,7 @@
       </div>
       <ul ng-show="resultView.patientLoadStatus.isLoaded()" class="list-group">
         <li class="list-group-item " ng-repeat="labTest in resultView.labTests">
-          <div class="content-offset-below">
+          <div class="">
             <div class="row">
               <div class="col-md-6">
                 <h5 class="inline">[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|displayDate ]]</span></h5> {% if request.user.is_superuser %}<a class="text-muted" href="/intrahospital_api/raw/results/[[ patient.demographics[0].hospital_number ]]/test/[[ labTest.lab_test_type ]]">&nbsp;view upstream {% icon "fa fa-code-fork" %}</a>{% endif %}
@@ -41,7 +41,7 @@
                     </span>
                   </div>
                   <div class="col-sm-9">
-                    <div class="row content-offset-below-10" ng-if="resultView.isPopulated(labTest.by_observations[observation_name][obsDate])" ng-repeat="observation_name in labTest.observation_names">
+                    <div class="row" ng-if="resultView.isPopulated(labTest.by_observations[observation_name][obsDate])" ng-repeat="observation_name in labTest.observation_names">
                       <div class="col-md-3">
                         [[ observation_name ]]
                       </div>
@@ -50,7 +50,7 @@
                           [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
                         </p>
                         <span ng-if="!resultView.isNumber(labTest.by_observations[observation_name][obsDate].observation_value)">
-                          <p ng-repeat="par_obs in resultView.splitObservation(labTest.by_observations[observation_name][obsDate]) track by $index">
+                          <p class="tilde-replacement-paragraph" ng-repeat="par_obs in resultView.splitObservation(labTest.by_observations[observation_name][obsDate]) track by $index">
                             [[ par_obs ]]
                           </p>
                         </span>
@@ -66,7 +66,7 @@
                   <div class="col-sm-2">
                     Range
                   </div>
-                  <div ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
+                  <div ng-repeat="obsDate in labTest.observation_date_range | limitTo:7 track by $index" class="col-sm-1">
                       [[ obsDate|displayDate ]]
                   </div>
                 </div>
@@ -83,7 +83,7 @@
                       -
                       [[ labTest.observation_metadata[observation_name].reference_range.max ]]
                     </div>
-                    <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:6 track by $index" class="col-sm-1">
+                    <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:7 track by $index" class="col-sm-1">
                       [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
                     </div>
                   </div>
