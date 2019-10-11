@@ -18,6 +18,7 @@ $small-text-color: $secondary-background;
 
 body{
     background-color: $bg;
+    height: calc(100% - 30px);
 }
 
 .outer-container .container-fluid {
