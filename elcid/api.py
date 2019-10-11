@@ -280,7 +280,6 @@ class LabTestResultsView(LoginRequiredViewset):
                 list(observation_date_range),
                 key=lambda x: serialization.deserialize_date(x)
             )
-            observation_date_range.reverse()
             long_form = False
 
             for observation in observations:
