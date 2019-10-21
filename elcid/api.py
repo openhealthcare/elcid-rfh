@@ -340,7 +340,7 @@ class LabTestResultsView(LoginRequiredViewset):
             # ordered by most recent observations first please
             serialised_tests = sorted(
                 serialised_tests, key=lambda t: -serialization.deserialize_date(
-                    t["observation_date_range"][0]
+                    t["observation_date_range"][-1]
                 ).toordinal()
             )
 
