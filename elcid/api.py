@@ -280,6 +280,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 list(observation_date_range),
                 key=lambda x: serialization.deserialize_date(x)
             )
+            observation_date_range.reverse()
             long_form = False
 
             for observation in observations:
@@ -333,16 +334,16 @@ class LabTestResultsView(LoginRequiredViewset):
             )
             serialised_tests.append(serialised_lab_test)
 
-        serialised_tests = sorted(
-            serialised_tests, key=itemgetter("lab_test_type")
-        )
+            serialised_tests = sorted(
+                serialised_tests, key=itemgetter("lab_test_type")
+            )
 
-        # ordered by most recent observations first please
-        serialised_tests = sorted(
-            serialised_tests, key=lambda t: -serialization.deserialize_date(
-                t["observation_date_range"][-1]
-            ).toordinal()
-        )
+            # ordered by most recent observations first please
+            serialised_tests = sorted(
+                serialised_tests, key=lambda t: -serialization.deserialize_date(
+                    t["observation_date_range"][0]
+                ).toordinal()
+            )
 
         all_tags = list(_LAB_TEST_TAGS.keys())
 
