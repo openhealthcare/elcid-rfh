@@ -318,7 +318,11 @@ class LabTestResultsView(LoginRequiredViewset):
                         api_name=slugify(observation["observation_name"])
                     )
 
-            if not long_form:
+            if long_form:
+                # when we are showing in long form the user sees tests as a
+                # list so show the most recent test first
+                observation_date_range.reverse()
+            else:
                 # if we're not in long form ie we're displaying results
                 # in a tabular timeline, we only want to display
                 # the 7 most recent results.
