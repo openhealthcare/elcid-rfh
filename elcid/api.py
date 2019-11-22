@@ -318,6 +318,12 @@ class LabTestResultsView(LoginRequiredViewset):
                         api_name=slugify(observation["observation_name"])
                     )
 
+            if not long_form:
+                # if we're not in long form ie we're displaying results
+                # in a tabular timeline, we only want to display
+                # the 7 most recent results.
+                observation_date_range = observation_date_range[-7:]
+
             serialised_lab_test = dict(
                 long_form=long_form,
                 timeseries=timeseries,
