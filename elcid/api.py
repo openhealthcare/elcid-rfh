@@ -194,41 +194,49 @@ class LabTestResultsView(LoginRequiredViewset):
         # defined or its what is in the profile description
         # if its an HL7 jobby
         for lab_test in lab_tests:
-            as_dict = lab_test.dict_for_view(None)
-            observations = as_dict.get("observations", [])
-            lab_test_type = as_dict["extras"].get("test_name")
+            observations = lab_test.observation_set.all()
+            lab_test_type = lab_test.test_name
             if lab_test_type == "FULL BLOOD COUNT" and observations:
                 print("id {} name {} result {}".format(
                     lab_test.id,
-                    observations[0]["observation_name"],
-                    observations[0]["observation_value"]
+                    observations[0].observation_name,
+                    observations[0].observation_value
                 ))
 
             for observation in observations:
-                obs_result = extract_observation_value(observation["observation_value"])
+                obs_dict = {
+                    "observation_name": observation.observation_name,
+                    "observation_datetime": serialization.serialize_datetime(observation.observation_datetime),
+                    "observation_number": observation.observation_number,
+                    "units": observation.units,
+                    "last_updated": serialization.serialize_datetime(observation.last_updated),
+                }
+                obs_result = extract_observation_value(observation.observation_value)
                 if obs_result:
-                    observation["observation_value"] = obs_result
-
-                observation["reference_range"] = observation["reference_range"].replace("]", "").replace("[", "")
-
-                if not len(observation["reference_range"].replace("-", "").strip()):
-                    observation["reference_range"] = None
+                    obs_dict["observation_value"] = obs_result
                 else:
-                    range_min_max = observation["reference_range"].split("-")
+                    obs_dict["observation_value"] = observation.observation_value
+
+                obs_dict["reference_range"] = observation.reference_range.replace("]", "").replace("[", "")
+
+                if not len(obs_dict["reference_range"].replace("-", "").strip()):
+                    obs_dict["reference_range"] = None
+                else:
+                    range_min_max = obs_dict["reference_range"].split("-")
                     if not range_min_max[0].strip():
-                        observation["reference_range"] = None
+                        obs_dict["reference_range"] = None
                     else:
                         if not len(range_min_max) == 2:
-                            observation["reference_range"] = None
+                            obs_dict["reference_range"] = None
                             # raise ValueError("unable to properly judge the range")
                         else:
-                            observation["reference_range"] = dict(
+                            obs_dict["reference_range"] = dict(
                                 min=float(range_min_max[0].strip()),
                                 max=float(range_min_max[1].strip())
                             )
 
-                observation["datetime_ordered"] = lab_test.datetime_ordered
-                by_test[lab_test_type].append(observation)
+                obs_dict["datetime_ordered"] = lab_test.datetime_ordered
+                by_test[lab_test_type].append(obs_dict)
 
         return by_test
 
