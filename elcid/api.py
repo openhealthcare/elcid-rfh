@@ -81,38 +81,9 @@ from plugins.labtests.models import LabTest, Observation
 from collections import defaultdict
 
 
-def get_observations():
-    result = defaultdict(lambda: defaultdict(int))
-    result_count = defaultdict(int)
-    observations = Observation.objects.filter(test__test_name="BLOOD CULTURE")
-    for observation in observations:
-        result[observation.observation_name][observation.observation_value] += 1
-        result_count[observation.observation_name] += 1
-    return result, result_count
-
-
-def print_obs(i):
-    print("{} {} {} {} {}".format(i.observation_number, i.observation_name, i.last_updated, i.observation_datetime, i.observation_value))
-
 for tag, test_names in _LAB_TEST_TAGS.items():
     for test_name in test_names:
         LAB_TEST_TAGS[test_name].append(tag)
-
-
-def generate_time_series(observations):
-    """
-        take in a bunch of observations and return a list
-        of numeric observation values
-        If we can't pass the observation to a float, we skip it.
-    """
-    timeseries = []
-    for observation in observations:
-        obs_result = get_observation_value(observation)
-
-        if obs_result:
-            timeseries.append(obs_result)
-
-    return timeseries
 
 
 def extract_observation_value(observation_value):
@@ -134,36 +105,6 @@ def get_observation_value(observation):
 
 def clean_ref_range(ref_range):
     return ref_range.replace("]", "").replace("[", "").strip()
-
-
-def to_date_str(some_date):
-    if some_date:
-        return some_date[:10]
-
-
-def datetime_to_str(dt):
-    return dt.strftime(
-        settings.DATETIME_INPUT_FORMATS[0]
-    )
-
-
-def observations_by_date(observations):
-    """ takes in a bunch of observations, assumes that
-        they are like they are in the model, that
-    """
-    by_date_str = {}
-
-    date_keys = [o['observation_datetime'] for o in observations]
-    date_keys = sorted(date_keys)
-    date_keys.reverse()
-    date_keys = [to_date_str(d) for d in date_keys]
-
-    for observation in observations:
-        by_date_str[
-            to_date_str(observation['observation_datetime'])
-        ] = observation
-
-    return [by_date_str[date_key] for date_key in date_keys]
 
 
 def get_reference_range(observation_reference_range):
