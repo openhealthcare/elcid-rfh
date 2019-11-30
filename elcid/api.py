@@ -200,7 +200,7 @@ class LabTestResultsView(LoginRequiredViewset):
             for observation in observations:
                 obs_dict = {
                     "observation_name": observation.observation_name,
-                    "observation_datetime": serialization.serialize_datetime(observation.observation_datetime),
+                    "observation_datetime": observation.observation_datetime,
                     "observation_number": observation.observation_number,
                     "units": observation.units,
                     "last_updated": serialization.serialize_datetime(observation.last_updated),
@@ -276,12 +276,9 @@ class LabTestResultsView(LoginRequiredViewset):
 
             observation_metadata = {}
             observation_date_range = {
-                to_date_str(observation["observation_datetime"]) for observation in observations
+                observation["observation_datetime"].date() for observation in observations
             }
-            observation_date_range = sorted(
-                list(observation_date_range),
-                key=lambda x: serialization.deserialize_date(x)
-            )
+            observation_date_range = sorted(list(observation_date_range))
             long_form = False
 
             for observation in observations:
@@ -303,8 +300,10 @@ class LabTestResultsView(LoginRequiredViewset):
                             long_form = True
 
                 if test_name not in by_observations:
+
+                    # we don't serializer dictionary keys as part of the serializer so we need to do it ourselves
                     obs_for_test_name = {
-                        to_date_str(i["observation_datetime"]): i for i in observations if i["observation_name"] == test_name
+                        serialization.serialize_date(i["observation_datetime"].date()): i for i in observations if i["observation_name"] == test_name
                     }
                     # if its all None's for a certain observation name lets skip it
                     # ie if WBC is all None, lets not waste the users' screen space
@@ -351,9 +350,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         # ordered by most recent observations first please
         serialised_tests = sorted(
-            serialised_tests, key=lambda t: -serialization.deserialize_date(
-                t["observation_date_range"][-1]
-            ).toordinal()
+            serialised_tests, key=lambda t: -t["observation_date_range"][-1].toordinal()
         )
 
         all_tags = list(_LAB_TEST_TAGS.keys())
