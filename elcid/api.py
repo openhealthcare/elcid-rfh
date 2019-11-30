@@ -252,7 +252,6 @@ class LabTestResultsView(LoginRequiredViewset):
         a_year_ago = datetime.date.today() - datetime.timedelta(365)
         lab_tests = patient.lab_tests.all()
         lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
-        lab_tests = [l for l in lab_tests if l.extras]
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
         serialised_tests = []
 

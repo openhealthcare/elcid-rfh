@@ -103,25 +103,6 @@ class LabTest(models.Model):
             obs = self.observation_set.create()
             obs.create(obs_dict)
 
-    @property
-    def extras(self):
-        fields = [
-            "clinical_info",
-            "site",
-            "status",
-            "test_code",
-            "test_name",
-            "lab_number",
-        ]
-        result = {}
-        for field in fields:
-            result[field] = getattr(self, field)
-
-        result["observations"] = [
-            i.to_dict() for i in self.observation_set.all()
-        ]
-        return result
-
     @classmethod
     def get_relevant_tests(self, patient):
         relevent_tests = [
@@ -139,12 +120,6 @@ class LabTest(models.Model):
             datetime_ordered__gt=three_weeks_ago
         ).order_by("datetime_ordered")
         return [i for i in qs if i.extras.get("test_name") in relevent_tests]
-
-    def dict_for_view(self, user):
-        result = self.extras
-        result["datetime_ordered"] = self.datetime_ordered
-        result["extras"] = self.extras
-        return result
 
 
 class Observation(models.Model):
@@ -196,18 +171,4 @@ class Observation(models.Model):
         self.save()
         return self
 
-    def to_dict(self):
-        as_dict = {}
-        as_dict["last_updated"] = format_dt(self.last_updated)
-        as_dict["observation_datetime"] = format_dt(self.observation_datetime)
-        fields = [
-            "observation_number",
-            "observation_name",
-            "observation_value",
-            "reference_range",
-            "units"
-        ]
-        for field in fields:
-            as_dict[field] = getattr(self, field)
-        return as_dict
 
