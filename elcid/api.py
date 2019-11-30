@@ -3,7 +3,6 @@ import re
 from django.conf import settings
 from operator import itemgetter
 from collections import defaultdict, OrderedDict
-from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from intrahospital_api import loader
@@ -15,11 +14,7 @@ from opal.core.api import (
 from opal.core.views import json_response
 from opal.core import serialization
 from elcid import models as emodels
-from elcid.utils import timing
-from opal import models as omodels
 from plugins.labtests import models as lab_test_models
-import os
-import json
 
 
 _LAB_TEST_TAGS = {
@@ -77,8 +72,6 @@ _ALWAYS_SHOW_AS_TABULAR = [
 
 LAB_TEST_TAGS = defaultdict(list)
 
-from plugins.labtests.models import LabTest, Observation
-from collections import defaultdict
 
 
 for tag, test_names in _LAB_TEST_TAGS.items():
