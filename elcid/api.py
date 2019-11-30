@@ -73,7 +73,6 @@ _ALWAYS_SHOW_AS_TABULAR = [
 LAB_TEST_TAGS = defaultdict(list)
 
 
-
 for tag, test_names in _LAB_TEST_TAGS.items():
     for test_name in test_names:
         LAB_TEST_TAGS[test_name].append(tag)
@@ -184,7 +183,7 @@ class LabTestResultsView(LoginRequiredViewset):
         # name with the lab test properties on the observation
 
         a_year_ago = datetime.date.today() - datetime.timedelta(365)
-        lab_tests = patient.lab_tests.all()
+        lab_tests = patient.lab_tests.all().prefetch_related('observation_set')
         lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
         by_test = self.aggregate_observations_by_lab_test(lab_tests)
         serialised_tests = []
