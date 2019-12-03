@@ -120,7 +120,40 @@ class LabTestResultsView(LoginRequiredViewset):
     """
     base_name = 'lab_test_results_view'
 
-    def aggregate_observations_by_lab_test(self, lab_tests):
+    def serialize_observation(self, observation):
+        obs_dict = {
+            "observation_name": observation.observation_name,
+            "observation_datetime": observation.observation_datetime,
+            "observation_number": observation.observation_number,
+            "units": observation.units,
+            "last_updated": serialization.serialize_datetime(observation.last_updated),
+        }
+        obs_result = extract_observation_value(observation.observation_value)
+        if obs_result:
+            obs_dict["observation_value"] = obs_result
+        else:
+            obs_dict["observation_value"] = observation.observation_value
+
+        obs_dict["reference_range"] = observation.reference_range.replace("]", "").replace("[", "")
+
+        if not len(obs_dict["reference_range"].replace("-", "").strip()):
+            obs_dict["reference_range"] = None
+        else:
+            range_min_max = obs_dict["reference_range"].split("-")
+            if not range_min_max[0].strip():
+                obs_dict["reference_range"] = None
+            else:
+                if not len(range_min_max) == 2:
+                    obs_dict["reference_range"] = None
+                    # raise ValueError("unable to properly judge the range")
+                else:
+                    obs_dict["reference_range"] = dict(
+                        min=float(range_min_max[0].strip()),
+                        max=float(range_min_max[1].strip())
+                    )
+        return obs_dict
+
+    def get_observations_by_lab_test(self, lab_tests):
         by_test = defaultdict(list)
         # lab tests are sorted by lab test type
         # this is either the lab test type if its a lab test we've
@@ -131,37 +164,7 @@ class LabTestResultsView(LoginRequiredViewset):
             lab_test_type = lab_test.test_name
 
             for observation in observations:
-                obs_dict = {
-                    "observation_name": observation.observation_name,
-                    "observation_datetime": observation.observation_datetime,
-                    "observation_number": observation.observation_number,
-                    "units": observation.units,
-                    "last_updated": serialization.serialize_datetime(observation.last_updated),
-                }
-                obs_result = extract_observation_value(observation.observation_value)
-                if obs_result:
-                    obs_dict["observation_value"] = obs_result
-                else:
-                    obs_dict["observation_value"] = observation.observation_value
-
-                obs_dict["reference_range"] = observation.reference_range.replace("]", "").replace("[", "")
-
-                if not len(obs_dict["reference_range"].replace("-", "").strip()):
-                    obs_dict["reference_range"] = None
-                else:
-                    range_min_max = obs_dict["reference_range"].split("-")
-                    if not range_min_max[0].strip():
-                        obs_dict["reference_range"] = None
-                    else:
-                        if not len(range_min_max) == 2:
-                            obs_dict["reference_range"] = None
-                            # raise ValueError("unable to properly judge the range")
-                        else:
-                            obs_dict["reference_range"] = dict(
-                                min=float(range_min_max[0].strip()),
-                                max=float(range_min_max[1].strip())
-                            )
-
+                obs_dict = self.serialize_observation(observation)
                 obs_dict["datetime_ordered"] = lab_test.datetime_ordered
                 by_test[lab_test_type].append(obs_dict)
 
@@ -185,7 +188,7 @@ class LabTestResultsView(LoginRequiredViewset):
         a_year_ago = datetime.date.today() - datetime.timedelta(365)
         lab_tests = patient.lab_tests.all().prefetch_related('observation_set')
         lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
-        by_test = self.aggregate_observations_by_lab_test(lab_tests)
+        by_test = self.get_observations_by_lab_test(lab_tests)
         serialised_tests = []
 
         # within the lab test observations should be sorted by test name

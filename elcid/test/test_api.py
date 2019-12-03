@@ -15,22 +15,9 @@ from elcid import models as emodels
 from plugins.labtests.models import LabTest
 
 from elcid.api import (
-    BloodCultureResultApi, UpstreamBloodCultureApi
+    BloodCultureResultApi, UpstreamBloodCultureApi, LabTestResultsView
 )
 from elcid import api
-
-
-class GenerateTimeSeriesTestCase(OpalTestCase):
-    def test_generate_time_series(self):
-        data = [
-            dict(observation_value='1'),
-            dict(observation_value='1'),
-            dict(observation_value='2'),
-            dict(observation_value='3'),
-            dict(observation_value='1'),
-        ]
-        expected = [1, 1, 2, 3, 1]
-        self.assertEqual(expected, api.generate_time_series(data))
 
 
 class ExtractObservationValueTestCase(OpalTestCase):
@@ -50,28 +37,98 @@ class ExtractObservationValueTestCase(OpalTestCase):
             self.assertEqual(api.extract_observation_value(input), expected)
 
 
-class ToDateStrTestCase(OpalTestCase):
-    def test_takes_first_ten_chars(self):
-        self.assertEqual('First of A', api.to_date_str('First of April 1975'))
+class LabTestResultsViewTestCase(OpalTestCase):
+    def setUp(self):
+        self.api = LabTestResultsView()
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+        request = self.rf.get("/")
+        self.url = reverse(
+            "lab_test_results_view-detail",
+            kwargs=dict(pk=self.patient.id),
+            request=request
+        )
 
+    def test_vanilla(self):
+        self.maxDiff = None
+        this_year = datetime.date.today().year
 
-class DatetimeToStrTestCase(OpalTestCase):
-    def test_to_str(self):
-        dt = datetime.datetime(2017, 7, 4)
-        self.assertEqual('04/07/2017 00:00:00', api.datetime_to_str(dt))
+        lt = self.patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(this_year, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
 
+        lt.observation_set.create(
+            last_updated=datetime.datetime(this_year, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(this_year, 4, 15, 4, 15, 10),
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234",
+            observation_name="Aerobic bottle culture"
+        )
 
-class ObservationsByDateTestCase(OpalTestCase):
-    def test_observations_by_date(self):
-        data = [
-            dict(observation_datetime='04/07/2017', value='pos'),
-            dict(observation_datetime='14/07/2017', value='neg')
-        ]
         expected = [
-            dict(observation_datetime='14/07/2017', value='neg'),
-            dict(observation_datetime='04/07/2017', value='pos')
+            {
+                "api_name": "anti-cv2-crmp-5-antibodies",
+                "by_observations": {
+                    "Aerobic bottle culture": {
+                        "15/04/2019": {
+                            "datetime_ordered": "17/06/2019 " "04:15:10",
+                            "last_updated": "18/06/2019 " "04:15:10",
+                            "observation_datetime": "15/04/2019 " "04:15:10",
+                            "observation_name": "Aerobic " "bottle " "culture",
+                            "observation_number": "12312",
+                            "observation_value": 234.0,
+                            "reference_range": {"max": 11.0, "min": 3.5},
+                            "units": "g",
+                        }
+                    }
+                },
+                "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
+                "long_form": False,
+                "observation_date_range": ["15/04/2019"],
+                "observation_metadata": {
+                    "Aerobic bottle culture": {
+                        "api_name": "aerobic-bottle-culture",
+                        "reference_range": {"max": 11.0, "min": 3.5},
+                        "units": "g",
+                    }
+                },
+                "observation_names": ["Aerobic bottle culture"],
+                "observations": [
+                    {
+                        "datetime_ordered": "17/06/2019 04:15:10",
+                        "last_updated": "18/06/2019 04:15:10",
+                        "observation_datetime": "15/04/2019 04:15:10",
+                        "observation_name": "Aerobic bottle culture",
+                        "observation_number": "12312",
+                        "observation_value": 234.0,
+                        "reference_range": {"max": 11.0, "min": 3.5},
+                        "units": "g",
+                    }
+                ],
+                "tags": [],
+                "timeseries": {},
+            }
         ]
-        self.assertEqual(expected, api.observations_by_date(data))
+        response = self.client.get(self.url).json()
+        self.assertEqual(response["tests"], expected)
+        self.assertEqual(
+            set(response["tags"]),
+            {"HAEMATOLOGY", "ENDOCRINOLOGY", "BIOCHEMISTRY", "URINE"}
+        )
 
 
 class UpstreamBloodCultureApiTestCase(OpalTestCase):
