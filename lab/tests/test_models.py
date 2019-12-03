@@ -112,18 +112,6 @@ class TestLabTestSave(OpalTestCase):
             "some_required_observation is required by SomeTestWithARequiredObservation"
         )
 
-    def test_to_dict(self):
-        lab_test = models.LabTest.objects.create(
-            patient=self.patient,
-            lab_test_type="Smear"
-        )
-        obs = lab_test.pathology
-        obs.result = "-ve"
-        obs.lab_test_id = lab_test.id
-        obs.save()
-        result = lab_test.to_dict(self.user)
-        self.assertEqual(result["pathology"]["result"], "-ve")
-
     def test_cast_to_class(self):
         lab_test = models.LabTest(patient=self.patient)
         with self.assertRaises(exceptions.APIError) as e:
