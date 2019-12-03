@@ -280,9 +280,11 @@ class LabTestResultsView(LoginRequiredViewset):
             serialised_tests, key=itemgetter("lab_test_type")
         )
 
-        # ordered by most recent observations first please
+        # ordered by most recent observations first please, bu maintaining
+        # the alphabetically order of the lab tests
         serialised_tests = sorted(
-            serialised_tests, key=lambda t: -t["observation_date_range"][-1].toordinal()
+            serialised_tests, key=lambda t: t["observation_date_range"][-1],
+            reverse=True
         )
 
         all_tags = list(_LAB_TEST_TAGS.keys())
