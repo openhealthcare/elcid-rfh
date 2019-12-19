@@ -136,21 +136,55 @@ class Observation(models.Model):
     # as defined by us
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def to_float(self, some_val):
+        regex = r'^[-+]?[0-9]+(\.[0-9]+)?$'
+        if re.match(regex, some_val):
+            return round(float(some_val), 3)
+
     @property
     def value_numeric(self):
         """
-        if an observation is numeric, return it as a float
+        if an observation is    , return it as a float
         some of the inputted values are messy, but essentially
         integers for example
         ' 12 ~ using new systyem as of Sep 2014
         If possible we clean this up and return a number
         otherwise return None
         """
-        regex = r'^[-+]?[0-9]+(\.[0-9]+)?$'
         obs_result = self.observation_value.strip()
         obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
-        if re.match(regex, obs_result):
-            return round(float(obs_result), 3)
+        return self.to_float(obs_result)
+
+    @property
+    def cleaned_reference_range(self):
+        """
+        reference ranges appear of the form
+        1.5 - 4
+        [      < 17     ]
+        1-6
+        -
+
+        Clean these and handle them appropriately
+        For the moment we will now pass < 17
+        """
+        reference_range = self.reference_range.replace("]", "").replace("[", "")
+        reference_range = reference_range.strip()
+        if reference_range == "" or reference_range == "-":
+            return
+
+        min_max_range = [
+            self.to_float(i.strip()) for i in reference_range.split("-")
+        ]
+        # remove Nones
+        min_max_range = [i for i in min_max_range if i is not None]
+
+        if not len(min_max_range) == 2:
+            return
+
+        return {
+            "min": min_max_range[0],
+            "max": min_max_range[1]
+        }
 
     def create(self, observation_dict):
         self.last_updated = serialization.deserialize_datetime(

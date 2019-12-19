@@ -420,30 +420,6 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
 
-class GetReferenceRangeTestCase(OpalTestCase):
-    def test_clean_ref_range(self):
-        self.assertEqual(
-            api.get_reference_range("[ 2 - 3 ]"),
-            dict(min="2", max="3")
-        )
-
-    def test_return_none_if_only_dash(self):
-        self.assertIsNone(
-            api.get_reference_range(" - ")
-        )
-
-    def test_return_none_if_more_than_one_dash(self):
-        self.assertIsNone(
-            api.get_reference_range("else -something - or")
-        )
-
-    def test_return_stripped_max_min(self):
-        self.assertEqual(
-            api.get_reference_range("2-3"),
-            dict(min="2", max="3")
-        )
-
-
 class BloodCultureSetTestCase(OpalTestCase):
     def setUp(self):
         positive = datetime.date(2019, 5, 9)
@@ -908,31 +884,31 @@ class LabTestSummaryTestCase(OpalTestCase):
                 {
                     'latest_results': {'04/06/2019': 1.8, '05/06/2019': 1.8},
                     'name': 'WBC',
-                    'reference_range': {'max': '7.5', 'min': '1.7'},
+                    'reference_range': {'max': 7.5, 'min': 1.7},
                     'units': 'g/l'
                 },
                 {
                     'latest_results': {'04/06/2019': 1.0, '05/06/2019': 1.0},
                     'name': 'Lymphocytes',
-                    'reference_range': {'max': '4', 'min': '1'},
+                    'reference_range': {'max': 4, 'min': 1},
                     'units': '10'
                 },
                 {
                     'latest_results': {'04/06/2019': 2.0, '05/06/2019': 2.0},
                     'name': 'Neutrophils',
-                    'reference_range': {'max': '7.5', 'min': '1.7'},
+                    'reference_range': {'max': 7.5, 'min': 1.7},
                     'units': '10'
                 },
                 {
                     'latest_results': {'04/06/2019': 1.2, '05/06/2019': 1.2},
                     'name': 'INR',
-                    'reference_range': {'max': '1.12', 'min': '0.9'},
+                    'reference_range': {'max': 1.12, 'min': 0.9},
                     'units': 'Ratio'
                 },
                 {
                     'latest_results': {'04/06/2019': 1.0, '05/06/2019': 1.0},
                     'name': 'C Reactive Protein',
-                    'reference_range': {'max': '5', 'min': '0'},
+                    'reference_range': {'max': 5, 'min': 0},
                     'units': 'mg/L'
                 }
             ],
@@ -962,7 +938,7 @@ class LabTestSummaryTestCase(OpalTestCase):
                 {
                     'latest_results': {'04/06/2019': 1.3},
                     'name': 'INR',
-                    'reference_range': {'max': '1.12', 'min': '0.9'},
+                    'reference_range': {'max': 1.12, 'min': 0.9},
                     'units': 'Ratio'
                 }
             ],
@@ -1011,7 +987,7 @@ class LabTestSummaryTestCase(OpalTestCase):
                         },
                         'name': 'INR',
                         'reference_range': {
-                            'max': '1.12', 'min': '0.9'
+                            'max': 1.12, 'min': 0.9
                         },
                         'units': 'Ratio'
                     },
@@ -1025,7 +1001,7 @@ class LabTestSummaryTestCase(OpalTestCase):
                         },
                         'name': 'C Reactive Protein',
                         'reference_range': {
-                            'max': '5', 'min': '0'
+                            'max': 5, 'min': 0
                         },
                         'units': 'mg/L'
                     }

@@ -78,20 +78,6 @@ for tag, test_names in _LAB_TEST_TAGS.items():
         LAB_TEST_TAGS[test_name].append(tag)
 
 
-def clean_ref_range(ref_range):
-    return ref_range.replace("]", "").replace("[", "").strip()
-
-
-def get_reference_range(observation_reference_range):
-    ref_range = clean_ref_range(observation_reference_range)
-    if not len(ref_range.replace("-", "").strip()):
-        return None
-    range_min_max = ref_range.split("-")
-    if len(range_min_max) > 2:
-        return None
-    return {"min": range_min_max[0].strip(), "max": range_min_max[1].strip()}
-
-
 AEROBIC = "aerobic"
 ANAEROBIC = "anaerobic"
 
@@ -108,6 +94,7 @@ class LabTestResultsView(LoginRequiredViewset):
             "observation_name": observation.observation_name,
             "observation_datetime": observation.observation_datetime,
             "observation_number": observation.observation_number,
+            "reference_range": observation.cleaned_reference_range,
             "units": observation.units,
             "last_updated": serialization.serialize_datetime(observation.last_updated),
         }
@@ -117,23 +104,6 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             obs_dict["observation_value"] = observation.observation_value
 
-        obs_dict["reference_range"] = observation.reference_range.replace("]", "").replace("[", "")
-
-        if not len(obs_dict["reference_range"].replace("-", "").strip()):
-            obs_dict["reference_range"] = None
-        else:
-            range_min_max = obs_dict["reference_range"].split("-")
-            if not range_min_max[0].strip():
-                obs_dict["reference_range"] = None
-            else:
-                if not len(range_min_max) == 2:
-                    obs_dict["reference_range"] = None
-                    # raise ValueError("unable to properly judge the range")
-                else:
-                    obs_dict["reference_range"] = dict(
-                        min=float(range_min_max[0].strip()),
-                        max=float(range_min_max[1].strip())
-                    )
         return obs_dict
 
     def get_observations_by_lab_test(self, lab_tests):
@@ -337,9 +307,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         return dict(
             name=observations[0].observation_name,
             units=observations[0].units,
-            reference_range=get_reference_range(
-                observations[0].reference_range
-            ),
+            reference_range=observations[0].cleaned_reference_range,
             latest_results=latest_results
         )
 
