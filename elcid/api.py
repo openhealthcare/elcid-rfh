@@ -221,7 +221,6 @@ class LabTestResultsView(LoginRequiredViewset):
                 api_name=slugify(lab_test_type),
                 observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
-                observations=observations,
                 observation_date_range=observation_date_range,
                 # observation_time_series=observation_time_series,
                 by_observations=by_observations,

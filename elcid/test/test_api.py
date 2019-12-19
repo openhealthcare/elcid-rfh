@@ -90,18 +90,6 @@ class LabTestResultsViewTestCase(OpalTestCase):
                     }
                 },
                 "observation_names": ["Aerobic bottle culture"],
-                "observations": [
-                    {
-                        "datetime_ordered": "17/06/2019 04:15:10",
-                        "last_updated": "18/06/2019 04:15:10",
-                        "observation_datetime": "15/04/2019 04:15:10",
-                        "observation_name": "Aerobic bottle culture",
-                        "observation_number": "12312",
-                        "observation_value": 234.0,
-                        "reference_range": {"max": 11.0, "min": 3.5},
-                        "units": "g",
-                    }
-                ],
                 "tags": [],
                 "timeseries": {},
             }

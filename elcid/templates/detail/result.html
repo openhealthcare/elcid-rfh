@@ -32,7 +32,7 @@
                 <h5 class="inline">[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|displayDate ]]</span></h5> {% if request.user.is_superuser %}<a class="text-muted" href="/intrahospital_api/raw/results/[[ patient.demographics[0].hospital_number ]]/test/[[ labTest.lab_test_type ]]">&nbsp;view upstream {% icon "fa fa-code-fork" %}</a>{% endif %}
               </div>
             </div>
-            <div ng-show="labTest.observations.length">
+            <div ng-show="labTest.observation_date_range.length">
               <div ng-if="labTest.long_form">
                 <div class="row lab-test-row content-offset-below-10" ng-repeat="obsDate in labTest.observation_date_range track by $index" class="row">
                   <div class="col-sm-3">
