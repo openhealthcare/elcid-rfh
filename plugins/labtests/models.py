@@ -168,22 +168,22 @@ class Observation(models.Model):
         For the moment we will now pass < 17
         """
         reference_range = self.reference_range.replace("]", "").replace("[", "")
-        reference_range = reference_range.strip()
-        if reference_range == "" or reference_range == "-":
+        regex = r"\s*([-+]?[0-9]+(\.[0-9]+)?)\s*-\s*([-+]?[0-9]+(\.[0-9]+)?)\s*?"
+        matches = re.search(regex, reference_range)
+        if not matches:
             return
 
-        min_max_range = [
-            self.to_float(i.strip()) for i in reference_range.split("-")
-        ]
-        # remove Nones
-        min_max_range = [i for i in min_max_range if i is not None]
+        groups = matches.groups()
 
-        if not len(min_max_range) == 2:
+        min_val = groups[0]
+        max_val = groups[2]
+
+        if min_val is None or max_val is None:
             return
 
         return {
-            "min": min_max_range[0],
-            "max": min_max_range[1]
+            "min": self.to_float(min_val),
+            "max": self.to_float(max_val)
         }
 
     def create(self, observation_dict):

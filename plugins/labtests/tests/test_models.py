@@ -216,6 +216,9 @@ class ObservationTestCase(OpalTestCase):
         inputs_to_expected_results = (
             ("1.5 - 4", (1.5, 4,)),
             ('0 - 129', (0, 129,)),
+            ('-2 - 3', (-2, 3,)),
+            ('-5 - -2', (-5, -2,)),
+            ('-5 --2', (-5, -2,)),
             ("[      < 17     ]", None),
             ("1-6", (1, 6)),
             (" -   ", None),
