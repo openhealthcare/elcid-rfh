@@ -91,7 +91,6 @@ class LabTestResultsViewTestCase(OpalTestCase):
                 },
                 "observation_names": ["Aerobic bottle culture"],
                 "tags": [],
-                "timeseries": {},
             }
         ]
         response = self.client.get(self.url).json()

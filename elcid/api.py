@@ -161,7 +161,6 @@ class LabTestResultsView(LoginRequiredViewset):
 
             # observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
-            timeseries = {}
 
             observation_metadata = {}
             observation_date_range = {
@@ -219,7 +218,6 @@ class LabTestResultsView(LoginRequiredViewset):
 
             serialised_lab_test = dict(
                 long_form=long_form,
-                timeseries=timeseries,
                 api_name=slugify(lab_test_type),
                 observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
