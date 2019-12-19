@@ -203,6 +203,7 @@ class ObservationTestCase(OpalTestCase):
             ("0.1 ", 0.1),
             ("1E", None),
             ("'1'", None),
+            ("21.06.2019", None)
         )
         for input_value, expected in inputs_to_expected_results:
             observation.observation_value = input_value

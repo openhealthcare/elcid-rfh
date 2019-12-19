@@ -146,7 +146,7 @@ class Observation(models.Model):
         If possible we clean this up and return a number
         otherwise return None
         """
-        regex = r'^[-0-9][0-9.]*$'
+        regex = r'^[-+]?[0-9]+(\.[0-9]+)?$'
         obs_result = self.observation_value.strip()
         obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
         if re.match(regex, obs_result):
