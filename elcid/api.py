@@ -213,8 +213,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     pass
                 else:
                     if isinstance(observation["observation_value"], str):
-                        if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
-                            long_form = True
+                        long_form = True
 
                 if test_name not in by_observations:
 
