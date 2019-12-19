@@ -78,23 +78,6 @@ for tag, test_names in _LAB_TEST_TAGS.items():
         LAB_TEST_TAGS[test_name].append(tag)
 
 
-def extract_observation_value(observation_value):
-    """
-        if an observation is numeric, return it as a float
-        if its >12 return >12
-        else return None
-    """
-    regex = r'^[-0-9][0-9.]*$'
-    obs_result = observation_value.strip()
-    obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
-    if re.match(regex, obs_result):
-        return round(float(obs_result), 3)
-
-
-def get_observation_value(observation):
-    return extract_observation_value(observation["observation_value"])
-
-
 def clean_ref_range(ref_range):
     return ref_range.replace("]", "").replace("[", "").strip()
 
@@ -128,7 +111,7 @@ class LabTestResultsView(LoginRequiredViewset):
             "units": observation.units,
             "last_updated": serialization.serialize_datetime(observation.last_updated),
         }
-        obs_result = extract_observation_value(observation.observation_value)
+        obs_result = observation.value_numeric
         if obs_result:
             obs_dict["observation_value"] = obs_result
         else:
@@ -203,7 +186,6 @@ class LabTestResultsView(LoginRequiredViewset):
 
             observations = sorted(observations, key=lambda x: x["datetime_ordered"])
             observations = sorted(observations, key=lambda x: x["observation_name"])
-
 
             # observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
