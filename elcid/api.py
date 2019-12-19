@@ -187,11 +187,16 @@ class LabTestResultsView(LoginRequiredViewset):
                         long_form = True
 
                 if test_name not in by_observations:
+                    obs_for_test_name = {}
+                    for observation in observations:
+                        if observation["observation_name"] == test_name:
+                            # we don't serializer dictionary keys as part of
+                            # the serializer so we need to do it ourselves
+                            key = serialization.serialize_date(
+                                observation["observation_datetime"].date()
+                            )
+                            obs_for_test_name[key] = observation
 
-                    # we don't serializer dictionary keys as part of the serializer so we need to do it ourselves
-                    obs_for_test_name = {
-                        serialization.serialize_date(i["observation_datetime"].date()): i for i in observations if i["observation_name"] == test_name
-                    }
                     # if its all None's for a certain observation name lets skip it
                     # ie if WBC is all None, lets not waste the users' screen space
                     # sometimes they just have '-' so lets skip these too
