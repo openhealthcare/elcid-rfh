@@ -132,15 +132,22 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return observation_value is None
 
+    def get_qs(self, patient):
+        to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
+        a_year_ago = datetime.date.today() - datetime.timedelta(365)
+        lab_tests = patient.lab_tests.all()
+        lab_tests = lab_tests.exclude(
+            test_name__in=to_ignore
+        )
+        lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
+        return lab_tests.prefetch_related('observation_set')
+
     @patient_from_pk
     def retrieve(self, request, patient):
 
         # so what I want to return is all observations to lab test desplay
         # name with the lab test properties on the observation
-
-        a_year_ago = datetime.date.today() - datetime.timedelta(365)
-        lab_tests = patient.lab_tests.all().prefetch_related('observation_set')
-        lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
+        lab_tests = self.get_qs(patient)
         by_test = self.get_observations_by_lab_test(lab_tests)
         serialised_tests = []
 
@@ -149,11 +156,6 @@ class LabTestResultsView(LoginRequiredViewset):
         # them as part of a time series, ie adding in blanks if they
         # aren't populated
         for lab_test_type, observations in by_test.items():
-            if lab_test_type.strip().upper() in set([
-                'UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT'
-            ]):
-                continue
-
             observations = sorted(observations, key=lambda x: x["datetime_ordered"])
             observations = sorted(observations, key=lambda x: x["observation_name"])
 
