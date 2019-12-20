@@ -37,13 +37,12 @@ class LabTestResultsViewTestCase(OpalTestCase):
             kwargs=dict(pk=self.patient.id),
             request=request
         )
+        self.this_year = datetime.date.today().year
 
     def new_lab_test_and_observation_please(self):
-        this_year = datetime.date.today().year
-
         lt = self.patient.lab_tests.create(**{
             "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(this_year, 6, 17, 4, 15, 10),
+            "datetime_ordered": datetime.datetime(self.this_year, 6, 17, 4, 15, 10),
             "lab_number": "11111",
             "site": u'^&        ^',
             "status": "Sucess",
@@ -52,8 +51,8 @@ class LabTestResultsViewTestCase(OpalTestCase):
         })
 
         obs = lt.observation_set.create(
-            last_updated=datetime.datetime(this_year, 6, 18, 4, 15, 10),
-            observation_datetime=datetime.datetime(this_year, 4, 15, 4, 15, 10),
+            last_updated=datetime.datetime(self.this_year, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(self.this_year, 4, 15, 4, 15, 10),
             observation_number="12312",
             reference_range="3.5 - 11",
             units="g",
@@ -72,7 +71,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
                 "by_observations": {
                     "Aerobic bottle culture": {
                         "15/04/2019": {
-                            "datetime_ordered": "17/06/2019 " "04:15:10",
+                            "datetime_ordered": "17/06/2019 04:15:10",
                             "last_updated": "18/06/2019 " "04:15:10",
                             "observation_datetime": "15/04/2019 " "04:15:10",
                             "observation_name": "Aerobic " "bottle " "culture",
@@ -126,8 +125,8 @@ class LabTestResultsViewTestCase(OpalTestCase):
                     "Aerobic bottle culture": {
                         "15/04/2019": {
                             "datetime_ordered": "17/06/2019 " "04:15:10",
-                            "last_updated": "18/06/2019 " "04:15:10",
-                            "observation_datetime": "15/04/2019 " "04:15:10",
+                            "last_updated": "18/06/2019 04:15:10",
+                            "observation_datetime": "15/04/2019 04:15:10",
                             "observation_name": "Aerobic " "bottle " "culture",
                             "observation_number": "12312",
                             "observation_value": 234.0,
@@ -135,9 +134,9 @@ class LabTestResultsViewTestCase(OpalTestCase):
                             "units": "g",
                         },
                         "16/04/2019": {
-                            "datetime_ordered": "18/06/2019 " "04:15:10",
-                            "last_updated": "19/06/2019 " "04:15:10",
-                            "observation_datetime": "16/04/2019 " "04:15:10",
+                            "datetime_ordered": "18/06/2019 04:15:10",
+                            "last_updated": "19/06/2019 04:15:10",
+                            "observation_datetime": "16/04/2019 04:15:10",
                             "observation_name": "Aerobic " "bottle " "culture",
                             "observation_number": "12312",
                             "observation_value": 233.0,
