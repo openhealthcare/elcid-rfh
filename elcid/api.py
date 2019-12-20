@@ -99,15 +99,23 @@ class LabTestResultsView(LoginRequiredViewset):
 
     def get_observations_by_lab_test(self, lab_tests):
         by_test = defaultdict(list)
-        # lab tests are sorted by lab test type
-        # this is either the lab test type if its a lab test we've
-        # defined or its what is in the profile description
-        # if its an HL7 jobby
+
         for lab_test in lab_tests:
             observations = lab_test.observation_set.all()
             lab_test_type = lab_test.test_name
 
             for observation in observations:
+                if observation.observation_name.strip() == "Haem Lab Comment":
+                    continue
+                if observation.observation_name.strip() == "Sample Comment":
+                    continue
+
+                # if its all None's for a certain observation name lets skip it
+                # ie if WBC is all None, lets not waste the users' screen space
+                # sometimes they just have '-' so lets skip these too
+                if self.is_empty_value(observation.observation_value):
+                    continue
+
                 by_test[lab_test_type].append(observation)
 
         return by_test
@@ -161,14 +169,6 @@ class LabTestResultsView(LoginRequiredViewset):
             for observation in observations:
                 test_name = observation.observation_name
 
-                if test_name.strip() == "Haem Lab Comment":
-                    # skip these for the time being, we may not even
-                    # have to bring them in
-                    continue
-
-                if test_name.strip() == "Sample Comment":
-                    continue
-
                 if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
                     pass
                 else:
@@ -186,11 +186,6 @@ class LabTestResultsView(LoginRequiredViewset):
                             )
                             obs_for_test_name[key] = self.get_observation_value(observation)
 
-                    # if its all None's for a certain observation name lets skip it
-                    # ie if WBC is all None, lets not waste the users' screen space
-                    # sometimes they just have '-' so lets skip these too
-                    if not all(i for i in obs_for_test_name.values() if self.is_empty_value(i)):
-                        continue
                     by_observations[test_name] = obs_for_test_name
 
                 if test_name not in observation_metadata:
