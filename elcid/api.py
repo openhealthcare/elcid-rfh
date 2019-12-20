@@ -97,6 +97,7 @@ class LabTestResultsView(LoginRequiredViewset):
             "reference_range": observation.cleaned_reference_range,
             "units": observation.units,
             "last_updated": serialization.serialize_datetime(observation.last_updated),
+            "datetime_ordered": observation.test.datetime_ordered,
         }
         obs_result = observation.value_numeric
         if obs_result:
@@ -117,9 +118,7 @@ class LabTestResultsView(LoginRequiredViewset):
             lab_test_type = lab_test.test_name
 
             for observation in observations:
-                obs_dict = self.serialize_observation(observation)
-                obs_dict["datetime_ordered"] = lab_test.datetime_ordered
-                by_test[lab_test_type].append(obs_dict)
+                by_test[lab_test_type].append(observation)
 
         return by_test
 
@@ -156,21 +155,21 @@ class LabTestResultsView(LoginRequiredViewset):
         # them as part of a time series, ie adding in blanks if they
         # aren't populated
         for lab_test_type, observations in by_test.items():
-            observations = sorted(observations, key=lambda x: x["datetime_ordered"])
-            observations = sorted(observations, key=lambda x: x["observation_name"])
+            observations = sorted(observations, key=lambda x: x.test.datetime_ordered)
+            observations = sorted(observations, key=lambda x: x.observation_name)
 
             # observation_time_series = defaultdict(list)
             by_observations = defaultdict(list)
 
             observation_metadata = {}
             observation_date_range = {
-                observation["observation_datetime"].date() for observation in observations
+                observation.observation_datetime.date() for observation in observations
             }
             observation_date_range = sorted(list(observation_date_range))
             long_form = False
 
             for observation in observations:
-                test_name = observation["observation_name"]
+                test_name = observation.observation_name
 
                 if test_name.strip() == "Haem Lab Comment":
                     # skip these for the time being, we may not even
@@ -183,19 +182,19 @@ class LabTestResultsView(LoginRequiredViewset):
                 if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
                     pass
                 else:
-                    if isinstance(observation["observation_value"], str):
+                    if not observation.value_numeric:
                         long_form = True
 
                 if test_name not in by_observations:
                     obs_for_test_name = {}
                     for observation in observations:
-                        if observation["observation_name"] == test_name:
+                        if observation.observation_name == test_name:
                             # we don't serializer dictionary keys as part of
                             # the serializer so we need to do it ourselves
                             key = serialization.serialize_date(
-                                observation["observation_datetime"].date()
+                                observation.observation_datetime.date()
                             )
-                            obs_for_test_name[key] = observation
+                            obs_for_test_name[key] = self.serialize_observation(observation)
 
                     # if its all None's for a certain observation name lets skip it
                     # ie if WBC is all None, lets not waste the users' screen space
@@ -206,9 +205,9 @@ class LabTestResultsView(LoginRequiredViewset):
 
                 if test_name not in observation_metadata:
                     observation_metadata[test_name] = dict(
-                        units=observation["units"],
-                        reference_range=observation["reference_range"],
-                        api_name=slugify(observation["observation_name"])
+                        units=observation.units,
+                        reference_range=observation.cleaned_reference_range,
+                        api_name=slugify(observation.observation_name)
                     )
 
             if long_form:
