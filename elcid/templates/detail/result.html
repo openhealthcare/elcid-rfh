@@ -46,10 +46,10 @@
                         [[ observation_name ]]
                       </div>
                       <div class="col-md-9">
-                        <p ng-if="resultView.isNumber(labTest.by_observations[observation_name][obsDate].observation_value)">
-                          [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
+                        <p ng-if="resultView.isNumber(labTest.by_observations[observation_name][obsDate])">
+                          [[ labTest.by_observations[observation_name][obsDate] ]]
                         </p>
-                        <span ng-if="!resultView.isNumber(labTest.by_observations[observation_name][obsDate].observation_value)">
+                        <span ng-if="!resultView.isNumber(labTest.by_observations[observation_name][obsDate])">
                           <p class="tilde-replacement-paragraph" ng-repeat="par_obs in resultView.splitObservation(labTest.by_observations[observation_name][obsDate]) track by $index">
                             [[ par_obs ]]
                           </p>
@@ -83,8 +83,8 @@
                       -
                       [[ labTest.observation_metadata[observation_name].reference_range.max ]]
                     </div>
-                    <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate].observation_value > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate].observation_value < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:7 track by $index" class="col-sm-1">
-                      [[ labTest.by_observations[observation_name][obsDate].observation_value ]]
+                    <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate] > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate] < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:7 track by $index" class="col-sm-1">
+                      [[ labTest.by_observations[observation_name][obsDate] ]]
                     </div>
                   </div>
                   <div ng-show="resultView.isShownObservation(labTest, observation_name)" class="row">

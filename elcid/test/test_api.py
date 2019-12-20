@@ -70,21 +70,12 @@ class LabTestResultsViewTestCase(OpalTestCase):
                 "api_name": "anti-cv2-crmp-5-antibodies",
                 "by_observations": {
                     "Aerobic bottle culture": {
-                        "15/04/2019": {
-                            "datetime_ordered": "17/06/2019 04:15:10",
-                            "last_updated": "18/06/2019 " "04:15:10",
-                            "observation_datetime": "15/04/2019 " "04:15:10",
-                            "observation_name": "Aerobic " "bottle " "culture",
-                            "observation_number": "12312",
-                            "observation_value": 234.0,
-                            "reference_range": {"max": 11.0, "min": 3.5},
-                            "units": "g",
-                        }
+                        "15/04/{}".format(self.this_year): 234.0
                     }
                 },
                 "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
                 "long_form": False,
-                "observation_date_range": ["15/04/2019"],
+                "observation_date_range": ["15/04/{}".format(self.this_year)],
                 "observation_metadata": {
                     "Aerobic bottle culture": {
                         "api_name": "aerobic-bottle-culture",
@@ -123,33 +114,15 @@ class LabTestResultsViewTestCase(OpalTestCase):
                 "api_name": "anti-cv2-crmp-5-antibodies",
                 "by_observations": {
                     "Aerobic bottle culture": {
-                        "15/04/2019": {
-                            "datetime_ordered": "17/06/2019 " "04:15:10",
-                            "last_updated": "18/06/2019 04:15:10",
-                            "observation_datetime": "15/04/2019 04:15:10",
-                            "observation_name": "Aerobic " "bottle " "culture",
-                            "observation_number": "12312",
-                            "observation_value": 234.0,
-                            "reference_range": {"max": 11.0, "min": 3.5},
-                            "units": "g",
-                        },
-                        "16/04/2019": {
-                            "datetime_ordered": "18/06/2019 04:15:10",
-                            "last_updated": "19/06/2019 04:15:10",
-                            "observation_datetime": "16/04/2019 04:15:10",
-                            "observation_name": "Aerobic " "bottle " "culture",
-                            "observation_number": "12312",
-                            "observation_value": 233.0,
-                            "reference_range": {"max": 11.0, "min": 3.5},
-                            "units": "g",
-                        }
+                        "15/04/{}".format(self.this_year): 234.0,
+                        "16/04/{}".format(self.this_year): 233.0
                     }
                 },
                 "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
                 "long_form": False,
                 "observation_date_range": [
-                    "15/04/2019",
-                    "16/04/2019",
+                    "15/04/{}".format(self.this_year),
+                    "16/04/{}".format(self.this_year),
                 ],
                 "observation_metadata": {
                     "Aerobic bottle culture": {
@@ -189,33 +162,15 @@ class LabTestResultsViewTestCase(OpalTestCase):
                 "api_name": "anti-cv2-crmp-5-antibodies",
                 "by_observations": {
                     "Aerobic bottle culture": {
-                        "15/04/2019": {
-                            "datetime_ordered": "17/06/2019 " "04:15:10",
-                            "last_updated": "18/06/2019 " "04:15:10",
-                            "observation_datetime": "15/04/2019 " "04:15:10",
-                            "observation_name": "Aerobic " "bottle " "culture",
-                            "observation_number": "12312",
-                            "observation_value": 234.0,
-                            "reference_range": {"max": 11.0, "min": 3.5},
-                            "units": "g",
-                        },
-                        "16/04/2019": {
-                            "datetime_ordered": "18/06/2019 " "04:15:10",
-                            "last_updated": "19/06/2019 " "04:15:10",
-                            "observation_datetime": "16/04/2019 " "04:15:10",
-                            "observation_name": "Aerobic " "bottle " "culture",
-                            "observation_number": "12312",
-                            "observation_value": "Negative",
-                            "reference_range": {"max": 11.0, "min": 3.5},
-                            "units": "g",
-                        },
+                        "15/04/{}".format(self.this_year): 234.0,
+                        "16/04/{}".format(self.this_year): "Negative"
                     }
                 },
                 "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
                 "long_form": True,
                 "observation_date_range": [
-                    "16/04/2019",
-                    "15/04/2019",
+                    "16/04/{}".format(self.this_year),
+                    "15/04/{}".format(self.this_year),
                 ],
                 "observation_metadata": {
                     "Aerobic bottle culture": {

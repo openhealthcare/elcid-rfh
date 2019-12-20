@@ -89,23 +89,13 @@ class LabTestResultsView(LoginRequiredViewset):
     """
     base_name = 'lab_test_results_view'
 
-    def serialize_observation(self, observation):
-        obs_dict = {
-            "observation_name": observation.observation_name,
-            "observation_datetime": observation.observation_datetime,
-            "observation_number": observation.observation_number,
-            "reference_range": observation.cleaned_reference_range,
-            "units": observation.units,
-            "last_updated": serialization.serialize_datetime(observation.last_updated),
-            "datetime_ordered": observation.test.datetime_ordered,
-        }
+    def get_observation_value(self, observation):
         obs_result = observation.value_numeric
-        if obs_result:
-            obs_dict["observation_value"] = obs_result
-        else:
-            obs_dict["observation_value"] = observation.observation_value
 
-        return obs_dict
+        if obs_result:
+            return obs_result
+
+        return observation.observation_value
 
     def get_observations_by_lab_test(self, lab_tests):
         by_test = defaultdict(list)
@@ -194,7 +184,7 @@ class LabTestResultsView(LoginRequiredViewset):
                             key = serialization.serialize_date(
                                 observation.observation_datetime.date()
                             )
-                            obs_for_test_name[key] = self.serialize_observation(observation)
+                            obs_for_test_name[key] = self.get_observation_value(observation)
 
                     # if its all None's for a certain observation name lets skip it
                     # ie if WBC is all None, lets not waste the users' screen space
