@@ -156,6 +156,10 @@ class Observation(models.Model):
         return self.to_float(obs_result)
 
     @property
+    def is_pending(self):
+        return self.observation_value.lower() == "pending"
+
+    @property
     def cleaned_reference_range(self):
         """
         reference ranges appear of the form

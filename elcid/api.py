@@ -161,8 +161,7 @@ class LabTestResultsView(LoginRequiredViewset):
             if obs_date not in obs_dict:
                 obs_dict[obs_date] = obs_value
             else:
-                current_obs_value = obs_dict[obs_date].observation_value
-                if current_obs_value.lower() == "pending":
+                if obs_dict[obs_date].is_pending:
                     obs_dict[obs_date] = obs_value
 
         return result
@@ -184,7 +183,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         for observation in observations:
             if not observation.value_numeric:
-                if not observation.observation_value.lower() == "pending":
+                if not observation.is_pending:
                     return True
         return False
 

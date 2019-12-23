@@ -228,3 +228,12 @@ class ObservationTestCase(OpalTestCase):
                 expected = {"min": expected[0], "max": expected[1]}
             self.assertEqual(observation.cleaned_reference_range, expected)
 
+    def test_is_pending_true(self):
+        observation = models.Observation()
+        observation.observation_value = 'Pending'
+        self.assertTrue(observation.is_pending)
+
+    def test_is_pending_false(self):
+        observation = models.Observation()
+        observation.observation_value = 'Not pending'
+        self.assertFalse(observation.is_pending)
