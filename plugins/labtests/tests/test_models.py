@@ -189,7 +189,6 @@ class LabTestTestCase(OpalTestCase):
 
 class ObservationTestCase(OpalTestCase):
     def test_value_numeric(self):
-        patient, _ = self.new_patient_and_episode_please()
         observation = models.Observation()
 
         inputs_to_expected_results = (
@@ -210,7 +209,6 @@ class ObservationTestCase(OpalTestCase):
             self.assertEqual(observation.value_numeric, expected)
 
     def test_cleaned_reference_range(self):
-        patient, _ = self.new_patient_and_episode_please()
         observation = models.Observation()
 
         inputs_to_expected_results = (
@@ -229,3 +227,4 @@ class ObservationTestCase(OpalTestCase):
             if expected:
                 expected = {"min": expected[0], "max": expected[1]}
             self.assertEqual(observation.cleaned_reference_range, expected)
+
