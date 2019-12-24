@@ -159,15 +159,18 @@ class LabTestResultsView(LoginRequiredViewset):
                 observation
             )
             if obs_date not in obs_dict:
-                obs_dict[obs_date] = obs_value
+                if observation.is_pending:
+                    obs_dict[obs_date] = "Pending"
+                else:
+                    obs_dict[obs_date] = obs_value
             else:
-                if obs_dict[obs_date].is_pending:
+                if obs_dict[obs_date] == "Pending":
                     obs_dict[obs_date] = obs_value
 
         return result
 
     def get_date_range(self, observations):
-        observation_date_range = set()
+        observation_date_range = set()  
 
         for observation in observations:
             observation_date_range.add(observation.observation_datetime.date())
