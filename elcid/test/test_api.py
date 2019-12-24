@@ -38,6 +38,9 @@ class LabTestResultsViewTestCase(OpalTestCase):
             request=request
         )
         self.this_year = datetime.date.today().year
+        self.plus_hour = datetime.timedelta(
+            hours=1
+        )
 
     def new_lab_test_and_observation_please(self):
         lt = self.patient.lab_tests.create(**{
@@ -188,6 +191,156 @@ class LabTestResultsViewTestCase(OpalTestCase):
         self.assertEqual(
             set(response["tags"]),
             {"HAEMATOLOGY", "ENDOCRINOLOGY", "BIOCHEMISTRY", "URINE"}
+        )
+
+    def test_multiple_tests_on_the_same_day(self):
+        """
+        When we have multiple tests on the same day the date rante should
+        still only contain 1 date and we should use the newer result
+        """
+        lt_1, obs_1 = self.new_lab_test_and_observation_please()
+
+        lt_2, obs_2 = self.new_lab_test_and_observation_please()
+        lt_2.datetime_ordered = lt_2.datetime_ordered + datetime.timedelta(1)
+        lt_2.save()
+
+        obs_2.last_updated = obs_2.last_updated + self.plus_hour
+        obs_2.observation_datetime = obs_2.observation_datetime + self.plus_hour
+        obs_2.observation_value = "345"
+        obs_2.save()
+
+        expected = [
+            {
+                "api_name": "anti-cv2-crmp-5-antibodies",
+                "by_observations": {
+                    "Aerobic bottle culture": {
+                        "15/04/{}".format(self.this_year): 345.0
+                    }
+                },
+                "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
+                "long_form": False,
+                "observation_date_range": ["15/04/{}".format(self.this_year)],
+                "observation_metadata": {
+                    "Aerobic bottle culture": {
+                        "api_name": "aerobic-bottle-culture",
+                        "reference_range": {"max": 11.0, "min": 3.5},
+                        "units": "g",
+                    }
+                },
+                "observation_names": ["Aerobic bottle culture"],
+                "tags": [],
+            }
+        ]
+        response = self.client.get(self.url).json()
+        self.assertEqual(response["tests"], expected)
+
+
+class GetObservationByTypeAndDateStrTestCase(OpalTestCase):
+    def setUp(self):
+        self.api = LabTestResultsView()
+        patient, _ = self.new_patient_and_episode_please()
+        self.this_year = datetime.date.today().year
+        plus_hour = datetime.timedelta(
+            hours=1
+        )
+
+        self.lab_test = patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(self.this_year, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
+
+        self.old_obs = self.lab_test.observation_set.create(
+            last_updated=datetime.datetime(self.this_year, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(self.this_year, 4, 15, 4, 15, 10),
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234",
+            observation_name="Aerobic bottle culture"
+        )
+
+        self.new_obs = self.lab_test.observation_set.create(
+            last_updated=datetime.datetime(
+                self.this_year, 6, 18, 4, 15, 10
+            ) + plus_hour,
+            observation_datetime=datetime.datetime(
+                self.this_year, 4, 15, 4, 15, 10
+            ) + plus_hour,
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="345",
+            observation_name="Aerobic bottle culture"
+        )
+
+    def test_get_observations_by_type_and_date_str_normal(self):
+        result = self.api.get_observations_by_type_and_date_str([self.old_obs])
+        self.assertEqual(
+            result, {"Aerobic bottle culture": {
+                "15/04/{}".format(self.this_year): 234.0
+            }}
+        )
+
+    def test_get_observations_by_type_and_date_str_multiple(self):
+        result = self.api.get_observations_by_type_and_date_str([
+            self.old_obs, self.new_obs
+        ])
+        self.assertEqual(
+            result, {"Aerobic bottle culture": {
+                "15/04/{}".format(self.this_year): 345.0
+            }}
+        )
+
+    def test_get_observations_by_type_and_date_str_pending(self):
+        self.new_obs.observation_value = "Pending"
+        self.new_obs.save()
+
+        result = self.api.get_observations_by_type_and_date_str([
+            self.old_obs, self.new_obs
+        ])
+        self.assertEqual(
+            result, {"Aerobic bottle culture": {
+                "15/04/{}".format(self.this_year): 234.0
+            }}
+        )
+
+    def test_get_observations_by_type_and_date_multiple_dates(self):
+        next_day = self.new_obs.observation_datetime + datetime.timedelta(1)
+        self.new_obs.observation_datetime = next_day
+        self.new_obs.save()
+        result = self.api.get_observations_by_type_and_date_str([
+            self.old_obs, self.new_obs
+        ])
+        self.assertEqual(
+            result, {"Aerobic bottle culture": {
+                "15/04/{}".format(self.this_year): 234.0,
+                "16/04/{}".format(self.this_year): 345.0,
+            }}
+        )
+
+    def test_get_observations_by_type_and_date_multiple_observation_types(
+        self
+    ):
+        self.new_obs.observation_name = "Anaerobic bottle culture"
+        self.new_obs.save()
+        result = self.api.get_observations_by_type_and_date_str([
+            self.old_obs, self.new_obs
+        ])
+        expected = {
+            "Aerobic bottle culture": {
+                "15/04/{}".format(self.this_year): 234.0,
+            },
+            "Anaerobic bottle culture": {
+                "15/04/{}".format(self.this_year): 345.0,
+            }
+        }
+        self.assertEqual(
+            result, expected
         )
 
 
