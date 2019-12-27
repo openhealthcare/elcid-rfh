@@ -1,6 +1,7 @@
 from mock import PropertyMock, patch
 from opal.core.test import OpalTestCase
 from intrahospital_api import models
+from intrahospital_api.apis import dev_api
 
 
 class InitialPatientLoadTestCase(OpalTestCase):
@@ -48,3 +49,14 @@ class BatchPatientLoadTestCase(OpalTestCase):
             m.return_value = ""
             str(self.bpl)
             self.assertTrue(m.called)
+
+
+class UpstreamLabTestRowTestCase(OpalTestCase):
+    def setUp(self):
+        self.row = dev_api.RAW_DATA
+
+    def test_create(self):
+        result = models.UpstreamLabTestRow.create(self.row)
+        self.assertEqual(
+            self.row["id"], result.upstream_id
+        )
