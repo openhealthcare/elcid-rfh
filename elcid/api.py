@@ -201,6 +201,33 @@ class LabTestResultsView(LoginRequiredViewset):
             )
         return observation_metadata
 
+    def sort_lab_tests_dicts(self, lab_test_dicts):
+        """
+        Ordered by most recent observations first please, this means
+        the first date if its a long form observation or the last
+        if its not. (as short form dates are shown ascending and long form descending)
+
+        When there are multiple results for the same date, tests should be shown in
+        alphabetical order.
+        """
+        serialised_tests = sorted(
+            lab_test_dicts, key=itemgetter("lab_test_type")
+        )
+
+        def get_latest_date(obs_dict):
+            if obs_dict["long_form"]:
+                return obs_dict["observation_date_range"][0]
+            else:
+                return obs_dict["observation_date_range"][-1]
+
+        # ordered by most recent observations first please, bu maintaining
+        # the alphabetically order of the lab tests
+        serialised_tests = sorted(
+            serialised_tests, key=get_latest_date, reverse=True
+        )
+        return serialised_tests
+
+
     @patient_from_pk
     def retrieve(self, request, patient):
 
@@ -245,16 +272,7 @@ class LabTestResultsView(LoginRequiredViewset):
             )
             serialised_tests.append(serialised_lab_test)
 
-        serialised_tests = sorted(
-            serialised_tests, key=itemgetter("lab_test_type")
-        )
-
-        # ordered by most recent observations first please, bu maintaining
-        # the alphabetically order of the lab tests
-        serialised_tests = sorted(
-            serialised_tests, key=lambda t: t["observation_date_range"][-1],
-            reverse=True
-        )
+        serialised_tests = self.sort_lab_tests_dicts(serialised_tests)
 
         all_tags = list(_LAB_TEST_TAGS.keys())
 

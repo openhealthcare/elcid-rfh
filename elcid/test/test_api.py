@@ -405,6 +405,67 @@ class IsLongFormTestCase(OpalTestCase):
         )
 
 
+class SortLabTestsDictsTestCase(OpalTestCase):
+    def setUp(self):
+        self.this_year = datetime.date.today().year
+        self.api = LabTestResultsView()
+
+    def test_ordering_with_long_form(self):
+        dict_1 = {
+            "lab_test_type": "Test 1",
+            "long_form": False,
+            "observation_date_range": [
+                "12/04/{}".format(self.this_year),
+                "13/04/{}".format(self.this_year),
+                "14/04/{}".format(self.this_year)
+            ]
+        }
+        dict_2 = {
+            "lab_test_type": "Test 2",
+            "long_form": True,
+            "observation_date_range": [
+                "16/04/{}".format(self.this_year),
+                "15/04/{}".format(self.this_year),
+                "14/04/{}".format(self.this_year)
+            ]
+        }
+        dict_3 = {
+            "lab_test_type": "Test 3",
+            "long_form": False,
+            "observation_date_range": [
+                "13/04/{}".format(self.this_year),
+                "14/04/{}".format(self.this_year),
+                "15/04/{}".format(self.this_year)
+            ]
+        }
+        self.assertEqual(
+            self.api.sort_lab_tests_dicts([dict_1, dict_2, dict_3]),
+            [dict_2, dict_3, dict_1]
+        )
+
+    def test_ordering_within_a_date(self):
+        dict_1 = {
+            "lab_test_type": "Test Z",
+            "long_form": False,
+            "observation_date_range": [
+                "16/04/{}".format(self.this_year),
+                "15/04/{}".format(self.this_year)
+            ]
+        }
+        dict_2 = {
+            "lab_test_type": "Test A",
+            "long_form": False,
+            "observation_date_range": [
+                "16/04/{}".format(self.this_year),
+                "15/04/{}".format(self.this_year)
+            ]
+        }
+        self.assertEqual(
+            self.api.sort_lab_tests_dicts([dict_1, dict_2]),
+            [dict_2, dict_1]
+        )
+
+
 class UpstreamBloodCultureApiTestCase(OpalTestCase):
     def setUp(self):
         self.api = UpstreamBloodCultureApi()
