@@ -13,7 +13,7 @@ angular.module('opal.controllers').controller('ResultView', function(
       this.parseFloat = parseFloat;
 
       this.splitObservation = function(observation){
-        return observation.observation_value.split('~');
+        return observation.split('~');
       }
 
       this.isNumber = _.isNumber;
@@ -23,11 +23,11 @@ angular.module('opal.controllers').controller('ResultView', function(
           return false;
         }
 
-        if(_.isNumber(observation.observation_value)){
+        if(_.isNumber(observation)){
           return true;
         }
 
-        return observation.observation_value.replace('-', '').trim().length;
+        return observation.replace('-', '').trim().length;
       }
 
 
@@ -94,9 +94,8 @@ angular.module('opal.controllers').controller('ResultView', function(
         if(!nextObservation){
           return 0;
         }
-
-        var mostRecent = recentObservation.observation_value;
-        var nextRecent = nextObservation.observation_value;
+        var mostRecent = recentObservation;
+        var nextRecent = nextObservation;
 
         if(isNaN(mostRecent) || isNaN(nextRecent)){
           return 0
