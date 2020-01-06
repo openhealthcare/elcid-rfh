@@ -182,7 +182,7 @@ class LabTestResultsView(LoginRequiredViewset):
         form or long form
         """
         if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
-            return True
+            return False
 
         for observation in observations:
             if not observation.value_numeric:

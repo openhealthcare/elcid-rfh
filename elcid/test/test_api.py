@@ -344,6 +344,67 @@ class GetObservationByTypeAndDateStrTestCase(OpalTestCase):
         )
 
 
+class IsLongFormTestCase(OpalTestCase):
+    def setUp(self):
+        self.api = LabTestResultsView()
+        patient, _ = self.new_patient_and_episode_please()
+        self.this_year = datetime.date.today().year
+        plus_hour = datetime.timedelta(
+            hours=1
+        )
+
+        self.lab_test = patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(self.this_year, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
+
+        self.old_obs = self.lab_test.observation_set.create(
+            last_updated=datetime.datetime(self.this_year, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(self.this_year, 4, 15, 4, 15, 10),
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234",
+            observation_name="Aerobic bottle culture"
+        )
+
+        self.new_obs = self.lab_test.observation_set.create(
+            last_updated=datetime.datetime(
+                self.this_year, 6, 18, 4, 15, 10
+            ) + plus_hour,
+            observation_datetime=datetime.datetime(
+                self.this_year, 4, 15, 4, 15, 10
+            ) + plus_hour,
+            observation_number="12312",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="345",
+            observation_name="Aerobic bottle culture"
+        )
+
+    def test_is_long_form_numeric(self):
+        self.assertFalse(
+            self.api.is_long_form("testing", [self.old_obs, self.new_obs])
+        )
+
+    def test_is_long_form_always_show_as_tabular(self):
+        self.assertFalse(
+            self.api.is_long_form("BONE PROFILE", [self.old_obs, self.new_obs])
+        )
+
+    def test_is_long_form_true(self):
+        self.new_obs.observation_value = "Some text based observation"
+        self.new_obs.save()
+        self.assertTrue(
+            self.api.is_long_form("testing", [self.old_obs, self.new_obs])
+        )
+
+
 class UpstreamBloodCultureApiTestCase(OpalTestCase):
     def setUp(self):
         self.api = UpstreamBloodCultureApi()
