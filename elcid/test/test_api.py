@@ -6,18 +6,14 @@ import mock
 import datetime
 
 from opal.core.test import OpalTestCase
-from elcid import models as elcid_models
 from django.utils import timezone
 from django.test import override_settings
 from rest_framework.reverse import reverse
 
 from elcid import models as emodels
-from plugins.labtests.models import LabTest
-
 from elcid.api import (
     BloodCultureResultApi, UpstreamBloodCultureApi, LabTestResultsView
 )
-from elcid import api
 
 
 class LabTestResultsViewTestCase(OpalTestCase):
