@@ -147,9 +147,10 @@ class LabTestResultsView(LoginRequiredViewset):
         """
         result = defaultdict(dict)
         observations = sorted(
-            observations, key=lambda x: x.observation_datetime
+            observations,
+            key=lambda x: x.observation_datetime,
+            reverse=True
         )
-        observations.reverse()
         for observation in observations:
             obs_dict = result[observation.observation_name]
             obs_date = serialization.serialize_date(
@@ -226,7 +227,6 @@ class LabTestResultsView(LoginRequiredViewset):
             serialised_tests, key=get_latest_date, reverse=True
         )
         return serialised_tests
-
 
     @patient_from_pk
     def retrieve(self, request, patient):
