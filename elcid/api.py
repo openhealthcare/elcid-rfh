@@ -129,7 +129,7 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return observation_value is None
 
-    def get_qs(self, patient):
+    def get_last_365_days(self, patient):
         to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
         a_year_ago = datetime.date.today() - datetime.timedelta(365)
         lab_tests = patient.lab_tests.all()
@@ -142,7 +142,7 @@ class LabTestResultsView(LoginRequiredViewset):
     def get_observations_by_type_and_date_str(self, observations):
         """
         Returns a dict of observation name -> date -> observation
-        We choose the most recent date for the datetime unless the most
+        We choose the most recent datetime for the date unless the most
         recent is 'Pending'
         """
         result = defaultdict(dict)
@@ -206,7 +206,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         # so what I want to return is all observations to lab test desplay
         # name with the lab test properties on the observation
-        lab_tests = self.get_qs(patient)
+        lab_tests = self.get_last_365_days(patient)
         by_test = self.get_observations_by_lab_test(lab_tests)
         serialised_tests = []
 
