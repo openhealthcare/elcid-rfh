@@ -5,7 +5,7 @@ bcrypt==3.1.5
 cffi==1.11.5
 cryptography==2.4.2
 enum34==1.1.6
-Fabric==1.14.0
+Fabric==2.5.0
 funcsigs==1.0.2
 idna==2.8
 ipaddress==1.0.22
