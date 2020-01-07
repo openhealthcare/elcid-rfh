@@ -31,7 +31,7 @@ static3==0.6.1
 Fabric==1.14.0
 
 # intrahospital_api
-python-tds==1.8.2
+python-tds==1.9.1
 
 # Open Health Care repositories on GitHub
 -e git+https://github.com/openhealthcare/opal.git@v0.17.1#egg=opal
