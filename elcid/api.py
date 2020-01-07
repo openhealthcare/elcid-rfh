@@ -78,37 +78,6 @@ for tag, test_names in _LAB_TEST_TAGS.items():
         LAB_TEST_TAGS[test_name].append(tag)
 
 
-def extract_observation_value(observation_value):
-    """
-        if an observation is numeric, return it as a float
-        if its >12 return >12
-        else return None
-    """
-    regex = r'^[-0-9][0-9.]*$'
-    obs_result = observation_value.strip()
-    obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
-    if re.match(regex, obs_result):
-        return round(float(obs_result), 3)
-
-
-def get_observation_value(observation):
-    return extract_observation_value(observation["observation_value"])
-
-
-def clean_ref_range(ref_range):
-    return ref_range.replace("]", "").replace("[", "").strip()
-
-
-def get_reference_range(observation_reference_range):
-    ref_range = clean_ref_range(observation_reference_range)
-    if not len(ref_range.replace("-", "").strip()):
-        return None
-    range_min_max = ref_range.split("-")
-    if len(range_min_max) > 2:
-        return None
-    return {"min": range_min_max[0].strip(), "max": range_min_max[1].strip()}
-
-
 AEROBIC = "aerobic"
 ANAEROBIC = "anaerobic"
 
@@ -120,53 +89,34 @@ class LabTestResultsView(LoginRequiredViewset):
     """
     base_name = 'lab_test_results_view'
 
-    def serialize_observation(self, observation):
-        obs_dict = {
-            "observation_name": observation.observation_name,
-            "observation_datetime": observation.observation_datetime,
-            "observation_number": observation.observation_number,
-            "units": observation.units,
-            "last_updated": serialization.serialize_datetime(observation.last_updated),
-        }
-        obs_result = extract_observation_value(observation.observation_value)
+    def get_observation_value(self, observation):
+        obs_result = observation.value_numeric
+
         if obs_result:
-            obs_dict["observation_value"] = obs_result
-        else:
-            obs_dict["observation_value"] = observation.observation_value
+            return obs_result
 
-        obs_dict["reference_range"] = observation.reference_range.replace("]", "").replace("[", "")
-
-        if not len(obs_dict["reference_range"].replace("-", "").strip()):
-            obs_dict["reference_range"] = None
-        else:
-            range_min_max = obs_dict["reference_range"].split("-")
-            if not range_min_max[0].strip():
-                obs_dict["reference_range"] = None
-            else:
-                if not len(range_min_max) == 2:
-                    obs_dict["reference_range"] = None
-                    # raise ValueError("unable to properly judge the range")
-                else:
-                    obs_dict["reference_range"] = dict(
-                        min=float(range_min_max[0].strip()),
-                        max=float(range_min_max[1].strip())
-                    )
-        return obs_dict
+        return observation.observation_value
 
     def get_observations_by_lab_test(self, lab_tests):
         by_test = defaultdict(list)
-        # lab tests are sorted by lab test type
-        # this is either the lab test type if its a lab test we've
-        # defined or its what is in the profile description
-        # if its an HL7 jobby
+
         for lab_test in lab_tests:
             observations = lab_test.observation_set.all()
             lab_test_type = lab_test.test_name
 
             for observation in observations:
-                obs_dict = self.serialize_observation(observation)
-                obs_dict["datetime_ordered"] = lab_test.datetime_ordered
-                by_test[lab_test_type].append(obs_dict)
+                if observation.observation_name.strip() == "Haem Lab Comment":
+                    continue
+                if observation.observation_name.strip() == "Sample Comment":
+                    continue
+
+                # if its all None's for a certain observation name lets skip it
+                # ie if WBC is all None, lets not waste the users' screen space
+                # sometimes they just have '-' so lets skip these too
+                if self.is_empty_value(observation.observation_value):
+                    continue
+
+                by_test[lab_test_type].append(observation)
 
         return by_test
 
@@ -179,15 +129,111 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return observation_value is None
 
+    def get_last_365_days(self, patient):
+        to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
+        a_year_ago = datetime.date.today() - datetime.timedelta(365)
+        lab_tests = patient.lab_tests.all()
+        lab_tests = lab_tests.exclude(
+            test_name__in=to_ignore
+        )
+        lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
+        return lab_tests.prefetch_related('observation_set')
+
+    def get_observations_by_type_and_date_str(self, observations):
+        """
+        Returns a dict of observation name -> date -> observation
+        We choose the most recent datetime for the date unless the most
+        recent is 'Pending'
+        """
+        result = defaultdict(dict)
+        observations = sorted(
+            observations,
+            key=lambda x: x.observation_datetime,
+            reverse=True
+        )
+        for observation in observations:
+            obs_dict = result[observation.observation_name]
+            obs_date = serialization.serialize_date(
+                observation.observation_datetime.date()
+            )
+            obs_value = self.get_observation_value(
+                observation
+            )
+            if obs_date not in obs_dict:
+                if observation.is_pending:
+                    obs_dict[obs_date] = "Pending"
+                else:
+                    obs_dict[obs_date] = obs_value
+            else:
+                if obs_dict[obs_date] == "Pending":
+                    obs_dict[obs_date] = obs_value
+
+        return result
+
+    def get_date_range(self, observations):
+        observation_date_range = set()  
+
+        for observation in observations:
+            observation_date_range.add(observation.observation_datetime.date())
+        return sorted(list(observation_date_range))
+
+    def is_long_form(self, lab_test_type, observations):
+        """
+        and whether the observations should be displayed in a table
+        form or long form
+        """
+        if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
+            return False
+
+        for observation in observations:
+            if not observation.value_numeric:
+                if not observation.is_pending:
+                    return True
+        return False
+
+    def get_observation_metadata(self, observations):
+        observation_metadata = {}
+        for observation in observations:
+            obs_name = observation.observation_name
+            observation_metadata[obs_name] = dict(
+                units=observation.units,
+                reference_range=observation.cleaned_reference_range,
+                api_name=slugify(observation.observation_name)
+            )
+        return observation_metadata
+
+    def sort_lab_tests_dicts(self, lab_test_dicts):
+        """
+        Ordered by most recent observations first please, this means
+        the first date if its a long form observation or the last
+        if its not. (as short form dates are shown ascending and long form descending)
+
+        When there are multiple results for the same date, tests should be shown in
+        alphabetical order.
+        """
+        serialised_tests = sorted(
+            lab_test_dicts, key=itemgetter("lab_test_type")
+        )
+
+        def get_latest_date(obs_dict):
+            if obs_dict["long_form"]:
+                return obs_dict["observation_date_range"][0]
+            else:
+                return obs_dict["observation_date_range"][-1]
+
+        # ordered by most recent observations first please, bu maintaining
+        # the alphabetically order of the lab tests
+        serialised_tests = sorted(
+            serialised_tests, key=get_latest_date, reverse=True
+        )
+        return serialised_tests
+
     @patient_from_pk
     def retrieve(self, request, patient):
 
         # so what I want to return is all observations to lab test desplay
         # name with the lab test properties on the observation
-
-        a_year_ago = datetime.date.today() - datetime.timedelta(365)
-        lab_tests = patient.lab_tests.all().prefetch_related('observation_set')
-        lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
+        lab_tests = self.get_last_365_days(patient)
         by_test = self.get_observations_by_lab_test(lab_tests)
         serialised_tests = []
 
@@ -196,63 +242,12 @@ class LabTestResultsView(LoginRequiredViewset):
         # them as part of a time series, ie adding in blanks if they
         # aren't populated
         for lab_test_type, observations in by_test.items():
-            if lab_test_type.strip().upper() in set([
-                'UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT'
-            ]):
-                continue
-
-            observations = sorted(observations, key=lambda x: x["datetime_ordered"])
-            observations = sorted(observations, key=lambda x: x["observation_name"])
-
-
-            # observation_time_series = defaultdict(list)
-            by_observations = defaultdict(list)
-            timeseries = {}
-
-            observation_metadata = {}
-            observation_date_range = {
-                observation["observation_datetime"].date() for observation in observations
-            }
-            observation_date_range = sorted(list(observation_date_range))
-            long_form = False
-
-            for observation in observations:
-                test_name = observation["observation_name"]
-
-                if test_name.strip() == "Haem Lab Comment":
-                    # skip these for the time being, we may not even
-                    # have to bring them in
-                    continue
-
-                if test_name.strip() == "Sample Comment":
-                    continue
-
-                if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
-                    pass
-                else:
-                    if isinstance(observation["observation_value"], str):
-                        if extract_observation_value(observation["observation_value"].strip(">").strip("<")) is None:
-                            long_form = True
-
-                if test_name not in by_observations:
-
-                    # we don't serializer dictionary keys as part of the serializer so we need to do it ourselves
-                    obs_for_test_name = {
-                        serialization.serialize_date(i["observation_datetime"].date()): i for i in observations if i["observation_name"] == test_name
-                    }
-                    # if its all None's for a certain observation name lets skip it
-                    # ie if WBC is all None, lets not waste the users' screen space
-                    # sometimes they just have '-' so lets skip these too
-                    if not all(i for i in obs_for_test_name.values() if self.is_empty_value(i)):
-                        continue
-                    by_observations[test_name] = obs_for_test_name
-
-                if test_name not in observation_metadata:
-                    observation_metadata[test_name] = dict(
-                        units=observation["units"],
-                        reference_range=observation["reference_range"],
-                        api_name=slugify(observation["observation_name"])
-                    )
+            by_observations = self.get_observations_by_type_and_date_str(
+                observations
+            )
+            observation_date_range = self.get_date_range(observations)
+            observation_metadata = self.get_observation_metadata(observations)
+            long_form = self.is_long_form(lab_test_type, observations)
 
             if long_form:
                 # when we are showing in long form the user sees tests as a
@@ -266,11 +261,9 @@ class LabTestResultsView(LoginRequiredViewset):
 
             serialised_lab_test = dict(
                 long_form=long_form,
-                timeseries=timeseries,
                 api_name=slugify(lab_test_type),
                 observation_metadata=observation_metadata,
                 lab_test_type=lab_test_type,
-                observations=observations,
                 observation_date_range=observation_date_range,
                 # observation_time_series=observation_time_series,
                 by_observations=by_observations,
@@ -279,16 +272,7 @@ class LabTestResultsView(LoginRequiredViewset):
             )
             serialised_tests.append(serialised_lab_test)
 
-        serialised_tests = sorted(
-            serialised_tests, key=itemgetter("lab_test_type")
-        )
-
-        # ordered by most recent observations first please, bu maintaining
-        # the alphabetically order of the lab tests
-        serialised_tests = sorted(
-            serialised_tests, key=lambda t: t["observation_date_range"][-1],
-            reverse=True
-        )
+        serialised_tests = self.sort_lab_tests_dicts(serialised_tests)
 
         all_tags = list(_LAB_TEST_TAGS.keys())
 
@@ -356,9 +340,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         return dict(
             name=observations[0].observation_name,
             units=observations[0].units,
-            reference_range=get_reference_range(
-                observations[0].reference_range
-            ),
+            reference_range=observations[0].cleaned_reference_range,
             latest_results=latest_results
         )
 

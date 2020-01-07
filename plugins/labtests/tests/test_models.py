@@ -189,7 +189,6 @@ class LabTestTestCase(OpalTestCase):
 
 class ObservationTestCase(OpalTestCase):
     def test_value_numeric(self):
-        patient, _ = self.new_patient_and_episode_please()
         observation = models.Observation()
 
         inputs_to_expected_results = (
@@ -203,7 +202,38 @@ class ObservationTestCase(OpalTestCase):
             ("0.1 ", 0.1),
             ("1E", None),
             ("'1'", None),
+            ("21.06.2019", None)
         )
         for input_value, expected in inputs_to_expected_results:
             observation.observation_value = input_value
             self.assertEqual(observation.value_numeric, expected)
+
+    def test_cleaned_reference_range(self):
+        observation = models.Observation()
+
+        inputs_to_expected_results = (
+            ("1.5 - 4", (1.5, 4,)),
+            ('0 - 129', (0, 129,)),
+            ('-2 - 3', (-2, 3,)),
+            ('-5 - -2', (-5, -2,)),
+            ('-5 --2', (-5, -2,)),
+            ("[      < 17     ]", None),
+            ("1-6", (1, 6)),
+            (" -   ", None),
+            ("  ", None),
+        )
+        for input_value, expected in inputs_to_expected_results:
+            observation.reference_range = input_value
+            if expected:
+                expected = {"min": expected[0], "max": expected[1]}
+            self.assertEqual(observation.cleaned_reference_range, expected)
+
+    def test_is_pending_true(self):
+        observation = models.Observation()
+        observation.observation_value = 'Pending'
+        self.assertTrue(observation.is_pending)
+
+    def test_is_pending_false(self):
+        observation = models.Observation()
+        observation.observation_value = 'Not pending'
+        self.assertFalse(observation.is_pending)

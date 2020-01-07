@@ -136,21 +136,59 @@ class Observation(models.Model):
     # as defined by us
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def to_float(self, some_val):
+        regex = r'^[-+]?[0-9]+(\.[0-9]+)?$'
+        if re.match(regex, some_val):
+            return round(float(some_val), 3)
+
     @property
     def value_numeric(self):
         """
-        if an observation is numeric, return it as a float
+        if an observation is    , return it as a float
         some of the inputted values are messy, but essentially
         integers for example
         ' 12 ~ using new systyem as of Sep 2014
         If possible we clean this up and return a number
         otherwise return None
         """
-        regex = r'^[-0-9][0-9.]*$'
         obs_result = self.observation_value.strip()
         obs_result = obs_result.split("~")[0].strip("<").strip(">").strip()
-        if re.match(regex, obs_result):
-            return round(float(obs_result), 3)
+        return self.to_float(obs_result)
+
+    @property
+    def is_pending(self):
+        return self.observation_value.lower() == "pending"
+
+    @property
+    def cleaned_reference_range(self):
+        """
+        reference ranges appear of the form
+        1.5 - 4
+        [      < 17     ]
+        1-6
+        -
+
+        Clean these and handle them appropriately
+        For the moment we will now pass < 17
+        """
+        reference_range = self.reference_range.replace("]", "").replace("[", "")
+        regex = r"\s*([-+]?[0-9]+(\.[0-9]+)?)\s*-\s*([-+]?[0-9]+(\.[0-9]+)?)\s*?"
+        matches = re.search(regex, reference_range)
+        if not matches:
+            return
+
+        groups = matches.groups()
+
+        min_val = groups[0]
+        max_val = groups[2]
+
+        if min_val is None or max_val is None:
+            return
+
+        return {
+            "min": self.to_float(min_val),
+            "max": self.to_float(max_val)
+        }
 
     def create(self, observation_dict):
         self.last_updated = serialization.deserialize_datetime(
