@@ -9,6 +9,9 @@ class TbPatientList(patient_lists.TaggedPatientList):
     # 1 elcid test fails unless there is an explicitly declared comparator_service
     comparator_service = "EpisodeAddedComparator"
     template_name = 'patient_lists/layouts/table_list.html'
+
+    # The slug cannot be tb as this was used by an old disused infection
+    # service list
     slug = "tb_patient_list"
     tag = "tb_tag"
 
