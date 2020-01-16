@@ -54,7 +54,6 @@ class Application(application.OpalApplication):
         'js/elcid/services/blood_culture_isolate.js',
         'js/elcid/services/blood_culture_loader.js',
         'js/elcid/services/upstream_blood_culture_loader.js',
-        'js/elcid/services/blood_culture_record.js',
         'js/elcid/services/lab_test_results.js',
         'js/elcid/services/demographics_search.js',
         'js/elcid/services/lab_test_summary_loader.js',
