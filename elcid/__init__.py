@@ -42,19 +42,14 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/lab_test_json_dump_view.js',
         'js/elcid/controllers/result_view.js',
         'js/elcid/controllers/rfh_find_patient.js',
-        'js/elcid/controllers/bloodculture_pathway_form.js',
         'js/elcid/controllers/blood_culture_panel.js',
         'js/elcid/controllers/edit_blood_culture_isolate.js',
         'js/elcid/controllers/delete_blood_culture_isolate.js',
         'js/elcid/controllers/remove_patient_step.js',
 
         'js/elcid/services/demographics_search.js',
-
-
         'js/elcid/controllers/tagging_step.js',
         'js/elcid/controllers/investigations.js',
-        # used in the blood culture forms
-        'js/elcid/services/blood_culture_helper.js',
 
         'js/elcid/services/blood_culture_isolate.js',
         'js/elcid/services/blood_culture_loader.js',
