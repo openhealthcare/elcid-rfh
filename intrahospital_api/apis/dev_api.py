@@ -406,7 +406,7 @@ class DevApi(base_api.BaseApi):
                     ),
                     external_identifier=self.get_external_identifier(),
                     external_system=constants.EXTERNAL_SYSTEM,
-                    status=lmodels.LabTest.COMPLETE,
+                    status=constants.COMPLETE,
                     site=u'^&                              ^',
                     test_code=i.lower().replace(" ", "_"),
                     test_name=i,

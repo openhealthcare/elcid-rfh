@@ -8,14 +8,14 @@ from collections import defaultdict
 from pytds.tds import OperationalError
 from intrahospital_api.apis import base_api
 from intrahospital_api import logger
-from intrahospital_api.constants import EXTERNAL_SYSTEM
+from intrahospital_api.constants import EXTERNAL_SYSTEM, COMPLETE, PENDING
 from elcid.utils import timing
-from lab import models as lmodels
 from django.conf import settings
 from elcid.models import Demographics
 
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
+
 
 MAIN_DEMOGRAPHICS_VIEW = "VIEW_CRS_Patient_Masterfile"
 
@@ -247,9 +247,9 @@ class PathologyRow(object):
         status_abbr = self.db_row.get("OBX_Status")
 
         if status_abbr == 'F':
-            return lmodels.LabTest.COMPLETE
+            return COMPLETE
         else:
-            return lmodels.LabTest.PENDING
+            return PENDING
 
     def get_site(self):
         site = self.db_row.get('Specimen_Site')

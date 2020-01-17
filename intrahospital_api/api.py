@@ -4,16 +4,13 @@ from rest_framework import viewsets
 from opal.core.views import json_response
 from opal import models as omodels
 from opal.core import subrecords
-from lab import models as lmodels
 from elcid.episode_serialization import serialize
 from intrahospital_api import get_api
 
 
 def patient_to_dict(patient, user):
     active_episode = patient.get_active_episode()
-    subs = [
-        i for i in subrecords.subrecords() if not i == lmodels.LabTest
-    ]
+    subs = [i for i in subrecords.subrecords()]
     subs.append(omodels.Tagging)
 
     serialised_episodes = serialize(
@@ -23,18 +20,10 @@ def patient_to_dict(patient, user):
         'id': patient.id,
     }
     for model in subrecords.patient_subrecords():
-        if model == lmodels.LabTest:
-            subs = model.objects.filter(patient_id=patient.id).filter(
-                external_system=None
-            )
-            d[model.get_api_name()] = [
-                subrecord.to_dict(user) for subrecord in subs
-            ]
-        else:
-            subs = model.objects.filter(patient_id=patient.id)
-            d[model.get_api_name()] = [
-                subrecord.to_dict(user) for subrecord in subs
-            ]
+        subs = model.objects.filter(patient_id=patient.id)
+        d[model.get_api_name()] = [
+            subrecord.to_dict(user) for subrecord in subs
+        ]
 
         for episode_dict in serialised_episodes:
             if model.get_api_name() in d:

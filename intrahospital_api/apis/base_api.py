@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 
 
 class BaseApi(object):
+    COMPLETE = "complete"
+    PENDING = "pending"
     def demographics(self, hospital_number):
         """ get me all demographics information for this patient
         """

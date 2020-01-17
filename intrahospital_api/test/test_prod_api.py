@@ -6,7 +6,6 @@ from datetime import datetime, date
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import prod_api
 from intrahospital_api import constants
-from lab import models as lmodels
 
 
 FAKE_PATHOLOGY_DATA = {
@@ -307,12 +306,12 @@ class PathologyRowTestCase(OpalTestCase):
     def test_get_status(self):
         row = self.get_row(OBX_Status="F")
         self.assertEqual(
-            row.get_status(), lmodels.LabTest.COMPLETE
+            row.get_status(), prod_api.COMPLETE
         )
 
         row = self.get_row(OBX_Status="C")
         self.assertEqual(
-            row.get_status(), lmodels.LabTest.PENDING
+            row.get_status(), prod_api.PENDING
         )
 
     def test_get_test_code(self):

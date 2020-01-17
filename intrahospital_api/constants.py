@@ -15,3 +15,6 @@ INTRAHOSPITAL_ROLES = set([
 ])
 
 EXTERNAL_SYSTEM = "RFH Database"
+
+COMPLETE = "complete"
+PENDING = "pending"
