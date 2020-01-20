@@ -20,21 +20,21 @@ RETRY_DELAY = 30
 MAIN_DEMOGRAPHICS_VIEW = "VIEW_CRS_Patient_Masterfile"
 
 PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
-@hospital_number ORDER BY last_updated DESC;"
+@hospital_number ORDER BY date_inserted DESC;"
 
 MAIN_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
+@hospital_number AND date_inserted > @since ORDER BY date_inserted DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and Result_ID = @lab_number ORDER BY last_updated DESC;"
+@hospital_number AND date_inserted > @since and Result_ID = @lab_number ORDER BY date_inserted DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND last_updated > @since and OBR_exam_code_Text = @test_type ORDER BY last_updated DESC;"
+@hospital_number AND date_inserted > @since and OBR_exam_code_Text = @test_type ORDER BY date_inserted DESC;"
 
-ALL_DATA_SINCE = "SELECT * FROM {view} WHERE last_updated > @since ORDER BY Patient_Number, last_updated DESC;"
+ALL_DATA_SINCE = "SELECT * FROM {view} WHERE date_inserted > @since ORDER BY Patient_Number, date_inserted DESC;"
 
 
 ETHNICITY_MAPPING = {
