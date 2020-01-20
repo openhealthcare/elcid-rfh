@@ -329,28 +329,30 @@ class PathologyRow(object):
 
 class ProdApi(base_api.BaseApi):
     def __init__(self):
-        self.ip_address = settings.HOSPITAL_DB.get("ip_address")
-        self.database = settings.HOSPITAL_DB.get("database")
-        self.username = settings.HOSPITAL_DB.get("username")
-        self.password = settings.HOSPITAL_DB.get("password")
-        self.view = settings.HOSPITAL_DB.get("view")
+        self.hospital_settings = settings.HOSPITAL_DB
+        self.trust_settings = settings.TRUST_DB
         if not all([
-            self.ip_address,
-            self.database,
-            self.username,
-            self.password,
-            self.view
+            self.hospital_settings.get("ip_address"),
+            self.hospital_settings.get("database"),
+            self.hospital_settings.get("username"),
+            self.hospital_settings.get("password"),
+            self.hospital_settings.get("view"),
+            self.trust_settings.get("ip_address"),
+            self.trust_settings.get("database"),
+            self.trust_settings.get("username"),
+            self.trust_settings.get("password"),
+            self.trust_settings.get("view"),
         ]):
             raise ValueError(
                 "You need to set proper credentials to use the prod api"
             )
 
-    def execute_query(self, query, params=None):
+    def execute_hospital_query(self, query, params=None):
         with pytds.connect(
-            self.ip_address,
-            self.database,
-            self.username,
-            self.password,
+            self.hospital_settings["ip_address"],
+            self.hospital_settings["database"],
+            self.hospital_settings["username"],
+            self.hospital_settings["password"],
             as_dict=True
         ) as conn:
             with conn.cursor() as cur:
@@ -364,23 +366,33 @@ class ProdApi(base_api.BaseApi):
 
     @property
     def pathology_demographics_query(self):
-        return PATHOLOGY_DEMOGRAPHICS_QUERY.format(view=self.view)
+        return PATHOLOGY_DEMOGRAPHICS_QUERY.format(
+            view=self.hospital_settings["view"]
+        )
 
     @property
     def all_data_for_hospital_number_query(self):
-        return ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER.format(view=self.view)
+        return ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER.format(
+            view=self.hospital_settings["view"]
+        )
 
     @property
     def all_data_since_query(self):
-        return ALL_DATA_SINCE.format(view=self.view)
+        return ALL_DATA_SINCE.format(
+            view=self.hospital_settings["view"]
+        )
 
     @property
     def all_data_query_for_lab_number(self):
-        return ALL_DATA_QUERY_WITH_LAB_NUMBER.format(view=self.view)
+        return ALL_DATA_QUERY_WITH_LAB_NUMBER.format(
+            view=self.hospital_settings["view"]
+        )
 
     @property
     def all_data_query_for_lab_test_type(self):
-        return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(view=self.view)
+        return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(
+            view=self.hospital_settings["view"]
+        )
 
 
     @property
@@ -399,11 +411,10 @@ class ProdApi(base_api.BaseApi):
             demographics_result["external_system"] = EXTERNAL_SYSTEM
             return demographics_result
 
-
     @timing
     @db_retry
     def main_demographics(self, hospital_number):
-        rows = list(self.execute_query(
+        rows = list(self.execute_hospital_query(
             self.main_demographics_query,
             params=dict(hospital_number=hospital_number)
         ))
@@ -416,7 +427,7 @@ class ProdApi(base_api.BaseApi):
     @timing
     @db_retry
     def pathology_demographics(self, hospital_number):
-        rows = list(self.execute_query(
+        rows = list(self.execute_hospital_query(
             self.pathology_demographics_query,
             params=dict(hospital_number=hospital_number)
         ))
@@ -431,7 +442,7 @@ class ProdApi(base_api.BaseApi):
         db_date = datetime.date.today() - datetime.timedelta(365)
 
         if lab_number:
-            return self.execute_query(
+            return self.execute_hospital_query(
                 self.all_data_query_for_lab_number,
                 params=dict(
                     hospital_number=hospital_number,
@@ -440,7 +451,7 @@ class ProdApi(base_api.BaseApi):
                 )
             )
         if test_type:
-            return self.execute_query(
+            return self.execute_hospital_query(
                 self.all_data_query_for_lab_test_type,
                 params=dict(
                     hospital_number=hospital_number,
@@ -449,7 +460,7 @@ class ProdApi(base_api.BaseApi):
                 )
             )
         else:
-            return self.execute_query(
+            return self.execute_hospital_query(
                 self.all_data_for_hospital_number_query,
                 params=dict(hospital_number=hospital_number, since=db_date)
             )
@@ -457,7 +468,7 @@ class ProdApi(base_api.BaseApi):
     @timing
     @db_retry
     def data_delta_query(self, since):
-        all_rows = self.execute_query(
+        all_rows = self.execute_hospital_query(
             self.all_data_since_query,
             params=dict(since=since)
         )
