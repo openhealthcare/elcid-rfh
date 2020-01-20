@@ -7,7 +7,7 @@ from intrahospital_api.models import UpstreamLabTestRow
 from intrahospital_api.apis.prod_api import ProdApi
 from elcid.models import Demographics
 
-SINCE = datetime.datetime(2019, 12, 27)
+SINCE = datetime.datetime(2020, 1, 18)
 
 
 class Command(BaseCommand):
