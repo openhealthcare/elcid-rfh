@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         api = ProdApi()
-        all_rows = api.execute_query(
+        all_rows = api.execute_trust_query(
             api.all_data_since_query,
             params=dict(since=SINCE)
         )
