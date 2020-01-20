@@ -179,7 +179,10 @@ class UpstreamLabTestRow(models.Model):
     Encounter_Location_Code = models.TextField(blank=True, null=True)
     Encounter_Location_Name = models.TextField(blank=True, null=True)
     Encounter_Location_Type = models.TextField(blank=True, null=True)
+
+    # is the time its produced by winpath
     Event_Date = models.DateTimeField(blank=True, null=True)
+
     Firstname = models.TextField(blank=True, null=True)
     MSH_Control_ID = models.TextField(blank=True, null=True)
     obr_id = models.IntegerField(blank=True, null=True)
@@ -221,10 +224,14 @@ class UpstreamLabTestRow(models.Model):
     Surname = models.TextField(blank=True, null=True)
     Visit_Number = models.TextField(blank=True, null=True)
     crs_patient_masterfile_id = models.TextField(blank=True, null=True)
+
+    # date inserted into the database
     date_inserted = models.DateTimeField(blank=True, null=True)
 
     # is id in the upstream
     upstream_id = models.IntegerField(blank=True, null=True)
+
+    # always the same as date inserted
     last_updated = models.DateTimeField(blank=True, null=True)
     visible = models.TextField(blank=True, null=True)
 
