@@ -469,7 +469,7 @@ class ProdApiTestcase(OpalTestCase):
         dt.today.return_value = date(2017, 10, 1)
         api = self.get_api()
         expected = [copy.copy(FAKE_PATHOLOGY_DATA)]
-        with mock.patch.object(api, 'execute_hospital_query') as execute_query:
+        with mock.patch.object(api, 'execute_trust_query') as execute_query:
             execute_query.return_value = [copy.copy(FAKE_PATHOLOGY_DATA)]
             result = api.raw_data("12312222")
         self.assertEqual(result, expected)
@@ -496,7 +496,7 @@ class ProdApiTestcase(OpalTestCase):
 
     def test_pathology_demographics_success(self):
         api = self.get_api()
-        with mock.patch.object(api, "execute_hospital_query") as execute_query:
+        with mock.patch.object(api, "execute_trust_query") as execute_query:
             execute_query.return_value = [FAKE_PATHOLOGY_DATA]
             result = api.pathology_demographics("123")
 
@@ -515,7 +515,7 @@ class ProdApiTestcase(OpalTestCase):
 
     def test_pathology_demographics_hospital_number_fail(self):
         api = self.get_api()
-        with mock.patch.object(api, "execute_hospital_query") as execute_query:
+        with mock.patch.object(api, "execute_trust_query") as execute_query:
             execute_query.return_value = []
             result = api.pathology_demographics("A1' 23")
 
@@ -601,10 +601,18 @@ class ProdApiTestcase(OpalTestCase):
     def test_demographics_not_found_in_either(self):
         api = self.get_api()
 
-        with mock.patch.object(api, "execute_hospital_query") as execute_query:
-            execute_query.return_value = []
-            result = api.demographics("123")
+        with mock.patch.object(
+            api, "execute_hospital_query"
+        ) as execute_hospital_query:
+            with mock.patch.object(
+                api, "execute_trust_query"
+            ) as execute_trust_query:
+                execute_hospital_query.return_value = []
+                execute_trust_query.return_value = []
+                result = api.demographics("123")
 
+        execute_hospital_query.assert_called()
+        execute_trust_query.assert_called()
         self.assertIsNone(result)
 
     def test_data_deltas(self):

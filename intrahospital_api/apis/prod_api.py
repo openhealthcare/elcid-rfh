@@ -364,36 +364,52 @@ class ProdApi(base_api.BaseApi):
         logger.debug(result)
         return result
 
+    def execute_trust_query(self, query, params=None):
+        with pytds.connect(
+            self.trust_settings["ip_address"],
+            self.trust_settings["database"],
+            self.trust_settings["username"],
+            self.trust_settings["password"],
+            as_dict=True
+        ) as conn:
+            with conn.cursor() as cur:
+                logger.info(
+                    "Running upstream query {} {}".format(query, params)
+                )
+                cur.execute(query, params)
+                result = cur.fetchall()
+        logger.debug(result)
+        return result
+
     @property
     def pathology_demographics_query(self):
         return PATHOLOGY_DEMOGRAPHICS_QUERY.format(
-            view=self.hospital_settings["view"]
+            view=self.trust_settings["view"]
         )
 
     @property
     def all_data_for_hospital_number_query(self):
         return ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER.format(
-            view=self.hospital_settings["view"]
+            view=self.trust_settings["view"]
         )
 
     @property
     def all_data_since_query(self):
         return ALL_DATA_SINCE.format(
-            view=self.hospital_settings["view"]
+            view=self.trust_settings["view"]
         )
 
     @property
     def all_data_query_for_lab_number(self):
         return ALL_DATA_QUERY_WITH_LAB_NUMBER.format(
-            view=self.hospital_settings["view"]
+            view=self.trust_settings["view"]
         )
 
     @property
     def all_data_query_for_lab_test_type(self):
         return ALL_DATA_QUERY_WITH_LAB_TEST_TYPE.format(
-            view=self.hospital_settings["view"]
+            view=self.trust_settings["view"]
         )
-
 
     @property
     def main_demographics_query(self):
@@ -423,11 +439,10 @@ class ProdApi(base_api.BaseApi):
 
         return MainDemographicsRow(rows[0]).get_demographics_dict()
 
-
     @timing
     @db_retry
     def pathology_demographics(self, hospital_number):
-        rows = list(self.execute_hospital_query(
+        rows = list(self.execute_trust_query(
             self.pathology_demographics_query,
             params=dict(hospital_number=hospital_number)
         ))
@@ -442,7 +457,7 @@ class ProdApi(base_api.BaseApi):
         db_date = datetime.date.today() - datetime.timedelta(365)
 
         if lab_number:
-            return self.execute_hospital_query(
+            return self.execute_trust_query(
                 self.all_data_query_for_lab_number,
                 params=dict(
                     hospital_number=hospital_number,
@@ -451,7 +466,7 @@ class ProdApi(base_api.BaseApi):
                 )
             )
         if test_type:
-            return self.execute_hospital_query(
+            return self.execute_trust_query(
                 self.all_data_query_for_lab_test_type,
                 params=dict(
                     hospital_number=hospital_number,
@@ -460,7 +475,7 @@ class ProdApi(base_api.BaseApi):
                 )
             )
         else:
-            return self.execute_hospital_query(
+            return self.execute_trust_query(
                 self.all_data_for_hospital_number_query,
                 params=dict(hospital_number=hospital_number, since=db_date)
             )
@@ -468,7 +483,7 @@ class ProdApi(base_api.BaseApi):
     @timing
     @db_retry
     def data_delta_query(self, since):
-        all_rows = self.execute_hospital_query(
+        all_rows = self.execute_trust_query(
             self.all_data_since_query,
             params=dict(since=since)
         )
