@@ -400,7 +400,10 @@ class ProdApiTestcase(OpalTestCase):
     )
 
     def get_api(self):
-        with override_settings(HOSPITAL_DB=self.REQUIRED_FIELDS):
+        with override_settings(
+            HOSPITAL_DB=self.REQUIRED_FIELDS,
+            TRUST_DB=self.REQUIRED_FIELDS
+        ):
             api = prod_api.ProdApi()
         return api
 
@@ -415,7 +418,9 @@ class ProdApiTestcase(OpalTestCase):
             missing = {
                 i: v for i, v in self.REQUIRED_FIELDS.items() if not k == i
             }
-            with override_settings(HOSPITAL_DB=missing):
+            with override_settings(
+                HOSPITAL_DB=missing, TRUST_DB=self.REQUIRED_FIELDS
+            ):
                 with self.assertRaises(ValueError) as er:
                     prod_api.ProdApi()
                 self.assertEqual(
@@ -425,18 +430,16 @@ class ProdApiTestcase(OpalTestCase):
 
     def test_init_success(self):
         api = self.get_api()
-        for k, v in self.REQUIRED_FIELDS.items():
-            self.assertEqual(
-                getattr(api, k), v
-            )
+        self.assertEqual(api.hospital_settings, self.REQUIRED_FIELDS)
+        self.assertEqual(api.trust_settings, self.REQUIRED_FIELDS)
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
-    def test_execute_query_with_params(self, pytds):
+    def test_execute_hospital_query_with_params(self, pytds):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
         cursor.fetchall.return_value = ["some_results"]
-        result = api.execute_query(
+        result = api.execute_hospital_query(
             "some query", dict(hospital_number="1231222222")
         )
         self.assertEqual(
@@ -449,12 +452,12 @@ class ProdApiTestcase(OpalTestCase):
         self.assertTrue(cursor.fetchall.called)
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
-    def test_execute_query_without_params(self, pytds):
+    def test_execute_hospital_query_without_params(self, pytds):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
         cursor.fetchall.return_value = ["some_results"]
-        result = api.execute_query("some query")
+        result = api.execute_hospital_query("some query")
         self.assertEqual(
             result, ["some_results"]
         )
@@ -466,7 +469,7 @@ class ProdApiTestcase(OpalTestCase):
         dt.today.return_value = date(2017, 10, 1)
         api = self.get_api()
         expected = [copy.copy(FAKE_PATHOLOGY_DATA)]
-        with mock.patch.object(api, 'execute_query') as execute_query:
+        with mock.patch.object(api, 'execute_trust_query') as execute_query:
             execute_query.return_value = [copy.copy(FAKE_PATHOLOGY_DATA)]
             result = api.raw_data("12312222")
         self.assertEqual(result, expected)
@@ -493,7 +496,7 @@ class ProdApiTestcase(OpalTestCase):
 
     def test_pathology_demographics_success(self):
         api = self.get_api()
-        with mock.patch.object(api, "execute_query") as execute_query:
+        with mock.patch.object(api, "execute_trust_query") as execute_query:
             execute_query.return_value = [FAKE_PATHOLOGY_DATA]
             result = api.pathology_demographics("123")
 
@@ -512,7 +515,7 @@ class ProdApiTestcase(OpalTestCase):
 
     def test_pathology_demographics_hospital_number_fail(self):
         api = self.get_api()
-        with mock.patch.object(api, "execute_query") as execute_query:
+        with mock.patch.object(api, "execute_trust_query") as execute_query:
             execute_query.return_value = []
             result = api.pathology_demographics("A1' 23")
 
@@ -520,7 +523,7 @@ class ProdApiTestcase(OpalTestCase):
 
     def test_main_demographics_success(self):
         api = self.get_api()
-        with mock.patch.object(api, "execute_query") as execute_query:
+        with mock.patch.object(api, "execute_hospital_query") as execute_query:
             execute_query.return_value = [FAKE_MAIN_DEMOGRAPHICS_ROW]
             result = api.main_demographics("123")
 
@@ -558,7 +561,7 @@ class ProdApiTestcase(OpalTestCase):
 
     def test_main_demographics_fail(self):
         api = self.get_api()
-        with mock.patch.object(api, "execute_query") as execute_query:
+        with mock.patch.object(api, "execute_hospital_query") as execute_query:
             execute_query.return_value = []
             result = api.main_demographics("A1' 23")
 
@@ -598,10 +601,18 @@ class ProdApiTestcase(OpalTestCase):
     def test_demographics_not_found_in_either(self):
         api = self.get_api()
 
-        with mock.patch.object(api, "execute_query") as execute_query:
-            execute_query.return_value = []
-            result = api.demographics("123")
+        with mock.patch.object(
+            api, "execute_hospital_query"
+        ) as execute_hospital_query:
+            with mock.patch.object(
+                api, "execute_trust_query"
+            ) as execute_trust_query:
+                execute_hospital_query.return_value = []
+                execute_trust_query.return_value = []
+                result = api.demographics("123")
 
+        execute_hospital_query.assert_called()
+        execute_trust_query.assert_called()
         self.assertIsNone(result)
 
     def test_data_deltas(self):
