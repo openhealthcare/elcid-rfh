@@ -129,7 +129,7 @@ class Observation(models.Model):
     observation_datetime = models.DateTimeField(blank=True, null=True)
     observation_name = models.CharField(max_length=256, blank=True, null=True)
     observation_number = models.CharField(max_length=256, blank=True, null=True)
-    observation_value = models.TextField(blank=True)
+    observation_value = models.TextField(null=True, blank=True)
     reference_range = models.CharField(max_length=256, blank=True, null=True)
     units = models.CharField(max_length=256, blank=True, null=True)
     test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
@@ -195,9 +195,10 @@ class Observation(models.Model):
         self.last_updated = serialization.deserialize_datetime(
             observation_dict["last_updated"]
         )
-        self.observation_datetime = serialization.deserialize_datetime(
-            observation_dict["observation_datetime"]
-        )
+        if observation_dict["observation_datetime"]:
+            self.observation_datetime = serialization.deserialize_datetime(
+                observation_dict["observation_datetime"]
+            )
         fields = [
             "observation_number",
             "observation_name",
