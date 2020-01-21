@@ -23,3 +23,4 @@ class Command(BaseCommand):
                 hospital_number=row["Patient_Number"]
             ).exists():
                 UpstreamLabTestRow.create(row)
+

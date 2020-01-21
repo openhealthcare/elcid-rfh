@@ -383,6 +383,22 @@ class ProdApi(base_api.BaseApi):
         logger.debug(result)
         return result
 
+    def execute_trust_query_2(self, query, params=None):
+        with pytds.connect(
+            self.trust_settings["ip_address"],
+            self.trust_settings["database"],
+            self.trust_settings["username"],
+            self.trust_settings["password"],
+            as_dict=True
+        ) as conn:
+            with conn.cursor() as cur:
+                logger.info(
+                    "Running upstream query {} {}".format(query, params)
+                )
+                cur.execute(query, params)
+                result = cur.fetchall()
+        return result
+
     @property
     def pathology_demographics_query(self):
         return PATHOLOGY_DEMOGRAPHICS_QUERY.format(
