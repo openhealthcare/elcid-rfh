@@ -84,9 +84,10 @@ class LabTest(models.Model):
         """
         self.patient = patient
         self.clinical_info = data["clinical_info"]
-        self.datetime_ordered = serialization.deserialize_datetime(
-            data["datetime_ordered"]
-        )
+        if data["datetime_ordered"]:
+            self.datetime_ordered = serialization.deserialize_datetime(
+                data["datetime_ordered"]
+            )
         self.lab_number = data["external_identifier"]
         self.status = data["status"]
         self.test_code = data["test_code"]
