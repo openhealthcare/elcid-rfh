@@ -476,7 +476,7 @@ class ProdApiTestcase(OpalTestCase):
 
         # make sure we query by the correct db date
         expected_query = "SELECT * FROM some_view WHERE Patient_Number = \
-@hospital_number AND last_updated > @since ORDER BY last_updated DESC;"
+@hospital_number AND date_inserted > @since ORDER BY date_inserted DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
         )
@@ -505,7 +505,7 @@ class ProdApiTestcase(OpalTestCase):
         )
 
         expected_query = "SELECT top(1) * FROM some_view WHERE Patient_Number \
-= @hospital_number ORDER BY last_updated DESC;"
+= @hospital_number ORDER BY date_inserted DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
         )
