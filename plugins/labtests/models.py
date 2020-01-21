@@ -22,7 +22,7 @@ class LabTest(models.Model):
         on_delete=models.CASCADE,
         related_name="lab_tests"
     )
-    clinical_info = models.TextField(blank=True)
+    clinical_info = models.TextField(null=True, blank=True)
     datetime_ordered = models.DateTimeField(null=True, blank=True)
     site = models.CharField(max_length=256, blank=True, null=True)
     status = models.CharField(max_length=256, blank=True, null=True)
