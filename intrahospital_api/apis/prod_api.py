@@ -348,6 +348,7 @@ class ProdApi(base_api.BaseApi):
             )
 
     def execute_hospital_query(self, query, params=None):
+        result = []
         with pytds.connect(
             self.hospital_settings["ip_address"],
             self.hospital_settings["database"],
@@ -360,11 +361,12 @@ class ProdApi(base_api.BaseApi):
                     "Running upstream query {} {}".format(query, params)
                 )
                 cur.execute(query, params)
-                result = cur.fetchall()
+                result.extend(cur.fetchmany(1000))
         logger.debug(result)
         return result
 
     def execute_trust_query(self, query, params=None):
+        result = []
         with pytds.connect(
             self.trust_settings["ip_address"],
             self.trust_settings["database"],
@@ -377,7 +379,7 @@ class ProdApi(base_api.BaseApi):
                     "Running upstream query {} {}".format(query, params)
                 )
                 cur.execute(query, params)
-                result = cur.fetchall()
+                result.extend(cur.fetchmany(1000))
         logger.debug(result)
         return result
 
