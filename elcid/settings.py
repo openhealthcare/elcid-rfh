@@ -189,10 +189,19 @@ API_USER = "needs to be set"
 # this needs to be set to true on prod
 ASYNC_API = False
 
-# if the intrahospital api is prod, we need
-# an ip address, a database, a username and a password for
-# the hospital db
+# if the intrahospital api is prod
+# there 2 databases
+# the hopstial DB does demographics, appointments and ITU
 HOSPITAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
+
+# the trust DB does lab tests
+TRUST_DB = dict(
     ip_address=None,
     database=None,
     username=None,

@@ -22,7 +22,7 @@ class LabTest(models.Model):
         on_delete=models.CASCADE,
         related_name="lab_tests"
     )
-    clinical_info = models.TextField(blank=True)
+    clinical_info = models.TextField(null=True, blank=True)
     datetime_ordered = models.DateTimeField(null=True, blank=True)
     site = models.CharField(max_length=256, blank=True, null=True)
     status = models.CharField(max_length=256, blank=True, null=True)
@@ -84,9 +84,10 @@ class LabTest(models.Model):
         """
         self.patient = patient
         self.clinical_info = data["clinical_info"]
-        self.datetime_ordered = serialization.deserialize_datetime(
-            data["datetime_ordered"]
-        )
+        if data["datetime_ordered"]:
+            self.datetime_ordered = serialization.deserialize_datetime(
+                data["datetime_ordered"]
+            )
         self.lab_number = data["external_identifier"]
         self.status = data["status"]
         self.test_code = data["test_code"]
@@ -128,7 +129,7 @@ class Observation(models.Model):
     observation_datetime = models.DateTimeField(blank=True, null=True)
     observation_name = models.CharField(max_length=256, blank=True, null=True)
     observation_number = models.CharField(max_length=256, blank=True, null=True)
-    observation_value = models.TextField(blank=True)
+    observation_value = models.TextField(null=True, blank=True)
     reference_range = models.CharField(max_length=256, blank=True, null=True)
     units = models.CharField(max_length=256, blank=True, null=True)
     test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
@@ -194,9 +195,10 @@ class Observation(models.Model):
         self.last_updated = serialization.deserialize_datetime(
             observation_dict["last_updated"]
         )
-        self.observation_datetime = serialization.deserialize_datetime(
-            observation_dict["observation_datetime"]
-        )
+        if observation_dict["observation_datetime"]:
+            self.observation_datetime = serialization.deserialize_datetime(
+                observation_dict["observation_datetime"]
+            )
         fields = [
             "observation_number",
             "observation_name",

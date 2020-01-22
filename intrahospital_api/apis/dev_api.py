@@ -74,6 +74,10 @@ RAW_DATA = {
     u'Patient_Class': u'NHS',
     u'Patient_ID_External': u'7060976728',
     u'Patient_Number': u'20552710',
+    'PV1_7_C_NUMBER': '',
+    'PV1_7_CONSULTANT_NAME': '',
+    'PV1_3_5': None,
+    'PV1_3_9': None,
     u'Relevant_Clinical_Info': u'testing',
     u'Reported_date': datetime(2015, 7, 18, 16, 26),
     u'Request_Date': datetime(2015, 7, 18, 16, 15),
@@ -90,6 +94,8 @@ RAW_DATA = {
     u'date_inserted': datetime(2015, 7, 18, 17, 0, 2, 240000),
     u'id': 5949264,
     u'last_updated': datetime(2015, 7, 18, 17, 0, 2, 240000),
+    'obr_id': 2000000,
+    'result_source': 'RF',
     u'visible': u'Y'
 }
 
