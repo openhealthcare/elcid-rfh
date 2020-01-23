@@ -476,14 +476,13 @@ class ProdApiTestcase(OpalTestCase):
 
         # make sure we query by the correct db date
         expected_query = "SELECT * FROM some_view WHERE Patient_Number = \
-@hospital_number AND date_inserted > @since ORDER BY date_inserted DESC;"
+@hospital_number ORDER BY date_inserted DESC;"
         self.assertEqual(
             execute_query.call_args[0][0], expected_query
         )
         self.assertEqual(
             execute_query.call_args[1]["params"], dict(
                 hospital_number="12312222",
-                since=date(2016, 10, 1)
             )
         )
 
