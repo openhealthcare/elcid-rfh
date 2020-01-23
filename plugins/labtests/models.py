@@ -35,29 +35,6 @@ class LabTest(models.Model):
     class Meta:
         ordering = ['-datetime_ordered']
 
-    @classmethod
-    def create_from_old_test(cls, old_lab_test):
-        new_lab_test = cls()
-        new_lab_test.patient = old_lab_test.patient
-        extras = old_lab_test.extras
-        fields = [
-            "clinical_info",
-            "site",
-            "status",
-            "test_code",
-            "test_name",
-            "lab_number",
-        ]
-        for f in fields:
-            setattr(new_lab_test, f, extras.get(f, None))
-        new_lab_test.datetime_ordered = old_lab_test.datetime_ordered
-        new_lab_test.lab_number = old_lab_test.external_identifier
-        new_lab_test.save()
-        for ob in extras["observations"]:
-            obs = new_lab_test.observation_set.create()
-            obs.create(ob)
-        return new_lab_test
-
     def update_from_api_dict(self, patient, data):
         """
             This is the updateFromDict of the the UpstreamLabTest

@@ -102,29 +102,3 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
                 loader.load_patient(saved_patient)
 
         return saved_patient, saved_episode
-
-
-class BloodCultureStep(Step):
-    template = "pathway/blood_culture.html"
-    display_name = "Blood Culture"
-    icon = "fa fa-crosshairs"
-    step_controller = "BloodCulturePathwayFormCtrl"
-    model = lmodels.LabTest
-
-    def pre_save(self, data, user, patient=None, episode=None):
-        existing_data = data.get(lmodels.LabTest.get_api_name(), [])
-        ids = [i["id"] for i in existing_data if "id" in i]
-        existing = lmodels.LabTest.objects.filter(patient=patient)
-        existing = existing.filter(
-            external_system=None
-        )
-        existing.exclude(id__in=ids).delete()
-
-
-class BloodCulturePathway(IgnoreDemographicsMixin, PagePathway):
-    display_name = "Blood Culture"
-    slug = "blood_culture"
-
-    steps = (
-        BloodCultureStep(),
-    )
