@@ -361,7 +361,12 @@ class ProdApi(base_api.BaseApi):
                     "Running upstream query {} {}".format(query, params)
                 )
                 cur.execute(query, params)
-                result.extend(cur.fetchmany(1000))
+                while True:
+                    latest = cur.fetchmany(1000)
+                    if latest:
+                        result.extend(latest)
+                    else:
+                        break
         logger.debug(result)
         return result
 
@@ -379,7 +384,12 @@ class ProdApi(base_api.BaseApi):
                     "Running upstream query {} {}".format(query, params)
                 )
                 cur.execute(query, params)
-                result.extend(cur.fetchmany(1000))
+                while True:
+                    latest = cur.fetchmany(1000)
+                    if latest:
+                        result.extend(latest)
+                    else:
+                        break
         logger.debug(result)
         return result
 
