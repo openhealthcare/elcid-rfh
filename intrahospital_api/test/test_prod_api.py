@@ -438,12 +438,12 @@ class ProdApiTestcase(OpalTestCase):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
-        cursor.fetchmany.return_value = ["some_results"]
+        cursor.fetchmany.side_effect = [["some_results"], None]
         result = api.execute_hospital_query(
             "some query", dict(hospital_number="1231222222")
         )
         self.assertEqual(
-            result, ["some_results"]
+            list(result), ["some_results"]
         )
         cursor.execute.assert_called_once_with(
             "some query",
@@ -456,10 +456,10 @@ class ProdApiTestcase(OpalTestCase):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
-        cursor.fetchmany.return_value = ["some_results"]
+        cursor.fetchmany.side_effect = [["some_results"], None]
         result = api.execute_hospital_query("some query")
         self.assertEqual(
-            result, ["some_results"]
+            list(result), ["some_results"]
         )
         cursor.execute.assert_called_once_with("some query", None)
         self.assertTrue(cursor.fetchmany.called)

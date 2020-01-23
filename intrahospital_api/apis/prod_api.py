@@ -348,7 +348,6 @@ class ProdApi(base_api.BaseApi):
             )
 
     def execute_hospital_query(self, query, params=None):
-        result = []
         with pytds.connect(
             self.hospital_settings["ip_address"],
             self.hospital_settings["database"],
@@ -364,14 +363,13 @@ class ProdApi(base_api.BaseApi):
                 while True:
                     latest = cur.fetchmany(1000)
                     if latest:
-                        result.extend(latest)
+                        for row in latest:
+                            logger.debug(row)
+                            yield row
                     else:
                         break
-        logger.debug(result)
-        return result
 
     def execute_trust_query(self, query, params=None):
-        result = []
         with pytds.connect(
             self.trust_settings["ip_address"],
             self.trust_settings["database"],
@@ -387,11 +385,11 @@ class ProdApi(base_api.BaseApi):
                 while True:
                     latest = cur.fetchmany(1000)
                     if latest:
-                        result.extend(latest)
+                        for row in latest:
+                            logger.debug(row)
+                            yield row
                     else:
                         break
-        logger.debug(result)
-        return result
 
     @property
     def pathology_demographics_query(self):
@@ -469,23 +467,23 @@ class ProdApi(base_api.BaseApi):
         db_date = datetime.date.today() - datetime.timedelta(365)
 
         if lab_number:
-            return self.execute_trust_query(
+            return list(self.execute_trust_query(
                 self.all_data_query_for_lab_number,
                 params=dict(
                     hospital_number=hospital_number,
                     since=db_date,
                     lab_number=lab_number
                 )
-            )
+            ))
         if test_type:
-            return self.execute_trust_query(
+            return list(self.execute_trust_query(
                 self.all_data_query_for_lab_test_type,
                 params=dict(
                     hospital_number=hospital_number,
                     since=db_date,
                     test_type=test_type
                 )
-            )
+            ))
         else:
             return self.execute_trust_query(
                 self.all_data_for_hospital_number_query,
@@ -515,22 +513,26 @@ class ProdApi(base_api.BaseApi):
         all_rows = self.data_delta_query(some_datetime)
 
         hospital_number_to_rows = defaultdict(list)
+        hospital_numbers = set(
+            Demographics.objects.values_list(
+                'hospital_number', flat=True
+            )
+        )
 
         for row in all_rows:
-            hospital_number_to_rows[row.get_hospital_number()].append(row)
+            hn = row.get_hospital_number()
+            if hn in hospital_numbers:
+                hospital_number_to_rows[row.get_hospital_number()].append(row)
 
         result = []
 
         for hospital_number, rows in hospital_number_to_rows.items():
-            if Demographics.objects.filter(
-                hospital_number=hospital_number
-            ).exists():
-                demographics = rows[0].get_demographics_dict()
-                lab_tests = self.cast_rows_to_lab_test(rows)
-                result.append(dict(
-                    demographics=demographics,
-                    lab_tests=lab_tests
-                ))
+            demographics = rows[0].get_demographics_dict()
+            lab_tests = self.cast_rows_to_lab_test(rows)
+            result.append(dict(
+                demographics=demographics,
+                lab_tests=lab_tests
+            ))
 
         return result
 
