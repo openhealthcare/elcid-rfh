@@ -253,7 +253,7 @@ class PathologyRow(object):
 
     def get_site(self):
         site = self.db_row.get('Specimen_Site')
-        if "^" in site and "-" in site:
+        if site and "^" in site and "-" in site:
             return site.split("^")[1].strip().split("-")[0].strip()
         return site
 

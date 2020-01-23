@@ -22,7 +22,7 @@ class LabTest(models.Model):
         on_delete=models.CASCADE,
         related_name="lab_tests"
     )
-    clinical_info = models.TextField(blank=True)
+    clinical_info = models.TextField(null=True, blank=True)
     datetime_ordered = models.DateTimeField(null=True, blank=True)
     site = models.CharField(max_length=256, blank=True, null=True)
     status = models.CharField(max_length=256, blank=True, null=True)
@@ -34,29 +34,6 @@ class LabTest(models.Model):
 
     class Meta:
         ordering = ['-datetime_ordered']
-
-    @classmethod
-    def create_from_old_test(cls, old_lab_test):
-        new_lab_test = cls()
-        new_lab_test.patient = old_lab_test.patient
-        extras = old_lab_test.extras
-        fields = [
-            "clinical_info",
-            "site",
-            "status",
-            "test_code",
-            "test_name",
-            "lab_number",
-        ]
-        for f in fields:
-            setattr(new_lab_test, f, extras.get(f, None))
-        new_lab_test.datetime_ordered = old_lab_test.datetime_ordered
-        new_lab_test.lab_number = old_lab_test.external_identifier
-        new_lab_test.save()
-        for ob in extras["observations"]:
-            obs = new_lab_test.observation_set.create()
-            obs.create(ob)
-        return new_lab_test
 
     def update_from_api_dict(self, patient, data):
         """
@@ -84,9 +61,10 @@ class LabTest(models.Model):
         """
         self.patient = patient
         self.clinical_info = data["clinical_info"]
-        self.datetime_ordered = serialization.deserialize_datetime(
-            data["datetime_ordered"]
-        )
+        if data["datetime_ordered"]:
+            self.datetime_ordered = serialization.deserialize_datetime(
+                data["datetime_ordered"]
+            )
         self.lab_number = data["external_identifier"]
         self.status = data["status"]
         self.test_code = data["test_code"]
@@ -128,7 +106,7 @@ class Observation(models.Model):
     observation_datetime = models.DateTimeField(blank=True, null=True)
     observation_name = models.CharField(max_length=256, blank=True, null=True)
     observation_number = models.CharField(max_length=256, blank=True, null=True)
-    observation_value = models.TextField(blank=True)
+    observation_value = models.TextField(null=True, blank=True)
     reference_range = models.CharField(max_length=256, blank=True, null=True)
     units = models.CharField(max_length=256, blank=True, null=True)
     test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
@@ -194,9 +172,10 @@ class Observation(models.Model):
         self.last_updated = serialization.deserialize_datetime(
             observation_dict["last_updated"]
         )
-        self.observation_datetime = serialization.deserialize_datetime(
-            observation_dict["observation_datetime"]
-        )
+        if observation_dict["observation_datetime"]:
+            self.observation_datetime = serialization.deserialize_datetime(
+                observation_dict["observation_datetime"]
+            )
         fields = [
             "observation_number",
             "observation_name",

@@ -438,7 +438,7 @@ class ProdApiTestcase(OpalTestCase):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
-        cursor.fetchall.return_value = ["some_results"]
+        cursor.fetchmany.return_value = ["some_results"]
         result = api.execute_hospital_query(
             "some query", dict(hospital_number="1231222222")
         )
@@ -449,20 +449,20 @@ class ProdApiTestcase(OpalTestCase):
             "some query",
             dict(hospital_number="1231222222")
         )
-        self.assertTrue(cursor.fetchall.called)
+        self.assertTrue(cursor.fetchmany.called)
 
     @mock.patch('intrahospital_api.apis.prod_api.pytds')
     def test_execute_hospital_query_without_params(self, pytds):
         api = self.get_api()
         conn = pytds.connect().__enter__()
         cursor = conn.cursor().__enter__()
-        cursor.fetchall.return_value = ["some_results"]
+        cursor.fetchmany.return_value = ["some_results"]
         result = api.execute_hospital_query("some query")
         self.assertEqual(
             result, ["some_results"]
         )
         cursor.execute.assert_called_once_with("some query", None)
-        self.assertTrue(cursor.fetchall.called)
+        self.assertTrue(cursor.fetchmany.called)
 
     @mock.patch("intrahospital_api.apis.prod_api.datetime.date")
     def test_raw_data(self, dt):
