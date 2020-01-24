@@ -367,6 +367,39 @@ def async_load_patient(patient_id, patient_load_id):
         raise
 
 
+def synch_all_patients():
+    """
+    Updates all lab tests from the upstream server.
+    It refreshes lab tests with the same lab number
+    but does not delete old lab tests
+    """
+    patients = Patient.objects.all().prefetch_related("demographics_set")
+    count = patients.count()
+    for number, ipl in enumerate(patients):
+        patient = ipl.patient
+        logger.info("Synching {} ({}/{})".format(
+            patient.id, number+1, count
+        ))
+        sync_patient(patient)
+
+
+def sync_patient(patient):
+    hospital_number = patient.demographics_set.all()[0]
+    results = api.results_for_hospital_number(
+        hospital_number
+    )
+    logger.info(
+        "loaded results for patient {}".format(patient.id)
+    )
+    update_lab_tests.update_tests(patient, results)
+    logger.info(
+        "tests synced for {}".format(patient.id)
+    )
+    update_demographics.update_patient_demographics(patient)
+    logger.info(
+        "demographics synced for {}".format(patient.id)
+    )
+
 @transaction.atomic
 def _load_patient(patient, patient_load):
     logger.info(
