@@ -183,6 +183,29 @@ class LabTestTestCase(OpalTestCase):
             "g"
         )
 
+    def test_update_from_dict_deletes_other_obs(self):
+        lt = self.patient.lab_tests.create(**{
+            "clinical_info":  'testing',
+            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "lab_number": "11111",
+            "site": u'^&        ^',
+            "status": "Sucess",
+            "test_code": "AN12",
+            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        })
+
+        lt.observation_set.create(
+            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
+            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
+            observation_number="other",
+            reference_range="3.5 - 11",
+            units="g",
+            observation_value="234"
+        )
+        lt.update_from_api_dict(self.patient, self.api_dict)
+        obs = lt.observation_set.get()
+        self.assertEqual(obs.observation_number, "12312")
+
     def test_patient_deletion_behaviour(self):
         self.create_lab_test()
         self.patient.delete()
