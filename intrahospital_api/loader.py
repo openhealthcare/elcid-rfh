@@ -384,21 +384,27 @@ def synch_all_patients():
 
 
 def sync_patient(patient):
-    hospital_number = patient.demographics_set.all()[0]
-    results = api.results_for_hospital_number(
-        hospital_number
-    )
-    logger.info(
-        "loaded results for patient {}".format(patient.id)
-    )
-    update_lab_tests.update_tests(patient, results)
-    logger.info(
-        "tests synced for {}".format(patient.id)
-    )
-    update_demographics.update_patient_demographics(patient)
-    logger.info(
-        "demographics synced for {}".format(patient.id)
-    )
+    try:
+        hospital_number = patient.demographics_set.all()[0]
+        results = api.results_for_hospital_number(
+            hospital_number
+        )
+        logger.info(
+            "loaded results for patient {}".format(patient.id)
+        )
+        update_lab_tests.update_tests(patient, results)
+        logger.info(
+            "tests synced for {}".format(patient.id)
+        )
+        update_demographics.update_patient_demographics(patient)
+        logger.info(
+            "demographics synced for {}".format(patient.id)
+        )
+    except Exception:
+        logger.info(
+            "Unable to sync {}".format(patient.id)
+        )
+
 
 @transaction.atomic
 def _load_patient(patient, patient_load):
