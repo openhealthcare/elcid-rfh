@@ -71,13 +71,9 @@ class LabTest(models.Model):
         self.site = data["site"]
         self.test_name = data["test_name"]
         self.save()
-        for obs_dict in data["observations"]:
-            obs = self.observation_set.filter(
-                observation_number=obs_dict["observation_number"]
-            )
-            if obs.exists():
-                obs.delete()
+        self.observation_set.all().delete()
 
+        for obs_dict in data["observations"]:
             obs = self.observation_set.create()
             obs.create(obs_dict)
 
