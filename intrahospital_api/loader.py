@@ -375,8 +375,7 @@ def synch_all_patients():
     """
     patients = Patient.objects.all().prefetch_related("demographics_set")
     count = patients.count()
-    for number, ipl in enumerate(patients):
-        patient = ipl.patient
+    for number, patient in enumerate(patients):
         logger.info("Synching {} ({}/{})".format(
             patient.id, number+1, count
         ))
