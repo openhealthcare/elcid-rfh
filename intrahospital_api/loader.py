@@ -388,7 +388,7 @@ def sync_all_patients():
 
 
 def sync_patient(patient):
-    hospital_number = patient.demographics_set.all()[0]
+    hospital_number = patient.demographics_set.all()[0].hospital_number
     results = api.results_for_hospital_number(
         hospital_number
     )
