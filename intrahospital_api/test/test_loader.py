@@ -626,7 +626,7 @@ class SynchAllPatientsTestCase(ApiTestCase):
     @mock.patch.object(loader.logger, 'info')
     def test_sync_all_patients(self, info, sync_patient):
         p, _ = self.new_patient_and_episode_please()
-        loader.synch_all_patients()
+        loader.sync_all_patients()
 
         info.assert_called_once_with("Synching {} (1/1)".format(
             p.id
