@@ -11,7 +11,7 @@ class TestGetOrCreateLabTest(OpalTestCase):
             "clinical_info":  'testing',
             "datetime_ordered": "17/07/2015 04:15:10",
             "external_identifier": "11111",
-            "site": u'^&        ^',
+            "site": u'some site',
             "status": "Success",
             "test_code": "AN12",
             "test_name": "Anti-CV2 (CRMP-5) antibodies",
@@ -27,12 +27,10 @@ class TestGetOrCreateLabTest(OpalTestCase):
         }
         self.patient, _ = self.new_patient_and_episode_please()
 
-
     def test_creates_lab_test(self):
-        lt, created = update_lab_tests.get_or_create_lab_test(
+        lt = update_lab_tests.delete_and_create_lab_test(
             self.patient, self.api_dict
         )
-        self.assertTrue(created)
 
         self.assertEqual(
             lt.patient, self.patient
@@ -60,7 +58,7 @@ class TestGetOrCreateLabTest(OpalTestCase):
         )
 
         self.assertEqual(
-            lt.site, '^&        ^'
+            lt.site, 'some site'
         )
 
         obs = lt.observation_set.get()
@@ -101,7 +99,7 @@ class TestGetOrCreateLabTest(OpalTestCase):
             lab_test_models.LabTest.objects.all().count(), 1
         )
 
-    def test_updates_lab_test(self):
+    def test_replaces_lab_test(self):
         lab_test_models.LabTest.objects.create(**{
             "patient": self.patient,
             "clinical_info":  'testing',
@@ -109,17 +107,15 @@ class TestGetOrCreateLabTest(OpalTestCase):
                 2015, 7, 17, 4, 15, 10
             ),
             "lab_number": "11111",
-            "site": u'^&        ^',
+            "site": 'some site',
             "status": "Pending",
             "test_code": "AN12",
             "test_name": "Anti-CV2 (CRMP-5) antibodies",
         })
 
-        lt, created = update_lab_tests.get_or_create_lab_test(
+        lt = update_lab_tests.delete_and_create_lab_test(
             self.patient, self.api_dict
         )
-
-        self.assertFalse(created)
         self.assertEqual(lt.status, "Success")
         # check the model did actually save
         self.assertEqual(
