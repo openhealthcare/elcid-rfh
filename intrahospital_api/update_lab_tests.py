@@ -11,21 +11,22 @@ def update_tests(patient, lab_tests):
     updating.
     """
     for lab_test in lab_tests:
-        get_or_create_lab_test(patient, lab_test)
+        delete_and_create_lab_test(patient, lab_test)
 
 
-def get_or_create_lab_test(patient, lab_test):
+def delete_and_create_lab_test(patient, lab_test):
     """"
-    Updates the plugins.labtest lab test if it exists
-    otherwise it creates it.
+    Lab tests should be unique for lab_number, test
+    name and patient. So if we have a new on coming
+    in, delete the existing one and create a new test.
     """
 
-    test, created = lab_test_models.LabTest.objects.get_or_create(
+    lab_test_models.LabTest.objects.filter(
         lab_number=lab_test["external_identifier"],
         test_name=lab_test["test_name"],
         patient=patient
-    )
+    ).delete()
+    test = lab_test_models.LabTest()
     test.update_from_api_dict(patient, lab_test)
-    return test, created
-
+    return test
 
