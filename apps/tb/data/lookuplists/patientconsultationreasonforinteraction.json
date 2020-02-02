@@ -2,11 +2,23 @@
     "patientconsultationreasonforinteraction": [
         {
             "synonyms": [],
+            "name": "MDT Meeting"
+        },
+        {
+            "synonyms": [],
             "name": "LTBI follow up"
         },
         {
             "synonyms": [],
+            "name": "TB follow up"
+        },
+        {
+            "synonyms": [],
             "name": "LTBI initial assessment"
+        },
+        {
+            "synonyms": [],
+            "name": "TB initial assessment"
         }
     ]
 }
