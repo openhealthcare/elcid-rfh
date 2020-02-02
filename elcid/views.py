@@ -3,6 +3,7 @@ eLCID specific views.
 """
 import csv
 import random
+import datetime
 from collections import defaultdict, OrderedDict
 
 from django.apps import apps
@@ -181,9 +182,13 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
             # regardless as to whether it is on that specific episode
             # this is because from the user perspective micro input
             # is shown which ever episode the medical professional is viewing
+            hundred_days_ago = datetime.datetime.now() - datetime.timedelta(
+                days=100
+            )
             microbiology_inputs = models.MicrobiologyInput.objects.filter(
                 episode__patient_id=episode.patient_id
-            ).order_by("when")
+            ).filter(when__gte=hundred_days_ago).order_by("when")
+
             primary_diagnosis = episode.primarydiagnosis_set.all()[0].condition
             ward = location.ward
             if not ward:
@@ -197,7 +202,11 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
                 "diagnosis": diagnosis,
                 "lines": episode.line_set.all(),
                 "clinical_advices": microbiology_inputs,
-                "blood_culture_sets": episode.patient.bloodcultureset_set.all()
+                "blood_culture_sets": episode.patient.bloodcultureset_set.filter(
+                    date_ordered__gte=datetime.date.today() - datetime.timedelta(
+                        days=100
+                    )
+                )
             })
 
         ward_names = sorted(by_ward.keys())
