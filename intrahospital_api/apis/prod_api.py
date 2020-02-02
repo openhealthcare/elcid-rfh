@@ -26,13 +26,13 @@ MAIN_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND date_inserted > @since ORDER BY date_inserted DESC;"
+@hospital_number ORDER BY date_inserted DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND date_inserted > @since and Result_ID = @lab_number ORDER BY date_inserted DESC;"
+@hospital_number and Result_ID = @lab_number ORDER BY date_inserted DESC;"
 
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
-@hospital_number AND date_inserted > @since and OBR_exam_code_Text = @test_type ORDER BY date_inserted DESC;"
+@hospital_number AND OBR_exam_code_Text = @test_type ORDER BY date_inserted DESC;"
 
 ALL_DATA_SINCE = "SELECT * FROM {view} WHERE date_inserted > @since ORDER BY Patient_Number, date_inserted DESC;"
 
@@ -348,7 +348,6 @@ class ProdApi(base_api.BaseApi):
             )
 
     def execute_hospital_query(self, query, params=None):
-        result = []
         with pytds.connect(
             self.hospital_settings["ip_address"],
             self.hospital_settings["database"],
@@ -361,12 +360,11 @@ class ProdApi(base_api.BaseApi):
                     "Running upstream query {} {}".format(query, params)
                 )
                 cur.execute(query, params)
-                result.extend(cur.fetchmany(1000))
+                result = cur.fetchall()
         logger.debug(result)
         return result
 
     def execute_trust_query(self, query, params=None):
-        result = []
         with pytds.connect(
             self.trust_settings["ip_address"],
             self.trust_settings["database"],
@@ -379,9 +377,10 @@ class ProdApi(base_api.BaseApi):
                     "Running upstream query {} {}".format(query, params)
                 )
                 cur.execute(query, params)
-                result.extend(cur.fetchmany(1000))
+                result = cur.fetchall()
         logger.debug(result)
         return result
+
 
     @property
     def pathology_demographics_query(self):
@@ -454,16 +453,11 @@ class ProdApi(base_api.BaseApi):
         return PathologyRow(rows[0]).get_demographics_dict()
 
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
-        """ not all data, I lied. Only the last year's
-        """
-        db_date = datetime.date.today() - datetime.timedelta(365)
-
         if lab_number:
             return self.execute_trust_query(
                 self.all_data_query_for_lab_number,
                 params=dict(
                     hospital_number=hospital_number,
-                    since=db_date,
                     lab_number=lab_number
                 )
             )
@@ -472,14 +466,13 @@ class ProdApi(base_api.BaseApi):
                 self.all_data_query_for_lab_test_type,
                 params=dict(
                     hospital_number=hospital_number,
-                    since=db_date,
                     test_type=test_type
                 )
             )
         else:
             return self.execute_trust_query(
                 self.all_data_for_hospital_number_query,
-                params=dict(hospital_number=hospital_number, since=db_date)
+                params=dict(hospital_number=hospital_number)
             )
 
     @timing
