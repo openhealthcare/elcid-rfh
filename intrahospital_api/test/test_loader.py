@@ -619,3 +619,60 @@ class AnyLoadsRunningTestCase(ApiTestCase):
             started=timezone.now()
         )
         self.assertFalse(loader.any_loads_running())
+
+
+class SynchAllPatientsTestCase(ApiTestCase):
+    @mock.patch('intrahospital_api.loader.sync_patient')
+    @mock.patch.object(loader.logger, 'info')
+    def test_sync_all_patients(self, info, sync_patient):
+        p, _ = self.new_patient_and_episode_please()
+        loader.sync_all_patients()
+
+        info.assert_called_once_with("Synching {} (1/1)".format(
+            p.id
+        ))
+        sync_patient.assert_called_once_with(p)
+
+    @mock.patch('intrahospital_api.loader.sync_patient')
+    @mock.patch('intrahospital_api.loader.log_errors')
+    @mock.patch.object(loader.logger, 'info')
+    def test_sync_all_patients_with_error(self, info, log_errors, sync_patient):
+        sync_patient.side_effect = ValueError('Boom')
+        patient, _ = self.new_patient_and_episode_please()
+        loader.sync_all_patients()
+        log_errors.assert_called_once_with(
+            "Unable to sync {}".format(patient.id)
+        )
+
+
+class SynchPatientTestCase(ApiTestCase):
+    @mock.patch.object(loader.logger, 'info')
+    @mock.patch.object(loader.api, 'results_for_hospital_number')
+    @mock.patch('intrahospital_api.loader.update_lab_tests.update_tests')
+    @mock.patch(
+        'intrahospital_api.loader.update_demographics.update_patient_demographics'
+    )
+    def test_synch_patient(
+        self, update_demographics, update_tests, results, info
+    ):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="111"
+        )
+        results.return_value = "some_results"
+        loader.sync_patient(patient)
+        results.assert_called_once_with('111')
+        update_tests.assert_called_once_with(patient, "some_results")
+        update_demographics.assert_called_once_with(patient)
+        self.assertEqual(
+            info.call_args_list[0][0][0],
+            "fetched results for patient {}".format(patient.id)
+        )
+        self.assertEqual(
+            info.call_args_list[1][0][0],
+            "tests synced for {}".format(patient.id)
+        )
+        self.assertEqual(
+            info.call_args_list[2][0][0],
+            "demographics synced for {}".format(patient.id)
+        )
