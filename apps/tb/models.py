@@ -380,7 +380,7 @@ class TBHistory(models.PatientSubrecord):
     diagnosis_details = fields.TextField(default="")
 
     class Meta:
-        verbose_name = "Personal history of TB"
+        verbose_name = "Personal History Of TB"
         verbose_name_plural = "Personal histories of TB"
 
 
@@ -588,6 +588,3 @@ class OtherInvestigation(models.EpisodeSubrecord):
     name = fields.CharField(max_length=256, blank=True, default="")
     date = fields.DateField(blank=True, null=True)
     details = fields.TextField(blank=True, default='')
-
-
-
