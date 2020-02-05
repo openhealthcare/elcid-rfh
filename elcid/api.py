@@ -129,14 +129,13 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return observation_value is None
 
-    def get_last_365_days(self, patient):
+    def get_non_comments_for_patient(self, patient):
         to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
-        a_year_ago = datetime.date.today() - datetime.timedelta(365)
+
         lab_tests = patient.lab_tests.all()
         lab_tests = lab_tests.exclude(
             test_name__in=to_ignore
         )
-        lab_tests = lab_tests.filter(datetime_ordered__gte=a_year_ago)
         return lab_tests.prefetch_related('observation_set')
 
     def get_observations_by_type_and_date_str(self, observations):
@@ -171,7 +170,7 @@ class LabTestResultsView(LoginRequiredViewset):
         return result
 
     def get_date_range(self, observations):
-        observation_date_range = set()  
+        observation_date_range = set()
 
         for observation in observations:
             observation_date_range.add(observation.observation_datetime.date())
@@ -233,7 +232,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         # so what I want to return is all observations to lab test desplay
         # name with the lab test properties on the observation
-        lab_tests = self.get_last_365_days(patient)
+        lab_tests = self.get_non_comments_for_patient(patient)
         by_test = self.get_observations_by_lab_test(lab_tests)
         serialised_tests = []
 
