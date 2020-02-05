@@ -1,8 +1,13 @@
+"""
+Utilities for the TB module
+"""
 from collections import OrderedDict, defaultdict
 from django.conf import settings
 
 
 RELEVANT_TESTS = OrderedDict((
+    ("AFB : CULTURE", ["TB: Culture Result"]),
+    ("TB PCR TEST", ["TB PCR"]),
     ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
     ("LIVER PROFILE", ["ALT", "AST", "Total Bilirubin"]),
     ("QUANTIFERON TB GOLD IT", [
@@ -70,6 +75,5 @@ def get_tb_summary_information(patient):
 
     for observation_name in results_order:
         if observation_name in by_observation:
-            result[observation_name] = by_observation[observation_name]
+            result[clean_observation_name(observation_name)] = by_observation[observation_name]
     return result
-
