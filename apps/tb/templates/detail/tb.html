@@ -4,6 +4,8 @@
   <div class="col-md-6">
     {% include "panels/external_links.html" %}
     {% include "partials/tb_summary_tests.html" %}
+    {% include "panels/symptoms.html" %}
+
     {% include 'panels/primary_diagnosis.html' %}
     {% include 'panels/secondary_diagnosis.html' %}
     {% include 'panels/tb_medication.html' %}
@@ -15,7 +17,6 @@
     {% record_panel models.Travel %}
     {% record_panel models.TBHistory %}
     {% record_panel models.IndexCase title="Index Cases" %}
-    {% include "panels/symptoms.html" %}
     {% record_panel models.Allergies %}
     {% record_panel models.SocialHistory %}
     {% include 'tb/obs_panel.html' %}
