@@ -39,6 +39,8 @@
                     <span ng-hide="labTest.observation_date_range.length === 1">
                       [[ obsDate|displayDate ]]
                     </span>
+                    <br />
+                    [[ labTest.lab_number ]]
                   </div>
                   <div class="col-sm-9">
                     <div class="row" ng-if="resultView.isPopulated(labTest.by_observations[observation_name][obsDate])" ng-repeat="observation_name in labTest.observation_names">
