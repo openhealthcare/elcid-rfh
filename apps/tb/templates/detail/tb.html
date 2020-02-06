@@ -93,13 +93,13 @@
                       </div>
                     </div>
                     <div class="row content-offset-10">
-                      <div ng-show="item.reason_for_interaction == 'LTBI initial assessment'" class="col-md-12">
-                        <a target="_blank" href="/letters/#/tb/ltbi_initial_assessment/[[ item.id ]]/">
+                      <div ng-show="item.reason_for_interaction.indexOf('initial assessment') != -1" class="col-md-12">
+                        <a target="_blank" href="/letters/#/tb/initial_assessment/[[ item.id ]]/">
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
-                      <div ng-show="item.reason_for_interaction == 'LTBI follow up'" class="col-md-12">
-                          <a target="_blank" href="/letters/#/tb/ltbi_followup_assessment/[[ item.id ]]/">
+                      <div ng-show="item.reason_for_interaction.indexOf('follow up') != -1" class="col-md-12">
+                          <a target="_blank" href="/letters/#/tb/followup_assessment/[[ item.id ]]/">
                             <i class="fa fa-envelope edit pull-right pointer"></i>
                           </a>
                         </div>
