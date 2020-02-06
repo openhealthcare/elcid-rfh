@@ -171,7 +171,7 @@ class LabTestResultsView(LoginRequiredViewset):
         return result
 
     def get_date_range(self, observations):
-        observation_date_range = set()  
+        observation_date_range = set()
 
         for observation in observations:
             observation_date_range.add(observation.observation_datetime.date())
@@ -260,6 +260,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 observation_date_range = observation_date_range[-7:]
 
             serialised_lab_test = dict(
+                lab_number=observations[0].test.lab_number,
                 long_form=long_form,
                 api_name=slugify(lab_test_type),
                 observation_metadata=observation_metadata,
