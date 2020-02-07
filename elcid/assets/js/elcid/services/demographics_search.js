@@ -56,6 +56,9 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
   }
 
   return {
-    find: find
+    find: find,
+    PATIENT_FOUND_IN_ELCID: PATIENT_FOUND_IN_ELCID,
+    PATIENT_FOUND_UPSTREAM: PATIENT_FOUND_UPSTREAM,
+    PATIENT_NOT_FOUND: PATIENT_NOT_FOUND,
   };
 });

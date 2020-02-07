@@ -3,17 +3,18 @@ Plugin definition for the labtests Opal plugin
 """
 from opal.core import plugins
 
-from plugins.labtests.urls import urlpatterns
+from plugins.add_patients.urls import urlpatterns
 
 
-class LabtestsPlugin(plugins.OpalPlugin):
+class AddPatientsPlugin(plugins.OpalPlugin):
     """
     Main entrypoint to expose this plugin to our Opal application.
     """
     urls = urlpatterns
     javascripts = {
-        # Add your javascripts here!
-        'opal.labtests': [
+        'opal.controllers': [
+            'js/add_patients/add_patients.js',
+            'js/add_patients/directives.js'
             # 'js/labtests/app.js',
             # 'js/labtests/controllers/larry.js',
             # 'js/labtests/services/larry.js',

@@ -457,6 +457,10 @@ class DemographicsSearch(LoginRequiredViewset):
             hospital_number=hospital_number
         ).last()
 
+        import random
+        if random.randint(1, 2) == 1:
+            return json_response(dict(status=self.PATIENT_NOT_FOUND))
+
         # the patient is in elcid
         if demographics:
             return json_response(dict(

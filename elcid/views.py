@@ -9,16 +9,19 @@ from collections import defaultdict, OrderedDict
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import (
     TemplateView, FormView, View, ListView
 )
+from django.urls import reverse
+from django.utils import timezone
 
 from opal.core import application
-from opal.models import Ward
+from opal.models import Patient
 from elcid.patient_lists import Renal
 from elcid import models
 from elcid.forms import BulkCreateUsersForm
+from intrahospital_api import loader
 
 app = application.get_app()
 
@@ -214,3 +217,31 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         ctx["ward_and_episodes"] = result
         return ctx
 
+
+class AddPatients(LoginRequiredMixin, TemplateView):
+    template_name = "elcid/add_patients.html"
+
+    def get_redirect_url(self):
+        return "/#/list"
+
+    def post(self, *args, **kwargs):
+        hospital_numbers_string = self.request.POST.get("hospital_numbers")
+        hospital_numbers = []
+        patients = []
+        for i in hospital_numbers_string.split(" "):
+            for y in i.split(","):
+                hospital_numbers.extend(y.split("\n"))
+        hospital_numbers = [i for i in hospital_numbers if i]
+        if not hospital_numbers:
+            return self.render_to_response(self.get_context_data(error=True))
+
+        found_hospital_numbers = set(models.Demographics.objects.filter(
+            hospital_number__in=hospital_numbers
+        ).values_list('hospital_number', flat=True))
+        result = {}
+        for hn in hospital_numbers:
+            result[hn] = hn in found_hospital_numbers
+
+        return self.render_to_response(
+            self.get_context_data(added_patients=patients)
+        )
