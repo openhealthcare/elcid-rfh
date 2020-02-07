@@ -47,7 +47,123 @@ class LabTestResultsViewTestCase(OpalTestCase):
         self.assertEqual('BLOOD TEST', tests[0].test_name)
 
 
+    def test_group_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
+        })
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
+        })
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'test_name': 'HIV TEST'
+        })
 
+        api = LabTestResultsView()
+        grouped = api.group_tests(patient.lab_tests.all())
+        self.assertEqual(2, len(grouped['BLOOD TEST']))
+        self.assertEqual(1, len(grouped['HIV TEST']))
+
+    def test_is_long_form_always_show(self):
+        api = LabTestResultsView()
+        self.assertFalse(api.is_long_form("TACROLIMUS", None))
+
+    def test_is_long_form_long_form(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
+        })
+
+        test.observation_set.create(**{
+            'observation_value': 'No Growth Seen'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertTrue(api.is_long_form('BLOOD TEST', [test]))
+
+    def test_is_long_form_not_long_form(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        test.observation_set.create(**{
+            'observation_value': '3'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertFalse(api.is_long_form('LFT', [test]))
+
+    def test_is_empty_value(self):
+        api = LabTestResultsView()
+        self.assertTrue(api.is_empty_value(None))
+
+    def test_is_empty_value_ignores_dash(self):
+        api = LabTestResultsView()
+        self.assertTrue(api.is_empty_value(' - '))
+
+    def test_is_empty_value_ignores_hash(self):
+        api = LabTestResultsView()
+        self.assertTrue(api.is_empty_value(' # '))
+
+    def test_is_empty_value_knows_non_empty_value(self):
+        api = LabTestResultsView()
+        self.assertFalse(api.is_empty_value(' 23 '))
+
+    def test_display_class_too_high(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': '3',
+            'reference_range'  : '1 - 2'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('too-high', api.display_class_for_numeric_observation(observation))
+
+    def test_display_class_too_low(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': '3',
+            'reference_range'  : '10 - 20'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('too-low', api.display_class_for_numeric_observation(observation))
+
+    def test_display_class_empty(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': '3',
+            'reference_range'  : '1 - 10'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('', api.display_class_for_numeric_observation(observation))
 
 
 
