@@ -1,9 +1,12 @@
 {% load panels %}
 {% load forms %}
 <div ng-if="view === 'test_results'">
+
   <div ng-controller="ResultView as resultView" class="col-md-12 lab-tests">
+
     <div class="panel panel-default">
       <div class="panel-heading">
+
         <div class="row">
           <div class="col-md-9">
             <h3>
@@ -11,110 +14,76 @@
             </h3>
           </div>
           <div class="text-right col-md-3">
-            <input class="form-control" placeholder="Filter" ng-change="resultView.filter(resultView.filterString)" ng-model="resultView.filterString" />
+            <input class="form-control" placeholder="Filter" ng-model="resultView.filterString" />
           </div>
         </div>
       </div>
-      <div ng-show="resultView.patientLoadStatus.isLoading()">
-        <h2 class="text-center no-results">Lab tests loading please wait</h2>
-      </div>
-      <div ng-show="resultView.patientLoadStatus.isAbsent()">
-        <h2 class="text-center no-results">Unable to get lab tests for this patient</h2>
-      </div>
-      <div ng-show="resultView.patientLoadStatus.isFailed()">
-        <h2 class="text-center no-results">Failed to load lab tests for this patient</h2>
-      </div>
-      <ul ng-show="resultView.patientLoadStatus.isLoaded()" class="list-group">
-        <li class="list-group-item " ng-repeat="labTest in resultView.labTests">
-          <div class="">
-            <div class="row">
-              <div class="col-md-6">
-                <h5 class="inline">[[ labTest.lab_test_type ]] <span ng-show="labTest.observation_date_range.length === 1">- [[ labTest.observation_date_range[0]|displayDate ]]</span></h5> {% if request.user.is_superuser %}<a class="text-muted" href="/intrahospital_api/raw/results/[[ patient.demographics[0].hospital_number ]]/test/[[ labTest.lab_test_type ]]">&nbsp;view upstream {% icon "fa fa-code-fork" %}</a>{% endif %}
+      <!-- End Panel Header -->
+
+      <ul class="list-group">
+        <li class="list-group-item " ng-repeat="test_name in resultView.test_order"
+            ng-show="resultView.show(test_name)">
+          <h5 class="">[[ test_name ]]</h5>
+
+          <div ng-if="resultView.lab_tests[test_name].long_form">
+
+            <div ng-repeat="instance in resultView.lab_tests[test_name].instances | limitTo:10"
+                 class="row content-offset-below-10">
+
+              <div class="col-md-3">
+                [[ instance.lab_number ]]
+                <br />
+                [[ instance.date ]]
               </div>
+
+              <div class="col-md-9">
+                <div class="row" ng-repeat="observation in instance.observations">
+                  <div class="col-md-4">[[ observation.name ]]</div>
+                  <div class="col-md-8">
+                    <p class="tilde-replacement-paragraph"
+                       ng-repeat="par_obs in resultView.splitObservation(observation.value) track by $index">
+                      [[ par_obs ]]
+                    </p>
+                  </div>
+                </div>
+              </div>
+
             </div>
-            <div ng-show="labTest.observation_date_range.length">
-              <div ng-if="labTest.long_form">
-                <div class="row lab-test-row content-offset-below-10" ng-repeat="obsDate in labTest.observation_date_range track by $index" class="row">
-                  <div class="col-sm-3">
-                    <span ng-hide="labTest.observation_date_range.length === 1">
-                      [[ obsDate|displayDate ]]
-                    </span>
-                  </div>
-                  <div class="col-sm-9">
-                    <div class="row" ng-if="resultView.isPopulated(labTest.by_observations[observation_name][obsDate])" ng-repeat="observation_name in labTest.observation_names">
-                      <div class="col-md-3">
-                        [[ observation_name ]]
-                      </div>
-                      <div class="col-md-9">
-                        <p ng-if="resultView.isNumber(labTest.by_observations[observation_name][obsDate])">
-                          [[ labTest.by_observations[observation_name][obsDate] ]]
-                        </p>
-                        <span ng-if="!resultView.isNumber(labTest.by_observations[observation_name][obsDate])">
-                          <p class="tilde-replacement-paragraph" ng-repeat="par_obs in resultView.splitObservation(labTest.by_observations[observation_name][obsDate]) track by $index">
-                            [[ par_obs ]]
-                          </p>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div ng-if="!labTest.long_form">
-                <div class="row lab-test-row content-offset-below-10">
-                  <div class="col-sm-3">
-                  </div>
-                  <div class="col-sm-2">
-                    Range
-                  </div>
-                  <div ng-repeat="obsDate in labTest.observation_date_range | limitTo:7 track by $index" class="col-sm-1">
-                      [[ obsDate|displayDate ]]
-                  </div>
-                </div>
-                <div ng-repeat="observation_name in labTest.observation_names">
-                  <div {# we need to remove this for the time being - ng-click="resultView.showObservation(labTest, observation_name)" #}class="lab-test-row selectable row">
-                    <div class="col-sm-3">
-                      [[ observation_name ]]
-                      <span ng-show="labTest.observation_metadata[observation_name].units && labTest.observation_metadata[observation_name].units.length">
-                        ([[ labTest.observation_metadata[observation_name].units ]])
-                      </span>
-                    </div>
-                    <div class="text-muted col-sm-2">
-                      [[ labTest.observation_metadata[observation_name].reference_range.min ]]
-                      -
-                      [[ labTest.observation_metadata[observation_name].reference_range.max ]]
-                    </div>
-                    <div ng-class="{'too-high': labTest.by_observations[observation_name][obsDate] > labTest.observation_metadata[observation_name].reference_range.max, 'too-low': labTest.by_observations[observation_name][obsDate] < labTest.observation_metadata[observation_name].reference_range.min}" ng-repeat="obsDate in labTest.observation_date_range | limitTo:7 track by $index" class="col-sm-1">
-                      [[ labTest.by_observations[observation_name][obsDate] ]]
-                    </div>
-                  </div>
-                  <div ng-show="resultView.isShownObservation(labTest, observation_name)" class="row">
-                    <div class="col-md-12">
-                      <div class="observation-graph-pane" ng-show="resultView.observationDetail[observation_name]">
-                        <div ng-if="resultView.observationDetail[labTest.lab_test_type][observation_name].length">
-                          <div observation-name="observation_name" observation-range="labTest.observation_metadata[observation_name].reference_range" observation-graph="resultView.observationDetail[labTest.lab_test_type][observation_name]"></div>
-                        </div>
-                        <div ng-show="!resultView.observationDetail[labTest.lab_test_type][observation_name].length">
-                          <div class="row">
-                            <div class="result-loading col-md-12 text-center">
-                              <h3>
-                                <i class="fa fa-cog fa-spin"></i> Loading...
-                              </h3>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div ng-show="!$last" class="row ">
-                    <div class="col-md-12">
-                      <hr />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
+          </div>
+
+          <div ng-if="!resultView.lab_tests[test_name].long_form">
+            <table class="table table-striped">
+              <tr>
+                <th></th> <!-- Observation name -->
+                <th></th> <!-- Reference range -->
+                <th ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                  <span title="[[ resultView.lab_tests[test_name].instances.lab_numbers[date] ]] [[ date ]]"
+                        class="pointer">
+                    [[ date.substring(0, 10) ]]
+                  </span>
+                </th>
+              </tr>
+
+              <tr ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
+                <td>[[ observation_name ]]</td>
+                <td>[[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]</td>
+
+                <td ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                  <span
+                    class="pointer [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].display_class ]]"
+                    title="Range: [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].range ]]">
+                    [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].value ]]
+                  </span>
+                </td>
+              </tr>
+
+            </table>
+          </div>
+
         </li>
       </ul>
     </div>
   </div>
-</div>
+
+</div> <!-- Angular display div to check if this is the results view -->
