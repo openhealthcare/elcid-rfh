@@ -1,4 +1,5 @@
 import datetime
+import copy
 from django.utils import timezone
 from opal.core.test import OpalTestCase
 from opal.models import Patient
@@ -113,6 +114,25 @@ class LabTestTestCase(OpalTestCase):
         self.assertEqual(
             obs.observation_value,
             "123"
+        )
+
+    def test_update_from_api_dict_datetime_ordered_is_none(self):
+        lt = models.LabTest()
+        api_dict = copy.deepcopy(self.api_dict)
+        api_dict["datetime_ordered"] = None
+        lt.update_from_api_dict(self.patient, api_dict)
+        self.assertIsNone(lt.datetime_ordered)
+        self.assertEqual(lt.test_name, "Anti-CV2 (CRMP-5) antibodies")
+
+    def test_update_from_api_dict_observation_datetime_is_none(self):
+        lt = models.LabTest()
+        api_dict = copy.deepcopy(self.api_dict)
+        api_dict["observations"][0]["observation_datetime"] = None
+        lt.update_from_api_dict(self.patient, api_dict)
+        obs = lt.observation_set.get()
+        self.assertIsNone(obs.observation_datetime)
+        self.assertEqual(
+            obs.observation_name, "Aerobic bottle culture"
         )
 
     def test_update_from_api_dict_replaces_observation(self):

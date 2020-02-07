@@ -188,10 +188,19 @@ API_USER = "needs to be set"
 # this needs to be set to true on prod
 ASYNC_API = False
 
-# if the intrahospital api is prod, we need
-# an ip address, a database, a username and a password for
-# the hospital db
+# if the intrahospital api is prod
+# there 2 databases
+# the hopstial DB does demographics, appointments and ITU
 HOSPITAL_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
+
+# the trust DB does lab tests
+TRUST_DB = dict(
     ip_address=None,
     database=None,
     username=None,
@@ -297,7 +306,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # !!! TODO: Are these how we want to discover these ?
 OPAL_OPTIONS_MODULE = 'elcid.options'
 OPAL_BRAND_NAME = 'elCID Royal Free Hospital'
-OPAL_LOG_OUT_MINUTES = 15
+OPAL_LOG_OUT_MINUTES = 35
 OPAL_LOG_OUT_DURATION = OPAL_LOG_OUT_MINUTES*60*1000
 
 # Do we need this at all ?
@@ -323,7 +332,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.19'
+VERSION_NUMBER = '0.22'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

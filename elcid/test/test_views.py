@@ -150,7 +150,8 @@ class RenalHandoverTestCase(OpalTestCase):
         location.bed = "1"
         location.save()
         microinput = episode_1.microbiologyinput_set.create(
-            clinical_discussion=["some_discussion"]
+            clinical_discussion=["some_discussion"],
+            when=timezone.now() - datetime.timedelta(1)
         )
         diagnosis = episode_1.diagnosis_set.create()
         diagnosis.condition = "Cough"
@@ -164,7 +165,10 @@ class RenalHandoverTestCase(OpalTestCase):
         line.line_type = "Hickman"
         line.save()
 
-        bcs = episode_1.patient.bloodcultureset_set.create(lab_number="123")
+        bcs = episode_1.patient.bloodcultureset_set.create(
+            lab_number="123",
+            date_ordered=timezone.now() - datetime.timedelta(1)
+        )
 
         ctx = views.RenalHandover().get_context_data()
         episode = ctx["ward_and_episodes"][0]["episodes"][0]
@@ -308,6 +312,42 @@ class RenalHandoverTestCase(OpalTestCase):
         self.assertEqual(
             discussion, ["first", "second", "third"]
         )
+
+    def test_ignore_old_clinical_advice(self):
+        patient, episode = self.new_patient_and_episode_please()
+        over_hundred_days = timezone.now().date() - datetime.timedelta(101)
+        episode.microbiologyinput_set.create(
+            clinical_discussion="something",
+            when=over_hundred_days
+        )
+        location = episode.location_set.get()
+        location.ward = "10 East"
+        location.bed = "1"
+        location.save()
+
+        episode.set_tag_names(["renal"], None)
+        ctx = views.RenalHandover().get_context_data()
+        ca = ctx["ward_and_episodes"][0]["episodes"][0]["clinical_advices"]
+        self.assertEqual(len(ca), 0)
+
+    def test_ignore_old_blood_tests(self):
+        patient, episode = self.new_patient_and_episode_please()
+        over_hundred_days = timezone.now() - datetime.timedelta(101)
+        episode.microbiologyinput_set.create(
+            clinical_discussion="something",
+            when=over_hundred_days
+        )
+        location = episode.location_set.get()
+        location.ward = "10 East"
+        location.bed = "1"
+        location.save()
+        bcs = episode.patient.bloodcultureset_set.create(
+            lab_number="123", date_ordered=over_hundred_days
+        )
+        episode.set_tag_names(["renal"], None)
+        ctx = views.RenalHandover().get_context_data()
+        bcs = ctx["ward_and_episodes"][0]["episodes"][0]["blood_culture_sets"]
+        self.assertEqual(len(bcs), 0)
 
     def test_other(self):
         # if the patient has no ward we should just put them in `other`
