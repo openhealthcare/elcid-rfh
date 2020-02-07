@@ -147,7 +147,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         for instance in instances:
             test_datetimes.add(instance.datetime_ordered)
-            lab_numbers[instance.datetime_ordered.isoformat()] = instance.lab_number
+            lab_numbers[serialization.serialize_datetime(instance.datetime_ordered)] = instance.lab_number
 
             for observation in instance.observation_set.all():
                 if not self.is_empty_value(observation.observation_value):
@@ -157,16 +157,15 @@ class LabTestResultsView(LoginRequiredViewset):
                             observation_ranges[observation.observation_name.rstrip('.')] = observation.reference_range
 
                     observation_names.add(observation.observation_name.rstrip('.'))
-                    data[observation.observation_name.rstrip('.')][instance.datetime_ordered.isoformat()] = {
+                    data[observation.observation_name.rstrip('.')][serialization.serialize_datetime(instance.datetime_ordered)] = {
                         'value'        : observation.observation_value,
                         'range'        : observation.reference_range,
                         'display_class': self.display_class_for_numeric_observation(observation)
                     }
 
 
-
         date_series = list(sorted(test_datetimes))
-        date_series = [d.isoformat() for d in date_series]
+        date_series = [serialization.serialize_datetime(d) for d in date_series]
 
         return {
             'test_datetimes'    : date_series[-8:],

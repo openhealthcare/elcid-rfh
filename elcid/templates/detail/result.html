@@ -55,21 +55,24 @@
           <div ng-if="!resultView.lab_tests[test_name].long_form">
             <table class="table table-striped">
               <tr>
-                <th></th> <!-- Observation name -->
-                <th></th> <!-- Reference range -->
-                <th ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                <th class="col-xs-3"></th> <!-- Observation name -->
+                <th class="col-xs-1"></th <!-- Reference range -->
+                <th class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
                   <span title="[[ resultView.lab_tests[test_name].instances.lab_numbers[date] ]] [[ date ]]"
                         class="pointer">
                     [[ date.substring(0, 10) ]]
                   </span>
                 </th>
+                <th class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">
+                </th>
+
               </tr>
 
               <tr ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
-                <td>[[ observation_name ]]</td>
-                <td>[[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]</td>
+                <td class="col-xs-3">[[ observation_name ]]</td>
+                <td class="col-xs-1">[[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]</td>
 
-                <td ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                <td class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
                   <span
                     class="pointer [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].display_class ]]"
                     title="Range: [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].range ]]">
@@ -79,6 +82,9 @@
                     </p>
                   </span>
                 </td>
+                <td class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">
+                </td>
+
               </tr>
 
             </table>
