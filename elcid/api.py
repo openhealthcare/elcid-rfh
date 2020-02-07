@@ -170,7 +170,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         return {
             'test_datetimes'    : date_series[-8:],
-            'observation_names' : list(observation_names),
+            'observation_names' : list(sorted(observation_names)),
             'lab_numbers'       : lab_numbers,
             'observation_ranges': observation_ranges,
             'observation_series': data
