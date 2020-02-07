@@ -1,11 +1,14 @@
+"""
+API endpoints for the elCID application
+"""
 import datetime
 import re
-from django.conf import settings
-from operator import itemgetter
 from collections import defaultdict, OrderedDict
+from operator import itemgetter
+
+from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
-from intrahospital_api import loader
 from rest_framework import viewsets, status
 from opal.core.api import OPALRouter
 from opal.core.api import (
@@ -13,30 +16,11 @@ from opal.core.api import (
 )
 from opal.core.views import json_response
 from opal.core import serialization
+
+from intrahospital_api import loader
 from elcid import models as emodels
 from plugins.labtests import models as lab_test_models
 
-
-_LAB_TEST_TAGS = {
-    "BIOCHEMISTRY": [
-        "BONE PROFILE",
-        "UREA AND ELECTROLYTES",
-        "LIVER PROFILE",
-        "IMMUNOGLOBULINS",
-        "C REACTIVE PROTEIN",
-        "RENAL"
-
-    ],
-    "HAEMATOLOGY": [
-        "FULL BLOOD COUNT", "HAEMATINICS", "HBA1C"
-    ],
-    "ENDOCRINOLOGY": [
-        "CORTISOL AT 9AM", "THYROID FUNCTION TESTS"
-    ],
-    "URINE": [
-        "OSMALITY", "PROTEIN ELECTROPHORESIS"
-    ],
-}
 
 _ALWAYS_SHOW_AS_TABULAR = [
     "UREA AND ELECTROLYTES",
@@ -70,216 +54,196 @@ _ALWAYS_SHOW_AS_TABULAR = [
     "FULL BLOOD COUNT"
 ]
 
-LAB_TEST_TAGS = defaultdict(list)
 
-
-for tag, test_names in _LAB_TEST_TAGS.items():
-    for test_name in test_names:
-        LAB_TEST_TAGS[test_name].append(tag)
-
-
-AEROBIC = "aerobic"
+AEROBIC   = "aerobic"
 ANAEROBIC = "anaerobic"
 
 
 class LabTestResultsView(LoginRequiredViewset):
-    """ The Api view of the the results view in the patient detail
-        We want to show everything grouped by test, then observation, then
-        date.
+    """
+    The API endpoint that returns data for the test results view on the
+    patient detail page.
     """
     base_name = 'lab_test_results_view'
 
-    def get_observation_value(self, observation):
-        obs_result = observation.value_numeric
+    def get_non_comments_for_patient(self, patient):
+        """
+        Returns all non comments for a patient, ensuring they are
+        ordered by date and prefetching observations.
+        """
+        to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
 
-        if obs_result:
-            return obs_result
+        lab_tests = patient.lab_tests.all().order_by('-datetime_ordered')
+        lab_tests = lab_tests.exclude(
+            test_name__in=to_ignore
+        )
+        return lab_tests.prefetch_related('observation_set')
 
-        return observation.observation_value
-
-    def get_observations_by_lab_test(self, lab_tests):
+    def group_tests(self, lab_tests):
+        """
+        Return dictionary that groups a queryset of lab tests by test name.
+        """
         by_test = defaultdict(list)
 
         for lab_test in lab_tests:
-            observations = lab_test.observation_set.all()
-            lab_test_type = lab_test.test_name
-
-            for observation in observations:
-                if observation.observation_name.strip() == "Haem Lab Comment":
-                    continue
-                if observation.observation_name.strip() == "Sample Comment":
-                    continue
-
-                # if its all None's for a certain observation name lets skip it
-                # ie if WBC is all None, lets not waste the users' screen space
-                # sometimes they just have '-' so lets skip these too
-                if self.is_empty_value(observation.observation_value):
-                    continue
-
-                by_test[lab_test_type].append(observation)
-
+            by_test[lab_test.test_name].append(lab_test)
         return by_test
 
+    def is_long_form(self, test_type, instances):
+        """
+        Predicate function that indicates whether results should
+        be displayed in a table form or long form
+        """
+        if test_type in _ALWAYS_SHOW_AS_TABULAR:
+            return False
+
+        for instance in instances:
+            for observation in instance.observation_set.all():
+                if not observation.value_numeric:
+                    if not observation.is_pending:
+                        return True
+        return False
+
     def is_empty_value(self, observation_value):
-        """ we don't care about empty strings or
-            ' - ' or ' # '
+        """
+        Predocate function that indicates whether there is a meaningful value
+        in this string.
+
+        For these purposes don't care about empty strings, ' - ', or ' # '
         """
         if isinstance(observation_value, str):
             return not observation_value.strip().strip("-").strip("#").strip()
         else:
             return observation_value is None
 
-    def get_non_comments_for_patient(self, patient):
-        to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
-
-        lab_tests = patient.lab_tests.all()
-        lab_tests = lab_tests.exclude(
-            test_name__in=to_ignore
-        )
-        return lab_tests.prefetch_related('observation_set')
-
-    def get_observations_by_type_and_date_str(self, observations):
+    def display_class_for_numeric_observation(self, observation):
         """
-        Returns a dict of observation name -> date -> observation
-        We choose the most recent datetime for the date unless the most
-        recent is 'Pending'
+        Returns too-high too-low or '' for a numeric observation
         """
-        result = defaultdict(dict)
-        observations = sorted(
-            observations,
-            key=lambda x: x.observation_datetime,
-            reverse=True
-        )
-        for observation in observations:
-            obs_dict = result[observation.observation_name]
-            obs_date = serialization.serialize_date(
-                observation.observation_datetime.date()
-            )
-            obs_value = self.get_observation_value(
-                observation
-            )
-            if obs_date not in obs_dict:
-                if observation.is_pending:
-                    obs_dict[obs_date] = "Pending"
-                else:
-                    obs_dict[obs_date] = obs_value
-            else:
-                if obs_dict[obs_date] == "Pending":
-                    obs_dict[obs_date] = obs_value
+        display_class = ''
+        numeric       = observation.value_numeric
+        refrange      = observation.cleaned_reference_range
 
-        return result
+        if refrange is None:
+            return display_class
 
-    def get_date_range(self, observations):
-        observation_date_range = set()
+        if numeric < refrange['min']:
+            display_class = 'too-low'
 
-        for observation in observations:
-            observation_date_range.add(observation.observation_datetime.date())
-        return sorted(list(observation_date_range))
+        if numeric > refrange['max']:
+            display_class = 'too-high'
 
-    def is_long_form(self, lab_test_type, observations):
+        return display_class
+
+    def serialise_tabular_instances(self, instances):
         """
-        and whether the observations should be displayed in a table
-        form or long form
+        Serialise all instances of a tabular test type (e.g. Full Blood Count)
         """
-        if lab_test_type in _ALWAYS_SHOW_AS_TABULAR:
-            return False
+        test_datetimes     = set()
+        observation_names  = set()
+        observation_ranges = {}
+        lab_numbers        = {}
+        data               = defaultdict(lambda: defaultdict(lambda: None))
 
-        for observation in observations:
-            if not observation.value_numeric:
-                if not observation.is_pending:
-                    return True
-        return False
+        for instance in instances:
+            test_datetimes.add(instance.datetime_ordered)
+            lab_numbers[instance.datetime_ordered.isoformat()] = instance.lab_number
 
-    def get_observation_metadata(self, observations):
-        observation_metadata = {}
-        for observation in observations:
-            obs_name = observation.observation_name
-            observation_metadata[obs_name] = dict(
-                units=observation.units,
-                reference_range=observation.cleaned_reference_range,
-                api_name=slugify(observation.observation_name)
-            )
-        return observation_metadata
+            for observation in instance.observation_set.all():
+                if not self.is_empty_value(observation.observation_value):
 
-    def sort_lab_tests_dicts(self, lab_test_dicts):
+                    if observation.observation_name.rstrip('.') not in observation_ranges:
+                        if observation.reference_range != " -":
+                            observation_ranges[observation.observation_name.rstrip('.')] = observation.reference_range
+
+                    observation_names.add(observation.observation_name.rstrip('.'))
+                    data[observation.observation_name.rstrip('.')][instance.datetime_ordered.isoformat()] = {
+                        'value'        : observation.observation_value,
+                        'range'        : observation.reference_range,
+                        'display_class': self.display_class_for_numeric_observation(observation)
+                    }
+
+
+
+        date_series = list(reversed(sorted(test_datetimes)))
+        date_series = [d.isoformat() for d in date_series]
+
+        return {
+            'test_datetimes'    : date_series,
+            'observation_names' : list(observation_names),
+            'lab_numbers'       : lab_numbers,
+            'observation_ranges': observation_ranges,
+            'observation_series': data
+        }
+
+    def serialise_long_form_instance(self, instance):
         """
-        Ordered by most recent observations first please, this means
-        the first date if its a long form observation or the last
-        if its not. (as short form dates are shown ascending and long form descending)
-
-        When there are multiple results for the same date, tests should be shown in
-        alphabetical order.
+        Serialise a single long form test instance.
         """
-        serialised_tests = sorted(
-            lab_test_dicts, key=itemgetter("lab_test_type")
-        )
+        serialised_observations = []
+        for o in instance.observation_set.all():
+            if not self.is_empty_value(o.observation_value):
+                serialised_observations.append(
+                    {
+                        'name' : o.observation_name.rstrip('.'),
+                        'value': o.observation_value
+                    }
+                )
 
-        def get_latest_date(obs_dict):
-            if obs_dict["long_form"]:
-                return obs_dict["observation_date_range"][0]
-            else:
-                return obs_dict["observation_date_range"][-1]
+        return {
+            'lab_number'  : instance.lab_number,
+            'date'        : instance.datetime_ordered,
+            'observations': serialised_observations
 
-        # ordered by most recent observations first please, bu maintaining
-        # the alphabetically order of the lab tests
-        serialised_tests = sorted(
-            serialised_tests, key=get_latest_date, reverse=True
-        )
-        return serialised_tests
+        }
 
     @patient_from_pk
     def retrieve(self, request, patient):
+        """
+        Main entrypoint for test results via the API.
+        """
+        lab_tests  = self.get_non_comments_for_patient(patient)
+        test_dates = {}
 
-        # so what I want to return is all observations to lab test desplay
-        # name with the lab test properties on the observation
-        lab_tests = self.get_non_comments_for_patient(patient)
-        by_test = self.get_observations_by_lab_test(lab_tests)
-        serialised_tests = []
+        for test in lab_tests:
+            if test.test_name in test_dates:
+                if test_dates[test.test_name] > test.datetime_ordered:
+                    continue
+            test_dates[test.test_name] = test.datetime_ordered
 
-        # within the lab test observations should be sorted by test name
-        # and within the if we have a date range we want to be exposing
-        # them as part of a time series, ie adding in blanks if they
-        # aren't populated
-        for lab_test_type, observations in by_test.items():
-            by_observations = self.get_observations_by_type_and_date_str(
-                observations
-            )
-            observation_date_range = self.get_date_range(observations)
-            observation_metadata = self.get_observation_metadata(observations)
-            long_form = self.is_long_form(lab_test_type, observations)
+        test_order = [d for d in sorted(test_dates)]
 
+        by_test          = self.group_tests(lab_tests)
+        serialised_tests = {}
+        test_dates       = {}
+
+        for test_type, instances in by_test.items():
+
+            long_form = self.is_long_form(test_type, instances)
             if long_form:
-                # when we are showing in long form the user sees tests as a
-                # list so show the most recent test first
-                observation_date_range.reverse()
+                serialised = {
+                    'long_form'    : True,
+                    'lab_test_type': test_type,
+                    'count'        : len(instances),
+                    'instances'    : [
+                        self.serialise_long_form_instance(i) for i in instances
+                    ]
+                }
             else:
-                # if we're not in long form ie we're displaying results
-                # in a tabular timeline, we only want to display
-                # the 7 most recent results.
-                observation_date_range = observation_date_range[-7:]
+                serialised = {
+                    'long_form'    : False,
+                    'lab_test_type': test_type,
+                    'count'        : len(instances),
+                    'instances'    : self.serialise_tabular_instances(instances)
+                }
 
-            serialised_lab_test = dict(
-                long_form=long_form,
-                api_name=slugify(lab_test_type),
-                observation_metadata=observation_metadata,
-                lab_test_type=lab_test_type,
-                observation_date_range=observation_date_range,
-                # observation_time_series=observation_time_series,
-                by_observations=by_observations,
-                observation_names=sorted(by_observations.keys()),
-                tags=LAB_TEST_TAGS.get(lab_test_type, [])
-            )
-            serialised_tests.append(serialised_lab_test)
-
-        serialised_tests = self.sort_lab_tests_dicts(serialised_tests)
-
-        all_tags = list(_LAB_TEST_TAGS.keys())
+            serialised_tests[test_type] = serialised
 
         return json_response(
-            dict(
-                tags=all_tags,
-                tests=serialised_tests
-            )
+            {
+                'test_order': test_order,
+                'tests'     : serialised_tests
+            }
         )
 
 
