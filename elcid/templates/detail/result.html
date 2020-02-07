@@ -73,7 +73,10 @@
                   <span
                     class="pointer [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].display_class ]]"
                     title="Range: [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].range ]]">
-                    [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].value ]]
+                    <p class="tilde-replacement-paragraph"
+                       ng-repeat="par_obs in resultView.splitObservation(resultView.lab_tests[test_name].instances.observation_series[observation_name][date].value) track by $index">
+                      [[ par_obs ]]
+                    </p>
                   </span>
                 </td>
               </tr>

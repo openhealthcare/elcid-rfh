@@ -165,11 +165,11 @@ class LabTestResultsView(LoginRequiredViewset):
 
 
 
-        date_series = list(reversed(sorted(test_datetimes)))
+        date_series = list(sorted(test_datetimes))
         date_series = [d.isoformat() for d in date_series]
 
         return {
-            'test_datetimes'    : date_series,
+            'test_datetimes'    : date_series[-8:],
             'observation_names' : list(observation_names),
             'lab_numbers'       : lab_numbers,
             'observation_ranges': observation_ranges,
@@ -211,7 +211,11 @@ class LabTestResultsView(LoginRequiredViewset):
                     continue
             test_dates[test.test_name] = test.datetime_ordered
 
-        test_order = [d for d in sorted(test_dates)]
+        test_order = [
+            d[0] for d in
+            sorted(test_dates.items(),
+                   key=lambda x: -x[1].timestamp())
+        ]
 
         by_test          = self.group_tests(lab_tests)
         serialised_tests = {}
