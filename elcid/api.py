@@ -74,8 +74,16 @@ class LabTestResultsView(LoginRequiredViewset):
         to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
 
         lab_tests = patient.lab_tests.all().order_by('-datetime_ordered')
+
         lab_tests = lab_tests.exclude(
             test_name__in=to_ignore
+        )
+
+        # we have some lab tests with no datetime ordered
+        # they also have no lab test name or observation
+        # value so skipping them
+        lab_tests = lab_tests.exclude(
+            datetime_ordered=None
         )
         return lab_tests.prefetch_related('observation_set')
 
