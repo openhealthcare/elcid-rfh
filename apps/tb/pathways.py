@@ -11,9 +11,9 @@ from elcid.pathways import AddPatientPathway, IgnoreDemographicsMixin
 from obs import models as obs_models
 from intrahospital_api import loader
 
-from apps.tb.patient_lists import TbPatientList
 from apps.tb import models as tb_models
 from intrahospital_api import constants
+from apps.tb import constants as tb_constants
 
 
 class AddTbPatientPathway(AddPatientPathway):
@@ -35,7 +35,7 @@ class AddTbPatientPathway(AddPatientPathway):
             data, user=user, patient=patient, episode=episode
         )
 
-        episode.set_tag_names([TbPatientList.tag], user)
+        episode.set_tag_names([tb_constants.TB_TAG], user)
         episode.category_name = "TB"
         episode.stage = "New Referral"
         episode.save()
