@@ -166,6 +166,191 @@ class LabTestResultsViewTestCase(OpalTestCase):
         self.assertEqual('', api.display_class_for_numeric_observation(observation))
 
 
+    def test_serialise_tabular_instances(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '123'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '3',
+            'reference_range'  : '1 - 10'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '13',
+            'reference_range'  : '10 - 100'
+        })
+
+        test2 = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '121'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '20',
+            'reference_range'  : '1 - 10'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '123',
+            'reference_range'  : '10 - 100'
+        })
+
+        expected_datetimes = ['10/06/2019 04:15:10','17/06/2019 04:15:10']
+        expected_observation_names = ['RBC', 'WBC']
+        expected_lab_numbers = {
+            '10/06/2019 04:15:10': '121',
+            '17/06/2019 04:15:10': '123'
+        }
+        expected_observation_ranges = {'WBC': '1 - 10', 'RBC': '10 - 100'}
+        expected_observation_series = {
+            'WBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '20',
+                    'range': '1 - 10',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '3',
+                    'range': '1 - 10',
+                    'display_class': ''
+                }
+            },
+            'RBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '123',
+                    'range': '10 - 100',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '13',
+                    'range': '10 - 100',
+                    'display_class': ''
+                }
+            }
+        }
+
+        api = LabTestResultsView()
+        serialised = api.serialise_tabular_instances(patient.lab_tests.all())
+
+        self.assertEqual(expected_datetimes, serialised['test_datetimes'])
+        self.assertEqual(expected_observation_names, serialised['observation_names'])
+        self.assertEqual(expected_lab_numbers, serialised['lab_numbers'])
+        self.assertEqual(expected_observation_ranges, serialised['observation_ranges'])
+        self.assertEqual(expected_observation_series, serialised['observation_series'])
+
+    def test_serialise_long_form_instance(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test  = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'test_name'       : 'BLOOD CULTURE',
+            'lab_number'      : '121'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'ORGANISM',
+            'observation_value': 'Staph. Aureus',
+        })
+
+        api = LabTestResultsView()
+
+        serialised = api.serialise_long_form_instance(test)
+
+        self.assertEqual('121', serialised['lab_number'])
+
+    def test_retrieve(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test  = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2017, 6, 10, 4, 15, 10),
+            'test_name'       : 'BLOOD CULTURE',
+            'lab_number'      : '121'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'ORGANISM',
+            'observation_value': 'Staph. Aureus',
+        })
+        test2 = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '123'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '3',
+            'reference_range'  : '1 - 10'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '13',
+            'reference_range'  : '10 - 100'
+        })
+
+        test3 = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '121'
+        })
+        test3.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '20',
+            'reference_range'  : '1 - 10'
+        })
+        test3.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '123',
+            'reference_range'  : '10 - 100'
+        })
+
+        expected_FBC_observation_series = {
+            'WBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '20',
+                    'range': '1 - 10',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '3',
+                    'range': '1 - 10',
+                    'display_class': ''
+                }
+            },
+            'RBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '123',
+                    'range': '10 - 100',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '13',
+                    'range': '10 - 100',
+                    'display_class': ''
+                }
+            }
+        }
+
+        expected_BC_observations = [
+            {'name': 'ORGANISM', 'value': 'Staph. Aureus'}
+        ]
+
+        expected_test_order = ['FULL BLOOD COUNT', 'BLOOD CULTURE']
+
+        api = LabTestResultsView()
+        result = api.retrieve(None, pk=patient.id)
+
+        data = json.loads(result.content)
+
+        self.assertEqual(expected_test_order, data['test_order'])
+        self.assertEqual(
+            expected_FBC_observation_series,
+            data['tests']['FULL BLOOD COUNT']['instances']['observation_series'])
+        self.assertEqual(
+            expected_BC_observations,
+            data['tests']['BLOOD CULTURE']['instances'][0]['observations']
+        )
+
 
 class UpstreamBloodCultureApiTestCase(OpalTestCase):
     def setUp(self):
