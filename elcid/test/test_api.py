@@ -340,7 +340,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
         api = LabTestResultsView()
         result = api.retrieve(None, pk=patient.id)
 
-        data = json.loads(result.content)
+        data = json.loads(result.content.decode('UTF-8'))
 
         self.assertEqual(expected_test_order, data['test_order'])
         self.assertEqual(
