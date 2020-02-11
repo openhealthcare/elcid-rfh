@@ -124,7 +124,7 @@ class LabTestResultsView(LoginRequiredViewset):
         else:
             return observation_value is None
 
-    def display_class_for_numeric_observation(self, observation):
+    def display_class_for_observation(self, observation):
         """
         Returns too-high too-low or '' for a numeric observation
         """
@@ -132,7 +132,7 @@ class LabTestResultsView(LoginRequiredViewset):
         numeric       = observation.value_numeric
         refrange      = observation.cleaned_reference_range
 
-        if refrange is None:
+        if refrange is None or numeric is None:
             return display_class
 
         if numeric < refrange['min']:
@@ -168,7 +168,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     data[observation.observation_name.rstrip('.')][serialization.serialize_datetime(instance.datetime_ordered)] = {
                         'value'        : observation.observation_value,
                         'range'        : observation.reference_range,
-                        'display_class': self.display_class_for_numeric_observation(observation)
+                        'display_class': self.display_class_for_observation(observation)
                     }
 
 
