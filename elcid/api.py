@@ -66,10 +66,13 @@ class LabTestResultsView(LoginRequiredViewset):
     """
     base_name = 'lab_test_results_view'
 
-    def get_non_comments_for_patient(self, patient):
+    def get_querset_for_patient(self, patient):
         """
         Returns all non comments for a patient, ensuring they are
         ordered by date and prefetching observations.
+
+        excluding lab tests that don't have an observation value
+        or a datetime ordered of None
         """
         to_ignore = ['UNPROCESSED SAMPLE COMT', 'COMMENT', 'SAMPLE COMMENT']
 
@@ -84,6 +87,8 @@ class LabTestResultsView(LoginRequiredViewset):
         # value so skipping them
         lab_tests = lab_tests.exclude(
             datetime_ordered=None
+        ).exclude(
+            observation__observation_value=None
         )
         return lab_tests.prefetch_related('observation_set')
 
@@ -209,7 +214,7 @@ class LabTestResultsView(LoginRequiredViewset):
         """
         Main entrypoint for test results via the API.
         """
-        lab_tests  = self.get_non_comments_for_patient(patient)
+        lab_tests  = self.get_querset_for_patient(patient)
         test_dates = {}
 
         for test in lab_tests:

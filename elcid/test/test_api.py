@@ -18,34 +18,60 @@ from elcid.api import (
 
 class LabTestResultsViewTestCase(OpalTestCase):
 
-    def test_get_non_comments_for_patient(self):
+    def new_lab_test_observation_please(self, patient):
+        lab_test = patient.lab_tests.create(
+            datetime_ordered=datetime.datetime(2019, 6, 17, 4, 15, 10),
+            test_name='FULL BLOOD COUNT'
+        )
+        lab_test.observation_set.create(
+            observation_name='WBC',
+            observation_value='2.63',
+            observation_datetime=datetime.datetime(2019, 6, 17, 4, 15, 10),
+        )
+        return lab_test
+
+    def test_get_querset_for_patient(self):
         patient, _ = self.new_patient_and_episode_please()
-        patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
-            'test_name': 'BLOOD TEST'
-        })
-
+        self.new_lab_test_observation_please(patient)
         api = LabTestResultsView()
-        tests = api.get_non_comments_for_patient(patient)
+        tests = api.get_querset_for_patient(patient)
         self.assertEqual(1, len(tests))
-        self.assertEqual('BLOOD TEST', tests[0].test_name)
+        self.assertEqual('FULL BLOOD COUNT', tests[0].test_name)
 
-    def test_get_non_comments_for_patient_excludes_comments(self):
+    def test_get_querset_for_patient_excludes_comments(self):
         patient, _ = self.new_patient_and_episode_please()
-        patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
-            'test_name': 'BLOOD TEST'
-        })
-        patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
-            'test_name': 'COMMENT'
-        })
-
+        self.new_lab_test_observation_please(patient)
+        comment_lt = self.new_lab_test_observation_please(patient)
+        comment_lt.test_name = "COMMENT"
+        comment_lt.save()
         api = LabTestResultsView()
-        tests = api.get_non_comments_for_patient(patient)
+        tests = api.get_querset_for_patient(patient)
         self.assertEqual(1, len(tests))
-        self.assertEqual('BLOOD TEST', tests[0].test_name)
+        self.assertEqual('FULL BLOOD COUNT', tests[0].test_name)
 
+    def test_get_querset_for_patient_excludes_datetime_ordered_is_none(self):
+        patient, _ = self.new_patient_and_episode_please()
+        self.new_lab_test_observation_please(patient)
+        no_datetime_ordered = self.new_lab_test_observation_please(patient)
+        no_datetime_ordered.datetime_ordered = None
+        no_datetime_ordered.save()
+        api = LabTestResultsView()
+        tests = api.get_querset_for_patient(patient)
+        self.assertEqual(1, len(tests))
+        self.assertEqual('FULL BLOOD COUNT', tests[0].test_name)
+
+    def test_get_querset_for_patient_excludes_observation_value_is_none(self):
+        patient, _ = self.new_patient_and_episode_please()
+        self.new_lab_test_observation_please(patient)
+        no_observation_value = self.new_lab_test_observation_please(patient)
+        no_observation_value.observation_set.update(
+            observation_value=None
+        )
+        no_observation_value.datetime_ordered = None
+        api = LabTestResultsView()
+        tests = api.get_querset_for_patient(patient)
+        self.assertEqual(1, len(tests))
+        self.assertEqual('FULL BLOOD COUNT', tests[0].test_name)
 
     def test_group_tests(self):
         patient, _ = self.new_patient_and_episode_please()
@@ -164,7 +190,6 @@ class LabTestResultsViewTestCase(OpalTestCase):
         api = LabTestResultsView()
 
         self.assertEqual('', api.display_class_for_numeric_observation(observation))
-
 
     def test_serialise_tabular_instances(self):
         patient, _ = self.new_patient_and_episode_please()
