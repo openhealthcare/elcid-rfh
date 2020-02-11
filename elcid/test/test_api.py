@@ -131,7 +131,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
 
         api = LabTestResultsView()
 
-        self.assertEqual('too-high', api.display_class_for_numeric_observation(observation))
+        self.assertEqual('too-high', api.display_class_for_observation(observation))
 
     def test_display_class_too_low(self):
         patient, _ = self.new_patient_and_episode_please()
@@ -147,7 +147,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
 
         api = LabTestResultsView()
 
-        self.assertEqual('too-low', api.display_class_for_numeric_observation(observation))
+        self.assertEqual('too-low', api.display_class_for_observation(observation))
 
     def test_display_class_empty(self):
         patient, _ = self.new_patient_and_episode_please()
@@ -163,8 +163,23 @@ class LabTestResultsViewTestCase(OpalTestCase):
 
         api = LabTestResultsView()
 
-        self.assertEqual('', api.display_class_for_numeric_observation(observation))
+        self.assertEqual('', api.display_class_for_observation(observation))
 
+    def test_display_class_obs_value_none(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': 'Pending',
+            'reference_range'  : '1 - 10'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('', api.display_class_for_observation(observation))
 
     def test_serialise_tabular_instances(self):
         patient, _ = self.new_patient_and_episode_please()
