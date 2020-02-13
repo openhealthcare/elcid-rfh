@@ -4,7 +4,7 @@
     <div class="panel-heading">
       <h2>
         <i class="fa fa-user-md"></i>
-        [[ tag_display[currentTag] ]]
+        {{ patient_list.display_name }}
       </h2>
     </div>
 
@@ -31,9 +31,16 @@
                   {% endfor %}
                 </ul>
               </div>
-              <a ng-show="currentTag === 'renal'" href="/letters/#{% url 'renal_handover' %}" target="_blank" class="btn btn-secondary pull-left left-offset-10">
+              {% if patient_list.display_name == 'Renal' %}
+              <a href="/letters/#{% url 'renal_handover' %}" target="_blank" class="btn btn-secondary pull-left left-offset-10">
                 Renal handover list
               </a>
+              {% endif %}
+              {% if patient_list.is_chronic %}
+              <a href="{% url 'add_antifungal_patients' %}" class="btn btn-secondary pull-left left-offset-10">
+                Bulk add patients
+              </a>
+              {% endif %}
               <div class="btn-group pull-right">
                   <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
                   <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
@@ -53,11 +60,13 @@
         <p class="lead text-center">
           There are no patients on this list.
         </p>
+        {% if not patient_list.is_chronic %}
         <p class="lead text-center">
           <span class="screen-only">
             Would you like to <a href="/pathway/#/add_patient">add one</a>?
           </span>
         </p>
+        {% endif %}
       </div>
 
     </div>

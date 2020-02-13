@@ -372,6 +372,8 @@ class MicrobiologyInput(EpisodeSubrecord):
     _list_limit = 3
     _angular_service = 'MicrobiologyInput'
 
+    ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"
+
     when = models.DateTimeField(null=True, blank=True)
     initials = models.CharField(max_length=255, blank=True)
     reason_for_interaction = ForeignKeyOrFreeText(
@@ -394,6 +396,17 @@ class MicrobiologyInput(EpisodeSubrecord):
     class Meta:
         verbose_name = "Clinical Advice"
         verbose_name_plural = "Clinical Advice"
+
+# method for updating
+@receiver(post_save, sender=MicrobiologyInput)
+def update_chronic_antifungal_reason_for_interaction(
+    sender, instance, **kwargs
+):
+    asr = MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
+    if instance.reason_for_interaction == asr:
+        i, _ = instance.episode.patient.chronicantifungal_set.create(
+            reason=ChronicAntifungal.REASON_TO_INTERACTION
+        )
 
 
 class Line(EpisodeSubrecord):
@@ -757,6 +770,20 @@ class BloodCultureIsolate(
     def get_api_name(cls):
         return camelcase_to_underscore(cls._meta.object_name)
 
+
+class ChronicAntifungal(models.Model):
+    DISPENSARY_REPORT = "Dispensary report"
+    REASON_TO_INTERACTION = "Reason for interaction"
+
+    REASONS = (
+        (DISPENSARY_REPORT, DISPENSARY_REPORT,),
+        (REASON_TO_INTERACTION, REASON_TO_INTERACTION,),
+    )
+    patient = models.ForeignKey(omodels.Patient, on_delete=models.CASCADE)
+    updated_dt = models.DateTimeField(auto_now=True)
+    reason = models.TextField(
+        choices=REASONS, blank=True, null=True
+    )
 
 
 # method for updating

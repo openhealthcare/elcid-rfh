@@ -50,7 +50,7 @@
       </div>
     </div>
   </div>
-  <input name="demographics" type="hidden" value="[[ get_demographics_json() ]]">
+  <input name="demographics" type="hidden" value="[[ getDemographicsJson() ]]">
   {% csrf_token %}
   <div class="row content-offset-25">
       <a ng-click="stage = stages.LOOKUP_PATIENTS" class="btn btn-primary btn-lg">

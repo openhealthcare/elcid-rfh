@@ -15,10 +15,12 @@ from django.views.generic import (
     TemplateView, FormView, View, ListView
 )
 
+
 from opal.core import application
 from opal.models import Patient
 from elcid.patient_lists import Renal
 from elcid import models
+from elcid.episode_categories import InfectionService
 from elcid.forms import BulkCreateUsersForm
 from intrahospital_api import loader
 
@@ -229,7 +231,12 @@ class AddAntifungalPatients(LoginRequiredMixin, TemplateView):
         )
 
         for demographics_dict in demographics:
-            if not demographics_dict.get("patient_id"):
+            patient_id = demographics_dict.get("patient_id")
+            if patient_id:
+                patient = Patient.objects.get(
+                    id=patient_id
+                )
+            else:
                 patient = Patient.objects.create()
                 patient.create_episode()
                 demos = patient.demographics_set.get()
@@ -238,4 +245,8 @@ class AddAntifungalPatients(LoginRequiredMixin, TemplateView):
                     user=self.request.user
                 )
                 loader.load_patient(patient)
+
+            patient.chronicantifungal_set.create(
+                reason=models.ChronicAntifungal.DISPENSARY_REPORT
+            )
         return HttpResponseRedirect(self.get_redirect_url())

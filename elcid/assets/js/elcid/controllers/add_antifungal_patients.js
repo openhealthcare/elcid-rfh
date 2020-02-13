@@ -55,28 +55,28 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
    return newPatient;
   }
 
-  var getSearchArgs = function(patient){
+  $scope.getSearchArgs = function(patientForm){
     var searchArgs = {}
     searchArgs[DemographicsSearch.PATIENT_FOUND_IN_ELCID] = function(result){
-      patient.demographics = result.demographics[0];
-      patient.state = $scope.states.FOUND;
-      patient.error = false;
+      patientForm.demographics = result.demographics[0];
+      patientForm.state = $scope.states.FOUND;
+      patientForm.error = false;
     }
     searchArgs[DemographicsSearch.PATIENT_FOUND_UPSTREAM] = function(result){
-      patient.demographics = result.demographics[0];
-      patient.state = $scope.states.FOUND;
-      patient.error = false;
+      patientForm.demographics = result.demographics[0];
+      patientForm.state = $scope.states.FOUND;
+      patientForm.error = false;
     }
     searchArgs[DemographicsSearch.PATIENT_NOT_FOUND] = function(){
-      patient.state = $scope.states.EDITING;
-      patient.error = true;
+      patientForm.state = $scope.states.EDITING;
+      patientForm.error = true;
     }
 
     return searchArgs;
   }
 
 
-  $scope.get_demographics_json = function(){
+  $scope.getDemographicsJson = function(){
     return JSON.stringify(_.pluck($scope.patientForms, "demographics"));
   }
 
@@ -85,12 +85,12 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
     * Query and handle the response of looking up
     * the hospital number for a patient Form.
     */
-    if(!patientForm.demographics.hospital_number){
+    if(!patientForm.demographics.hospital_number || !patientForm.demographics.hospital_number.length){
       return
     }
     patientForm.error = undefined;
     patientForm.state = $scope.states.SEARCHING;
-    var args = getSearchArgs(patientForm);
+    var args = $scope.getSearchArgs(patientForm);
     DemographicsSearch.find(patientForm.demographics.hospital_number, args);
   }
 
@@ -99,9 +99,9 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
     * Look at all the forms that are in editing state
     * and query them again.
     */
-    _.each($scope.patientForms, function(pf){
-      if(pf.state === $scope.states.EDITING && !pf.error){
-        $scope.lookup(pf);
+    _.each($scope.patientForms, function(patientForm){
+      if(patientForm.state === $scope.states.EDITING && !patientForm.error){
+        $scope.lookup(patientForm);
       }
     });
   }

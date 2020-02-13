@@ -2,6 +2,8 @@
 Unittests for the UCLH eLCID OPAL implementation.
 """
 import datetime
+import json
+from unittest import mock
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone
@@ -12,6 +14,7 @@ from opal.models import Patient
 from opal.core.subrecords import subrecords
 
 from elcid import views
+from elcid import models
 
 
 HERE = ffs.Path.here()
@@ -395,4 +398,107 @@ class RenalHandoverTestCase(OpalTestCase):
         self.assertEqual(
             ctx["ward_and_episodes"][0]["episodes"][0]["primary_diagnosis"],
             "Should appear"
+        )
+
+
+class AddAntifungalPatientsTestCase(OpalTestCase):
+    def setUp(self):
+        self.url = reverse('add_antifungal_patients')
+
+    def login(self):
+        self.user
+        self.assertTrue(self.client.login(username=self.user.username,
+                                          password='password'))
+
+    def test_login_required(self):
+        response = self.client.get(self.url)
+        self.assertTrue(
+            response.url.startswith('/accounts/login/')
+        )
+
+    def test_get(self):
+        self.login()
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.template_name,
+            ['add_antifungal_patients.html']
+        )
+        self.assertStatusCode(self.url, 200)
+
+    @mock.patch('elcid.views.loader.load_patient')
+    def test_add_patients_that_are_not_found(self, load_patient):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Jane",
+            surname="Doe"
+        )
+        demographics_dict = patient.demographics().to_dict(self.user)
+        demographics_dict.pop("patient_id")
+        demographics_dict.pop("id")
+        patient.delete()
+        self.login()
+        result = self.client.post(
+            self.url,
+            {"demographics": json.dumps([demographics_dict])},
+            follow=True
+        )
+        self.assertEqual(result.status_code, 200)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().first_name, "Jane"
+        )
+        self.assertTrue(load_patient.called_once_with(patient))
+        self.assertEqual(
+            patient.chronicantifungal_set.get().reason,
+            models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+
+    @mock.patch('elcid.views.loader.load_patient')
+    def test_does_not_add_patients_that_exist(self, load_patient):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Jane",
+            surname="Doe"
+        )
+        demographics_dict = patient.demographics().to_dict(self.user)
+
+        self.login()
+        result = self.client.post(
+            self.url,
+            {"demographics": json.dumps([demographics_dict])},
+            follow=True
+        )
+        self.assertEqual(result.status_code, 200)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().first_name, "Jane"
+        )
+        self.assertFalse(load_patient.called)
+        self.assertEqual(
+            patient.chronicantifungal_set.get().reason,
+            models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+
+    def test_creates_a_new_antifungal(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Jane",
+            surname="Doe"
+        )
+        patient.chronicantifungal_set.create(
+            reason=models.ChronicAntifungal.REASON_TO_INTERACTION
+        )
+        demographics_dict = patient.demographics().to_dict(self.user)
+
+        self.login()
+        result = self.client.post(
+            self.url,
+            {"demographics": json.dumps([demographics_dict])},
+            follow=True
+        )
+        self.assertEqual(result.status_code, 200)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.chronicantifungal_set.all().count(),
+            2
         )
