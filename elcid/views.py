@@ -4,21 +4,23 @@ eLCID specific views.
 import csv
 import random
 import datetime
+import json
 from collections import defaultdict, OrderedDict
 
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import (
     TemplateView, FormView, View, ListView
 )
 
 from opal.core import application
-from opal.models import Ward
+from opal.models import Patient
 from elcid.patient_lists import Renal
 from elcid import models
 from elcid.forms import BulkCreateUsersForm
+from intrahospital_api import loader
 
 app = application.get_app()
 
@@ -214,3 +216,26 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         ctx["ward_and_episodes"] = result
         return ctx
 
+
+class AddAntifungalPatients(LoginRequiredMixin, TemplateView):
+    template_name = "add_antifungal_patients.html"
+
+    def get_redirect_url(self):
+        return "/#/list/"
+
+    def post(self, *args, **kwargs):
+        demographics = json.loads(
+            self.request.POST.get("demographics")
+        )
+
+        for demographics_dict in demographics:
+            if not demographics_dict.get("patient_id"):
+                patient = Patient.objects.create()
+                patient.create_episode()
+                demos = patient.demographics_set.get()
+                demos.update_from_dict(
+                    demographics_dict,
+                    user=self.request.user
+                )
+                loader.load_patient(patient)
+        return HttpResponseRedirect(self.get_redirect_url())

@@ -1,0 +1,22 @@
+<div class="form-group">
+  <form ng-submit="lookupAll()" {% if error %}class="has-error"{% endif %} method="POST">
+    <h3>
+      Hospital numbers
+    </h3>
+    <p class="lead">
+      Please enter a list of all hospital numbers for the patients you would like to add to elcid
+    </p>
+    <div class="row">
+      <div class="col-sm-12 control-group">
+        <textarea autofocus ng-model="editing.hospitalNumbers" rows="20" class="form-control" name="hospital_numbers"></textarea>
+      </div>
+    </div>
+    <div class="row content-offset-10">
+      <div class="col-sm-12">
+        <button ng-disabled="!editing.hospitalNumbers.length" class="btn btn-lg btn-primary pull-right" type="submit">
+          Lookup patients
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

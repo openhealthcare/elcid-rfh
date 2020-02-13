@@ -30,6 +30,10 @@ body{
     margin-top: 30px;
 }
 
+.content-offset-5{
+    margin-top: 5px;;
+}
+
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
 
@@ -346,4 +350,18 @@ div.add-isolate:hover{
 
 .left-offset-10{
     margin-left: 10px;
+}
+
+.form-hint{
+    padding-top: 4px;
+    font-size: 18px;
+    margin-left: -20px;
+
+    .success{
+        color: $primary;
+    }
+
+    .failure{
+        color: $red;
+    }
 }

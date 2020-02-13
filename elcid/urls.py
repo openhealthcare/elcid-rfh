@@ -22,6 +22,11 @@ urlpatterns = [
         r'^elcid/renal_handover',
         views.RenalHandover.as_view(),
         name="renal_handover"
+    ),
+    url(
+        r'^elcid/antifungal_add_patients',
+        views.AddAntifungalPatients.as_view(),
+        name="add_antifungal_patients"
     )
 ]
 
