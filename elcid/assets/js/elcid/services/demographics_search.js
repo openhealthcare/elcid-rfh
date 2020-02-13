@@ -1,4 +1,4 @@
-angular.module('opal.services').factory('DemographicsSearch', function($q, $http, $window, Patient, ngProgressLite) {
+angular.module('opal.services').factory('DemographicsSearch', function($http, $window) {
   "use strict";
   /*
   * The demographics search used by the find patient
@@ -26,8 +26,6 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
   ]
 
   var find = function(hospitalNumber, findPatientOptions){
-    ngProgressLite.set(0);
-    ngProgressLite.start();
     var callBackNames = _.keys(findPatientOptions);
     _.each(callBackNames, function(key){
       if(expectedStatuses.indexOf(key) === -1){
@@ -36,7 +34,6 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
     });
     var patientUrl = url + encodeURIComponent(hospitalNumber)
     $http.get(patientUrl).then(function(response) {
-      ngProgressLite.done();
       if(response.data.status == PATIENT_FOUND_IN_ELCID){
         findPatientOptions[PATIENT_FOUND_IN_ELCID](response.data.patient);
       }
@@ -50,12 +47,14 @@ angular.module('opal.services').factory('DemographicsSearch', function($q, $http
         $window.alert('DemographicsSearch could not be loaded');
       }
     }, function(){
-      ngProgressLite.done();
       $window.alert('DemographicsSearch could not be loaded');
     });
   }
 
   return {
-    find: find
+    find: find,
+    PATIENT_FOUND_IN_ELCID: PATIENT_FOUND_IN_ELCID,
+    PATIENT_FOUND_UPSTREAM: PATIENT_FOUND_UPSTREAM,
+    PATIENT_NOT_FOUND: PATIENT_NOT_FOUND,
   };
 });
