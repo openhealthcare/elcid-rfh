@@ -1,9 +1,17 @@
 describe('RfhFindPatientCtrl', function() {
   "use strict";
-  var scope, DemographicsSearch, $controller, controller, $window;
+  var scope, DemographicsSearch, $controller, controller, $window, ngProgressLite;
 
   beforeEach(function(){
-    module('opal.controllers');
+    module('opal.controllers', function($provide){
+      ngProgressLite = jasmine.createSpyObj([
+        "set", "start", "done"
+      ])
+      $provide.service('ngProgressLite', function(){
+        return ngProgressLite
+      })
+    });
+
     inject(function($injector){
       var $rootScope = $injector.get('$rootScope');
       scope = $rootScope.$new();
@@ -36,6 +44,7 @@ describe('RfhFindPatientCtrl', function() {
   it("should change scope if we're unable to find a patient", function(){
     expect(scope.state).toBe('initial');
     scope.new_patient();
+    expect(ngProgressLite.done).toHaveBeenCalled();
     expect(scope.state).toBe('editing_demographics');
     expect(scope.hideFooter).toBe(false);
   });
@@ -51,6 +60,8 @@ describe('RfhFindPatientCtrl', function() {
     expect(callArgs[1].patient_not_found).toEqual(scope.new_patient);
     expect(callArgs[1].patient_found_in_elcid).toEqual(scope.new_for_patient);
     expect(callArgs[1].patient_found_upstream).toEqual(scope.new_for_patient);
+    expect(ngProgressLite.set).toHaveBeenCalledWith(0);
+    expect(ngProgressLite.start).toHaveBeenCalled();
   });
 
   it('should only show next if state is has_demographics or editing_demographics', function(){
@@ -81,6 +92,7 @@ describe('RfhFindPatientCtrl', function() {
     scope.new_for_patient(fakePatient);
     expect(scope.state).toBe('has_demographics');
     expect(scope.demographics).toBe(fakePatient.demographics[0]);
+    expect(ngProgressLite.done).toHaveBeenCalled();
   });
 
   it("should hoist demographics to editing before saving", function(){
