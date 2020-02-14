@@ -1,6 +1,6 @@
 """
-A management command that runs every 5 mins and loads in
-batches of patients
+A management command that is run by a cron job every 5 mins and runs
+intrahospital_api.loader.batch_load
 """
 from django.core.management.base import BaseCommand
 from intrahospital_api.loader import batch_load
