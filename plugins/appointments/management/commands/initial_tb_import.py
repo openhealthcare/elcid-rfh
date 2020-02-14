@@ -7,7 +7,7 @@ from django.db import transaction
 from opal.models import Patient
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from intrahospital_api import update_demographics, update_tests
+from intrahospital_api import update_demographics, update_lab_tests
 
 from plugins.appointments.models import Appointment
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         update_demographics.update_patient_demographics(patient)
         print('Hitting upstream database for {} tests'.format(mrn))
         results = self.api.results_for_hospital_number(mrn)
-        update_tests(patient, results)
+        update_lab_tests.update_tests(patient, results)
         print('Done')
         return patient
 
