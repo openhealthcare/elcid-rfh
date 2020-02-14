@@ -27,7 +27,8 @@
     this is run every 5 mins and after deployments
 
     Loads everything since the start of the previous
-    successful load so that we paper over any cracks.
+    successful load so that we don't miss results that were reported
+    during a previous import.
 
     load_patient()
     is what is run when we run it from the admin, or
