@@ -7,8 +7,6 @@
     This handles our internals and relationship
     between elcid.
 
-    we have 5 entry points
-
     initial_load()
     nukes all existing lab tests and replaces them.
 
