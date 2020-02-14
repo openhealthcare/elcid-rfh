@@ -171,6 +171,7 @@ INSTALLED_APPS = (
     'lab',
     'plugins.letters',
     'plugins.labtests',
+    'plugins.appointments',
     'intrahospital_api',
     'elcid',
     'django.contrib.admin',

@@ -1,0 +1,3 @@
+"""
+Appointment plugin for elCID
+"""
