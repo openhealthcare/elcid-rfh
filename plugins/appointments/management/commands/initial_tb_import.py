@@ -9,10 +9,11 @@ from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import update_demographics, update_lab_tests
 
+from apps.tb import constants as tb_constants
 from plugins.appointments.models import Appointment
 
 Q_GET_ALL_TB_APPOINTMENTS = """
-SELECT TOP 10 *
+SELECT *
 FROM VIEW_ElCid_CRS_OUTPATIENTS
 WHERE Derived_Appointment_Type LIKE 'Thoracic TB%'
 """
@@ -42,7 +43,7 @@ class Command(BaseCommand):
         """
         Main entrypoint for loading all TB appointments ever.
         """
-        Appointment.objects.delete()
+        Appointment.objects.all().delete()
 
         self.api     = ProdAPI()
         appointments = self.api.execute_hospital_query(Q_GET_ALL_TB_APPOINTMENTS)
@@ -60,3 +61,6 @@ class Command(BaseCommand):
                 setattr(our_appointment, Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
 
             our_appointment.save()
+
+            if patient.episode_set.filter(category_name="TB").count() == 0:
+                patient.create_episode(category_name="TB")

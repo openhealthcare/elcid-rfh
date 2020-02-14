@@ -26,37 +26,37 @@ class Appointment(models.Model):
     # The upstream demographics in this view are denormalised here to aid
     # debugging by mirroring the upstream View. We do not intend to use
     # these fields in our application.
-    v_patient_number     = models.CharField(max_length=20, blank=True, null=True, help_text="MRN")
-    v_patient_nhs_number = models.CharField(max_length=20, blank=True, null=True)
-    v_patient_surname    = models.CharField(max_length=20, blank=True, null=True)
-    v_patient_forename   = models.CharField(max_length=20, blank=True, null=True)
+    v_patient_number     = models.CharField(max_length=255, blank=True, null=True, help_text="MRN")
+    v_patient_nhs_number = models.CharField(max_length=255, blank=True, null=True)
+    v_patient_surname    = models.CharField(max_length=255, blank=True, null=True)
+    v_patient_forename   = models.CharField(max_length=255, blank=True, null=True)
     v_patient_dob        = models.DateTimeField(blank=True, null=True)
-    patient_number       = models.CharField(max_length=20, blank=True, null=True, help_text="MRN")
+    patient_number       = models.CharField(max_length=255, blank=True, null=True, help_text="MRN")
 
     # The next set of fields describe the 'Encounter'. In practice we ignore
     # these in our application as they are not usefully filled in as far as our
     # patient cohort is concerned.
-    v_patient_class         = models.CharField(max_length=50, blank=True, null=True,
+    v_patient_class         = models.CharField(max_length=255, blank=True, null=True,
                                                help_text="Encounter Patient Class")
-    v_attending_doctor_code = models.CharField(max_length=50, blank=True, null=True,
+    v_attending_doctor_code = models.CharField(max_length=255, blank=True, null=True,
                                                help_text="Encounter consultant")
-    v_attending_doctor_name = models.CharField(max_length=50, blank=True, null=True,
+    v_attending_doctor_name = models.CharField(max_length=255, blank=True, null=True,
                                                help_text="Encounter consultant")
-    v_referring_doctor_code = models.CharField(max_length=50, blank=True, null=True,
+    v_referring_doctor_code = models.CharField(max_length=255, blank=True, null=True,
                                                help_text="Encounter referring doctor")
-    v_referring_doctor_name = models.CharField(max_length=50, blank=True, null=True,
+    v_referring_doctor_name = models.CharField(max_length=255, blank=True, null=True,
                                                help_text="Encounter referring doctor")
-    v_patient_type          = models.CharField(max_length=50, blank=True, null=True,
+    v_patient_type          = models.CharField(max_length=255, blank=True, null=True,
                                                help_text="Encounter Patient Type")
-    v_account_status        = models.CharField(max_length=50, blank=True, null=True)
+    v_account_status        = models.CharField(max_length=255, blank=True, null=True)
 
     # The next group of fields describe the originating HL7 message for traceability
     # and debugging purposes.
-    hl7_message_type = models.CharField(max_length=50, blank=True, null=True,
+    hl7_message_type = models.CharField(max_length=255, blank=True, null=True,
                                         help_text="Appointment HL7 message type")
     hl7_message_date = models.DateTimeField(blank=True, null=True,
                                             help_text="Appointment HL7 Date")
-    hl7_message_id   = models.CharField(max_length=50, blank=True, null=True,
+    hl7_message_id   = models.CharField(max_length=255, blank=True, null=True,
                                         help_text="Appointment HL7 ID")
 
     # Then some fields that relate to implementation details of the middleman database.
@@ -78,27 +78,27 @@ class Appointment(models.Model):
                                                 help_text="Consultant resource details if they are seeing the patient.")
 
     # It is entirely ambiguous what these "TCI" fields refer to
-    tci_datetime_text = models.CharField(max_length=50, blank=True, null=True)
+    tci_datetime_text = models.CharField(max_length=255, blank=True, null=True)
     tci_datetime      = models.DateTimeField(blank=True, null=True)
     tci_location      = models.CharField(max_length=255, blank=True, null=True)
 
     # Finally we discover some fields that describe an appointment
-    encounter_number       = models.CharField(max_length=50, blank=True, null=True)
-    visit_id               = models.CharField(max_length=50, blank=True, null=True)
-    appointment_id         = models.CharField(max_length=50, blank=True, null=True,
+    encounter_number       = models.CharField(max_length=255, blank=True, null=True)
+    visit_id               = models.CharField(max_length=255, blank=True, null=True)
+    appointment_id         = models.CharField(max_length=255, blank=True, null=True,
                                               help_text="Unique appointment identifier")
-    filler_appointment_id  = models.CharField(max_length=50, blank=True, null=True,
+    filler_appointment_id  = models.CharField(max_length=255, blank=True, null=True,
                                               help_text="Choose & Book ID when relevent")
     full_appointment_type  = models.CharField(max_length=255, blank=True, null=True,
                                               help_text="Raw Appointment Type")
-    duration               = models.CharField(max_length=50, blank=True, null=True)
-    duration_units         = models.CharField(max_length=50, blank=True, null=True)
+    duration               = models.CharField(max_length=255, blank=True, null=True)
+    duration_units         = models.CharField(max_length=255, blank=True, null=True)
     start_datetime         = models.DateTimeField(blank=True, null=True)
     end_datetime           = models.DateTimeField(blank=True, null=True)
     full_contact_person    = models.CharField(max_length=255,blank=True, null=True)
     full_entered_by_person = models.CharField(max_length=255,blank=True, null=True)
-    status_code            = models.CharField(max_length=50, blank=True, null=True)
-    hospital_service       = models.CharField(max_length=50, blank=True, null=True,
+    status_code            = models.CharField(max_length=255, blank=True, null=True)
+    hospital_service       = models.CharField(max_length=255, blank=True, null=True,
                                               help_text="Speciality code associated with the encounter")
 
     # These fields are 'derived' - by which we interpret that the middleman database has
@@ -107,7 +107,7 @@ class Appointment(models.Model):
                                                          help_text="Cleaned up Appointment type (Taken from Full Appointment type)")
     derived_appointment_location      = models.CharField(max_length=255, blank=True, null=True,
                                                          help_text="Cleaned up Appointment location (taken from AIL)")
-    derived_appointment_location_site = models.CharField(max_length=20, blank=True, null=True,
+    derived_appointment_location_site = models.CharField(max_length=255, blank=True, null=True,
                                                          help_text="Cleaned up Appointment location Site (taken from AIL)")
     derived_clinic_resource           = models.CharField(max_length=255, blank=True, null=True,
                                                          help_text="Cleaned up Resource (taken from AIL & AIP) AIP taken presedence")
