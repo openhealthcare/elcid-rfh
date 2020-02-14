@@ -485,15 +485,12 @@ class ProdApi(base_api.BaseApi):
         return (PathologyRow(r) for r in all_rows)
 
     def data_deltas(self, some_datetime):
-        """ yields an iterator of dictionary
-
-            the dictionary contains
-
-            "demographics" : demographics, the first (ie the most recent)
-            demographics result in the set.
-
-            "lab_tests": all lab tests for the patient
-
+        """
+        Returns a list of instances like
+        {
+         "demographics" : demographics, the first (ie the most recent) demographics result in the set.
+         "lab_tests": all lab tests for the patient
+        }
         """
         all_rows = self.data_delta_query(some_datetime)
 
