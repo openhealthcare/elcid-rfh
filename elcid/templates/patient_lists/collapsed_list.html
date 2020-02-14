@@ -1,0 +1,47 @@
+<div class="container content-offset">
+  <div class="panel panel-primary panel-container">
+    <div class="panel-heading patient-list-header">
+      <h2><i class="fa fa-user-md"></i>{{ patient_list.display_name }}</h2>
+    </div>
+    <div class="panel-body">
+      <div class="row screen-only">
+        <form class="form-inline">
+          <div class="col-md-12">
+            <h1>
+              {% include "patient_lists/partials/list_dropdown_menu.html" %}
+            </h1>
+          </div>
+        </form>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8 col-md-push-2">
+          <div class="row">
+            <div class="col-md-4"><h4>Name</h4></div>
+            <div class="col-md-3"><h4>Hpspital Number</h4></div>
+            <div class="col-md-3"><h4>DOB</h4></div>
+          </div>
+          <hr />
+          <div ng-repeat="row in rows" class="row content-offset-below-10">
+            <a class="" href="/#[[ row.link ]]">
+              <div class="col-md-4">
+                [[ row.getFullName() ]]
+              </div>
+              <div class="col-md-3">
+                [[ row.demographics[0].hospital_number ]]
+              </div>
+              <div class="col-md-3">
+                [[ row.demographics[0].date_of_birth | displayDate ]]
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="empty-list" ng-hide="num_episodes > 0">
+        <p class="lead text-center">
+          There are no patients on this list.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

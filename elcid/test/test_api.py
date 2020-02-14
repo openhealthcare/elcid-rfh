@@ -17,448 +17,353 @@ from elcid.api import (
 
 
 class LabTestResultsViewTestCase(OpalTestCase):
-    def setUp(self):
-        self.api = LabTestResultsView()
-        self.patient, _ = self.new_patient_and_episode_please()
-        self.user
-        self.assertTrue(
-            self.client.login(
-                username=self.USERNAME,
-                password=self.PASSWORD
-            )
-        )
-        request = self.rf.get("/")
-        self.url = reverse(
-            "lab_test_results_view-detail",
-            kwargs=dict(pk=self.patient.id),
-            request=request
-        )
-        self.this_year = datetime.date.today().year
-        self.plus_hour = datetime.timedelta(
-            hours=1
-        )
 
-    def new_lab_test_and_observation_please(self):
-        lt = self.patient.lab_tests.create(**{
-            "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(self.this_year, 6, 17, 4, 15, 10),
-            "lab_number": "11111",
-            "site": u'^&        ^',
-            "status": "Sucess",
-            "test_code": "AN12",
-            "test_name": "Anti-CV2 (CRMP-5) antibodies",
-        })
-
-        obs = lt.observation_set.create(
-            last_updated=datetime.datetime(self.this_year, 6, 18, 4, 15, 10),
-            observation_datetime=datetime.datetime(self.this_year, 4, 15, 4, 15, 10),
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="234",
-            observation_name="Aerobic bottle culture"
-        )
-
-        return lt, obs
-
-    def test_vanilla_one_short_form(self):
-        lt, obs = self.new_lab_test_and_observation_please()
-
-        expected = [
-            {
-                "api_name": "anti-cv2-crmp-5-antibodies",
-                "by_observations": {
-                    "Aerobic bottle culture": {
-                        "15/04/{}".format(self.this_year): 234.0
-                    }
-                },
-                "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
-                "long_form": False,
-                "observation_date_range": ["15/04/{}".format(self.this_year)],
-                "observation_metadata": {
-                    "Aerobic bottle culture": {
-                        "api_name": "aerobic-bottle-culture",
-                        "reference_range": {"max": 11.0, "min": 3.5},
-                        "units": "g",
-                    }
-                },
-                "observation_names": ["Aerobic bottle culture"],
-                "tags": [],
-            }
-        ]
-        response = self.client.get(self.url).json()
-        self.assertEqual(response["tests"], expected)
-        self.assertEqual(
-            set(response["tags"]),
-            {"HAEMATOLOGY", "ENDOCRINOLOGY", "BIOCHEMISTRY", "URINE"}
-        )
-
-    def test_multiple_tests_short_form(self):
-        """
-        In short form tests are ordered by date with most recent last
-        """
-        lt_1, obs_1 = self.new_lab_test_and_observation_please()
-
-        lt_2, obs_2 = self.new_lab_test_and_observation_please()
-        lt_2.datetime_ordered = lt_2.datetime_ordered + datetime.timedelta(1)
-        lt_2.save()
-
-        obs_2.last_updated = obs_2.last_updated + datetime.timedelta(1)
-        obs_2.observation_datetime = obs_2.observation_datetime + datetime.timedelta(1)
-        obs_2.observation_value = "233"
-        obs_2.save()
-
-        expected = [
-            {
-                "api_name": "anti-cv2-crmp-5-antibodies",
-                "by_observations": {
-                    "Aerobic bottle culture": {
-                        "15/04/{}".format(self.this_year): 234.0,
-                        "16/04/{}".format(self.this_year): 233.0
-                    }
-                },
-                "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
-                "long_form": False,
-                "observation_date_range": [
-                    "15/04/{}".format(self.this_year),
-                    "16/04/{}".format(self.this_year),
-                ],
-                "observation_metadata": {
-                    "Aerobic bottle culture": {
-                        "api_name": "aerobic-bottle-culture",
-                        "reference_range": {"max": 11.0, "min": 3.5},
-                        "units": "g",
-                    }
-                },
-                "observation_names": ["Aerobic bottle culture"],
-                "tags": [],
-            }
-        ]
-        response = self.client.get(self.url).json()
-        self.assertEqual(response["tests"], expected)
-        self.assertEqual(
-            set(response["tags"]),
-            {"HAEMATOLOGY", "ENDOCRINOLOGY", "BIOCHEMISTRY", "URINE"}
-        )
-
-    def test_multiple_tests_long_form(self):
-        """
-        In long form tests are ordered by date with most recent first
-        """
-        lt_1, obs_1 = self.new_lab_test_and_observation_please()
-
-        lt_2, obs_2 = self.new_lab_test_and_observation_please()
-        lt_2.datetime_ordered = lt_2.datetime_ordered + datetime.timedelta(1)
-        lt_2.save()
-
-        obs_2.last_updated = obs_2.last_updated + datetime.timedelta(1)
-        obs_2.observation_datetime = obs_2.observation_datetime + datetime.timedelta(1)
-        obs_2.observation_value = "Negative"
-        obs_2.save()
-
-        expected = [
-            {
-                "api_name": "anti-cv2-crmp-5-antibodies",
-                "by_observations": {
-                    "Aerobic bottle culture": {
-                        "15/04/{}".format(self.this_year): 234.0,
-                        "16/04/{}".format(self.this_year): "Negative"
-                    }
-                },
-                "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
-                "long_form": True,
-                "observation_date_range": [
-                    "16/04/{}".format(self.this_year),
-                    "15/04/{}".format(self.this_year),
-                ],
-                "observation_metadata": {
-                    "Aerobic bottle culture": {
-                        "api_name": "aerobic-bottle-culture",
-                        "reference_range": {"max": 11.0, "min": 3.5},
-                        "units": "g",
-                    }
-                },
-                "observation_names": ["Aerobic bottle culture"],
-                "tags": [],
-            }
-        ]
-        response = self.client.get(self.url).json()
-        self.assertEqual(response["tests"], expected)
-        self.assertEqual(
-            set(response["tags"]),
-            {"HAEMATOLOGY", "ENDOCRINOLOGY", "BIOCHEMISTRY", "URINE"}
-        )
-
-    def test_multiple_tests_on_the_same_day(self):
-        """
-        When we have multiple tests on the same day the date rante should
-        still only contain 1 date and we should use the newer result
-        """
-        lt_1, obs_1 = self.new_lab_test_and_observation_please()
-
-        lt_2, obs_2 = self.new_lab_test_and_observation_please()
-        lt_2.datetime_ordered = lt_2.datetime_ordered + datetime.timedelta(1)
-        lt_2.save()
-
-        obs_2.last_updated = obs_2.last_updated + self.plus_hour
-        obs_2.observation_datetime = obs_2.observation_datetime + self.plus_hour
-        obs_2.observation_value = "345"
-        obs_2.save()
-
-        expected = [
-            {
-                "api_name": "anti-cv2-crmp-5-antibodies",
-                "by_observations": {
-                    "Aerobic bottle culture": {
-                        "15/04/{}".format(self.this_year): 345.0
-                    }
-                },
-                "lab_test_type": "Anti-CV2 (CRMP-5) antibodies",
-                "long_form": False,
-                "observation_date_range": ["15/04/{}".format(self.this_year)],
-                "observation_metadata": {
-                    "Aerobic bottle culture": {
-                        "api_name": "aerobic-bottle-culture",
-                        "reference_range": {"max": 11.0, "min": 3.5},
-                        "units": "g",
-                    }
-                },
-                "observation_names": ["Aerobic bottle culture"],
-                "tags": [],
-            }
-        ]
-        response = self.client.get(self.url).json()
-        self.assertEqual(response["tests"], expected)
-
-
-class GetObservationByTypeAndDateStrTestCase(OpalTestCase):
-    def setUp(self):
-        self.api = LabTestResultsView()
+    def test_get_non_comments_for_patient(self):
         patient, _ = self.new_patient_and_episode_please()
-        self.this_year = datetime.date.today().year
-        plus_hour = datetime.timedelta(
-            hours=1
-        )
-
-        self.lab_test = patient.lab_tests.create(**{
-            "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(self.this_year, 6, 17, 4, 15, 10),
-            "lab_number": "11111",
-            "site": u'^&        ^',
-            "status": "Sucess",
-            "test_code": "AN12",
-            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
         })
 
-        self.old_obs = self.lab_test.observation_set.create(
-            last_updated=datetime.datetime(self.this_year, 6, 18, 4, 15, 10),
-            observation_datetime=datetime.datetime(self.this_year, 4, 15, 4, 15, 10),
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="234",
-            observation_name="Aerobic bottle culture"
-        )
+        api = LabTestResultsView()
+        tests = api.get_non_comments_for_patient(patient)
+        self.assertEqual(1, len(tests))
+        self.assertEqual('BLOOD TEST', tests[0].test_name)
 
-        self.new_obs = self.lab_test.observation_set.create(
-            last_updated=datetime.datetime(
-                self.this_year, 6, 18, 4, 15, 10
-            ) + plus_hour,
-            observation_datetime=datetime.datetime(
-                self.this_year, 4, 15, 4, 15, 10
-            ) + plus_hour,
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="345",
-            observation_name="Aerobic bottle culture"
-        )
+    def test_get_non_comments_for_patient_excludes_comments(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
+        })
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'test_name': 'COMMENT'
+        })
 
-    def test_get_observations_by_type_and_date_str_normal(self):
-        result = self.api.get_observations_by_type_and_date_str([self.old_obs])
-        self.assertEqual(
-            result, {"Aerobic bottle culture": {
-                "15/04/{}".format(self.this_year): 234.0
-            }}
-        )
+        api = LabTestResultsView()
+        tests = api.get_non_comments_for_patient(patient)
+        self.assertEqual(1, len(tests))
+        self.assertEqual('BLOOD TEST', tests[0].test_name)
 
-    def test_get_observations_by_type_and_date_str_multiple(self):
-        result = self.api.get_observations_by_type_and_date_str([
-            self.old_obs, self.new_obs
-        ])
-        self.assertEqual(
-            result, {"Aerobic bottle culture": {
-                "15/04/{}".format(self.this_year): 345.0
-            }}
-        )
 
-    def test_get_observations_by_type_and_date_str_pending(self):
-        self.new_obs.observation_value = "Pending"
-        self.new_obs.save()
+    def test_group_tests(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
+        })
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
+        })
+        patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'test_name': 'HIV TEST'
+        })
 
-        result = self.api.get_observations_by_type_and_date_str([
-            self.old_obs, self.new_obs
-        ])
-        self.assertEqual(
-            result, {"Aerobic bottle culture": {
-                "15/04/{}".format(self.this_year): 234.0
-            }}
-        )
+        api = LabTestResultsView()
+        grouped = api.group_tests(patient.lab_tests.all())
+        self.assertEqual(2, len(grouped['BLOOD TEST']))
+        self.assertEqual(1, len(grouped['HIV TEST']))
 
-    def test_get_observations_by_type_and_date_multiple_dates(self):
-        next_day = self.new_obs.observation_datetime + datetime.timedelta(1)
-        self.new_obs.observation_datetime = next_day
-        self.new_obs.save()
-        result = self.api.get_observations_by_type_and_date_str([
-            self.old_obs, self.new_obs
-        ])
-        self.assertEqual(
-            result, {"Aerobic bottle culture": {
-                "15/04/{}".format(self.this_year): 234.0,
-                "16/04/{}".format(self.this_year): 345.0,
-            }}
-        )
+    def test_is_long_form_always_show(self):
+        api = LabTestResultsView()
+        self.assertFalse(api.is_long_form("TACROLIMUS", None))
 
-    def test_get_observations_by_type_and_date_multiple_observation_types(
-        self
-    ):
-        self.new_obs.observation_name = "Anaerobic bottle culture"
-        self.new_obs.save()
-        result = self.api.get_observations_by_type_and_date_str([
-            self.old_obs, self.new_obs
-        ])
-        expected = {
-            "Aerobic bottle culture": {
-                "15/04/{}".format(self.this_year): 234.0,
+    def test_is_long_form_long_form(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'BLOOD TEST'
+        })
+
+        test.observation_set.create(**{
+            'observation_value': 'No Growth Seen'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertTrue(api.is_long_form('BLOOD TEST', [test]))
+
+    def test_is_long_form_not_long_form(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        test.observation_set.create(**{
+            'observation_value': '3'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertFalse(api.is_long_form('LFT', [test]))
+
+    def test_is_empty_value(self):
+        api = LabTestResultsView()
+        self.assertTrue(api.is_empty_value(None))
+
+    def test_is_empty_value_ignores_dash(self):
+        api = LabTestResultsView()
+        self.assertTrue(api.is_empty_value(' - '))
+
+    def test_is_empty_value_ignores_hash(self):
+        api = LabTestResultsView()
+        self.assertTrue(api.is_empty_value(' # '))
+
+    def test_is_empty_value_knows_non_empty_value(self):
+        api = LabTestResultsView()
+        self.assertFalse(api.is_empty_value(' 23 '))
+
+    def test_display_class_too_high(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': '3',
+            'reference_range'  : '1 - 2'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('too-high', api.display_class_for_observation(observation))
+
+    def test_display_class_too_low(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': '3',
+            'reference_range'  : '10 - 20'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('too-low', api.display_class_for_observation(observation))
+
+    def test_display_class_empty(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': '3',
+            'reference_range'  : '1 - 10'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('', api.display_class_for_observation(observation))
+
+    def test_display_class_obs_value_none(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name': 'LFT'
+        })
+
+        observation = test.observation_set.create(**{
+            'observation_value': 'Pending',
+            'reference_range'  : '1 - 10'
+        })
+
+        api = LabTestResultsView()
+
+        self.assertEqual('', api.display_class_for_observation(observation))
+
+    def test_serialise_tabular_instances(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '123'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '3',
+            'reference_range'  : '1 - 10'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '13',
+            'reference_range'  : '10 - 100'
+        })
+
+        test2 = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '121'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '20',
+            'reference_range'  : '1 - 10'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '123',
+            'reference_range'  : '10 - 100'
+        })
+
+        expected_datetimes = ['10/06/2019 04:15:10','17/06/2019 04:15:10']
+        expected_observation_names = ['RBC', 'WBC']
+        expected_lab_numbers = {
+            '10/06/2019 04:15:10': '121',
+            '17/06/2019 04:15:10': '123'
+        }
+        expected_observation_ranges = {'WBC': '1 - 10', 'RBC': '10 - 100'}
+        expected_observation_series = {
+            'WBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '20',
+                    'range': '1 - 10',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '3',
+                    'range': '1 - 10',
+                    'display_class': ''
+                }
             },
-            "Anaerobic bottle culture": {
-                "15/04/{}".format(self.this_year): 345.0,
+            'RBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '123',
+                    'range': '10 - 100',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '13',
+                    'range': '10 - 100',
+                    'display_class': ''
+                }
             }
         }
-        self.assertEqual(
-            result, expected
-        )
 
+        api = LabTestResultsView()
+        serialised = api.serialise_tabular_instances(patient.lab_tests.all())
 
-class IsLongFormTestCase(OpalTestCase):
-    def setUp(self):
-        self.api = LabTestResultsView()
+        self.assertEqual(expected_datetimes, serialised['test_datetimes'])
+        self.assertEqual(expected_observation_names, serialised['observation_names'])
+        self.assertEqual(expected_lab_numbers, serialised['lab_numbers'])
+        self.assertEqual(expected_observation_ranges, serialised['observation_ranges'])
+        self.assertEqual(expected_observation_series, serialised['observation_series'])
+
+    def test_serialise_long_form_instance(self):
         patient, _ = self.new_patient_and_episode_please()
-        self.this_year = datetime.date.today().year
-        plus_hour = datetime.timedelta(
-            hours=1
-        )
-
-        self.lab_test = patient.lab_tests.create(**{
-            "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(self.this_year, 6, 17, 4, 15, 10),
-            "lab_number": "11111",
-            "site": u'^&        ^',
-            "status": "Sucess",
-            "test_code": "AN12",
-            "test_name": "Anti-CV2 (CRMP-5) antibodies",
+        test  = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'test_name'       : 'BLOOD CULTURE',
+            'lab_number'      : '121'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'ORGANISM',
+            'observation_value': 'Staph. Aureus',
         })
 
-        self.old_obs = self.lab_test.observation_set.create(
-            last_updated=datetime.datetime(self.this_year, 6, 18, 4, 15, 10),
-            observation_datetime=datetime.datetime(self.this_year, 4, 15, 4, 15, 10),
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="234",
-            observation_name="Aerobic bottle culture"
-        )
+        api = LabTestResultsView()
 
-        self.new_obs = self.lab_test.observation_set.create(
-            last_updated=datetime.datetime(
-                self.this_year, 6, 18, 4, 15, 10
-            ) + plus_hour,
-            observation_datetime=datetime.datetime(
-                self.this_year, 4, 15, 4, 15, 10
-            ) + plus_hour,
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="345",
-            observation_name="Aerobic bottle culture"
-        )
+        serialised = api.serialise_long_form_instance(test)
 
-    def test_is_long_form_numeric(self):
-        self.assertFalse(
-            self.api.is_long_form("testing", [self.old_obs, self.new_obs])
-        )
+        self.assertEqual('121', serialised['lab_number'])
 
-    def test_is_long_form_always_show_as_tabular(self):
-        self.assertFalse(
-            self.api.is_long_form("BONE PROFILE", [self.old_obs, self.new_obs])
-        )
+    def test_retrieve(self):
+        patient, _ = self.new_patient_and_episode_please()
+        test  = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2017, 6, 10, 4, 15, 10),
+            'test_name'       : 'BLOOD CULTURE',
+            'lab_number'      : '121'
+        })
+        test.observation_set.create(**{
+            'observation_name' : 'ORGANISM',
+            'observation_value': 'Staph. Aureus',
+        })
+        test2 = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '123'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '3',
+            'reference_range'  : '1 - 10'
+        })
+        test2.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '13',
+            'reference_range'  : '10 - 100'
+        })
 
-    def test_is_long_form_true(self):
-        self.new_obs.observation_value = "Some text based observation"
-        self.new_obs.save()
-        self.assertTrue(
-            self.api.is_long_form("testing", [self.old_obs, self.new_obs])
-        )
+        test3 = patient.lab_tests.create(**{
+            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'test_name'       : 'FULL BLOOD COUNT',
+            'lab_number'      : '121'
+        })
+        test3.observation_set.create(**{
+            'observation_name' : 'WBC',
+            'observation_value': '20',
+            'reference_range'  : '1 - 10'
+        })
+        test3.observation_set.create(**{
+            'observation_name' : 'RBC',
+            'observation_value': '123',
+            'reference_range'  : '10 - 100'
+        })
 
-
-class SortLabTestsDictsTestCase(OpalTestCase):
-    def setUp(self):
-        self.this_year = datetime.date.today().year
-        self.api = LabTestResultsView()
-
-    def test_ordering_with_long_form(self):
-        dict_1 = {
-            "lab_test_type": "Test 1",
-            "long_form": False,
-            "observation_date_range": [
-                "12/04/{}".format(self.this_year),
-                "13/04/{}".format(self.this_year),
-                "14/04/{}".format(self.this_year)
-            ]
+        expected_FBC_observation_series = {
+            'WBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '20',
+                    'range': '1 - 10',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '3',
+                    'range': '1 - 10',
+                    'display_class': ''
+                }
+            },
+            'RBC': {
+                '10/06/2019 04:15:10': {
+                    'value': '123',
+                    'range': '10 - 100',
+                    'display_class': 'too-high'
+                },
+                '17/06/2019 04:15:10': {
+                    'value': '13',
+                    'range': '10 - 100',
+                    'display_class': ''
+                }
+            }
         }
-        dict_2 = {
-            "lab_test_type": "Test 2",
-            "long_form": True,
-            "observation_date_range": [
-                "16/04/{}".format(self.this_year),
-                "15/04/{}".format(self.this_year),
-                "14/04/{}".format(self.this_year)
-            ]
-        }
-        dict_3 = {
-            "lab_test_type": "Test 3",
-            "long_form": False,
-            "observation_date_range": [
-                "13/04/{}".format(self.this_year),
-                "14/04/{}".format(self.this_year),
-                "15/04/{}".format(self.this_year)
-            ]
-        }
+
+        expected_BC_observations = [
+            {'name': 'ORGANISM', 'value': 'Staph. Aureus'}
+        ]
+
+        expected_test_order = ['FULL BLOOD COUNT', 'BLOOD CULTURE']
+
+        api = LabTestResultsView()
+        result = api.retrieve(None, pk=patient.id)
+
+        data = json.loads(result.content.decode('UTF-8'))
+
+        self.assertEqual(expected_test_order, data['test_order'])
         self.assertEqual(
-            self.api.sort_lab_tests_dicts([dict_1, dict_2, dict_3]),
-            [dict_2, dict_3, dict_1]
-        )
-
-    def test_ordering_within_a_date(self):
-        dict_1 = {
-            "lab_test_type": "Test Z",
-            "long_form": False,
-            "observation_date_range": [
-                "16/04/{}".format(self.this_year),
-                "15/04/{}".format(self.this_year)
-            ]
-        }
-        dict_2 = {
-            "lab_test_type": "Test A",
-            "long_form": False,
-            "observation_date_range": [
-                "16/04/{}".format(self.this_year),
-                "15/04/{}".format(self.this_year)
-            ]
-        }
+            expected_FBC_observation_series,
+            data['tests']['FULL BLOOD COUNT']['instances']['observation_series'])
         self.assertEqual(
-            self.api.sort_lab_tests_dicts([dict_1, dict_2]),
-            [dict_2, dict_1]
+            expected_BC_observations,
+            data['tests']['BLOOD CULTURE']['instances'][0]['observations']
         )
 
 
@@ -1223,4 +1128,3 @@ class LabTestSummaryTestCase(OpalTestCase):
              'recent_dates': [None, None, None, None, None]
         }
         self.assertEqual(result.data, expected)
-

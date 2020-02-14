@@ -11,9 +11,9 @@ from elcid.pathways import AddPatientPathway, IgnoreDemographicsMixin
 from obs import models as obs_models
 from intrahospital_api import loader
 
-from apps.tb.patient_lists import TbPatientList
 from apps.tb import models as tb_models
 from intrahospital_api import constants
+from apps.tb import constants as tb_constants
 
 
 class AddTbPatientPathway(AddPatientPathway):
@@ -31,11 +31,20 @@ class AddTbPatientPathway(AddPatientPathway):
 
     @transaction.atomic
     def save(self, data, user, patient=None, episode=None):
+        if patient:
+            # at present we don't close tb episodes if they
+            # already have one, do nothing and return that
+            episode = patient.episode_set.filter(
+                tagging__value=tb_constants.TB_TAG
+            ).first()
+            if episode:
+                return patient, episode
+
         saved_patient, episode = super(AddTbPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
 
-        episode.set_tag_names([TbPatientList.tag], user)
+        episode.set_tag_names([tb_constants.TB_TAG], user)
         episode.category_name = "TB"
         episode.stage = "New Referral"
         episode.save()
