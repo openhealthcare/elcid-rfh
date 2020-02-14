@@ -1,6 +1,4 @@
 """
-    Get a loader this.
-
     This is the entry point to the api.
 
     The api handles all interaction with the external
