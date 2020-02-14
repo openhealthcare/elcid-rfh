@@ -7,7 +7,7 @@ from intrahospital_api.loader import batch_load
 
 
 class Command(BaseCommand):
-    help = " runs a batch load since the last successful batch run. --force\
+    help = "Runs a batch load since the last successful batch run. --force\
 skips sanity checks"
 
     def add_arguments(self, parser):
