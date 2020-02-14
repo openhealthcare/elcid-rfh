@@ -12,7 +12,7 @@ from intrahospital_api import update_demographics, update_lab_tests
 from plugins.appointments.models import Appointment
 
 Q_GET_ALL_TB_APPOINTMENTS = """
-SELECT *
+SELECT TOP 10 *
 FROM VIEW_ElCid_CRS_OUTPATIENTS
 WHERE Derived_Appointment_Type LIKE 'Thoracic TB%'
 """
@@ -42,12 +42,14 @@ class Command(BaseCommand):
         """
         Main entrypoint for loading all TB appointments ever.
         """
+        Appointment.objects.delete()
+
         self.api     = ProdAPI()
         appointments = self.api.execute_hospital_query(Q_GET_ALL_TB_APPOINTMENTS)
         for appointment in appointments:
             mrn = appointment['vPatient_Number']
 
-            if Patient.objets.filter(demographics__hospital_number=mrn).count() == 0:
+            if Patient.objects.filter(demographics__hospital_number=mrn).count() == 0:
                 patient = self.create_patient_for_mrn(mrn)
             else:
                 patient = Patient.objects.get(demographics__hospital_number=mrn)

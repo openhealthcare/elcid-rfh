@@ -129,6 +129,7 @@ class Appointment(models.Model):
         'HL7_Message_Type'                 : 'hl7_message_type',
         'HL7_Message_Date'                 : 'hl7_message_date',
         'HL7_Message_ID'                   : 'hl7_message_id',
+        'id'                               : 'sqlserver_id',
         'insert_date'                      : 'insert_date',
         'last_updated'                     : 'last_updated',
         'AIG_Resource_ID'                  : 'aig_resource_id',
