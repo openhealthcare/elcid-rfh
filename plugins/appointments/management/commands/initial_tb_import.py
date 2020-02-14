@@ -53,7 +53,10 @@ class Command(BaseCommand):
             if Patient.objects.filter(demographics__hospital_number=mrn).count() == 0:
                 patient = self.create_patient_for_mrn(mrn)
             else:
-                patient = Patient.objects.get(demographics__hospital_number=mrn)
+                try:
+                    patient = Patient.objects.get(demographics__hospital_number=mrn)
+                except:
+                    patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
 
             our_appointment = Appointment(patient=patient)
 

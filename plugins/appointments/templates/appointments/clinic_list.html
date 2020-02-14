@@ -1,0 +1,30 @@
+{% extends 'app_layouts/layout_base.html' %}
+{% block ngapp %}{% endblock %}
+{% block loading %}{% endblock %}
+
+{% block content %}
+  <div class="row content-offset">
+    <div class="col-md-10 col-md-offset-1">
+      <h2 >Upcoming TB Clinic Appointments</h2>
+    </div>
+  </div>
+  {% for appointment in object_list %}
+    <div class="row">
+      <div class="col-md-3">
+        {{ appointment.start_datetime }}
+        <br />
+        {{ appointment.duration}}
+      </div>
+      <div class="col-md-3">
+        {{ appointment.derived_appointment_type }}
+      </div>
+      <div class="col-md-3">
+        {{ appointment.patient.demographics.name }}
+      </div>
+      <div class="col-md-3">
+        {{ appointment.patient.demographics.hospital_number }}
+        {{ appointment.patient.demographics.date_of_birth }}
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}
