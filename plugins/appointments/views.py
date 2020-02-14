@@ -18,4 +18,4 @@ class ClinicListView(ListView):
     def get_queryset(self):
         return Appointment.objects.filter(
             start_datetime__gte=datetime.date.today()
-        ).exclude(status_code='Canceled')
+        ).exclude(status_code='Canceled').order_by('start_datetime')

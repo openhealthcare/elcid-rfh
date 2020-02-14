@@ -9,21 +9,24 @@
     </div>
   </div>
   {% for appointment in object_list %}
-    <div class="row">
-      <div class="col-md-3">
+    <div class="row"p>
+      <div class="col-md-2 col-md-offset-1">
         {{ appointment.start_datetime }}
-        <br />
         {{ appointment.duration}}
       </div>
       <div class="col-md-3">
         {{ appointment.derived_appointment_type }}
       </div>
       <div class="col-md-3">
+        <a href="/#/patient/{{patient/appointment.patient.id}}">
         {{ appointment.patient.demographics.name }}
+        </a>
       </div>
       <div class="col-md-3">
+        <a href="/#/patient/{{patient/appointment.patient.id}}">
         {{ appointment.patient.demographics.hospital_number }}
         {{ appointment.patient.demographics.date_of_birth }}
+        </a>
       </div>
     </div>
   {% endfor %}
