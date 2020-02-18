@@ -54,7 +54,7 @@
   {% csrf_token %}
   <div class="row content-offset-25">
       <a ng-click="stage = stages.LOOKUP_PATIENTS" class="btn btn-primary btn-lg">
-        <i class="fa fa-floppy-o"></i>
+        <i class="fa fa-arrow-left"></i>
         Back
       </a>
       <div class="pull-right">
@@ -64,7 +64,7 @@
           Add patients
         </button>
         <a ng-show="filterForms({state: states.EDITING}).length" class="btn btn-primary btn-lg" ng-click="research()">
-          <i class="fa fa-floppy-o"></i>
+          <i class="fa fa-search"></i>
           Lookup patients
         </a>
       </div>
