@@ -4,6 +4,7 @@ from rest_framework.reverse import reverse
 from opal.core.test import OpalTestCase
 from opal import models as omodels
 from elcid import models as emodels
+from lab import models as lmodels
 from intrahospital_api import api
 from intrahospital_api import constants
 
@@ -17,15 +18,9 @@ class PatientToDict(OpalTestCase):
             system, which in practical terms means UpstreamLabTests
             and UpstreamBloodCultures at present.
         """
-        self.maxDiff = None
         patient, episode = self.new_patient_and_episode_please()
         episode.set_tag_names(["something"], self.user)
-        emodels.UpstreamLabTest.objects.create(
-            patient=patient,
-            external_system=constants.EXTERNAL_SYSTEM
-
-        )
-        emodels.QuickFISH.objects.create(
+        lmodels.LabTest.objects.create(
             patient=patient
         )
         emodels.Imaging.objects.create(episode=episode, site="elbow")
@@ -46,10 +41,6 @@ class PatientToDict(OpalTestCase):
             to_dicted, result
         )
         self.assertEqual(len(found_lab_tests_for_patient), 1)
-        self.assertEqual(
-            found_lab_tests_for_patient[0]["lab_test_type"],
-            emodels.QuickFISH.get_display_name()
-        )
         self.assertEqual(
             found_lab_tests_for_episode, found_lab_tests_for_patient
         )

@@ -354,70 +354,6 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         return json_response(result)
 
 
-class UpstreamBloodCultureApi(viewsets.ViewSet):
-    """
-        for every upstream blood culture, return them grouped by
-
-        datetimes_ordered as a date,
-        lab_number
-        observation name
-    """
-    base_name = "upstream_blood_culture_results"
-
-    def no_growth_observations(self, observations):
-        """
-            We are looking for observations that looks like the below.
-            Its not necessarily 5 days, sometimes its e.g. 48 hours.
-            Otherwise they always look like the below.
-
-            Aerobic bottle culture: No growth after 5 days of incubation
-            Anaerobic bottle culture: No growth after 5 days of incubation
-
-            The are always of the type [Anaerobic/Aerobic] bottle culture
-        """
-        obs_names = ["Aerobic bottle culture", "Anaerobic bottle culture"]
-
-        bottles = [
-            o for o in observations if o["observation_name"] in obs_names
-        ]
-
-        return len(bottles) == 2
-
-    @patient_from_pk
-    def retrieve(self, request, patient):
-        """
-            returns any observations with Aerobic or Anaerobic in their name
-        """
-        lab_tests = patient.labtest_set.filter(
-            lab_test_type=emodels.UpstreamBloodCulture.get_display_name()
-        ).order_by("external_identifier").order_by("-datetime_ordered")
-        lab_tests = [i.dict_for_view(request.user) for i in lab_tests]
-        for lab_test in lab_tests:
-            observations = []
-            lab_test["no_growth"] = self.no_growth_observations(
-                lab_test["observations"]
-            )
-
-            for observation in lab_test["observations"]:
-                ob_name = observation["observation_name"].lower()
-
-                if "aerobic" in ob_name:
-                    observations.append(observation)
-
-            lab_test["observations"] = sorted(
-                observations, key=lambda x: x["observation_name"]
-            )
-            if lab_test["extras"]["clinical_info"]:
-                lab_test["extras"]["clinical_info"] = "{}{}".format(
-                    lab_test["extras"]["clinical_info"][0].upper(),
-                    lab_test["extras"]["clinical_info"][1:]
-                )
-
-        return json_response(dict(
-            lab_tests=lab_tests
-        ))
-
-
 class DemographicsSearch(LoginRequiredViewset):
     base_name = 'demographics_search'
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
@@ -464,9 +400,6 @@ class BloodCultureIsolateApi(SubrecordViewSet):
 
 
 elcid_router = OPALRouter()
-elcid_router.register(
-    UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
-)
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
