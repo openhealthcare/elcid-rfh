@@ -1,14 +1,18 @@
 <div class="form-group">
   <form ng-submit="lookupAll()" {% if error %}class="has-error"{% endif %} method="POST">
-    <h3>
-      Hospital numbers
-    </h3>
-    <p class="lead">
-      Please enter a list of all hospital numbers for the patients you would like to add to elcid
+    <p class="lead content-offset-25 content-offset-below-25">
+      Enter a list of all <strong>hospital numbers</strong> for patients you would like to add to elCID
     </p>
     <div class="row">
-      <div class="col-sm-12 control-group">
+      <div class="col-sm-9 control-group">
         <textarea autofocus ng-model="editing.hospitalNumbers" rows="20" class="form-control" name="hospital_numbers"></textarea>
+      </div>
+      <div class="col-sm-3">
+        <div class="content-offset">
+          <p class="sidebar-help content-offset">
+            Copy and paste from the daily antifungal report
+          </p>
+        </div>
       </div>
     </div>
     <div class="row content-offset-10">

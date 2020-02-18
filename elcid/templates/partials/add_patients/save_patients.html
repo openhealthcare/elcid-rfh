@@ -11,9 +11,9 @@
             <i ng-hide="patientForm.error" class="fa fa-pencil"></i>
           </div>
         </div>
-        <button ng-click="remove($index)" class="btn btn-default col-md-2">
+        <a ng-click="remove($index)" class="btn btn-default col-md-2">
           Remove
-        </button>
+        </a>
       </div>
       <div ng-hide="patientForm.state === states.EDITING" class="row">
         <div class="col-md-9">
