@@ -536,6 +536,8 @@ class BCG(models.PatientSubrecord):
 
 
 class MantouxTest(models.PatientSubrecord):
+    _icon = "fa fa-crosshairs"
+
     MANTOUX_SITES = (
         ("Left Lower Arm", "Left Lower Arm",),
         ("Right Lower Arm", "Right Lower Arm",),
