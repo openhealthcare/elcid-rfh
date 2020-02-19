@@ -1,3 +1,5 @@
+import { setupMaster } from "cluster";
+
 describe('AddAntifungalPatients', function() {
   "use strict"
   var $scope, $controller, ctrl, DemographicsSearch;
@@ -136,46 +138,13 @@ describe('AddAntifungalPatients', function() {
       expect(DemographicsSearch.find).not.toHaveBeenCalled();
     });
 
-    it('should query the demographcis search', function(){
+    it('should query the demographics search', function(){
       patientForm.demographics.hospital_number = "1";
       spyOn($scope, "getSearchArgs").and.returnValue("some search args");
       $scope.lookup(patientForm);
       expect(DemographicsSearch.find).toHaveBeenCalledWith(
         "1", "some search args"
       )
-    });
-  });
-
-  describe('research', function(){
-    it('should only query patient forms that are editing and not in error', function(){
-      $scope.patientForms = []
-      var shouldBeSearched = {
-        state: $scope.states.EDITING,
-        error: false,
-        demographics: {
-          hospital_number: "1"
-        }
-      };
-      $scope.patientForms.push(shouldBeSearched);
-      $scope.patientForms.push({
-        state: $scope.states.FOUND,
-        error: false,
-        demographics: {
-          hospital_number: "2"
-        }
-      });
-      $scope.patientForms.push({
-        state: $scope.states.EDITING,
-        error: true,
-        demographics: {
-          hospital_number: "3"
-        }
-      });
-      spyOn($scope, "lookup");
-      $scope.research();
-      var count = $scope.lookup.calls.count();
-      expect(count).toBe(1);
-      expect($scope.lookup).toHaveBeenCalledWith(shouldBeSearched);
     });
   });
 
@@ -236,6 +205,45 @@ describe('AddAntifungalPatients', function() {
 
       $scope.remove(0);
       expect($scope.state).toEqual($scope.states.LOOKUP_PATIENTS);
+    });
+  });
+
+  describe('can save', function(){
+    var patientForm;
+
+    setup(function(){
+      patientForm = {
+        state: $scope.states.FOUND,
+        error: false,
+        demographics: {
+          hospital_number: "1"
+        }
+      }
+
+      $scope.patientForms.push(patientForm);
+    });
+
+
+    it('should be false if some forms are not found', function(){
+      patientForm.state = $scope.states.SEARCHING;
+      expect($scope.canSave()).toBeFalse();
+    });
+
+    it('should be false even if one of the forms is found', function(){
+      otherPatientForm = {
+        state: $scope.states.SEARCHING,
+        error: false,
+        demographics: {
+          hospital_number: "1"
+        }
+      };
+
+      $scope.patientForms.push(otherPatientForm);
+      expect($scope.canSave()).toBeFalse();
+    });
+
+    it('should be true, if all the forms are found', function(){
+      expect($scope.canSave()).toBeTrue();
     });
   });
 

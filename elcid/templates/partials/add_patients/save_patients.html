@@ -1,58 +1,56 @@
 <form action="{% url 'add_antifungal_patients' %}" method="post">
-  <div ng-repeat="patientForm in patientForms track by $index" class="row form-horizontal content-offset-25">
+  <div ng-repeat="patientForm in patientForms track by $index" class="form-horizontal content-offset-25">
     <div class="controls">
-      <div class="row" ng-class="{'has-error': patientForm.error}" ng-show="patientForm.state === states.EDITING">
-        <div class="col-md-9">
-          <input ng-change="patientForm.error = undefined" ng-model="patientForm.demographics.hospital_number" class="form-control" type="text">
+      <div class="row" ng-class="{'has-error': patientForm.error}" ng-hide="patientForm.state === states.FOUND">
+        <div class="col-md-5">
+          <input ng-change="lookupDebounced(patientForm)" ng-disabled="patientForm.state === states.SEARCHING" ng-model="patientForm.demographics.hospital_number" class="form-control" type="text">
         </div>
-        <div class="col-md-1">
-          <div class="form-hint">
-            <i ng-show="patientForm.error" class="fa fa-close failure"></i>
-            <i ng-hide="patientForm.error" class="fa fa-pencil"></i>
+        <div class="col-md-5">
+          <div class="help-block">
+            <span class="form-hint">
+              <i ng-show="patientForm.state === states.ERROR" class="fa fa-close failure" aria-hidden="true"></i>
+              <i ng-show="patientForm.state === states.SEARCHING" class="fa fa-spinner fa-spin" aria-hidden="true"></i>
+            </span>
+            <span ng-show="patientForm.state === states.ERROR" class="has-error">
+              Patient not found
+            </span>
+          </div>
+        </div>
+        <a ng-click="remove($index)" ng-show="patientForm.state !== states.SEARCHING" class="btn btn-default col-md-2">
+          Remove
+        </a>
+        <a ng-click="lookup(patientForm)" disabled ng-show="patientForm.state === states.SEARCHING" class="btn btn-default col-md-2">
+          Searching
+        </a>
+      </div>
+
+      <div ng-show="patientForm.state === states.FOUND" class="row">
+        <div class="col-md-5">
+          <input disabled ng-model="patientForm.demographics.hospital_number" class="form-control" type="text">
+        </div>
+        <div class="col-md-5">
+          <div class="help-block">
+            <span class="form-hint">
+              <i class="fa fa-check success"></i>
+            </span>
+            [[ patientForm.demographics.first_name ]]
+            [[ patientForm.demographics.surname ]]
+            <span ng-show="patientForm.demographics.date_of_birth">
+              ([[ patientForm.demographics.date_of_birth|displayDate ]])
+            </span>
           </div>
         </div>
         <a ng-click="remove($index)" class="btn btn-default col-md-2">
           Remove
         </a>
       </div>
-      <div ng-hide="patientForm.state === states.EDITING" class="row">
-        <div class="col-md-9">
-          <input disabled ng-model="patientForm.demographics.hospital_number" class="form-control" type="text">
-        </div>
-        <div class="col-md-1">
-          <div class="form-hint">
-            <i ng-show="patientForm.state === states.SEARCHING" class="fa fa-spinner fa-spin" aria-hidden="true"></i>
-            <i ng-hide="patientForm.state === states.SEARCHING" class="fa fa-check success"></i>
-          </div>
-        </div>
-        <button ng-click="remove($index)" ng-show="patientForm.state !== states.SEARCHING" class="btn btn-default col-md-2">
-          Remove
-        </button>
-        <button ng-click="lookup(patientForm)" disabled ng-show="patientForm.state === states.SEARCHING" class="btn btn-default col-md-2">
-          Searching
-        </button>
-      </div>
-    </div>
-    <div class="row">
-      <div ng-show="patientForm.state === states.FOUND" class="col-md-9">
-        <div class="left-offset-10 content-offset-5">
-          [[ patientForm.demographics.first_name ]]
-          [[ patientForm.demographics.surname ]]
-          <span ng-show="patientForm.demographics.date_of_birth">
-            ([[ patientForm.demographics.date_of_birth|displayDate ]])
-          </span>
-        </div>
-      </div>
-      <div ng-show="patientForm.error" class="col-md-9 has-error">
-        <div class="left-offset-10 help-block">
-          Patient not found
-        </div>
-      </div>
     </div>
   </div>
+
   <input name="demographics" type="hidden" value="[[ getDemographicsJson() ]]">
   {% csrf_token %}
   <div class="row content-offset-25">
+    <div class="col-md-12">
       <a ng-click="stage = stages.LOOKUP_PATIENTS" class="btn btn-primary btn-lg">
         <i class="fa fa-arrow-left"></i>
         Back

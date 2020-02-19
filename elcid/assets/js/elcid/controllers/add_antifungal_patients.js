@@ -6,7 +6,8 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
   $scope.states = {
     EDITING: "editing",
     SEARCHING: "searching",
-    FOUND: "found"
+    FOUND: "found",
+    ERROR: "error"
   }
 
   $scope.stages = {
@@ -16,7 +17,6 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
 
   var patient = {
     state: $scope.states.EDITING,
-    error: false,
     demographics: {
       hospital_number: undefined,
       // if populated from the server this has the rest of demographcis.to_dict()
@@ -60,16 +60,13 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
     searchArgs[DemographicsSearch.PATIENT_FOUND_IN_ELCID] = function(result){
       patientForm.demographics = result.demographics[0];
       patientForm.state = $scope.states.FOUND;
-      patientForm.error = false;
     }
     searchArgs[DemographicsSearch.PATIENT_FOUND_UPSTREAM] = function(result){
       patientForm.demographics = result.demographics[0];
       patientForm.state = $scope.states.FOUND;
-      patientForm.error = false;
     }
     searchArgs[DemographicsSearch.PATIENT_NOT_FOUND] = function(){
-      patientForm.state = $scope.states.EDITING;
-      patientForm.error = true;
+      patientForm.state = $scope.states.ERROR;
     }
 
     return searchArgs;
@@ -80,30 +77,27 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
     return JSON.stringify(_.pluck($scope.patientForms, "demographics"));
   }
 
-  $scope.lookup = function(patientForm){
-    /*
-    * Query and handle the response of looking up
-    * the hospital number for a patient Form.
-    */
+  var lookup = function(patientForm){
     if(!patientForm.demographics.hospital_number || !patientForm.demographics.hospital_number.length){
       return
     }
-    patientForm.error = undefined;
     patientForm.state = $scope.states.SEARCHING;
     var args = $scope.getSearchArgs(patientForm);
     DemographicsSearch.find(patientForm.demographics.hospital_number, args);
   }
 
-  $scope.research = function(){
+  $scope.lookup = lookup;
+
+  var lookupDebounced = _.debounce(lookup, 500);
+
+  $scope.lookupDebounced = function(patientForm){
     /*
-    * Look at all the forms that are in editing state
-    * and query them again.
+    * Query and handle the response of looking up
+    * the hospital number for a patient Form.
     */
-    _.each($scope.patientForms, function(patientForm){
-      if(patientForm.state === $scope.states.EDITING && !patientForm.error){
-        $scope.lookup(patientForm);
-      }
-    });
+    lookupDebounced(patientForm);
+    // var args = $scope.getSearchArgs(patientForm);
+    // DemographicsSearch.find(patientForm.demographics.hospital_number, args);
   }
 
   $scope.filterForms = function(filterArgs){
@@ -121,9 +115,9 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
     * forms still have errors or if we're
     * querying the upstream.
     */
-    var hasSearch = $scope.filterForms({state: $scope.states.SEARCHING});
-    var hasErrors = $scope.filterForms({error: true});
-    return !hasSearch.length && !hasErrors.length
+    return _.all($scope.patientForms, function(patientForm){
+      return patientForm.state === $scope.states.FOUND;
+    });
   }
 
   $scope.remove = function(idx){
