@@ -71,7 +71,7 @@ class SocialHistory(models.EpisodeSubrecord):
         verbose_name="Alcohol",
         choices=ALCOHOL_CHOICES
     )
-    history_of_alocohol_dependence = fields.BooleanField(
+    history_of_alcohol_dependence = fields.BooleanField(
         default=False
     )
     recreational_drug_use = fields.CharField(
