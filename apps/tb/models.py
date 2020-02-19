@@ -585,6 +585,8 @@ class AdverseReaction(models.EpisodeSubrecord):
 
 
 class OtherInvestigation(models.EpisodeSubrecord):
-    name = fields.CharField(max_length=256, blank=True, default="")
-    date = fields.DateField(blank=True, null=True)
+    _icon = 'fa fa-crosshairs'
+
+    name    = fields.CharField(max_length=256, blank=True, default="")
+    date    = fields.DateField(blank=True, null=True)
     details = fields.TextField(blank=True, default='')
