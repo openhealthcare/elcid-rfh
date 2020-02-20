@@ -3,18 +3,20 @@
 {% block loading %}{% endblock %}
 
 {% block content %}
-<div ng-controller="AddAntifungalPatients" class="container content-offset-20 content-offset-below detail">
-  <div class="panel panel-primary panel-container">
-    <div class="panel-heading">
-      <h2>Add Patients: Chronic Antifungal</h2>
-    </div>
-    <div class="panel-body">
-      <div class="row">
-        <div ng-show="stage === stages.LOOKUP_PATIENTS" class="col-md-8 col-md-push-2">
-          {% include "partials/add_patients/lookup_patients.html" %}
-        </div>
-        <div ng-show="stage === stages.ADD_PATIENTS" class="col-md-8 col-md-push-2">
-          {% include "partials/add_patients/save_patients.html" %}
+<div class="outer-container">
+  <div ng-controller="AddAntifungalPatients" class="container content-offset">
+    <div class="panel panel-primary panel-container">
+      <div class="panel-heading">
+        <h2>Add Patients: Chronic Antifungal</h2>
+      </div>
+      <div class="panel-body">
+        <div class="row">
+          <div ng-show="stage === stages.LOOKUP_PATIENTS" class="col-md-8 col-md-push-2">
+            {% include "partials/add_patients/lookup_patients.html" %}
+          </div>
+          <div ng-show="stage === stages.ADD_PATIENTS" class="col-md-8 col-md-push-2">
+            {% include "partials/add_patients/save_patients.html" %}
+          </div>
         </div>
       </div>
     </div>

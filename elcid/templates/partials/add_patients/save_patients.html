@@ -1,5 +1,5 @@
 <form action="{% url 'add_antifungal_patients' %}" method="post">
-  <div ng-repeat="patientForm in patientForms track by $index" class="form-horizontal content-offset-25">
+  <div ng-repeat="patientForm in patientForms track by $index" class="form-horizontal content-offset-10">
     <div class="controls">
       <div class="row" ng-class="{'has-error': patientForm.error}" ng-hide="patientForm.state === states.FOUND">
         <div class="col-md-5">
