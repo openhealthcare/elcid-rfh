@@ -185,7 +185,9 @@ class ChronicAntifungal(RfhPatientList, PatientList):
     display_name = "Chronic Antifungal"
     template_name = 'episode_list.html'
     schema = []
-    is_chronic = True
+
+    # if the users can add/remove patients from this list
+    is_editable = True
 
     @property
     def queryset(self):
