@@ -194,7 +194,7 @@ class ChronicAntifungal(RfhPatientList, PatientList):
             patient__chronicantifungal__updated_dt__gte=active_from_date
         ).filter(
             category_name=InfectionService.display_name
-        )
+        ).distinct()
         patient_id_to_episode_ids = defaultdict(list)
 
         for episode in episodes:
