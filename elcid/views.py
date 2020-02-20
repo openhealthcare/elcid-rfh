@@ -236,9 +236,18 @@ class AddAntifungalPatients(LoginRequiredMixin, TemplateView):
                 patient = Patient.objects.get(
                     id=patient_id
                 )
+
+                if not patient.episode_set.filter(
+                    category_name=InfectionService.display_name
+                ).exists():
+                    patient.create_episode(
+                        category_name=InfectionService.display_name
+                    )
             else:
                 patient = Patient.objects.create()
-                patient.create_episode()
+                patient.create_episode(
+                    category_name=InfectionService.display_name
+                )
                 demos = patient.demographics_set.get()
                 demos.update_from_dict(
                     demographics_dict,

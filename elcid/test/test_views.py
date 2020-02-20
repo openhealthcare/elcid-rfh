@@ -15,6 +15,7 @@ from opal.core.subrecords import subrecords
 
 from elcid import views
 from elcid import models
+from elcid import episode_categories
 
 
 HERE = ffs.Path.here()
@@ -502,3 +503,27 @@ class AddAntifungalPatientsTestCase(OpalTestCase):
             patient.chronicantifungal_set.all().count(),
             2
         )
+
+    def test_creates_a_new_infection_service_episode(self):
+        patient, episode = self.new_patient_and_episode_please()
+        episode.category_name = "TB"
+        episode.save()
+        patient.demographics_set.update(
+            first_name="Jane",
+            surname="Doe"
+        )
+        demographics_dict = patient.demographics().to_dict(self.user)
+
+        self.login()
+        result = self.client.post(
+            self.url,
+            {"demographics": json.dumps([demographics_dict])},
+            follow=True
+        )
+        self.assertEqual(result.status_code, 200)
+        patient = Patient.objects.get()
+        self.assertEqual(patient.episode_set.count(), 2)
+        infectious_episodes = patient.episode_set.filter(
+            category_name=episode_categories.InfectionService.display_name
+        )
+        self.assertEqual(infectious_episodes.count(), 1)
