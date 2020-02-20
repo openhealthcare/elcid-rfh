@@ -1,5 +1,3 @@
-import { setupMaster } from "cluster";
-
 describe('AddAntifungalPatients', function() {
   "use strict"
   var $scope, $controller, ctrl, DemographicsSearch;
@@ -38,6 +36,12 @@ describe('AddAntifungalPatients', function() {
 
     it('should remove duplicates', function(){
       var hns = "1 1";
+      var expected = ["1"];
+      expect($scope.flattenAndClean(hns)).toEqual(expected);
+    });
+
+    it('should ignore the column header', function(){
+      var hns = "patient_hospitalno 1";
       var expected = ["1"];
       expect($scope.flattenAndClean(hns)).toEqual(expected);
     });
@@ -89,8 +93,7 @@ describe('AddAntifungalPatients', function() {
     it('should handle the case if the patient is not found', function(){
       searchArgs[DemographicsSearch.PATIENT_NOT_FOUND]();
       expect(patientForm.demographics).toEqual({hospital_number: "1"});
-      expect(patientForm.state).toEqual($scope.states.EDITING);
-      expect(patientForm.error).toBe(true);
+      expect(patientForm.state).toEqual($scope.states.ERROR);
     });
   });
 
@@ -211,7 +214,7 @@ describe('AddAntifungalPatients', function() {
   describe('can save', function(){
     var patientForm;
 
-    setup(function(){
+    beforeEach(function(){
       patientForm = {
         state: $scope.states.FOUND,
         error: false,
@@ -230,7 +233,7 @@ describe('AddAntifungalPatients', function() {
     });
 
     it('should be false even if one of the forms is found', function(){
-      otherPatientForm = {
+      var otherPatientForm = {
         state: $scope.states.SEARCHING,
         error: false,
         demographics: {

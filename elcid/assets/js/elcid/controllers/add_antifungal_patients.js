@@ -35,7 +35,9 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
         return _.map(y.split("\n"))
       })
     })
-    return _.uniq(_.compact(_.flatten(splitted)));
+    var columnHeader = "patient_hospitalno";
+    var nums =  _.uniq(_.compact(_.flatten(splitted)));
+    return _.without(nums, columnHeader);
   }
 
 
