@@ -30,9 +30,9 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
     *
     * returns an an array of hospital numbers
     */
-    var splitted = _.map(hospitalNumbers.split(" "), function(x){
-      return _.map(x.split(","), function(y){
-        return _.map(y.split("\n"))
+    var splitted = _.map(hospitalNumbers.split(" "), function(row){
+      return _.map(row.split(","), function(rowSplitted){
+        return _.map(rowSplitted.split("\n"))
       })
     })
     var columnHeader = "patient_hospitalno";
