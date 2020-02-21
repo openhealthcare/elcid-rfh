@@ -59,18 +59,18 @@ angular.module('opal.controllers').controller("AddAntifungalPatients", function(
 
   $scope.getSearchArgs = function(patientForm){
     var searchArgs = {}
-    searchArgs[DemographicsSearch.PATIENT_FOUND_IN_ELCID] = function(result){
+
+    var patientFound = function(result){
       patientForm.demographics = result.demographics[0];
       patientForm.state = $scope.states.FOUND;
     }
-    searchArgs[DemographicsSearch.PATIENT_FOUND_UPSTREAM] = function(result){
-      patientForm.demographics = result.demographics[0];
-      patientForm.state = $scope.states.FOUND;
-    }
-    searchArgs[DemographicsSearch.PATIENT_NOT_FOUND] = function(){
+    var patientNotFound = function(){
       patientForm.state = $scope.states.ERROR;
     }
 
+    searchArgs[DemographicsSearch.PATIENT_FOUND_IN_ELCID] = patientFound;
+    searchArgs[DemographicsSearch.PATIENT_FOUND_UPSTREAM] = patientFound;
+    searchArgs[DemographicsSearch.PATIENT_NOT_FOUND] = patientNotFound;
     return searchArgs;
   }
 
