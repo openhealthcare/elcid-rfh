@@ -1,43 +1,6 @@
 """
-    Get a loader this.
-
-    This is the entry point to the api.
-
-    The api handles all interaction with the external
-    system.
-
-    This handles our internals and relationship
-    between elcid.
-
-    we have 5 entry points
-
-    initial_load()
-    nukes all existing lab tests and replaces them.
-
-    this is run in the inital load below. When we add a patient for the
-    first time, when we add a patient who has demographics or when we've
-    reconciled a patient.
-
-    batch_load()
-    Tries to reconcile all unreconciled demographics
-
-    runs the batch load for all patients that are reconciled.
-    currently not being loaded in.
-
-    this is run every 5 mins and after deployments
-
-    Loads everything since the start of the previous
-    successful load so that we paper over any cracks.
-
-    load_patient()
-    is what is run when we run it from the admin, or
-    after a patient has been reconciled from teh reconciliation pathway.
-    It loads in data for a single specific patient.
-
-    any_loads_running()
-    returns true if any, ie initial or batch, loads are running
+Functions for loading data from upstream.
 """
-
 import datetime
 import traceback
 import json

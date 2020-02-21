@@ -440,7 +440,8 @@ def write_cron_backup(new_env):
 
 
 def write_cron_lab_tests(new_env):
-    """ Creates a cron job that copies a file to a remote server
+    """
+    Creates a cron job that runs the 'batch_load' management command
     """
     print("Writing cron {}_batch_test_load".format(PROJECT_NAME))
     template = jinja_env.get_template(
@@ -638,7 +639,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     env.host_string = private_settings["host_string"]
 
     kill_running_processes()
-    
+
     install_apt_dependencies()
 
     # Setup environment
