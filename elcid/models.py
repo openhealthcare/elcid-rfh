@@ -2,6 +2,7 @@
 elCID implementation specific models!
 """
 import datetime
+import json
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models
@@ -15,7 +16,7 @@ import opal.models as omodels
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
 )
-from opal.core.fields import ForeignKeyOrFreeText
+from opal.core.fields import ForeignKeyOrFreeText, enum
 from opal.core import lookuplists
 
 
@@ -344,6 +345,31 @@ class Antimicrobial(EpisodeSubrecord):
     _icon = 'fa fa-flask'
     _modal = 'lg'
 
+    EMPIRIC = "Empiric"
+    TARGETTED = "Targetted"
+    PREEMPTIVE = "Pre-emptive"
+
+    TREATMENT_REASON = enum(EMPIRIC, TARGETTED, PREEMPTIVE)
+
+
+    # Antifungals will require a treament reason
+    ANTIFUNGALS = [
+        "Anidulafungin",
+        "Caspofungin",
+        "Combination",
+        "Conventional Amphotericin",
+        "Fluconazole",
+        "Isavuconazole",
+        "Liposomal Amphotericin",
+        "Micfungin",
+        "Posacanazole",
+        "Voiconazole"
+    ]
+
+    @classmethod
+    def get_antifungals_json(cls):
+        return json.dumps(cls.ANTIFUNGALS)
+
     drug          = ForeignKeyOrFreeText(omodels.Antimicrobial)
     dose          = models.CharField(max_length=255, blank=True)
     route         = ForeignKeyOrFreeText(omodels.Antimicrobial_route)
@@ -351,6 +377,9 @@ class Antimicrobial(EpisodeSubrecord):
     end_date      = models.DateField(null=True, blank=True)
     delivered_by  = ForeignKeyOrFreeText(Drug_delivered)
     reason_for_stopping = ForeignKeyOrFreeText(Iv_stop)
+    treatment_reason = models.CharField(
+        max_length=256, blank=True, null=True, choices=TREATMENT_REASON
+    )
     adverse_event = ForeignKeyOrFreeText(omodels.Antimicrobial_adverse_event)
     comments      = models.TextField(blank=True, null=True)
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)

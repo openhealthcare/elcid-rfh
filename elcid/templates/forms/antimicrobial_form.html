@@ -1,6 +1,10 @@
 {% load forms %}
-
-{% input  field="Antimicrobial.drug" %}
+{% input field="Antimicrobial.drug" %}
+<span ng-repeat="antifungal in {{ models.Antimicrobial.get_antifungals_json }}">
+  <span ng-show="editing.antimicrobial.drug|startsWith:antifungal">
+    {% radio field="Antimicrobial.treatment_reason" %}
+  </span>
+</span>
 {% datepicker  field="Antimicrobial.start_date" %}
 {% datepicker  field="Antimicrobial.end_date" %}
 {% input  field="Antimicrobial.dose" %}

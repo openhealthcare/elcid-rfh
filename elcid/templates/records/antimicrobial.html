@@ -3,4 +3,9 @@
     [[ item|totalDays ]]D [[item.start_date|displayDate]]<span ng-show="item.end_date">&ndash;[[item.end_date|displayDate]]</span>
   </span>
   [[item.drug]] [[item.dose]] [[item.route]] [[ item.frequency ]] [[item.delivered_by]]
+  <span ng-show="item.treatment_reason">
+    <br />
+    [[ item.treatment_reason ]]
+  </span>
 </span>
+

@@ -57,11 +57,25 @@ filters.filter('month', function(){
 filters.filter('plural', function(){
   return function(someWord, count, plural){
       if(count === 1){
-          return someWord;	
+          return someWord;
       }
       else if(plural){
           return plural;
       }
-      return someWord + "s";	
+      return someWord + "s";
   };
 });
+
+filters.filter('startsWith', function(){
+  return function(someStr, somePrefix, caseSensitive){
+    if(!someStr){
+      return false;
+    }
+    if(!caseSensitive){
+      someStr = someStr.toLowerCase();
+      somePrefix = somePrefix.toLowerCase();
+    }
+
+    return someStr.indexOf(somePrefix) === 0;
+  }
+})

@@ -1,4 +1,5 @@
 import datetime
+import json
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
@@ -572,3 +573,11 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+
+
+class AntimicrobialTestCase(OpalTestCase):
+    def test_get_antifungal_json(self):
+        self.assertEqual(
+            emodels.Antimicrobial.ANTIFUNGALS,
+            json.loads(emodels.Antimicrobial.get_antifungals_json())
+        )
