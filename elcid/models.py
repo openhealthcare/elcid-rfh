@@ -707,6 +707,19 @@ class GNROutcome(lookuplists.LookupList):
         return self.name
 
 
+class RiskFactor(lookuplists.LookupList):
+    pass
+
+
+class RiskFactorPresent(omodels.PatientSubrecord):
+    risk_factor = ForeignKeyOrFreeText(RiskFactor)
+    _icon = 'fa fa-map-signs'
+
+    class Meta:
+        verbose_name = "Risk Factors Present"
+        verbose_name_plural = "Risk Factors Present"
+
+
 class BloodCultureIsolate(
     omodels.UpdatesFromDictMixin,
     omodels.ToDictMixin,
