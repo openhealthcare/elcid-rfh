@@ -545,6 +545,7 @@ class MantouxTest(models.PatientSubrecord):
     batch_number = fields.CharField(
         max_length=256, blank=True, default=""
     )
+    date_administered = fields.DateField(blank=True, null=True)
     expiry_date = fields.DateField(blank=True, null=True)
     induration = fields.IntegerField(
         verbose_name="Induration (mm)",
