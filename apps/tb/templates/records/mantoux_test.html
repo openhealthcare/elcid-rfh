@@ -1,41 +1,44 @@
-<span>
-   <h5>[[ item.site ]]</h5>
-</span>
-<span ng-show="item.batch_number || item.expiry_date || item.induration">
-  <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Batch number
-      </label>
-      <p class="form-control-static col-sm-8">
-        [[ item.batch_number ]]
-      </p>
-    </div>
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Induration
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.induration ]]<span ng-show="item.induration">mm</span>
+    </p>
   </div>
-
-
-  <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Expiry date
-      </label>
-      <p class="form-control-static col-sm-8">
-        [[ item.expiry_date | displayDate ]]
-      </p>
-    </div>
+</div>
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Site
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.site ]]
+    </p>
   </div>
-
-  <div class="row">
-    <div class="form-group">
-      <label class="control-label col-sm-4">
-        Induration
-      </label>
-      <p class="form-control-static col-sm-8">
-        [[ item.induration ]]
-      </p>
-    </div>
+</div>
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Date administered
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.date_administered | displayDate ]]
+    </p>
   </div>
-</span>
-<span ng-hide="item.batch_number || item.expiry_date || item.induration">
-  Not Done
-</span>
+</div>
+<div class="row">
+  <div class="form-group">
+    <label class="control-label col-sm-4">
+      Batch number
+    </label>
+    <p class="form-control-static col-sm-8">
+      [[ item.batch_number ]]
+      <span ng-show="item.expiry_date">
+      (exp [[ item.expiry_date | displayDate ]])
+      </span>
+    </p>
+  </div>
+</div>
+
