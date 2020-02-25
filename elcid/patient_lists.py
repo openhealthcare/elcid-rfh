@@ -1,8 +1,10 @@
 import datetime
 from collections import defaultdict
+from django.utils import timezone
 from opal.utils import AbstractBase
 from opal.core.patient_lists import TaggedPatientList, PatientList
 from elcid import models
+from plugins.labtests.models import Observation
 from opal import models as omodels
 from intrahospital_api.models import InitialPatientLoad
 from elcid.episode_serialization import serialize
@@ -209,3 +211,70 @@ class ChronicAntifungal(RfhPatientList, PatientList):
                 to_remove = to_remove.union(old_episodes)
         return episodes.exclude(id__in=to_remove)
 
+
+class OrganismPatientlist(AbstractBase):
+    is_read_only = True
+    schema = []
+    template_name = 'episode_list.html'
+
+    def six_months_ago(self):
+        return timezone.now() - datetime.timedelta(183)
+
+    def get_observations(self):
+        return Observation.objects.filter(
+            test__test_name__iexact='BLOOD CULTURE'
+        ).filter(
+            observation_name__iexact='Blood Culture'
+        ).filter(
+            test__datetime_ordered__gte=self.six_months_ago()
+        )
+
+    @property
+    def queryset(self):
+        obs = self.get_observations()
+        qs = omodels.Episode.objects.all()
+        return qs.filter(
+            patient__lab_tests__observation__in=obs
+        ).distinct()
+
+
+class CandidaList(OrganismPatientlist, RfhPatientList, PatientList):
+    display_name = 'Candida'
+
+    def get_observations(self):
+        qs = super().get_observations()
+        qs = qs.filter(
+            observation_value__icontains='candida'
+        )
+        to_ignore_strings = [
+            "Candida auris NOT isolated",
+            "Candida NOT isolated",
+        ]
+
+        for to_ignore in to_ignore_strings:
+            qs = qs.exclude(observation_value__icontains=to_ignore)
+        return qs
+
+
+class StaphList(OrganismPatientlist, RfhPatientList, PatientList):
+    display_name = 'Staph'
+
+    def get_observations(self):
+        qs = super().get_observations()
+        qs = qs.filter(
+            observation_value__icontains='staph'
+        )
+        return qs
+
+
+class EcoliList(OrganismPatientlist, RfhPatientList, PatientList):
+    display_name = 'Ecoli'
+
+    def get_observations(self):
+        qs = super().get_observations()
+        # regex to match the word as there are a bunch of false positives
+        # e.g. Colistin
+        qs = qs.filter(
+            observation_value__iregex='\y{}\y'.format("coli")
+        )
+        return qs
