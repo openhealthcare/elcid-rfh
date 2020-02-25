@@ -40,7 +40,7 @@
                 Renal handover list
               </a>
               {% endif %}
-              {% if patient_list.is_editable %}
+              {% if patient_list.display_name == 'Chronic Antifungal' %}
               <a href="{% url 'add_antifungal_patients' %}" class="btn btn-primary pull-right">
                 Bulk add patients
               </a>
@@ -59,7 +59,7 @@
         <p class="lead text-center">
           There are no patients on this list.
         </p>
-        {% if not patient_list.is_editable %}
+        {% if not patient_list.is_read_only %}
         <p class="lead text-center">
           <span class="screen-only">
             Would you like to <a href="/pathway/#/add_patient">add one</a>?

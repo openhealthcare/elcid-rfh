@@ -187,7 +187,7 @@ class ChronicAntifungal(RfhPatientList, PatientList):
     schema = []
 
     # if the users can add/remove patients from this list
-    is_editable = True
+    is_read_only = True
 
     @property
     def queryset(self):
