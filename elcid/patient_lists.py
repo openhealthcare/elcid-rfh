@@ -241,6 +241,7 @@ class OrganismPatientlist(AbstractBase):
 
 class CandidaList(OrganismPatientlist, RfhPatientList, PatientList):
     display_name = 'Candida'
+    order = 10
 
     def get_observations(self):
         qs = super().get_observations()
@@ -259,6 +260,7 @@ class CandidaList(OrganismPatientlist, RfhPatientList, PatientList):
 
 class StaphList(OrganismPatientlist, RfhPatientList, PatientList):
     display_name = 'Staphylococcus'
+    order = 12
 
     def get_observations(self):
         qs = super().get_observations()
@@ -270,6 +272,7 @@ class StaphList(OrganismPatientlist, RfhPatientList, PatientList):
 
 class EcoliList(OrganismPatientlist, RfhPatientList, PatientList):
     display_name = 'E coli'
+    order = 11
 
     def get_observations(self):
         qs = super().get_observations()
