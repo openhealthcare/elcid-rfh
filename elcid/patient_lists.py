@@ -216,6 +216,7 @@ class OrganismPatientlist(AbstractBase):
     is_read_only = True
     schema = []
     template_name = 'episode_list.html'
+    organism_list = True
 
     def six_months_ago(self):
         return timezone.now() - datetime.timedelta(183)
