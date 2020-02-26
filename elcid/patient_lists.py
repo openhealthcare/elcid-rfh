@@ -218,8 +218,8 @@ class OrganismPatientlist(AbstractBase):
     template_name = 'episode_list.html'
     organism_list = True
 
-    def six_months_ago(self):
-        return timezone.now() - datetime.timedelta(183)
+    def three_months_ago(self):
+        return timezone.now() - datetime.timedelta(93)
 
     def get_observations(self):
         return Observation.objects.filter(
@@ -227,7 +227,7 @@ class OrganismPatientlist(AbstractBase):
         ).filter(
             observation_name__iexact='Blood Culture'
         ).filter(
-            test__datetime_ordered__gte=self.six_months_ago()
+            test__datetime_ordered__gte=self.three_months_ago()
         )
 
     @property
