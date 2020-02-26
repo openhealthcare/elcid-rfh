@@ -1,0 +1,27 @@
+<div class="form-group">
+  <form ng-submit="lookupAll()" {% if error %}class="has-error"{% endif %} method="POST">
+    <p class="lead content-offset-25 content-offset-below-25">
+      Enter a list of all <strong>hospital numbers</strong> for patients you would like to add to elCID
+    </p>
+    <div class="row">
+      <div class="col-sm-9 control-group">
+        <textarea autofocus ng-model="editing.hospitalNumbers" rows="20" class="form-control" name="hospital_numbers"></textarea>
+      </div>
+      <div class="col-sm-3">
+        <div class="content-offset">
+          <p class="sidebar-help content-offset">
+            Copy and paste from the daily antifungal report
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="row content-offset-10">
+      <div class="col-sm-12">
+        <button ng-disabled="!editing.hospitalNumbers.length" class="btn btn-lg btn-primary pull-right" type="submit">
+          <i class="fa fa-search"></i>
+          Lookup patients
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

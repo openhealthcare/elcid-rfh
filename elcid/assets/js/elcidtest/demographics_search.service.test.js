@@ -1,17 +1,10 @@
 describe("DemographicsSearch", function(){
   "use strict";
 
-  var DemographicsSearch, $rootScope, $httpBackend, $window, ngProgressLite;
+  var DemographicsSearch, $rootScope, $httpBackend, $window;
 
   beforeEach(function(){
     module('opal.services', function($provide){
-      ngProgressLite = jasmine.createSpyObj([
-        "set", "start", "done"
-      ])
-      $provide.service('ngProgressLite', function(){
-        return ngProgressLite
-      });
-
     });
     inject(function($injector){
       DemographicsSearch  = $injector.get('DemographicsSearch');
@@ -111,9 +104,6 @@ describe("DemographicsSearch", function(){
 
     $rootScope.$apply();
     $httpBackend.flush();
-    expect(ngProgressLite.set).toHaveBeenCalledWith(0);
-    expect(ngProgressLite.start).toHaveBeenCalled();
-    expect(ngProgressLite.done).toHaveBeenCalled();
   });
 
   it('should call patient found in hosptial', function(){

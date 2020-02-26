@@ -1,4 +1,5 @@
 import datetime
+from unittest import mock
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
@@ -572,3 +573,4 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+
