@@ -11,9 +11,7 @@ from django.test import override_settings
 from rest_framework.reverse import reverse
 
 from elcid import models as emodels
-from elcid.api import (
-    UpstreamBloodCultureApi, LabTestResultsView
-)
+from elcid.api import LabTestResultsView
 
 
 class LabTestResultsViewTestCase(OpalTestCase):
@@ -365,25 +363,6 @@ class LabTestResultsViewTestCase(OpalTestCase):
             expected_BC_observations,
             data['tests']['BLOOD CULTURE']['instances'][0]['observations']
         )
-
-
-class UpstreamBloodCultureApiTestCase(OpalTestCase):
-    def setUp(self):
-        self.api = UpstreamBloodCultureApi()
-
-    def test_no_growth_observations_present(self):
-        obs = [
-            dict(observation_name="Aerobic bottle culture"),
-            dict(observation_name="Anaerobic bottle culture"),
-        ]
-        self.assertTrue(self.api.no_growth_observations(obs))
-
-    def test_no_growth_observations_not_present(self):
-        obs = [
-            dict(observation_name="something"),
-            dict(observation_name="Anaerobic bottle culture"),
-        ]
-        self.assertFalse(self.api.no_growth_observations(obs))
 
 
 class DemographicsSearchTestCase(OpalTestCase):

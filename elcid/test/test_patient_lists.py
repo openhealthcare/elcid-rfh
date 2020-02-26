@@ -29,17 +29,6 @@ class AbstractPatientListTestCase(OpalTestCase):
         demographics.first_name = "Wilma"
         demographics.surname = "Flintstone"
         demographics.save()
-        gram_stain = models.GramStain.objects.create(
-            datetime_ordered=datetime.datetime.now(),
-            patient=patient,
-        )
-
-        gram_stain.extras = dict(
-            lab_number="212",
-            aerobic=False,
-            isolate=1
-        )
-        gram_stain.save()
         return episode
 
 

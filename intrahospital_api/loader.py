@@ -93,12 +93,7 @@ def load_demographics(hospital_number):
 def load_patient(patient, run_async=None):
     """
         Load all the things for a patient.
-
-        This is called by the admin and by the add patient pathways
-        Nuke all existing lab tests for a patient. Synch lab tests.
-
         will work asynchronously based on your preference.
-
         it will default to settings.ASYNC_API.
     """
     logger.info("starting to load patient {}".format(patient.id))
@@ -374,16 +369,6 @@ def _load_patient(patient, patient_load):
     )
     try:
         hospital_number = patient.demographics_set.first().hospital_number
-        patient.labtest_set.filter(
-            lab_test_type__in=[
-                emodels.UpstreamBloodCulture.get_display_name(),
-                emodels.UpstreamLabTest.get_display_name()
-            ]
-        ).delete()
-        logger.info(
-            "deleted patient {} {}".format(patient.id, patient_load.id)
-        )
-
         results = api.results_for_hospital_number(hospital_number)
         logger.info(
             "loaded results for patient {} {}".format(
