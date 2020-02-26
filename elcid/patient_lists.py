@@ -257,7 +257,7 @@ class CandidaList(OrganismPatientlist, RfhPatientList, PatientList):
 
 
 class StaphList(OrganismPatientlist, RfhPatientList, PatientList):
-    display_name = 'Staph'
+    display_name = 'Staphylococcus'
 
     def get_observations(self):
         qs = super().get_observations()
@@ -268,7 +268,7 @@ class StaphList(OrganismPatientlist, RfhPatientList, PatientList):
 
 
 class EcoliList(OrganismPatientlist, RfhPatientList, PatientList):
-    display_name = 'Ecoli'
+    display_name = 'E coli'
 
     def get_observations(self):
         qs = super().get_observations()
