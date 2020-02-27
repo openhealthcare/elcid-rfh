@@ -10,7 +10,6 @@ from intrahospital_api import get_api
 
 
 def patient_to_dict(patient, user):
-    active_episode = patient.get_active_episode()
     subs = [
         i for i in subrecords.subrecords() if not i == lmodels.LabTest
     ]
