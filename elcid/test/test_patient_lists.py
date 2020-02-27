@@ -203,31 +203,12 @@ class ChronicAntifungalTestCase(OpalTestCase):
         self.now = timezone.now()
 
     @mock.patch('django.utils.timezone.now')
-    def test_includes_new_chronic_antifungal(self, now):
+    def test_includes_chronic_antifungal(self, now):
         now.return_value = self.now - datetime.timedelta(3)
         self.patient.chronicantifungal_set.create(
             reason=models.ChronicAntifungal.DISPENSARY_REPORT
         )
         self.assertEqual(list(self.patient_list.queryset), [self.episode])
-
-    @mock.patch('django.utils.timezone.now')
-    def test_includes_multiple_new_chronic_antifungal(self, now):
-        now.return_value = self.now - datetime.timedelta(3)
-        self.patient.chronicantifungal_set.create(
-            reason=models.ChronicAntifungal.DISPENSARY_REPORT
-        )
-        self.patient.chronicantifungal_set.create(
-            reason=models.ChronicAntifungal.DISPENSARY_REPORT
-        )
-        self.assertEqual(list(self.patient_list.queryset), [self.episode])
-
-    @mock.patch('django.utils.timezone.now')
-    def test_excludes_old_chronic_antifungal(self, now):
-        now.return_value = self.now - datetime.timedelta(4)
-        self.patient.chronicantifungal_set.create(
-            reason=models.ChronicAntifungal.DISPENSARY_REPORT
-        )
-        self.assertEqual(list(self.patient_list.queryset), [])
 
     def test_excludes_chrnoic_antifungal_is_none(self):
         self.assertEqual(list(self.patient_list.queryset), [])
@@ -238,14 +219,6 @@ class ChronicAntifungalTestCase(OpalTestCase):
             reason=models.ChronicAntifungal.DISPENSARY_REPORT
         )
         self.assertEqual(list(self.patient_list.queryset), [episode_2])
-
-    def test_ignores_episodes_of_other_categories(self):
-        self.episode.category_name = "TB"
-        self.episode.save()
-        self.patient.chronicantifungal_set.create(
-            reason=models.ChronicAntifungal.DISPENSARY_REPORT
-        )
-        self.assertEqual(list(self.patient_list.queryset), [])
 
 
 

@@ -191,12 +191,7 @@ class ChronicAntifungal(RfhPatientList, PatientList):
 
     @property
     def queryset(self):
-        active_from_date = datetime.date.today() - datetime.timedelta(3)
-        episodes = omodels.Episode.objects.filter(
-            patient__chronicantifungal__updated_dt__gte=active_from_date
-        ).filter(
-            category_name=InfectionService.display_name
-        ).distinct()
+        episodes = models.ChronicAntifungal.antifungal_episodes()
         patient_id_to_episode_ids = defaultdict(list)
 
         for episode in episodes:
