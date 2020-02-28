@@ -1,11 +1,9 @@
 angular.module('opal.services').factory('TestSummaryLoader', function($q, $http, $window) {
   "use strict";
 
-  var url = '/api/v0.1/tb_test_summary/';
-
-  var load = function(patientId){
+  var load = function(url, patientId){
     var deferred = $q.defer();
-    var patientUrl = url + patientId + "/"
+    var patientUrl = url + patientId.toString() + "/"
     $http.get(patientUrl).then(function(response) {
         deferred.resolve(response.data);
     }, function() {

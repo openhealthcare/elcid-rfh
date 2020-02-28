@@ -3,23 +3,18 @@ directives.directive("tbSummaryTests", function(InitialPatientTestLoadStatus, Te
   return {
     restrict: 'A',
     scope: true,
-    link: function(scope){
-      // TODO: this is wrong, well maybe not wrong, but not right
-      var episode = scope.row || scope.episode;
-      var patientId = episode.demographics[0].patient_id;
+    link: function(scope, element, attrs){
+      var patientId = scope.episode.demographics[0].patient_id;
       var patientLoadStatus = new InitialPatientTestLoadStatus(
-          episode
+        scope.episode
       );
 
-      // make sure we are using the correct
-      // js object scope(ie this)
       patientLoadStatus.load();
       scope.patientLoadStatus = patientLoadStatus;
 
       if(!scope.patientLoadStatus.isAbsent()){
         scope.patientLoadStatus.promise.then(function(){
-            // success
-            TestSummaryLoader.load(patientId).then(function(result){
+            TestSummaryLoader.load(attrs.apiUrl, patientId).then(function(result){
               scope.data = result;
             });
         });
