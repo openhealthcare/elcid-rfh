@@ -253,7 +253,7 @@ class OrganismPatientlistTestCase(OpalTestCase):
         self.patient, self.episode = self.new_patient_and_episode_please()
         self.patient_list = patient_lists.OrganismPatientlist()
 
-    def test_six_months_ago(self):
+    def test_four_months_ago(self):
         before = timezone.make_aware(datetime.datetime(
             2019, 8, 1
         ))
@@ -262,10 +262,10 @@ class OrganismPatientlistTestCase(OpalTestCase):
         ) as timezone_now:
             timezone_now.return_value = before
             self.assertEqual(
-                self.patient_list.six_months_ago(),
+                self.patient_list.four_months_ago(),
                 timezone.make_aware(
                     datetime.datetime(
-                        2019, 1, 30
+                        2019, 4, 3
                     )
                 )
             )
