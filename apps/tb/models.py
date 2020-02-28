@@ -174,6 +174,7 @@ class Nationality(models.PatientSubrecord):
 
 
 class Employment(models.PatientSubrecord):
+    _icon = "fa fa-handshake-o"
     _is_singleton = True
 
     FINANICAL_STATUS_CHOICES = (
