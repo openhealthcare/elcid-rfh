@@ -12,7 +12,7 @@
       <div class="row screen-only">
           <form class="form-inline">
             <div class="col-md-12">
-            <h1 >
+            <h1 class="pull-left">
               <div class="btn-group pull-left" uib-dropdown is-open="status.isopen">
                 <button type="button" class="btn btn-secondary" uib-dropdown-toggle ng-disabled="disabled" id="list-dropdown">
                   <i class="fa fa-user-md"></i>
@@ -31,6 +31,19 @@
                   {% endfor %}
                 </ul>
               </div>
+            </h1>
+            <div class="pull-left">
+              {% if patient_list.organism_list %}
+              <div class="row screen-only ">
+                <div class="col-md-12">
+                  <div class="col-md-12 content-offset-25 text-muted">
+                    A rolling 4 month list of patients found with <strong>{{ patient_list.display_name.lower }}</strong> in their blood cultures.
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+            <h1 class="pull-right">
               <div class="btn-group pull-right left-offset-10">
                   <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
                   <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>

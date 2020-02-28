@@ -248,4 +248,166 @@ class ChronicAntifungalTestCase(OpalTestCase):
         self.assertEqual(list(self.patient_list.queryset), [])
 
 
+class OrganismPatientlistTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+        self.patient_list = patient_lists.OrganismPatientlist()
 
+    def test_four_months_ago(self):
+        before = timezone.make_aware(datetime.datetime(
+            2019, 8, 1
+        ))
+        with mock.patch(
+            "elcid.patient_lists.timezone.now"
+        ) as timezone_now:
+            timezone_now.return_value = before
+            self.assertEqual(
+                self.patient_list.four_months_ago(),
+                timezone.make_aware(
+                    datetime.datetime(
+                        2019, 4, 3
+                    )
+                )
+            )
+
+    def test_get_observations_only_includes_blood_cultures(self):
+        lab_test_1 = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        observation = lab_test_1.observation_set.create(
+            observation_name="Blood Culture",
+        )
+        patient2, _ = self.new_patient_and_episode_please()
+        lab_test_2 = patient2.lab_tests.create(
+            test_name="NOT BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test_2.observation_set.create(
+            observation_name="Blood Culture",
+        )
+
+        patient3, _ = self.new_patient_and_episode_please()
+        lab_test_3 = patient2.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test_3.observation_set.create(
+            observation_name="Not Blood Culture",
+        )
+        self.assertEqual(
+            self.patient_list.get_observations().get().id,
+            observation.id
+        )
+
+    def test_queryset(self):
+        lab_test = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+        )
+        self.assertEqual(
+            self.patient_list.queryset.get().id,
+            self.episode.id
+        )
+
+    def test_queryset_distinct(self):
+        lab_test = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+        )
+        self.assertEqual(
+            self.patient_list.queryset.get().id,
+            self.episode.id
+        )
+
+
+class CandidaTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+        self.patient_list = patient_lists.CandidaList()
+
+    def test_get_queryset_includes_candida(self):
+        lab_test = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+            observation_value="candida"
+        )
+        self.assertEqual(
+            self.patient_list.queryset.get().id,
+            self.episode.id
+        )
+
+    def test_get_queryset_excludes_candida(self):
+        lab_test = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+            observation_value="something else"
+        )
+        self.assertFalse(self.patient_list.queryset.exists())
+
+    def test_get_queryset_ignores_strings(self):
+        lab_test = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+            observation_value="Candida NOT isolatede"
+        )
+        self.assertFalse(self.patient_list.queryset.exists())
+
+
+class StaphAureusListListTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+        self.patient_list = patient_lists.StaphAureusList()
+
+    def test_get_queryset_includes_staph(self):
+        lab_test = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+            observation_value="1) Staphylococcus aureus"
+        )
+        self.assertEqual(
+            self.patient_list.queryset.get().id,
+            self.episode.id
+        )
+
+    def test_get_queryset_excludes_not_staph_aureus(self):
+        lab_test = self.patient.lab_tests.create(
+            test_name="BLOOD CULTURE",
+            datetime_ordered=timezone.now(),
+            patient=self.patient
+        )
+        lab_test.observation_set.create(
+            observation_name="Blood Culture",
+            observation_value="Staphylococcus hominis"
+        )
+        self.assertFalse(self.patient_list.queryset.exists())
