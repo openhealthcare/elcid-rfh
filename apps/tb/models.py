@@ -501,6 +501,8 @@ class Travel(models.EpisodeSubrecord):
 
 
 class TBLocation(models.EpisodeSubrecord):
+    _icon = "fa fa-shopping-cart"
+
     _is_singleton = True
     sites = fields.ManyToManyField(TBSite, blank=True)
 
