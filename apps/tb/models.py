@@ -13,7 +13,7 @@ class RecreationalDrug(lookuplists.LookupList):
 
 class SocialHistory(models.EpisodeSubrecord):
     _is_singleton = True
-    _icon = 'fa fa-clock-o'
+    _icon = 'fa fa-bath'
 
     HOMELESSNESS_TYPE_CHOICES = (
         ("Hostel", "Hostel",),
