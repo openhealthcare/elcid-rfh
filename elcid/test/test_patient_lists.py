@@ -380,10 +380,10 @@ class CandidaTestCase(OpalTestCase):
         self.assertFalse(self.patient_list.queryset.exists())
 
 
-class StaphListTestCase(OpalTestCase):
+class StaphAureusListListTestCase(OpalTestCase):
     def setUp(self):
         self.patient, self.episode = self.new_patient_and_episode_please()
-        self.patient_list = patient_lists.StaphList()
+        self.patient_list = patient_lists.StaphAureusList()
 
     def test_get_queryset_includes_staph(self):
         lab_test = self.patient.lab_tests.create(
@@ -393,14 +393,14 @@ class StaphListTestCase(OpalTestCase):
         )
         lab_test.observation_set.create(
             observation_name="Blood Culture",
-            observation_value="Staph"
+            observation_value="1) Staphylococcus aureus"
         )
         self.assertEqual(
             self.patient_list.queryset.get().id,
             self.episode.id
         )
 
-    def test_get_queryset_excludes_not_staph(self):
+    def test_get_queryset_excludes_not_staph_aureus(self):
         lab_test = self.patient.lab_tests.create(
             test_name="BLOOD CULTURE",
             datetime_ordered=timezone.now(),
@@ -408,6 +408,6 @@ class StaphListTestCase(OpalTestCase):
         )
         lab_test.observation_set.create(
             observation_name="Blood Culture",
-            observation_value="something else"
+            observation_value="Staphylococcus hominis"
         )
         self.assertFalse(self.patient_list.queryset.exists())

@@ -257,13 +257,13 @@ class CandidaList(OrganismPatientlist, RfhPatientList, PatientList):
         return qs
 
 
-class StaphList(OrganismPatientlist, RfhPatientList, PatientList):
-    display_name = 'Staphylococcus'
+class StaphAureusList(OrganismPatientlist, RfhPatientList, PatientList):
+    display_name = 'Staphylococcus aureus'
 
     def get_observations(self):
         qs = super().get_observations()
         qs = qs.filter(
-            observation_value__icontains='staph'
+            observation_value__icontains='aureus'
         )
         return qs
 
