@@ -1,8 +1,10 @@
 import datetime
 import json
+from unittest import mock
 
 from django.test import RequestFactory
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.reverse import reverse as drf_reverse
 
 from opal.core.patient_lists import PatientList
@@ -10,7 +12,8 @@ from opal.core.test import OpalTestCase
 from opal.models import Patient
 
 from elcid import models
-from elcid.patient_lists import RfhPatientList
+from elcid import episode_categories
+from elcid import patient_lists
 
 
 class AbstractPatientListTestCase(OpalTestCase):
@@ -125,7 +128,124 @@ class TestPatientList(AbstractPatientListTestCase):
         )
 
     def test_patient_list_episode_comparators(self):
-        pls = PatientList.list()
-        self.assertTrue(all(
-            i.comparator_service for i in pls if issubclass(i, RfhPatientList)
-        ))
+        self.assertEqual(
+            patient_lists.Hepatology.comparator_service,
+            "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.SurgicalAntibioti.comparator_service,
+            "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.MAU.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.Antifungal.comparator_service,
+            "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.RnohWardround.comparator_service,
+            "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.CDIFF.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.ICU.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.Acute.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.Chronic.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.Haematology.comparator_service,
+            "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.HIV.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.MalboroughClinic.comparator_service,
+            "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.Renal.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.Sepsis.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.PCP.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.R1.comparator_service, "EpisodeAddedComparator"
+        )
+        self.assertEqual(
+            patient_lists.LiverTransplantation.comparator_service,
+            "EpisodeAddedComparator"
+        )
+
+        self.assertEqual(
+            patient_lists.ChronicAntifungal.comparator_service,
+            "EpisodeAddedComparator"
+        )
+
+
+class ChronicAntifungalTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+        category_name = episode_categories.InfectionService.display_name
+        self.episode.category_name = category_name
+        self.episode.save()
+        self.patient_list = patient_lists.ChronicAntifungal()
+        self.now = timezone.now()
+
+    @mock.patch('django.utils.timezone.now')
+    def test_includes_new_chronic_antifungal(self, now):
+        now.return_value = self.now - datetime.timedelta(3)
+        self.patient.chronicantifungal_set.create(
+            reason=models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(list(self.patient_list.queryset), [self.episode])
+
+    @mock.patch('django.utils.timezone.now')
+    def test_includes_multiple_new_chronic_antifungal(self, now):
+        now.return_value = self.now - datetime.timedelta(3)
+        self.patient.chronicantifungal_set.create(
+            reason=models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.patient.chronicantifungal_set.create(
+            reason=models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(list(self.patient_list.queryset), [self.episode])
+
+    @mock.patch('django.utils.timezone.now')
+    def test_excludes_old_chronic_antifungal(self, now):
+        now.return_value = self.now - datetime.timedelta(4)
+        self.patient.chronicantifungal_set.create(
+            reason=models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(list(self.patient_list.queryset), [])
+
+    def test_excludes_chrnoic_antifungal_is_none(self):
+        self.assertEqual(list(self.patient_list.queryset), [])
+
+    def test_returns_most_recent_episode_if_multiple_are_available(self):
+        episode_2 = self.patient.create_episode()
+        self.patient.chronicantifungal_set.create(
+            reason=models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(list(self.patient_list.queryset), [episode_2])
+
+    def test_ignores_episodes_of_other_categories(self):
+        self.episode.category_name = "TB"
+        self.episode.save()
+        self.patient.chronicantifungal_set.create(
+            reason=models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(list(self.patient_list.queryset), [])
+
+
+
