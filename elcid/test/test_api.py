@@ -2,7 +2,7 @@
 Unittests for elcid.api
 """
 import json
-import mock
+from unittest import mock
 import datetime
 
 from opal.core.test import OpalTestCase

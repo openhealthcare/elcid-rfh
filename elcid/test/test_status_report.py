@@ -4,7 +4,7 @@ Unittests for elcid.management.commands.status_report
 import datetime
 import logging
 import json
-import mock
+from unittest import mock
 
 from opal.core.test import OpalTestCase
 

@@ -1,6 +1,6 @@
 from opal.core.test import OpalTestCase
 from elcid.management.commands import error_emailer
-import mock
+from unittest import mock
 
 
 class ErrorEmailerTestCase(OpalTestCase):

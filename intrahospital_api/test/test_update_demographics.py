@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 import datetime
 from intrahospital_api.test.test_loader import ApiTestCase
 from intrahospital_api import update_demographics
