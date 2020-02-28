@@ -586,6 +586,8 @@ class AdverseReaction(models.EpisodeSubrecord):
 
 
 class OtherInvestigation(models.EpisodeSubrecord):
+    _icon = "fa fa-snowflake-o"
+
     name = fields.CharField(max_length=256, blank=True, default="")
     date = fields.DateField(blank=True, null=True)
     details = fields.TextField(blank=True, default='')
