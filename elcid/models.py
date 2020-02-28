@@ -715,6 +715,7 @@ class RiskFactor(omodels.PatientSubrecord):
     _icon = 'fa fa-exclamation-triangle'
 
     risk_factor = ForeignKeyOrFreeText(PatientRiskFactor)
+    date = models.DateField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Risk Factors"
