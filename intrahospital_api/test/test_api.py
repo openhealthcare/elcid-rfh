@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from rest_framework.reverse import reverse
 
 from opal.core.test import OpalTestCase

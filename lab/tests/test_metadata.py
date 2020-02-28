@@ -3,7 +3,7 @@ from lab.tests.models import (
     SomeTestWithSynonyms, SomeInherittedTest
 )
 from lab import models as lmodels
-import mock
+from unittest import mock
 from lab.metadata import LabTestMetadata
 
 
