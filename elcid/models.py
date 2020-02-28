@@ -712,6 +712,20 @@ class GNROutcome(lookuplists.LookupList):
         return self.name
 
 
+class PatientRiskFactor(lookuplists.LookupList):
+    pass
+
+
+class RiskFactor(omodels.PatientSubrecord):
+    _icon = 'fa fa-exclamation-triangle'
+
+    risk_factor = ForeignKeyOrFreeText(PatientRiskFactor)
+    date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Risk Factors"
+
+
 class BloodCultureIsolate(
     omodels.UpdatesFromDictMixin,
     omodels.ToDictMixin,
