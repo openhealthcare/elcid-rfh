@@ -350,6 +350,9 @@ class Antimicrobial(EpisodeSubrecord):
 
     TREATMENT_REASON = enum(EMPIRIC, TARGETTED, PREEMPTIVE)
 
+    class Meta:
+        verbose_name = "Anti-Infectives"
+
     drug          = ForeignKeyOrFreeText(omodels.Antimicrobial)
     dose          = models.CharField(max_length=255, blank=True)
     route         = ForeignKeyOrFreeText(omodels.Antimicrobial_route)
@@ -366,7 +369,9 @@ class Antimicrobial(EpisodeSubrecord):
     adverse_event = ForeignKeyOrFreeText(omodels.Antimicrobial_adverse_event)
     comments      = models.TextField(blank=True, null=True)
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
-    no_antimicrobials = models.NullBooleanField(default=False)
+    no_antimicrobials = models.NullBooleanField(
+        default=False, verbose_name="No anti-infectives"
+    )
 
 
 class RenalFunction(lookuplists.LookupList):
@@ -717,6 +722,20 @@ class GPCStrepOutcome(lookuplists.LookupList):
 class GNROutcome(lookuplists.LookupList):
     def __str__(self):
         return self.name
+
+
+class PatientRiskFactor(lookuplists.LookupList):
+    pass
+
+
+class RiskFactor(omodels.PatientSubrecord):
+    _icon = 'fa fa-exclamation-triangle'
+
+    risk_factor = ForeignKeyOrFreeText(PatientRiskFactor)
+    date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Risk Factors"
 
 
 class BloodCultureIsolate(
