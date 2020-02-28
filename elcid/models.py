@@ -17,6 +17,7 @@ from opal.models import (
 )
 from opal.core.fields import ForeignKeyOrFreeText, enum
 from opal.core import lookuplists
+from elcid.episode_categories import InfectionService
 
 
 def get_for_lookup_list(model, values):
@@ -815,6 +816,15 @@ class ChronicAntifungal(models.Model):
     reason = models.TextField(
         choices=REASONS, blank=True, null=True
     )
+
+    @classmethod
+    def antifungal_episodes(cls):
+        active_from_date = datetime.date.today() - datetime.timedelta(3)
+        return omodels.Episode.objects.filter(
+            patient__chronicantifungal__updated_dt__gte=active_from_date
+        ).filter(
+            category_name=InfectionService.display_name
+        ).distinct()
 
 
 # method for updating
