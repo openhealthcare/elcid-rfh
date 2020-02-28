@@ -483,6 +483,7 @@ class IndexCase(models.PatientSubrecord):
 
 
 class Allergies(models.Allergies):
+    _icon = "fa fa-arrow-down"
     pass
 
 
