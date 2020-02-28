@@ -344,6 +344,9 @@ class Antimicrobial(EpisodeSubrecord):
     _icon = 'fa fa-flask'
     _modal = 'lg'
 
+    class Meta:
+        verbose_name = "Anti-Infectives"
+
     drug          = ForeignKeyOrFreeText(omodels.Antimicrobial)
     dose          = models.CharField(max_length=255, blank=True)
     route         = ForeignKeyOrFreeText(omodels.Antimicrobial_route)
@@ -354,7 +357,9 @@ class Antimicrobial(EpisodeSubrecord):
     adverse_event = ForeignKeyOrFreeText(omodels.Antimicrobial_adverse_event)
     comments      = models.TextField(blank=True, null=True)
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
-    no_antimicrobials = models.NullBooleanField(default=False)
+    no_antimicrobials = models.NullBooleanField(
+        default=False, verbose_name="No anti-infectives"
+    )
 
 
 class RenalFunction(lookuplists.LookupList):
