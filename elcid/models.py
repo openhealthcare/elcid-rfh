@@ -360,6 +360,9 @@ class Antimicrobial(EpisodeSubrecord):
     treatment_reason = models.CharField(
         max_length=256, blank=True, null=True, choices=TREATMENT_REASON
     )
+    indication = models.CharField(
+        max_length=256, blank=True, null=True
+    )
     adverse_event = ForeignKeyOrFreeText(omodels.Antimicrobial_adverse_event)
     comments      = models.TextField(blank=True, null=True)
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
