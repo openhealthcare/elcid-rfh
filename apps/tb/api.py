@@ -1,6 +1,7 @@
 """
 Specific API endpoints for the TB module
 """
+from collections import OrderedDict
 from plugins.labtests.api import RecentResultsApiView
 
 
