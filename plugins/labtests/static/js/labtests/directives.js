@@ -1,4 +1,4 @@
-directives.directive("tbSummaryTests", function(InitialPatientTestLoadStatus, TestSummaryLoader){
+directives.directive("keyInvestigations", function(InitialPatientTestLoadStatus, TestSummaryLoader){
   "use strict";
   return {
     restrict: 'A',
