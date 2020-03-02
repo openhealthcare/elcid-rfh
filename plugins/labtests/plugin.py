@@ -14,7 +14,7 @@ class LabtestsPlugin(plugins.OpalPlugin):
     javascripts = {
         # Add your javascripts here!
         'opal.controllers': [
-            'js/labtests/directives.js'
+            'js/labtests/controllers/key_investigations.js'
         ],
         'opal.services': [
             'js/labtests/services/test_summary_loader.js',
