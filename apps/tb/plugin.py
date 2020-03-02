@@ -26,13 +26,11 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/tb_treatment.js',
             'js/tb/controllers/mantoux_test.js',
             'js/tb/controllers/add_episode_helper.js',
-            'js/tb/directives.js'
             # 'js/tb/services/larry.js',
         ],
         'opal.services': [
             'js/tb/services/treatment_utils.js',
             'js/tb/services/treatment_record.js',
-            'js/tb/services/test_summary_loader.js',
         ],
     }
 

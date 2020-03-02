@@ -5,6 +5,7 @@ from opal.core import plugins
 
 from plugins.labtests.urls import urlpatterns
 
+
 class LabtestsPlugin(plugins.OpalPlugin):
     """
     Main entrypoint to expose this plugin to our Opal application.
@@ -12,11 +13,12 @@ class LabtestsPlugin(plugins.OpalPlugin):
     urls = urlpatterns
     javascripts = {
         # Add your javascripts here!
-        'opal.labtests': [
-            # 'js/labtests/app.js',
-            # 'js/labtests/controllers/larry.js',
-            # 'js/labtests/services/larry.js',
-        ]
+        'opal.controllers': [
+            'js/labtests/directives.js'
+        ],
+        'opal.services': [
+            'js/labtests/services/test_summary_loader.js',
+        ],
     }
 
     def list_schemas(self):
