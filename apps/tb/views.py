@@ -41,11 +41,6 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
             category=Treatment.TB
         )
         ctx["communication_considerations"] = patient.communinicationconsiderations_set.get()
-        ctx["results"] = get_tb_summary_information(patient)
-        for result in ctx["results"].values():
-            result["observation_datetime"] = deserialize_datetime(
-                result["observation_datetime"]
-            )
         ctx["travel_list"] = episode.travel_set.all()
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
