@@ -7,8 +7,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from apps.tb.models import PatientConsultation
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
-from apps.tb.utils import get_tb_summary_information
-
 from apps.tb.models import Treatment
 from elcid.models import Diagnosis
 from opal import views
