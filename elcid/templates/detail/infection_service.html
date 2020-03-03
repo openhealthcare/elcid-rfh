@@ -1,5 +1,6 @@
 {% load panels %}
 {% load forms %}
+{% load key_investigations %}
 <div class="col-md-6">
   {% record_panel models.Location %}
   {% teams_panel %}
@@ -13,6 +14,8 @@
       </div>
     </div>
   {% endif %}
+
+  {% key_investigations "/elcid/v0.1/antifungal_key_investigations/" %}
 
 
   {% record_panel models.PrimaryDiagnosis %}
