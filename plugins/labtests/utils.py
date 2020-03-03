@@ -16,10 +16,8 @@ def clean_observation_value(value):
 
     Ie its just noise, e.g. ~Please note: New method effective.
     """
-    if "~" in value:
-        return value[:value.find("~")]
-    else:
-        return value
+    if value:
+        return value.replace("~", " ")
 
 
 def recent_observations(patient, test_name_to_observation_names):
