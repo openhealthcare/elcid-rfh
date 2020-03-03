@@ -1,4 +1,4 @@
-controllers.controller('KeyInvestigations', function($scope, $attrs, InitialPatientTestLoadStatus, TestSummaryLoader){
+controllers.controller('KeyInvestigations', function($scope, $attrs, InitialPatientTestLoadStatus, KeyInvestigationsLoader){
       // TODO: this is wrong, well maybe not wrong, but not right
       var episode = $scope.row || $scope.episode;
       var patientId = episode.demographics[0].patient_id;
@@ -14,7 +14,7 @@ controllers.controller('KeyInvestigations', function($scope, $attrs, InitialPati
       if(!$scope.patientLoadStatus.isAbsent()){
         $scope.patientLoadStatus.promise.then(function(){
             // success
-            TestSummaryLoader.load($attrs.apiUrl, patientId).then(function(result){
+            KeyInvestigationsLoader.load($attrs.apiUrl, patientId).then(function(result){
               $scope.data = result;
             });
         });
