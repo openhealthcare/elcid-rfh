@@ -9,6 +9,8 @@ module.exports = function(config){
     __dirname + '/../elcid/assets/js/elcid/services/records/*',
     __dirname + '/../intrahospital_api/static/js/intrahospital_api/controllers/*',
     __dirname + '/../apps/tb/static/js/tb/controllers/*',
+    __dirname + '/../plugins/labtests/static/js/labtests/controllers/*',
+    __dirname + '/../plugins/labtests/static/js/labtests/services/*',
   ];
   var includedFiles = [
     'opal/app.js',
@@ -17,6 +19,8 @@ module.exports = function(config){
     __dirname + '/../intrahospital_api/static/js/intrahospital_api/*.js',
     __dirname + '/../apps/tb/static/js/tb/**/*',
     __dirname + '/../apps/tb/static/js/test/**/*',
+    __dirname + '/../plugins/labtests/static/js/**/*',
+    __dirname + '/../plugins/labtests/static/js/**/*',
   ];
 
   var defaultConfig = karmaDefaults(includedFiles, baseDir, coverageFiles);
