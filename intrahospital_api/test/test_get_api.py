@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from django.test import override_settings
 from opal.core.test import OpalTestCase
 from intrahospital_api import get_api

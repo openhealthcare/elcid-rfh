@@ -1,5 +1,5 @@
 from opal.core.test import OpalTestCase
-import mock
+from unittest import mock
 from lab import admin
 from lab.tests import models as test_models
 from lab import models

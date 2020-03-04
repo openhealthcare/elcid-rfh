@@ -1,7 +1,7 @@
 """
 Test the opal.context_processors module
 """
-from mock import patch
+from unittest.mock import patch
 from lab import context_processors
 from opal.core.test import OpalTestCase
 from lab.models import LabTest
