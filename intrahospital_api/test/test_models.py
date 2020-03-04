@@ -1,4 +1,4 @@
-from mock import PropertyMock, patch
+from unittest.mock import PropertyMock, patch
 from opal.core.test import OpalTestCase
 from intrahospital_api import models
 

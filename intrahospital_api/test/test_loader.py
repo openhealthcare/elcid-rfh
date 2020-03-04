@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 import datetime
 from django.contrib.auth.models import User
 from django.test import override_settings

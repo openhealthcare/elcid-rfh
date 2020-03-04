@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 import copy
 from django.test import override_settings
 from pytds.tds import OperationalError
@@ -610,8 +610,8 @@ class ProdApiTestcase(OpalTestCase):
                 execute_trust_query.return_value = []
                 result = api.demographics("123")
 
-        execute_hospital_query.assert_called()
-        execute_trust_query.assert_called()
+        self.assertTrue(execute_hospital_query.called)
+        self.assertTrue(execute_trust_query.called)
         self.assertIsNone(result)
 
     def test_data_deltas(self):
