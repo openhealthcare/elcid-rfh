@@ -468,12 +468,12 @@ class AntifungalKeyInvestigations(RecentResultsApiView):
     base_name = 'antifungal_key_investigations'
     RELEVANT_TESTS = OrderedDict((
         ("BETA D GLUCAN TEST", [
-            "Beta Glucan concentration",
             "Beta Glucan test:"
+            "Beta Glucan concentration",
         ]),
         ("GALACTOMANNAN AGN. ELISA", [
-            "Galactomannan Agn. INDEX",
             "Galactomannan Agn. ELISA"
+            "Galactomannan Agn. INDEX",
         ]),
         ("T2MR", ["T2MR PCR result"]),
         ("ANTIFUNGAL DRUG ASSAY", [
