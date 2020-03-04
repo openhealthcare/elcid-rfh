@@ -422,7 +422,7 @@ def update_chronic_antifungal_reason_for_interaction(
 ):
     asr = MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
     if instance.reason_for_interaction == asr:
-        i, _ = instance.episode.patient.chronicantifungal_set.create(
+        instance.episode.patient.chronicantifungal_set.create(
             reason=ChronicAntifungal.REASON_TO_INTERACTION
         )
 

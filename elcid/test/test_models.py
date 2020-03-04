@@ -594,6 +594,22 @@ class ChronicAntifungalTestCase(OpalTestCase):
             list(emodels.ChronicAntifungal.antifungal_episodes()), []
         )
 
+    def test_signals_with_antifungal_reason(self):
+        self.episode.microbiologyinput_set.create(
+            reason_for_interaction=emodels.MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
+        )
+        self.assertTrue(
+            self.patient.chronicantifungal_set.filter(
+                reason=emodels.ChronicAntifungal.REASON_TO_INTERACTION
+            ).exists()
+        )
+
+    def test_signals_without_antifungal_reason(self):
+        self.episode.microbiologyinput_set.create(
+            reason_for_interaction="something"
+        )
+        self.assertFalse(self.patient.chronicantifungal_set.exists())
+
 
 class PositiveBloodCultureHistoryTestCase(OpalTestCase):
     def setUp(self):
