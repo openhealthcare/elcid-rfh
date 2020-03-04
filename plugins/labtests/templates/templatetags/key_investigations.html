@@ -1,9 +1,9 @@
 {% load forms %}
 <div class="panel panel-default">
     <div class="panel-heading"><h3>
-      {% icon 'fa fa-crosshairs' %} Key Investigations
+      {% icon icon %} {{ title }}
     </h3></div>
-    <div class="panel-footer overflow-x-auto">
+    <div class="{{ body_class }} overflow-x-auto">
       <div class="tb-summary-panel" ng-controller="KeyInvestigations" api-url="{{ url_base }}">
         <div ng-show="patientLoadStatus.isLoading()">
           <h2 class="text-center no-results">Lab tests loading please wait</h2>
