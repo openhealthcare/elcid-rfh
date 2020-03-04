@@ -1,4 +1,5 @@
 from opal.core.test import OpalTestCase
+from django.template import Template, Context
 from plugins.labtests.templatetags import key_investigations
 
 class TestCase(OpalTestCase):
@@ -32,3 +33,7 @@ class TestCase(OpalTestCase):
         )
         self.assertEqual(result, expected)
 
+    def test_render(self):
+        tpl = Template('{% load key_investigations %}{% key_investigations "/api/v0.1/tb_test_summary/" body_class="panel-footer" %}')
+        rendered = tpl.render(Context({}))
+        self.assertIsNotNone(rendered)
