@@ -17,7 +17,7 @@ class LabtestsPlugin(plugins.OpalPlugin):
             'js/labtests/controllers/key_investigations.js'
         ],
         'opal.services': [
-            'js/labtests/services/test_summary_loader.js',
+            'js/labtests/services/key_investigations_loader.js',
         ],
     }
 
