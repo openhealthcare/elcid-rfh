@@ -15,7 +15,9 @@
     </div>
   {% endif %}
 
-  {% key_investigations "/elcid/v0.1/antifungal_key_investigations/" title="Antifungal Investgations" body_class="panel-body" %}
+  <div ng-if="patient.is_antifungal">
+    {% key_investigations "/elcid/v0.1/antifungal_key_investigations/" title="Antifungal Investgations" body_class="panel-body" %}
+  </div>
 
 
   {% record_panel models.PrimaryDiagnosis %}
