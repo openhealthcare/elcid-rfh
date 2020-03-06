@@ -571,7 +571,7 @@ class ChronicAntifungalTestCase(OpalTestCase):
 
     @mock.patch('django.utils.timezone.now')
     def test_excludes_old_chronic_antifungal(self, now):
-        now.return_value = self.now - datetime.timedelta(4)
+        now.return_value = self.now - datetime.timedelta(184)
         self.patient.chronicantifungal_set.create(
             reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
         )
