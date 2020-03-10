@@ -1,9 +1,10 @@
 {% load panels %}
 {% load forms %}
+{% load key_investigations %}
 <div class="row">
   <div class="col-md-6">
     {% include "panels/external_links.html" %}
-    {% include "partials/tb_summary_tests.html" %}
+    {% key_investigations "/api/v0.1/tb_test_summary/" body_class="panel-footer" %}
     {% include "panels/symptoms.html" %}
 
     {% include 'panels/primary_diagnosis.html' %}

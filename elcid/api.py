@@ -4,6 +4,7 @@ API endpoints for the elCID application
 import datetime
 import re
 from collections import defaultdict, OrderedDict
+from plugins.labtests.api import RecentResultsApiView
 from operator import itemgetter
 
 from django.conf import settings
@@ -463,9 +464,34 @@ class BloodCultureIsolateApi(SubrecordViewSet):
         )
 
 
+class AntifungalKeyInvestigations(RecentResultsApiView):
+    base_name = 'antifungal_key_investigations'
+    RELEVANT_TESTS = OrderedDict((
+        ("BETA D GLUCAN TEST", [
+            "Beta Glucan test:"
+            "Beta Glucan concentration",
+        ]),
+        ("GALACTOMANNAN AGN. ELISA", [
+            "Galactomannan Agn. ELISA"
+            "Galactomannan Agn. INDEX",
+        ]),
+        ("T2MR", ["T2MR PCR result"]),
+        ("ANTIFUNGAL DRUG ASSAY", [
+            "Antifungal Drug Assay of",
+            "Specimen Level"
+        ])
+    ),)
+
+
 elcid_router = OPALRouter()
 elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
+)
+elcid_router.register(
+    AntifungalKeyInvestigations.base_name, AntifungalKeyInvestigations
+)
+elcid_router.register(
+    AntifungalKeyInvestigations.base_name, AntifungalKeyInvestigations
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)

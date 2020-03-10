@@ -2,7 +2,6 @@ import datetime
 from plugins.labtests import models
 from rest_framework.reverse import reverse
 from opal.core.test import OpalTestCase
-from apps.tb import utils
 
 
 class TestMultipleResults(OpalTestCase):
