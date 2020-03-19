@@ -356,6 +356,11 @@ class Antimicrobial(EpisodeSubrecord):
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
     no_antimicrobials = models.NullBooleanField(default=False)
 
+    @classmethod
+    def get_display_name(klass):
+        # TODO: Yes I know, do this via Meta, but for now no migrations
+        # and the panel uses this method...
+        return "Anti-infectives"
 
 class RenalFunction(lookuplists.LookupList):
     pass
