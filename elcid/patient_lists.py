@@ -92,8 +92,8 @@ class ICUEast(RfhPatientList):
     schema = []
 
 
-class ICUNorth(RfhPatientList):
-    display_name = 'ICU North'
+class ICUSouth(RfhPatientList):
+    display_name = 'ICU South'
     direct_add = True
     order = 3
     tag = "icu_north"
