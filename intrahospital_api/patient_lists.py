@@ -8,6 +8,7 @@ from opal.models import Patient, Episode
 
 class ReconcileDemographics(patient_lists.PatientList):
     comparator_service = "EpisodeAddedComparator"
+    order = 50
     display_name = "Reconcile Demographics"
     slug = "reconcile_all_demographics"
     template_name = 'reconcile_list.html'
