@@ -75,7 +75,7 @@ class CDIFF(RfhPatientList):
 
 
 class ICU(RfhPatientList):
-    display_name = 'ICU West'
+    display_name = 'ICU South'
     direct_add = True
     order = 1
     tag = "icu"
@@ -92,11 +92,11 @@ class ICUEast(RfhPatientList):
     schema = []
 
 
-class ICUSouth(RfhPatientList):
-    display_name = 'ICU South'
+class ICUWest(RfhPatientList):
+    display_name = 'ICU West'
     direct_add = True
     order = 3
-    tag = "icu_north"
+    tag = "icu_west"
     template_name = 'episode_list.html'
     schema = []
 
