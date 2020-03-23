@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="col-md-8">
+    <b>Admission Date</b>
+  </div>
+  <div class="col-md-4">
+    [[ item.admission_date | displayDate ]]
+  </div>
+</div>
+<div class="row" ng-show="item.discharge_date">
+  <div class="col-md-8">
+    <b>Discharge Date</b>
+  </div>
+  <div class="col-md-4">
+    [[ item.discharge_date | displayDate ]]
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <b>Apache Score On Admission</b>
+  </div>
+  <div class="col-md-4">
+    [[ item.apache_score ]]
+  </div>
+</div>
+<div class="row" ng-show="item.outcome">
+  <div class="col-md-8">
+    <b>Outcome</b>
+  </div>
+  <div class="col-md-4">
+    [[ item.outcome ]]
+  </div>
+</div>
