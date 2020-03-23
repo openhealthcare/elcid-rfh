@@ -790,4 +790,4 @@ class ICUAdmission(EpisodeSubrecord):
     )
 
     class Meta:
-        verbose_name = 'ICU Admisssion'
+        verbose_name = 'ICU Admission'
