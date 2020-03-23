@@ -1,17 +1,19 @@
 describe('RfhFindPatientCtrl', function() {
   "use strict";
-  var scope, DemographicsSearch, $controller, controller, $window;
+  var scope, DemographicsSearch, $controller, controller, $window, step;
 
   beforeEach(function(){
     module('opal.controllers');
     inject(function($injector){
       var $rootScope = $injector.get('$rootScope');
       scope = $rootScope.$new();
+      scope.editing = {};
       DemographicsSearch = $injector.get('DemographicsSearch');
       $controller = $injector.get('$controller');
     });
 
     $window = {alert: jasmine.createSpy()};
+    step = {};
 
     scope.pathway = {
       save_url: "/some_url"
@@ -19,7 +21,7 @@ describe('RfhFindPatientCtrl', function() {
     controller = $controller('RfhFindPatientCtrl', {
       scope: scope,
       DemographicsSearch: DemographicsSearch,
-      step: {},
+      step: step,
       episode: {},
       $window: $window
     });
@@ -83,6 +85,45 @@ describe('RfhFindPatientCtrl', function() {
     expect(scope.demographics).toBe(fakePatient.demographics[0]);
   });
 
+  it('should update the editing dictionary to include location/tags if the episode is of the correct category', function(){
+    var fakePatient = {
+      demographics: [{hospital_number: "1"}],
+      episodes: {
+        1000: {
+          tagging: [{Bacteraemia: true}],
+          location: [{ward: "North 10"}],
+          category_name: "Infectious Service",
+        }
+      }
+    };
+    scope.metadata = {tags: {Bacteraemia: {}}};
+    step.category_name = "Infectious Service"
+    scope.new_for_patient(fakePatient);
+    expect(scope.state).toBe('has_demographics');
+    expect(scope.demographics).toBe(fakePatient.demographics[0]);
+    expect(scope.editing.tagging).toBe(fakePatient.episodes["1000"].tagging[0]);
+    expect(scope.editing.location).toBe(fakePatient.episodes["1000"].location[0]);
+  });
+
+  it('should not update the editing dictionary to include location/tags if the episode is not of the correct category', function(){
+    var fakePatient = {
+      demographics: [{hospital_number: "1"}],
+      episodes: {
+        1000: {
+          tagging: [{Bacteraemia: true}],
+          location: [{ward: "North 10"}],
+          category_name: "TB",
+        }
+      }
+    };
+    scope.metadata = {tags: {Bacteraemia: {}}};
+    step.category_name = "Infectious Service"
+    scope.new_for_patient(fakePatient);
+    expect(scope.state).toBe('has_demographics');
+    expect(scope.demographics).toBe(fakePatient.demographics[0]);
+    expect(scope.editing).toEqual({});
+  });
+
   it("should hoist demographics to editing before saving", function(){
     scope.demographics = {hospital_number: "1"};
     var editing = {};
@@ -95,7 +136,8 @@ describe('RfhFindPatientCtrl', function() {
       demographics: [{hospital_number: "1"}],
       episodes: {
         1: {
-          tagging: [{haem: true}]
+          tagging: [{haem: true}],
+          location: [{ward: "North 10"}]
         }
       }
 
@@ -110,7 +152,8 @@ describe('RfhFindPatientCtrl', function() {
       demographics: [{hospital_number: "1"}],
       episodes: {
         1: {
-          tagging: [{haem: true}]
+          tagging: [{haem: true}],
+          location: [{ward: "North 10"}]
         }
       }
 
@@ -129,11 +172,13 @@ describe('RfhFindPatientCtrl', function() {
             haem: true,
             bacteraemia: true
           }],
+          location: [{ward: "North 10"}]
         },
         3: {
           tagging: [{
             oncology: true
           }],
+          location: [{ward: "North 10"}]
         }
       }
 
@@ -158,11 +203,13 @@ describe('RfhFindPatientCtrl', function() {
             haem: true,
             bacteraemia: true
           }],
+          location: [{ward: "North 10"}]
         },
         3: {
           tagging: [{
             bacteraemia: true
           }],
+          location: [{ward: "North 10"}]
         }
       }
 
@@ -177,4 +224,5 @@ describe('RfhFindPatientCtrl', function() {
     scope.new_for_patient(fakePatient);
     expect(scope.allTags).toEqual(['haem', 'bacteraemia']);
   });
+
 });
