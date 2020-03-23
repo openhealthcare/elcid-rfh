@@ -15,7 +15,7 @@ import opal.models as omodels
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
 )
-from opal.core.fields import ForeignKeyOrFreeText
+from opal.core.fields import ForeignKeyOrFreeText, enum
 from opal.core import lookuplists
 
 
@@ -775,3 +775,19 @@ def record_positive_blood_culture(sender, instance, **kwargs):
         )
         pbch.when = datetime.datetime.now()
         pbch.save()
+
+
+class ICUAdmission(EpisodeSubrecord):
+    _icon = 'fa fa-heartbeat'
+
+    OUTCOMES = enum('Survived', 'Atributable Death', 'Non-attributable Death')
+
+    admission_date = models.DateField(blank=True, null=True)
+    discharge_date = models.DateField(blank=True, null=True)
+    apache_score   = models.CharField(max_length=200, blank=True, null=True)
+    outcome        = models.CharField(
+        max_length=200, blank=True, null=True, choices=OUTCOMES
+    )
+
+    class Meta:
+        verbose_name = 'ICU Admisssion'
