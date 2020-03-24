@@ -206,6 +206,39 @@ class LabTestTestCase(OpalTestCase):
             lt.id
         )
 
+    def test_site(self):
+        lt = self.create_lab_test()
+        lt.site = "S     ^Swab & Tips etc.         &CANS ^"
+        self.assertEqual(
+            lt.cleaned_site, 'Swab & Tips etc. CANS'
+        )
+        lt.site = "PDF   ^PD Fluid                 &PERF ^Peritoneal "
+        self.assertEqual(
+            lt.cleaned_site,
+            'PD Fluid Peritoneal'
+        )
+        lt.site = "^&                              ^"
+        self.assertEqual(lt.cleaned_site, '')
+        lt.site = "ASF   ^Ascitic Fluid            &ASC  ^"
+        self.assertEqual(
+            lt.cleaned_site,
+            'Ascitic Fluid ASC'
+        )
+        lt.site = "F     ^Fluid                    &ABD  ^Abdominal"
+        self.assertEqual(
+            lt.cleaned_site,
+            'Fluid Abdominal'
+        )
+        lt.site = "DONOR ^&     ^"
+        self.assertEqual(
+            lt.cleaned_site,
+            'DONOR'
+        )
+        lt.site = "B^Blood&         "
+        self.assertEqual(
+            lt.cleaned_site,
+            'Blood'
+        )
 
 class ObservationTestCase(OpalTestCase):
     def test_value_numeric(self):

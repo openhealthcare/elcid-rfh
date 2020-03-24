@@ -25,7 +25,7 @@ class AddTbPatientPathway(WizardPathway):
         pathways.Step(
             template="pathway/rfh_find_patient_form.html",
             step_controller="RfhFindPatientCtrl",
-            display_name="Find patient",
+            display_name="Patient Details",
             icon="fa fa-user",
             category_name=episode_categories.TbEpisode.display_name
         ),
