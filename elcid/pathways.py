@@ -64,7 +64,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         Step(
             template="pathway/rfh_find_patient_form.html",
             step_controller="RfhFindPatientCtrl",
-            display_name="Find patient",
+            display_name="Patient Details",
             icon="fa fa-user"
         ),
         Step(
