@@ -6,7 +6,7 @@ from django.conf import settings
 from opal.core.pathway import pathways, HelpTextStep, WizardPathway
 
 from elcid import models
-from elcid.pathways import IgnoreDemographicsMixin, SaveTaggingMixin
+from elcid.pathways import IgnoreDemographicsMixin
 
 from obs import models as obs_models
 from intrahospital_api import loader
@@ -17,7 +17,7 @@ from intrahospital_api import constants
 from apps.tb import constants as tb_constants
 
 
-class AddTbPatientPathway(SaveTaggingMixin, WizardPathway):
+class AddTbPatientPathway(WizardPathway):
     display_name = "Add Patient"
     slug = 'add_tb_patient'
 
