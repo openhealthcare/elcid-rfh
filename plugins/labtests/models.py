@@ -104,6 +104,8 @@ class LabTest(models.Model):
         if not self.site:
             return ''
         values = []
+        # Sometimes the description text includes a character
+        # used as a separator, so rsplit
         for part in self.site.rsplit("&", 1):
             code_or_desc = [i for i in part.split('^') if i]
             if len(code_or_desc):
@@ -198,5 +200,3 @@ class Observation(models.Model):
             setattr(self, f, observation_dict.get(f))
         self.save()
         return self
-
-
