@@ -2,6 +2,7 @@ import datetime
 from intrahospital_api import loader
 from intrahospital_api import constants
 from elcid import models
+from elcid.episode_categories import InfectionService
 from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
@@ -65,7 +66,8 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             template="pathway/rfh_find_patient_form.html",
             step_controller="RfhFindPatientCtrl",
             display_name="Patient Details",
-            icon="fa fa-user"
+            icon="fa fa-user",
+            category_name=InfectionService.display_name
         ),
         Step(
             model=models.Location,
@@ -74,17 +76,30 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         ),
     )
 
+    def redirect_url(self, user=None, patient=None, episode=None):
+        if not episode:
+            episode = patient.episode_set.last()
+        return "/#/patient/{0}/{1}".format(patient.id, episode.id)
+
     @transaction.atomic
     def save(self, data, user, patient=None, episode=None):
         """
-            saves the patient.
+            If the patient already exists and has an infectious service
+            episode. Update that episode.
 
-            if the patient already exists, create a new episode.
+            Else if the patient already exists, create a new episode.
 
-            if the patient doesn't exist and we're gloss enabled query gloss.
-
-            we expect the patient to have already been updated by gloss
+            Else if the patient doesn't exist load in the patient.
         """
+        if patient:
+            infectious_episode = patient.episode_set.filter(
+                category_name=InfectionService.display_name
+            ).last()
+            if infectious_episode:
+                return super(AddPatientPathway, self).save(
+                    data, user=user, patient=patient, episode=infectious_episode
+                )
+
         saved_patient, saved_episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
