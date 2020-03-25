@@ -1,11 +1,9 @@
 angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', function(
   $scope,
-  item,
-  blood_culture_set,
+  formItem, // should have a method of save and delete
   referencedata,
   $modal,
   $modalInstance,
-  BloodCultureIsolate,
   $q,
   ngProgressLite,
   callBack
@@ -13,35 +11,7 @@ angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', fun
 
   $scope.initialize = function(){
     _.extend($scope, referencedata.toLookuplists());
-
-    // lists should be alphabetical but with
-    // Negative always as the last result
-    // if the list contains negative
-    var lists = [
-      "gramstainoutcome_list",
-      "quickfishoutcome_list",
-      "gpcstaphoutcome_list",
-      "gpcstrepoutcome_list"
-    ]
-
-    _.each(lists, list => {
-      var removed = _.without($scope[list], 'Negative');
-      if(removed.length !== $scope[list].length){
-        removed.push("Negative");
-        $scope[list] = removed;
-      }
-    });
-
-
-    // are we editing or creating
-    if(item){
-      $scope.isNew = false;
-      $scope.isolate = new BloodCultureIsolate(blood_culture_set, item)
-    }
-    else{
-      $scope.isNew = true;
-      $scope.isolate = new BloodCultureIsolate(blood_culture_set);
-    }
+    $scope.formItem = formItem;
   }
 
   $scope.delete = function(){
@@ -52,7 +22,7 @@ angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', fun
         controller: 'GeneralDeleteCtrl',
         resolve: {
             item: function() {
-                return $scope.isolate;
+                return $scope.formItem;
             }
         }
     });
@@ -67,7 +37,7 @@ angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', fun
   $scope.save = function(){
     ngProgressLite.set(0);
     ngProgressLite.start();
-    $scope.isolate.save().then(function(result){
+    $scope.formItem.save().then(function(result){
       callBack().then(function(){
         ngProgressLite.done();
         $modalInstance.close(result);

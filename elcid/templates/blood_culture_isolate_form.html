@@ -7,17 +7,17 @@ fa fa-crosshairs
 Blood Culture Isolate
 {% endblock %}
 {% block form %}
-  {% radio model="isolate.editing.aerobic_or_anaerobic" label="Blood culture bottle type" lookuplist="['Aerobic', 'Anaerobic']" %}
-  {% datepicker model="isolate.editing.date_positive" label="Date positive" %}
+  {% radio model="formItem.editing.aerobic_or_anaerobic" label="Blood culture bottle type" lookuplist="['Aerobic', 'Anaerobic']" %}
+  {% datepicker model="formItem.editing.date_positive" label="Date positive" %}
   <div class="form-group">
   <label class="control-label col-sm-3">Gram stain</label>
     <div class="col-sm-8">
       <div class="row" >
-        <div ng-repeat="item in gramstainoutcome_list">
+        <div ng-repeat="item in formItem.gramstainoutcome_list">
           <div class="clearfix" ng-if="$index % 2 == 0"></div>
           <div class="col-sm-6">
             <label class="radio-inline">
-              <input class="" type="radio" name="gramstainoutcome" value="[[ item ]]" ng-model="isolate.editing.gram_stain">
+              <input class="" type="radio" name="gramstainoutcome" value="[[ item ]]" ng-model="formItem.editing.gram_stain">
               [[ item ]]
             </label>
           </div>
@@ -28,18 +28,18 @@ Blood Culture Isolate
 
 
 
-  {% radio model="isolate.editing.quick_fish" label="Candida QuickFISH" lookuplist="quickfishoutcome_list" %}
-  {% radio model="isolate.editing.gpc_staph" label="Staph QuickFISH" lookuplist="gpcstaphoutcome_list" %}
-  {% radio model="isolate.editing.gpc_strep" label="Strep QuickFISH" lookuplist="gpcstrepoutcome_list" %}
-  {% input model="isolate.editing.sepsityper_organism" label="Sepsityper organism" lookuplist="microbiology_organism_list" %}
-  {% input model="isolate.editing.organism" label="Organism" lookuplist="microbiology_organism_list" %}
-  {% select model="isolate.editing.sensitivities" label="Sensitivities" multiple=True tagging=False lookuplist="antimicrobial_list" %}
-  {% select model="isolate.editing.resistance" label="Resistance" multiple=True tagging=False lookuplist="antimicrobial_list" %}
-  {% textarea model="isolate.editing.notes" label="Notes" %}
+  {% radio model="formItem.editing.quick_fish" label="Candida QuickFISH" lookuplist="formItem.quickfishoutcome_list" %}
+  {% radio model="formItem.editing.gpc_staph" label="Staph QuickFISH" lookuplist="formItem.gpcstaphoutcome_list" %}
+  {% radio model="formItem.editing.gpc_strep" label="Strep QuickFISH" lookuplist="formItem.gpcstrepoutcome_list" %}
+  {% input model="formItem.editing.sepsityper_organism" label="Sepsityper organism" lookuplist="microbiology_organism_list" %}
+  {% input model="formItem.editing.organism" label="Organism" lookuplist="microbiology_organism_list" %}
+  {% select model="formItem.editing.sensitivities" label="Sensitivities" multiple=True tagging=False lookuplist="antimicrobial_list" %}
+  {% select model="formItem.editing.resistance" label="Resistance" multiple=True tagging=False lookuplist="antimicrobial_list" %}
+  {% textarea model="formItem.editing.notes" label="Notes" %}
 {% endblock %}
 
 {% block modal_delete %}
-<span ng-show="!isNew" class="float-left">
+<span ng-show="!formItem.isNew" class="float-left">
   <button class="btn btn-secondary btn-delete" ng-click="delete('delete')">
     <i class="fa fa-trash-o"></i>
     Delete
