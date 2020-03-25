@@ -289,10 +289,10 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
                 specimen = observations.get('2019 nCoV Specimen Type', None)
                 ordered = test.datetime_ordered.strftime('d/m/Y H:i')
-                result_string = f"{ordered} {value}"
+                result_string = "{} {}".format(ordered, value)
 
                 if specimen:
-                    result_string += f" {specimen.observation_value}"
+                    result_string += " {}".format(specimen.observation_value)
 
                 ticker.append(result_string)
 
