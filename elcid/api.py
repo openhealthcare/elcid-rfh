@@ -200,8 +200,8 @@ class LabTestResultsView(LoginRequiredViewset):
         return {
             'lab_number'  : instance.lab_number,
             'date'        : instance.datetime_ordered,
-            'observations': serialised_observations
-
+            'observations': serialised_observations,
+            'site'        : instance.cleaned_site
         }
 
     @patient_from_pk

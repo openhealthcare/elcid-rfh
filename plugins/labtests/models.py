@@ -99,6 +99,19 @@ class LabTest(models.Model):
         ).order_by("datetime_ordered")
         return [i for i in qs if i.extras.get("test_name") in relevent_tests]
 
+    @property
+    def cleaned_site(self):
+        if not self.site:
+            return ''
+        values = []
+        # Sometimes the description text includes a character
+        # used as a separator, so rsplit
+        for part in self.site.rsplit("&", 1):
+            code_or_desc = [i for i in part.split('^') if i]
+            if len(code_or_desc):
+                values.append(code_or_desc[-1])
+        return ' '.join([i.strip() for i in values if i.strip()])
+
 
 class Observation(models.Model):
     # as created in the upstream db
@@ -187,5 +200,3 @@ class Observation(models.Model):
             setattr(self, f, observation_dict.get(f))
         self.save()
         return self
-
-
