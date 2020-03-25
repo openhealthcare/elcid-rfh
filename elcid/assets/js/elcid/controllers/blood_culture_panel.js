@@ -4,7 +4,7 @@ angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
   /*
   * open a panel when the user clicks on it and close and refresh when they are done
   */
-  const ctrl = "EditBloodCultureIsolateCtrl";
+  const ctrl = "GeneralEditCtrl";
   const templateUrl = "/templates/blood_culture_isolate_form.html"
   var self = this;
 

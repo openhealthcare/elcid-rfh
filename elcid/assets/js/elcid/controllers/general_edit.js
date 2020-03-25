@@ -1,4 +1,4 @@
-angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', function(
+angular.module('opal.controllers').controller('GeneralEditCtrl', function(
   $scope,
   formItem, // should have a method of save and delete
   referencedata,
