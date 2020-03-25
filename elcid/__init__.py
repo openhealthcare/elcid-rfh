@@ -44,7 +44,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/rfh_find_patient.js',
         'js/elcid/controllers/blood_culture_panel.js',
         'js/elcid/controllers/edit_blood_culture_isolate.js',
-        'js/elcid/controllers/delete_blood_culture_isolate.js',
+        'js/elcid/controllers/general_delete.js',
         'js/elcid/controllers/remove_patient_step.js',
 
         'js/elcid/services/demographics_search.js',

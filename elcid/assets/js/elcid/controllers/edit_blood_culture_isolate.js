@@ -49,7 +49,7 @@ angular.module('opal.controllers').controller('EditBloodCultureIsolateCtrl', fun
     $modalInstance.close(deferred.promise);
     var deleteModal =  $modal.open({
         templateUrl: '/templates/delete_item_confirmation_modal.html',
-        controller: 'DeleteBloodCultureIsolateCtrl',
+        controller: 'GeneralDeleteCtrl',
         resolve: {
             item: function() {
                 return $scope.isolate;
