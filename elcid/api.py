@@ -269,6 +269,35 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
     NUM_RESULTS = 5
 
+    def get_ticker_observations(self):
+        """
+        Some results are displayed as a ticker in chronological
+        order.
+        """
+        ticker = []
+        tests = lab_test_models.LabTest.objects.filter(
+            test_name='2019 Novel Coronavirus'
+        ).order_by('-datetime_ordered')
+        for test in tests:
+            if len(ticker) < 3:
+                observations = {
+                    t.observation_name: t for t in test.observation_set.all()
+                }
+                value = observations['2019 nCoV'].observation_value
+                if value == 'Pending':
+                    continue
+
+                specimen = observations.get('2019 nCoV Specimen Type', None)
+                ordered = test.datetime_ordered.strftime('d/m/Y H:i')
+                result_string = f"{ordered} {value}"
+
+                if specimen:
+                    result_string += f" {specimen.observation_value}"
+
+                ticker.append(result_string)
+
+        return ticker
+
     def get_recent_dates_to_observations(self, qs):
         """
         We are looking for the last 5 dates
@@ -345,7 +374,8 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
             obs_values.append(self.serialize_observations(obs_set))
         return dict(
             obs_values=obs_values,
-            recent_dates=recent_dates
+            recent_dates=recent_dates,
+            ticker=ticker
         )
 
     @patient_from_pk
