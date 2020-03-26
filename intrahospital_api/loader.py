@@ -4,13 +4,15 @@ Functions for loading data from upstream.
 import datetime
 import traceback
 import json
+
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings
 from intrahospital_api import models
-from elcid import models as emodels
 from opal.models import Patient
+
+from elcid import models as emodels
 from elcid.utils import timing
 from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
@@ -90,16 +92,42 @@ def load_demographics(hospital_number):
     return result
 
 
+def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
+    """
+    Creates a patient programatically and sets up integration.
+
+    This is the recommended interface for new patients not via the UI.
+
+    It will create a patient with HOSPITAL_NUMBER.
+    It will create an episode of category EPISODE_CATEGORY for the patient.
+
+    If a patient with this hospital number already exists raise ValueError
+    """
+    if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
+        raise ValueError('Patient with this hospital number already exists')
+
+    patient = Patient.objects.create()
+
+    demographics = patient.demographics()
+    demographics.hospital_number = hospital_number
+    demographics.save()
+
+    patient.create_episode(category_name=episode_category.display_name)
+
+    load_patient(patient)
+
+
 def load_patient(patient, run_async=None):
     """
-        Load all the things for a patient.
+    Load all the things for a patient.
 
-        This is called by the admin and by the add patient pathways
-        Nuke all existing lab tests for a patient. Synch lab tests.
+    This is called by the admin and by the add patient pathways.
 
-        will work asynchronously based on your preference.
+    Sync lab tests.
+    Sync demographics.
 
-        it will default to settings.ASYNC_API.
+    Will work asynchronously based on your preference.
+    It will default to settings.ASYNC_API.
     """
     logger.info("starting to load patient {}".format(patient.id))
     if run_async is None:
