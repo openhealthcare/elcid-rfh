@@ -33,7 +33,7 @@
               <div class="col-md-3">
                 [[ instance.lab_number ]]
                 <br />
-                [[ instance.date ]]
+                [[ instance.date | displayDateTime]]
                 <br />
                 [[ instance.site ]]
               </div>
@@ -62,7 +62,7 @@
                 <th class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
                   <span title="[[ resultView.lab_tests[test_name].instances.lab_numbers[date] ]] [[ date ]]"
                         class="pointer">
-                    [[ date.substring(0, 10) ]]
+                    [[ date | displayDate ]]
                   </span>
                 </th>
                 <th class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">
