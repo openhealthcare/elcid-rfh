@@ -867,7 +867,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_celery_conf")
-    @mock.patch("fabfile.write_cron_lab_tests")
+    @mock.patch("fabfile.local")
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -882,7 +882,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
-        write_cron_lab_tests,
+        local,
         services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -993,7 +993,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_celery_conf")
-    @mock.patch("fabfile.write_cron_lab_tests")
+    @mock.patch("fabfile.local")
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -1008,7 +1008,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
-        write_cron_lab_tests,
+        local,
         services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -1069,12 +1069,9 @@ class DeployTestCase(FabfileTestCase):
         services_create_local_settings.assert_called_once_with(
             self.env, pv
         )
-        write_cron_lab_tests.assert_called_once_with(
-            self.env
-        )
+
         services_create_gunicorn_conf.assert_called_once_with(self.env)
         services_create_upstart_conf.assert_called_once_with(self.env)
-        write_cron_lab_tests.assert_called_once_with(self.env)
         services_create_celery_conf.assert_called_once_with(self.env)
         self.assertEqual(
             run_management_command.call_count, 4
