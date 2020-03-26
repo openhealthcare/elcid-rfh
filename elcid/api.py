@@ -216,7 +216,7 @@ class LabTestResultsView(LoginRequiredViewset):
             if test.test_name in test_dates:
                 if test_dates[test.test_name] > test.datetime_ordered:
                     continue
-                test_dates[test.test_name] = test.datetime_ordered
+            test_dates[test.test_name] = test.datetime_ordered
 
         test_order = [
             d[0] for d in
@@ -275,7 +275,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         order.
         """
         ticker = []
-	tests = lab_test_models.LabTest.objects.filter(
+        tests = lab_test_models.LabTest.objects.filter(
             test_name='2019 NOVEL CORONAVIRUS',
             patient=patient
         ).order_by('-datetime_ordered')
@@ -285,7 +285,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
                     t.observation_name: t for t in test.observation_set.all()
                 }
                 value = observations['2019 nCoV'].observation_value
-		if value == 'Pending':
+                if value == 'Pending':
                     continue
 
                 specimen = observations.get('2019 nCoV Specimen Type', None)
@@ -375,7 +375,8 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         # the patient does not have a lot of results
         while len(recent_dates) < self.NUM_RESULTS:
             recent_dates.append(None)
-            obs_values = []
+
+        obs_values = []
 
         for obs_set in obs:
             obs_values.append(self.serialize_observations(obs_set))
