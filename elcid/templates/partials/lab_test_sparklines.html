@@ -11,7 +11,7 @@
     <h2 class="text-center no-results">Failed To load lab tests for this patient</h2>
   </div>
   <div ng-show="patientLoadStatus.isLoaded()">
-    <div ng-hide="data.obs_values.length">
+    <div ng-hide="data.obs_values.length || data.ticker.length">
       <h2 class="text-center no-results">No results found</h2>
     </div>
 
