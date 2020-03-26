@@ -966,6 +966,7 @@ class LabTestSummaryTestCase(OpalTestCase):
 
         result = self.client.get(self.url)
         expected = {
+            'ticker': [],
             'obs_values': [
                 {
                     'latest_results': {'04/06/2019': 1.8, '05/06/2019': 1.8},
@@ -1020,6 +1021,7 @@ class LabTestSummaryTestCase(OpalTestCase):
         })
         result = self.client.get(self.url)
         expected = {
+            'ticker': [],
             'obs_values': [
                 {
                     'latest_results': {'04/06/2019': 1.3},
@@ -1061,6 +1063,7 @@ class LabTestSummaryTestCase(OpalTestCase):
             dt_4: "1.4", dt_5: "1.5", dt_6: "1.6", dt_7: "1.7", dt_8: "1.8"
         })
         expected = {
+            'ticker': [],
             'obs_values':
                 [
                     {
@@ -1109,6 +1112,7 @@ class LabTestSummaryTestCase(OpalTestCase):
         })
         result = self.client.get(self.url)
         expected = {
+            'ticker': [],
              'obs_values': [],
              'recent_dates': [None, None, None, None, None]
         }
@@ -1124,6 +1128,7 @@ class LabTestSummaryTestCase(OpalTestCase):
     def test_handles_no_tests(self):
         result = self.client.get(self.url)
         expected = {
+            'ticker': [],
              'obs_values': [],
              'recent_dates': [None, None, None, None, None]
         }
