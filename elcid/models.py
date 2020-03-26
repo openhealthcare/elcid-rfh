@@ -11,6 +11,7 @@ from django.utils import timezone
 from opal.utils import camelcase_to_underscore
 from lab import models as lmodels
 import opal.models as omodels
+from obs import models as obs_models
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
@@ -376,6 +377,7 @@ class MicrobiologyInput(EpisodeSubrecord):
     _modal = 'lg'
     _list_limit = 3
     _angular_service = 'MicrobiologyInput'
+    ICU_REASON_FOR_INTERACTION = "ICU round"
 
     when = models.DateTimeField(null=True, blank=True)
     initials = models.CharField(max_length=255, blank=True)
@@ -395,6 +397,32 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
+
+    def to_dict(self, *args, **kwargs):
+        result = super().to_dict(*args, **kwargs)
+        if MicroInputICURoundRelation.objects.filter(microbiology_input_id=self.id).exists():
+            result["micro_input_icu_round_relation"] = self.microinputicuroundrelation.to_dict(*args, **kwargs)
+        else:
+            result["micro_input_icu_round_relation"] = {}
+        return result
+
+    def update_from_dict(self, data, *args, **kwargs):
+        micro_input_icu_round_relation = data.pop("micro_input_icu_round_relation", {})
+        result = super().update_from_dict(data, *args, **kwargs)
+
+        if self.reason_for_interaction == self.ICU_REASON_FOR_INTERACTION:
+            icu_round, _ = MicroInputICURoundRelation.objects.get_or_create(
+                microbiology_input_id=self.id
+            )
+            icu_round.update_from_dict(
+                micro_input_icu_round_relation, self.episode, data["when"], *args, **kwargs
+            )
+            return result
+        else:
+            MicroInputICURoundRelation.objects.filter(
+                microbiology_input_id=self.id
+            ).delete()
+        return result
 
     class Meta:
         verbose_name = "Clinical Advice"
@@ -791,3 +819,79 @@ class ICUAdmission(EpisodeSubrecord):
 
     class Meta:
         verbose_name = 'ICU Admission'
+
+
+class InteropicDrug(lookuplists.LookupList):
+    pass
+
+
+class ICURound(EpisodeSubrecord):
+    VENTILATION_TYPES = enum('NIV', "Intubated")
+
+    when = models.DateTimeField(
+        blank=True, null=True
+    )
+    ventilated = models.NullBooleanField(blank=True)
+    ventilation_type = models.CharField(
+        max_length=200, blank=True, null=True, choices=VENTILATION_TYPES
+    )
+    fio2 = models.CharField(
+        max_length=200, blank=True, null=True
+    )
+    inotropic_drug = ForeignKeyOrFreeText(InteropicDrug)
+    inotropic_dose = models.CharField(max_length=200, blank=True, null=True)
+    meld_score = models.CharField(max_length=200, blank=True, null=True)
+    sofa_score = models.CharField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'ICU Round'
+
+
+class MicroInputICURoundRelation(models.Model):
+    """
+    A model that is used when reason for interaction
+    is ICU round
+    """
+    microbiology_input = models.OneToOneField(
+        MicrobiologyInput, on_delete=models.CASCADE
+    )
+    observation = models.OneToOneField(
+        obs_models.Observation, blank=True, null=True, on_delete=models.CASCADE
+    )
+    icu_round = models.OneToOneField(
+        ICURound,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE
+    )
+
+    def update_from_dict(self, data, episode, when, *args, **kwargs):
+        if not self.observation_id:
+            self.observation = obs_models.Observation(
+                episode=episode
+            )
+        data["observation"]["datetime"] = when
+        self.observation.update_from_dict(data["observation"], *args, **kwargs)
+
+        if not self.icu_round_id:
+            self.icu_round = ICURound(
+                episode=episode
+            )
+
+        data["icu_round"]["when"] = when
+        self.icu_round.update_from_dict(data["icu_round"], *args, **kwargs)
+
+    def to_dict(self, *args, **kwargs):
+        result = {}
+        if self.observation:
+            result["observation"] = self.observation.to_dict(*args, **kwargs)
+        else:
+            result["observation"] = {}
+
+        if self.icu_round:
+            result["icu_round"] = self.icu_round.to_dict(*args, **kwargs)
+        else:
+            result["icu_round"]= {}
+        return result
+
+
