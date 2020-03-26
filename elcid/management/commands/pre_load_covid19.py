@@ -30,7 +30,7 @@ class Command(BaseCommand):
             create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
             self.stdout.write(self.style.SUCCESS(
-                'Created patient for {}'.format(hospital_number)
+                'Created patient for {}'.format(mrn)
             ))
 
 
