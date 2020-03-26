@@ -491,9 +491,11 @@ class ServicesTestCase(FabfileTestCase):
         )
 
     @mock.patch('fabfile.local')
+    @mock.patch('fabfile.generate_secret_key')
     def test_sevices_create_local_settings(
-        self, local, print_function
+        self, generate_secret_key, local, print_function
     ):
+        generate_secret_key.return_value = "blah"
         some_dir = tempfile.mkdtemp()
         project_dir = "{}/elcid".format(some_dir)
         os.mkdir(project_dir)
@@ -514,6 +516,7 @@ class ServicesTestCase(FabfileTestCase):
 
         self.assertIn("Some = 'settings'", output_file)
         self.assertIn("'NAME': 'elcidrfh_some_branch'", output_file)
+        self.assertIn('SECRET_KEY = "blah"', output_file)
 
         local.assert_called_once_with(
             "rm -f {}".format(local_settings_file)
@@ -1406,6 +1409,12 @@ class DumpAndCopyTestCase(FabfileTestCase):
         )
         copy_backup.assert_called_once_with(self.env)
         clean_old_backups.assert_called_once_with()
+
+
+class GenerateSecretKeyTestCase(FabfileTestCase):
+    def test_generate_secret_key(self):
+        result = fabfile.generate_secret_key()
+        self.assertEqual(len(result), 50)
 
 
 @mock.patch("fabfile.is_load_running")
