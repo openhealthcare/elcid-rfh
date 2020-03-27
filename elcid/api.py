@@ -269,6 +269,42 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
     NUM_RESULTS = 5
 
+    def get_ticker_observations(self, patient):
+        """
+        Some results are displayed as a ticker in chronological
+        order.
+        """
+        ticker = []
+        tests = lab_test_models.LabTest.objects.filter(
+            test_name='2019 NOVEL CORONAVIRUS',
+            patient=patient
+        ).order_by('-datetime_ordered')
+        for test in tests:
+            if len(ticker) < 3:
+                observations = {
+                    t.observation_name: t for t in test.observation_set.all()
+                }
+                value = observations['2019 nCoV'].observation_value
+                if value == 'Pending':
+                    continue
+
+                specimen = observations.get('2019 nCoV Specimen Type', None)
+                timestamp = test.datetime_ordered.strftime('%d/%m/%Y %H:%M')
+                result_string = "{}".format(value)
+
+                if specimen:
+                    result_string += " ({})".format(specimen.observation_value)
+
+                ticker.append(
+                    {
+                        'timestamp': timestamp,
+                        'name': '2019 nCoV',
+                        'value': result_string
+                    }
+                )
+
+        return ticker
+
     def get_recent_dates_to_observations(self, qs):
         """
         We are looking for the last 5 dates
@@ -339,13 +375,15 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         # the patient does not have a lot of results
         while len(recent_dates) < self.NUM_RESULTS:
             recent_dates.append(None)
+
         obs_values = []
 
         for obs_set in obs:
             obs_values.append(self.serialize_observations(obs_set))
         return dict(
             obs_values=obs_values,
-            recent_dates=recent_dates
+            recent_dates=recent_dates,
+            ticker=self.get_ticker_observations(patient)
         )
 
     @patient_from_pk

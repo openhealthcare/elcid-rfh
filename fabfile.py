@@ -44,6 +44,7 @@ import datetime
 import json
 import copy
 import time
+import random
 from jinja2 import Environment, FileSystemLoader
 
 from fabric.api import local, env
@@ -326,12 +327,18 @@ def services_symlink_upstart(new_env):
         symlink_name
     ))
 
+def generate_secret_key():
+    chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+    return ''.join([
+        random.SystemRandom().choice(chars) for i in range(50)
+    ])
 
 def services_create_local_settings(new_env, additional_settings):
     print("Creating local settings")
     new_settings = copy.copy(additional_settings)
     new_settings["db_name"] = new_env.database_name
     new_settings["db_user"] = DB_USER
+    new_settings["secret_key"] = generate_secret_key()
     template = jinja_env.get_template(
         'etc/conf_templates/local_settings.py.jinja2'
     )

@@ -9,6 +9,8 @@ DATABASES = {
     }
 }
 
+SECRET_KEY = "{{ secret_key }}"
+
 DEBUG = False
 
 {% for k, v in additional_settings.items() %}
