@@ -46,9 +46,14 @@ class TbPlugin(plugins.OpalPlugin):
         if not user:
             return []
 
-        is_tb = UserProfile.objects.filter(
-            user=user,
-            roles__name=tb_constants.TB_ROLE
+        profile = UserProfile.objects.get(
+            user=user
+        )
+        if profile.readonly:
+            return []
+
+        is_tb = profile.roles.filter(
+            name=tb_constants.TB_ROLE
         ).exists()
 
         if is_tb:
