@@ -43,6 +43,36 @@
                       <b>Reason For Interaction: </b><br/>[[item.reason_for_interaction]]
                     </p>
                   </span>
+
+
+                  <div ng-show="item.micro_input_icu_round_relation.observation.temperature">
+                    <b>Temperature: </b>[[ item.micro_input_icu_round_relation.observation.temperature ]]
+                  </div>
+                  <div ng-show="item.micro_input_icu_round_relation.icu_round.ventilated || item.micro_input_icu_round_relation.icu_round.ventilation_type">
+                    <b ng-show="item.micro_input_icu_round_relation.icu_round.ventilated">Ventilated:</b>
+                    <span ng-show="item.micro_input_icu_round_relation.icu_round.ventilation_type">
+                    [[ item.micro_input_icu_round_relation.icu_round.ventilation_type ]]
+                    </span>
+                  </div>
+
+                  <div ng-show="item.micro_input_icu_round_relation.icu_round.inotropic_drug">
+                    <b>Inotropic drug:</b>
+                    [[ item.micro_input_icu_round_relation.icu_round.inotropic_drug ]]
+                    [[ item.micro_input_icu_round_relation.icu_round.inotropic_dose ]]
+                  </div>
+                  <div ng-show="item.micro_input_icu_round_relation.icu_round.meld_score">
+                    <b>MELD score:</b>
+                    [[ item.micro_input_icu_round_relation.icu_round.meld_score ]]
+                  </div>
+                  <div ng-show="item.micro_input_icu_round_relation.icu_round.fio2">
+                    <b>FiO₂:</b>
+                    [[ item.micro_input_icu_round_relation.icu_round.fio2 ]]
+                  </div>
+                  <div ng-show="item.micro_input_icu_round_relation.icu_round.sofa_score">
+                    <b>SOFA score:</b>
+                    [[ item.micro_input_icu_round_relation.icu_round.sofa_score ]]
+                  </div>
+                  <div class="content-offset-10" ng-show="clinicalAdviceForm.hasIcuOrObservation(item)"></div>
                   <span ng-show="item.clinical_discussion">
                     <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
                   </span>
@@ -80,7 +110,7 @@
       <div class="row">
         <div class="col-md-12">
           <form class="form-horizontal">
-            <div ng-repeat="editing in [clinicalAdviceForm.editing]">
+            <div ng-repeat="formItem in [clinicalAdviceForm.formItem]">
               {% include models.MicrobiologyInput.get_form_template %}
             </div>
           </form>

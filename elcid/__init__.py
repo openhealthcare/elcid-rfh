@@ -52,6 +52,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/investigations.js',
 
         'js/elcid/services/blood_culture_isolate.js',
+        'js/elcid/services/clinical_advice.js',
         'js/elcid/services/blood_culture_loader.js',
         'js/elcid/services/upstream_blood_culture_loader.js',
         'js/elcid/services/lab_test_results.js',
