@@ -13,9 +13,13 @@ class StandardAddPatientMenuItem(menus.MenuItem):
         from opal.models import UserProfile
         if user and user.is_superuser:
             return True
-        return not UserProfile.objects.filter(
-            user=user,
-            roles__name=tb_constants.TB_ROLE
+
+        profile = UserProfile.objects.get(user=user)
+        if profile.readonly:
+            return False
+
+        return not profile.roles.filter(
+            name=tb_constants.TB_ROLE
         ).exists()
 
 
