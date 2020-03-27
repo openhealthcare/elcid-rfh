@@ -25,7 +25,7 @@
           <div class="row">
             <div class="col-md-6">
               <h4><strong>
-                  {% icon models.PrimaryDiagnosis.get_icon %} Primary Diagnosis
+                  {% icon models.PrimaryDiagnosis.get_icon %} {{ models.PrimaryDiagnosis.get_display_name }}
               </strong></h4>
               <p ng-repeat="item in row.primary_diagnosis">
                 {% include models.PrimaryDiagnosis.get_display_template %}
@@ -33,7 +33,7 @@
             </div>
             <div class="col-md-6">
               <h4><strong>
-                  {% icon models.Antimicrobial.get_icon %} Antimicrobials
+                  {% icon models.Antimicrobial.get_icon %} {{ models.Antimicrobial.get_display_name }}
               </strong></h4>
               <p ng-repeat="item in row.antimicrobial">
                 {% include models.Antimicrobial.get_display_template %}
@@ -43,7 +43,7 @@
           <div class="row">
             <div class="col-md-6">
               <h4><strong>
-                  {% icon models.Diagnosis.get_icon %} Diagnosis
+                  {% icon models.Diagnosis.get_icon %} {{ models.Diagnosis.get_display_name }}
               </strong></h4>
               <p ng-repeat="item in row.diagnosis">
                 {% include models.Diagnosis.get_display_template %}
