@@ -110,10 +110,19 @@ class ICUSHDU(RfhPatientList):
     schema = []
 
 
+class NonCanonicalICU(RfhPatientList):
+    display_name = 'Non-Canonical ICU'
+    direct_add = True
+    order = 5
+    tag = "non_canonical_icu"
+    template_name = 'episode_list.html'
+    schema = []
+
+
 class Covid19NonICU(RfhPatientList):
     display_name = 'Covid 19 Non-ICU'
     direct_add = True
-    order = 5
+    order = 6
     tag = "covid_19_non_icu"
     template_name = 'episode_list.html'
     schema = []
