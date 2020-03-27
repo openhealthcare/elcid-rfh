@@ -18,7 +18,7 @@ requests==2.22.0
 python-dateutil==2.7.5
 celery==3.1.25
 django-celery==3.2.2
-django-compressor==2.2
+django-compressor==2.4
 jsonfield==2.0.2
 pycrypto==2.6.1
 paramiko==1.16.0
