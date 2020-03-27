@@ -2,7 +2,7 @@ angular.module('opal.controllers').controller(
     'ClinicalAdviceForm',
     function(
         $scope, recordLoader, ngProgressLite, $cookies,
-        Referencedata, $q
+        Referencedata, $q, ClinicalAdvice, $modal
       ){
         "use strict";
 
@@ -15,6 +15,12 @@ angular.module('opal.controllers').controller(
             return !(key == 'when' || key == '_client' || key == "initials");
           })).length;
         };
+
+        this.hasIcuOrObservation = function(item){
+          var icuSize = _.size(item.micro_input_icu_round_relation.icu_round)
+          var observation = _.size(item.micro_input_icu_round_relation.observation)
+          return icuSize || observation;
+        }
 
         this.getClinicalAdvice = function(){
           var result = [];
@@ -29,28 +35,46 @@ angular.module('opal.controllers').controller(
         this.getClinicalAdvice();
 
         this.editItem = function(episode, item){
-          episode.recordEditor.openEditItemModal(item, 'microbiology_input').then(function(){
-            self.getClinicalAdvice();
-          });
+          const ctrl = "GeneralEditCtrl";
+          const templateUrl = "/templates/modals/microbiology_input.html/"
+          var formItem = self.getClinicalAdviceFormObject(item);
+
+          var modal_opts = {
+            backdrop: 'static',
+            templateUrl: templateUrl,
+            controller: ctrl,
+            resolve: {
+                formItem: function() { return formItem; },
+                episode: function() { return $scope.episode; },
+                metadata: function(Metadata) { return Metadata.load(); },
+                referencedata: function(Referencedata){ return Referencedata.load(); },
+                callBack: function(){ return function(){
+                  self.getClinicalAdvice();
+                }}
+            }
+          }
+          $modal.open(modal_opts);
         };
+
+        this.getClinicalAdviceFormObject = function(item){
+          if(!item){
+            item = $scope.episode.newItem("microbiology_input");
+          }
+          return new ClinicalAdvice(item);
+        }
 
         $q.all([Referencedata.load(), recordLoader.load()]).then(function(datasets){
             angular.extend($scope, datasets[0].toLookuplists());
-            var item = $scope.episode.newItem("microbiology_input");
+            self.formItem = self.getClinicalAdviceFormObject();
 
-            self.editing = {microbiology_input: item.makeCopy()};
-            $scope.$watch("clinicalAdviceForm.editing.microbiology_input", self.watchMicroFields, true);
+            $scope.$watch("clinicalAdviceForm.formItem.editing", self.watchMicroFields, true);
             self.save = function(){
               ngProgressLite.set(0);
               ngProgressLite.start();
-              // reset the item so that we are definitely saving
-              // using the episode that is currently on scope
-              var resetItem = $scope.episode.newItem("microbiology_input");
-              resetItem.save(self.editing.microbiology_input).then(function() {
+              self.formItem.save($scope.episode).then(function() {
                   ngProgressLite.done();
-                  item = $scope.episode.newItem('microbiology_input');
-                  self.editing.microbiology_input = item.makeCopy();
                   self.changed = false;
+                  self.formItem = self.getClinicalAdviceFormObject();
                   self.getClinicalAdvice();
               });
             };
