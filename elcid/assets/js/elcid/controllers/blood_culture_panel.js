@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
-  $rootScope, $scope, $modal, $http, $q, BloodCultureIsolate
+  $scope, $modal, $http, $q, BloodCultureIsolate
 ) {
   /*
   * open a panel when the user clicks on it and close and refresh when they are done
@@ -10,7 +10,6 @@ angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
 
   this.open = function(blood_culture_set, item){
     var isolateForm;
-    $rootScope.state = 'modal';
     var callBack = function(){
       return self.refresh(blood_culture_set);
     }
@@ -35,9 +34,6 @@ angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
         }
     }
     var modal = $modal.open(modal_opts);
-    modal.result.then(result => {
-      $rootScope.state = 'normal';
-    });
   };
 
   this.refresh = function(bcs){
