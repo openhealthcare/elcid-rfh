@@ -72,6 +72,8 @@
       </div>
     </div>
   </div>
+
+  {% if not user.profile.readonly %}
   <div  class="panel panel-default hidden-print">
     <div class="panel-heading"><h3>
       <i class="fa fa-comments"></i> Clinical Advice
@@ -96,4 +98,6 @@
       </div>
     </div>
   </div>
+  {% endif %}
+
 </div>
