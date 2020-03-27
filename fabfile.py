@@ -481,8 +481,9 @@ def write_cron_lab_pre_load(new_env):
         unix_user=UNIX_USER,
         project_dir=new_env.project_directory
     )
+    cron_file = "/etc/cron.d/{0}_lab_pre_load".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
-        output, CRON_TEST_LOAD
+        output, cron_file
     ))
 
 
