@@ -265,6 +265,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         ("CLOTTING SCREEN", ["INR"],),
         ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
         ("LIVER PROFILE", ["ALT", "AST", "Alkaline Phosphatase"]),
+        ("PROCALCITONIN", ["Procalcitonin"]),
     ),)
 
     NUM_RESULTS = 5
@@ -342,9 +343,27 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
             observation_name=observation_name
         )
 
+    def get_PROCALCITONIN_Procalcitonin(self, observation):
+        return observation.observation_value.split('~')[0]
+
+    def get_observation_value(self, observation):
+        """
+        Return the observation value for this observation
+
+        Defaults to .value_numeric, but looks for a method
+        called get_TEST_NAME_OBSERVATION_NAME(observation)
+        and uses that if it exists.
+        """
+        method_name = 'get_{}_{}'.format(
+            observation.test.test_name, observation.observation_name
+        )
+        if hasattr(self, method_name):
+            return getattr(self, method_name)(observation)
+        return observation.value_numeric
+
     def serialize_observations(self, observations):
         latest_results = {
-            serialization.serialize_date(i.observation_datetime.date()): i.value_numeric
+            serialization.serialize_date(i.observation_datetime.date()): self.get_observation_value(i)
             for i in observations
         }
         return dict(

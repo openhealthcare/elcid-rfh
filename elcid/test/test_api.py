@@ -12,7 +12,8 @@ from rest_framework.reverse import reverse
 
 from elcid import models as emodels
 from elcid.api import (
-    UpstreamBloodCultureApi, LabTestResultsView
+    UpstreamBloodCultureApi, LabTestResultsView,
+    InfectionServiceTestSummaryApi
 )
 
 
@@ -1106,6 +1107,8 @@ class LabTestSummaryTestCase(OpalTestCase):
         result = self.client.get(self.url)
         self.assertEqual(result.data, expected)
 
+
+
     def test_ignores_strings(self):
         self.create_clotting_screen({
             datetime.datetime(2019, 6, 4, 12, 10): "Pending"
@@ -1133,3 +1136,38 @@ class LabTestSummaryTestCase(OpalTestCase):
              'recent_dates': [None, None, None, None, None]
         }
         self.assertEqual(result.data, expected)
+
+    def test_get_procalcitonin(self):
+        api = InfectionServiceTestSummaryApi()
+
+        mock_observation = mock.MagicMock(name='Mock observation')
+        mock_observation.observation_value = "0.61~PCT 0.5-1.99       Suggestive of the presence of~bacterial infection. Please interpret within the~clinical picture. Consider repeat in 24-48 hours."
+
+        self.assertEqual(
+            "0.61",
+            api.get_PROCALCITONIN_Procalcitonin(mock_observation)
+        )
+
+    def test_get_observation_value_calls_getter(self):
+        api = InfectionServiceTestSummaryApi()
+
+        mock_observation = mock.MagicMock(name='Mock observation')
+        mock_observation.observation_name = 'Procalcitonin'
+        mock_observation.observation_value = 'ONE MILLION~TESTS'
+        mock_observation.test.test_name = 'PROCALCITONIN'
+
+        self.assertEqual(
+            "ONE MILLION",
+            api.get_observation_value(mock_observation)
+        )
+
+    def test_get_observation_value_default(self):
+        api = InfectionServiceTestSummaryApi()
+
+        mock_observation = mock.MagicMock(name='Mock observation')
+        mock_observation.value_numeric = 483
+
+        self.assertEqual(
+            483,
+            api.get_observation_value(mock_observation)
+        )
