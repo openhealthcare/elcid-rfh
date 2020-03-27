@@ -415,14 +415,25 @@ class MicrobiologyInput(EpisodeSubrecord):
                 microbiology_input_id=self.id
             )
             icu_round.update_from_dict(
-                micro_input_icu_round_relation, self.episode, data["when"], *args, **kwargs
+                self.episode, data["when"], micro_input_icu_round_relation, *args, **kwargs
             )
             return result
         else:
-            MicroInputICURoundRelation.objects.filter(
+            micro_input = MicroInputICURoundRelation.objects.filter(
                 microbiology_input_id=self.id
-            ).delete()
+            ).first()
+            if micro_input:
+                micro_input.delete_self()
         return result
+
+    def delete(self):
+        micro_input = MicroInputICURoundRelation.objects.filter(
+            microbiology_input_id=self.id
+        ).first()
+        if micro_input:
+            micro_input.delete_self()
+
+        super().delete()
 
     class Meta:
         verbose_name = "Clinical Advice"
@@ -835,13 +846,17 @@ class ICURound(EpisodeSubrecord):
     ventilation_type = models.CharField(
         max_length=200, blank=True, null=True, choices=VENTILATION_TYPES
     )
-    fio2 = models.CharField(
-        max_length=200, blank=True, null=True
+    fio2 = models.FloatField(
+        max_length=200, blank=True, null=True, verbose_name="FiO₂"
     )
     inotropic_drug = ForeignKeyOrFreeText(InteropicDrug)
     inotropic_dose = models.CharField(max_length=200, blank=True, null=True)
-    meld_score = models.CharField(max_length=200, blank=True, null=True)
-    sofa_score = models.CharField(max_length=200, blank=True, null=True)
+    meld_score = models.CharField(
+        max_length=200, blank=True, null=True, verbose_name="MELD score"
+    )
+    sofa_score = models.CharField(
+        max_length=200, blank=True, null=True, verbose_name="SOFA score"
+    )
 
     class Meta:
         verbose_name = 'ICU Round'
@@ -853,33 +868,40 @@ class MicroInputICURoundRelation(models.Model):
     is ICU round
     """
     microbiology_input = models.OneToOneField(
-        MicrobiologyInput, on_delete=models.CASCADE
+        MicrobiologyInput, blank=True, null=True, on_delete=models.SET_NULL
     )
     observation = models.OneToOneField(
-        obs_models.Observation, blank=True, null=True, on_delete=models.CASCADE
+        obs_models.Observation, blank=True, null=True, on_delete=models.SET_NULL
     )
     icu_round = models.OneToOneField(
         ICURound,
         blank=True,
         null=True,
-        on_delete=models.CASCADE
+        on_delete=models.SET_NULL
     )
 
-    def update_from_dict(self, data, episode, when, *args, **kwargs):
-        if not self.observation_id:
-            self.observation = obs_models.Observation(
+    def update_from_dict(self, episode, when, data, *args, **kwargs):
+        if self.observation_id:
+            observation = self.observation
+        else:
+            observation = obs_models.Observation(
                 episode=episode
             )
         data["observation"]["datetime"] = when
-        self.observation.update_from_dict(data["observation"], *args, **kwargs)
+        observation.update_from_dict(data["observation"], *args, **kwargs)
+        self.observation_id = observation.id
 
-        if not self.icu_round_id:
-            self.icu_round = ICURound(
+        if self.icu_round_id:
+            icu_round = self.icu_round
+        else:
+            icu_round = ICURound(
                 episode=episode
             )
 
         data["icu_round"]["when"] = when
-        self.icu_round.update_from_dict(data["icu_round"], *args, **kwargs)
+        icu_round.update_from_dict(data["icu_round"], *args, **kwargs)
+        self.icu_round_id = icu_round.id
+        self.save()
 
     def to_dict(self, *args, **kwargs):
         result = {}
@@ -894,4 +916,9 @@ class MicroInputICURoundRelation(models.Model):
             result["icu_round"]= {}
         return result
 
-
+    def delete_self(self):
+        if self.observation_id:
+            self.observation.delete()
+        if self.icu_round_id:
+            self.icu_round.delete()
+        self.delete()
