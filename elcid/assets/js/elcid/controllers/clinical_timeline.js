@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller(
-    'ClinicalAdviceForm',
+    'ClinicalTimeline',
     function(
         $scope, recordLoader, ngProgressLite, $cookies,
         Referencedata, $q, ClinicalAdvice, $modal
@@ -66,7 +66,7 @@ angular.module('opal.controllers').controller(
             angular.extend($scope, datasets[0].toLookuplists());
             self.formItem = self.getClinicalAdviceFormObject();
 
-            $scope.$watch("clinicalAdviceForm.formItem.editing", self.watchMicroFields, true);
+            $scope.$watch("clinicalTimeline.formItem.editing", self.watchMicroFields, true);
             self.save = function(){
               ngProgressLite.set(0);
               ngProgressLite.start();

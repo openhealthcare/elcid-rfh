@@ -3,7 +3,7 @@ describe('ClinicalAdviceFormTest', function() {
 
     var $scope, $httpBackend, $rootScope, $controller;
     var Episode, ctrl, opalTestHelper;
-    var mkcontroller;
+    var mkcontroller, $modal;
 
     var episodedata = {
         id: 1,
@@ -30,15 +30,17 @@ describe('ClinicalAdviceFormTest', function() {
             $scope       = $rootScope.$new();
             $controller  = $injector.get('$controller');
             Episode      = $injector.get('Episode');
+            $modal      = $injector.get('$modal');
         });
 
         $scope.patient = opalTestHelper.newPatient($rootScope);
         $scope.episode = $scope.patient.episodes[0];
 
         mkcontroller = function(){
-            ctrl = $controller('ClinicalAdviceForm', {
+            ctrl = $controller('ClinicalTimeline', {
                 $rootScope: $rootScope,
                 $scope: $scope,
+                $modal: $modal
             });
         };
         $httpBackend.expectGET('/api/v0.1/referencedata/').respond({});
@@ -50,12 +52,12 @@ describe('ClinicalAdviceFormTest', function() {
         $httpBackend.verifyNoOutstandingRequest();
     });
 
-    describe('initialization', function() {
-      it('should setup editing', function() {
+    fdescribe('initialization', function() {
+      it('should setup the form item', function() {
           mkcontroller();
           $rootScope.$apply();
           $httpBackend.flush();
-          expect(!!ctrl.editing.microbiology_input).toBe(true)
+          expect(!!ctrl.formItem).toBe(true)
       });
 
       it('should set changed to false', function(){
@@ -210,31 +212,14 @@ describe('ClinicalAdviceFormTest', function() {
       beforeEach(function(){
         mkcontroller();
         $rootScope.$apply();
+
         $httpBackend.flush();
       });
 
-      it("should update the clinical advice after edit item is called", function(){
-        var fakeEpisode = {
-          recordEditor: {
-            openEditItemModal: function(){
-              return {then: function(x){x()}}
-            }
-          }
-        }
-        spyOn(ctrl, "getClinicalAdvice");
-        ctrl.editItem(fakeEpisode, null);
-        expect(ctrl.getClinicalAdvice).toHaveBeenCalledWith();
-      });
-
       it("should push the correct variables though to the record editor", function(){
-        var fakeEpisode = {
-          recordEditor: {
-            openEditItemModal: function(){
-              return {then: function(x){x()}}
-            }
-          }
-        }
+        spyOn(ctrl, "open");
         spyOn(ctrl, "getClinicalAdvice");
+        spyOn(ctrl, "getClinicalAdviceFormObject");
         spyOn(fakeEpisode.recordEditor, "openEditItemModal").and.callThrough();
         var microInput = {
           reason_for_interaction: "middle date",
