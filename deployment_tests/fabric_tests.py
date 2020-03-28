@@ -491,9 +491,11 @@ class ServicesTestCase(FabfileTestCase):
         )
 
     @mock.patch('fabfile.local')
+    @mock.patch('fabfile.generate_secret_key')
     def test_sevices_create_local_settings(
-        self, local, print_function
+        self, generate_secret_key, local, print_function
     ):
+        generate_secret_key.return_value = "blah"
         some_dir = tempfile.mkdtemp()
         project_dir = "{}/elcid".format(some_dir)
         os.mkdir(project_dir)
@@ -514,6 +516,7 @@ class ServicesTestCase(FabfileTestCase):
 
         self.assertIn("Some = 'settings'", output_file)
         self.assertIn("'NAME': 'elcidrfh_some_branch'", output_file)
+        self.assertIn('SECRET_KEY = "blah"', output_file)
 
         local.assert_called_once_with(
             "rm -f {}".format(local_settings_file)
@@ -867,7 +870,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_celery_conf")
-    @mock.patch("fabfile.write_cron_lab_tests")
+    @mock.patch("fabfile.local")
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -882,7 +885,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
-        write_cron_lab_tests,
+        local,
         services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -993,7 +996,7 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.services_symlink_nginx")
     @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_celery_conf")
-    @mock.patch("fabfile.write_cron_lab_tests")
+    @mock.patch("fabfile.local")
     @mock.patch("fabfile.services_create_local_settings")
     @mock.patch("fabfile.services_create_upstart_conf")
     @mock.patch("fabfile.services_create_gunicorn_conf")
@@ -1008,7 +1011,7 @@ class DeployTestCase(FabfileTestCase):
         services_create_gunicorn_conf,
         services_create_upstart_conf,
         services_create_local_settings,
-        write_cron_lab_tests,
+        local,
         services_create_celery_conf,
         services_symlink_upstart,
         services_symlink_nginx,
@@ -1069,12 +1072,9 @@ class DeployTestCase(FabfileTestCase):
         services_create_local_settings.assert_called_once_with(
             self.env, pv
         )
-        write_cron_lab_tests.assert_called_once_with(
-            self.env
-        )
+
         services_create_gunicorn_conf.assert_called_once_with(self.env)
         services_create_upstart_conf.assert_called_once_with(self.env)
-        write_cron_lab_tests.assert_called_once_with(self.env)
         services_create_celery_conf.assert_called_once_with(self.env)
         self.assertEqual(
             run_management_command.call_count, 4
@@ -1406,6 +1406,12 @@ class DumpAndCopyTestCase(FabfileTestCase):
         )
         copy_backup.assert_called_once_with(self.env)
         clean_old_backups.assert_called_once_with()
+
+
+class GenerateSecretKeyTestCase(FabfileTestCase):
+    def test_generate_secret_key(self):
+        result = fabfile.generate_secret_key()
+        self.assertEqual(len(result), 50)
 
 
 @mock.patch("fabfile.is_load_running")

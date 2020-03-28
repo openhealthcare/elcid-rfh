@@ -819,7 +819,7 @@ def record_positive_blood_culture(sender, instance, **kwargs):
 class ICUAdmission(EpisodeSubrecord):
     _icon = 'fa fa-heartbeat'
 
-    OUTCOMES = enum('Survived', 'Atributable Death', 'Non-attributable Death')
+    OUTCOMES = enum('Survived', 'Covid-19 Atributable Death', 'Covid-19 Non-attributable Death')
 
     admission_date = models.DateField(blank=True, null=True)
     discharge_date = models.DateField(blank=True, null=True)
