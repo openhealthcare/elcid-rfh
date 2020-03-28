@@ -55,12 +55,12 @@
                     </span>
                   </div>
 
-                  <div ng-show="item.micro_input_icu_round_relation.icu_round.inotropic_drug">
-                    <b>Inotropic drug:</b>
-                    [[ item.micro_input_icu_round_relation.icu_round.inotropic_drug ]]
+                  <div ng-show="item.micro_input_icu_round_relation.icu_round.inotropic_dose || item.micro_input_icu_round_relation.icu_round.inotropic">
+                    <b ng-show="item.micro_input_icu_round_relation.icu_round.inotropic">Intropic:</b>
                     [[ item.micro_input_icu_round_relation.icu_round.inotropic_dose ]]
+                    [[ item.micro_input_icu_round_relation.icu_round.inotropic_drug ]]
                   </div>
-                  <div ng-show="item.micro_input_icu_round_relation.icu_round.meld_score">
+                  <div ng-show="item.micro_input_0035icu_round_relation.icu_round.meld_score">
                     <b>MELD score:</b>
                     [[ item.micro_input_icu_round_relation.icu_round.meld_score ]]
                   </div>

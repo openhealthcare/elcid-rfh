@@ -849,6 +849,7 @@ class ICURound(EpisodeSubrecord):
     fio2 = models.FloatField(
         max_length=200, blank=True, null=True, verbose_name="FiO₂"
     )
+    inotropic = models.NullBooleanField(blank=True)
     inotropic_drug = ForeignKeyOrFreeText(InteropicDrug)
     inotropic_dose = models.CharField(max_length=200, blank=True, null=True)
     meld_score = models.CharField(

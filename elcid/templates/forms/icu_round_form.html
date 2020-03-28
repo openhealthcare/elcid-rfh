@@ -1,6 +1,7 @@
 {% load forms %}
-{% checkbox element_name="formItem.checkBoxName" model="formItem.editing.micro_input_icu_round_relation.icu_round.ventilated" field="ICURound.ventilated" %}
+{% checkbox element_name="formItem.elementName('ventilated')" model="formItem.editing.micro_input_icu_round_relation.icu_round.ventilated" field="ICURound.ventilated" %}
 {% radio model="formItem.editing.micro_input_icu_round_relation.icu_round.ventilation_type"  field="ICURound.ventilation_type" %}
+{% checkbox element_name="formItem.elementName('inotropic')" model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic" field="ICURound.inotropic" %}
 {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic_drug" field="ICURound.inotropic_drug" %}
 {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic_dose" field="ICURound.inotropic_dose" %}
 

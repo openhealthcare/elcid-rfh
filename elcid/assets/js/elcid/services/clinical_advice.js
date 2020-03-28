@@ -5,7 +5,7 @@ angular.module('opal.services').service('ClinicalAdvice', function($http, $q, $w
     constructor(item){
       this.item = item;
       this.isNew = true;
-      this.checkBoxName = 'checkbox_' + _.uniqueId();
+      this.unique_id = _.uniqueId();
 
       if(item.id){
         this.isNew = false;
@@ -23,6 +23,16 @@ angular.module('opal.services').service('ClinicalAdvice', function($http, $q, $w
           icu_round: {}
         }
       }
+    }
+
+    elementName(prefix){
+      /*
+      because we have elements permanently in the inline
+      form and in the modal unique element names
+      need to be declared otherwise checkboxes
+      will not work
+      */
+      return prefix + this.unique_id;
     }
 
     save(episode){
