@@ -34,7 +34,7 @@ angular.module('opal.controllers').controller(
 
         this.getClinicalAdvice();
 
-        this.editItem = function(episode, item){
+        this.editItem = function(item){
           const ctrl = "GeneralEditCtrl";
           const templateUrl = "/templates/modals/microbiology_input.html/"
           var formItem = self.getClinicalAdviceFormObject(item);
@@ -45,7 +45,6 @@ angular.module('opal.controllers').controller(
             controller: ctrl,
             resolve: {
                 formItem: function() { return formItem; },
-                episode: function() { return $scope.episode; },
                 metadata: function(Metadata) { return Metadata.load(); },
                 referencedata: function(Referencedata){ return Referencedata.load(); },
                 callBack: function(){ return function(){
