@@ -20,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, *a, **k):
         api = ProdAPI()
 
-        results = api.execute_trust_query(Q_GET_ICU_HANDOVER)
+        results = api.execute_hospital_query(Q_GET_ICU_HANDOVER)
 
         for result in results:
 
