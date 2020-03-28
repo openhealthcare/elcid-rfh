@@ -49,6 +49,7 @@ angular.module('opal.controllers').controller(
                 referencedata: function(Referencedata){ return Referencedata.load(); },
                 callBack: function(){ return function(){
                   self.getClinicalAdvice();
+                  return 'hello';
                 }}
             }
           }
