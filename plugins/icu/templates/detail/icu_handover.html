@@ -1,0 +1,367 @@
+<section ng-repeat="item in patient.icu_handover" class="icu-handover">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3><i class="fa fa-heartbeat"></i> ICU Admission</h3>
+        </div><!-- End Panel Header -->
+
+        <div class="panel-footer">
+          <div class="row">
+            <div class= "col-md-6">
+              <b>Date Of Admission</b>
+            </div>
+            <div class="col-md-6">
+              [[ item.date_itu_admission ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class= "col-md-6">
+              <b>Location</b>
+            </div>
+            <div class="col-md-6">
+              [[ item.location ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class= "col-md-6">
+              <b>Referring Consultant</b>
+            </div>
+            <div class="col-md-6">
+              [[ item.referring_consultant ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class= "col-md-6">
+              <b>Location Prior To Admission</b>
+            </div>
+            <div class="col-md-6">
+              [[ item.patient_location_prior_to_admission ]]
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3><i class="fa fa-line-chart"></i> ICU Observations</h3>
+        </div><!-- End Panel Header -->
+
+        <div class="panel-footer">
+          <div class="row">
+            <div class= "col-md-6">
+              <b>Height</b>
+            </div>
+            <div class="col-md-6">
+              [[ item.patient_height ]]
+            </div>
+          </div>
+          <div class="row">
+            <div class= "col-md-6">
+              <b>Weight</b>
+            </div>
+            <div class="col-md-6">
+              [[ item.patient_height ]]
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3><i class="fa fa-address-card-o"></i> Initial Assessment</h3>
+        </div><!-- End Panel Header -->
+
+        <div class="panel-footer">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div ng-show="item.admission_reason_itu_admission">
+                <p>
+                  <b>Reason for admisssion</b>
+                </p>
+                <div markdown="admission_reason_itu_admission"></div>
+              </div>
+              <div ng-show="item.admission_summary">
+                <p>
+                  <b>Admission Summary</b>
+                </p>
+                <div markdown="admission_summary"></div>
+              </div>
+
+              <div ng-show="item.admission_history_present_illness">
+                <p><b>History Of Present Illness</b></p>
+                <div markdown="admission_history_present_illness"></div>
+              </div>
+
+              <div ng-show="item.admission_past_medical_history">
+                <p>
+                  <b>Past Medical History</b>
+                </p>
+                <div markdown="admission_past_medical_history"></div>
+              </div>
+
+              <div ng-show="item.admission_regular_medication">
+                <p>
+                  <b>Regular Medication</b>
+                </p>
+                <div markdown="admission_regular_medication"></div>
+              </div>
+
+              <p><b>Allergies</b></p>
+              <p>[[ item.admission_allergies ]]</p>
+            </div>
+            <div class="col-md-6">
+              <div class="row">
+                <div class="col-md-6">
+                  <b>Chronic Health Evaluation</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.admission_chronic_health_evaluation ]]
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <b>GCS Score</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.admission_gcs_score ]]
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <b>GCS Best Motor</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.admission_gcs_best_motor ]]
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <b>GCS Eye Opening</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.admission_gcs_eye_opening ]]
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <b>GCS Best Verbal</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.admission_gcs_best_verbal ]]
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div> <!-- footer -->
+      </div>   <!-- panel -->
+    </div>     <!-- col -->
+  </div>       <!-- row -->
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3><i class="fa fa-bed"></i> Daily Progress</h3>
+        </div><!-- End Panel Header -->
+
+        <div class="panel-footer">
+          <div class="row">
+            <div class="col-md-6">
+
+              <div ng-show="item.dailyprogress_consultant_comment ">
+                <p>
+                  <b>Consultant Comment</b>
+                </p>
+                <div markdown="dailyprogress_consultant_comment"></div>
+              </div>
+
+              <div ng-show="item.dailyprogress_registrars_comments">
+                <p>
+                  <b>Registrar Comment</b>
+                </p>
+                <div markdown="dailyprogress_registrars_comments"></div>
+              </div>
+
+              <div ng-show="item.dailyprogress_nurses_handover_comment">
+                <p>
+                  <b>Nurse Handover Comment</b>
+                </p>
+                <p>
+                  [[ item.dailyprogress_nurses_handover_comment ]]
+                </p>
+              </div>
+
+              <div ng-show="item.dailyprogress_critical_care_mdt">
+                <p>
+                  <b>Critical Care MDT</b>
+                </p>
+                <div markdown="dailyprogress_critical_care_mdt"></div>
+              </div>
+              <div ng-show="item.dailyprogress_main_diagnosis">
+                <p>
+                  <b>Main Diagnosis</b>
+                </p>
+                <div markdown="dailyprogress_main_diagnosis"></div>
+              </div>
+
+
+            </div> <!-- col -->
+            <div class="col-md-6">
+
+              <div ng-show="item.dailyprogress_results_of_investigations">
+                <p>
+                  <b>Results Of Investigations</b>
+                </p>
+                <div markdown="dailyprogress_results_of_investigations"></div>
+              </div>
+
+              <div ng-show="item.dailyprogress_to_do_list">
+                <p>
+                  <b>To-Do List</b>
+                </p>
+                <div markdown="dailyprogress_to_do_list"></div>
+              </div>
+            </div>
+          </div> <!-- row -->
+        </div> <!-- footer -->
+      </div>
+    </div> <!-- col -->
+
+  </div>   <!-- row -->
+
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3><i class="fa fa-stethoscope"></i> Therapy</h3>
+        </div><!-- End Panel Header -->
+
+        <div class="panel-footer">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-6">
+                  <b>GCS OT</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.dailyprogress_therapy_input_ot ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <b>PT</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.dailyprogress_therapy_input_pt ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <b>Dietician</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.dailyprogress_therapy_input_dietician ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <b>SLT</b>
+                </div>
+                <div class="col-md-6">
+                  [[ item.dailyprogress_therapy_input_slt ]]
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3><i class="fa fa-stethoscope"></i> Organ</h3>
+        </div><!-- End Panel Header -->
+
+        <div class="panel-footer">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="row">
+                <div class="col-md-3">
+                  <b>Infection</b>
+                </div>
+                <div class="col-md-9">
+                  [[ item.dailyprogress_organ_infection ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <b>GI</b>
+                </div>
+                <div class="col-md-9">
+                  [[ item.dailyprogress_organ_gi ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <b>CVS</b>
+                </div>
+                <div class="col-md-9">
+                  [[ item.dailyprogress_organ_cvs ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <b>Renal</b>
+                </div>
+                <div class="col-md-9">
+                  [[ item.dailyprogress_organ_renal ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <b>Resp</b>
+                </div>
+                <div class="col-md-9">
+                  [[ item.dailyprogress_organ_resp ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <b>CNS</b>
+                </div>
+                <div class="col-md-9">
+                  [[ item.dailyprogress_organ_cns ]]
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-3">
+                  <b>Other</b>
+                </div>
+                <div class="col-md-9">
+                  [[ item.dailyprogress_organ_others ]]
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
