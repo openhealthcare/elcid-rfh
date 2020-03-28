@@ -13,6 +13,7 @@ from plugins.icu.models import ICUHandover
 from plugins.icu.episode_categories import ICUHandoverEpisode
 
 Q_GET_ICU_HANDOVER = """
+SELECT * FROM VIEW_ElCid_ITU_Handover
 """
 
 class Command(BaseCommand):
