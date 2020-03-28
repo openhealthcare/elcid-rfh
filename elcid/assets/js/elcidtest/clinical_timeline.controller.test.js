@@ -105,8 +105,61 @@ describe('ClinicalAdviceFormTest', function() {
           [advice3, advice2, advice1]
         )
       });
+    });
 
+    describe('hasIcuOrObservation', function(){
+      var item;
+      beforeEach(function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+      });
 
+      it('should return true if the icu round is populated', function(){
+        item = {
+          reason_for_interaction: "ICU round",
+          micro_input_icu_round_relation: {
+            icu_round: {
+              inotropic: true
+            },
+            observation: {}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(true);
+      });
+
+      it('should return true if the observation is populated', function(){
+        item = {
+          reason_for_interaction: "ICU round",
+          micro_input_icu_round_relation: {
+            icu_round: {},
+            observation: {temperature: 38.5}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(true);
+      });
+
+      it('should return false if reason for interaction is not ICU round', function(){
+        item = {
+          reason_for_interaction: "Other",
+          micro_input_icu_round_relation: {
+            icu_round: {},
+            observation: {temperature: 38.5}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(false);
+      });
+
+      it('should return false if the icu round and observation are not populated', function(){
+        item = {
+          reason_for_interaction: "ICU round",
+          micro_input_icu_round_relation: {
+            icu_round: {},
+            observation: {}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(false);
+      });
     });
 
     describe('it should save', function(){
