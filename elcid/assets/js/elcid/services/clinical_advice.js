@@ -7,20 +7,22 @@ angular.module('opal.services').service('ClinicalAdvice', function($http, $q, $w
       this.isNew = true;
       this.unique_id = _.uniqueId();
 
-      if(item.id){
-        this.isNew = false;
-      }
-      this.editing = item.makeCopy();
-      if(item.micro_input_icu_round_relation){
-        this.editing.micro_input_icu_round_relation = {
-          observation: _.clone(item.micro_input_icu_round_relation.observation),
-          icu_round: _.clone(item.micro_input_icu_round_relation.icu_round)
-        }
-      }
-      else{
-        this.editing.micro_input_icu_round_relation = {
+      // the editing object if item is not populated
+      this.editing = {
+        micro_input_icu_round_relation: {
           observation: {},
           icu_round: {}
+        }
+      };
+
+      if(item && item.id){
+        this.isNew = false;
+        this.editing = item.makeCopy();
+        if(item.micro_input_icu_round_relation){
+          this.editing.micro_input_icu_round_relation = {
+            observation: _.clone(item.micro_input_icu_round_relation.observation),
+            icu_round: _.clone(item.micro_input_icu_round_relation.icu_round)
+          };
         }
       }
     }
