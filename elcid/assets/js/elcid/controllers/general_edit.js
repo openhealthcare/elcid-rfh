@@ -9,6 +9,14 @@ angular.module('opal.controllers').controller('GeneralEditCtrl', function(
   ngProgressLite,
   callBack
 ){
+  /*
+  * Takes in a formItem that should have a `save` method
+  * a `delete` method and a field `isNew` as to whether
+  * we show the `delete` button or not.
+  *
+  * Takes in a callback function (that can return a promise or not)
+  * that is called after `save` or `delete`
+  */
 
   $scope.initialize = function(){
     $rootScope.state = 'modal';
