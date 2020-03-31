@@ -8,17 +8,13 @@ angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
   const templateUrl = "/templates/blood_culture_isolate_form.html"
   var self = this;
 
-  this.open = function(blood_culture_set, item){
+  this.open = function(blood_culture_set, isolate){
     var isolateForm;
     var callBack = function(){
       return self.refresh(blood_culture_set);
     }
-    if(item){
-      isolateForm =  new BloodCultureIsolate(blood_culture_set, item);
-    }
-    else{
-      isolateForm =  new BloodCultureIsolate(blood_culture_set, item);
-    }
+    // isolate is undefined if its a new isolate
+    isolateForm =  new BloodCultureIsolate(blood_culture_set, isolate);
     var modal_opts = {
         backdrop: 'static',
         templateUrl: templateUrl,
