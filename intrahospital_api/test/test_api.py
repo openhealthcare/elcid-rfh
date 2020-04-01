@@ -10,12 +10,14 @@ from intrahospital_api import constants
 
 class PatientToDict(OpalTestCase):
     def test_patient_to_dict(self):
-        """ patient_to_dict should be logically equivellent of
-            patient.to_dict() apart from lab tests.
+        """
+        patient_to_dict should be logically equivalent of
+        patient.to_dict() apart from lab tests and the additional
+        faked Episode.end
 
-            Lab tests should exclude anything whith an external
-            system, which in practical terms means UpstreamLabTests
-            and UpstreamBloodCultures at present.
+        Lab tests should exclude anything whith an external
+        system, which in practical terms means UpstreamLabTests
+        and UpstreamBloodCultures at present.
         """
         self.maxDiff = None
         patient, episode = self.new_patient_and_episode_please()
@@ -33,9 +35,16 @@ class PatientToDict(OpalTestCase):
             first_name="Wilma",
             hospital_number="1"
         )
+
         to_dicted = patient.to_dict(self.user)
+
+        # Remove lab tests
         to_dicted.pop("lab_test")
         to_dicted["episodes"][episode.id].pop("lab_test")
+
+        # Add End
+        to_dicted["episodes"][episode.id]['end'] = '30'
+
         result = api.patient_to_dict(patient, self.user)
         found_lab_tests_for_patient = result.pop("lab_test")
         found_lab_tests_for_episode = result["episodes"][episode.id].pop(
