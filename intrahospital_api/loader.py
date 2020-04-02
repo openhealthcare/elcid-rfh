@@ -112,7 +112,10 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
     demographics.hospital_number = hospital_number
     demographics.save()
 
-    patient.create_episode(category_name=episode_category.display_name)
+    patient.create_episode(
+        category_name=episode_category.display_name,
+        start=datetime.date.today()
+    )
 
     load_patient(patient)
 
