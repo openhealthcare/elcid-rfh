@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('covid', '0001_initial'),
+        ('opal',  '0037_auto_20181114_1445'),
     ]
 
     operations = [
