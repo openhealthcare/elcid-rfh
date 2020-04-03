@@ -171,8 +171,9 @@ INSTALLED_APPS = (
     'lab',
     'plugins.letters',
     'plugins.labtests',
-    'intrahospital_api',
+    'plugins.icu',
     'elcid',
+    'intrahospital_api',
     'django.contrib.admin',
     'djcelery',
     'obs',
@@ -279,6 +280,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'icu': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
     }
 }
 
@@ -334,7 +340,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.30'
+VERSION_NUMBER = '0.32'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

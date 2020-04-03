@@ -9,6 +9,7 @@
     </h3>
   </div>
   <div class="list-group">
+
     <a class="list-group-item episodelist pointer"
        ng-class="{'bg-active': view == null && e.id == episode.id}"
        ng-repeat="e in patient.episodes"
@@ -17,6 +18,7 @@
        >
       [[ e.category_name ]]
     </a>
+
   </div>
 </div>
 {% endblock episodes_switcher %}
