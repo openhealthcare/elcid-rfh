@@ -14,7 +14,10 @@ app.config(
              // template in the application viewport
              controller: 'WelcomeCtrl',
              controllerAs: 'welcome',
-             templateUrl: '/templates/covid/dashboard.html',
+             templateUrl: function(x){
+                 // silly cache busting technique. The param is never read
+                 return '/templates/covid/dashboard.html?when='+Date.now()
+             },
              resolve: {
                  referencedata: function(Referencedata) { return Referencedata; },
              },
