@@ -1,8 +1,15 @@
 {% load forms %}
-{% datetimepicker field="MicrobiologyInput.when" %}
-{% input field="MicrobiologyInput.initials" %}
-{% select field="MicrobiologyInput.reason_for_interaction" %}
-{% textarea field="MicrobiologyInput.clinical_discussion" %}
-{% textarea field="MicrobiologyInput.infection_control" %}
-{% input field="MicrobiologyInput.discussed_with" %}
-{% textarea field="MicrobiologyInput.agreed_plan" %}
+{% datetimepicker model="formItem.editing.when" field="MicrobiologyInput.when" %}
+{% input model="formItem.editing.initials" field="MicrobiologyInput.initials" %}
+{% select model="formItem.editing.reason_for_interaction" field="MicrobiologyInput.reason_for_interaction" %}
+
+<span ng-show="formItem.editing.reason_for_interaction === '{{ models.MicrobiologyInput.ICU_REASON_FOR_INTERACTION }}'">
+  {% include models.ICURound.get_form_template %}
+  {% input model="formItem.editing.micro_input_icu_round_relation.observation.temperature" field="Observation.temperature" %}
+  <hr />
+</span>
+
+{% textarea model="formItem.editing.clinical_discussion" field="MicrobiologyInput.clinical_discussion" %}
+{% textarea model="formItem.editing.infection_control" field="MicrobiologyInput.infection_control" %}
+{% input model="formItem.editing.discussed_with" field="MicrobiologyInput.discussed_with" %}
+{% textarea model="formItem.editing.agreed_plan" field="MicrobiologyInput.agreed_plan" %}

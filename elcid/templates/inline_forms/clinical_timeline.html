@@ -1,6 +1,6 @@
 {% load forms %}
-<div ng-controller="ClinicalAdviceForm as clinicalAdviceForm">
-  <div ng-show="clinicalAdviceForm.clinicalAdvice.length" class="panel panel-default hidden-print">
+<div ng-controller="ClinicalTimeline as clinicalTimeline">
+  <div ng-show="clinicalTimeline.clinicalAdvice.length" class="panel panel-default hidden-print">
     <div class="panel-body">
       <div class="patient-timeline-container">
         <div class="row">
@@ -16,7 +16,7 @@
           <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
           <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
         </svg>
-        <div ng-repeat="item in clinicalAdviceForm.clinicalAdvice" class="row content-offset-20">
+        <div ng-repeat="item in clinicalTimeline.clinicalAdvice" class="row content-offset-20">
 
           <div class="col-md-3 patient-timeline">
             <div class="patient-timeline-speech-bubble">
@@ -43,6 +43,60 @@
                       <b>Reason For Interaction: </b><br/>[[item.reason_for_interaction]]
                     </p>
                   </span>
+
+                  <div ng-show="item.reason_for_interaction === '{{ models.MicrobiologyInput.ICU_REASON_FOR_INTERACTION }}'">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <b>Ventilation:</b>
+                      </div>
+                      <div class="col-md-6">
+                        [[ item.micro_input_icu_round_relation.icu_round.ventilation_type ]]
+                        <span ng-show="item.micro_input_icu_round_relation.icu_round.fio2">
+                          FiO₂:
+                          [[ item.micro_input_icu_round_relation.icu_round.fio2 ]]
+                        </span>
+                      </div>
+                    </div> <!-- row -->
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        <b>Cardiovascular Support:</b>
+                      </div>
+                      <div class="col-md-6">
+                        [[ item.micro_input_icu_round_relation.icu_round.inotropic_drug ]]
+                        [[ item.micro_input_icu_round_relation.icu_round.inotropic_dose ]]
+                      </div>
+                    </div> <!-- row -->
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        <b>MELD:</b>
+                      </div>
+                      <div class="col-md-6">
+                        [[ item.micro_input_icu_round_relation.icu_round.meld_score ]]
+                      </div>
+                    </div> <!-- row -->
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        <b>SOFA:</b>
+                      </div>
+                      <div class="col-md-6">
+                        [[ item.micro_input_icu_round_relation.icu_round.sofa_score ]]
+                      </div>
+                    </div> <!-- row -->
+                    <div class="row">
+                      <div class="col-md-6">
+                        <b>Temperature:</b>
+                      </div>
+                      <div class="col-md-6">
+                        [[ item.micro_input_icu_round_relation.observation.temperature ]]
+                      </div>
+                    </div> <!-- row -->
+
+                  </div>
+
+                  <div class="content-offset-10" ng-show="clinicalTimeline.hasIcuOrObservation(item)"></div>
                   <span ng-show="item.clinical_discussion">
                     <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
                   </span>
@@ -52,11 +106,13 @@
                   <span ng-show="item.agreed_plan">
                     <b>Agreed Plan: </b><div markdown="agreed_plan"></div>
                   </span>
+
+
                 </div>
                 <div class="col-sm-2">
                   <div class="row">
                     <div class="col-md-12">
-                      <i class="fa fa-pencil edit pull-right pointer" ng-click="clinicalAdviceForm.editItem(episode, item)"></i>
+                      <i class="fa fa-pencil edit pull-right pointer" ng-click="clinicalTimeline.editItem(item)"></i>
                     </div>
                   </div>
                   <div class="row content-offset-10">
@@ -74,30 +130,30 @@
   </div>
 
   {% if not user.profile.readonly %}
-  <div  class="panel panel-default hidden-print">
-    <div class="panel-heading"><h3>
-      <i class="fa fa-comments"></i> Clinical Advice
-    </div></h3>
-    <div class="panel-body">
-      <div class="row">
-        <div class="col-md-12">
-          <form class="form-horizontal">
-            <div ng-repeat="editing in [clinicalAdviceForm.editing]">
-              {% include models.MicrobiologyInput.get_form_template %}
-            </div>
-          </form>
+    <div  class="panel panel-default hidden-print">
+      <div class="panel-heading"><h3>
+          <i class="fa fa-comments"></i> Clinical Advice
+      </div></h3>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-12">
+            <form class="form-horizontal">
+              <div ng-repeat="formItem in [clinicalTimeline.formItem]">
+                {% include models.MicrobiologyInput.get_form_template %}
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12 text-right">
-          <button ng-disabled="!clinicalAdviceForm.changed" class="btn btn-primary" ng-click="clinicalAdviceForm.save('save')">
-            <i class="fa fa-save"></i>
-            Save
-          </button>
+        <div class="row">
+          <div class="col-md-12 text-right">
+            <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
+              <i class="fa fa-save"></i>
+              Save
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
   {% endif %}
 
 </div>

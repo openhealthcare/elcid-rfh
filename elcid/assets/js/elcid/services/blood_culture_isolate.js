@@ -1,5 +1,5 @@
 angular.module('opal.services').service(
-  'BloodCultureIsolate', function($http, $q, $window){
+  'BloodCultureIsolate', function($http, $q, $window, Referencedata){
   var DATE_FORMAT = 'DD/MM/YYYY'
 
   const baseUrl = "/elcid/v0.1/blood_culture_isolate/";
@@ -10,6 +10,7 @@ angular.module('opal.services').service(
     constructor(blood_culture_set, item){
       if(item){
         this.isolateUrl = baseUrl + item.id + "/"
+        this.isNew = false;
         this.editing = _.clone(item);
         _.each(dateFields, dateField => {
           if(this.editing[dateField]){
@@ -23,7 +24,32 @@ angular.module('opal.services').service(
           consistency_token: "",
           blood_culture_set_id: blood_culture_set.id
         }
+        this.isNew = true;
       }
+
+      var isolate = this;
+
+      Referencedata.load().then(function(referenceData){
+        // lists should be alphabetical but with
+        // Negative always as the last result
+        // if the list contains negative
+        var lists = [
+          "gramstainoutcome_list",
+          "quickfishoutcome_list",
+          "gpcstaphoutcome_list",
+          "gpcstrepoutcome_list"
+        ]
+        var lookupLists = referenceData.toLookuplists();
+
+        _.each(lists, list => {
+          isolate[list] = lookupLists[list];
+          var removed = _.without(isolate[list], 'Negative');
+          if(removed.length !== isolate[list].length){
+            removed.push("Negative");
+            isolate[list] = removed;
+          }
+        });
+      });
     }
 
     save(){
