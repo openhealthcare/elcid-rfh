@@ -1,10 +1,46 @@
 {% load forms %}
-{% checkbox element_name="formItem.elementName('ventilated')" model="formItem.editing.micro_input_icu_round_relation.icu_round.ventilated" field="ICURound.ventilated" %}
-{% radio model="formItem.editing.micro_input_icu_round_relation.icu_round.ventilation_type"  field="ICURound.ventilation_type" %}
-{% checkbox element_name="formItem.elementName('inotropic')" model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic" field="ICURound.inotropic" %}
-{% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic_drug" field="ICURound.inotropic_drug" %}
-{% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic_dose" field="ICURound.inotropic_dose" %}
+<hr />
+<div class="row">
+  <div class="col-md-9 col-md-offset-1 pl0">
+    <p><b>Ventilation</b></p>
+  </div>
 
-{% input model="formItem.editing.micro_input_icu_round_relation.icu_round.meld_score" field="ICURound.meld_score" %}
-{% input model="formItem.editing.micro_input_icu_round_relation.icu_round.fio2" field="ICURound.fio2" %}
-{% input model="formItem.editing.micro_input_icu_round_relation.icu_round.sofa_score" field="ICURound.sofa_score" %}
+  <div class="col-md-4 col-md-offset-1">
+    {% radio model="formItem.editing.micro_input_icu_round_relation.icu_round.ventilation_type"  field="ICURound.ventilation_type" style="vertical"%}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.fio2" field="ICURound.fio2" style="vertical"%}
+  </div>
+</div>
+
+<hr />
+
+<div class="row">
+  <div class="col-md-9 col-md-offset-1 pl0">
+    <p><b>Cardiovascular Support</b></p>
+  </div>
+
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic_drug" field="ICURound.inotropic_drug" label="Drug" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotropic_dose" field="ICURound.inotropic_dose" label="Dose" style="vertical" %}
+  </div>
+</div>
+
+<hr />
+
+<div class="row">
+  <div class="col-md-9 col-md-offset-1 pl0">
+    <p><b>ICU Scores</b></p>
+  </div>
+
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.meld_score" field="ICURound.meld_score" style="vertical" label="Meld" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.sofa_score" field="ICURound.sofa_score" style="vertical" label="Sofa" %}
+  </div>
+</div>
+
+<hr />
