@@ -823,7 +823,9 @@ class ICUAdmission(EpisodeSubrecord):
 
     admission_date = models.DateField(blank=True, null=True)
     discharge_date = models.DateField(blank=True, null=True)
-    apache_score   = models.CharField(max_length=200, blank=True, null=True)
+    apache2_score   = models.CharField(
+        max_length=200, blank=True, null=True,
+        verbose_name="APACHE2 Score")
     outcome        = models.CharField(
         max_length=200, blank=True, null=True, choices=OUTCOMES
     )
