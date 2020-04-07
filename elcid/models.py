@@ -19,6 +19,14 @@ from opal.models import (
 from opal.core.fields import ForeignKeyOrFreeText, enum
 from opal.core import lookuplists
 
+def now():
+    """
+    Return a timezone aware datetime.now
+
+    Use as a default for model fields
+    """
+    return timezone.make_aware(datetime.datetime.now)
+
 
 def get_for_lookup_list(model, values):
     ct = ContentType.objects.get_for_model(model)
@@ -657,7 +665,7 @@ class Imaging(EpisodeSubrecord):
 
 
 class PositiveBloodCultureHistory(PatientSubrecord):
-    when = models.DateTimeField(default=datetime.datetime.now)
+    when = models.DateTimeField(default=now)
 
     @classmethod
     def _get_field_default(cls, name):
