@@ -43,8 +43,9 @@ class ViewsTest(OpalTestCase):
         self.assertStatusCode('/templates/delete_item_confirmation_modal.html/', 200)
 
     def test_all_modal_templates(self):
-        """ This renders all of our modal templates and blows up
-            if they fail to render
+        """
+        This renders all of our modal templates and blows up
+        if they fail to render
         """
         for i in subrecords():
             if i.get_form_template():
