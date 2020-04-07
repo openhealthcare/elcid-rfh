@@ -833,7 +833,10 @@ class InotropicDrug(lookuplists.LookupList):
 
 
 class ICURound(EpisodeSubrecord):
-    VENTILATION_TYPES = enum('NIV', "Intubated")
+    NIV       = 'NIV'
+    INTUBATED = "Intubated"
+
+    VENTILATION_TYPES = enum(NIV, INTUBATED)
 
     when = models.DateTimeField(
         blank=True, null=True
@@ -842,7 +845,8 @@ class ICURound(EpisodeSubrecord):
     ventilation_type = models.CharField(
         max_length=200, blank=True, null=True, choices=VENTILATION_TYPES
     )
-    fio2 = models.FloatField(
+    fio2 = models.CharField(
+        max_length=20,
         blank=True, null=True, verbose_name="FiO₂"
     )
     inotropic = models.NullBooleanField(blank=True)
