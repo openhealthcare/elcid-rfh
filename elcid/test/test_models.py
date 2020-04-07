@@ -112,7 +112,6 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 
         self.location = emodels.Location.objects.create(
             bed="13",
-            category="Inpatient",
             consistency_token="12345678",
             hospital="UCH",
             ward="T10",
@@ -124,7 +123,6 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'consistency_token': '12345678',
             'episode_id': self.episode.id,
             'id': self.location.id,
-            'category': 'Inpatient',
             'hospital': 'UCH',
             'ward': 'T10',
             'bed': '13',
@@ -141,7 +139,6 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
         data = {
             'consistency_token': '12345678',
             'id': self.location.id,
-            'category': 'Inpatient',
             'hospital': 'HH',
             'ward': 'T10',
             'bed': '13',
@@ -742,7 +739,6 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
             'id': self.diagnosis.id,
             'condition': 'Some condition',
             'provisional': False,
-            'category': None,
             'details': u'',
             'date_of_diagnosis': datetime.date(2013, 7, 25),
             }
