@@ -1,13 +1,17 @@
 import datetime
-from plugins.labtests import models
+
+from django.utils import timezone
 from rest_framework.reverse import reverse
 from opal.core.test import OpalTestCase
+
+from plugins.labtests import models
+
 from apps.tb import utils
 
 
 class TestMultipleResults(OpalTestCase):
-    LAB_TEST_DT = datetime.datetime(2019, 1, 4)
-    OBS_DATE_TIME = datetime.datetime(2019, 1, 5)
+    LAB_TEST_DT   = timezone.make_aware(datetime.datetime(2019, 1, 4))
+    OBS_DATE_TIME = timezone.make_aware(datetime.datetime(2019, 1, 5))
 
     TESTS_TO_OBS_TO_VALUES = {
         "C REACTIVE PROTEIN": [
@@ -103,4 +107,3 @@ class TestMultipleResults(OpalTestCase):
             ]
         }
         self.assertEqual(result.json(), expected)
-
