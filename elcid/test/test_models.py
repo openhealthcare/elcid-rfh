@@ -316,7 +316,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
                 2020, 3, 27, 9, 33, 55
             ))
         )
-        self.assertEqual('12', icu_round.sofa_score)
+        self.assertEqual(12.0, icu_round.sofa_score)
 
 
     def test_update_from_dict_delete_observation(self):
