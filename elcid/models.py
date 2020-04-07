@@ -832,6 +832,10 @@ class InotropicDrug(lookuplists.LookupList):
     pass
 
 
+class Vasopressor(lookuplists.LookupList):
+    pass
+
+
 class ICURound(EpisodeSubrecord):
     NIV       = 'NIV'
     INTUBATED = "Intubated"
@@ -841,7 +845,6 @@ class ICURound(EpisodeSubrecord):
     when = models.DateTimeField(
         blank=True, null=True
     )
-    ventilated = models.NullBooleanField(blank=True)
     ventilation_type = models.CharField(
         max_length=200, blank=True, null=True, choices=VENTILATION_TYPES
     )
@@ -849,9 +852,10 @@ class ICURound(EpisodeSubrecord):
         max_length=20,
         blank=True, null=True, verbose_name="FiO₂"
     )
-    inotropic = models.NullBooleanField(blank=True)
-    inotropic_drug = ForeignKeyOrFreeText(InotropicDrug)
-    inotropic_dose = models.CharField(max_length=200, blank=True, null=True)
+    inotrope         = ForeignKeyOrFreeText(InotropicDrug)
+    inotrope_dose    = models.CharField(max_length=200, blank=True, null=True)
+    vasopressor      = ForeignKeyOrFreeText(Vasopressor)
+    vasopressor_dose = models.CharField(max_length=200, blank=True, null=True)
     meld_score = models.FloatField(
         blank=True, null=True, verbose_name="MELD score"
     )

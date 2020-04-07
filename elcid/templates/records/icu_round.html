@@ -2,10 +2,6 @@
     [[ item.when | displayDateTime ]]
    <br />
 </span>
-<span ng-show="item.ventilated">
-     Ventilated
-   <br />
-</span>
 <span ng-show="item.ventilation_type">
     [[ item.ventilation_type ]]
    <br />
@@ -14,8 +10,20 @@
     [[ item.fio2 ]]
    <br />
 </span>
-<span ng-show="item.inotropic_dose">
+<span ng-show="item.inotrope_dose">
     [[ item.inotropic_dose ]]
+   <br />
+</span>
+<span ng-show="item.inotrop">
+    [[ item.inotropic_drug ]]
+   <br />
+</span>
+<span ng-show="item.vasopressor_dose">
+    [[ item.inotropic_dose ]]
+   <br />
+</span>
+<span ng-show="item.inotrop">
+    [[ item.inotropic_drug ]]
    <br />
 </span>
 <span ng-show="item.meld_score">
@@ -24,9 +32,5 @@
 </span>
 <span ng-show="item.sofa_score">
     [[ item.sofa_score ]]
-   <br />
-</span>
-<span ng-show="item.inotropic_drug">
-    [[ item.inotropic_drug ]]
    <br />
 </span>

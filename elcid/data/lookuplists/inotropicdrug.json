@@ -1,16 +1,10 @@
 {
   "inotropicdrug": [
     {
-      "name": "Noradrenaline"
-    },
-    {
       "name": "Adrenaline"
     },
     {
       "name": "Dobutamine"
-    },
-    {
-      "name": "Vasopressin"
     },
     {
       "name": "Inoximone"
@@ -20,9 +14,6 @@
     },
     {
       "name": "Levosemendin"
-    },
-    {
-      "name": "Metaraminol"
     }
   ]
 }
