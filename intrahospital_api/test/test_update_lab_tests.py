@@ -103,9 +103,9 @@ class TestGetOrCreateLabTest(OpalTestCase):
         lab_test_models.LabTest.objects.create(**{
             "patient": self.patient,
             "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(
+            "datetime_ordered": timezone.make_aware(datetime.datetime(
                 2015, 7, 17, 4, 15, 10
-            ),
+            )),
             "lab_number": "11111",
             "site": 'some site',
             "status": "Pending",
@@ -122,7 +122,3 @@ class TestGetOrCreateLabTest(OpalTestCase):
             lab_test_models.LabTest.objects.get().status,
             "Success"
         )
-
-
-
-
