@@ -97,7 +97,6 @@
         "fields": {
             "consistency_token": "12345678",
             "episode": 1,
-            "category_ft": "Inpatient",
             "hospital_ft": "UCH",
             "ward_ft": "T10",
             "bed": "13"
@@ -109,7 +108,6 @@
         "fields": {
             "consistency_token": "12345678",
             "episode": 2,
-            "category_ft": "Inpatient",
             "hospital_ft": "UCH",
             "ward_ft": "T11",
             "bed": "14"
