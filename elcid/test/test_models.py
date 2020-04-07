@@ -273,7 +273,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
             when=timezone.make_aware(datetime.datetime(
                 2020, 3, 26, 10, 33, 55
             )),
-            ventilated=False
+            sofa_score='12'
         )
         emodels.MicroInputICURoundRelation.objects.create(
             microbiology_input=micro_input,
@@ -289,7 +289,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
             'micro_input_icu_round_relation': {
                 'observation': {'temperature': 222},
                 'icu_round': {
-                    "ventilated": True
+                    "sofa_score": '12'
                 }
             },
             'episode_id': self.episode.id
@@ -316,7 +316,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
                 2020, 3, 27, 9, 33, 55
             ))
         )
-        self.assertTrue(icu_round.ventilated)
+        self.assertEqual(12.0, icu_round.sofa_score)
 
 
     def test_update_from_dict_delete_observation(self):
@@ -335,7 +335,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
             when=timezone.make_aware(datetime.datetime(
                 2020, 3, 26, 10, 33, 55
             )),
-            ventilated=False
+            sofa_score='12'
         )
         emodels.MicroInputICURoundRelation.objects.create(
             microbiology_input=micro_input,
@@ -375,7 +375,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
             when=timezone.make_aware(datetime.datetime(
                 2020, 3, 26, 10, 33, 55
             )),
-            ventilated=False
+            sofa_score='12'
         )
         emodels.MicroInputICURoundRelation.objects.create(
             microbiology_input=micro_input,
@@ -403,7 +403,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
             when=timezone.make_aware(datetime.datetime(
                 2020, 3, 26, 10, 33, 55
             )),
-            ventilated=True
+            sofa_score='12'
         )
         emodels.MicroInputICURoundRelation.objects.create(
             microbiology_input=micro_input,
@@ -418,8 +418,9 @@ class MicrobiologyInputTestCase(OpalTestCase):
         self.assertEqual(
             as_dict["micro_input_icu_round_relation"]["observation"]["temperature"], 111
         )
-        self.assertTrue(
-            as_dict["micro_input_icu_round_relation"]["icu_round"]["ventilated"]
+        self.assertEqual(
+            '12',
+            as_dict["micro_input_icu_round_relation"]["icu_round"]["sofa_score"]
         )
 
     def test_delete_with_icu_round(self):
@@ -439,7 +440,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
             when=timezone.make_aware(datetime.datetime(
                 2020, 3, 26, 10, 33, 55
             )),
-            ventilated=True
+            sofa_score='12'
         )
         emodels.MicroInputICURoundRelation.objects.create(
             microbiology_input=micro_input,
