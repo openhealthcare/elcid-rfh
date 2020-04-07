@@ -60,10 +60,6 @@ class DuplicatePatient(PatientSubrecord):
         return self._icon
 
 
-class LocationCategory(lookuplists.LookupList):
-    pass
-
-
 class Provenance(lookuplists.LookupList):
     pass
 
@@ -72,7 +68,6 @@ class Location(EpisodeSubrecord):
     _is_singleton = True
     _icon = 'fa fa-map-marker'
 
-    category = ForeignKeyOrFreeText(LocationCategory)
     provenance = ForeignKeyOrFreeText(Provenance)
     hospital = ForeignKeyOrFreeText(omodels.Hospital)
     ward = ForeignKeyOrFreeText(omodels.Ward)
