@@ -733,6 +733,7 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
             'consistency_token': u'12345678',
             'updated': None,
             'created': None,
+            'category': None,
             'updated_by_id': None,
             'created_by_id': None,
             'episode_id': self.episode.id,
