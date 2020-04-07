@@ -793,7 +793,7 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 0)
 
     def test_not_updated_on_other_removal(self):
-        weeks_ago = datetime.datetime(2017, 1, 1)
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.patient.positivebloodculturehistory_set.update(
             when=weeks_ago
@@ -803,7 +803,7 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.assertEqual(pbch.when.date(), weeks_ago.date())
 
     def test_updated_on_repeat_saves(self):
-        weeks_ago = datetime.datetime(2017, 1, 1)
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.patient.positivebloodculturehistory_set.update(
             when=weeks_ago
