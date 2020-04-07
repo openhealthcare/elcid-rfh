@@ -651,7 +651,7 @@ class Imaging(EpisodeSubrecord):
 
 
 class PositiveBloodCultureHistory(PatientSubrecord):
-    when = models.DateTimeField(default=datetime.datetime.now)
+    when = models.DateTimeField(default=timezone.now)
 
     @classmethod
     def _get_field_default(cls, name):
