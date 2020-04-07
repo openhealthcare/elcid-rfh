@@ -1,4 +1,5 @@
 import datetime
+from django.utils import timezone
 from opal.core.test import OpalTestCase
 from opal.models import Tagging, Episode
 from elcid import models
@@ -23,7 +24,7 @@ class SerialisedTestCase(OpalTestCase):
         demographics.surname = "Flintstone"
         demographics.save()
         gram_stain = models.GramStain.objects.create(
-            datetime_ordered=datetime.datetime.now(),
+            datetime_ordered=timezone.make_aware(datetime.datetime.now()),
             patient=patient,
         )
         gram_stain.extras = dict(
