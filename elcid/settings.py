@@ -297,6 +297,13 @@ if 'test' not in sys.argv:
         'propagate': False,
     }
 
+if 'test' in sys.argv:
+    LOGGING['loggers']['elcid.requestLogger'] = {
+        'handlers': [],
+        'level': 'ERROR',
+        'propagate': True
+    }
+
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
