@@ -395,3 +395,9 @@ if 'test' not in sys.argv:
         from elcid.local_settings import *
     except ImportError:
         pass
+
+if 'test' in sys.argv:
+    try:
+        from elcid.local_test_settings import *
+    except ImportError:
+        pass
