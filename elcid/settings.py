@@ -298,11 +298,13 @@ if 'test' not in sys.argv:
     }
 
 if 'test' in sys.argv:
-    LOGGING['loggers']['elcid.requestLogger'] = {
+    blank_logger = {
         'handlers': [],
         'level': 'ERROR',
         'propagate': True
     }
+    LOGGING['loggers']['elcid.requestLogger'] = blank_logger
+    LOGGING['loggers']['intrahospital_api'] = blank_logger
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
