@@ -447,6 +447,15 @@ class MicrobiologyInputTestCase(OpalTestCase):
             as_dict["micro_input_icu_round_relation"]["icu_round"]["sofa_score"]
         )
 
+    def test_to_dict_for_no_icu_round(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode,
+            clinical_discussion="some discussion"
+        )
+        as_dict = micro_input.to_dict(None)
+        self.assertEqual(as_dict["micro_input_icu_round_relation"]["observation"], {})
+        self.assertEqual(as_dict["micro_input_icu_round_relation"]["icu_round"], {})
+
     def test_delete_with_icu_round(self):
         micro_input = emodels.MicrobiologyInput.objects.create(
             episode=self.episode,
