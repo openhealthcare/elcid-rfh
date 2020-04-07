@@ -22,7 +22,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_get_non_comments_for_patient(self):
         patient, _ = self.new_patient_and_episode_please()
         patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'BLOOD TEST'
         })
 
@@ -34,11 +34,11 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_get_non_comments_for_patient_excludes_comments(self):
         patient, _ = self.new_patient_and_episode_please()
         patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'BLOOD TEST'
         })
         patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 16, 4, 15, 10)),
             'test_name': 'COMMENT'
         })
 
@@ -51,15 +51,15 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_group_tests(self):
         patient, _ = self.new_patient_and_episode_please()
         patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'BLOOD TEST'
         })
         patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 16, 4, 15, 10)),
             'test_name': 'BLOOD TEST'
         })
         patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 16, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 16, 4, 15, 10)),
             'test_name': 'HIV TEST'
         })
 
@@ -75,7 +75,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_is_long_form_long_form(self):
         patient, _ = self.new_patient_and_episode_please()
         test = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'BLOOD TEST'
         })
 
@@ -90,7 +90,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_is_long_form_not_long_form(self):
         patient, _ = self.new_patient_and_episode_please()
         test = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'LFT'
         })
 
@@ -121,7 +121,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_display_class_too_high(self):
         patient, _ = self.new_patient_and_episode_please()
         test = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'LFT'
         })
 
@@ -137,7 +137,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_display_class_too_low(self):
         patient, _ = self.new_patient_and_episode_please()
         test = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'LFT'
         })
 
@@ -153,7 +153,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_display_class_empty(self):
         patient, _ = self.new_patient_and_episode_please()
         test = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'LFT'
         })
 
@@ -169,7 +169,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_display_class_obs_value_none(self):
         patient, _ = self.new_patient_and_episode_please()
         test = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name': 'LFT'
         })
 
@@ -185,7 +185,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_serialise_tabular_instances(self):
         patient, _ = self.new_patient_and_episode_please()
         test = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name'       : 'FULL BLOOD COUNT',
             'lab_number'      : '123'
         })
@@ -201,7 +201,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
         })
 
         test2 = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 10, 4, 15, 10)),
             'test_name'       : 'FULL BLOOD COUNT',
             'lab_number'      : '121'
         })
@@ -262,7 +262,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_serialise_long_form_instance(self):
         patient, _ = self.new_patient_and_episode_please()
         test  = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 10, 4, 15, 10)),
             'test_name'       : 'BLOOD CULTURE',
             'lab_number'      : '121'
         })
@@ -280,7 +280,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
     def test_retrieve(self):
         patient, _ = self.new_patient_and_episode_please()
         test  = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2017, 6, 10, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2017, 6, 10, 4, 15, 10)),
             'test_name'       : 'BLOOD CULTURE',
             'lab_number'      : '121'
         })
@@ -289,7 +289,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
             'observation_value': 'Staph. Aureus',
         })
         test2 = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 17, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 17, 4, 15, 10)),
             'test_name'       : 'FULL BLOOD COUNT',
             'lab_number'      : '123'
         })
@@ -305,7 +305,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
         })
 
         test3 = patient.lab_tests.create(**{
-            'datetime_ordered': datetime.datetime(2019, 6, 10, 4, 15, 10),
+            'datetime_ordered': timezone.make_aware(datetime.datetime(2019, 6, 10, 4, 15, 10)),
             'test_name'       : 'FULL BLOOD COUNT',
             'lab_number'      : '121'
         })
@@ -955,8 +955,8 @@ class LabTestSummaryTestCase(OpalTestCase):
             )
 
     def test_vanilla_check(self):
-        dt_1 = datetime.datetime(2019, 6, 5, 10, 10)
-        dt_2 = datetime.datetime(2019, 6, 4, 10, 10)
+        dt_1 = timezone.make_aware(datetime.datetime(2019, 6, 5, 10, 10))
+        dt_2 = timezone.make_aware(datetime.datetime(2019, 6, 4, 10, 10))
         self.create_blood_count(dt_1, dt_2)
         self.create_clotting_screen({
             dt_1: "1.2", dt_2: "1.2"
@@ -1014,9 +1014,9 @@ class LabTestSummaryTestCase(OpalTestCase):
         """
         We should use the latest date
         """
-        dt_1 = datetime.datetime(2019, 6, 4, 10, 10)
-        dt_2 = datetime.datetime(2019, 6, 4, 12, 10)
-        dt_3 = datetime.datetime(2019, 6, 4, 11, 10)
+        dt_1 = timezone.make_aware(datetime.datetime(2019, 6, 4, 10, 10))
+        dt_2 = timezone.make_aware(datetime.datetime(2019, 6, 4, 12, 10))
+        dt_3 = timezone.make_aware(datetime.datetime(2019, 6, 4, 11, 10))
         self.create_clotting_screen({
             dt_1: "1.1", dt_2: "1.3", dt_3: "1.2"
         })
@@ -1047,15 +1047,15 @@ class LabTestSummaryTestCase(OpalTestCase):
         of 7 Jan, 8 Jan, 9 Jan, 10 Jan , 11 Jan in that order
         """
 
-        dt_1 = datetime.datetime(2019, 6, 1)
-        dt_2 = datetime.datetime(2019, 6, 2)
-        dt_3 = datetime.datetime(2019, 6, 5)
-        dt_4 = datetime.datetime(2019, 6, 6)
-        dt_5 = datetime.datetime(2019, 6, 7)
-        dt_6 = datetime.datetime(2019, 6, 8)
-        dt_7 = datetime.datetime(2019, 6, 9)
-        dt_8 = datetime.datetime(2019, 6, 10)
-        dt_9 = datetime.datetime(2019, 6, 11)
+        dt_1 = timezone.make_aware(datetime.datetime(2019, 6, 1))
+        dt_2 = timezone.make_aware(datetime.datetime(2019, 6, 2))
+        dt_3 = timezone.make_aware(datetime.datetime(2019, 6, 5))
+        dt_4 = timezone.make_aware(datetime.datetime(2019, 6, 6))
+        dt_5 = timezone.make_aware(datetime.datetime(2019, 6, 7))
+        dt_6 = timezone.make_aware(datetime.datetime(2019, 6, 8))
+        dt_7 = timezone.make_aware(datetime.datetime(2019, 6, 9))
+        dt_8 = timezone.make_aware(datetime.datetime(2019, 6, 10))
+        dt_9 = timezone.make_aware(datetime.datetime(2019, 6, 11))
 
         self.create_clotting_screen({
             dt_1: "1.1", dt_2: "1.2", dt_3: "1.3", dt_8: "1.8", dt_9: "1.9"
@@ -1111,7 +1111,7 @@ class LabTestSummaryTestCase(OpalTestCase):
 
     def test_ignores_strings(self):
         self.create_clotting_screen({
-            datetime.datetime(2019, 6, 4, 12, 10): "Pending"
+            timezone.make_aware(datetime.datetime(2019, 6, 4, 12, 10)): "Pending"
         })
         result = self.client.get(self.url)
         expected = {
@@ -1122,8 +1122,8 @@ class LabTestSummaryTestCase(OpalTestCase):
         self.assertEqual(result.data, expected)
 
     def test_ignore_strings_same_date(self):
-        dt_1 = datetime.datetime(2019, 6, 4, 12, 10)
-        dt_2 = datetime.datetime(2019, 6, 4, 11, 10)
+        dt_1 = timezone.make_aware(datetime.datetime(2019, 6, 4, 12, 10))
+        dt_2 = timezone.make_aware(datetime.datetime(2019, 6, 4, 11, 10))
         self.create_clotting_screen({
             dt_1: "Pending", dt_2: "1.3"
         })
