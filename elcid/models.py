@@ -397,7 +397,7 @@ class MicrobiologyInput(EpisodeSubrecord):
         if MicroInputICURoundRelation.objects.filter(microbiology_input_id=self.id).exists():
             result["micro_input_icu_round_relation"] = self.microinputicuroundrelation.to_dict(*args, **kwargs)
         else:
-            result["micro_input_icu_round_relation"] = {}
+            result["micro_input_icu_round_relation"] = MicroInputICURoundRelation().to_dict()
         return result
 
     def update_from_dict(self, data, *args, **kwargs):
