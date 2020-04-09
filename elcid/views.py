@@ -10,6 +10,7 @@ from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
+from django.utils import timezone
 from django.views.generic import (
     TemplateView, FormView, View, ListView
 )
@@ -182,7 +183,7 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
             # regardless as to whether it is on that specific episode
             # this is because from the user perspective micro input
             # is shown which ever episode the medical professional is viewing
-            hundred_days_ago = datetime.datetime.now() - datetime.timedelta(
+            hundred_days_ago = timezone.now() - datetime.timedelta(
                 days=100
             )
             microbiology_inputs = models.MicrobiologyInput.objects.filter(
@@ -213,4 +214,3 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         result = [{'ward': w, 'episodes': by_ward[w]} for w in ward_names]
         ctx["ward_and_episodes"] = result
         return ctx
-

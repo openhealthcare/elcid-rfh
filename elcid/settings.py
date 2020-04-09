@@ -297,6 +297,15 @@ if 'test' not in sys.argv:
         'propagate': False,
     }
 
+if 'test' in sys.argv:
+    blank_logger = {
+        'handlers': [],
+        'level': 'ERROR',
+        'propagate': True
+    }
+    LOGGING['loggers']['elcid.requestLogger'] = blank_logger
+    LOGGING['loggers']['intrahospital_api'] = blank_logger
+
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -386,5 +395,11 @@ REST_FRAMEWORK = {
 if 'test' not in sys.argv:
     try:
         from elcid.local_settings import *
+    except ImportError:
+        pass
+
+if 'test' in sys.argv:
+    try:
+        from elcid.local_test_settings import *
     except ImportError:
         pass

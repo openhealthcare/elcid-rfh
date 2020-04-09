@@ -651,7 +651,7 @@ class Imaging(EpisodeSubrecord):
 
 
 class PositiveBloodCultureHistory(PatientSubrecord):
-    when = models.DateTimeField(default=datetime.datetime.now)
+    when = models.DateTimeField(default=timezone.now)
 
     @classmethod
     def _get_field_default(cls, name):
@@ -806,7 +806,7 @@ def record_positive_blood_culture(sender, instance, **kwargs):
         pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
             patient_id=instance.episode.patient.id
         )
-        pbch.when = datetime.datetime.now()
+        pbch.when = timezone.now()
         pbch.save()
 
 

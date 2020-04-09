@@ -43,8 +43,9 @@ class ViewsTest(OpalTestCase):
         self.assertStatusCode('/templates/delete_item_confirmation_modal.html/', 200)
 
     def test_all_modal_templates(self):
-        """ This renders all of our modal templates and blows up
-            if they fail to render
+        """
+        This renders all of our modal templates and blows up
+        if they fail to render
         """
         for i in subrecords():
             if i.get_form_template():
@@ -315,7 +316,7 @@ class RenalHandoverTestCase(OpalTestCase):
 
     def test_ignore_old_clinical_advice(self):
         patient, episode = self.new_patient_and_episode_please()
-        over_hundred_days = timezone.now().date() - datetime.timedelta(101)
+        over_hundred_days = timezone.now() - datetime.timedelta(101)
         episode.microbiologyinput_set.create(
             clinical_discussion="something",
             when=over_hundred_days

@@ -1,4 +1,3 @@
-
 """
 
 """
@@ -7,6 +6,7 @@ import json
 import logging
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from opal.core import subrecords
 from opal import models
 
@@ -14,9 +14,9 @@ from opal import models
 class Command(BaseCommand):
 
     def count_created_last_week(self, model):
-        today = datetime.datetime.combine(
+        today = timezone.make_aware(datetime.datetime.combine(
             datetime.date.today(), datetime.time.min
-        )
+        ))
         last_week = today - datetime.timedelta(7)
         return model.objects.filter(created__gte=last_week).count()
 
