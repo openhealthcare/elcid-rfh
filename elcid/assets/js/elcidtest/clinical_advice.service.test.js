@@ -33,11 +33,11 @@ describe('ClinicalAdvice', function(){
       expect(clinicalAdvice.editing.micro_input_icu_round_relation.icu_round.ventilated).toBe(true);
     });
 
-    it('should construct the editing object with item', function(){
+    it('should construct the editing object without item', function(){
       var clinicalAdvice = new ClinicalAdvice();
       expect(clinicalAdvice.isNew).toBe(true);
-      expect(clinicalAdvice.editing.micro_input_icu_round_relation.observation).toEqual({});
       expect(clinicalAdvice.editing.micro_input_icu_round_relation.icu_round).toEqual({});
+      expect(_.isDate(clinicalAdvice.editing.when)).toBe(true);
     });
   });
 
