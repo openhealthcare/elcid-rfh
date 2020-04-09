@@ -370,7 +370,6 @@ class MicrobiologyInput(EpisodeSubrecord):
     _icon = 'fa fa-comments'
     _modal = 'lg'
     _list_limit = 3
-    _angular_service = 'MicrobiologyInput'
     ICU_REASON_FOR_INTERACTION = "ICU round"
 
     when = models.DateTimeField(null=True, blank=True)

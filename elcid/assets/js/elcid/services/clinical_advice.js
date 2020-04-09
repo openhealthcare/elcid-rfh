@@ -25,6 +25,9 @@ angular.module('opal.services').service('ClinicalAdvice', function($http, $q, $w
           };
         }
       }
+      else{
+        this.editing.when = new Date();
+      }
     }
 
     elementName(prefix){
