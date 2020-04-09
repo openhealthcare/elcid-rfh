@@ -63,6 +63,25 @@ describe('ClinicalAdviceFormTest', function() {
         expect(ctrl.changed).toBe(false);
       });
 
+      it('should set changed to false when reviewing the initial clinical advice', function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        ctrl.watchMicroFields(ctrl.getClinicalAdviceFormObject().editing);
+        expect(ctrl.changed).toBe(false);
+      });
+
+      it('should set changed to true if the clinical advice has changed', function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        var clinicalAdviceForm = ctrl.getClinicalAdviceFormObject();
+        clinicalAdviceForm.editing.clinical_discussion = "clinical discussion"
+        ctrl.watchMicroFields(clinicalAdviceForm);
+        expect(ctrl.changed).toBe(true);
+      });
+
+
       it('should set clinical advice to empty if there are no clinical advice', function(){
         $scope.episode.microbiology_input = [];
         mkcontroller();
