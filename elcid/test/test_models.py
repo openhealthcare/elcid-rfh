@@ -257,6 +257,31 @@ class MicrobiologyInputTestCase(OpalTestCase):
             emodels.ICURound.objects.get().id
         )
 
+    def test_update_from_dict_without_when(self):
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'ICU round',
+            'micro_input_icu_round_relation': {
+                'observation': {'temperature': 1111},
+                'icu_round': {}
+            },
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(
+            episode=self.episode
+        )
+        micro_input.update_from_dict(update_dict, self.user)
+
+        # refesh from database
+        micro_input = self.episode.microbiologyinput_set.get()
+
+        self.assertEqual(None, micro_input.when)
+        self.assertEqual(None micro_input.microinputicuroundrelation.icu_round.when)
+
+
     def test_update_from_dict_micro_relation(self):
         micro_input = emodels.MicrobiologyInput.objects.create(
             episode=self.episode
