@@ -409,7 +409,7 @@ class MicrobiologyInput(EpisodeSubrecord):
                 microbiology_input_id=self.id
             )
             icu_round.update_from_dict(
-                self.episode, data["when"], micro_input_icu_round_relation, *args, **kwargs
+                self.episode, data.get("when"), micro_input_icu_round_relation, *args, **kwargs
             )
             return result
         else:

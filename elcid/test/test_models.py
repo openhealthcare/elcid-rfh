@@ -259,7 +259,6 @@ class MicrobiologyInputTestCase(OpalTestCase):
 
     def test_update_from_dict_without_when(self):
         update_dict = {
-            'when': '27/03/2020 09:33:55',
             'initials': 'FJK',
             'infection_control': 'asdf',
             'clinical_discussion': 'asdf',
@@ -279,7 +278,7 @@ class MicrobiologyInputTestCase(OpalTestCase):
         micro_input = self.episode.microbiologyinput_set.get()
 
         self.assertEqual(None, micro_input.when)
-        self.assertEqual(None micro_input.microinputicuroundrelation.icu_round.when)
+        self.assertEqual(None, micro_input.microinputicuroundrelation.icu_round.when)
 
 
     def test_update_from_dict_micro_relation(self):
