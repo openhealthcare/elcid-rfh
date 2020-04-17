@@ -2,6 +2,7 @@
 {% load forms %}
 <div class="col-md-6">
   {% record_panel models.Location %}
+  {% record_panel models.Allergies %}
   {% record_panel models.ICUAdmission %}
   {% teams_panel %}
   {% if permissions.view_lab_test_trends %}
