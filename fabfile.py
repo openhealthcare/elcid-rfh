@@ -486,6 +486,26 @@ def write_cron_lab_pre_load(new_env):
         output, cron_file
     ))
 
+def write_cron_sync_demographics(new_env):
+    """
+    Creates a cron job that syncs demographics
+    """
+    print("Writing cron {}_sync_demographics".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_sync_demographics.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_sync_demographics".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
 
 def write_cron_calculate_dashboard(new_env):
     """
@@ -767,19 +787,13 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
     # symlink the celery conf
     services_create_celery_conf(new_env)
-    # for the moment write cron lab tests on both prod and test
+
+    # Cron jobs
     write_cron_lab_tests(new_env)
-
-    # Lab pre-loader on prod and test
     write_cron_lab_pre_load(new_env)
-
-    # ICU loader on prod and test
+    write_cron_sync_demographics(new_env)
     write_cron_icu_load(new_env)
-
-    # Check disk space everywhere
     write_cron_disk_check(new_env)
-
-    # precalculate dashboard figures everywhere
     write_cron_calculate_dashboard(new_env)
 
     # django setup
