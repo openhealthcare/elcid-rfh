@@ -12,7 +12,7 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 
 from plugins.icu import logger
-from plugins.icu.models import ICUHandover
+from plugins.icu.models import ICUHandover, ICUHandoverLocation, parse_icu_location
 from plugins.icu.episode_categories import ICUHandoverEpisode
 
 Q_GET_ICU_HANDOVER = """
@@ -53,6 +53,17 @@ class Command(BaseCommand):
                     )
 
                 our_handover.save()
+
+                handover_location, _ = ICUHandoverLocation.objects.get_or_create(
+                    patient=patient
+                )
+                hospital, ward, bed        = parse_icu_location(result['Location'])
+
+                handover_location.hospital = hospital
+                handover_location.ward     = ward
+                handover_location.bed      = bed
+                handover_location.save()
+
                 self.stdout.write(self.style.SUCCESS(
                     'Stored ICU Handover record for {}'.format(mrn)
                 ))
