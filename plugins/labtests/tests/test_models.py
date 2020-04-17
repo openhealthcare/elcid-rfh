@@ -31,7 +31,7 @@ class LabTestTestCase(OpalTestCase):
     def create_lab_test(self):
         lt = self.patient.lab_tests.create(**{
             "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "datetime_ordered": timezone.make_aware(datetime.datetime(2015, 6, 17, 4, 15, 10)),
             "lab_number": "11111",
             "site": u'^&        ^',
             "status": "Sucess",
@@ -40,8 +40,8 @@ class LabTestTestCase(OpalTestCase):
         })
 
         lt.observation_set.create(
-            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
-            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
+            last_updated=timezone.make_aware(datetime.datetime(2015, 6, 18, 4, 15, 10)),
+            observation_datetime=timezone.make_aware(datetime.datetime(2015, 4, 15, 4, 15, 10)),
             observation_number="12312",
             reference_range="3.5 - 11",
             units="g",
@@ -138,7 +138,7 @@ class LabTestTestCase(OpalTestCase):
     def test_update_from_api_dict_replaces_observation(self):
         lt = self.patient.lab_tests.create(**{
             "clinical_info":  'testing',
-            "datetime_ordered": datetime.datetime(2015, 6, 17, 4, 15, 10),
+            "datetime_ordered": timezone.make_aware(datetime.datetime(2015, 6, 17, 4, 15, 10)),
             "lab_number": "11111",
             "site": u'^&        ^',
             "status": "Sucess",
@@ -147,8 +147,8 @@ class LabTestTestCase(OpalTestCase):
         })
 
         lt.observation_set.create(
-            last_updated=datetime.datetime(2015, 6, 18, 4, 15, 10),
-            observation_datetime=datetime.datetime(2015, 4, 15, 4, 15, 10),
+            last_updated=timezone.make_aware(datetime.datetime(2015, 6, 18, 4, 15, 10)),
+            observation_datetime=timezone.make_aware(datetime.datetime(2015, 4, 15, 4, 15, 10)),
             observation_number="12312",
             reference_range="3.5 - 11",
             units="g",
@@ -206,6 +206,39 @@ class LabTestTestCase(OpalTestCase):
             lt.id
         )
 
+    def test_site(self):
+        lt = self.create_lab_test()
+        lt.site = "S     ^Swab & Tips etc.         &CANS ^"
+        self.assertEqual(
+            lt.cleaned_site, 'Swab & Tips etc. CANS'
+        )
+        lt.site = "PDF   ^PD Fluid                 &PERF ^Peritoneal "
+        self.assertEqual(
+            lt.cleaned_site,
+            'PD Fluid Peritoneal'
+        )
+        lt.site = "^&                              ^"
+        self.assertEqual(lt.cleaned_site, '')
+        lt.site = "ASF   ^Ascitic Fluid            &ASC  ^"
+        self.assertEqual(
+            lt.cleaned_site,
+            'Ascitic Fluid ASC'
+        )
+        lt.site = "F     ^Fluid                    &ABD  ^Abdominal"
+        self.assertEqual(
+            lt.cleaned_site,
+            'Fluid Abdominal'
+        )
+        lt.site = "DONOR ^&     ^"
+        self.assertEqual(
+            lt.cleaned_site,
+            'DONOR'
+        )
+        lt.site = "B^Blood&         "
+        self.assertEqual(
+            lt.cleaned_site,
+            'Blood'
+        )
 
 class ObservationTestCase(OpalTestCase):
     def test_value_numeric(self):

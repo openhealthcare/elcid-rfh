@@ -213,6 +213,13 @@ a.list-group-item {
   display: inline-block;
 }
 
+.death-banner {
+    margin-top: -15px;
+    background-color: #864200;
+    color: white;
+    margin-bottom: 12px;
+}
+
 .lab-tests{
   $too-high: #E02F03;
   $too-low: #E02F03;
@@ -346,4 +353,18 @@ div.add-isolate:hover{
 
 .left-offset-10{
     margin-left: 10px;
+}
+
+.pl0 {
+    padding-left: 0px;
+}
+
+.icu-handover ol {
+    padding-left: 12px;
+}
+.icu-handover ol li {
+    list-style: decimal;
+}
+.icu-handover ul li {
+    list-style: disc inside;
 }

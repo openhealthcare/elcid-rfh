@@ -4,8 +4,9 @@ Unittests for elcid.management.commands.status_report
 import datetime
 import logging
 import json
-import mock
+from unittest import mock
 
+from django.utils import timezone
 from opal.core.test import OpalTestCase
 
 from elcid.management.commands import status_report
@@ -21,11 +22,11 @@ class RandomiseStatusReport(OpalTestCase):
         patient.demographics_set.update(
             first_name="Wilma",
             surname="Flintstone",
-            created=datetime.datetime(2015, 1, 1)
+            created=timezone.make_aware(datetime.datetime(2015, 1, 1))
         )
 
         patient.positivebloodculturehistory_set.create(
-            created=datetime.datetime.now() - datetime.timedelta(1)
+            created=timezone.now() - datetime.timedelta(1)
         )
 
         command = status_report.Command()

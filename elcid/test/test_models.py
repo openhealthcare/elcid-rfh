@@ -11,6 +11,7 @@ from opal.models import (
     Patient, Episode, Condition, Synonym, Antimicrobial
 )
 from elcid import models as emodels
+from obs import models as obs_models
 
 
 class AbstractPatientTestCase(TestCase):
@@ -111,7 +112,6 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 
         self.location = emodels.Location.objects.create(
             bed="13",
-            category="Inpatient",
             consistency_token="12345678",
             hospital="UCH",
             ward="T10",
@@ -123,7 +123,6 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'consistency_token': '12345678',
             'episode_id': self.episode.id,
             'id': self.location.id,
-            'category': 'Inpatient',
             'hospital': 'UCH',
             'ward': 'T10',
             'bed': '13',
@@ -140,7 +139,6 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
         data = {
             'consistency_token': '12345678',
             'id': self.location.id,
-            'category': 'Inpatient',
             'hospital': 'HH',
             'ward': 'T10',
             'bed': '13',
@@ -218,6 +216,286 @@ class GetForLookupListTestCase(OpalTestCase):
                 self.antimicrobial_3
             ])
         )
+
+class MicrobiologyInputTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+
+    def test_update_from_dict_create_micro_relation(self):
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'ICU round',
+            'micro_input_icu_round_relation': {
+                'observation': {'temperature': 1111},
+                'icu_round': {}
+            },
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(
+            episode=self.episode
+        )
+        micro_input.update_from_dict(update_dict, self.user)
+        saved_input = self.episode.microbiologyinput_set.get()
+        saved_input.refresh_from_db()
+        observation = saved_input.microinputicuroundrelation.observation
+        self.assertEqual(
+            observation.temperature, 1111
+        )
+        # observatio should gain the datetime
+        # of the advice
+        self.assertEqual(
+            observation.datetime,
+            timezone.make_aware(datetime.datetime(
+                2020, 3, 27, 9, 33, 55
+            ))
+        )
+        self.assertEqual(
+            saved_input.microinputicuroundrelation.icu_round.id,
+            emodels.ICURound.objects.get().id
+        )
+
+    def test_update_from_dict_without_when(self):
+        update_dict = {
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'ICU round',
+            'micro_input_icu_round_relation': {
+                'observation': {'temperature': 1111},
+                'icu_round': {}
+            },
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(
+            episode=self.episode
+        )
+        micro_input.update_from_dict(update_dict, self.user)
+
+        # refesh from database
+        micro_input = self.episode.microbiologyinput_set.get()
+
+        self.assertEqual(None, micro_input.when)
+        self.assertEqual(None, micro_input.microinputicuroundrelation.icu_round.when)
+
+
+    def test_update_from_dict_micro_relation(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode
+        )
+        observation =  obs_models.Observation.objects.create(
+            episode=self.episode,
+            temperature=111,
+            datetime=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            ))
+        )
+        icu_round = emodels.ICURound.objects.create(
+            episode=self.episode,
+            when=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            )),
+            sofa_score='12'
+        )
+        emodels.MicroInputICURoundRelation.objects.create(
+            microbiology_input=micro_input,
+            observation=observation,
+            icu_round=icu_round
+        )
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'ICU round',
+            'micro_input_icu_round_relation': {
+                'observation': {'temperature': 222},
+                'icu_round': {
+                    "sofa_score": '12'
+                }
+            },
+            'episode_id': self.episode.id
+        }
+        micro_input.update_from_dict(update_dict, self.user)
+        saved_input = self.episode.microbiologyinput_set.get()
+        saved_input.refresh_from_db()
+        observation = saved_input.microinputicuroundrelation.observation
+        self.assertEqual(
+            observation.temperature, 222
+        )
+        # observatio should gain the datetime
+        # of the advice
+        self.assertEqual(
+            observation.datetime,
+            timezone.make_aware(datetime.datetime(
+                2020, 3, 27, 9, 33, 55
+            ))
+        )
+        icu_round = saved_input.microinputicuroundrelation.icu_round
+        self.assertEqual(
+            icu_round.when,
+            timezone.make_aware(datetime.datetime(
+                2020, 3, 27, 9, 33, 55
+            ))
+        )
+        self.assertEqual(12.0, icu_round.sofa_score)
+
+
+    def test_update_from_dict_delete_observation(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode
+        )
+        observation =  obs_models.Observation.objects.create(
+            episode=self.episode,
+            temperature=111,
+            datetime=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            ))
+        )
+        icu_round = emodels.ICURound.objects.create(
+            episode=self.episode,
+            when=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            )),
+            sofa_score='12'
+        )
+        emodels.MicroInputICURoundRelation.objects.create(
+            microbiology_input=micro_input,
+            observation=observation,
+            icu_round=icu_round
+        )
+
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'Other',
+            'micro_input_icu_round_relation': {},
+            'episode_id': self.episode.id
+        }
+        micro_input.update_from_dict(update_dict, self.user)
+        saved_input = self.episode.microbiologyinput_set.get()
+        saved_input.refresh_from_db()
+        self.assertFalse(emodels.MicroInputICURoundRelation.objects.all().exists())
+        self.assertFalse(obs_models.Observation.objects.all().exists())
+        self.assertFalse(emodels.ICURound.objects.all().exists())
+
+    def test_delete_observation(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode
+        )
+        observation =  obs_models.Observation.objects.create(
+            episode=self.episode,
+            temperature=111,
+            datetime=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            ))
+        )
+        icu_round = emodels.ICURound.objects.create(
+            episode=self.episode,
+            when=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            )),
+            sofa_score='12'
+        )
+        emodels.MicroInputICURoundRelation.objects.create(
+            microbiology_input=micro_input,
+            observation=observation,
+            icu_round=icu_round
+        )
+        observation.delete()
+        micro_input.refresh_from_db()
+        self.assertIsNone(micro_input.microinputicuroundrelation.observation_id)
+
+    def test_to_dict(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode,
+            clinical_discussion="some discussion"
+        )
+        observation =  obs_models.Observation.objects.create(
+            episode=self.episode,
+            temperature=111,
+            datetime=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            ))
+        )
+        icu_round = emodels.ICURound.objects.create(
+            episode=self.episode,
+            when=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            )),
+            sofa_score='12'
+        )
+        emodels.MicroInputICURoundRelation.objects.create(
+            microbiology_input=micro_input,
+            observation=observation,
+            icu_round=icu_round
+        )
+        as_dict = micro_input.to_dict(None)
+        self.assertEqual(
+            as_dict["clinical_discussion"], "some discussion"
+        )
+
+        self.assertEqual(
+            as_dict["micro_input_icu_round_relation"]["observation"]["temperature"], 111
+        )
+        self.assertEqual(
+            '12',
+            as_dict["micro_input_icu_round_relation"]["icu_round"]["sofa_score"]
+        )
+
+    def test_to_dict_for_no_icu_round(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode,
+            clinical_discussion="some discussion"
+        )
+        as_dict = micro_input.to_dict(None)
+        self.assertEqual(as_dict["micro_input_icu_round_relation"]["observation"], {})
+        self.assertEqual(as_dict["micro_input_icu_round_relation"]["icu_round"], {})
+
+    def test_delete_with_icu_round(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode,
+            clinical_discussion="some discussion"
+        )
+        observation =  obs_models.Observation.objects.create(
+            episode=self.episode,
+            temperature=111,
+            datetime=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            ))
+        )
+        icu_round = emodels.ICURound.objects.create(
+            episode=self.episode,
+            when=timezone.make_aware(datetime.datetime(
+                2020, 3, 26, 10, 33, 55
+            )),
+            sofa_score='12'
+        )
+        emodels.MicroInputICURoundRelation.objects.create(
+            microbiology_input=micro_input,
+            observation=observation,
+            icu_round=icu_round
+        )
+        micro_input.delete()
+        self.assertFalse(emodels.MicroInputICURoundRelation.objects.all().exists())
+        self.assertFalse(obs_models.Observation.objects.all().exists())
+        self.assertFalse(emodels.ICURound.objects.all().exists())
+        self.assertFalse(emodels.MicrobiologyInput.objects.all().exists())
+
+    def test_delete_without_icu_round(self):
+        micro_input = emodels.MicrobiologyInput.objects.create(
+            episode=self.episode,
+            clinical_discussion="some discussion"
+        )
+        micro_input.delete()
+        self.assertFalse(emodels.MicroInputICURoundRelation.objects.all().exists())
+        self.assertFalse(obs_models.Observation.objects.all().exists())
+        self.assertFalse(emodels.ICURound.objects.all().exists())
+        self.assertFalse(emodels.MicrobiologyInput.objects.all().exists())
 
 
 class BloodCultureMixinTestCase(OpalTestCase):
@@ -489,13 +767,13 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
             'consistency_token': u'12345678',
             'updated': None,
             'created': None,
+            'category': None,
             'updated_by_id': None,
             'created_by_id': None,
             'episode_id': self.episode.id,
             'id': self.diagnosis.id,
             'condition': 'Some condition',
             'provisional': False,
-            'category': None,
             'details': u'',
             'date_of_diagnosis': datetime.date(2013, 7, 25),
             }
@@ -548,7 +826,7 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 0)
 
     def test_not_updated_on_other_removal(self):
-        weeks_ago = datetime.datetime(2017, 1, 1)
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.patient.positivebloodculturehistory_set.update(
             when=weeks_ago
@@ -558,7 +836,7 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.assertEqual(pbch.when.date(), weeks_ago.date())
 
     def test_updated_on_repeat_saves(self):
-        weeks_ago = datetime.datetime(2017, 1, 1)
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.patient.positivebloodculturehistory_set.update(
             when=weeks_ago

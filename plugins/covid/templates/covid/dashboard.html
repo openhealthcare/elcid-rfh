@@ -1,0 +1,77 @@
+{% load humanize %}
+<div class="content-offset">
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h1>Testing</h1>
+    </div> <!-- heading -->
+    <div class="panel-body">
+      <div class="row">
+
+        <div class="col-md-4">
+          <h1>{{ patients_tested |intcomma }}</h1>
+          <p>Patients tested</p>
+        </div> <!-- Column -->
+
+        <div class="col-md-4">
+          <h1>{{ negative_count |intcomma }}</h1>
+          <p>Negative</p>
+        </div> <!-- Column -->
+
+
+        <div class="col-md-4">
+          <h1>{{ positive_count |intcomma }}</h1>
+          <p>Positive</p>
+        </div> <!-- Column -->
+      </div> <!-- row -->
+    </div>   <!-- panel body -->
+  </div>     <!-- Panel -->
+
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h1>ICU Teams</h1>
+    </div> <!-- heading -->
+    <div class="panel-body">
+      <div class="row">
+
+        <div class="col-md-4">
+          <h1>{{ icu_south_count |intcomma }}</h1>
+          <p>ICU South</p>
+        </div> <!-- Column -->
+
+        <div class="col-md-4">
+          <h1>{{ icu_east_count |intcomma }}</h1>
+          <p>ICU East</p>
+        </div> <!-- Column -->
+
+
+        <div class="col-md-4">
+          <h1>{{ icu_west_count |intcomma }}</h1>
+          <p>ICU West</p>
+        </div> <!-- Column -->
+      </div> <!-- row -->
+
+      <div class="row">
+
+        <div class="col-md-4">
+          <h1>{{ shdu_count |intcomma }}</h1>
+          <p>SHDU</p>
+        </div> <!-- Column -->
+
+        <div class="col-md-4">
+          <h1>{{ non_canonical_icu_count |intcomma }}</h1>
+          <p>Non Canonical ICU</p>
+        </div> <!-- Column -->
+
+
+        <div class="col-md-4">
+          <h1>{{ icu_total |intcomma }}</h1>
+          <p>ICU Total</p>
+        </div> <!-- Column -->
+      </div> <!-- row -->
+
+    </div>   <!-- panel body -->
+  </div>     <!-- Panel -->
+
+</div>

@@ -11,9 +11,18 @@
     <h2 class="text-center no-results">Failed To load lab tests for this patient</h2>
   </div>
   <div ng-show="patientLoadStatus.isLoaded()">
-    <div ng-hide="data.obs_values.length">
+    <div ng-hide="data.obs_values.length || data.ticker.length">
       <h2 class="text-center no-results">No results found</h2>
     </div>
+
+    <div class="content-offset-below-20" ng-show="data.ticker.length">
+      <div class="row" ng-repeat="test in data.ticker">
+        <div class="col-md-4">[[ test.timestamp ]]</div>
+        <div class="col-md-4">[[ test.name ]]</div>
+        <div class="col-md-4">[[ test.value ]]</div>
+      </div>
+    </div>
+
     <table ng-show="data.obs_values.length" class="col-md-12 table">
       <thead>
         <tr>
@@ -23,9 +32,9 @@
             [[ date | displayDate ]]
           </th>
           {% comment %}
-          <th class="text-center">
-            3 week trend
-          </th>
+            <th class="text-center">
+              3 week trend
+            </th>
           {% endcomment %}
         </tr>
       </thead>
@@ -37,9 +46,9 @@
             [[ item.latest_results[date] ]]
           </td>
           {% comment %}
-          <td class="text-center">
-            <div spark-line="item.graph_values"></div>
-          </td>
+            <td class="text-center">
+              <div spark-line="item.graph_values"></div>
+            </td>
           {% endcomment %}
         </tr>
       </tbody>

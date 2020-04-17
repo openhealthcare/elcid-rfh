@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from django.contrib.admin.sites import AdminSite
 from opal.core.test import OpalTestCase
 from opal import models as omodels

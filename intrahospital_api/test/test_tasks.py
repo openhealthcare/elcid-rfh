@@ -1,4 +1,4 @@
-from mock import patch
+from unittest.mock import patch
 from opal.core.test import OpalTestCase
 from intrahospital_api import tasks
 

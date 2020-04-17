@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 import datetime
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import dev_api

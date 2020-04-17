@@ -1,5 +1,5 @@
 from datetime import date
-from mock import patch
+from unittest.mock import patch
 from django.test import override_settings
 from django.contrib.auth.models import User
 
@@ -9,6 +9,7 @@ from intrahospital_api import constants
 from elcid.pathways import (
     AddPatientPathway, IgnoreDemographicsMixin
 )
+from elcid import episode_categories
 from apps.tb.pathways import AddTbPatientPathway
 from elcid import models as emodels
 
@@ -184,27 +185,20 @@ class TestAddPatientPathway(OpalTestCase):
             ['antifungal']
         )
 
-
-class TestAddTbPatientPathway(OpalTestCase):
-    def setUp(self):
-        self.assertTrue(
-            self.client.login(
-                username=self.user.username, password=self.PASSWORD
-            )
-        )
-        self.url = AddTbPatientPathway().save_url()
-
-    def test_saves_tag_and_episode(self):
+    def test_dont_create_new_episode_if_infectious_service_episode_exists(self):
+        patient, episode = self.new_patient_and_episode_please()
+        episode.category_name = episode_categories.InfectionService.display_name
+        episode.save()
+        url = AddPatientPathway().save_url(patient=patient)
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'tb': True}],
+            tagging=[{u'antifungal': True}]
         )
-        response = self.post_json(self.url, test_data)
-        self.assertEqual(response.status_code, 200)
-        patient = models.Patient.objects.get()
-        episode = patient.episode_set.get()
+        self.post_json(url, test_data)
+        self.assertEqual(
+            patient.episode_set.get().id, episode.id
+        )
         self.assertEqual(
             list(episode.get_tag_names(None)),
-            ["tb_tag"]
+            ['antifungal']
         )
-        self.assertEqual(episode.category_name, "TB")

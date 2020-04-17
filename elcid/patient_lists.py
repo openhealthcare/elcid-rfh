@@ -18,6 +18,7 @@ PATIENT_LIST_SUBRECORDS = [
 
 class RfhPatientList(TaggedPatientList, AbstractBase):
     comparator_service = "EpisodeAddedComparator"
+    order = 50
 
     def to_dict(self, user):
         qs = super(RfhPatientList, self).get_queryset()
@@ -50,6 +51,7 @@ class MAU(RfhPatientList):
 
 class Antifungal(RfhPatientList):
     display_name = 'Antifungal Stewardship'
+    order = -5
     direct_add = True
     tag = 'antifungal'
     template_name = 'episode_list.html'
@@ -73,9 +75,55 @@ class CDIFF(RfhPatientList):
 
 
 class ICU(RfhPatientList):
-    display_name = 'ICU'
+    display_name = 'ICU South'
     direct_add = True
+    order = 1
     tag = "icu"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class ICUEast(RfhPatientList):
+    display_name = 'ICU East'
+    direct_add = True
+    order = 2
+    tag = "icu_east"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class ICUWest(RfhPatientList):
+    display_name = 'ICU West'
+    direct_add = True
+    order = 3
+    tag = "icu_west"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class ICUSHDU(RfhPatientList):
+    display_name = 'ICU SHDU'
+    direct_add = True
+    order = 4
+    tag = "icu_shdu"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class NonCanonicalICU(RfhPatientList):
+    display_name = 'Non-Canonical ICU'
+    direct_add = True
+    order = 5
+    tag = "non_canonical_icu"
+    template_name = 'episode_list.html'
+    schema = []
+
+
+class Covid19NonICU(RfhPatientList):
+    display_name = 'Covid 19 Non-ICU'
+    direct_add = True
+    order = 6
+    tag = "covid_19_non_icu"
     template_name = 'episode_list.html'
     schema = []
 
@@ -130,6 +178,7 @@ class MalboroughClinic(RfhPatientList):
 
 class Renal(RfhPatientList):
     display_name = 'Renal'
+    order = -5
     direct_add = True
     tag = "renal"
     template_name = 'episode_list.html'

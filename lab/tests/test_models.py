@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from reversion.models import Version
 from reversion import revisions as reversion
 from opal.core.test import OpalTestCase

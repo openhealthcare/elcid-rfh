@@ -71,7 +71,7 @@ class SocialHistory(models.EpisodeSubrecord):
         verbose_name="Alcohol",
         choices=ALCOHOL_CHOICES
     )
-    history_of_alocohol_dependence = fields.BooleanField(
+    history_of_alcohol_dependence = fields.BooleanField(
         default=False
     )
     recreational_drug_use = fields.CharField(
@@ -536,6 +536,8 @@ class BCG(models.PatientSubrecord):
 
 
 class MantouxTest(models.PatientSubrecord):
+    _icon = "fa fa-crosshairs"
+
     MANTOUX_SITES = (
         ("Left Lower Arm", "Left Lower Arm",),
         ("Right Lower Arm", "Right Lower Arm",),
@@ -543,6 +545,7 @@ class MantouxTest(models.PatientSubrecord):
     batch_number = fields.CharField(
         max_length=256, blank=True, default=""
     )
+    date_administered = fields.DateField(blank=True, null=True)
     expiry_date = fields.DateField(blank=True, null=True)
     induration = fields.IntegerField(
         verbose_name="Induration (mm)",
@@ -585,6 +588,8 @@ class AdverseReaction(models.EpisodeSubrecord):
 
 
 class OtherInvestigation(models.EpisodeSubrecord):
-    name = fields.CharField(max_length=256, blank=True, default="")
-    date = fields.DateField(blank=True, null=True)
+    _icon = 'fa fa-crosshairs'
+
+    name    = fields.CharField(max_length=256, blank=True, default="")
+    date    = fields.DateField(blank=True, null=True)
     details = fields.TextField(blank=True, default='')

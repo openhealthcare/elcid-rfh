@@ -1,53 +1,18 @@
 """
-    Get a loader this.
-
-    This is the entry point to the api.
-
-    The api handles all interaction with the external
-    system.
-
-    This handles our internals and relationship
-    between elcid.
-
-    we have 5 entry points
-
-    initial_load()
-    nukes all existing lab tests and replaces them.
-
-    this is run in the inital load below. When we add a patient for the
-    first time, when we add a patient who has demographics or when we've
-    reconciled a patient.
-
-    batch_load()
-    Tries to reconcile all unreconciled demographics
-
-    runs the batch load for all patients that are reconciled.
-    currently not being loaded in.
-
-    this is run every 5 mins and after deployments
-
-    Loads everything since the start of the previous
-    successful load so that we paper over any cracks.
-
-    load_patient()
-    is what is run when we run it from the admin, or
-    after a patient has been reconciled from teh reconciliation pathway.
-    It loads in data for a single specific patient.
-
-    any_loads_running()
-    returns true if any, ie initial or batch, loads are running
+Functions for loading data from upstream.
 """
-
 import datetime
 import traceback
 import json
+
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings
 from intrahospital_api import models
-from elcid import models as emodels
 from opal.models import Patient
+
+from elcid import models as emodels
 from elcid.utils import timing
 from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
@@ -127,16 +92,45 @@ def load_demographics(hospital_number):
     return result
 
 
+def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
+    """
+    Creates a patient programatically and sets up integration.
+
+    This is the recommended interface for new patients not via the UI.
+
+    It will create a patient with HOSPITAL_NUMBER.
+    It will create an episode of category EPISODE_CATEGORY for the patient.
+
+    If a patient with this hospital number already exists raise ValueError
+    """
+    if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
+        raise ValueError('Patient with this hospital number already exists')
+
+    patient = Patient.objects.create()
+
+    demographics = patient.demographics()
+    demographics.hospital_number = hospital_number
+    demographics.save()
+
+    patient.create_episode(
+        category_name=episode_category.display_name,
+        start=datetime.date.today()
+    )
+
+    load_patient(patient)
+
+
 def load_patient(patient, run_async=None):
     """
-        Load all the things for a patient.
+    Load all the things for a patient.
 
-        This is called by the admin and by the add patient pathways
-        Nuke all existing lab tests for a patient. Synch lab tests.
+    This is called by the admin and by the add patient pathways.
 
-        will work asynchronously based on your preference.
+    Sync lab tests.
+    Sync demographics.
 
-        it will default to settings.ASYNC_API.
+    Will work asynchronously based on your preference.
+    It will default to settings.ASYNC_API.
     """
     logger.info("starting to load patient {}".format(patient.id))
     if run_async is None:
@@ -411,16 +405,6 @@ def _load_patient(patient, patient_load):
     )
     try:
         hospital_number = patient.demographics_set.first().hospital_number
-        patient.labtest_set.filter(
-            lab_test_type__in=[
-                emodels.UpstreamBloodCulture.get_display_name(),
-                emodels.UpstreamLabTest.get_display_name()
-            ]
-        ).delete()
-        logger.info(
-            "deleted patient {} {}".format(patient.id, patient_load.id)
-        )
-
         results = api.results_for_hospital_number(hospital_number)
         logger.info(
             "loaded results for patient {} {}".format(

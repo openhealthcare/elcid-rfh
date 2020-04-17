@@ -40,6 +40,14 @@
         [[ patient.demographics[0].date_of_birth | displayDate ]]
       </div>
     </div>
+    <div class="row" ng-show="patient.demographics[0].death_indicator">
+      <div class="col-md-4">
+        <b>Date Of Death</b>
+      </div>
+      <div class="col-md-8">
+        [[ patient.demographics[0].date_of_death | displayDate ]]
+      </div>
+    </div>
     <div class="row">
       <div class="col-md-4">
         <b>Sex</b>
@@ -62,11 +70,6 @@
       </div>
       <div class="col-md-8">
         [[ patient.demographics[0].ethnicity ]]
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12">
-        {% include "partials/historical_bacteraemia.html" %}
       </div>
     </div>
   </div>

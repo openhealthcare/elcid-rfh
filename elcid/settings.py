@@ -159,6 +159,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'axes',
     'reversion',
     'apps.tb',
@@ -172,6 +173,8 @@ INSTALLED_APPS = (
     'plugins.letters',
     'plugins.labtests',
     'plugins.appointments',
+    'plugins.icu',
+    'plugins.covid',
     'intrahospital_api',
     'elcid',
     'django.contrib.admin',
@@ -280,6 +283,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'icu': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
     }
 }
 
@@ -289,6 +297,15 @@ if 'test' not in sys.argv:
         'level': 'INFO',
         'propagate': False,
     }
+
+if 'test' in sys.argv:
+    blank_logger = {
+        'handlers': [],
+        'level': 'ERROR',
+        'propagate': True
+    }
+    LOGGING['loggers']['elcid.requestLogger'] = blank_logger
+    LOGGING['loggers']['intrahospital_api'] = blank_logger
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
@@ -335,7 +352,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.24'
+VERSION_NUMBER = '0.35'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -379,5 +396,11 @@ REST_FRAMEWORK = {
 if 'test' not in sys.argv:
     try:
         from elcid.local_settings import *
+    except ImportError:
+        pass
+
+if 'test' in sys.argv:
+    try:
+        from elcid.local_test_settings import *
     except ImportError:
         pass

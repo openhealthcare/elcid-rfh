@@ -148,6 +148,12 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .no-touchevents .patient-timeline-discussion:hover i.edit {
   display: inline-block; }
 
+.death-banner {
+  margin-top: -15px;
+  background-color: #864200;
+  color: white;
+  margin-bottom: 12px; }
+
 .lab-tests hr {
   margin-top: 0;
   margin-bottom: 0;
@@ -231,5 +237,17 @@ div.add-isolate:hover {
 
 .left-offset-10 {
   margin-left: 10px; }
+
+.pl0 {
+  padding-left: 0px; }
+
+.icu-handover ol {
+  padding-left: 12px; }
+
+.icu-handover ol li {
+  list-style: decimal; }
+
+.icu-handover ul li {
+  list-style: disc inside; }
 
 /*# sourceMappingURL=elcid.css.map */

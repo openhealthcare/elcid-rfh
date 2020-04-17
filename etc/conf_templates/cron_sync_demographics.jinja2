@@ -1,0 +1,1 @@
+8 */12 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py sync_demographics >> /usr/lib/ohc/log/cron_synch.log 2>&1

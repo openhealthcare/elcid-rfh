@@ -13,9 +13,6 @@
                   <span ng-show="row.location[0].ward">
                     &nbsp; {% icon models.Location.get_icon %} [[ row.location[0].ward ]]
                   </span>
-                  <span class="pull-right" ng-repeat="episode in [row]" ng-show="currentTag !== 'bacteraemia' && row.positive_blood_culture_history.length">
-                    {% include "partials/historical_bacteraemia.html" %}
-                  </span>
                 </small>
               </h3>
             </div>
@@ -24,19 +21,19 @@
         <div uib-collapse="isCardCollapsed" class="panel-body">
             <div class="col-md-5">
               <h4><strong>
-                  {% icon models.PrimaryDiagnosis.get_icon %} Primary Diagnosis
+                  {% icon models.PrimaryDiagnosis.get_icon %} {{ models.PrimaryDiagnosis.get_display_name }}
               </strong></h4>
               <p ng-repeat="item in row.primary_diagnosis">
                 {% include models.PrimaryDiagnosis.get_display_template %}
               </p>
               <h4><strong>
-                  {% icon models.Diagnosis.get_icon %} Diagnosis
+                  {% icon models.Diagnosis.get_icon %} {{ models.Diagnosis.get_display_name }}
               </strong></h4>
               <p ng-repeat="item in row.diagnosis">
                 {% include models.Diagnosis.get_display_template %}
               </p>
               <h4><strong>
-                  {% icon models.Antimicrobial.get_icon %} Antimicrobials
+                  {% icon models.Antimicrobial.get_icon %} {{ models.Antimicrobial.get_display_name }}
               </strong></h4>
               <p ng-repeat="item in row.antimicrobial">
                 {% include models.Antimicrobial.get_display_template %}
