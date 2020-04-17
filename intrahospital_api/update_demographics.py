@@ -118,3 +118,13 @@ def update_patient_demographics(patient, upstream_demographics_dict=None):
         demographics.update_from_dict(
             upstream_demographics_dict, api.user, force=True
         )
+
+
+def update_all_demographics():
+    """
+    Runs update_patient_demographics for all_patients.
+
+    Called by the management command sync_demographics which runs periodically
+    """
+    for patient in Patient.objects.all():
+        update_patient_demographics(patient)
