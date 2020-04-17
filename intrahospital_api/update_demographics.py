@@ -1,9 +1,12 @@
 """
-    Handles updating demographics pulled in by the loader
+Handles updating demographics pulled in by the loader
 """
+import traceback
+
 from django.db import transaction
 from opal.models import Patient
 from opal.core.serialization import deserialize_date
+
 from intrahospital_api import logger
 from intrahospital_api import get_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
@@ -127,4 +130,8 @@ def update_all_demographics():
     Called by the management command sync_demographics which runs periodically
     """
     for patient in Patient.objects.all():
-        update_patient_demographics(patient)
+        try:
+            update_patient_demographics(patient)
+        except:
+            msg = 'Exception syncing upstream demographics \n {}'
+            logger.error(msg.format(traceback.format_exc()))
