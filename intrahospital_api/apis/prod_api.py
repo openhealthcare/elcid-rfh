@@ -103,7 +103,9 @@ class MainDemographicsRow(object):
         "date_of_birth",
         "sex",
         "ethnicity",
-        "title"
+        "title",
+        "date_of_death",
+        "death_indicator"
     ]
 
     def __init__(self, db_row):
@@ -140,6 +142,13 @@ class MainDemographicsRow(object):
 
     def get_title(self):
         return self.db_row.get("TITLE")
+
+    def get_date_of_death(self):
+        return self.db_row.get('')
+
+    def get_death_indicator(self):
+        alive = self.db_row.get("CRS_Deceased_Flag") == 'ALIVE'
+        return not alive
 
     def get_demographics_dict(self):
         result = {}
