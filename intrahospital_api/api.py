@@ -21,6 +21,25 @@ def patient_to_dict(patient, user):
     serialised_episodes = serialize(
         episodes, user, subs
     )
+
+    # This is an awful hack. Episodes are hard coded to sort by
+    # End date or start date. We pretend the episodes have an end
+    # date because:
+    #
+    # a) we're already overriding serialisation with this horrible hack
+    # b) episodes never end at the Free
+    #
+    # The entire point of this is to order the episode switcher this
+    # way without having to rewrite either patient_detail.js or patient.js
+    category_orders = {
+        'Infection Service': '30',
+        'ICU Handover': '20',
+        'TB': '10',
+    }
+    for s in serialised_episodes:
+        if s['category_name'] in category_orders:
+            s['end'] = category_orders[s['category_name']]
+
     d = {
         'id': patient.id,
     }

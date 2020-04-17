@@ -3,20 +3,21 @@ Pathways for the TB service
 """
 from django.db import transaction
 from django.conf import settings
-from opal.core.pathway import pathways, HelpTextStep
+from opal.core.pathway import pathways, HelpTextStep, WizardPathway
 
 from elcid import models
-from elcid.pathways import AddPatientPathway, IgnoreDemographicsMixin
+from elcid.pathways import IgnoreDemographicsMixin
 
 from obs import models as obs_models
 from intrahospital_api import loader
 
 from apps.tb import models as tb_models
+from apps.tb import episode_categories
 from intrahospital_api import constants
 from apps.tb import constants as tb_constants
 
 
-class AddTbPatientPathway(AddPatientPathway):
+class AddTbPatientPathway(WizardPathway):
     display_name = "Add Patient"
     slug = 'add_tb_patient'
 
@@ -24,13 +25,20 @@ class AddTbPatientPathway(AddPatientPathway):
         pathways.Step(
             template="pathway/rfh_find_patient_form.html",
             step_controller="RfhFindPatientCtrl",
-            display_name="Find patient",
-            icon="fa fa-user"
+            display_name="Patient Details",
+            icon="fa fa-user",
+            category_name=episode_categories.TbEpisode.display_name
         ),
     )
 
+    def redirect_url(self, user=None, patient=None, episode=None):
+        if not episode:
+            episode = patient.episode_set.last()
+        return "/#/patient/{0}/{1}".format(patient.id, episode.id)
+
     @transaction.atomic
     def save(self, data, user, patient=None, episode=None):
+
         if patient:
             # at present we don't close tb episodes if they
             # already have one, do nothing and return that

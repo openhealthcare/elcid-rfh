@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller(
-  'DeleteBloodCultureIsolateCtrl',
+  'GeneralDeleteCtrl',
   function($scope, $modalInstance, item) {
     $scope.destroy = function() {
       item.delete().then(function() {

@@ -1,0 +1,61 @@
+{% load forms %}
+<hr />
+<div class="row">
+  <div class="col-md-9 col-md-offset-1 pl0">
+    <p><b>Ventilation</b></p>
+  </div>
+
+  <div class="col-md-4 col-md-offset-1">
+    {% select model="formItem.editing.micro_input_icu_round_relation.icu_round.ventilation_type"  field="ICURound.ventilation_type" style="vertical"%}
+  </div>
+  <div class="col-md-4 col-md-offset-1" >
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.fio2" field="ICURound.fio2" style="vertical"%}
+  </div>
+</div>
+
+<hr />
+
+<div class="row">
+  <div class="col-md-9 col-md-offset-1 pl0">
+    <p><b>Inotropic Support</b></p>
+  </div>
+
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotrope" field="ICURound.inotrope" label="Drug" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.inotrope_dose" field="ICURound.inotrope_dose" label="Dose" style="vertical" %}
+  </div>
+</div>
+
+<hr />
+
+<div class="row">
+  <div class="col-md-9 col-md-offset-1 pl0">
+    <p><b>Vasopressor</b></p>
+  </div>
+
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.vasopressor" field="ICURound.vasopressor" label="Drug" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.vasopressor_dose" field="ICURound.vasopressor_dose" label="Dose" style="vertical" %}
+  </div>
+</div>
+
+<hr />
+
+<div class="row">
+  <div class="col-md-9 col-md-offset-1 pl0">
+    <p><b>ICU Scores</b></p>
+  </div>
+
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.meld_score" field="ICURound.meld_score" style="vertical" label="MELD" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input model="formItem.editing.micro_input_icu_round_relation.icu_round.sofa_score" field="ICURound.sofa_score" style="vertical" label="SOFA" %}
+  </div>
+</div>
+
+<hr />

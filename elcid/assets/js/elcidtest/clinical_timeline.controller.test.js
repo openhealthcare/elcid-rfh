@@ -3,12 +3,8 @@ describe('ClinicalAdviceFormTest', function() {
 
     var $scope, $httpBackend, $rootScope, $controller;
     var Episode, ctrl, opalTestHelper;
-    var mkcontroller;
+    var mkcontroller, $modal;
 
-    var episodedata = {
-        id: 1,
-        demographics: [ { patient_id: 123 } ]
-    }
     var recorddata = {
             'microbiology_input': {
                 'name': 'microbiology_input',
@@ -30,15 +26,17 @@ describe('ClinicalAdviceFormTest', function() {
             $scope       = $rootScope.$new();
             $controller  = $injector.get('$controller');
             Episode      = $injector.get('Episode');
+            $modal      = $injector.get('$modal');
         });
 
         $scope.patient = opalTestHelper.newPatient($rootScope);
         $scope.episode = $scope.patient.episodes[0];
 
         mkcontroller = function(){
-            ctrl = $controller('ClinicalAdviceForm', {
+            ctrl = $controller('ClinicalTimeline', {
                 $rootScope: $rootScope,
                 $scope: $scope,
+                $modal: $modal
             });
         };
         $httpBackend.expectGET('/api/v0.1/referencedata/').respond({});
@@ -51,11 +49,11 @@ describe('ClinicalAdviceFormTest', function() {
     });
 
     describe('initialization', function() {
-      it('should setup editing', function() {
+      it('should setup the form item', function() {
           mkcontroller();
           $rootScope.$apply();
           $httpBackend.flush();
-          expect(!!ctrl.editing.microbiology_input).toBe(true)
+          expect(!!ctrl.formItem).toBe(true)
       });
 
       it('should set changed to false', function(){
@@ -64,6 +62,25 @@ describe('ClinicalAdviceFormTest', function() {
         $httpBackend.flush();
         expect(ctrl.changed).toBe(false);
       });
+
+      it('should set changed to false when reviewing the initial clinical advice', function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        ctrl.watchMicroFields(ctrl.getClinicalAdviceFormObject().editing);
+        expect(ctrl.changed).toBe(false);
+      });
+
+      it('should set changed to true if the clinical advice has changed', function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+        var clinicalAdviceForm = ctrl.getClinicalAdviceFormObject();
+        clinicalAdviceForm.editing.clinical_discussion = "clinical discussion"
+        ctrl.watchMicroFields(clinicalAdviceForm);
+        expect(ctrl.changed).toBe(true);
+      });
+
 
       it('should set clinical advice to empty if there are no clinical advice', function(){
         $scope.episode.microbiology_input = [];
@@ -107,8 +124,61 @@ describe('ClinicalAdviceFormTest', function() {
           [advice3, advice2, advice1]
         )
       });
+    });
 
+    describe('hasIcuOrObservation', function(){
+      var item;
+      beforeEach(function(){
+        mkcontroller();
+        $rootScope.$apply();
+        $httpBackend.flush();
+      });
 
+      it('should return true if the icu round is populated', function(){
+        item = {
+          reason_for_interaction: "ICU round",
+          micro_input_icu_round_relation: {
+            icu_round: {
+              inotropic: true
+            },
+            observation: {}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(true);
+      });
+
+      it('should return true if the observation is populated', function(){
+        item = {
+          reason_for_interaction: "ICU round",
+          micro_input_icu_round_relation: {
+            icu_round: {},
+            observation: {temperature: 38.5}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(true);
+      });
+
+      it('should return false if reason for interaction is not ICU round', function(){
+        item = {
+          reason_for_interaction: "Other",
+          micro_input_icu_round_relation: {
+            icu_round: {},
+            observation: {temperature: 38.5}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(false);
+      });
+
+      it('should return false if the icu round and observation are not populated', function(){
+        item = {
+          reason_for_interaction: "ICU round",
+          micro_input_icu_round_relation: {
+            icu_round: {},
+            observation: {}
+          }
+        }
+        expect(ctrl.hasIcuOrObservation(item)).toBe(false);
+      });
     });
 
     describe('it should save', function(){
@@ -116,66 +186,20 @@ describe('ClinicalAdviceFormTest', function() {
         mkcontroller();
         $rootScope.$apply();
         $httpBackend.flush();
-        ctrl.editing.microbiology_input.reason_for_interaction = "something";
       });
 
       it('should reset item', function(){
-          $httpBackend.expectPOST(
-            "/api/v0.1/microbiology_input/",
-            {
-              reason_for_interaction: "something",
-              episode_id: 123
-            }
-          ).respond({});
-          ctrl.save();
-          $rootScope.$apply();
-          $httpBackend.flush();
-          expect(ctrl.editing.microbiology_input.reason_for_interaction).toBe(undefined);
-      });
-
-      it('should reset changed', function(){
-        $httpBackend.expectPOST(
-          "/api/v0.1/microbiology_input/",
-          {
-            reason_for_interaction: "something",
-            episode_id: 123
-          }
-        ).respond({});
-        ctrl.changed = true;
-        ctrl.save();
-        $rootScope.$apply();
-        $httpBackend.flush();
-        expect(ctrl.changed).toBe(false);
-      });
-
-      it('should call through to update the clinical advice', function(){
+        ctrl.changed = true
+        spyOn(ctrl.formItem, "save").and.returnValue({
+          then: function(x){ x() }
+        });
+        spyOn(ctrl, "getClinicalAdviceFormObject");
         spyOn(ctrl, "getClinicalAdvice");
-        $httpBackend.expectPOST(
-          "/api/v0.1/microbiology_input/",
-          {
-            reason_for_interaction: "something",
-            episode_id: 123
-          }
-        ).respond({});
-        ctrl.changed = true;
         ctrl.save();
         $rootScope.$apply();
-        $httpBackend.flush();
+        expect(ctrl.getClinicalAdviceFormObject).toHaveBeenCalledWith();
         expect(ctrl.getClinicalAdvice).toHaveBeenCalledWith();
-      })
-
-      it('should always save for the episode that is currently on scope', function(){
-        var episode2 = new Episode(opalTestHelper.getEpisodeData());
-        $scope.episode = episode2;
-        $httpBackend.expectPOST(
-          "/api/v0.1/microbiology_input/",
-          {"reason_for_interaction":"something","episode_id":123}
-        ).respond({reason_for_interaction: "something"});
-
-        ctrl.save();
-        $httpBackend.flush();
-        $rootScope.$apply();
-        expect(_.last($scope.episode.microbiology_input).reason_for_interaction).toBe("something");
+        expect(ctrl.changed).toBe(false);
       });
     });
 
@@ -207,42 +231,37 @@ describe('ClinicalAdviceFormTest', function() {
     });
 
     describe("editItem", function(){
+      var fakeItem, clinicalAdvice;
+
       beforeEach(function(){
         mkcontroller();
         $rootScope.$apply();
         $httpBackend.flush();
+        spyOn($modal, "open");
+        fakeItem = {fake: "item"};
+        clinicalAdvice = "clinicalAdvice"
+        spyOn(ctrl, "getClinicalAdviceFormObject").and.returnValue(clinicalAdvice);
+        spyOn(ctrl, "getClinicalAdvice");
       });
 
-      it("should update the clinical advice after edit item is called", function(){
-        var fakeEpisode = {
-          recordEditor: {
-            openEditItemModal: function(){
-              return {then: function(x){x()}}
-            }
-          }
-        }
-        spyOn(ctrl, "getClinicalAdvice");
-        ctrl.editItem(fakeEpisode, null);
-        expect(ctrl.getClinicalAdvice).toHaveBeenCalledWith();
+      it("open the modal with the correct arguments", function(){
+        ctrl.editItem(fakeItem);
+        var callArgs = $modal.open.calls.allArgs();
+        expect(callArgs.length).toBe(1);
+        var call = callArgs[0][0];
+        expect(call.backdrop).toBe('static');
+        expect(call.templateUrl).toBe("/templates/modals/microbiology_input.html/");
+        expect(call.controller).toBe("GeneralEditCtrl");
+        expect(call.resolve.formItem()).toBe(clinicalAdvice);
+        expect(ctrl.getClinicalAdvice.calls.any()).toBe(false);
       });
 
-      it("should push the correct variables though to the record editor", function(){
-        var fakeEpisode = {
-          recordEditor: {
-            openEditItemModal: function(){
-              return {then: function(x){x()}}
-            }
-          }
-        }
-        spyOn(ctrl, "getClinicalAdvice");
-        spyOn(fakeEpisode.recordEditor, "openEditItemModal").and.callThrough();
-        var microInput = {
-          reason_for_interaction: "middle date",
-          initials: "TTT",
-          when: moment(new Date(2018, 13, 1))
-        }
-        ctrl.editItem(fakeEpisode, microInput);
-        expect(fakeEpisode.recordEditor.openEditItemModal).toHaveBeenCalledWith(microInput, "microbiology_input");
+      it("should reload the clinical advice as a callback", function(){
+        ctrl.editItem(fakeItem);
+        var callArgs = $modal.open.calls.allArgs();
+        var call = callArgs[0][0];
+        var result = call.resolve.callBack()();
+        expect(ctrl.getClinicalAdvice.calls.any()).toBe(true);
       });
     })
 

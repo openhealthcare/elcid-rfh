@@ -1842,7 +1842,6 @@
       "name": "Child visiting family"
     }
   ],
-  "locationcategory": [],
   "micro_test_stool_pcr": [
     {
       "synonyms": [],
@@ -2283,6 +2282,10 @@
     {
       "synonyms": [],
       "name": "Antifungal stewardship ward round"
+    },
+    {
+      "synonyms": [],
+      "name": "ICU round"
     },
     {
       "synonyms": [],
@@ -2845,6 +2848,10 @@
     {
       "synonyms": [],
       "name": "ICU 4 West"
+    },
+    {
+      "synonyms": [],
+      "name": "SHDU"
     },
     {
       "synonyms": [],

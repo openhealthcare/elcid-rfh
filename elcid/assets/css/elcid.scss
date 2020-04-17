@@ -365,3 +365,18 @@ div.add-isolate:hover{
         color: $red;
     }
 }
+
+.pl0 {
+    padding-left: 0px;
+}
+
+.icu-handover ol {
+    padding-left: 12px;
+}
+.icu-handover ol li {
+    list-style: decimal;
+}
+.icu-handover ul li {
+    list-style: disc inside;
+
+}

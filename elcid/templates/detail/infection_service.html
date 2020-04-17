@@ -2,6 +2,7 @@
 {% load forms %}
 <div class="col-md-6">
   {% record_panel models.Location %}
+  {% record_panel models.ICUAdmission %}
   {% teams_panel %}
   {% if permissions.view_lab_test_trends %}
     <div class="panel panel-default">
@@ -16,9 +17,10 @@
 
 
   {% record_panel models.PrimaryDiagnosis %}
-
+  {% record_panel models.PastMedicalHistory %}
   {% record_panel models.Diagnosis %}
   {% record_panel models.RiskFactor %}
+  {% record_panel models.Travel %}
   {% record_panel models.Procedure %}
   <div class="visible-print">
     {% record_panel models.MicrobiologyInput %}
@@ -26,6 +28,7 @@
 
   {% record_panel models.Line %}
   {% include "partials/antimicrobial_panel.html" %}
+  {% include 'panels/other_medication.html' %}
   {% include "partials/imaging_panel.html" %}
   {% record_panel models.OtherInvestigation title="Other Investigations"%}
   {% include "partials/edrm_panel.html" %}

@@ -11,6 +11,7 @@ from django.utils import timezone
 from opal.utils import camelcase_to_underscore
 from lab import models as lmodels
 import opal.models as omodels
+from obs import models as obs_models
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
@@ -60,10 +61,6 @@ class DuplicatePatient(PatientSubrecord):
         return self._icon
 
 
-class LocationCategory(lookuplists.LookupList):
-    pass
-
-
 class Provenance(lookuplists.LookupList):
     pass
 
@@ -72,7 +69,6 @@ class Location(EpisodeSubrecord):
     _is_singleton = True
     _icon = 'fa fa-map-marker'
 
-    category = ForeignKeyOrFreeText(LocationCategory)
     provenance = ForeignKeyOrFreeText(Provenance)
     hospital = ForeignKeyOrFreeText(omodels.Hospital)
     ward = ForeignKeyOrFreeText(omodels.Ward)
@@ -81,10 +77,9 @@ class Location(EpisodeSubrecord):
     def __str__(self):
         try:
             demographics = self.episode.patient.demographics_set.get()
-            return u'Location for {0}({1}) {2} {3} {4} {5}'.format(
+            return u'Location for {0}({1}) {2} {3} {4}'.format(
                 demographics.name,
                 demographics.hospital_number,
-                self.category,
                 self.hospital,
                 self.ward,
                 self.bed
@@ -374,6 +369,11 @@ class Antimicrobial(EpisodeSubrecord):
         default=False, verbose_name="No anti-infectives"
     )
 
+    @classmethod
+    def get_display_name(klass):
+        # TODO: Yes I know, do this via Meta, but for now no migrations
+        # and the panel uses this method...
+        return "Anti-infectives"
 
 class RenalFunction(lookuplists.LookupList):
     pass
@@ -388,7 +388,7 @@ class MicrobiologyInput(EpisodeSubrecord):
     _icon = 'fa fa-comments'
     _modal = 'lg'
     _list_limit = 3
-    _angular_service = 'MicrobiologyInput'
+    ICU_REASON_FOR_INTERACTION = "ICU round"
 
     ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"
 
@@ -410,6 +410,43 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
+
+    def to_dict(self, *args, **kwargs):
+        result = super().to_dict(*args, **kwargs)
+        if MicroInputICURoundRelation.objects.filter(microbiology_input_id=self.id).exists():
+            result["micro_input_icu_round_relation"] = self.microinputicuroundrelation.to_dict(*args, **kwargs)
+        else:
+            result["micro_input_icu_round_relation"] = MicroInputICURoundRelation().to_dict()
+        return result
+
+    def update_from_dict(self, data, *args, **kwargs):
+        micro_input_icu_round_relation = data.pop("micro_input_icu_round_relation", {})
+        result = super().update_from_dict(data, *args, **kwargs)
+
+        if self.reason_for_interaction == self.ICU_REASON_FOR_INTERACTION:
+            icu_round, _ = MicroInputICURoundRelation.objects.get_or_create(
+                microbiology_input_id=self.id
+            )
+            icu_round.update_from_dict(
+                self.episode, data.get("when"), micro_input_icu_round_relation, *args, **kwargs
+            )
+            return result
+        else:
+            micro_input = MicroInputICURoundRelation.objects.filter(
+                microbiology_input_id=self.id
+            ).first()
+            if micro_input:
+                micro_input.delete_self()
+        return result
+
+    def delete(self):
+        micro_input = MicroInputICURoundRelation.objects.filter(
+            microbiology_input_id=self.id
+        ).first()
+        if micro_input:
+            micro_input.delete_self()
+
+        super().delete()
 
     class Meta:
         verbose_name = "Clinical Advice"
@@ -644,7 +681,7 @@ class Imaging(EpisodeSubrecord):
 
 
 class PositiveBloodCultureHistory(PatientSubrecord):
-    when = models.DateTimeField(default=datetime.datetime.now)
+    when = models.DateTimeField(default=timezone.now)
 
     @classmethod
     def _get_field_default(cls, name):
@@ -837,5 +874,124 @@ def record_positive_blood_culture(sender, instance, **kwargs):
         pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
             patient_id=instance.episode.patient.id
         )
-        pbch.when = datetime.datetime.now()
+        pbch.when = timezone.now()
         pbch.save()
+
+
+class ICUAdmission(EpisodeSubrecord):
+    _icon = 'fa fa-heartbeat'
+
+    OUTCOMES = enum('Survived', 'Covid-19 Atributable Death', 'Covid-19 Non-attributable Death')
+
+    admission_date = models.DateField(blank=True, null=True)
+    discharge_date = models.DateField(blank=True, null=True)
+    apache2_score   = models.CharField(
+        max_length=200, blank=True, null=True,
+        verbose_name="APACHE II Score")
+    outcome        = models.CharField(
+        max_length=200, blank=True, null=True, choices=OUTCOMES
+    )
+
+    class Meta:
+        verbose_name = 'ICU Admission'
+
+
+class InotropicDrug(lookuplists.LookupList):
+    pass
+
+
+class Vasopressor(lookuplists.LookupList):
+    pass
+
+
+class ICURound(EpisodeSubrecord):
+    NIV       = 'NIV'
+    INTUBATED = "Intubated"
+
+    VENTILATION_TYPES = enum(NIV, INTUBATED)
+
+    when = models.DateTimeField(
+        blank=True, null=True
+    )
+    ventilation_type = models.CharField(
+        max_length=200, blank=True, null=True, choices=VENTILATION_TYPES
+    )
+    fio2 = models.CharField(
+        max_length=20,
+        blank=True, null=True, verbose_name="FiO₂"
+    )
+    inotrope         = ForeignKeyOrFreeText(InotropicDrug)
+    inotrope_dose    = models.CharField(max_length=200, blank=True, null=True)
+    vasopressor      = ForeignKeyOrFreeText(Vasopressor)
+    vasopressor_dose = models.CharField(max_length=200, blank=True, null=True)
+    meld_score = models.FloatField(
+        blank=True, null=True, verbose_name="MELD score"
+    )
+    sofa_score = models.FloatField(
+        blank=True, null=True, verbose_name="SOFA score"
+    )
+
+    class Meta:
+        verbose_name = 'ICU Round'
+
+
+class MicroInputICURoundRelation(models.Model):
+    """
+    A model that is used when reason for interaction
+    is ICU round
+    """
+    microbiology_input = models.OneToOneField(
+        MicrobiologyInput, blank=True, null=True, on_delete=models.SET_NULL
+    )
+    observation = models.OneToOneField(
+        obs_models.Observation, blank=True, null=True, on_delete=models.SET_NULL
+    )
+    icu_round = models.OneToOneField(
+        ICURound,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
+    )
+
+    def update_from_dict(self, episode, when, data, *args, **kwargs):
+        if self.observation_id:
+            observation = self.observation
+        else:
+            observation = obs_models.Observation(
+                episode=episode
+            )
+        data["observation"]["datetime"] = when
+        observation.update_from_dict(data["observation"], *args, **kwargs)
+        self.observation_id = observation.id
+
+        if self.icu_round_id:
+            icu_round = self.icu_round
+        else:
+            icu_round = ICURound(
+                episode=episode
+            )
+
+        data["icu_round"]["when"] = when
+        icu_round.update_from_dict(data["icu_round"], *args, **kwargs)
+        self.icu_round_id = icu_round.id
+        self.save()
+
+    def to_dict(self, *args, **kwargs):
+        result = {}
+        if self.observation:
+            result["observation"] = self.observation.to_dict(*args, **kwargs)
+        else:
+            result["observation"] = {}
+
+        if self.icu_round:
+            result["icu_round"] = self.icu_round.to_dict(*args, **kwargs)
+        else:
+            result["icu_round"]= {}
+        return result
+
+    def delete_self(self):
+        if self.observation_id:
+            self.observation.delete()
+        if self.icu_round_id:
+            self.icu_round.delete()
+        self.delete()

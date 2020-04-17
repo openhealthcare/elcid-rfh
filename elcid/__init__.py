@@ -13,9 +13,13 @@ class StandardAddPatientMenuItem(menus.MenuItem):
         from opal.models import UserProfile
         if user and user.is_superuser:
             return True
-        return not UserProfile.objects.filter(
-            user=user,
-            roles__name=tb_constants.TB_ROLE
+
+        profile = UserProfile.objects.get(user=user)
+        if profile.readonly:
+            return False
+
+        return not profile.roles.filter(
+            name=tb_constants.TB_ROLE
         ).exists()
 
 
@@ -35,16 +39,14 @@ class Application(application.OpalApplication):
         'js/elcid/filters.js',
         'js/elcid/directives.js',
         'js/elcid/controllers/discharge.js',
-        'js/elcid/services/records/microbiology_input.js',
-        'js/elcid/controllers/clinical_advice_form.js',
+        'js/elcid/controllers/clinical_timeline.js',
         'js/elcid/controllers/welcome.js',
-        'js/elcid/controllers/clinical_advice_form.js',
         'js/elcid/controllers/lab_test_json_dump_view.js',
         'js/elcid/controllers/result_view.js',
         'js/elcid/controllers/rfh_find_patient.js',
         'js/elcid/controllers/blood_culture_panel.js',
-        'js/elcid/controllers/edit_blood_culture_isolate.js',
-        'js/elcid/controllers/delete_blood_culture_isolate.js',
+        'js/elcid/controllers/general_edit.js',
+        'js/elcid/controllers/general_delete.js',
         'js/elcid/controllers/remove_patient_step.js',
 
         'js/elcid/services/demographics_search.js',
@@ -53,6 +55,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/add_antifungal_patients.js',
 
         'js/elcid/services/blood_culture_isolate.js',
+        'js/elcid/services/clinical_advice.js',
         'js/elcid/services/blood_culture_loader.js',
         'js/elcid/services/upstream_blood_culture_loader.js',
         'js/elcid/services/lab_test_results.js',

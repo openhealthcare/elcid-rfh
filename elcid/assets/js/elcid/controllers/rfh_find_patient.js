@@ -40,8 +40,16 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
         var allTags = [];
         _.each(patient.episodes, function(episode){
           _.each(_.keys(episode.tagging[0]), function(tag){
-            if(scope.metadata.tags[tag]){
-              allTags.push(tag);
+            // episodes are singletons
+            // if there is already an episode of this type
+            // hoist location and tagging up so
+            // it appears in other forms.
+            if(step.category_name === episode.category_name){
+              scope.editing.tagging = episode.tagging[0];
+              scope.editing.location = episode.location[0];
+              if(scope.metadata.tags[tag]){
+                allTags.push(tag);
+              }
             }
           });
         });

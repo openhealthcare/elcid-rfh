@@ -1,153 +1,121 @@
 body {
   background-color: #EEE;
-  height: calc(100% - 30px);
-}
+  height: calc(100% - 30px); }
 
 .outer-container .container-fluid {
   padding-left: 0px;
-  padding-right: 0px;
-}
+  padding-right: 0px; }
 
 .outer-container .container.content-offset,
 .outer-container .container-fluid.content-offset {
-  margin-top: 30px;
-}
+  margin-top: 30px; }
 
 .content-offset-5 {
-  margin-top: 5px;
-}
+  margin-top: 5px; }
 
 .bg-primary {
-  background-color: #0091C9;
-}
+  background-color: #0091C9; }
 
 .bg-secondary {
-  background-color: #D36C08;
-}
+  background-color: #D36C08; }
 
 .panel.panel-primary {
-  border-color: #0091C9;
-}
+  border-color: #0091C9; }
 
 .panel.panel-primary > .panel-heading {
   background-color: #0091C9;
   color: white;
-  border-color: #0091C9;
-}
+  border-color: #0091C9; }
 
 .radio-vertical.radio input[type="radio"] {
   opacity: 1;
   z-index: 0;
-  margin-top: 2px;
-}
-
+  margin-top: 2px; }
 .radio-vertical.radio label::before {
-  content: none;
-}
+  content: none; }
 
 h5 {
   font-weight: 600;
   text-transform: capitalize;
-  font-size: 14px;
-}
+  font-size: 14px; }
 
 .btn-primary {
   background-color: #0091C9;
-  border-color: #0091C9;
-}
+  border-color: #0091C9; }
 
 .btn-primary:hover,
 .btn-primary:focus {
   background-color: #006c96;
-  border-color: #006c96;
-}
+  border-color: #006c96; }
 
 .btn-secondary {
   background-color: #D36C08;
-  border-color: #D36C08;
-}
+  border-color: #D36C08; }
 
 .btn-secondary:hover,
 .btn-secondary:focus {
   background-color: #864200;
-  border-color: #864200;
-}
+  border-color: #864200; }
 
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:focus,
 .navbar-default .navbar-nav > li > a:hover {
-  background-color: #343637;
-}
+  background-color: #343637; }
 
 .navbar-nav li:hover,
 .navbar-nav li:hover a,
 .navbar-nav li.active a,
 .navbar-nav li.active {
-  background: #cbc9c8;
-}
+  background: #cbc9c8; }
 
 .panel-primary .panel-default .panel-heading,
 .panel-default .panel-heading {
-  border-bottom: 3px solid #D36C08;
-}
+  border-bottom: 3px solid #D36C08; }
 
 .modal-header {
-  background: #0091C9;
-}
+  background: #0091C9; }
 
 .loading {
   background-color: #343637;
-  color: white;
-}
+  color: white; }
 
 /* ngProgress overrides */
 .ngProgressLiteBar {
   background-color: #D36C08;
-  -webkit-box-shadow: 0 0 10px 0;
-          box-shadow: 0 0 10px 0;
-  /* Inherits the font color */
-}
+  box-shadow: 0 0 10px 0;
+  /* Inherits the font color */ }
 
 .smpl-step > .smpl-step-step > .progress > .progress-bar {
-  background-color: #D36C08;
-}
+  background-color: #D36C08; }
 
 a.list-group-item:hover, a.list-group-item:focus {
   text-decoration: none;
   background-color: #4d5051;
-  color: #FFF;
-}
-
+  color: #FFF; }
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
-  background-color: #343637;
-}
+  background-color: #343637; }
 
 .patient-row .label-warning {
   margin-top: 5px;
   display: inline-block;
-  padding-top: 4px;
-}
-
+  padding-top: 4px; }
 .patient-row .label-danger {
   margin-top: 5px;
   display: inline-block;
-  padding-top: 4px;
-}
+  padding-top: 4px; }
+
+/*# sourceMappingURL=elcid.css.map */
 .label-warning {
-  background-color: #A03110;
-}
+  background-color: #A03110; }
 
 .label-danger {
-  background-color: #DA163E;
-}
+  background-color: #DA163E; }
 
 .panel-link .panel-footer {
-  background-color: inherit;
-}
+  background-color: inherit; }
 
 .full-width {
-  width: 100%;
-}
+  width: 100%; }
 
 .multilined-btn {
   /*
@@ -155,186 +123,137 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   * the same height whether the ext is on 2 lines or not
   * and to vertically/horizontally centre the text
   */
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  min-height: 64px;
-}
+  min-height: 64px; }
 
 .btn-text-wrap {
-  white-space: normal;
-}
+  white-space: normal; }
 
 .patient-timeline-discussion {
-  min-height: 120px;
-}
-
-.patient-timeline-discussion ul {
-  padding-left: 40px;
-}
-
-.patient-timeline-discussion ul li {
-  list-style-type: disc;
-}
-
-.patient-timeline-discussion i {
-  color: #333;
-}
-
-.patient-timeline-discussion ol li {
-  list-style-type: decimal;
-}
+  min-height: 120px; }
+  .patient-timeline-discussion ul {
+    padding-left: 40px; }
+  .patient-timeline-discussion ul li {
+    list-style-type: disc; }
+  .patient-timeline-discussion i {
+    color: #333; }
+  .patient-timeline-discussion ol li {
+    list-style-type: decimal; }
 
 .no-touchevents
 .patient-timeline-discussion i.edit {
-  display: none;
-}
+  display: none; }
 
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit {
-  display: inline-block;
-}
+  display: inline-block; }
 
 .lab-tests hr {
   margin-top: 0;
   margin-bottom: 0;
   margin-left: 10px;
-  margin-right: 10px;
-}
-
+  margin-right: 10px; }
 .lab-tests .lab-test-row {
   padding-top: 10px;
   margin-left: 10px;
   margin-right: 10px;
-  padding-bottom: 10px;
-}
-
-.lab-tests .lab-test-row.selectable:hover {
-  background-color: #f5f5f5;
-}
-
+  padding-bottom: 10px; }
+  .lab-tests .lab-test-row.selectable:hover {
+    background-color: #f5f5f5; }
 .lab-tests .observation-graph-pane {
   padding-top: 10px;
-  padding-bottom: 10px;
-}
-
+  padding-bottom: 10px; }
 .lab-tests .c3-region.too-high {
-  fill: rgba(224, 47, 3, 0.5);
-}
-
+  fill: rgba(224, 47, 3, 0.5); }
 .lab-tests .c3-region.too-low {
-  fill: rgba(224, 47, 3, 0.5);
-}
-
+  fill: rgba(224, 47, 3, 0.5); }
 .lab-tests .too-high {
-  color: #E02F03;
-}
-
+  color: #E02F03; }
 .lab-tests .too-low {
-  color: #E02F03;
-}
+  color: #E02F03; }
 
 .tilde-replacement-paragraph {
   margin-top: 1px;
-  margin-bottom: 1px;
-}
+  margin-bottom: 1px; }
 
 .overflow-x-auto {
-  overflow-x: auto;
-}
+  overflow-x: auto; }
 
 .no-results {
   font-weight: 600;
-  color: #cbc9c8;
-}
+  color: #cbc9c8; }
 
 .trends-panel {
-  min-height: 395px;
-}
-
-.trends-panel .no-results {
-  padding-top: 120px;
-}
+  min-height: 395px; }
+  .trends-panel .no-results {
+    padding-top: 120px; }
 
 .star i {
   color: #0091c9;
-  font-size: 24px;
-}
+  font-size: 24px; }
 
 .field-text {
-  padding-top: 8px;
-}
+  padding-top: 8px; }
 
 .central-info-alert.alert.alert-info {
   text-align: left;
   font-size: 21px;
   background-color: #f2fbff;
   border-color: #006c96;
-  border-width: 3px;
-}
-
-.central-info-alert.alert.alert-info .btn {
-  padding-left: 50px;
-  padding-right: 50px;
-}
+  border-width: 3px; }
+  .central-info-alert.alert.alert-info .btn {
+    padding-left: 50px;
+    padding-right: 50px; }
 
 .tb-summary-panel {
-  min-height: 160px;
-}
+  min-height: 160px; }
 
 .panel tr.table-edit td {
-  vertical-align: middle;
-}
-
+  vertical-align: middle; }
 .panel tr.table-edit i.edit {
-  visibility: hidden;
-}
-
+  visibility: hidden; }
 .panel tr.table-edit:hover i.edit {
-  visibility: visible;
-}
+  visibility: visible; }
 
 .no-touchevents div.blood-culture-edit i,
 i.blood-culture-edit {
-  display: none;
-}
+  display: none; }
 
 div.blood-culture-edit:hover {
-  background-color: #f4f8fc;
-}
-
-div.blood-culture-edit:hover i {
-  display: inline-block;
-  font-size: 28px;
-  padding-top: 5px;
-}
+  background-color: #f4f8fc; }
+  div.blood-culture-edit:hover i {
+    display: inline-block;
+    font-size: 28px;
+    padding-top: 5px; }
 
 div.add-isolate:hover {
-  background-color: #f4f8fc;
-}
+  background-color: #f4f8fc; }
 
 .left-offset-10 {
-  margin-left: 10px;
-}
+  margin-left: 10px; }
 
 .form-hint {
   padding-top: 4px;
   font-size: 18px;
-  margin-left: -20px;
-}
+  margin-left: -20px; }
+  .form-hint .success {
+    color: #0091C9; }
+  .form-hint .failure {
+    color: #f76c51; }
 
-.form-hint .success {
-  color: #0091C9;
-}
+.pl0 {
+  padding-left: 0px; }
 
-.form-hint .failure {
-  color: #f76c51;
-}
+.icu-handover ol {
+  padding-left: 12px; }
+
+.icu-handover ol li {
+  list-style: decimal; }
+
+.icu-handover ul li {
+  list-style: disc inside; }
+
 /*# sourceMappingURL=elcid.css.map */
