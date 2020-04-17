@@ -108,20 +108,16 @@ class MainDemographicsRow(object):
         "death_indicator"
     ]
 
+    DIRECT_UPSTREAM_FIELDS_TO_ELCID_FIELDS = {
+        'hospital_number': 'PATIENT_NUMBER',
+        'nhs_number'     : 'NHS_NUMBER',
+        'first_name'     : 'FORENAME1',
+        'surname'        : 'SURNAME',
+        'title'          : 'TITLE'
+    }
+
     def __init__(self, db_row):
         self.db_row = db_row
-
-    def get_hospital_number(self):
-        return self.db_row.get("PATIENT_NUMBER")
-
-    def get_nhs_number(self):
-        return self.db_row.get("NHS_NUMBER")
-
-    def get_first_name(self):
-        return self.db_row.get("FORENAME1")
-
-    def get_surname(self):
-        return self.db_row.get("SURNAME")
 
     def get_date_of_birth(self):
         dob = self.db_row.get("DOB")
@@ -140,11 +136,9 @@ class MainDemographicsRow(object):
     def get_ethnicity(self):
         return ETHNICITY_MAPPING.get(self.db_row.get("ETHNIC_GROUP"))
 
-    def get_title(self):
-        return self.db_row.get("TITLE")
-
     def get_date_of_death(self):
         date_of_death = self.db_row.get('DATE_OF_DEATH')
+        # Sometimes the upstream database will return '' which raises a strptime error
         if date_of_death:
             return date_of_death
 
@@ -155,7 +149,12 @@ class MainDemographicsRow(object):
     def get_demographics_dict(self):
         result = {}
         for field in self.DEMOGRAPHICS_FIELDS:
-            result[field] = getattr(self, "get_{}".format(field))()
+            if field in self.DIRECT_UPSTREAM_FIELDS_TO_ELCID_FIELDS:
+                result[field] = self.db_row.get(
+                    self.DIRECT_UPSTREAM_FIELDS_TO_ELCID_FIELDS[field]
+                )
+            else:
+                result[field] = getattr(self, "get_{}".format(field))()
         return result
 
 
