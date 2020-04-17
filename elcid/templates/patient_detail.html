@@ -1,5 +1,18 @@
 {% extends 'patient_detail_base.html' %}
 
+{% block content %}
+  <div class="col-md-12 death-banner" ng-show="patient.demographics[0].death_indicator">
+    <h1>
+      <i class="fa fa-warning"></i>
+      Patient deceased
+      <small>
+        ([[ patient.demographics[0].date_of_death | displayDate ]])
+      </small>
+    </h1>
+  </div>
+  {{ block.super }}
+{% endblock %}
+
 {% block episodes_switcher %}
 <div class="panel panel-default">
   <div class="panel-heading ">
