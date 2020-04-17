@@ -144,10 +144,12 @@ class MainDemographicsRow(object):
         return self.db_row.get("TITLE")
 
     def get_date_of_death(self):
-        return self.db_row.get('')
+        date_of_death = self.db_row.get('DATE_OF_DEATH')
+        if date_of_death:
+            return to_date_str(date_of_death)
 
     def get_death_indicator(self):
-        alive = self.db_row.get("CRS_Deceased_Flag") == 'ALIVE'
+        alive = self.db_row.get("DEATH_FLAG") == 'ALIVE'
         return not alive
 
     def get_demographics_dict(self):
