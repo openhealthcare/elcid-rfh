@@ -20,18 +20,18 @@ NEGATIVE_TEST_VALUES = [
     'Undetected~results form ref lab',
     'Undetected~results from ref lab',
     'Undetetced',
+    'Not Detected',
+    'Not detected',
+    'Not detected- PHE Ref Lab report (14/03/2020)',
+    'SARS CoV-2 not detected - result from PHE',
 ]
 
 POSITIVE_TEST_VALUES = [
     '*****Amended Result*****~Detected',
     'DETECTED',
     'Detected',
-    'Not Detected',
-    'Not detected',
-    'Not detected- PHE Ref Lab report (14/03/2020)',
     'POSITIVE',
     'POSITIVE~SARS CoV-2 RNA DETECTED. Please maintain~appropriate Infection Prevention and Control~Measures in line with PHE Guidance.',
-    'SARS CoV-2 not detected - result from PHE',
     'detected',
     'detected~result from ref lab',
 ]
