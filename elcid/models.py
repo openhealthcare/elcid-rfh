@@ -32,10 +32,6 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
     _is_singleton = True
     _icon = 'fa fa-user'
 
-    def set_death_indicator(self, value, *args, **kwargs):
-        if not value:
-            return
-
     pid_fields = (
         'hospital_number', 'nhs_number', 'surname', 'first_name',
         'middle_name', 'post_code',
