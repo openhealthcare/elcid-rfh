@@ -43,6 +43,7 @@ class Command(BaseCommand):
         """
         Main entrypoint for loading all TB appointments ever.
         """
+        raise NotImplementedError('This command has not been refactored - do not run!')
         Appointment.objects.all().delete()
 
         self.api     = ProdAPI()
