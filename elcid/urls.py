@@ -24,9 +24,6 @@ urlpatterns = [
         views.RenalHandover.as_view(),
         name="renal_handover"
     ),
-    url(r'^appointments/tb-clinic-list/',
-        appointment_views.ClinicListView.as_view(),
-        name='tb-clinic-list')
 ]
 
 urlpatterns += opatterns
