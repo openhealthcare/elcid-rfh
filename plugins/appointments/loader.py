@@ -6,6 +6,7 @@ import datetime
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
+from plugins.appointments.models import Appointment
 from plugins.appointments import logger
 
 
@@ -27,10 +28,10 @@ def non_date_identical(frist, second):
     Second is an upstream database dictionary
     """
     for k in second:
-        if k.lower().find('date') != -1:
+        if k.lower().find('date') == -1:
             if getattr(frist, Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]) != second[k]:
-                return True
-    return False
+                return False
+    return True
 
 
 def save_or_discard_appointment_data(appointment, patient):
