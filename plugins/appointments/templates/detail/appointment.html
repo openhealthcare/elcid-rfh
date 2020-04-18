@@ -1,0 +1,39 @@
+<div ng-if="view === 'appointments'">
+  <div ng-controller="AppointmentView as appointmentView" class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+
+        <div class="row">
+          <div class="col-md-9">
+            <h3>
+               <i class="fa fa-calendar"></i>
+              Appointments
+            </h3>
+          </div>
+        </div>
+      </div>
+      <!-- End Panel Header -->
+
+      <ul class="list-group">
+        <li class="list-group-item " ng-repeat="appointment in appointmentView.appointments">
+          <h5>
+            [[ appointment.start_datetime ]] [[ appointment.derived_appointment_type ]] [[ appointment.derived_clinic_resource ]]
+          </h5>
+          <p>
+            <b>[[ appointment.status_code ]]</b>
+            [[ appointment.duration ]] Minutes
+            [[ appointment.derived_appointment_location ]]
+            [[ appointment.derived_appointment_location_site ]]
+            <br />
+            <span ng-show="appointment.v_attending_doctor_name">
+              Attending Dr: [[ appointment.v_attending_doctor_name ]]
+            </span>
+            <span ng-show="appointment.v_referring_doctor_name">
+              Attending Dr: [[ appointment.v_referring_doctor_name ]]
+            </span>
+          </p>
+        </li>
+      </ul>
+
+  </div>
+</div>
