@@ -3,6 +3,8 @@ Load Appointments from upstream
 """
 import datetime
 
+from django.utils import timezone
+
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
@@ -59,11 +61,19 @@ def save_or_discard_appointment_data(appointment, patient):
 
         # otherwise there's a difference.
         # check which has the most recent insert date
-        insert_date = datetime.datetime.strptime(
-            appointment['insert_date'],
-            '%Y-%m-%d %H:%M:%S'
-        )
-        if insert_date < frist.insert_date:
+        try:
+            insert_date = datetime.datetime.strptime(
+                appointment['insert_date'],
+                '%Y-%m-%d %H:%M:%S'
+            )
+        except ValueError:
+            # sometimes we seemingly randomly have microseconds in this field
+            insert_date = datetime.datetime.strptime(
+                appointment['insert_date'],
+                '%Y-%m-%d %H:%M:%S.%f'
+            )
+
+        if timezone.make_aware(insert_date) < frist.insert_date:
             msg = 'Discarding appointment data for {} with later insert_date than database'.format(
                 appointment_id
             )
@@ -77,11 +87,13 @@ def save_or_discard_appointment_data(appointment, patient):
             # The new one should replace the old one.
             frist.delete()
 
+
     our_appointment = Appointment(patient=patient)
     for k, v in appointment.items():
-        setattr(
-            our_appointment,
-            Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
+        if v: # Date fields often come through as '' which can't be strptimed
+            setattr(
+                our_appointment,
+                Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
 
     our_appointment.save()
     logger.info('Saved appointment {}'.format(appointment_id))
