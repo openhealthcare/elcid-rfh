@@ -2,7 +2,13 @@
 Models for the elCID appointment plugin
 """
 from django.db import models
-from opal.models import Patient
+from opal.models import Patient, PatientSubrecord
+
+
+class PatientAppointmentStatus(PatientSubrecord):
+    _is_singleton = True
+
+    has_appointments = models.BooleanField(default=False)
 
 
 class Appointment(models.Model):
@@ -133,7 +139,7 @@ class Appointment(models.Model):
         'insert_date'                      : 'insert_date',
         'last_updated'                     : 'last_updated',
         'AIG_Resource_ID'                  : 'aig_resource_id',
-        'AIL_Location_Resource_ID'         : 'ail_location_resource_id',
+        'AIL_Location_Resource_ID'         : 'aiL_location_resource_id',
         'AIP_Personnel_ID'                 : 'aip_personnel_id',
         'TCI_DateTime_Text'                : 'tci_datetime_text',
         'TCI_DateTime'                     : 'tci_datetime',
@@ -156,3 +162,22 @@ class Appointment(models.Model):
         'Derived_Appointment_Location_Site': 'derived_appointment_location_site',
         'derived_clinic_resource'          : 'derived_clinic_resource'
     }
+
+    FIELDS_TO_SERIALIZE = [
+        'v_referring_doctor_name',
+        'v_attending_doctor_name',
+        'duration',
+        'start_datetime',
+        'end_datetime',
+        'status_code',
+        'derived_appointment_type',
+        'derived_appointment_location',
+        'derived_appointment_location_site',
+        'derived_clinic_resource'
+    ]
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+
+    def to_upstream_dict(self):
+        return {k: getattr(self, v) for k, v in self.UPSTREAM_FIELDS_TO_MODEL_FIELDS.items()}
