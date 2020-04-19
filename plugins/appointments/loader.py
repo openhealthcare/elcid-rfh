@@ -61,17 +61,7 @@ def save_or_discard_appointment_data(appointment, patient):
 
         # otherwise there's a difference.
         # check which has the most recent insert date
-        try:
-            insert_date = datetime.datetime.strptime(
-                appointment['insert_date'],
-                '%Y-%m-%d %H:%M:%S'
-            )
-        except ValueError:
-            # sometimes we seemingly randomly have microseconds in this field
-            insert_date = datetime.datetime.strptime(
-                appointment['insert_date'],
-                '%Y-%m-%d %H:%M:%S.%f'
-            )
+        insert_date = appointment['insert_date']
 
         if timezone.make_aware(insert_date) < frist.insert_date:
             msg = 'Discarding appointment data for {} with later insert_date than database'.format(
@@ -108,7 +98,7 @@ def load_appointments(patient):
     demographic = patient.demographics()
 
     if patient.appointments.count() > 0:
-        insert_date = patient.appointments.all().order_by('started').last().insert_date
+        insert_date = patient.appointments.all().order_by('insert_date').last().insert_date
     else:
         # Arbitrary, but the data suggests this is well before the actual lower bound
         insert_date = datetime.datetime(2010, 1, 1, 1, 1, 1)
@@ -120,3 +110,9 @@ def load_appointments(patient):
 
     for appointment in appointments:
         save_or_discard_appointment_data(appointment, patient)
+
+    if patient.appointments.count() > 0:
+        status = patient.patientappointmentstatus_set.get()
+        if not status.has_appointments:
+            status.has_appointments = True
+            status.save()
