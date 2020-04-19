@@ -104,8 +104,11 @@ def load_appointments(patient):
     Load any upstream appointment data we may not have for PATIENT
     """
     api = ProdAPI()
-    if patient.appointments.objects.count() > 0:
-        insert_date = patient.appointments.objects.all().order_by('started').last().insert_date
+
+    demographic = patient.demographics()
+
+    if patient.appointments.count() > 0:
+        insert_date = patient.appointments.all().order_by('started').last().insert_date
     else:
         # Arbitrary, but the data suggests this is well before the actual lower bound
         insert_date = datetime.datetime(2010, 1, 1, 1, 1, 1)
@@ -116,4 +119,4 @@ def load_appointments(patient):
     )
 
     for appointment in appointments:
-        loader.save_or_discard_appointment_data(appointment)
+        save_or_discard_appointment_data(appointment, patient)
