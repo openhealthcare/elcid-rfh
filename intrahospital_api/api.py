@@ -5,19 +5,21 @@ from opal.core.views import json_response
 from opal import models as omodels
 from opal.core import subrecords
 from lab import models as lmodels
+from elcid import models as emodels
 from elcid.episode_serialization import serialize
 from intrahospital_api import get_api
 
 
 def patient_to_dict(patient, user):
-    active_episode = patient.get_active_episode()
     subs = [
         i for i in subrecords.subrecords() if not i == lmodels.LabTest
     ]
     subs.append(omodels.Tagging)
 
+    episodes = patient.episode_set.all()
+
     serialised_episodes = serialize(
-        patient.episode_set.all(), user, subs
+        episodes, user, subs
     )
 
     # This is an awful hack. Episodes are hard coded to sort by
@@ -64,6 +66,11 @@ def patient_to_dict(patient, user):
 
     episode_id_to_episode = {i["id"]: i for i in serialised_episodes}
     d["episodes"] = episode_id_to_episode
+
+    antifungal_episodes = emodels.ChronicAntifungal.antifungal_episodes()
+    d["is_antifungal"] = antifungal_episodes.filter(
+        id__in=episodes.values_list('id', flat=True)
+    ).exists()
 
     return d
 

@@ -1,0 +1,28 @@
+{
+  "patientriskfactor": [
+    {
+      "name": "Prolonged Steroids",
+      "synonyms": []
+    },
+    {
+      "name": "Recent Neutropenia",
+      "synonyms": []
+    },
+    {
+      "name": "Allogenic SCT",
+      "synonyms": []
+    },
+    {
+      "name": "T Cell Immunosuppressants",
+      "synonyms": []
+    },
+    {
+      "name": "Inherited Severe Immunodeficiency",
+      "synonyms": []
+    },
+    {
+      "name": "None",
+      "synonyms": []
+    }
+  ]
+}

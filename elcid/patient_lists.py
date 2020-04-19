@@ -1,9 +1,14 @@
+import datetime
+from collections import defaultdict
+from django.utils import timezone
 from opal.utils import AbstractBase
-from opal.core.patient_lists import TaggedPatientList
+from opal.core.patient_lists import TaggedPatientList, PatientList
 from elcid import models
+from plugins.labtests.models import Observation
 from opal import models as omodels
 from intrahospital_api.models import InitialPatientLoad
 from elcid.episode_serialization import serialize
+from elcid.episode_categories import InfectionService
 
 PATIENT_LIST_SUBRECORDS = [
     models.PrimaryDiagnosis,
@@ -11,12 +16,13 @@ PATIENT_LIST_SUBRECORDS = [
     models.Antimicrobial,
     models.Diagnosis,
     models.Location,
+    models.ChronicAntifungal,
     omodels.Tagging,
     InitialPatientLoad
 ]
 
 
-class RfhPatientList(TaggedPatientList, AbstractBase):
+class RfhPatientList(AbstractBase):
     comparator_service = "EpisodeAddedComparator"
     order = 50
 
@@ -25,7 +31,7 @@ class RfhPatientList(TaggedPatientList, AbstractBase):
         return serialize(qs, user, subrecords=PATIENT_LIST_SUBRECORDS)
 
 
-class Hepatology(RfhPatientList):
+class Hepatology(RfhPatientList, TaggedPatientList):
     display_name = 'Hepatology'
     direct_add = True
     tag = 'hepatology'
@@ -33,7 +39,7 @@ class Hepatology(RfhPatientList):
     schema = []
 
 
-class SurgicalAntibioti(RfhPatientList):
+class SurgicalAntibioti(RfhPatientList, TaggedPatientList):
     display_name = 'Surgical Antibiotic Stewardship Round'
     direct_add = True
     tag = 'sasr'
@@ -41,7 +47,7 @@ class SurgicalAntibioti(RfhPatientList):
     schema = []
 
 
-class MAU(RfhPatientList):
+class MAU(RfhPatientList, TaggedPatientList):
     display_name = 'MAU Round'
     direct_add = True
     tag = 'mau'
@@ -49,7 +55,7 @@ class MAU(RfhPatientList):
     schema = []
 
 
-class Antifungal(RfhPatientList):
+class Antifungal(RfhPatientList, TaggedPatientList):
     display_name = 'Antifungal Stewardship'
     order = -5
     direct_add = True
@@ -58,7 +64,7 @@ class Antifungal(RfhPatientList):
     schema = []
 
 
-class RnohWardround(RfhPatientList):
+class RnohWardround(RfhPatientList, TaggedPatientList):
     display_name = 'RNOH Ward Round'
     direct_add = True
     tag = "rnoh_wardround"
@@ -66,7 +72,7 @@ class RnohWardround(RfhPatientList):
     schema = []
 
 
-class CDIFF(RfhPatientList):
+class CDIFF(RfhPatientList, TaggedPatientList):
     display_name = 'CDIFF Round'
     direct_add = True
     tag = "cdiff_wardround"
@@ -74,7 +80,7 @@ class CDIFF(RfhPatientList):
     schema = []
 
 
-class ICU(RfhPatientList):
+class ICU(RfhPatientList, TaggedPatientList):
     display_name = 'ICU South'
     direct_add = True
     order = 1
@@ -83,7 +89,7 @@ class ICU(RfhPatientList):
     schema = []
 
 
-class ICUEast(RfhPatientList):
+class ICUEast(RfhPatientList, TaggedPatientList):
     display_name = 'ICU East'
     direct_add = True
     order = 2
@@ -92,7 +98,7 @@ class ICUEast(RfhPatientList):
     schema = []
 
 
-class ICUWest(RfhPatientList):
+class ICUWest(RfhPatientList, TaggedPatientList):
     display_name = 'ICU West'
     direct_add = True
     order = 3
@@ -101,7 +107,7 @@ class ICUWest(RfhPatientList):
     schema = []
 
 
-class ICUSHDU(RfhPatientList):
+class ICUSHDU(RfhPatientList, TaggedPatientList):
     display_name = 'ICU SHDU'
     direct_add = True
     order = 4
@@ -110,7 +116,7 @@ class ICUSHDU(RfhPatientList):
     schema = []
 
 
-class NonCanonicalICU(RfhPatientList):
+class NonCanonicalICU(RfhPatientList, TaggedPatientList):
     display_name = 'Non-Canonical ICU'
     direct_add = True
     order = 5
@@ -119,7 +125,7 @@ class NonCanonicalICU(RfhPatientList):
     schema = []
 
 
-class Covid19NonICU(RfhPatientList):
+class Covid19NonICU(RfhPatientList, TaggedPatientList):
     display_name = 'Covid 19 Non-ICU'
     direct_add = True
     order = 6
@@ -128,7 +134,7 @@ class Covid19NonICU(RfhPatientList):
     schema = []
 
 
-class Acute(RfhPatientList):
+class Acute(RfhPatientList, TaggedPatientList):
     display_name = 'Acute'
     direct_add = True
     tag = "acute"
@@ -136,7 +142,7 @@ class Acute(RfhPatientList):
     schema = []
 
 
-class Chronic(RfhPatientList):
+class Chronic(RfhPatientList, TaggedPatientList):
     display_name = 'Chronic Infections'
     direct_add = True
     tag = "chronic"
@@ -144,7 +150,7 @@ class Chronic(RfhPatientList):
     schema = []
 
 
-class Haematology(RfhPatientList):
+class Haematology(RfhPatientList, TaggedPatientList):
     display_name = 'Haematology'
     direct_add = True
     tag = "haem"
@@ -152,7 +158,7 @@ class Haematology(RfhPatientList):
     schema = []
 
 
-class HIV(RfhPatientList):
+class HIV(RfhPatientList, TaggedPatientList):
     display_name = 'HIV'
     direct_add = True
     tag = "hiv"
@@ -160,7 +166,7 @@ class HIV(RfhPatientList):
     schema = []
 
 
-class Paediatric(RfhPatientList):
+class Paediatric(RfhPatientList, TaggedPatientList):
     display_name = 'Paediatric'
     direct_add = True
     tag = "paediatric"
@@ -168,7 +174,7 @@ class Paediatric(RfhPatientList):
     schema = []
 
 
-class MalboroughClinic(RfhPatientList):
+class MalboroughClinic(RfhPatientList, TaggedPatientList):
     display_name = 'Malborough Clinic'
     direct_add = True
     tag = "malborough"
@@ -176,7 +182,7 @@ class MalboroughClinic(RfhPatientList):
     schema = []
 
 
-class Renal(RfhPatientList):
+class Renal(RfhPatientList, TaggedPatientList):
     display_name = 'Renal'
     order = -5
     direct_add = True
@@ -185,7 +191,7 @@ class Renal(RfhPatientList):
     schema = []
 
 
-class Sepsis(RfhPatientList):
+class Sepsis(RfhPatientList, TaggedPatientList):
     display_name = 'Sepsis Pathway'
     direct_add = True
     tag = "sepsis"
@@ -193,7 +199,7 @@ class Sepsis(RfhPatientList):
     schema = []
 
 
-class Bacteraemia(RfhPatientList):
+class Bacteraemia(RfhPatientList, TaggedPatientList):
     display_name = 'Bacteraemia'
     direct_add = True
     tag = "bacteraemia"
@@ -202,7 +208,7 @@ class Bacteraemia(RfhPatientList):
     order = -10
 
 
-class PCP(RfhPatientList):
+class PCP(RfhPatientList, TaggedPatientList):
     display_name = 'PCP'
     direct_add = True
     tag = "pcp"
@@ -210,7 +216,7 @@ class PCP(RfhPatientList):
     schema = []
 
 
-class R1(RfhPatientList):
+class R1(RfhPatientList, TaggedPatientList):
     display_name = 'R1'
     direct_add = True
     tag = "r1"
@@ -218,9 +224,102 @@ class R1(RfhPatientList):
     schema = []
 
 
-class LiverTransplantation(RfhPatientList):
+class LiverTransplantation(RfhPatientList, TaggedPatientList):
     display_name = 'Liver Transplantation'
     direct_add = True
     tag = "liver_transplantation"
     template_name = 'episode_list.html'
     schema = []
+
+
+class ChronicAntifungal(RfhPatientList, PatientList):
+    display_name = "Chronic Antifungal"
+    template_name = 'episode_list.html'
+    schema = []
+
+    # if the users can add/remove patients from this list
+    is_read_only = True
+
+    @property
+    def queryset(self):
+        episodes = models.ChronicAntifungal.antifungal_episodes()
+        patient_id_to_episode_ids = defaultdict(list)
+
+        for episode in episodes:
+            patient_id_to_episode_ids[episode.patient_id].append(episode.id)
+
+        to_remove = set()
+        for patient_id, episode_ids in patient_id_to_episode_ids.items():
+            if len(episode_ids) > 1:
+                old_episodes = sorted(episode_ids, reverse=True)[1:]
+                to_remove = to_remove.union(old_episodes)
+        return episodes.exclude(id__in=to_remove)
+
+
+class OrganismPatientlist(AbstractBase):
+    is_read_only = True
+    schema = []
+    template_name = 'episode_list.html'
+    organism_list = True
+
+    def four_months_ago(self):
+        return timezone.now() - datetime.timedelta(120)
+
+    def get_observations(self):
+        return Observation.objects.filter(
+            test__test_name__iexact='BLOOD CULTURE'
+        ).filter(
+            observation_name__iexact='Blood Culture'
+        ).filter(
+            test__datetime_ordered__gte=self.four_months_ago()
+        )
+
+    @property
+    def queryset(self):
+        obs = self.get_observations()
+        qs = omodels.Episode.objects.all()
+        return qs.filter(
+            patient__lab_tests__observation__in=obs
+        ).distinct()
+
+
+class CandidaList(OrganismPatientlist, RfhPatientList, PatientList):
+    display_name = 'Candida'
+
+    def get_observations(self):
+        qs = super().get_observations()
+        qs = qs.filter(
+            observation_value__icontains='candida'
+        )
+        to_ignore_strings = [
+            "Candida auris NOT isolated",
+            "Candida NOT isolated",
+        ]
+
+        for to_ignore in to_ignore_strings:
+            qs = qs.exclude(observation_value__icontains=to_ignore)
+        return qs
+
+
+class StaphAureusList(OrganismPatientlist, RfhPatientList, PatientList):
+    display_name = 'Staphylococcus aureus'
+
+    def get_observations(self):
+        qs = super().get_observations()
+        qs = qs.filter(
+            observation_value__icontains='aureus'
+        )
+        return qs
+
+
+class EcoliList(OrganismPatientlist, RfhPatientList, PatientList):
+    display_name = 'E coli'
+
+    def get_observations(self):
+        qs = super().get_observations()
+        # regex to match the word as there are a bunch of false positives
+        # e.g. Colistin
+        qs = qs.filter(
+            observation_value__iregex='\y{}\y'.format("coli")
+        )
+        return qs

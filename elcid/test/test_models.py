@@ -1,9 +1,11 @@
 import datetime
+from unittest import mock
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from django.conf import settings
+from elcid import episode_categories
 
 from opal.core import exceptions
 from opal.core.test import OpalTestCase
@@ -812,6 +814,81 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
         self.assertEqual('New condition', diagnosis.condition)
 
 
+class ChronicAntifungalTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+        category_name = episode_categories.InfectionService.display_name
+        self.episode.category_name = category_name
+        self.episode.save()
+        self.now = timezone.now()
+
+    @mock.patch('django.utils.timezone.now')
+    def test_includes_new_chronic_antifungal(self, now):
+        now.return_value = self.now - datetime.timedelta(3)
+        self.patient.chronicantifungal_set.create(
+            reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(
+            list(emodels.ChronicAntifungal.antifungal_episodes()),
+            [self.episode]
+        )
+
+    @mock.patch('django.utils.timezone.now')
+    def test_includes_multiple_new_chronic_antifungal(self, now):
+        now.return_value = self.now - datetime.timedelta(3)
+        self.patient.chronicantifungal_set.create(
+            reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.patient.chronicantifungal_set.create(
+            reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(
+            list(emodels.ChronicAntifungal.antifungal_episodes()),
+            [self.episode]
+        )
+
+    @mock.patch('django.utils.timezone.now')
+    def test_excludes_old_chronic_antifungal(self, now):
+        now.return_value = self.now - datetime.timedelta(184)
+        self.patient.chronicantifungal_set.create(
+            reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(
+            list(emodels.ChronicAntifungal.antifungal_episodes()), []
+        )
+
+    def test_excludes_chrnoic_antifungal_is_none(self):
+        self.assertEqual(
+            list(emodels.ChronicAntifungal.antifungal_episodes()), []
+        )
+
+    def test_ignores_episodes_of_other_categories(self):
+        self.episode.category_name = "TB"
+        self.episode.save()
+        self.patient.chronicantifungal_set.create(
+            reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(
+            list(emodels.ChronicAntifungal.antifungal_episodes()), []
+        )
+
+    def test_signals_with_antifungal_reason(self):
+        self.episode.microbiologyinput_set.create(
+            reason_for_interaction=emodels.MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
+        )
+        self.assertTrue(
+            self.patient.chronicantifungal_set.filter(
+                reason=emodels.ChronicAntifungal.REASON_TO_INTERACTION
+            ).exists()
+        )
+
+    def test_signals_without_antifungal_reason(self):
+        self.episode.microbiologyinput_set.create(
+            reason_for_interaction="something"
+        )
+        self.assertFalse(self.patient.chronicantifungal_set.exists())
+
+
 class PositiveBloodCultureHistoryTestCase(OpalTestCase):
     def setUp(self):
         self.patient, self.episode = self.new_patient_and_episode_please()
@@ -850,3 +927,4 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+

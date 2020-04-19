@@ -4,22 +4,26 @@ eLCID specific views.
 import csv
 import random
 import datetime
+import json
 from collections import defaultdict, OrderedDict
 
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
 from django.views.generic import (
     TemplateView, FormView, View, ListView
 )
 
+
 from opal.core import application
-from opal.models import Ward
+from opal.models import Patient
 from elcid.patient_lists import Renal
 from elcid import models
+from elcid.episode_categories import InfectionService
 from elcid.forms import BulkCreateUsersForm
+from intrahospital_api import loader
 
 app = application.get_app()
 
@@ -214,3 +218,45 @@ class RenalHandover(LoginRequiredMixin, TemplateView):
         result = [{'ward': w, 'episodes': by_ward[w]} for w in ward_names]
         ctx["ward_and_episodes"] = result
         return ctx
+
+
+class AddAntifungalPatients(LoginRequiredMixin, TemplateView):
+    template_name = "add_antifungal_patients.html"
+
+    def get_redirect_url(self):
+        return "/#/list/"
+
+    def post(self, *args, **kwargs):
+        demographics = json.loads(
+            self.request.POST.get("demographics")
+        )
+
+        for demographics_dict in demographics:
+            patient_id = demographics_dict.get("patient_id")
+            if patient_id:
+                patient = Patient.objects.get(
+                    id=patient_id
+                )
+
+                if not patient.episode_set.filter(
+                    category_name=InfectionService.display_name
+                ).exists():
+                    patient.create_episode(
+                        category_name=InfectionService.display_name
+                    )
+            else:
+                patient = Patient.objects.create()
+                patient.create_episode(
+                    category_name=InfectionService.display_name
+                )
+                demos = patient.demographics_set.get()
+                demos.update_from_dict(
+                    demographics_dict,
+                    user=self.request.user
+                )
+                loader.load_patient(patient)
+
+            patient.chronicantifungal_set.create(
+                reason=models.ChronicAntifungal.DISPENSARY_REPORT
+            )
+        return HttpResponseRedirect(self.get_redirect_url())
