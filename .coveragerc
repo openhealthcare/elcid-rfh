@@ -4,6 +4,7 @@ source =
        intrahospital_api
        lab
        plugins/labtests
+       plugins/appointments
 
 omit =
     */migrations/*
