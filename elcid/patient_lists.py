@@ -57,7 +57,7 @@ class MAU(RfhPatientList, TaggedPatientList):
 
 class Antifungal(RfhPatientList, TaggedPatientList):
     display_name = 'Chronic Antifungal'
-    order = -5
+    order = 15
     direct_add = True
     tag = 'antifungal'
     template_name = 'episode_list.html'
@@ -236,6 +236,7 @@ class ChronicAntifungal(RfhPatientList, PatientList):
     display_name = "Acute Antifungal"
     template_name = 'episode_list.html'
     schema = []
+    order = 15
 
     # if the users can add/remove patients from this list
     is_read_only = True
