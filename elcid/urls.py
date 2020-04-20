@@ -10,7 +10,7 @@ from opal.urls import urlpatterns as opatterns
 from elcid import api
 
 from elcid import views
-from plugins.appointments import views as appointment_views
+
 
 urlpatterns = [
     url('^admin/bulk-create-users$', views.BulkCreateUserView.as_view(), name='bulk-create-users'),
