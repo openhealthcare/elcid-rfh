@@ -3,7 +3,7 @@
 jinja2==2.10.1
 django==2.0.13
 django-reversion==3.0.1
-djangorestframework==3.7.4
+djangorestframework==3.11.0
 letter==0.5
 
 cffi==1.7.0
