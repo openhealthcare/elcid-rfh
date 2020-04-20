@@ -63,6 +63,11 @@ class Antifungal(RfhPatientList, TaggedPatientList):
     template_name = 'episode_list.html'
     schema = []
 
+    @classmethod
+    def visible_to(klass, user):
+        return user.is_superuser
+
+
 
 class RnohWardround(RfhPatientList, TaggedPatientList):
     display_name = 'RNOH Ward Round'
@@ -255,6 +260,11 @@ class ChronicAntifungal(RfhPatientList, PatientList):
                 old_episodes = sorted(episode_ids, reverse=True)[1:]
                 to_remove = to_remove.union(old_episodes)
         return episodes.exclude(id__in=to_remove)
+
+    @classmethod
+    def visible_to(klass, user):
+        return user.is_superuser
+
 
 
 class OrganismPatientlist(AbstractBase):
