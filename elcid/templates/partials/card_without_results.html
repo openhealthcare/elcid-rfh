@@ -49,6 +49,7 @@
           </div>
         </div>
       </a>
+      {% if not patient_list.is_read_only %}
       <div class="panel-footer">
         <div class="row">
           <div class="text-left col-sm-6">
@@ -63,6 +64,7 @@
           </div>
         </div>
       </div>
+      {% endif %}
     </div>
   </div>
 </div>

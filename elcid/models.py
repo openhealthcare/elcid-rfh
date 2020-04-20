@@ -18,6 +18,7 @@ from opal.models import (
 )
 from opal.core.fields import ForeignKeyOrFreeText, enum
 from opal.core import lookuplists
+from elcid.episode_categories import InfectionService
 
 
 def get_for_lookup_list(model, values):
@@ -335,6 +336,15 @@ class Antimicrobial(EpisodeSubrecord):
     _icon = 'fa fa-flask'
     _modal = 'lg'
 
+    EMPIRIC = "Empiric"
+    TARGETTED = "Targetted"
+    PREEMPTIVE = "Pre-emptive"
+
+    TREATMENT_REASON = enum(EMPIRIC, TARGETTED, PREEMPTIVE)
+
+    class Meta:
+        verbose_name = "Anti-Infectives"
+
     drug          = ForeignKeyOrFreeText(omodels.Antimicrobial)
     dose          = models.CharField(max_length=255, blank=True)
     route         = ForeignKeyOrFreeText(omodels.Antimicrobial_route)
@@ -342,10 +352,18 @@ class Antimicrobial(EpisodeSubrecord):
     end_date      = models.DateField(null=True, blank=True)
     delivered_by  = ForeignKeyOrFreeText(Drug_delivered)
     reason_for_stopping = ForeignKeyOrFreeText(Iv_stop)
+    treatment_reason = models.CharField(
+        max_length=256, blank=True, null=True, choices=TREATMENT_REASON
+    )
+    indication = models.CharField(
+        max_length=256, blank=True, null=True
+    )
     adverse_event = ForeignKeyOrFreeText(omodels.Antimicrobial_adverse_event)
     comments      = models.TextField(blank=True, null=True)
     frequency     = ForeignKeyOrFreeText(omodels.Antimicrobial_frequency)
-    no_antimicrobials = models.NullBooleanField(default=False)
+    no_antimicrobials = models.NullBooleanField(
+        default=False, verbose_name="No anti-infectives"
+    )
 
     @classmethod
     def get_display_name(klass):
@@ -367,6 +385,8 @@ class MicrobiologyInput(EpisodeSubrecord):
     _modal = 'lg'
     _list_limit = 3
     ICU_REASON_FOR_INTERACTION = "ICU round"
+
+    ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"
 
     when = models.DateTimeField(null=True, blank=True)
     initials = models.CharField(max_length=255, blank=True)
@@ -427,6 +447,17 @@ class MicrobiologyInput(EpisodeSubrecord):
     class Meta:
         verbose_name = "Clinical Advice"
         verbose_name_plural = "Clinical Advice"
+
+# method for updating
+@receiver(post_save, sender=MicrobiologyInput)
+def update_chronic_antifungal_reason_for_interaction(
+    sender, instance, **kwargs
+):
+    asr = MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
+    if instance.reason_for_interaction == asr:
+        instance.episode.patient.chronicantifungal_set.create(
+            reason=ChronicAntifungal.REASON_TO_INTERACTION
+        )
 
 
 class Line(EpisodeSubrecord):
@@ -740,6 +771,20 @@ class GNROutcome(lookuplists.LookupList):
         return self.name
 
 
+class PatientRiskFactor(lookuplists.LookupList):
+    pass
+
+
+class RiskFactor(omodels.PatientSubrecord):
+    _icon = 'fa fa-exclamation-triangle'
+
+    risk_factor = ForeignKeyOrFreeText(PatientRiskFactor)
+    date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Risk Factors"
+
+
 class BloodCultureIsolate(
     omodels.UpdatesFromDictMixin,
     omodels.ToDictMixin,
@@ -790,6 +835,30 @@ class BloodCultureIsolate(
     def get_api_name(cls):
         return camelcase_to_underscore(cls._meta.object_name)
 
+
+class ChronicAntifungal(models.Model):
+    DISPENSARY_REPORT = "Dispensary report"
+    REASON_TO_INTERACTION = "Reason for interaction"
+
+    REASONS = (
+        (DISPENSARY_REPORT, DISPENSARY_REPORT,),
+        (REASON_TO_INTERACTION, REASON_TO_INTERACTION,),
+    )
+    patient = models.ForeignKey(omodels.Patient, on_delete=models.CASCADE)
+    updated_dt = models.DateTimeField(auto_now=True)
+    reason = models.TextField(
+        choices=REASONS, blank=True, null=True
+    )
+
+    @classmethod
+    def antifungal_episodes(cls):
+        # patients should stay on the list for ~6 months
+        active_from_date = timezone.now() - datetime.timedelta(183)
+        return omodels.Episode.objects.filter(
+            patient__chronicantifungal__updated_dt__gte=active_from_date
+        ).filter(
+            category_name=InfectionService.display_name
+        ).distinct()
 
 
 # method for updating

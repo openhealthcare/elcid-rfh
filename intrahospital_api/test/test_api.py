@@ -46,6 +46,7 @@ class PatientToDict(OpalTestCase):
         to_dicted["episodes"][episode.id]['end'] = '30'
 
         result = api.patient_to_dict(patient, self.user)
+        result.pop("is_antifungal")
         found_lab_tests_for_patient = result.pop("lab_test")
         found_lab_tests_for_episode = result["episodes"][episode.id].pop(
             "lab_test"
@@ -118,6 +119,23 @@ class PatientToDict(OpalTestCase):
 
         result = self.client.get(url)
         self.assertEqual(result.status_code, 401)
+
+    def test_is_antifungal(self):
+        patient, episode = self.new_patient_and_episode_please()
+        patient.chronicantifungal_set.create(
+            reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
+        )
+        self.assertEqual(
+            api.patient_to_dict(patient, self.user)["is_antifungal"],
+            True
+        )
+
+    def test_is_not_antifungal(self):
+        patient, episode = self.new_patient_and_episode_please()
+        self.assertEqual(
+            api.patient_to_dict(patient, self.user)["is_antifungal"],
+            False
+        )
 
 
 @mock.patch("intrahospital_api.api.get_api")
