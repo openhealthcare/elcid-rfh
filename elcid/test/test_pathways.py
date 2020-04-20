@@ -10,7 +10,7 @@ from elcid.pathways import (
     AddPatientPathway, IgnoreDemographicsMixin
 )
 from elcid import episode_categories
-from apps.tb.pathways import AddTbPatientPathway
+from plugins.tb.pathways import AddTbPatientPathway
 from elcid import models as emodels
 
 

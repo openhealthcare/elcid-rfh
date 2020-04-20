@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from opal.core.test import OpalTestCase
 from opal import models as opal_models
 from elcid import Application
-from apps.tb import constants as tb_constants
+from plugins.tb import constants as tb_constants
 
 
 class ApplicationTestCase(OpalTestCase):

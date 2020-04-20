@@ -5,7 +5,7 @@ from django.utils import timezone
 from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 
-from apps.tb.utils import get_tb_summary_information
+from plugins.tb.utils import get_tb_summary_information
 
 
 class TbTestSummary(LoginRequiredViewset):

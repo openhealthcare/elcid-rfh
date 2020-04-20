@@ -162,7 +162,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'axes',
     'reversion',
-    'apps.tb',
+    'plugins.tb',
     'opal',
     'opal.core.pathway',
     'rest_framework',

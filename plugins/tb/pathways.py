@@ -11,10 +11,10 @@ from elcid.pathways import IgnoreDemographicsMixin
 from obs import models as obs_models
 from intrahospital_api import loader
 
-from apps.tb import models as tb_models
-from apps.tb import episode_categories
+from plugins.tb import models as tb_models
+from plugins.tb import episode_categories
 from intrahospital_api import constants
-from apps.tb import constants as tb_constants
+from plugins.tb import constants as tb_constants
 
 
 class AddTbPatientPathway(WizardPathway):
