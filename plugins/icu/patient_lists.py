@@ -2,8 +2,9 @@
 Patient lists for our ICU plugin
 """
 from opal.core.patient_lists import PatientList
-from opal.models import Episode
+from opal.models import Episode, Patient
 
+from elcid.episode_categories import InfectionService
 from elcid.patient_lists import RfhPatientList
 
 
@@ -17,9 +18,11 @@ class AutoICUSouthList(RfhPatientList, PatientList):
 
     @property
     def queryset(self):
+        patients = Patient.objects.filter(icuhandoverlocation__ward='South')
         return Episode.objects.filter(
-            patient__icuhandoverlocation__ward='South'
-        )
+            patient__in=patients,
+            category_name=InfectionService.display_name
+        ).distinct()
 
     @classmethod
     def visible_to(klass, user):
