@@ -310,7 +310,8 @@ if 'test' in sys.argv:
         'propagate': True
     }
     LOGGING['loggers']['elcid.requestLogger'] = blank_logger
-    LOGGING['loggers']['intrahospital_api'] = blank_logger
+    LOGGING['loggers']['intrahospital_api']   = blank_logger
+    LOGGING['loggers']['appointments']        = blank_logger
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)

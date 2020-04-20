@@ -3,6 +3,7 @@ Load Appointments from upstream
 """
 import datetime
 
+from django.db.models import DateTimeField
 from django.utils import timezone
 
 from elcid.models import Demographics
@@ -81,6 +82,13 @@ def save_or_discard_appointment_data(appointment, patient):
     our_appointment = Appointment(patient=patient)
     for k, v in appointment.items():
         if v: # Date fields often come through as '' which can't be strptimed
+
+            fieldtype = type(
+                Appointment._meta.get_field(Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k])
+            )
+            if fieldtype == DateTimeField:
+                v = timezone.make_aware(v)
+
             setattr(
                 our_appointment,
                 Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
