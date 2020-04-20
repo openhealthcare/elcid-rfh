@@ -847,12 +847,14 @@ class ChronicAntifungalTestCase(OpalTestCase):
             [self.episode]
         )
 
-    @mock.patch('django.utils.timezone.now')
-    def test_excludes_old_chronic_antifungal(self, now):
-        now.return_value = self.now - datetime.timedelta(184)
-        self.patient.chronicantifungal_set.create(
-            reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
-        )
+    def test_excludes_old_chronic_antifungal(self):
+
+        with mock.patch.object(timezone, 'now') as n:
+            n.return_value = self.now - datetime.timedelta(190)
+            self.patient.chronicantifungal_set.create(
+                reason=emodels.ChronicAntifungal.DISPENSARY_REPORT
+            )
+
         self.assertEqual(
             list(emodels.ChronicAntifungal.antifungal_episodes()), []
         )
@@ -927,4 +929,3 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
-
