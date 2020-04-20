@@ -11,6 +11,7 @@ from elcid import api
 
 from elcid import views
 
+
 urlpatterns = [
     url('^admin/bulk-create-users$', views.BulkCreateUserView.as_view(), name='bulk-create-users'),
     url(r'^test/500$', views.Error500View.as_view(), name='test-500'),
@@ -22,7 +23,7 @@ urlpatterns = [
         r'^elcid/renal_handover',
         views.RenalHandover.as_view(),
         name="renal_handover"
-    )
+    ),
 ]
 
 urlpatterns += opatterns
