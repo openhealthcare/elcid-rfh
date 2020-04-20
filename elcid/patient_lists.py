@@ -56,7 +56,7 @@ class MAU(RfhPatientList, TaggedPatientList):
 
 
 class Antifungal(RfhPatientList, TaggedPatientList):
-    display_name = 'Antifungal Stewardship'
+    display_name = 'Chronic Antifungal'
     order = -5
     direct_add = True
     tag = 'antifungal'
@@ -233,7 +233,7 @@ class LiverTransplantation(RfhPatientList, TaggedPatientList):
 
 
 class ChronicAntifungal(RfhPatientList, PatientList):
-    display_name = "Chronic Antifungal"
+    display_name = "Acute Antifungal"
     template_name = 'episode_list.html'
     schema = []
 
