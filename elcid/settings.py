@@ -283,6 +283,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'appointments': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'icu': {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
