@@ -24,33 +24,6 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
   };
 });
 
-directives.directive("upstreamBloodCultureResultDisplay", function(
-  UpstreamBloodCultureLoader, InitialPatientTestLoadStatus
-){
-  return {
-    restrict: 'A',
-    scope: true,
-    link : function(scope, $element){
-      scope.culture_order = [];
-      scope.cultures = {}
-      scope.patientLoadStatus = new InitialPatientTestLoadStatus(scope.patient);
-      scope.patientLoadStatus.load();
-
-      scope.loadBloodCultures = function(){
-        UpstreamBloodCultureLoader.load(scope.patient.id).then(function(bc_results){
-          scope.bc_results = bc_results;
-        });
-      }
-
-      if(!scope.patientLoadStatus.isAbsent()){
-        scope.patientLoadStatus.promise.then(function(){
-          scope.loadBloodCultures();
-        });
-      }
-    }
-  };
-});
-
 
 directives.directive("sparkLine", function () {
   "use strict";
