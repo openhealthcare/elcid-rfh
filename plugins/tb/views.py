@@ -4,12 +4,12 @@ Views for the TB Opal Plugin
 import datetime
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from apps.tb.models import PatientConsultation
+from plugins.tb.models import PatientConsultation
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
-from apps.tb.utils import get_tb_summary_information
+from plugins.tb.utils import get_tb_summary_information
 
-from apps.tb.models import Treatment
+from plugins.tb.models import Treatment
 from elcid.models import Diagnosis
 from opal import views
 

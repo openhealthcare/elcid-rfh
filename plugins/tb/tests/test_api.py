@@ -6,7 +6,7 @@ from opal.core.test import OpalTestCase
 
 from plugins.labtests import models
 
-from apps.tb import utils
+from plugins.tb import utils
 
 
 class TestMultipleResults(OpalTestCase):

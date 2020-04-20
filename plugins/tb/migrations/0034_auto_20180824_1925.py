@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-from apps.tb import constants
+from plugins.tb import constants
 
 
 def forwards(apps, schema_editor):

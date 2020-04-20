@@ -4,9 +4,9 @@ Plugin definition for the TB Opal plugin
 from opal.core import plugins
 from opal.core import menus
 from opal.models import UserProfile
-from apps.tb.urls import urlpatterns
-from apps.tb import constants as tb_constants
-from apps.tb import api
+from plugins.tb.urls import urlpatterns
+from plugins.tb import constants as tb_constants
+from plugins.tb import api
 
 
 class TbPlugin(plugins.OpalPlugin):

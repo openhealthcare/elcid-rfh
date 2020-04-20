@@ -1,6 +1,6 @@
 from opal.core.test import OpalTestCase
-from apps.tb import constants as tb_constants
-from apps.tb import plugin
+from plugins.tb import constants as tb_constants
+from plugins.tb import plugin
 
 
 class MenuItemsTestCase(OpalTestCase):

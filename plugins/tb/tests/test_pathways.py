@@ -1,7 +1,7 @@
 from opal.core.test import OpalTestCase
 from elcid import models
-from apps.tb import pathways
-from apps.tb import constants as tb_constants
+from plugins.tb import pathways
+from plugins.tb import constants as tb_constants
 
 
 class AddTBPatientTestCase(OpalTestCase):

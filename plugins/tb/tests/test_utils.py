@@ -1,7 +1,7 @@
 import datetime
 from rest_framework.reverse import reverse
 from opal.core.test import OpalTestCase
-from apps.tb import utils
+from plugins.tb import utils
 
 
 

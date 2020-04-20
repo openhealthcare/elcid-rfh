@@ -4,7 +4,7 @@ elCID Royal Free Hospital implementation
 
 from opal.core import application
 from opal.core import menus
-from apps.tb import constants as tb_constants
+from plugins.tb import constants as tb_constants
 from elcid import episode_categories
 
 
