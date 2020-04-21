@@ -12,18 +12,27 @@ from plugins.icu import logger
 from plugins.icu.models import ICUHandover, ICUHandoverLocation, parse_icu_location
 from plugins.icu.episode_categories import ICUHandoverEpisode
 
+
 Q_GET_ICU_HANDOVER = """
 SELECT * FROM VIEW_ElCid_ITU_Handover
 """
+
+
+def get_upstream_data():
+    """
+    Fetch the upstream handover snapshot data
+    """
+    api = ProdAPI()
+
+    return api.execute_hospital_query(Q_GET_ICU_HANDOVER)
+
 
 
 def load_icu_handover():
     """
     Load a snapshot of data from the upstream appointment database
     """
-    api = ProdAPI()
-
-    results = api.execute_hospital_query(Q_GET_ICU_HANDOVER)
+    results = get_upstream_data()
 
     for result in results:
 

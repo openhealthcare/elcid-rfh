@@ -5,7 +5,7 @@ import traceback
 
 from django.core.management.base import BaseCommand
 
-from plugins.icu impoert loader, logger
+from plugins.icu import loader, logger
 
 
 class Command(BaseCommand):
