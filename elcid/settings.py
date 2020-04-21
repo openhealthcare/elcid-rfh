@@ -177,6 +177,7 @@ INSTALLED_APPS = (
     'plugins.covid',
     'intrahospital_api',
     'elcid',
+    'passwordreset',
     'django.contrib.admin',
     'djcelery',
     'obs',
