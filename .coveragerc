@@ -3,8 +3,9 @@ source =
        elcid
        intrahospital_api
        lab
-       plugins/labtests
        plugins/appointments
+       plugins/icu
+       plugins/labtests
 
 omit =
     */migrations/*
