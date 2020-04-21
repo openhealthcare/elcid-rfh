@@ -10,6 +10,9 @@ from elcid import episode_categories
 
 class StandardAddPatientMenuItem(menus.MenuItem):
     def for_user(self, user):
+        if not user.is_authenticated:
+            return False
+
         from opal.models import UserProfile
         if user and user.is_superuser:
             return True
