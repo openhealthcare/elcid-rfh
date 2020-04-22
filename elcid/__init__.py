@@ -10,6 +10,9 @@ from elcid import episode_categories
 
 class StandardAddPatientMenuItem(menus.MenuItem):
     def for_user(self, user):
+        if not user:
+            return False
+
         if not user.is_authenticated:
             return False
 
