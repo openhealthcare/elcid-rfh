@@ -14,22 +14,24 @@ from plugins.covid.models import CovidDashboard
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        CovidDashboard.objects.all().delete()
+        # CovidDashboard.objects.all().delete()
 
-        tested = Patient.objects.filter(
-            lab_tests__test_name=CORONAVIRUS_TEST_NAME).distinct()
+        # tested = Patient.objects.filter(
+        #     lab_tests__test_name=CORONAVIRUS_TEST_NAME).distinct()
 
-        positive = tested.filter(
-            lab_tests__observation__observation_value__in=POSITIVE_TEST_VALUES
-        )
-        positive_ids = [p.id for p in positive]
+        # positive = tested.filter(
+        #     lab_tests__observation__observation_value__in=POSITIVE_TEST_VALUES
+        # )
+        # positive_ids = [p.id for p in positive]
 
-        negative = tested.filter(
-            lab_tests__observation__observation_value__in=NEGATIVE_TEST_VALUES
-        ).exclude(id__in=positive_ids)
+        # negative = tested.filter(
+        #     lab_tests__observation__observation_value__in=NEGATIVE_TEST_VALUES
+        # ).exclude(id__in=positive_ids)
 
-        CovidDashboard.objects.create(
-            patients_tested=tested.count(),
-            positive=positive.count(),
-            negative=negative.count()
-        )
+        # CovidDashboard.objects.create(
+        #     patients_tested=tested.count(),
+        #     positive=positive.count(),
+        #     negative=negative.count()
+        # )
+        from plugins.covid import calculator
+        calculator.calculate_daily_reports()
