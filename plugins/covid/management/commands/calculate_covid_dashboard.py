@@ -34,4 +34,4 @@ class Command(BaseCommand):
         #     negative=negative.count()
         # )
         from plugins.covid import calculator
-        calculator.calculate_daily_reports()
+        calculator.calculate()
