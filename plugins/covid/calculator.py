@@ -68,21 +68,23 @@ def calculate_daily_reports():
     for demographic in deceased_patients:
         days[demographic.date_of_death].deaths += 1
 
-    for day in days:
-        print(day)
-        print(days[day])
-        print('*************************')
-
-        # Save day
+    for date, day in days.items():
+        covid_day = CovidReportingDay(
+            date=date,
+            tests_conducted=day.tests_conducted,
+            tests_positive=day.tests_positive,
+            deaths=day.deaths
+        )
+        covid_day.save()
 
 
 def calculate():
     """
     Main entrypoint for calculating figures related to Covid 19.
     """
-    # Set dashboard last updated
     calculate_daily_reports()
 
-    models.CovidDashboard.objects.all.delete()
+    models.CovidDashboard.objects.all().delete()
+    models.CovidReportingDay.objects.all().delete()
     dashboard = models.CovidDashboard(last_updated=timezone.now())
     dashboard.save()
