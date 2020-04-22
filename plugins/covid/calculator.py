@@ -69,7 +69,7 @@ def calculate_daily_reports():
         days[demographic.date_of_death].deaths += 1
 
     for date, day in days.items():
-        covid_day = CovidReportingDay(
+        covid_day = models.CovidReportingDay(
             date=date,
             tests_conducted=day.tests_conducted,
             tests_positive=day.tests_positive,
