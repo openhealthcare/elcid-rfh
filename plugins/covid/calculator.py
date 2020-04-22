@@ -34,7 +34,6 @@ def calculate_daily_reports():
 
     coronavirus_tests = LabTest.objects.filter(test_name=constants.CORONAVIRUS_TEST_NAME)
     coronavirus_tests.order_by('-datetime_ordered')
-    coronavirus_tests.prefetch_related('observation_set')
 
     first_test_date = LabTest.objects.filter(
         test_name=constants.CORONAVIRUS_TEST_NAME).order_by(
