@@ -82,9 +82,9 @@ def calculate():
     """
     Main entrypoint for calculating figures related to Covid 19.
     """
-    calculate_daily_reports()
-
     models.CovidDashboard.objects.all().delete()
     models.CovidReportingDay.objects.all().delete()
+
+    calculate_daily_reports()
     dashboard = models.CovidDashboard(last_updated=timezone.now())
     dashboard.save()
