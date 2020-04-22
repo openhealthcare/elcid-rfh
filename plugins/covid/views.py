@@ -1,11 +1,14 @@
 """
 Views for our covid plugin
 """
+import datetime
+
+from django.db.models import Sum
 from django.views.generic import TemplateView
 
 from elcid import patient_lists
 
-from plugins.covid.models import CovidDashboard
+from plugins.covid import models
 
 class CovidDashboardView(TemplateView):
     template_name = 'covid/dashboard.html'
@@ -13,25 +16,30 @@ class CovidDashboardView(TemplateView):
     def get_context_data(self, *a, **k):
         context = super(CovidDashboardView, self).get_context_data(*a, **k)
 
-        dashboard = CovidDashboard.objects.first()
+        context['dashboard']       = models.CovidDashboard.objects.first()
+        context['patients_tested'] = models.CovidReportingDay.objects.all().aggregate(Sum('tests_conducted'))['tests_conducted__sum']
+        context['positive_count']  = models.CovidReportingDay.objects.all().aggregate(Sum('tests_positive'))['tests_positive__sum']
+        context['deaths']          = models.CovidReportingDay.objects.all().aggregate(Sum('deaths'))['deaths__sum']
 
-        context['patients_tested'] = dashboard.patients_tested
-        context['positive_count']  = dashboard.positive
-        context['negative_count']  = dashboard.negative
+        yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=1))
+        context['yesterday'] = yesterday
 
-        context['icu_south_count']         = patient_lists.ICU().get_queryset().count()
-        context['icu_east_count']          = patient_lists.ICUEast().get_queryset().count()
-        context['icu_west_count']          = patient_lists.ICUWest().get_queryset().count()
-        context['shdu_count']              = patient_lists.ICUSHDU().get_queryset().count()
-        context['non_canonical_icu_count'] = patient_lists.NonCanonicalICU().get_queryset().count()
-        context['covid_non_icu_count']     = patient_lists.Covid19NonICU().get_queryset().count()
+        positive_timeseries = ['Positive Tests']
+        positive_ticks      = ['x']
 
-        context['icu_total'] = sum([
-            context['icu_south_count'],
-            context['icu_east_count'],
-            context['icu_west_count'],
-            context['shdu_count'],
-            context['non_canonical_icu_count']
-        ])
+        deaths_timeseries   = ['Deaths']
+        deaths_ticks        = ['x']
+
+        for day in models.CovidReportingDay.objects.all().order_by('date'):
+            if day.tests_positive:
+                positive_ticks.append(day.date.strftime('%Y-%m-%d'))
+                positive_timeseries.append(day.tests_positive)
+
+            if day.deaths:
+                deaths_ticks.append(day.date.strftime('%Y-%m-%d'))
+                deaths_timeseries.append(day.deaths)
+
+        context['positive_data'] = [positive_ticks, positive_timeseries]
+        context['deaths_data']   = [deaths_ticks, deaths_timeseries]
 
         return context

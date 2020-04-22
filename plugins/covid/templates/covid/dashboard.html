@@ -1,77 +1,104 @@
 {% load humanize %}
 <div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
 
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h1>Testing</h1>
-    </div> <!-- heading -->
-    <div class="panel-body">
-      <div class="row">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>COVID-19 at the Royal Free Trust</h1>
+          <p>Last updated {{ dashboard.last_updated }}</p>
+        </div> <!-- heading -->
+        <div class="panel-body">
 
-        <div class="col-md-4">
-          <h1>{{ patients_tested |intcomma }}</h1>
-          <p>Patients tested</p>
-        </div> <!-- Column -->
+          <div class="row">
 
-        <div class="col-md-4">
-          <h1>{{ negative_count |intcomma }}</h1>
-          <p>Negative</p>
-        </div> <!-- Column -->
+            <div class="col-md-4">
+              <h2>Tests</h2>
+              <h1>{{ patients_tested |intcomma }}</h1>
+              <p>Total number of patients with a positive or negative COVID-19 test result</p>
+            </div> <!-- Column -->
 
+            <div class="col-md-4">
+              <h2>Positive</h2>
+              <h1>{{ positive_count |intcomma }}</h1>
+              <p>Total number of patients who have tested positive for COVID-19</p>
+            </div> <!-- Column -->
 
-        <div class="col-md-4">
-          <h1>{{ positive_count |intcomma }}</h1>
-          <p>Positive</p>
-        </div> <!-- Column -->
-      </div> <!-- row -->
-    </div>   <!-- panel body -->
-  </div>     <!-- Panel -->
+            <div class="col-md-4">
+              <h2>Deaths</h2>
+              <h1>{{ deaths |intcomma }}</h1>
+              <p>Total deaths of patients who have tested positive for COVID-19</p>
+            </div> <!-- Column -->
 
-
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h1>ICU Teams</h1>
-    </div> <!-- heading -->
-    <div class="panel-body">
-      <div class="row">
-
-        <div class="col-md-4">
-          <h1>{{ icu_south_count |intcomma }}</h1>
-          <p>ICU South</p>
-        </div> <!-- Column -->
-
-        <div class="col-md-4">
-          <h1>{{ icu_east_count |intcomma }}</h1>
-          <p>ICU East</p>
-        </div> <!-- Column -->
+          </div> <!-- row -->
 
 
-        <div class="col-md-4">
-          <h1>{{ icu_west_count |intcomma }}</h1>
-          <p>ICU West</p>
-        </div> <!-- Column -->
-      </div> <!-- row -->
+          <div class="row content-offset">
 
-      <div class="row">
+            <div class="col-md-4">
+              <h2>Daily Tests</h2>
+              <h1>{{ yesterday.tests_conducted | intcomma }}</h1>
+              <p>Number of patients tested on {{ yesterday.date }} with a positive or negative result</p>
+            </div> <!-- Column -->
 
-        <div class="col-md-4">
-          <h1>{{ shdu_count |intcomma }}</h1>
-          <p>SHDU</p>
-        </div> <!-- Column -->
+            <div class="col-md-4">
+              <h2>Daily Positive</h2>
+              <h1>{{ yesterday.tests_positive | intcomma }}</h1>
+              <p>Number of patients who tested positive for COVID-19 on {{ yesterday.date }}</p>
+            </div> <!-- Column -->
 
-        <div class="col-md-4">
-          <h1>{{ non_canonical_icu_count |intcomma }}</h1>
-          <p>Non Canonical ICU</p>
-        </div> <!-- Column -->
+            <div class="col-md-4">
+              <h2>Daily Deaths</h2>
+              <h1>{{ yesterday.deaths | intcomma }}</h1>
+              <p>Number of deaths on {{ yesterday.date }} of patients who have tested positive for COVID-19</p>
+            </div> <!-- Column -->
+
+          </div> <!-- row -->
+
+          <div class="row content-offset">
+            <div class="col-md-5">
+              <h2>Daily Novel COVID-19 Positive</h2>
+              <p>Daily number of patients testing positive for COVID-19 for the first time</p>
+              <div id="positive_graph"></div>
+            </div>
+
+            <div class="col-md-5 col-md-offset-1">
+              <h2>Daily Deaths</h2>
+              <p>Daily number of deaths of patients who have tested positive for COVID-19</p>
+              <div id="deaths_graph"></div>
+            </div>
+          </div>
 
 
-        <div class="col-md-4">
-          <h1>{{ icu_total |intcomma }}</h1>
-          <p>ICU Total</p>
-        </div> <!-- Column -->
-      </div> <!-- row -->
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
 
-    </div>   <!-- panel body -->
-  </div>     <!-- Panel -->
 
+    </div>
+  </div>
 </div>
+<script>
+
+  var render_graph = function(element_id, data){
+
+  var config = {
+    bindto: document.getElementById(element_id),
+    data: {
+     columns: data,
+     type: 'bar',
+     x: 'x',
+    },
+    axis: {
+      x: {
+          type: 'timeseries',
+          tick: {format: '%Y-%m-%d', rotate: 45}
+      }
+    },
+    size: { height: 440, width: 520 }
+  }
+  c3.generate(config)
+
+  }
+  render_graph('positive_graph', {{ positive_data | safe }});
+  render_graph('deaths_graph', {{ deaths_data | safe }});
+</script>

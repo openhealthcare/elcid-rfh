@@ -10,6 +10,14 @@ class CovidDashboard(models.Model):
     database when they take a significant amount of time
     to calculate.
     """
-    patients_tested = models.IntegerField()
-    positive        = models.IntegerField()
-    negative        = models.IntegerField()
+    last_updated = models.DateTimeField()
+
+
+class CovidReportingDay(models.Model):
+    """
+    Stores figures for a single day in for our Covid 19 Dashboard
+    """
+    date            = models.DateField()
+    tests_conducted = models.IntegerField()
+    tests_positive  = models.IntegerField()
+    deaths          = models.IntegerField()
