@@ -36,6 +36,7 @@ POSITIVE_TEST_VALUES = [
     'detected~result from ref lab',
 ]
 
+ALL_TEST_VALUES = POSITIVE_TEST_VALUES + NEGATIVE_TEST_VALUES
 PENDING_TEST_VALUES = [
     'Pending',
 ]
