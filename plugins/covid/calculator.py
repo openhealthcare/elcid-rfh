@@ -33,7 +33,7 @@ def calculate_daily_reports():
     positive_patients_seen = set()
 
     coronavirus_tests = LabTest.objects.filter(test_name=constants.CORONAVIRUS_TEST_NAME)
-    coronavirus_tests.order_by('-datetime_ordered')
+    coronavirus_tests = coronavirus_tests.order_by('datetime_ordered')
 
     first_test_date = LabTest.objects.filter(
         test_name=constants.CORONAVIRUS_TEST_NAME).order_by(
