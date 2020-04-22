@@ -63,3 +63,24 @@ class LoadICUHandoverTestCase(OpalTestCase):
 
         handover_location = models.ICUHandoverLocation.objects.get(patient=self.patient)
         self.assertEqual('15', handover_location.bed)
+
+
+    def test_only_one_handover_location(self, upstream):
+        p, e = self.new_patient_and_episode_please()
+        demographics = p.demographics()
+        demographics.hospital_number = 'F-556'
+        demographics.save()
+
+        upstream.return_value = [{
+            'Patient_MRN': 'F-555',
+            'Location'   : 'ICU4_South_Bed-15',
+        }]
+
+        loader.load_icu_handover()
+        upstream.return_value = [{
+            'Patient_MRN': 'F-556',
+            'Location'   : 'ICU4_South_Bed-15',
+        }]
+        loader.load_icu_handover()
+
+        self.assertEqual(1, models.ICUHandoverLocation.objects.count())
