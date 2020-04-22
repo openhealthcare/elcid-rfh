@@ -1,6 +1,7 @@
 """
 Load ICU Handover records from upstream
 """
+from django.db import transaction
 from opal.models import Patient
 
 from elcid.models import Demographics
@@ -27,12 +28,14 @@ def get_upstream_data():
     return api.execute_hospital_query(Q_GET_ICU_HANDOVER)
 
 
-
+@transaction.atomic
 def load_icu_handover():
     """
     Load a snapshot of data from the upstream appointment database
     """
     results = get_upstream_data()
+
+    ICUHandoverLocation.objects.all().delete()
 
     for result in results:
 
