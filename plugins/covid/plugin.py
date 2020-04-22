@@ -18,7 +18,7 @@ class CovidPlugin(plugins.OpalPlugin):
 
         dashboard = menus.MenuItem(
             href='/#/covid-19/',
-            display='Covid 19',
+            display='COVID-19',
             icon='fa fa-dashboard',
             activepattern='/#/covid-19/'
         )
