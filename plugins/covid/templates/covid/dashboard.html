@@ -15,19 +15,28 @@
             <div class="col-md-4">
               <h2>Tests</h2>
               <h1>{{ patients_tested |intcomma }}</h1>
-              <p>Total number of patients with a positive or negative COVID-19 test result</p>
+              <p>
+                Total number of patients with a positive or negative<br />
+                COVID-19 test result
+              </p>
             </div> <!-- Column -->
 
             <div class="col-md-4">
               <h2>Positive</h2>
               <h1>{{ positive_count |intcomma }}</h1>
-              <p>Total number of patients who have tested positive for COVID-19</p>
+              <p>
+                Total number of patients who have tested positive<br />
+                for COVID-19
+              </p>
             </div> <!-- Column -->
 
             <div class="col-md-4">
               <h2>Deaths</h2>
               <h1>{{ deaths |intcomma }}</h1>
-              <p>Total deaths of patients who have tested positive for COVID-19</p>
+              <p>
+                Total deaths of patients who have tested positive<br />
+                for COVID-19
+              </p>
             </div> <!-- Column -->
 
           </div> <!-- row -->
@@ -38,19 +47,28 @@
             <div class="col-md-4">
               <h2>Daily Tests</h2>
               <h1>{{ yesterday.tests_conducted | intcomma }}</h1>
-              <p>Number of patients tested on {{ yesterday.date }} with a positive or negative result</p>
+              <p>
+                Number of patients tested on {{ yesterday.date }} with a<br />
+                positive or negative result
+              </p>
             </div> <!-- Column -->
 
             <div class="col-md-4">
-              <h2>Daily Positive</h2>
+              <h2>Daily Novel Positive</h2>
               <h1>{{ yesterday.tests_positive | intcomma }}</h1>
-              <p>Number of patients who tested positive for COVID-19 on {{ yesterday.date }}</p>
+              <p>
+                Number of patients who tested positive<br />
+                for COVID-19 on {{ yesterday.date }}
+              </p>
             </div> <!-- Column -->
 
             <div class="col-md-4">
               <h2>Daily Deaths</h2>
               <h1>{{ yesterday.deaths | intcomma }}</h1>
-              <p>Number of deaths on {{ yesterday.date }} of patients who have tested positive for COVID-19</p>
+              <p>
+                Number of deaths on {{ yesterday.date }} of patients who have<br />
+                tested positive for COVID-19
+              </p>
             </div> <!-- Column -->
 
           </div> <!-- row -->
