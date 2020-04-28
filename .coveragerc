@@ -4,6 +4,7 @@ source =
        intrahospital_api
        lab
        plugins/appointments
+       plugins/covid
        plugins/icu
        plugins/labtests
 
