@@ -80,3 +80,56 @@ class ReferenceLabTest(CovidTest):
         'NOT detected',
         'Undetected'
     ]
+
+
+COVID_19_TESTS = [
+    Coronavirus2019Test,
+    CrickInstituteTest,
+    ReferenceLabTest
+]
+COVID_19_TEST_NAMES = [t.TEST_NAME for t in COVID_19_TESTS]
+
+
+def _get_covid_test(test):
+    """
+    Given the plugins.labtests.models.LabTest instance TEST, return
+    the CovidTest subclass related to it.
+    """
+    for t in COVID_19_TESTS:
+        if t.TEST_NAME == test.test_name:
+            return t
+
+
+def get_result(test):
+    """
+    Given the plugins.labtests.models.LabTest instance TEST, which is a
+    COVID 19 test, return the value of the relevant observation result
+    field.
+    """
+    covid_test = _get_covid_test(test)
+    observations = test.observation_set.filter(
+        observation_name=covid_test.OBSERVATION_NAME
+    )
+    if observations.count() == 0:
+        return
+    return observations[0].observation_value
+
+
+def resulted(test):
+    """
+    Predicate function to determine whether the plugins.labtests.models.LabTest
+    instance TEST has returned a positive or negative result.
+    """
+    covid_test = _get_covid_test(test)
+    result = get_result(test)
+    return result in covid_test.resulted_values()
+
+
+def positive(test):
+    """
+    Predicate function to determine whether the plugins.labtests.models.LabTest
+    instance TEST is positive
+    """
+    covid_test = _get_covid_test(test)
+    result = get_result(test)
+    return result in covid_test.POSITIVE_RESULTS
