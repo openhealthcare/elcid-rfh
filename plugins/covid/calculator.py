@@ -32,32 +32,28 @@ def calculate_daily_reports():
     days                   = collections.defaultdict(Day)
     positive_patients_seen = set()
 
-    coronavirus_tests = LabTest.objects.filter(test_name=lab.Coronavirus2019Test.TEST_NAME)
+    coronavirus_tests = LabTest.objects.filter(
+        test_name__in=lab.COVID_19_TEST_NAMES
+    )
     coronavirus_tests = coronavirus_tests.order_by('datetime_ordered')
 
     first_test_date = LabTest.objects.filter(
-        test_name=lab.Coronavirus2019Test.TEST_NAME).order_by(
+        test_name__in=lab.COVID_19_TEST_NAMES).order_by(
             'datetime_ordered').first().datetime_ordered.date()
 
     for test in coronavirus_tests:
-        day          = test.datetime_ordered.date()
-        observation = test.observation_set.filter(
-            observation_name=lab.Coronavirus2019Test.OBSERVATION_NAME
-        )
-        if observation.count() == 0:
-            continue # Test without a relevant observation, ignore
+        day = test.datetime_ordered.date()
 
-        result = observation[0].observation_value
-
-        if result in lab.Coronavirus2019Test.resulted_values():
+        if lab.resulted(test):
             days[day].tests_conducted += 1
 
-            if result in lab.Coronavirus2019Test.POSITIVE_RESULTS:
+            if lab.positive(test):
                 if test.patient_id in positive_patients_seen:
-                    continue # Subsequent positive
+                    continue # This is not the first positive test so ignore it
                 else:
                     positive_patients_seen.add(test.patient_id)
                     days[day].tests_positive += 1
+
 
     deceased_patients = Demographics.objects.filter(
         death_indicator=True,
