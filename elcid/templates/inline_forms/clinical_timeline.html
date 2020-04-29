@@ -1,5 +1,32 @@
 {% load forms %}
 <div ng-controller="ClinicalTimeline as clinicalTimeline">
+  {% if not user.profile.readonly %}
+    <div  class="panel panel-default hidden-print">
+      <div class="panel-heading"><h3>
+          <i class="fa fa-comments"></i> Clinical Advice
+      </div></h3>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-md-12">
+            <form class="form-horizontal">
+              <div ng-repeat="formItem in [clinicalTimeline.formItem]">
+                {% include models.MicrobiologyInput.get_form_template %}
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12 text-right">
+            <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
+              <i class="fa fa-save"></i>
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
   <div ng-show="clinicalTimeline.clinicalAdvice.length" class="panel panel-default hidden-print">
     <div class="panel-body">
       <div class="patient-timeline-container">
@@ -138,32 +165,5 @@
       </div>
     </div>
   </div>
-
-  {% if not user.profile.readonly %}
-    <div  class="panel panel-default hidden-print">
-      <div class="panel-heading"><h3>
-          <i class="fa fa-comments"></i> Clinical Advice
-      </div></h3>
-      <div class="panel-body">
-        <div class="row">
-          <div class="col-md-12">
-            <form class="form-horizontal">
-              <div ng-repeat="formItem in [clinicalTimeline.formItem]">
-                {% include models.MicrobiologyInput.get_form_template %}
-              </div>
-            </form>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-12 text-right">
-            <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
-              <i class="fa fa-save"></i>
-              Save
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  {% endif %}
 
 </div>
