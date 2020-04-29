@@ -8,7 +8,7 @@ from django.utils import timezone
 from elcid.models import Demographics
 from plugins.labtests.models import LabTest
 
-from plugins.covid import lab, models
+from plugins.covid import constants, lab, models
 
 class Day(object):
 
@@ -35,6 +35,12 @@ def calculate_daily_reports():
     positive_patients_seen = set()
     resulted_patients_seen = set()
 
+    junk_patient_ids = [
+        d.patient_id for d in Demographics.objects.filter(
+            hospital_number__in=constants.KNOWN_JUNK_MRNS
+        )
+    ]
+
     coronavirus_tests = LabTest.objects.filter(
         test_name__in=lab.COVID_19_TEST_NAMES
     )
@@ -45,6 +51,9 @@ def calculate_daily_reports():
             'datetime_ordered').first().datetime_ordered.date()
 
     for test in coronavirus_tests:
+        if test.patient_id in junk_patient_ids:
+            continue # We are uninterested in tests performed on Scooby Doo etc
+
         days[test.datetime_ordered.date()].tests_ordered += 1
 
         if lab.resulted(test):
@@ -76,6 +85,9 @@ def calculate_daily_reports():
         patient_id__in=positive_patients_seen
     )
     for demographic in deceased_patients:
+        if demographic.patient_id in junk_patient_ids:
+            continue # We are uninterested in the death of Scooby Doo etc
+
         days[demographic.date_of_death].deaths += 1
 
     for date, day in days.items():
