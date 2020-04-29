@@ -18,10 +18,19 @@ class CovidReportingDay(models.Model):
     """
     Stores figures for a single day in for our Covid 19 Dashboard
     """
-    date            = models.DateField()
-    tests_conducted = models.IntegerField()
-    tests_positive  = models.IntegerField()
-    deaths          = models.IntegerField()
+    HELP_DATE              = "Date this data relates to"
+    HELP_TESTS_ORDERED     = "Number of COVID 19 tests ordered on this day"
+    HELP_TESTS_RESULTED    = "Number of COVID 19 tests reported on this day"
+    HELP_PATIENTS_RESULTED = "Number of patients with resulted tests for COVID 19"
+    HELP_PATIENTS_POSITIVE = "Number of patients who first had a COVID 19 test positve result on this day"
+    HELP_DEATH             = "Number of patients who died on this day having tested positive for COVID 19"
+
+    date              = models.DateField(help_text=HELP_DATE)
+    tests_ordered     = models.IntegerField(help_text=HELP_TESTS_ORDERED)
+    tests_resulted    = models.IntegerField(help_text=HELP_TESTS_RESULTED)
+    patients_resulted = models.IntegerField(help_text=HELP_PATIENTS_RESULTED)
+    patients_positive = models.IntegerField(help_text=HELP_PATIENTS_POSITIVE)
+    deaths            = models.IntegerField(help_text=HELP_DEATH)
 
 
 class CovidPatient(models.Model):

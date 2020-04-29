@@ -13,24 +13,27 @@ from plugins.covid import lab, models
 class Day(object):
 
     def __init__(self):
-        self.tests_conducted = 0
-        self.tests_positive  = 0
-        self.deaths          = 0
+        self.tests_ordered     = 0
+        self.tests_resulted    = 0
+        self.patients_positive = 0
+        self.patients_resulted = 0
+        self.deaths            = 0
 
-    def __str__(self):
-        return 'Conducted: {}\n Positive: {}\n Deaths: {}'.format(
-            self.tests_conducted, self.tests_positive, self.deaths)
 
 
 def calculate_daily_reports():
     """
-    Calculate three numbers for each day:
-    - Tests Conducted
-    - Tests First Positive
+    Calculate five numbers for each day:
+
+    - Tests ordered
+    - Tests resulted
+    - Patients first resulted
+    - Patients first positive
     - Deaths
     """
     days                   = collections.defaultdict(Day)
     positive_patients_seen = set()
+    resulted_patients_seen = set()
 
     coronavirus_tests = LabTest.objects.filter(
         test_name__in=lab.COVID_19_TEST_NAMES
@@ -42,17 +45,25 @@ def calculate_daily_reports():
             'datetime_ordered').first().datetime_ordered.date()
 
     for test in coronavirus_tests:
-        day = test.datetime_ordered.date()
+        days[test.datetime_ordered.date()].tests_ordered += 1
 
         if lab.resulted(test):
-            days[day].tests_conducted += 1
+            day = lab.get_resulted_date(test)
+
+            days[day].tests_resulted += 1
+
+            if test.patient_id in resulted_patients_seen:
+                pass # This patient has already had a result, we only count them once
+            else:
+                resulted_patients_seen.add(test.patient_id)
+                days[day].patients_resulted += 1
 
             if lab.positive(test):
                 if test.patient_id in positive_patients_seen:
                     continue # This is not the first positive test so ignore it
                 else:
                     positive_patients_seen.add(test.patient_id)
-                    days[day].tests_positive += 1
+                    days[day].patients_positive += 1
                     covid_patient = models.CovidPatient(
                         patient=test.patient, date_first_positive=day
                     )
@@ -70,8 +81,10 @@ def calculate_daily_reports():
     for date, day in days.items():
         covid_day = models.CovidReportingDay(
             date=date,
-            tests_conducted=day.tests_conducted,
-            tests_positive=day.tests_positive,
+            tests_ordered=day.tests_ordered,
+            tests_resulted=day.tests_resulted,
+            patients_resulted=day.patients_resulted,
+            patients_positive=day.patients_positive,
             deaths=day.deaths
         )
         covid_day.save()

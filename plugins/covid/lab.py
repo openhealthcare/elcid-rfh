@@ -115,6 +115,18 @@ def get_result(test):
     return observations[0].observation_value
 
 
+def get_resulted_date(test):
+    """
+    Given the plugins.labtests.models.LabTest instance TEST, which is a
+    COVID 19 test, return the date of the relevant observation
+    """
+    covid_test = _get_covid_test(test)
+    observations = test.observation_set.filter(
+        observation_name=covid_test.OBSERVATION_NAME
+    )
+    return observation[0].observation_datetime.date()
+
+
 def resulted(test):
     """
     Predicate function to determine whether the plugins.labtests.models.LabTest

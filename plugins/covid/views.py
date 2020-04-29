@@ -16,10 +16,16 @@ class CovidDashboardView(TemplateView):
     def get_context_data(self, *a, **k):
         context = super(CovidDashboardView, self).get_context_data(*a, **k)
 
-        context['dashboard']       = models.CovidDashboard.objects.first()
-        context['patients_tested'] = models.CovidReportingDay.objects.all().aggregate(Sum('tests_conducted'))['tests_conducted__sum']
-        context['positive_count']  = models.CovidReportingDay.objects.all().aggregate(Sum('tests_positive'))['tests_positive__sum']
-        context['deaths']          = models.CovidReportingDay.objects.all().aggregate(Sum('deaths'))['deaths__sum']
+        context['dashboard'] = models.CovidDashboard.objects.first()
+
+        sum_fields = [
+            'tests_ordered', 'tests_resulted',
+            'patients_resulted', 'patients_positive',
+            'deaths'
+        ]
+        for sum_field in sum_fields:
+            context[sum_field] = models.CovidReportingDay.objects.all(
+            ).aggregate(Sum(sum_field))['{}__sum'.format(sum_field)]
 
         yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=1))
         context['yesterday'] = yesterday
@@ -31,9 +37,9 @@ class CovidDashboardView(TemplateView):
         deaths_ticks        = ['x']
 
         for day in models.CovidReportingDay.objects.all().order_by('date'):
-            if day.tests_positive:
+            if day.patients_positive:
                 positive_ticks.append(day.date.strftime('%Y-%m-%d'))
-                positive_timeseries.append(day.tests_positive)
+                positive_timeseries.append(day.patients_positive)
 
             if day.deaths:
                 deaths_ticks.append(day.date.strftime('%Y-%m-%d'))
