@@ -124,7 +124,7 @@ def get_resulted_date(test):
     observations = test.observation_set.filter(
         observation_name=covid_test.OBSERVATION_NAME
     )
-    return observation[0].observation_datetime.date()
+    return observations[0].observation_datetime.date()
 
 
 def resulted(test):
