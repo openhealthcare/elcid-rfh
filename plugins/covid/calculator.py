@@ -53,6 +53,10 @@ def calculate_daily_reports():
                 else:
                     positive_patients_seen.add(test.patient_id)
                     days[day].tests_positive += 1
+                    covid_patient = models.CovidPatient(
+                        patient=test.patient, date_first_positive=day
+                    )
+                    covid_patient.save()
 
 
     deceased_patients = Demographics.objects.filter(
@@ -79,6 +83,7 @@ def calculate():
     """
     models.CovidDashboard.objects.all().delete()
     models.CovidReportingDay.objects.all().delete()
+    models.CovidPatient.objects.all().delete()
 
     calculate_daily_reports()
     dashboard = models.CovidDashboard(last_updated=timezone.now())
