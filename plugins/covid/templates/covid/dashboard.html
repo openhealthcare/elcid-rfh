@@ -12,29 +12,20 @@
 
           <div class="row">
 
-            <div class="col-md-4">
-              <h2>Tests</h2>
-              <h1>{{ patients_tested |intcomma }}</h1>
+            <div class="col-md-5">
+              <h2>Cases</h2>
+              <h1>{{ patients_positive |intcomma }}</h1>
               <p>
-                Total number of patients with a positive or negative<br />
+                Total number of patients with a positive<br />
                 COVID-19 test result
               </p>
             </div> <!-- Column -->
 
-            <div class="col-md-4">
-              <h2>Positive</h2>
-              <h1>{{ positive_count |intcomma }}</h1>
-              <p>
-                Total number of patients who have tested positive<br />
-                for COVID-19
-              </p>
-            </div> <!-- Column -->
-
-            <div class="col-md-4">
+            <div class="col-md-5 col-md-offset-1">
               <h2>Deaths</h2>
               <h1>{{ deaths |intcomma }}</h1>
               <p>
-                Total deaths of patients who have tested positive<br />
+                Total deaths of patients who have died after testing positive<br />
                 for COVID-19
               </p>
             </div> <!-- Column -->
@@ -44,25 +35,16 @@
 
           <div class="row content-offset">
 
-            <div class="col-md-4">
-              <h2>Daily Tests</h2>
-              <h1>{{ yesterday.tests_conducted | intcomma }}</h1>
+            <div class="col-md-5">
+              <h2>Daily Cases</h2>
+              <h1>{{ yesterday.patients_positive | intcomma }}</h1>
               <p>
-                Number of patients tested on {{ yesterday.date }} with a<br />
-                positive or negative result
+                Number of patients who first tested positive for COVID-19
+                on {{ yesterday.date }}
               </p>
             </div> <!-- Column -->
 
-            <div class="col-md-4">
-              <h2>Daily Novel Positive</h2>
-              <h1>{{ yesterday.tests_positive | intcomma }}</h1>
-              <p>
-                Number of patients who tested positive<br />
-                for COVID-19 on {{ yesterday.date }}
-              </p>
-            </div> <!-- Column -->
-
-            <div class="col-md-4">
+            <div class="col-md-5 col-md-offset-1">
               <h2>Daily Deaths</h2>
               <h1>{{ yesterday.deaths | intcomma }}</h1>
               <p>
@@ -85,8 +67,67 @@
               <p>Daily number of deaths of patients who have tested positive for COVID-19</p>
               <div id="deaths_graph"></div>
             </div>
-          </div>
+          </div> <!-- row -->
 
+
+
+
+          <div class="row">
+
+            <div class="col-md-4">
+              <h2>Tests Ordered</h2>
+              <h1>{{ tests_ordered |intcomma }}</h1>
+              <p>
+                Total number of COVID-19 tests ordered
+              </p>
+            </div> <!-- Column -->
+
+            <div class="col-md-4">
+              <h2>Tests Resulted</h2>
+              <h1>{{ tests_resulted |intcomma }}</h1>
+              <p>
+                Total number of COVID-19 tests resulted
+              </p>
+            </div> <!-- Column -->
+
+            <div class="col-md-4">
+              <h2>Patients Tested</h2>
+              <h1>{{ patients_resulted |intcomma }}</h1>
+              <p>
+                Total number of patients with a COVID-19 test result
+              </p>
+            </div> <!-- Column -->
+
+          </div> <!-- row -->
+
+          <div class="row content-offset">
+
+            <div class="col-md-4">
+              <h2>Daily Tests Ordered</h2>
+              <h1>{{ yesterday.tests_ordered | intcomma }}</h1>
+              <p>
+                Number of COVID-19 tests ordered on
+                on {{ yesterday.date }}
+              </p>
+            </div> <!-- Column -->
+
+            <div class="col-md-4">
+              <h2>Daily Tests Resulted</h2>
+              <h1>{{ yesterday.tests_resulted | intcomma }}</h1>
+              <p>
+                Number of COVID-19 tests resulted on {{ yesterday.date }}
+              </p>
+            </div> <!-- Column -->
+
+            <div class="col-md-4">
+              <h2>Daily Patients first tested</h2>
+              <h1>{{ yesterday.patients_resulted | intcomma }}</h1>
+              <p>
+                Number of patients with a first COVID-19 test resulted on {{ yesterday.date }}
+              </p>
+            </div> <!-- Column -->
+
+          </div> <!-- row -->
 
         </div>   <!-- panel body -->
       </div>     <!-- Panel -->
@@ -100,18 +141,18 @@
   var render_graph = function(element_id, data){
 
   var config = {
-    bindto: document.getElementById(element_id),
-    data: {
-     columns: data,
-     type: 'bar',
-     x: 'x',
-    },
-    axis: {
-      x: {
-          type: 'timeseries',
-          tick: {format: '%Y-%m-%d', rotate: 45}
-      }
-    },
+  bindto: document.getElementById(element_id),
+  data: {
+  columns: data,
+  type: 'bar',
+  x: 'x',
+  },
+  axis: {
+  x: {
+  type: 'timeseries',
+  tick: {format: '%Y-%m-%d', rotate: 45}
+  }
+  },
   }
   c3.generate(config)
 
