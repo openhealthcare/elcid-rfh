@@ -129,6 +129,18 @@
 
           </div> <!-- row -->
 
+          {% if request.user.is_superuser %}
+            <div class="row content-offset">
+              <div class="col-md-6">
+                <a class="btn btn-lg btn-primary"
+                   href="{% url 'covid_download' %}">
+                  <i class="glyphicon glyphicon-download"></i>
+                  Download
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
         </div>   <!-- panel body -->
       </div>     <!-- Panel -->
 

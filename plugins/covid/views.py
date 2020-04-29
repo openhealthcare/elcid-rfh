@@ -1,16 +1,19 @@
 """
 Views for our covid plugin
 """
+import csv
 import datetime
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
-from django.views.generic import TemplateView
+from django.http import HttpResponse
+from django.views.generic import TemplateView, View
 
 from elcid import patient_lists
 
 from plugins.covid import models
 
-class CovidDashboardView(TemplateView):
+class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
 
     def get_context_data(self, *a, **k):
@@ -49,3 +52,24 @@ class CovidDashboardView(TemplateView):
         context['deaths_data']   = [deaths_ticks, deaths_timeseries]
 
         return context
+
+
+class CovidCohortDownloadView(LoginRequiredMixin, View):
+
+    def get(self, *args, **kwargs):
+        # Create the HttpResponse object with the appropriate CSV header.
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="covid.cohort.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['elcid_id', 'MRN', 'Name', 'date_first_positive'])
+        for patient in models.CovidPatient.objects.all():
+            demographics = patient.patient.demographics()
+            writer.writerow([
+                patient.patient_id,
+                demographics.hospital_number,
+                demographics.name,
+                str(patient.date_first_positive)
+            ])
+
+        return response
