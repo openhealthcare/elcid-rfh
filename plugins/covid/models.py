@@ -2,6 +2,7 @@
 Models for the Covid plugin
 """
 from django.db import models
+from opal.models import Patient
 
 
 class CovidDashboard(models.Model):
@@ -21,3 +22,14 @@ class CovidReportingDay(models.Model):
     tests_conducted = models.IntegerField()
     tests_positive  = models.IntegerField()
     deaths          = models.IntegerField()
+
+
+class CovidPatient(models.Model):
+    """
+    Way to flag that a patient is in our Covid Cohort
+    and store some metadata about that case.
+    """
+    patient             = models.ForeignKey(
+        Patient, on_delete=models.CASCADE, related_name='covid_patient'
+    )
+    date_first_positive = models.DateField()
