@@ -16,7 +16,7 @@
               <h2>Cases</h2>
               <h1>{{ patients_positive |intcomma }}</h1>
               <p>
-                Total number of patients with a positive<br />
+                Total number of patients with a positive
                 COVID-19 test result
               </p>
             </div> <!-- Column -->
@@ -25,7 +25,7 @@
               <h2>Deaths</h2>
               <h1>{{ deaths |intcomma }}</h1>
               <p>
-                Total deaths of patients who have died after testing positive<br />
+                Total deaths of patients who have died after testing positive
                 for COVID-19
               </p>
             </div> <!-- Column -->
@@ -48,7 +48,7 @@
               <h2>Daily Deaths</h2>
               <h1>{{ yesterday.deaths | intcomma }}</h1>
               <p>
-                Number of deaths on {{ yesterday.date }} of patients who have<br />
+                Number of deaths on {{ yesterday.date }} of patients who have
                 tested positive for COVID-19
               </p>
             </div> <!-- Column -->
@@ -120,7 +120,7 @@
             </div> <!-- Column -->
 
             <div class="col-md-4">
-              <h2>Daily Patients first tested</h2>
+              <h2>Daily Patients First Tested</h2>
               <h1>{{ yesterday.patients_resulted | intcomma }}</h1>
               <p>
                 Number of patients with a first COVID-19 test resulted on {{ yesterday.date }}
