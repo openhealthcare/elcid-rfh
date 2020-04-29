@@ -63,13 +63,15 @@ class CovidCohortDownloadView(LoginRequiredMixin, View):
 
         writer = csv.writer(response)
         writer.writerow(['elcid_id', 'MRN', 'Name', 'date_first_positive'])
-        for patient in models.CovidPatient.objects.all():
-            demographics = patient.patient.demographics()
-            writer.writerow([
-                patient.patient_id,
-                demographics.hospital_number,
-                demographics.name,
-                str(patient.date_first_positive)
-            ])
+
+        if self.request.user.is_superuser:
+            for patient in models.CovidPatient.objects.all():
+                demographics = patient.patient.demographics()
+                writer.writerow([
+                    patient.patient_id,
+                    demographics.hospital_number,
+                    demographics.name,
+                    str(patient.date_first_positive)
+                ])
 
         return response
