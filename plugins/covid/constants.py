@@ -10,3 +10,9 @@ KNOWN_JUNK_MRNS = [
     'DOOTEST99',
     '60256727'
 ]
+
+DOWNLOAD_USERS = [
+    'ohc',
+    'emmanuel.wey',
+    'marclipman'
+]

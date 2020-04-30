@@ -11,7 +11,7 @@ from django.views.generic import TemplateView, View
 
 from elcid import patient_lists
 
-from plugins.covid import models
+from plugins.covid import models, constants
 
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
@@ -51,6 +51,8 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         context['positive_data'] = [positive_ticks, positive_timeseries]
         context['deaths_data']   = [deaths_ticks, deaths_timeseries]
 
+        context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
+
         return context
 
 
@@ -64,7 +66,7 @@ class CovidCohortDownloadView(LoginRequiredMixin, View):
         writer = csv.writer(response)
         writer.writerow(['elcid_id', 'MRN', 'Name', 'date_first_positive'])
 
-        if self.request.user.is_superuser:
+        if self.request.user.username in constants.DOWNLOAD_USERS:
             for patient in models.CovidPatient.objects.all():
                 demographics = patient.patient.demographics()
                 writer.writerow([
