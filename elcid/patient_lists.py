@@ -39,6 +39,14 @@ class Hepatology(RfhPatientList, TaggedPatientList):
     schema = []
 
 
+class Virology(RfhPatientList, TaggedPatientList):
+    display_name = 'Virology'
+    direct_add = True
+    tag = 'viroloy'
+    template_name = 'episode_list.html'
+    schema = []
+
+
 class SurgicalAntibioti(RfhPatientList, TaggedPatientList):
     display_name = 'Surgical Antibiotic Stewardship Round'
     direct_add = True
