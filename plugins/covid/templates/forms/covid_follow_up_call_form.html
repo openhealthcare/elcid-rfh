@@ -1,0 +1,259 @@
+{% load forms %}
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="CovidFollowUpCall.when" style="vertical"%}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="CovidFollowUpCall.clinician" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% select field="CovidFollowUpCall.position" style="vertical" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% checkbox field="CovidFollowUpCall.unreachable" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% checkbox field="CovidFollowUpCall.unable_to_complete" %}
+  </div>
+</div>
+
+<div class="row" ng-show="editing.covid_follow_up_call.unable_to_complete">
+  <div class="col-md-10 col-md-offset-1">
+    {% textarea field="CovidFollowUpCall.incomplete_reason" %}
+  </div>
+</div>
+
+<section ng-hide="editing.covid_follow_up_call.unable_to_complete">
+  <hr />
+
+  <div class="row">
+    <div class="col-md-12 text-center content-offset-below-25">
+      <h4>Status</h4>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4 col-md-offset-1">
+      {% select field="CovidFollowUpCall.smoking_status" style="vertical" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-5 col-md-offset-1">
+      {% checkbox field="CovidFollowUpCall.changes_to_medication" style="vertical" %}
+    </div>
+  </div>
+
+  <div class="row" ng-show="editing.covid_follow_up_call.changes_to_medication">
+    <div class="col-md-10 col-md-offset-1">
+      {% textarea field="CovidFollowUpCall.medication_change_details" style="vertical" %}
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="col-md-12 text-center content-offset-below-25">
+      <h4>Current Symptoms</h4>
+    </div>
+  </div>
+
+  <div class="row content-offset-below-25">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Symptom</b>
+    </div>
+    <div class="col-md-2">
+      <b>Current</b>
+    </div>
+    <div class="col-md-2">
+      <b>Max</b>
+    </div>
+    <div class="col-md-3">
+      <b>Trend</b>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Breathlessness</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.current_breathlessness" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.max_breathlessness" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidFollowUpCall.breathlessness_trend" label="" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Cough</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.current_cough" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.max_cough" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidFollowUpCall.cough_trend" label="" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Fatigue</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.current_fatigue" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.max_fatigue" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidFollowUpCall.fatigue_trend" label="" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Sleep Quality</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.current_sleep_quality" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.max_sleep_quality" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidFollowUpCall.sleep_quality_trend" label="" %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.myalgia" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.anosmia" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.anorexia" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.chest_pain" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.chest_tightness" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.confusion" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.diarrhoea" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.peripheral_oedema" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.abdominal_pain" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.focal_weakness" %}
+    </div>
+    <div class="col-md-6">
+      {% checkbox field="CovidFollowUpCall.loss_of_taste" %}
+    </div>
+
+    <hr />
+
+    <div class="row">
+      <div class="col-md-12 text-center content-offset-below-25">
+        <h4>Quality Of Life</h4>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5 col-md-offset-1">
+        {% checkbox field="CovidFollowUpCall.back_to_normal" %}
+      </div>
+    </div>
+
+    <div class="row" ng-hide="editing.covid_follow_up_call.back_to_normal">
+      <div class="col-md-10 col-md-offset-1">
+        {% textarea field="CovidFollowUpCall.why_not_back_to_normal" style="vertical" %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 col-md-offset-1">
+        {% input field="CovidFollowUpCall.baseline_health_proximity" style="vertical" %}
+      </div>
+      <div class="col-md-4 col-md-offset-1">
+        {% select field="CovidFollowUpCall.back_to_work" style="vertical" %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 col-md-offset-1">
+        {% input field="CovidFollowUpCall.current_et" style="vertical" %}
+      </div>
+      <div class="col-md-4 col-md-offset-1">
+        {% select field="CovidFollowUpCall.mrc_dyspnoea_scale" style="vertical"%}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 col-md-offset-1">
+        {% select field="CovidFollowUpCall.limited_by" style="vertical" %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 col-md-offset-1">
+        {% input field="CovidFollowUpCall.current_cfs" style="vertical" %}
+      </div>
+    </div>
+
+   <hr />
+
+    <div class="row">
+      <div class="col-md-12 text-center content-offset-below-25">
+        <h4>Psychological Scores</h4>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 col-md-offset-1">
+        {% select field="CovidFollowUpCall.interest" style="vertical" %}
+      </div>
+      <div class="col-md-4 col-md-offset-1">
+        {% select field="CovidFollowUpCall.depressed" style="vertical" %}
+      </div>
+      <div class="col-md-10 col-md-offset-1">
+        {% checkbox field="CovidFollowUpCall.psych_referral" %}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        {% textarea field="CovidFollowUpCall.other_concerns" style="vertical" %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 col-md-offset-1">
+        {% select field="CovidFollowUpCall.haem_clinic" style="vertical" %}
+        {% select field="CovidFollowUpCall.call_satisfaction" style="vertical" %}
+      </div>
+      <div class="col-md-4 col-md-offset-1">
+        {% select field="CovidFollowUpCall.diabetic_team" style="vertical" %}
+        {% checkbox field="CovidFollowUpCall.recontact" style="vertical"%}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        {% select field="CovidFollowUpCall.follow_up_outcome" style="vertical"%}
+      </div>
+    </div>
+
+
+</section>
