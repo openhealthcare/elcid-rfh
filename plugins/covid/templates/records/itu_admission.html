@@ -1,16 +1,19 @@
-<span ng-show="item.date_of_admission">
-    [[ item.date_of_admission | displayDate ]]
-   <br />
-</span>
-<span ng-show="item.apache_score_on_arrival">
-    [[ item.apache_score_on_arrival ]]
-   <br />
-</span>
-<span ng-show="item.intubated">
-     Intubated
-   <br />
-</span>
-<span ng-show="item.date_of_intubation">
-    [[ item.date_of_intubation | displayDate ]]
-   <br />
-</span>
+<div class="row">
+  <div class="col-md-6"><b>Date Of Admission:</b></div>
+  <div class="col-md-6">[[ item.date_of_admission | displayDate ]]</div>
+</div>
+<div class="row">
+  <div class="col-md-6"><b>APACHE II Score On Arrival:</b></div>
+  <div class="col-md-6">[[ item.apache_score_on_arrival ]]</div>
+</div>
+<div class="row">
+  <div class="col-md-6"><b>Intubated:</b></div>
+  <div class="col-md-6">
+    <span ng-show="item.intubated">Yes</span>
+    <span ng-hide="item.intubated">No</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6"><b>Date Of Intubation:</b></div>
+  <div class="col-md-6">[[ item.date_of_intubation | displayDate ]]</div>
+</div>
