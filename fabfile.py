@@ -804,7 +804,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     services_symlink_nginx(new_env)
 
     # symlink the upstart conf
-    services_symlink_upstart(new_env)
+#    services_symlink_upstart(new_env)
 
     # symlink the celery conf
     services_create_celery_conf(new_env)
