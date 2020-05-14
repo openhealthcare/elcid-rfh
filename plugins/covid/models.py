@@ -302,8 +302,14 @@ class ITUAdmission(EpisodeSubrecord):
     """
     Details of ITU Admission
     """
+    _icon = 'fa fa-heartbeat'
+
+    class Meta:
+        verbose_name = 'ITU Admission'
+
     date_of_admission       = models.DateField(blank=True, null=True)
-    apache_score_on_arrival = models.CharField(blank=True, null=True, max_length=244, verbose_name='APACE score on ITU arrival')
+    apache_score_on_arrival = models.CharField(
+        blank=True, null=True, max_length=244, verbose_name='APACHE II score on ITU arrival')
     intubated               = models.NullBooleanField()
     date_of_intubation      = models.DateField(blank=True, null=True)
 
