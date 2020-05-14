@@ -757,7 +757,7 @@ def create_private_settings():
 
 
 def get_python_3():
-    return local("which python3.5", capture=True)
+    return local("which python3.6", capture=True)
 
 
 def _deploy(new_branch, backup_name=None, remove_existing=False):
