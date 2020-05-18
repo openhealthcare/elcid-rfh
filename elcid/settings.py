@@ -171,6 +171,7 @@ INSTALLED_APPS = (
     'lab',
     'plugins.letters',
     'plugins.labtests',
+    'plugins.admissions',
     'plugins.appointments',
     'plugins.icu',
     'plugins.covid',
@@ -283,6 +284,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'admissions': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'appointments': {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
@@ -312,6 +318,7 @@ if 'test' in sys.argv:
     LOGGING['loggers']['elcid.requestLogger'] = blank_logger
     LOGGING['loggers']['icu']                 = blank_logger
     LOGGING['loggers']['intrahospital_api']   = blank_logger
+    LOGGING['loggers']['admissions']          = blank_logger
     LOGGING['loggers']['appointments']        = blank_logger
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
