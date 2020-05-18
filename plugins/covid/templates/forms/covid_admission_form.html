@@ -1,4 +1,5 @@
 {% load forms %}
+{% load covid %}
 <div class="row">
   <div class="col-md-4 col-md-offset-1">
     {% datepicker field="CovidAdmission.date_of_admission" style="vertical" %}
@@ -113,6 +114,7 @@
     {% input field="CovidAdmission.diastolic_bp" style="vertical" %}
     {% input field="CovidAdmission.temperature" style="vertical" %}
     {% input field="CovidAdmission.fi02" style="vertical" %}
+    <p class="text-muted">{{ "CovidAdmission.fi02"|help }}</p>
     {% input field="CovidAdmission.sao2" style="vertical" %}
   </div>
 

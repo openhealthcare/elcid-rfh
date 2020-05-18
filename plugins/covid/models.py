@@ -137,7 +137,9 @@ class CovidAdmission(EpisodeSubrecord):
     heart_rate           = models.IntegerField(blank=True, null=True, help_text='Beats/min')
     sao2                 = models.CharField(blank=True, null=True, max_length=255, verbose_name="SaO2")
     fi02                 = models.CharField(
-        blank=True, null=True, max_length=255, verbose_name='FiO2 (Oxygen flow rate if on oxygen)')
+        blank=True, null=True, max_length=255, verbose_name='FiO2',
+        help_text="Oxygen flow rate if on nasal specs or non-fixed delivery mask"
+    )
     systolic_bp          = models.IntegerField(blank=True, null=True, verbose_name='Systolic BP (mmHg)')
     diastolic_bp         = models.IntegerField(blank=True, null=True, verbose_name='Diastolic BP (mmHg)')
     temperature          = models.IntegerField(blank=True, null=True, help_text='oC')
@@ -273,7 +275,7 @@ class CovidComorbidities(EpisodeSubrecord):
     active_malignancy                      = models.NullBooleanField()
     active_malignancy_on_immunosuppression = models.NullBooleanField(
         verbose_name='Active Malignancy On Immunosuppression (Includes radiotherapy)')
-    hiv                                    = models.NullBooleanField()
+    hiv                                    = models.NullBooleanField(verbose_name='HIV')
     autoimmunne_with_immunosuppression     = models.NullBooleanField(
         help_text='Autoimmune disease requiring current immunosuppression')
     autoimmunne_without_immunosuppression  = models.NullBooleanField(
