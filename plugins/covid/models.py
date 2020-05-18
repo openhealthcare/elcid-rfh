@@ -345,7 +345,7 @@ class CovidCT(EpisodeSubrecord):
         verbose_name = 'Covid CT'
 
     date   = models.DateField(blank=True, null=True)
-    pe     = models.NullBooleanField() # WHAT IS THIS? (Pulmonary_embolism)
+    pe     = models.NullBooleanField(verbose_name="Pulmonary Embolism") # WHAT IS THIS? (Pulmonary_embolism)
     report = models.TextField(blank=True, null=True)
 
 
