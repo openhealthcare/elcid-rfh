@@ -9,9 +9,10 @@ from django.core.management.base import BaseCommand
 
 
 def raise_the_alarm():
+    msg = "Routine system check on {} has detected a volume with > 90% disk usage. Please log in and investigate."
     send_mail(
-        "RFH Live Disk Space Alert: Action Required",
-        "Routine system check on Elcid RFH has detected a volume with > 90% disk usage. Please log in and investigate.",
+        "{} Disk Space Alert: Action Required".format(settings.OPAL_BRAND_NAME),
+        msg.format(settings.OPAL_BRAND_NAME),
         settings.DEFAULT_FROM_EMAIL,
         [i[1] for i in settings.ADMINS]
     )
