@@ -374,7 +374,8 @@ class CovidFollowUpCall(EpisodeSubrecord):
         'Repeat CXR and F/U Call',
         'CT Chest',
         'PFTs',
-        'Resp OPD'
+        'Resp OPD',
+        'Refer back to Primary Care'
     )
 
     when               = models.DateTimeField(blank=True, null=True)
