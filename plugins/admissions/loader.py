@@ -27,12 +27,26 @@ def save_encounter(encounter, patient):
     """
     our_encounter = Encounter(patient=patient)
     for k, v in encounter.items():
+
         if v: # Ignore for empty / nullvalues
+            # Empty is actually more complicated than pythonic truthiness.
+            # Many admissions have the string '""' as the contents of room/bed
+            if v = '""':
+                continue
+
             fieldtype = type(
                 Encounter._meta.get_field(Encounter.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k])
             )
             if fieldtype == DateTimeField:
-                v = timezone.make_aware(v)
+                try:
+                    v = timezone.make_aware(v)
+                except AttributeError:
+                    # Only some of the "DateTime" fields from upstream
+                    # are actually typed datetimes.
+                    # Sometimes (when they were data in the originating HL7v2 message),
+                    # they're strings. Make them datetimes.
+                    v = datetime.datetime.strptime(v, '%Y%m%d%H%M%S')
+                    v = timezone.make_aware(v)
 
             setattr(
                 our_encounter,
