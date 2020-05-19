@@ -7,9 +7,7 @@ from django.db import migrations
 
 def forwards(apps, schema_editor):
     """
-    Move all line type fields into the free text
-    so that we can move them out again into the new
-    model
+    Move all ft_or_fk line fields into there _ft option
     """
     Line = apps.get_model(
         'elcid', 'Line'

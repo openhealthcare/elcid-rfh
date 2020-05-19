@@ -39,6 +39,7 @@ def duplicate_lookup_list(old_lookup_list, new_lookup_list, apps):
 
 
 def forwards(apps, schema_editor):
+    # Populate elcid Line* for all the opal Line_* lookup lists
     opal_line_type = apps.get_model(
         'opal', 'Line_type'
     )

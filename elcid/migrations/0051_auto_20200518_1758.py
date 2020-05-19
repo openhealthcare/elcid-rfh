@@ -4,6 +4,10 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
+    # now that the fk of the ft to fk field that was pointing to
+    #  opal Microbiology_organism have been updated to point to
+    # their elcid counter part.
+    # move the fields temporarily stored in _ft into _fk
     BloodCultureIsolate = apps.get_model(
         'elcid', 'BloodCultureIsolate'
     )

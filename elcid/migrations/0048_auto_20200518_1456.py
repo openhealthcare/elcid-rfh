@@ -9,7 +9,8 @@ def forwards(apps, schema_editor):
     as Elcid organisms
     """
 
-    # Create ElcidOrganisms for all the OpalOrganisms
+    # Populate elcid MicrobiologyOrganism for all the
+    # opal Microbiology_organisms
     Microbiology_organism = apps.get_model(
         'opal', 'Microbiology_organism'
     )

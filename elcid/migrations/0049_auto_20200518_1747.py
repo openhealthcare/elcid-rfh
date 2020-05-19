@@ -4,6 +4,8 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
+    # copy all ft_or_fk fields that were linking to opal Microbiology_organism
+    # into the _ft fields
     BloodCultureIsolate = apps.get_model(
         'elcid', 'BloodCultureIsolate'
     )

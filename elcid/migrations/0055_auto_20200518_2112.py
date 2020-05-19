@@ -4,6 +4,10 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
+    # now that we have migrated the lookup lists
+    # from opal.Line_* to elcid.Line* and updated the fk
+    # of the fk_or_ft
+    # move the ft back into fk if possible
     Line = apps.get_model(
         'elcid', 'Line'
     )
