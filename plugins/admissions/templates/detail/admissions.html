@@ -1,0 +1,46 @@
+<div ng-if="view === 'admissions'">
+  <div ng-controller="AdmissionView as admissionView" class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+
+        <div class="row">
+          <div class="col-md-9">
+            <h3>
+               <i class="fa fa-calendar"></i>
+               Admissions
+            </h3>
+          </div>
+        </div>
+      </div>
+      <!-- End Panel Header -->
+
+      <table class="table table-bordered table-striped">
+        <tr>
+          <th>Admitted</th>
+          <th>Discharged</th>
+          <th>Speciality</th>
+          <th>Hospital</th>
+          <!-- <th>Last Update Type</th> -->
+          <th>Location</th>
+          <th>Class</th>
+        </tr>
+        <tr ng-repeat="admission in admissionView.admissions">
+          <td>[[ admission.admit_datetime | displayDateTime ]]</td>
+          <td>[[ admission.discharge_datetime | displayDateTime ]]</td>
+          <td>
+            [[ admission.speciality_name ]]
+            <br />
+            [[ admission.consultant_name ]]
+          </td>
+          <td>[[ admission.hospital ]]</td>
+          <!-- <td>[[ admission.last_update_type ]]</td> -->
+          <td>
+            [[ admission.ward ]] <br />
+            [[ admission.room ]] [[ admission.bed ]]
+          </td>
+          <td>[[ admission.patient_class ]]</td>
+        </tr>
+      </table>
+
+  </div>
+</div>

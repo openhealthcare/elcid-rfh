@@ -2,7 +2,15 @@
 Models for the elCID admissions plugin
 """
 from django.db import models
-from opal.models import Patient
+from opal.models import Patient, PatientSubrecord
+
+from plugins.admissions import constants
+
+
+class PatientEncounterStatus(PatientSubrecord):
+    _is_singleton = True
+
+    has_encounters = models.BooleanField(default=False)
 
 
 class Encounter(models.Model):
@@ -81,7 +89,10 @@ class Encounter(models.Model):
         'PV1_3_BED'                         : 'pv1_3_bed',
         'PV1_3_AMBULATORY_INDICATOR'        : 'pv1_3_ambulatory_indicator',
         'PV1_3_BUILDING'                    : 'pv1_3_building',
+
+        # WHAT ARE THESE CODES?
         'PV1_4_ADMISSION_TYPE'              : 'pv1_4_admission_type',
+
         'PV1_6_HOSPITAL'                    : 'pv1_6_hospital',
         'PV1_6_WARD'                        : 'pv1_6_ward',
         'PV1_6_ROOM'                        : 'pv1_6_room',
@@ -90,7 +101,10 @@ class Encounter(models.Model):
         'CONSULTANT_NAME'                   : 'consultant_name',
         'PV1_10_SPECIALITY_CODE'            : 'pv1_10_speciality_code',
         'SPECIALITY_NAME'                   : 'speciality_name',
+
+        # WHAT ARE THESE CODES?
         'PV1_14_ADMISSION_SOURCE'           : 'pv1_14_admission_source',
+
         'PV1_18_VISIT_PATIENT_TYPE_ORIGINAL': 'pv1_18_visit_patient_type_original',
         'PV1_18_VISIT_PATIENT_TYPE_PRODUCT' : 'pv1_18_visit_patient_type_product',
         'PV1_19_HSN'                        : 'pv1_19_hsn',
@@ -106,3 +120,38 @@ class Encounter(models.Model):
         'PARENT_MRN'                        : 'parent_mrn',
         'COMMENTS'                          : 'comments',
     }
+
+    # Although we maintain the upstream column names with minimal alterations,
+    # there is no real utility in sending metadata about the original HL7v2 message
+    # ADT format fieldnames through to the front end and using them in templates.
+    #
+    # Accdcordingly we re-name the fields that we will serialise via the API to
+    # more usable properties to be rendered in templates
+    FIELDS_TO_SERIALIZE = {
+        'evn_2_movement_date'       : 'movement_date',
+        'pv1_2_patient_class'       : 'patient_class',
+        'pv1_3_ward'                : 'ward',
+        'pv1_3_room'                : 'room',
+        'pv1_3_bed'                 : 'bed',
+        'consultant_name'           : 'consultant_name',
+        'speciality_name'           : 'speciality_name',
+        'pv1_44_admit_date_time'    : 'admit_datetime',
+        'pv1_45_discharge_date_time': 'discharge_datetime',
+        'pv1_3_ambulatory_indicator': 'ambulatory_indicator',
+    }
+
+    def to_dict(self):
+        """
+        Serialise an encounter instance for use on the client
+        """
+        serialized =  {
+            dictfield: getattr(self, modelfield)
+            for modelfield, dictfield in self.FIELDS_TO_SERIALIZE.items()
+        }
+
+        if self.msh_9_msg_type:
+            serialized['last_update_type'] = constants.MESSAGE_CODES[self.msh_9_msg_type]
+
+        serialized['hospital'] = constants.BUILDING_CODES.get(self.pv1_3_building)
+
+        return serialized

@@ -51,6 +51,9 @@
              {% if detail.display_name == "Appointments" %}
                ng-show="patient.patient_appointment_status[0].has_appointments"
              {% endif %}
+             {% if detail.display_name == "Admissions" %}
+               ng-show="patient.patient_encounter_status[0].has_encounters"
+             {% endif %}
              ng-class="{'bg-active': view == '{{ detail.get_slug}}'}"
              ng-click="switch_to_episode(0, $event) && switch_to_view('{{ detail.get_slug }}')"
              href="[[ '/#/patient/' + patient.id + '/{{ detail.get_slug }}' ]]"
