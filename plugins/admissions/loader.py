@@ -8,8 +8,8 @@ from django.utils import timezone
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
-from plugins.appointments.mdoels import Encounter
-from plugins.appointments import logger
+from plugins.admissions.models import Encounter
+from plugins.admissions import logger
 
 
 Q_GET_ALL_PATIENT_ENCOUNTERS = """
