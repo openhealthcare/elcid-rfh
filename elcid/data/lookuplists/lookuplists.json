@@ -29,68 +29,6 @@
       "name": "Signs of thromboembolism"
     }
   ],
-  "micro_test_single_test_pos_neg_equiv": [
-    {
-      "synonyms": [],
-      "name": "Amoebic Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Cystercicosis Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Fasciola Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Filaria Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Hydatid Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Strongyloides Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Toxcocara Serology"
-    },
-    {
-      "synonyms": [
-        "Trypanosomiasis brucei Serology"
-      ],
-      "name": "T brucei Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "T cruzi serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Schistosoma serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Leishmania Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Trichinella Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "HIV Point of Care"
-    }
-  ],
-  "micro_test_stool_parasitology_pcr": [
-    {
-      "synonyms": [],
-      "name": "Stool Parasitology PCR"
-    }
-  ],
   "primarydiagnosiscondition": [
     {
       "synonyms": [],
@@ -359,98 +297,371 @@
       "name": "Vascular Surgery"
     }
   ],
-  "micro_test_respiratory_virus_pcr": [
+  "drugfreq": [],
+  "microbiologyorganism": [
     {
-      "synonyms": [
-        "Flu swab",
-        "Viral Throat Swab"
-      ],
-      "name": "Respiratory Virus PCR"
-    }
-  ],
-  "micro_test_c_difficile": [
+      "synonyms": [],
+      "name": "Ascaris"
+    },
+    {
+      "synonyms": [],
+      "name": "Aspergillus"
+    },
+    {
+      "synonyms": [],
+      "name": "Bartonella bacilliformis"
+    },
+    {
+      "synonyms": [],
+      "name": "Bartonella henselae"
+    },
+    {
+      "synonyms": [],
+      "name": "Bartonella quintana"
+    },
+    {
+      "synonyms": [],
+      "name": "Brucella"
+    },
+    {
+      "synonyms": [],
+      "name": "Burkholderia cepacia"
+    },
+    {
+      "synonyms": [],
+      "name": "Burkholderia pseudomallei"
+    },
+    {
+      "synonyms": [],
+      "name": "Campylobacter"
+    },
+    {
+      "synonyms": [],
+      "name": "Candida"
+    },
     {
       "synonyms": [
         "Clostridium difficile"
       ],
       "name": "C diff"
-    }
-  ],
-  "micro_test_parasitaemia": [
-    {
-      "synonyms": [],
-      "name": "Babesia Film"
     },
     {
       "synonyms": [],
-      "name": "Malaria Film"
+      "name": "Corynebacteria"
     },
     {
       "synonyms": [],
-      "name": "Microfilarial Film"
+      "name": "Cryptococcus"
     },
     {
       "synonyms": [],
-      "name": "Trypanosomes Film"
-    }
-  ],
-  "micro_test_ebv_serology": [
-    {
-      "synonyms": [
-        "Epstein Barr Serology"
-      ],
-      "name": "EBV Serology"
-    }
-  ],
-  "micro_test_viral_load": [
-    {
-      "synonyms": [],
-      "name": "CMV Viral Load"
+      "name": "Cryptosporidium"
     },
     {
       "synonyms": [],
-      "name": "EBV Viral Load"
-    },
-    {
-      "synonyms": [],
-      "name": "HBV Viral Load"
-    },
-    {
-      "synonyms": [],
-      "name": "HCV Viral Load"
-    },
-    {
-      "synonyms": [],
-      "name": "HHV-6 Viral Load"
-    },
-    {
-      "synonyms": [],
-      "name": "HHV-7 Viral Load"
-    },
-    {
-      "synonyms": [],
-      "name": "HHV-8 Viral Load"
-    },
-    {
-      "synonyms": [],
-      "name": "HIV Viral Load"
-    },
-    {
-      "synonyms": [],
-      "name": "Measles PCR"
-    },
-    {
-      "synonyms": [],
-      "name": "VZV Viral Load"
+      "name": "Entamoeba histolytica"
     },
     {
       "synonyms": [
-        "BK PCR"
+        "Enterococcus faecalis"
       ],
-      "name": "BK quantification"
+      "name": "E. faecalis"
+    },
+    {
+      "synonyms": [
+        "Enterococcus faecium"
+      ],
+      "name": "E. faecium"
+    },
+    {
+      "synonyms": [],
+      "name": "Fusarium"
+    },
+    {
+      "synonyms": [],
+      "name": "Giardia lamblia"
+    },
+    {
+      "synonyms": [],
+      "name": "Group C Strep"
+    },
+    {
+      "synonyms": [],
+      "name": "Group D Strep"
+    },
+    {
+      "synonyms": [],
+      "name": "Group G Strep"
+    },
+    {
+      "synonyms": [],
+      "name": "Haemophilus influenzae"
+    },
+    {
+      "synonyms": [
+        "Klebsiella pneumoniae"
+      ],
+      "name": "K. pneumoniae"
+    },
+    {
+      "synonyms": [],
+      "name": "Legionella pneumophila"
+    },
+    {
+      "synonyms": [],
+      "name": "Listeria monocytogenes"
+    },
+    {
+      "synonyms": [],
+      "name": "Microsporidium"
+    },
+    {
+      "synonyms": [],
+      "name": "Mixed growth"
+    },
+    {
+      "synonyms": [],
+      "name": "Moraxella catarrhalis"
+    },
+    {
+      "synonyms": [
+        "Staph aureus (MRSA)"
+      ],
+      "name": "MRSA"
+    },
+    {
+      "synonyms": [
+        "MAC",
+        "Mycobacterium avium intracellulare"
+      ],
+      "name": "MAI"
+    },
+    {
+      "synonyms": [
+        "Mycobacterium tuberculosis",
+        "TB"
+      ],
+      "name": "MTB"
+    },
+    {
+      "synonyms": [
+        "Neisseria gonorrheae"
+      ],
+      "name": "N. gonorrheae"
+    },
+    {
+      "synonyms": [
+        "Neisseria meningitidis"
+      ],
+      "name": "N. meningitidis"
+    },
+    {
+      "synonyms": [],
+      "name": "No Growth"
+    },
+    {
+      "synonyms": [],
+      "name": "Nocardia"
+    },
+    {
+      "synonyms": [],
+      "name": "Penicillium marneffei"
+    },
+    {
+      "synonyms": [
+        "Pneumocystis carinii"
+      ],
+      "name": "Pneumocystis jirovecii"
+    },
+    {
+      "synonyms": [],
+      "name": "Proteus mirabilis"
+    },
+    {
+      "synonyms": [],
+      "name": "Pseudomonas aeruginosa"
+    },
+    {
+      "synonyms": [],
+      "name": "Salmonella paratyphi"
+    },
+    {
+      "synonyms": [],
+      "name": "Salmonella typhi"
+    },
+    {
+      "synonyms": [],
+      "name": "Shigella"
+    },
+    {
+      "synonyms": [
+        "MSSA"
+      ],
+      "name": "Staph aureus (MSSA)"
+    },
+    {
+      "synonyms": [],
+      "name": "Stenotrophomonas maltophilia"
+    },
+    {
+      "synonyms": [
+        "Streptococcus agalactiae"
+      ],
+      "name": "Group B Strep"
+    },
+    {
+      "synonyms": [],
+      "name": "Streptococcus pneumoniae"
+    },
+    {
+      "synonyms": [
+        "Streptococcus pyogenes"
+      ],
+      "name": "Group A Strep"
+    },
+    {
+      "synonyms": [],
+      "name": "Streptococcus viridans"
+    },
+    {
+      "synonyms": [],
+      "name": "Taenia"
+    },
+    {
+      "synonyms": [],
+      "name": "Taenia saginata"
+    },
+    {
+      "synonyms": [],
+      "name": "Taenia solium"
+    },
+    {
+      "synonyms": [],
+      "name": "Vibrio cholerae"
+    },
+    {
+      "synonyms": [],
+      "name": "Bacteroides"
+    },
+    {
+      "synonyms": [
+        "Klebsiella oxytoca"
+      ],
+      "name": "K. oxytoca"
+    },
+    {
+      "synonyms": [],
+      "name": "Proteus vulgaris"
+    },
+    {
+      "synonyms": [],
+      "name": "Serratia marcescens"
+    },
+    {
+      "synonyms": [],
+      "name": "Acinetobacter"
+    },
+    {
+      "synonyms": [],
+      "name": "Acinetobacter  baumannii"
+    },
+    {
+      "synonyms": [],
+      "name": "Enterobacter"
+    },
+    {
+      "synonyms": [],
+      "name": "Enterobacter aerogenes"
+    },
+    {
+      "synonyms": [],
+      "name": "Enterobacter cloacae"
+    },
+    {
+      "synonyms": [],
+      "name": "Salmonella"
+    },
+    {
+      "synonyms": [],
+      "name": "Pseudomonas"
+    },
+    {
+      "synonyms": [],
+      "name": "Citrobacter freundii"
+    },
+    {
+      "synonyms": [],
+      "name": "Citrobacter koseri"
+    },
+    {
+      "synonyms": [],
+      "name": "Group C Streptococcus"
+    },
+    {
+      "synonyms": [],
+      "name": "Group D Streptococcus"
+    },
+    {
+      "synonyms": [],
+      "name": "Group G Streptococcus"
+    },
+    {
+      "synonyms": [],
+      "name": "Klebsiella"
+    },
+    {
+      "synonyms": [],
+      "name": "Proteus"
+    },
+    {
+      "synonyms": [],
+      "name": "Echinococcus granulosus"
+    },
+    {
+      "synonyms": [
+        "Necator",
+        "Ancylostoma"
+      ],
+      "name": "Hookworm"
+    },
+    {
+      "synonyms": [],
+      "name": "Leishmania"
+    },
+    {
+      "synonyms": [],
+      "name": "Strongyloides"
+    },
+    {
+      "synonyms": [
+        "Staphylococcus lugdunensis",
+        "S lugdunensis",
+        "Staph lugdunensis"
+      ],
+      "name": "S. lugdunensis"
+    },
+    {
+      "synonyms": [],
+      "name": "Micrococcus luteus"
+    },
+    {
+      "synonyms": [
+        "Escherichia coli",
+        "E coli"
+      ],
+      "name": "E. coli"
+    },
+    {
+      "synonyms": [
+        "Coagulase negative staphylococcus",
+        "CNS"
+      ],
+      "name": "CoNS"
+    },
+    {
+      "name": "Mycobacterium abscessus"
     }
   ],
-  "drugfreq": [],
   "line_type": [
     {
       "synonyms": [],
@@ -489,16 +700,6 @@
       "name": "Vascath"
     }
   ],
-  "micro_test_hiv": [
-    {
-      "synonyms": [],
-      "name": "HIV Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "HIV"
-    }
-  ],
   "duration": [
     {
       "synonyms": [],
@@ -515,12 +716,6 @@
     {
       "synonyms": [],
       "name": "> 3 months"
-    }
-  ],
-  "micro_test_csf_pcr": [
-    {
-      "synonyms": [],
-      "name": "CSF PCR"
     }
   ],
   "ethnicity": [
@@ -647,34 +842,6 @@
     {
       "synonyms": [],
       "name": "Widow/Surviving Civil Partner"
-    }
-  ],
-  "micro_test_single_igg_test": [
-    {
-      "synonyms": [],
-      "name": "HHV-6 Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "HHV-7 Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "HTLV Serology"
-    },
-    {
-      "synonyms": [
-        "Hepatitis D Serology",
-        "HDV Serology"
-      ],
-      "name": "Hep D Serology"
-    },
-    {
-      "synonyms": [
-        "Hepatitis C Serology",
-        "HCV Serology"
-      ],
-      "name": "Hep C Serology"
     }
   ],
   "line_complication": [
@@ -1842,18 +2009,6 @@
       "name": "Child visiting family"
     }
   ],
-  "micro_test_stool_pcr": [
-    {
-      "synonyms": [],
-      "name": "Stool PCR"
-    }
-  ],
-  "micro_test_syphilis_serology": [
-    {
-      "synonyms": [],
-      "name": "Syphilis Serology"
-    }
-  ],
   "hiv_no": [
     {
       "synonyms": [],
@@ -2325,248 +2480,7 @@
     }
   ],
   "infectionsource": [],
-  "micro_test_single_test_pos_neg": [
-    {
-      "synonyms": [
-        "Cryptococcal antigen"
-      ],
-      "name": "CRAG"
-    },
-    {
-      "synonyms": [],
-      "name": "Dengue PCR"
-    },
-    {
-      "synonyms": [],
-      "name": "JC Virus PCR"
-    },
-    {
-      "synonyms": [],
-      "name": "Rickettsia PCR"
-    },
-    {
-      "synonyms": [],
-      "name": "Scrub Typhus PCR"
-    },
-    {
-      "synonyms": [
-        "Viral Haemorrhagic Fever PCR"
-      ],
-      "name": "VHF PCR"
-    },
-    {
-      "synonyms": [],
-      "name": "Skin Snip"
-    },
-    {
-      "synonyms": [],
-      "name": "Legionella serology"
-    },
-    {
-      "synonyms": [
-        "BK PCR",
-        "BK virus PCR"
-      ],
-      "name": "BK virus qualitative PCR"
-    },
-    {
-      "synonyms": [
-        "Toxo PCR"
-      ],
-      "name": "Toxoplasma PCR"
-    },
-    {
-      "synonyms": [
-        "Pneumococcal antigen",
-        "Urine pneumococcal antigen"
-      ],
-      "name": "Pneumococcal ag"
-    },
-    {
-      "synonyms": [
-        "Legionella antigen",
-        "Urine legionella antigen"
-      ],
-      "name": "Legionella ag"
-    },
-    {
-      "synonyms": [
-        "MRAP"
-      ],
-      "name": "MRSA PCR"
-    }
-  ],
-  "micro_test_other": [
-    {
-      "synonyms": [],
-      "name": "Other"
-    },
-    {
-      "synonyms": [
-        "CXR"
-      ],
-      "name": "Chest X-Ray"
-    },
-    {
-      "synonyms": [
-        "AXR"
-      ],
-      "name": "Abdominal X-Ray"
-    },
-    {
-      "synonyms": [],
-      "name": "CT"
-    },
-    {
-      "synonyms": [],
-      "name": "US"
-    },
-    {
-      "synonyms": [
-        "Magnetic Resonance Imaging"
-      ],
-      "name": "MRI"
-    },
-    {
-      "synonyms": [
-        "C-reactive protein"
-      ],
-      "name": "CRP"
-    },
-    {
-      "synonyms": [
-        "16S sequencing"
-      ],
-      "name": "16S PCR"
-    },
-    {
-      "synonyms": [
-        "18S sequencing"
-      ],
-      "name": "18S PCR"
-    },
-    {
-      "synonyms": [
-        "CD4 count"
-      ],
-      "name": "CD4"
-    },
-    {
-      "synonyms": [
-        "Transoesophageal echo"
-      ],
-      "name": "TOE"
-    },
-    {
-      "synonyms": [
-        "Transthoracic echo"
-      ],
-      "name": "TTE"
-    },
-    {
-      "synonyms": [
-        "Full Blood Count"
-      ],
-      "name": "FBC"
-    },
-    {
-      "synonyms": [],
-      "name": "Urinalysis"
-    },
-    {
-      "synonyms": [],
-      "name": "Parasite ID"
-    },
-    {
-      "synonyms": [],
-      "name": "Mycology"
-    }
-  ],
-  "micro_test_leishmaniasis_pcr": [
-    {
-      "synonyms": [],
-      "name": "Leishmaniasis PCR"
-    },
-    {
-      "synonyms": [],
-      "name": "Malaria PCR"
-    }
-  ],
-  "micro_test_serology": [
-    {
-      "synonyms": [],
-      "name": "CMV Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Dengue Serology"
-    },
-    {
-      "synonyms": [
-        "Hepatitis A Serology"
-      ],
-      "name": "Hep A Serology"
-    },
-    {
-      "synonyms": [
-        "Hepatitis E Serology"
-      ],
-      "name": "Hep E Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Measles Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Rubella Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Toxoplasmosis Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "VZV Serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Brucella Serology"
-    },
-    {
-      "synonyms": [
-        "Borrelia screening serology"
-      ],
-      "name": "Lyme screening serology"
-    },
-    {
-      "synonyms": [
-        "Borrelia reference lab serology"
-      ],
-      "name": "Lyme reference lab serology"
-    },
-    {
-      "synonyms": [],
-      "name": "Mumps"
-    },
-    {
-      "synonyms": [
-        "parvo"
-      ],
-      "name": "parvovirus"
-    },
-    {
-      "synonyms": [],
-      "name": "Chikungunya"
-    }
-  ],
   "referralorganisation": [],
-  "micro_test_swab_pcr": [
-    {
-      "synonyms": [],
-      "name": "Swab PCR"
-    }
-  ],
   "consultant": [
     {
       "synonyms": [],
@@ -5392,7 +5306,7 @@
       "name": "cmml"
     }
   ],
-  "microbiology_organism": [
+  "microbiologyorganism": [
     {
       "synonyms": [],
       "name": "Ascaris"
@@ -5961,138 +5875,7 @@
       "name": "X-Ray"
     }
   ],
-  "micro_test_hepititis_b_serology": [
-    {
-      "synonyms": [
-        "Hepatitis B serology",
-        "Hep B serology",
-        "Hepatitis B Serology"
-      ],
-      "name": "HBV Serology"
-    }
-  ],
   "patientconsultationreasonforinteraction": [],
-  "micro_test_mcs": [
-    {
-      "synonyms": [
-        "Broncheoalveolar lavage MC&S"
-      ],
-      "name": "BAL MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "CSF MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Fluid MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Lymph Node MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Sputum MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Stool MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Stool OCP"
-    },
-    {
-      "synonyms": [],
-      "name": "Throat Swab MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Tissue MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Urine MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Wound swab MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Ascitic Fluid MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Pleural Fluid MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Pleural Biopsy MC&S"
-    },
-    {
-      "synonyms": [],
-      "name": "Urine OCP"
-    },
-    {
-      "synonyms": [],
-      "name": "Surgical Site MC&S"
-    },
-    {
-      "synonyms": [
-        "Fluid AFB microscopy & TB culture",
-        "Fluid TB MC&S"
-      ],
-      "name": "Fluid AFB MC&S"
-    },
-    {
-      "synonyms": [
-        "CSF AFB microscopy & TB culture",
-        "CSF TB MC&S"
-      ],
-      "name": "CSF AFB MC&S"
-    },
-    {
-      "synonyms": [
-        "Tissue AFB microscopy & TB culture",
-        "Tissue TB MC&S"
-      ],
-      "name": "Tissue AFB MC&S"
-    },
-    {
-      "synonyms": [
-        "Urine AFB microscopy & TB culture",
-        "Urine TB MC&S"
-      ],
-      "name": "Urine AFB MC&S"
-    },
-    {
-      "synonyms": [
-        "Sputum AFB microscopy & TB culture",
-        "Sputum TB MC&S"
-      ],
-      "name": "Sputum AFB MC&S"
-    },
-    {
-      "synonyms": [
-        "Mid stream urine"
-      ],
-      "name": "MSU"
-    },
-    {
-      "synonyms": [
-        "Catheter specimen urine"
-      ],
-      "name": "CSU"
-    },
-    {
-      "synonyms": [
-        "BC"
-      ],
-      "name": "Blood Culture"
-    }
-  ],
   "destination": [
     {
       "name": "Abkhazia",

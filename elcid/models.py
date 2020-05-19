@@ -61,6 +61,26 @@ class Provenance(lookuplists.LookupList):
     pass
 
 
+class MicrobiologyOrganism(lookuplists.LookupList):
+    pass
+
+
+class LineType(lookuplists.LookupList):
+    pass
+
+
+class LineSite(lookuplists.LookupList):
+    pass
+
+
+class LineComplication(lookuplists.LookupList):
+    pass
+
+
+class LineRemovalReason(lookuplists.LookupList):
+    pass
+
+
 class Location(EpisodeSubrecord):
     _is_singleton = True
     _icon = 'fa fa-map-marker'
@@ -464,14 +484,14 @@ class Line(EpisodeSubrecord):
     _sort = 'insertion_datetime'
     _icon = 'fa fa-bolt'
 
-    line_type = ForeignKeyOrFreeText(omodels.Line_type)
-    site = ForeignKeyOrFreeText(omodels.Line_site)
+    line_type = ForeignKeyOrFreeText(LineType)
+    site = ForeignKeyOrFreeText(LineSite)
     insertion_datetime = models.DateTimeField(blank=True, null=True)
     inserted_by = models.CharField(max_length=255, blank=True, null=True)
     external_length = models.CharField(max_length=255, blank=True, null=True)
     removal_datetime = models.DateTimeField(blank=True, null=True)
-    complications = ForeignKeyOrFreeText(omodels.Line_complication)
-    removal_reason = ForeignKeyOrFreeText(omodels.Line_removal_reason)
+    complications = ForeignKeyOrFreeText(LineComplication)
+    removal_reason = ForeignKeyOrFreeText(LineRemovalReason)
     special_instructions = models.TextField()
     button_hole = models.NullBooleanField()
     tunnelled_or_temp = models.CharField(max_length=200, blank=True, null=True)
@@ -638,7 +658,7 @@ class Organism(lmodels.Observation, RfhObservation):
     class Meta:
         proxy = True
 
-    lookup_list = omodels.Microbiology_organism
+    lookup_list = MicrobiologyOrganism
 
 
 class BloodCultureOrganism(BloodCultureMixin, lmodels.LabTest):
@@ -820,9 +840,9 @@ class BloodCultureIsolate(
     gpc_staph = ForeignKeyOrFreeText(GPCStaphOutcome, verbose_name="Staph Quick FiSH")
     gpc_strep = ForeignKeyOrFreeText(GPCStrepOutcome, verbose_name="Strep Quick FiSH")
     sepsityper_organism = ForeignKeyOrFreeText(
-        omodels.Microbiology_organism, related_name="sepsityper_organism"
+        MicrobiologyOrganism, related_name="sepsityper_organism"
     )
-    organism = ForeignKeyOrFreeText(omodels.Microbiology_organism)
+    organism = ForeignKeyOrFreeText(MicrobiologyOrganism)
     sensitivities = models.ManyToManyField(
         omodels.Antimicrobial, blank=True, related_name="sensitive_isolates"
     )
