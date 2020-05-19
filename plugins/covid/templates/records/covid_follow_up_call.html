@@ -1,0 +1,199 @@
+<h3>
+  <b>
+    [[ item.when | displayDate ]] [[ item.clinician ]]
+  </b>
+  <span ng-show="item.position">(</span>
+  [[ item.position ]]
+  <span ng-show="item.position">)</span>
+</h3>
+
+<span ng-show="item.unreachable">
+  Unreachable
+  <br />
+</span>
+<span ng-show="item.unable_to_complete">
+  Unable To Complete
+  <br />
+</span>
+<span ng-show="item.incomplete_reason">
+  [[ item.incomplete_reason ]]
+  <br />
+</span>
+<section ng-hide="item.unable_to_complete">
+  <hr />
+
+  <div class="row ">
+    <div class="col-md-3">
+      <b>Smoking Status:</b>
+    </div>
+    <div class="col-md-3">
+      [[ item.smoking_status ]]
+    </div>
+  </div>
+
+  <section ng-show="item.changes_to_medication">
+    <hr />
+    <div class="row" >
+      <div class="col-md-8">
+        <b>Changes to medication post discharge</b>
+        <br />
+        [[ item.medication_change_details ]]
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <div class="row">
+    <div class="col-md-12">
+      <p><b>Symptoms At Followup:</b></p>
+      <br />
+      <span ng-show="item.myalgia">Myalgia<br /></span>
+      <span ng-show="item.anosmia">Anosmia<br /></span>
+      <span ng-show="item.anorexia">Anorexia<br /></span>
+      <span ng-show="item.chest_pain">Chest Pain<br /></span>
+      <span ng-show="item.chest_tightness">Chest Tightness<br /></span>
+      <span ng-show="item.confusion">Confusion<br /></span>
+      <span ng-show="item.diarrhoea">Diarrhoea<br /></span>
+      <span ng-show="item.peripheral_oedema">Peripheral Oedema<br /></span>
+      <span ng-show="item.abdominal_pain">Abdominal Pain<br /></span>
+      <span ng-show="item.focal_weakness">Focal Weakness<br /></span>
+      <span ng-show="item.loss_of_taste">Loss Of Taste<br /></span>
+    </div>
+
+    <div class="col-md-12 content-offset">
+      <table class="table table-striped table-bordered ">
+        <tr>
+          <th>Symptom</th>
+          <th>Current</th>
+          <th>Max</th>
+          <th>Trend</th>
+        </tr>
+        <tr>
+          <td>Breathlessness</td>
+          <td>[[ item.current_breathlessness ]]</td>
+          <td>[[ item.max_breathlessness ]]</td>
+          <td>[[ item.breathlessness_trend ]]</td>
+        </tr>
+        <tr>
+          <td>Cough</td>
+          <td>[[ item.current_cough ]]</td>
+          <td>[[ item.max_cough ]]</td>
+          <td>[[ item.cough_trend ]]</td>
+        </tr>
+        <tr>
+          <td>Fatigue</td>
+          <td>[[ item.current_fatigue ]]</td>
+          <td>[[ item.max_fatigue ]]</td>
+          <td>[[ item.fatigue_trend ]]</td>
+        </tr>
+        <tr>
+          <td>Sleep Quality</td>
+          <td>[[ item.current_sleep_quality ]]</td>
+          <td>[[ item.max_sleep_quality ]]</td>
+          <td>[[ item.sleep_quality_trend ]]</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+
+  <hr />
+
+  <div class="row">
+    <div class="col-md-12 content-offset-below-25">
+      <p><b>Quality Of Life:</b></p>
+      <br />
+
+      <span ng-show="item.back_to_normal">
+        Back To Normal
+        <br />
+      </span>
+      <span ng-show="item.why_not_back_to_normal">
+        [[ item.why_not_back_to_normal ]]
+        <br />
+      </span>
+
+    </div>
+
+    <div class="col-md-3"><b>Baseline Health Proximity</b></div>
+    <div class="col-md-3">[[ item.baseline_health_proximity ]]</div>
+    <div class="col-md-3"><b>Back To Work</b></div>
+    <div class="col-md-3">[[ item.back_to_work ]]</div>
+
+    <div class="col-md-3"><b>Exercise Tolerance</b></div>
+    <div class="col-md-3">[[ item.current_et ]]</div>
+    <div class="col-md-3"><b>MRC Dyspnoea Scale</b></div>
+    <div class="col-md-3">[[ item.mrc_dyspnoea_scale ]]</div>
+    <div class="col-md-3"><b>Limited By</b></div>
+    <div class="col-md-3">[[ item.limited_by ]]</div>
+    <div class="col-md-3"><b>Clinical Frailty Score</b></div>
+    <div class="col-md-3">[[ item.current_cfs ]]</div>
+
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="col-md-12">
+      <p><b>Psychological:</b></p>
+    </div>
+    <div class="col-md-6"><b>Little Interest Or Pleasure In Doing Things</b></div>
+    <div class="col-md-6">[[ item.interest ]]</div>
+    <div class="col-md-6"><b>Down, Depressed, Hopeless</b></div>
+    <div class="col-md-6">[[ item.depressed ]]</div>
+    <div class="col-md-6"><b>Psychology Referral</b></div>
+    <div class="col-md-6"><span ng-show="item.psych_referral">Yes</span></div>
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="col-md-8">
+      <p><b>Other Concerns:</b></p>
+      <div ng-show="item.other_concerns">
+        [[ item.other_concerns ]]
+        <br />
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+      <p><b>Haem Clinic:</b></p>
+    </div>
+    <div class="col-md-3">
+      [[ item.haem_clinic ]]
+    </div>
+    <div class="col-md-3">
+      <p><b>Diabetic Team:</b></p>
+    </div>
+    <div class="col-md-3">
+      [[ item.diabetic_team ]]
+    </div>
+  </div>
+
+  <hr />
+  <div class="row">
+    <div class="col-md-8">
+      <p><b>Call Satisfaction:</b></p>
+      [[ item.call_satisfaction ]]
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-8">
+      <p><b>Recontact:</b></p>
+      <span ng-show="item.recontact">Yes</span>
+    </div>
+  </div>
+
+  <hr />
+
+  <div class="row">
+    <div class="col-md-8">
+      <p><b>Followup Outcome:</b></p>
+      [[ item.follow_up_outcome ]]
+
+    </div>
+  </div>
+</section>
