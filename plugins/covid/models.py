@@ -244,7 +244,7 @@ class LungFunctionTest(EpisodeSubrecord):
     date    = models.DateField(blank=True, null=True)
     fev1    = models.CharField(blank=True, null=True, max_length=244, verbose_name='FEV1 %')
     fvc     = models.CharField(blank=True, null=True, max_length=244, verbose_name='FVC %')
-    lf_dlco = models.CharField(blank=True, null=True, max_length=244, verbose_name='LF DLCO %')
+    lf_dlco = models.CharField(blank=True, null=True, max_length=244, verbose_name='Lung Function DLCO %')
 
 
 class CovidComorbidities(EpisodeSubrecord):
@@ -445,6 +445,11 @@ class CovidFollowUpCall(EpisodeSubrecord):
     other_concerns            = models.TextField(blank=True, null=True)
     haem_clinic               = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)
     diabetic_team             = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)# TODO What is thsi
-    call_satisfaction         = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)
-    recontact                 = models.NullBooleanField()
+    call_satisfaction         = models.CharField(
+        blank=True, null=True, max_length=20, choices=Y_N_NA,
+        verbose_name="Patient satisfied with call?"
+    )
+    recontact                 = models.NullBooleanField(
+        verbose_name="Would you be willing to be contacted again to take part in research?"
+    )
     follow_up_outcome         = models.CharField(blank=True, null=True, max_length=50, choices=FOLLOWUP_CHOICES)
