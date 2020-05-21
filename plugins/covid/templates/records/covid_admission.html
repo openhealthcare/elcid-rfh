@@ -62,67 +62,81 @@
     <p><b>Observations At Admission:</b></p>
   </div>
 
-  <div class="col-md-3">
-    <b>Height:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.height ]] <span ng-show="item.height">m</span>
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-6">
+        <b>Height:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.height ]] <span ng-show="item.height">m</span>
+      </div>
+
+      <div class="col-md-6">
+        <b>Weight:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.weight ]] kg
+      </div>
+
+      <div class="col-md-6">
+        <b>BMI:</b>
+      </div>
+      <div class="col-md-6">
+        <span ng-show="item.height && item.weight">
+          [[ item.height| bmi: item.weight ]]
+        </span>
+      </div>
+      <div class="col-md-6">
+        <b>Systolic BP:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.systolic_bp ]] mmHg
+      </div>
+
+      <div class="col-md-6">
+        <b>Diastolic BP:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.diastolic_bp ]] mmHg
+      </div>
+    </div>
   </div>
 
-  <div class="col-md-3">
-    <b>Weight:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.weight ]] kg
-  </div>
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-6">
+        <b>Respiratory Rate:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.respiratory_rate ]] Breaths/min
+      </div>
 
-  <div class="col-md-3">
-    <b>Respiratory Rate:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.respiratory_rate ]] Breaths/min
-  </div>
+      <div class="col-md-6">
+        <b>Heart Rate:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.heart_rate ]] Beats/min
+      </div>
+      <div class="col-md-6">
+        <b>SaO2:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.sao2 ]]
+      </div>
 
-  <div class="col-md-3">
-    <b>Heart Rate:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.heart_rate ]] Beats/min
-  </div>
-
-  <div class="col-md-3">
-    <b>SaO2:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.sao2 ]]
-  </div>
-
-  <div class="col-md-3">
-    <b>FiO2:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.fi02 ]]
-  </div>
-
-  <div class="col-md-3">
-    <b>Systolic BP:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.systolic_bp ]] mmHg
-  </div>
-
-  <div class="col-md-3">
-    <b>Diastolic BP:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.diastolic_bp ]] mmHg
-  </div>
-
-  <div class="col-md-3">
-    <b>Temperature:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.temperature ]] oC
+      <div class="col-md-6">
+        <b>FiO2:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.fi02 ]]
+      </div>
+      <div class="col-md-6">
+        <b>Temperature:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.temperature ]] oC
+      </div>
+    </div>
   </div>
 
 </div>
