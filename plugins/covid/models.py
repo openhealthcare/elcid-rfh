@@ -142,7 +142,7 @@ class CovidAdmission(EpisodeSubrecord):
     )
     systolic_bp          = models.IntegerField(blank=True, null=True, verbose_name='Systolic BP (mmHg)')
     diastolic_bp         = models.IntegerField(blank=True, null=True, verbose_name='Diastolic BP (mmHg)')
-    temperature          = models.IntegerField(blank=True, null=True, help_text='oC')
+    temperature          = models.FloatField(blank=True, null=True, help_text='oC')
     news2                = models.CharField(blank=True, null=True, max_length=255, verbose_name='NEWS2 Score On Arrival')
     clinical_frailty     = models.CharField(blank=True, null=True, max_length=255, verbose_name='Clinical frailty')
 
