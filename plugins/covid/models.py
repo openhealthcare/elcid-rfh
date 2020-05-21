@@ -160,11 +160,12 @@ class CovidAdmission(EpisodeSubrecord):
     maximum_resp_support = models.CharField(
         blank=True, null=True, max_length=200, choices=MAX_RESP_SUPPORT_CHOICES
     )
-    max_fio2_non_nc           = models.CharField(blank=True, null=True, max_length=255, help_text='Max FiO2 non NC')
-    max_fio2_nc               = models.CharField(blank=True, null=True, max_length=255, help_text='Max FiO2 if NC')
+    max_fio2_non_nc           = models.CharField(blank=True, null=True, max_length=255, verbose_name='Max FiO2 non Nasal Cannula')
+    max_fio2_nc               = models.CharField(blank=True, null=True, max_length=255, verbose_name='Max FiO2 if Nasal Cannula')
     days_on_cpap              = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On CPAP')
     days_on_niv               = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On NIV')
     days_on_iv                = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On IV')
+    days_on_ippv              = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On IPPV')
     days_on_oxygen            = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On Oxygen')
 
     final_spo2                = models.CharField(
@@ -172,9 +173,7 @@ class CovidAdmission(EpisodeSubrecord):
     final_fio2                = models.CharField(
         blank=True, null=True, max_length=244, verbose_name='Last Available FiO2 Prior To Discharge')
 
-    systemic_corticosteroirds = models.NullBooleanField(verbose_name='Treated With Systemic Corticosteroids') # TODO IS THIS HERE?
-
-    covid_code                = models.CharField(blank=True, null=True, max_length=20, choices=COVID_CODE_CHOICES)
+    systemic_corticosteroirds = models.NullBooleanField(verbose_name='Treated With Systemic Corticosteroids')
 
 
 class CovidSmokingHistory(EpisodeSubrecord):
