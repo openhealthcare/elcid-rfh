@@ -152,6 +152,6 @@ class Encounter(models.Model):
         if self.msh_9_msg_type:
             serialized['last_update_type'] = constants.MESSAGE_CODES[self.msh_9_msg_type]
 
-        serialized['hospital'] = constants.BUILDING_CODES.get(self.pv1_3_building)
+        serialized['hospital'] = constants.BUILDING_CODES.get(self.pv1_3_building, self.pv1_3_building)
 
         return serialized

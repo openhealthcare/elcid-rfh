@@ -7,7 +7,12 @@ from opal.models import Patient
 from opal.core.views import json_response
 
 EXCLUDE_ADMISSIONS = [
-    'S12', 'S14', 'S15'
+    'A14', # Pending admit
+    'A35', # Merge account num
+    'S12', # New Appt
+    'S13', # Reschedule Appt
+    'S14', # Modify Appt
+    'S15'  # Cancel Appt
 ]
 
 class AdmissionViewSet(LoginRequiredViewset):
