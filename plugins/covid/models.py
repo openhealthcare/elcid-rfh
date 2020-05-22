@@ -98,7 +98,8 @@ class CovidAdmission(EpisodeSubrecord):
         'No support',
         'O2',
         'CPAP',
-        'Respiratory support'
+        'NIV',
+        'IV'
     )
 
     date_of_admission    = models.DateField(blank=True, null=True)
