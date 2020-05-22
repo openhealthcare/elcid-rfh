@@ -1,7 +1,8 @@
 {% load panels %}
+{% load elcid_panels %}
 <section>
   <div class="row">
-    <div class="col-md-12">{% record_panel models.CovidAdmission %}</div>
+    <div class="col-md-12">{% wide_panel models.CovidAdmission %}</div>
     <div class="col-md-6">{% record_panel models.CovidSmokingHistory %}</div>
     <div class="col-md-6">{% record_panel models.CovidSocialHistory %}</div>
     <div class="col-md-12">
