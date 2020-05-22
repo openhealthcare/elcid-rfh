@@ -456,10 +456,9 @@ class BatchLoadTestCase(ApiTestCase):
 
 class _BatchLoadTestCase(ApiTestCase):
     @mock.patch.object(loader.api, "data_deltas")
-    @mock.patch('intrahospital_api.loader.update_demographics.reconcile_all_demographics')
     @mock.patch('intrahospital_api.loader.update_from_batch')
     def test_batch_load(
-        self, update_from_batch, reconcile_all_demographics, data_deltas
+        self, update_from_batch, data_deltas
     ):
         now = timezone.now()
         imodels.BatchPatientLoad.objects.create(
@@ -468,7 +467,6 @@ class _BatchLoadTestCase(ApiTestCase):
         )
         data_deltas.return_value = "something"
         loader._batch_load()
-        reconcile_all_demographics.assert_called_once_with()
         data_deltas.assert_called_once_with(now)
         update_from_batch.assert_called_once_with("something")
 

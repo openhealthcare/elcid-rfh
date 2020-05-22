@@ -290,9 +290,6 @@ def _batch_load():
     started = get_batch_start_time()
 
     logger.info("start loading batch")
-    # update the non reconciled
-    update_demographics.reconcile_all_demographics()
-    logger.info("reconciled demographics")
 
     data_deltas = api.data_deltas(started)
     logger.info("calcualted data deltas")
