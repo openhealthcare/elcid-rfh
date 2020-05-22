@@ -250,25 +250,22 @@ def batch_load(force=False):
 
 def get_batch_start_time():
     """
-        we need to paper over the cracks.
+    Usually this just means get me everything since the start
+    of the last successful batch run.
 
-        usually this just means get me everything since the start
-        of the last successful batch run.
+    Batch A starts at 10:00 and finishes at 10:03
+    Batch B will get all data since 10:00
 
-        ie batch A starts at 10:00 and finishes at 10:03
-        batch B will get all data since 10:00 so that nothing is lost
+    The batches exclude initial patient loads, but usually that's ok
 
-        however...
-        the batches exclude initial patient loads, but usually that's ok
-        but we have extra cracks to paper over...
+    however...
 
-        a patient load starts during the batch A load, at 9:58. It finishes
-        the db load from the upstream db at 9:59 but is still saving the data
-        to our db at 10:00
+    A patient load starts during the batch A load, at 9:58. It finishes
+    the db load from the upstream db at 9:59 but is still saving the data
+    to our db at 10:00
 
-        it is excluded from the batch A, so batch B goes and starts its run
-        from 9:59 accordingly.
-
+    It is excluded from the batch A, so batch B goes and starts its run
+    from 9:59 accordingly.
     """
     last_successful_run = models.BatchPatientLoad.objects.filter(
         state=models.BatchPatientLoad.SUCCESS
