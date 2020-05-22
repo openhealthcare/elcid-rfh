@@ -343,9 +343,10 @@ class CovidCT(EpisodeSubrecord):
     class Meta:
         verbose_name = 'Covid CT'
 
-    date   = models.DateField(blank=True, null=True)
-    pe     = models.NullBooleanField(verbose_name="Pulmonary Embolism") # WHAT IS THIS? (Pulmonary_embolism)
-    report = models.TextField(blank=True, null=True)
+    date       = models.DateField(blank=True, null=True)
+    pe         = models.NullBooleanField(verbose_name="Pulmonary Embolism")
+    thrombosis = models.NullBooleanField()
+    report     = models.TextField(blank=True, null=True)
 
 
 class CovidFollowUpCall(EpisodeSubrecord):
