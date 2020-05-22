@@ -22,27 +22,28 @@
   <div class="col-md-6">
     <b>Symptoms On Admission:</b>
     <br />
-    <span ng-show="item.cough">Cough<br /></span>
-    <span ng-show="item.shortness_of_breath">Shortness Of Breath<br /></span>
-    <span ng-show="item.sore_throat">Sore Throat<br /></span>
-    <span ng-show="item.rhinitis">Rhinitis<br /></span>
-    <span ng-show="item.fever">Fever<br /></span>
-    <span ng-show="item.fatigue">Fatigue<br /></span>
-    <span ng-show="item.myalgia">Myalgia<br /></span>
-    <span ng-show="item.headache">Headache<br /></span>
-    <span ng-show="item.anorexia">Anorexia<br /></span>
-    <span ng-show="item.anosmia">Anosmia<br /></span>
-    <span ng-show="item.loss_of_taste">Loss Of Taste<br /></span>
-    <span ng-show="item.diarrhoea">Diarrhoea<br /></span>
-    <span ng-show="item.abdominal_pain">Abdominal Pain<br /></span>
-    <span ng-show="item.chest_pain">Chest Pain<br /></span>
-    <span ng-show="item.chest_tightness">Chest Tightness<br /></span>
-    <span ng-show="item.confusion">Confusion<br /></span>
-    <span ng-show="item.peripheral_oedema">Peripheral Oedema<br /></span>
-    <span ng-show="item.focal_weakness">Focal Weakness<br /></span>
-    <span ng-show="item.other">[[ item.other ]]<br /></span>
+    <span ng-show="item.cough">Cough;</span>
+    <span ng-show="item.shortness_of_breath">Shortness Of Breath;</span>
+    <span ng-show="item.sore_throat">Sore Throat;</span>
+    <span ng-show="item.rhinitis">Rhinitis;</span>
+    <span ng-show="item.fever">Fever;</span>
+    <span ng-show="item.fatigue">Fatigue;</span>
+    <span ng-show="item.myalgia">Myalgia;</span>
+    <span ng-show="item.headache">Headache;</span>
+    <span ng-show="item.anorexia">Anorexia;</span>
+    <span ng-show="item.anosmia">Anosmia;</span>
+    <span ng-show="item.loss_of_taste">Loss Of Taste;</span>
+    <span ng-show="item.diarrhoea">Diarrhoea;</span>
+    <span ng-show="item.abdominal_pain">Abdominal Pain;</span>
+    <span ng-show="item.chest_pain">Chest Pain;</span>
+    <span ng-show="item.chest_tightness">Chest Tightness;</span>
+    <span ng-show="item.confusion">Confusion;</span>
+    <span ng-show="item.peripheral_oedema">Peripheral Oedema;</span>
+    <span ng-show="item.focal_weakness">Focal Weakness;</span>
+    <span ng-show="item.other">[[ item.other ]]</span>
 
     <span ng-show="item.duration_of_symptoms">
+      <br />
       [[ item.duration_of_symptoms ]] days
     </span>
 
@@ -62,67 +63,86 @@
     <p><b>Observations At Admission:</b></p>
   </div>
 
-  <div class="col-md-3">
-    <b>Height:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.height ]] <span ng-show="item.height">m</span>
-  </div>
-
-  <div class="col-md-3">
-    <b>Weight:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.weight ]] kg
-  </div>
-
-  <div class="col-md-3">
-    <b>Respiratory Rate:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.respiratory_rate ]] Breaths/min
-  </div>
-
-  <div class="col-md-3">
-    <b>Heart Rate:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.heart_rate ]] Beats/min
-  </div>
-
-  <div class="col-md-3">
-    <b>SaO2:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.sao2 ]]
-  </div>
-
-  <div class="col-md-3">
-    <b>FiO2:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.fi02 ]]
-  </div>
-
-  <div class="col-md-3">
-    <b>Systolic BP:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.systolic_bp ]] mmHg
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-6">
+        <b>Height:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.height ]] <span ng-show="item.height">m</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Weight:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.weight ]] <span ng-show="item.weight">kg</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>BMI:</b>
+      </div>
+      <div class="col-md-6">
+        <span ng-show="item.height && item.weight">
+          [[ item.height| bmi: item.weight ]]
+        </span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Systolic BP:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.systolic_bp ]] <span ng-show="item.systolic_bp">mmHg</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Diastolic BP:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.diastolic_bp ]] <span ng-show="item.diastolic_bp">mmHg</span>
+      </div>
+    </div>
   </div>
 
-  <div class="col-md-3">
-    <b>Diastolic BP:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.diastolic_bp ]] mmHg
-  </div>
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-6">
+        <b>Respiratory Rate:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.respiratory_rate ]] <span ng-show="item.respiratory_rate">Breaths/min</span>
+      </div>
 
-  <div class="col-md-3">
-    <b>Temperature:</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.temperature ]] oC
+      <div class="col-md-6">
+        <b>Heart Rate:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.heart_rate ]] <span ng-show="item.heart_rate">Beats/min</span>
+      </div>
+      <div class="col-md-6">
+        <b>SaO2:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.sao2 ]]
+      </div>
+
+      <div class="col-md-6">
+        <b>FiO2:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.fi02 ]]
+      </div>
+      <div class="col-md-6">
+        <b>Temperature:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.temperature ]] oC
+      </div>
+    </div>
   </div>
 
 </div>
@@ -134,13 +154,13 @@
     <p><b>Arrival Scores</b></p>
   </div>
   <div class="col-md-3">
-    <b>NEWS2</b>
+    <b>NEWS2:</b>
   </div>
   <div class="col-md-3">
     [[ item.news2 ]]
   </div>
   <div class="col-md-3">
-    <b>Clinical Frailty</b>
+    <b>Clinical Frailty Score:</b>
   </div>
   <div class="col-md-3">
     [[ item.clinical_frailty ]]
@@ -154,13 +174,13 @@
     <p><b>Patient Status</b></p>
   </div>
   <div class="col-md-3">
-    <b>Treatment Escalation Plan</b>
+    <b>Treatment Escalation Plan:</b>
   </div>
   <div class="col-md-3">
     [[ item.tep_status ]]
   </div>
   <div class="col-md-3">
-    <b>Smoking</b>
+    <b>Smoking:</b>
   </div>
   <div class="col-md-3">
     [[ item.smoking_status ]]
@@ -173,73 +193,95 @@
   <div class="col-md-12">
     <p><b>Treatment Details</b></p>
   </div>
-  <div class="col-md-3">
-    <b>Max Resp Support</b>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-6">
+        <b>Max Resp Support</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.maximum_resp_support ]]
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Max FiO2 Non Nasal Cannula</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.max_fio2_non_nc ]]
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Max FiO2 If Nasal Cannula</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.max_fio2_nc ]]
+      </div>
+    </div>
   </div>
-  <div class="col-md-3">
-    [[ item.maximum_resp_support ]]&nbsp;
+  <div class="col-md-6">
+    <div class="row">
+      <div class="col-md-6">
+        <b>Days On CPAP</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.days_on_cpap ]]
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Days On NIV</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.days_on_niv ]]
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Days On IV</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.days_on_iv ]]
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Days On IPPV</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.days_on_ippv ]]
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Days On Oxygen</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.days_on_oxygen ]]
+      </div>
+    </div>
   </div>
-  <div class="col-md-3">
-    <b>Max FiO2 Non NC</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.max_fio2_non_nc ]]&nbsp;
-  </div>
-  <div class="col-md-3">
-    <b>Max FiO2 If NC</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.max_fio2_nc ]]&nbsp;
-  </div>
-  <div class="col-md-3">
-    <b>Days On CPAP</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.days_on_cpap ]]&nbsp;
-  </div>
-  <div class="col-md-3">
-    <b>Days On NIV</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.days_on_niv ]]&nbsp;
-  </div>
-  <div class="col-md-3">
-    <b>Days On IV</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.days_on_iv ]]&nbsp;
-  </div>
-  <div class="col-md-3">
-    <b>Days On Oxygen</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.days_on_oxygen ]]&nbsp;
-  </div>
+</div>
+
+<div class="row">
   <div class="col-md-3">
     <b>Final FiO2</b>
   </div>
   <div class="col-md-3">
-    [[ item.final_fio2 ]]&nbsp;
+    [[ item.final_fio2 ]]
   </div>
   <div class="col-md-3">
     <b>Final SpO2</b>
   </div>
   <div class="col-md-3">
-    [[ item.final_spo2 ]]&nbsp;
+    [[ item.final_spo2 ]]
   </div>
   <div class="col-md-12">
     <span ng-show="item.systemic_corticosteroirds">
       Treated with systemic corticosteroids
       <br />
     </span>
-  </div>
-</div>
-<hr />
-<div class="row">
-  <div class="col-md-3">
-    <b>Covid Code</b>
-  </div>
-  <div class="col-md-3">
-    [[ item.covid_code ]]
   </div>
 </div>

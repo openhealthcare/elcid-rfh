@@ -67,7 +67,7 @@
           <th>Symptom</th>
           <th>Current</th>
           <th>Max</th>
-          <th>Trend</th>
+          <th>Trajectory</th>
         </tr>
         <tr>
           <td>Breathlessness</td>
@@ -176,14 +176,15 @@
   <hr />
   <div class="row">
     <div class="col-md-8">
-      <p><b>Call Satisfaction:</b></p>
+      <p><b>Patient Satisfied With Call:</b></p>
       [[ item.call_satisfaction ]]
     </div>
   </div>
   <div class="row">
     <div class="col-md-8">
-      <p><b>Recontact:</b></p>
+      <p><b>Contactable For Research:</b></p>
       <span ng-show="item.recontact">Yes</span>
+      <span ng-hide="item.recontact">No</span>
     </div>
   </div>
 

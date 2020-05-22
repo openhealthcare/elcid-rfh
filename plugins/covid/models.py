@@ -98,7 +98,8 @@ class CovidAdmission(EpisodeSubrecord):
         'No support',
         'O2',
         'CPAP',
-        'Respiratory support'
+        'NIV',
+        'IV'
     )
 
     date_of_admission    = models.DateField(blank=True, null=True)
@@ -142,7 +143,7 @@ class CovidAdmission(EpisodeSubrecord):
     )
     systolic_bp          = models.IntegerField(blank=True, null=True, verbose_name='Systolic BP (mmHg)')
     diastolic_bp         = models.IntegerField(blank=True, null=True, verbose_name='Diastolic BP (mmHg)')
-    temperature          = models.IntegerField(blank=True, null=True, help_text='oC')
+    temperature          = models.FloatField(blank=True, null=True, help_text='oC')
     news2                = models.CharField(blank=True, null=True, max_length=255, verbose_name='NEWS2 Score On Arrival')
     clinical_frailty     = models.CharField(blank=True, null=True, max_length=255, verbose_name='Clinical frailty')
 
@@ -160,11 +161,12 @@ class CovidAdmission(EpisodeSubrecord):
     maximum_resp_support = models.CharField(
         blank=True, null=True, max_length=200, choices=MAX_RESP_SUPPORT_CHOICES
     )
-    max_fio2_non_nc           = models.CharField(blank=True, null=True, max_length=255, help_text='Max FiO2 non NC')
-    max_fio2_nc               = models.CharField(blank=True, null=True, max_length=255, help_text='Max FiO2 if NC')
+    max_fio2_non_nc           = models.CharField(blank=True, null=True, max_length=255, verbose_name='Max FiO2 non Nasal Cannula')
+    max_fio2_nc               = models.CharField(blank=True, null=True, max_length=255, verbose_name='Max FiO2 if Nasal Cannula')
     days_on_cpap              = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On CPAP')
     days_on_niv               = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On NIV')
     days_on_iv                = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On IV')
+    days_on_ippv              = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On IPPV')
     days_on_oxygen            = models.IntegerField(blank=True, null=True, verbose_name='Total Number Of Days On Oxygen')
 
     final_spo2                = models.CharField(
@@ -172,9 +174,7 @@ class CovidAdmission(EpisodeSubrecord):
     final_fio2                = models.CharField(
         blank=True, null=True, max_length=244, verbose_name='Last Available FiO2 Prior To Discharge')
 
-    systemic_corticosteroirds = models.NullBooleanField(verbose_name='Treated With Systemic Corticosteroids') # TODO IS THIS HERE?
-
-    covid_code                = models.CharField(blank=True, null=True, max_length=20, choices=COVID_CODE_CHOICES)
+    systemic_corticosteroirds = models.NullBooleanField(verbose_name='Treated With Systemic Corticosteroids')
 
 
 class CovidSmokingHistory(EpisodeSubrecord):
@@ -244,7 +244,7 @@ class LungFunctionTest(EpisodeSubrecord):
     date    = models.DateField(blank=True, null=True)
     fev1    = models.CharField(blank=True, null=True, max_length=244, verbose_name='FEV1 %')
     fvc     = models.CharField(blank=True, null=True, max_length=244, verbose_name='FVC %')
-    lf_dlco = models.CharField(blank=True, null=True, max_length=244, verbose_name='LF DLCO %')
+    lf_dlco = models.CharField(blank=True, null=True, max_length=244, verbose_name='Lung Function DLCO %')
 
 
 class CovidComorbidities(EpisodeSubrecord):
@@ -344,9 +344,10 @@ class CovidCT(EpisodeSubrecord):
     class Meta:
         verbose_name = 'Covid CT'
 
-    date   = models.DateField(blank=True, null=True)
-    pe     = models.NullBooleanField(verbose_name="Pulmonary Embolism") # WHAT IS THIS? (Pulmonary_embolism)
-    report = models.TextField(blank=True, null=True)
+    date       = models.DateField(blank=True, null=True)
+    pe         = models.NullBooleanField(verbose_name="Pulmonary Embolism")
+    thrombosis = models.NullBooleanField()
+    report     = models.TextField(blank=True, null=True)
 
 
 class CovidFollowUpCall(EpisodeSubrecord):
@@ -445,6 +446,11 @@ class CovidFollowUpCall(EpisodeSubrecord):
     other_concerns            = models.TextField(blank=True, null=True)
     haem_clinic               = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)
     diabetic_team             = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)# TODO What is thsi
-    call_satisfaction         = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)
-    recontact                 = models.NullBooleanField()
+    call_satisfaction         = models.CharField(
+        blank=True, null=True, max_length=20, choices=Y_N_NA,
+        verbose_name="Patient satisfied with call?"
+    )
+    recontact                 = models.NullBooleanField(
+        verbose_name="Would you be willing to be contacted again to take part in research?"
+    )
     follow_up_outcome         = models.CharField(blank=True, null=True, max_length=50, choices=FOLLOWUP_CHOICES)
