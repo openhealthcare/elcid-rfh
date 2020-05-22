@@ -19,7 +19,7 @@ class AdmissionViewSet(LoginRequiredViewset):
     base_name = 'admissions'
 
     def retrieve(self, request, pk):
-        patient     = get_object_or_404(Patient.objects.all(), pk=pk)
+        patient    = get_object_or_404(Patient.objects.all(), pk=pk)
         admissions = patient.encounters.exclude(
             msh_9_msg_type__in=EXCLUDE_ADMISSIONS
         ).order_by('-evn_2_movement_date')

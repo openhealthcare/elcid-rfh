@@ -31,7 +31,7 @@ def save_encounter(encounter, patient):
         if v: # Ignore for empty / nullvalues
             # Empty is actually more complicated than pythonic truthiness.
             # Many admissions have the string '""' as the contents of room/bed
-            if v = '""':
+            if v == '""':
                 continue
 
             fieldtype = type(
