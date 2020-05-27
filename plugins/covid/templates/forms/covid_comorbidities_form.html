@@ -1,84 +1,92 @@
 {% load forms %}
 <div class="row">
   <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.hypertension" %}
+    <div class="row">
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.hypertension" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.ihd" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.heart_failure" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.arrhythmia" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.cerebrovascular_disease" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.dyslipidaemia" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.ace_inhibitor" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.angiotension_blocker" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.nsaid" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.type_1_diabetes" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.type_2_diabetes" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.obesity" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.copd" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.asthma" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.ild" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.other_lung_condition" %}
+      </div>
+    </div>
   </div>
   <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.ace_inhibitor" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.angiotension_blocker" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.nsaid" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.ihd" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.heart_failure" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.arrhythmia" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.cerebrovascular_disease" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.type_1_diabetes" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.type_2_diabetes" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.copd" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.asthma" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.ild" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.other_lung_condition" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.ckd" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.active_malignancy" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.active_malignancy_on_immunosuppression" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.hiv" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.autoimmunne_with_immunosuppression" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.autoimmunne_without_immunosuppression" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.gord" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.depression" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.anxiety" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.other_mental_health" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.obesity" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.dyslipidaemia" %}
-  </div>
-  <div class="col-md-6">
-    {% checkbox field="CovidComorbidities.anaemia" %}
+    <div class="row">
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.ckd" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.gord" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.autoimmunne_with_immunosuppression" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.autoimmunne_without_immunosuppression" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.active_malignancy" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.active_malignancy_on_immunosuppression" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.hiv" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.depression" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.anxiety" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.other_mental_health" %}
+      </div>
+      <div class="col-md-12">
+        {% checkbox field="CovidComorbidities.anaemia" %}
+      </div>
+    </div>
   </div>
 </div>
