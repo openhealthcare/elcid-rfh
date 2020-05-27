@@ -7,7 +7,7 @@ from django.db import migrations
 
 def forwards(apps, schema_editor):
     """
-    Move all ft_or_fk line fields into there _ft option
+    Move all ft_or_fk line fields into their _ft option
     """
     Line = apps.get_model(
         'elcid', 'Line'
