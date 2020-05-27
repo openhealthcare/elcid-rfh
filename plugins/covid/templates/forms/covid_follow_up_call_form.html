@@ -77,6 +77,20 @@
   </div>
   <div class="row">
     <div class="col-md-3 col-md-offset-1">
+      <b>Fatigue</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.current_fatigue" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidFollowUpCall.max_fatigue" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidFollowUpCall.fatigue_trend" label="" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
       <b>Breathlessness</b>
     </div>
     <div class="col-md-2">
@@ -101,20 +115,6 @@
     </div>
     <div class="col-md-3">
       {% select field="CovidFollowUpCall.cough_trend" label="" %}
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-3 col-md-offset-1">
-      <b>Fatigue</b>
-    </div>
-    <div class="col-md-2">
-      {% select field="CovidFollowUpCall.current_fatigue" label="" %}
-    </div>
-    <div class="col-md-2">
-      {% select field="CovidFollowUpCall.max_fatigue" label="" %}
-    </div>
-    <div class="col-md-3">
-      {% select field="CovidFollowUpCall.fatigue_trend" label="" %}
     </div>
   </div>
   <div class="row">
