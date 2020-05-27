@@ -11,14 +11,21 @@ class ExternalDemographics(PatientSubrecord):
     _icon = "fa fa-handshake-o"
 
     hospital_number = models.CharField(max_length=255, blank=True)
-    nhs_number = models.CharField(max_length=255, blank=True, null=True)
-    surname = models.CharField(max_length=255, blank=True)
-    first_name = models.CharField(max_length=255, blank=True)
-    middle_name = models.CharField(max_length=255, blank=True, null=True)
-    title = ForeignKeyOrFreeText(omodels.Title)
-    date_of_birth = models.DateField(null=True, blank=True)
-    sex = ForeignKeyOrFreeText(omodels.Gender)
-    ethnicity = ForeignKeyOrFreeText(omodels.Ethnicity)
+    nhs_number      = models.CharField(max_length=255, blank=True, null=True)
+    surname         = models.CharField(max_length=255, blank=True)
+    first_name      = models.CharField(max_length=255, blank=True)
+    middle_name     = models.CharField(max_length=255, blank=True, null=True)
+    title           = ForeignKeyOrFreeText(omodels.Title)
+    date_of_birth   = models.DateField(null=True, blank=True)
+    sex             = ForeignKeyOrFreeText(omodels.Gender)
+    ethnicity       = ForeignKeyOrFreeText(omodels.Ethnicity)
+    death_indicator = models.BooleanField(
+        default=False,
+        help_text="This field will be True if the patient is deceased."
+    )
+    date_of_death   = models.DateField(
+        null=True, blank=True, verbose_name="Date of Death"
+    )
 
 
 class PatientLoad(models.Model):
