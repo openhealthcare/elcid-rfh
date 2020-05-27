@@ -5,8 +5,8 @@ from django.db import migrations
 
 def forwards(apps, schema_editor):
     """
-    Create models for all Microbiology_organism
-    as Elcid organisms
+    Create lookuplist entries for all Opal Microbiology_organism
+    as Elcid MicrobiologyOrganisms
     """
 
     # Populate elcid MicrobiologyOrganism for all the
