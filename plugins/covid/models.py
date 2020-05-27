@@ -73,7 +73,7 @@ class CovidAdmission(EpisodeSubrecord):
         'Cough',
         'Shortness of breath',
         'Sore throat',
-        'Rhinitis',
+        'Blocked or runny nose',
         'Fever',
         'Myalgia',
         'Headache',
@@ -111,13 +111,14 @@ class CovidAdmission(EpisodeSubrecord):
     cough                = models.NullBooleanField()
     shortness_of_breath  = models.NullBooleanField()
     sore_throat          = models.NullBooleanField()
-    rhinitis             = models.NullBooleanField()
+    rhinitis             = models.NullBooleanField(verbose_name="Blocked or runny nose")
     fever                = models.NullBooleanField()
+    chills               = models.NullBooleanField(verbose_name="Chills or sweats")
     fatigue              = models.NullBooleanField()
     myalgia              = models.NullBooleanField()
     headache             = models.NullBooleanField()
     anorexia             = models.NullBooleanField()
-    anosmia              = models.NullBooleanField()
+    anosmia              = models.NullBooleanField(verbose_name="Loss of smell")
     loss_of_taste        = models.NullBooleanField()
     diarrhoea            = models.NullBooleanField()
     abdominal_pain       = models.NullBooleanField()
