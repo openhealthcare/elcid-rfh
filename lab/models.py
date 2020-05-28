@@ -221,12 +221,6 @@ class Antimicrobial(Observation):
     lookup_list = omodels.Antimicrobial
 
 
-class Organism(Observation):
-    class Meta:
-        proxy = True
-
-    lookup_list = omodels.Microbiology_organism
-
 class DynamicResultChoices(Observation):
     """
         this type of observation has its result choices populated in init
