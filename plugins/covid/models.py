@@ -382,7 +382,8 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     when               = models.DateTimeField(blank=True, null=True)
     clinician          = models.CharField(blank=True, null=True, max_length=255) # Default to user
-    position           = models.CharField(blank=True, null=True, max_length=255, choices=POSITION_CHOICES)
+    position           =  models.CharField(
+        blank=True, null=True, max_length=255, choices=POSITION_CHOICES)
     unreachable        = models.NullBooleanField()
     unable_to_complete = models.NullBooleanField()
     incomplete_reason  = models.TextField(blank=True, null=True)
@@ -392,47 +393,63 @@ class CovidFollowUpCall(EpisodeSubrecord):
         verbose_name='Smoking staus at follow up'
     )
 
-    changes_to_medication     = models.NullBooleanField(verbose_name="Changes to medication post discharge")
+    changes_to_medication     = models.NullBooleanField(
+        verbose_name="Changes to medication post discharge")
     medication_change_details = models.TextField(blank=True, null=True)
 
-    current_breathlessness    = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    max_breathlessness        = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    breathlessness_trend      = models.CharField(blank=True, null=True, max_length=10, choices=TREND_CHOICES)
-    current_cough             = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    max_cough                 = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    cough_trend               = models.CharField(blank=True, null=True, max_length=10, choices=TREND_CHOICES)
-    current_fatigue           = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    max_fatigue               = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    fatigue_trend             = models.CharField(blank=True, null=True, max_length=10, choices=TREND_CHOICES)
-    current_sleep_quality     = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    max_sleep_quality         = models.CharField(blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
-    sleep_quality_trend       = models.CharField(blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+    current_breathlessness    = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    max_breathlessness        = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    breathlessness_trend      = models.CharField(
+        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+    current_cough             = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    max_cough                 = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    cough_trend               = models.CharField(
+        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+    current_fatigue           = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    max_fatigue               = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    fatigue_trend             = models.CharField(
+        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+    current_sleep_quality     = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    max_sleep_quality         = models.CharField(
+        blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
+    sleep_quality_trend       = models.CharField(
+        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
 
     # Symptoms at follow up
-    myalgia                   = models.NullBooleanField()
-    anosmia                   = models.NullBooleanField()
-    anorexia                  = models.NullBooleanField()
     chest_pain                = models.NullBooleanField(help_text='Chest pain')
     chest_tightness           = models.NullBooleanField(help_text='Chest tightness')
-    confusion                 = models.NullBooleanField(help_text='Confusion or fuzzy head')
+    myalgia                   = models.NullBooleanField()
+    anosmia                   = models.NullBooleanField()
+    loss_of_taste             = models.NullBooleanField(verbose_name="Loss of taste")
+    chills                    = models.NullBooleanField(verbose_name="Chills or sweats")
+    anorexia                  = models.NullBooleanField()
+    abdominal_pain            = models.NullBooleanField(verbose_name="Abdominal pain")
     diarrhoea                 = models.NullBooleanField()
     peripheral_oedema         = models.NullBooleanField()
-    abdominal_pain            = models.NullBooleanField()
+    confusion                 = models.NullBooleanField(help_text='Confusion or fuzzy head')
     focal_weakness            = models.NullBooleanField()
-    loss_of_taste             = models.NullBooleanField()
 
     # Quality of life at follow up
     back_to_normal            = models.NullBooleanField()
     why_not_back_to_normal    = models.TextField(blank=True, null=True)
     baseline_health_proximity = models.IntegerField(
         blank=True, null=True, verbose_name="How close to 100% of usual health do you feel")
-    back_to_work              = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)
+    back_to_work              = models.CharField(
+        blank=True, null=True, max_length=20, choices=Y_N_NA)
 
     current_et                = models.CharField(
         blank=True, null=True, max_length=50, help_text='Metres',
         verbose_name="Current ET") # Exercise tolerance?
     mrc_dyspnoea_scale        = models.CharField(
-        blank=True, null=True, max_length=50, choices=ONE_TO_FIVE, verbose_name="MRC Dyspnoea Scale")
+        blank=True, null=True, max_length=50, choices=ONE_TO_FIVE,
+        verbose_name="MRC Dyspnoea Scale")
     limited_by                = models.CharField(blank=True, null=True,
                                                  max_length=50, choices=LIMITED_BY_CHOICES)
     current_cfs               = models.CharField(
@@ -440,8 +457,10 @@ class CovidFollowUpCall(EpisodeSubrecord):
         max_length=50, choices=ONE_TO_NINE, verbose_name="Current Clinical Frailty Score")
 
     # Psychological scores
-    interest                  = models.CharField(blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
-    depressed                 = models.CharField(blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
+    interest                  = models.CharField(
+        blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
+    depressed                 = models.CharField(
+        blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
 
     psych_referral            = models.NullBooleanField()
     other_concerns            = models.TextField(blank=True, null=True)
