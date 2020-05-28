@@ -868,7 +868,6 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.create_pg_pass")
     @mock.patch("fabfile.postgres_load_database")
     @mock.patch("fabfile.services_symlink_nginx")
-    @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_celery_conf")
     @mock.patch("fabfile.local")
     @mock.patch("fabfile.services_create_local_settings")
@@ -887,7 +886,6 @@ class DeployTestCase(FabfileTestCase):
         services_create_local_settings,
         local,
         services_create_celery_conf,
-        services_symlink_upstart,
         services_symlink_nginx,
         postgres_load_database,
         create_pg_pass,
@@ -935,7 +933,6 @@ class DeployTestCase(FabfileTestCase):
         create_pg_pass.assert_called_once_with(self.env, pv)
         self.assertFalse(postgres_load_database.called)
         services_symlink_nginx.assert_called_once_with(self.env)
-        services_symlink_upstart.assert_called_once_with(self.env)
         services_create_local_settings.assert_called_once_with(self.env, pv)
         services_create_gunicorn_conf.assert_called_once_with(self.env)
         services_create_upstart_conf.assert_called_once_with(self.env)
@@ -994,7 +991,6 @@ class DeployTestCase(FabfileTestCase):
     @mock.patch("fabfile.create_pg_pass")
     @mock.patch("fabfile.postgres_load_database")
     @mock.patch("fabfile.services_symlink_nginx")
-    @mock.patch("fabfile.services_symlink_upstart")
     @mock.patch("fabfile.services_create_celery_conf")
     @mock.patch("fabfile.local")
     @mock.patch("fabfile.services_create_local_settings")
@@ -1013,7 +1009,6 @@ class DeployTestCase(FabfileTestCase):
         services_create_local_settings,
         local,
         services_create_celery_conf,
-        services_symlink_upstart,
         services_symlink_nginx,
         postgres_load_database,
         create_pg_pass,
@@ -1068,7 +1063,6 @@ class DeployTestCase(FabfileTestCase):
             "some_backup", self.env
         )
         services_symlink_nginx.assert_called_once_with(self.env)
-        services_symlink_upstart.assert_called_once_with(self.env)
         services_create_local_settings.assert_called_once_with(
             self.env, pv
         )
