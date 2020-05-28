@@ -13,6 +13,7 @@ from elcid import patient_lists
 
 from plugins.covid import models, constants
 
+
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
 

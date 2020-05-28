@@ -1,0 +1,38 @@
+{% load humanize %}
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>ICU at the Royal Free Trust</h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+          <div class="row">
+
+            {% for ward in wards %}
+
+            <div class="col-md-5 col-md-offset-1">
+              <h2>{{ ward.name }}</h2>
+              <h1>{{ ward.patient_count }}</h1>
+              <p>
+                Patients
+                {% if ward.beds %}
+                  <br />
+                  ({{ ward.beds }} beds)
+                {% endif %}
+              </p>
+            </div>
+
+            {% endfor %}
+
+          </div> <!-- row -->
+
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+
+
+    </div>
+  </div>
+</div>

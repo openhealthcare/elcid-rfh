@@ -20,6 +20,16 @@ def parse_icu_location(location_string):
     return (hospital, ward, bed)
 
 
+class ICUWard(models.Model):
+    """
+    Stores metadata about an ICU ward.
+
+    This is used by the dashboard to show ICU occupancy
+    """
+    name = models.CharField(blank=True, null=True, max_length=200)
+    beds = models.IntegerField(blank=True, null=True)
+
+
 class ICUHandoverLocation(models.Model):
     """
     Stores the location as entered in the upstream ICU Handover database
