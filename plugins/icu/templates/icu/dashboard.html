@@ -9,25 +9,45 @@
         </div> <!-- heading -->
         <div class="panel-body">
 
-          <div class="row">
+          {% for ward in wards %}
 
-            {% for ward in wards %}
-
-            <div class="col-md-5 col-md-offset-1">
-              <h2>{{ ward.name }}</h2>
-              <h1>{{ ward.patient_count }}</h1>
-              <p>
-                Patients
-                {% if ward.beds %}
-                  <br />
-                  ({{ ward.beds }} beds)
-                {% endif %}
-              </p>
+            <div class="row">
+              <div class="col-md-12">
+                <h1>{{ ward.name }}</h1>
+              </div>
             </div>
 
-            {% endfor %}
+            <div class="row">
 
-          </div> <!-- row -->
+
+              <div class="col-md-2">
+                <h3>Patients</h3>
+                <h1>{{ ward.patient_count }}</h1>
+                <p>
+                  {% if ward.beds %}
+                    <br />
+                    ({{ ward.beds }} beds)
+                  {% endif %}
+                </p>
+              </div>
+
+              <div class="col-md-2 col-md-offset-1">
+                <h3>Covid +ve</h3>
+                <h1>{{ ward.covid_patients }}</h1>
+                <p>
+                  Number of patients with +ve Covid results
+                </p>
+              </div>
+
+
+              <div class="col-md-5 col-md-offset-1">
+                <div id="{{ ward.name}}_graph"></div>
+              </div>
+
+            </div> <!-- row -->
+
+{% endfor %}
+
 
         </div>   <!-- panel body -->
       </div>     <!-- Panel -->
@@ -36,3 +56,28 @@
     </div>
   </div>
 </div>
+<script>
+
+  var render_graph = function(element_id, data){
+
+  var config = {
+  bindto: document.getElementById(element_id),
+  data: {
+  columns: data,
+  type: 'bar',
+  x: 'x',
+  },
+  bar: {
+  width: {
+  ratio: 0.3 // this makes bar width 50% of length between ticks
+  }
+  // or
+  //width: 100 // this makes bar width 100px
+  }
+  }
+
+  c3.generate(config)
+
+  }
+  {% for ward in wards %}render_graph('{{ ward.name }}_graph', {{ ward.stay | safe }});{% endfor %}
+</script>

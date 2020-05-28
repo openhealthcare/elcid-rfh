@@ -41,6 +41,7 @@ class ICUHandoverLocation(models.Model):
     hospital = models.CharField(blank=True, null=True, max_length=200)
     ward     = models.CharField(blank=True, null=True, max_length=200)
     bed      = models.CharField(blank=True, null=True, max_length=200)
+    admitted = models.DateField(blank=True, null=True)
 
 
 class ICUHandover(PatientSubrecord):

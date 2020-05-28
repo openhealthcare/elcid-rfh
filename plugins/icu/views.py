@@ -1,8 +1,13 @@
 """
 Views for the ICU plugin
 """
+import collections
+import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+
+from plugins.covid.models import CovidPatient
 
 from plugins.icu import constants
 from plugins.icu.models import ICUWard, ICUHandoverLocation
@@ -15,13 +20,33 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         """
         Given a WARD_NAME string, return summary info about that ICU ward
         """
-        beds = ICUWard.objects.get(name=ward_name).beds
-        patient_count = ICUHandoverLocation.objects.filter(ward=ward_name).count()
+        today = datetime.date.today()
+
+        beds     = ICUWard.objects.get(name=ward_name).beds
+        patients = ICUHandoverLocation.objects.filter(ward=ward_name)
+
+        patient_count = patients.count()
+        covid_patients = CovidPatient.objects.filter(patient__in=[p.patient for p in patients]).count()
+
+        stays       = [(today - p.admitted).days +1 for p in patients if p.admitted]
+        staycounter = collections.defaultdict(int)
+
+        for stay in stays:
+            staycounter[stay] += 1
+
+        timeseries = ['Length of stay (days)']
+        ticks      = ['x']
+
+        for stay in sorted(staycounter.keys()):
+            ticks.append(stay)
+            timeseries.append(staycounter[stay])
 
         info = {
-            'name'         : ward_name,
-            'beds'         : beds,
-            'patient_count': patient_count,
+            'name'          : ward_name,
+            'beds'          : beds,
+            'patient_count' : patient_count,
+            'covid_patients': covid_patients,
+            'stay'          : [ticks, timeseries]
         }
         return info
 

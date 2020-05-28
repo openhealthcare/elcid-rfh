@@ -73,6 +73,7 @@ def load_icu_handover():
         handover_location.hospital = hospital
         handover_location.ward     = ward
         handover_location.bed      = bed
+        handover_location.admitted = result['Date_ITU_Admission'].date()
         handover_location.save()
 
         logger.info('Stored ICU Handover record for {}'.format(mrn))
