@@ -1,6 +1,7 @@
 """
 Unittests for icu.loader
 """
+import datetime
 from unittest import mock
 
 from opal.core.test import OpalTestCase
@@ -21,8 +22,9 @@ class LoadICUHandoverTestCase(OpalTestCase):
 
     def test_creates_new_patient(self, upstream):
         upstream.return_value = [{
-            'Patient_MRN': '12345678',
-            'Location'   : 'ICU4_West_Bed-12',
+            'Patient_MRN'       : '12345678',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_West_Bed-12',
         }]
 
         with mock.patch.object(loader, 'create_rfh_patient_from_hospital_number') as mock_create:
@@ -43,8 +45,9 @@ class LoadICUHandoverTestCase(OpalTestCase):
     def test_new_handover(self, upstream):
 
         upstream.return_value = [{
-            'Patient_MRN': 'F-555',
-            'Location'   : 'ICU4_South_Bed-15',
+            'Patient_MRN'       : 'F-555',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
         }]
 
         loader.load_icu_handover()
@@ -55,8 +58,9 @@ class LoadICUHandoverTestCase(OpalTestCase):
 
     def test_new_handover_location(self, upstream):
         upstream.return_value = [{
-            'Patient_MRN': 'F-555',
-            'Location'   : 'ICU4_South_Bed-15',
+            'Patient_MRN'       : 'F-555',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
         }]
 
         loader.load_icu_handover()
@@ -72,14 +76,16 @@ class LoadICUHandoverTestCase(OpalTestCase):
         demographics.save()
 
         upstream.return_value = [{
-            'Patient_MRN': 'F-555',
-            'Location'   : 'ICU4_South_Bed-15',
+            'Patient_MRN'       : 'F-555',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
         }]
 
         loader.load_icu_handover()
         upstream.return_value = [{
-            'Patient_MRN': 'F-556',
-            'Location'   : 'ICU4_South_Bed-15',
+            'Patient_MRN'       : 'F-556',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
         }]
         loader.load_icu_handover()
 

@@ -58,7 +58,7 @@
 </div>
 <script>
 
-  var render_graph = function(element_id, data){
+  var render_graph = function(element_id, data, yticks){
 
   var config = {
   bindto: document.getElementById(element_id),
@@ -73,11 +73,19 @@
   }
   // or
   //width: 100 // this makes bar width 100px
+  },
+  axis: {
+  y: {
+  tick: {'values': yticks}
+  },
+  x: {
+  label: {text: 'Days since ICU Admission', position: 'outer-middle'}
   }
+}
   }
 
   c3.generate(config)
 
   }
-  {% for ward in wards %}render_graph('{{ ward.name }}_graph', {{ ward.stay | safe }});{% endfor %}
+  {% for ward in wards %}render_graph('{{ ward.name }}_graph', {{ ward.stay | safe }}, {{ ward.yticks | safe }} );{% endfor %}
 </script>

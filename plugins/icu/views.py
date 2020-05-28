@@ -34,8 +34,10 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         for stay in stays:
             staycounter[stay] += 1
 
-        timeseries = ['Length of stay (days)']
+        timeseries = ['Patients']
         ticks      = ['x']
+
+        max_stay   = max(staycounter.values())
 
         for stay in sorted(staycounter.keys()):
             ticks.append(stay)
@@ -46,7 +48,8 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             'beds'          : beds,
             'patient_count' : patient_count,
             'covid_patients': covid_patients,
-            'stay'          : [ticks, timeseries]
+            'stay'          : [ticks, timeseries],
+            'yticks'        : list(range(1, max_stay+1))
         }
         return info
 
