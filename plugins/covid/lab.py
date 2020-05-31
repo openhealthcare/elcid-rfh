@@ -231,7 +231,7 @@ def get_covid_result_ticker(patient):
                 if not resulted(test):
                     continue
 
-            timestamp = get_resulted_datetime(test).striftime('%d/%m/%Y %H:%M')
+            timestamp = get_resulted_datetime(test).strftime('%d/%m/%Y %H:%M')
             value     = get_result(test)
             specimen  = get_specimen(test)
 
