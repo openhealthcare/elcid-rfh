@@ -21,5 +21,17 @@ app.config(
              resolve: {
                  referencedata: function(Referencedata) { return Referencedata; },
              },
+         }).when('/ICU/', {
+             // This is a silly hack to let us render an arbitrary
+             // template in the application viewport
+             controller: 'WelcomeCtrl',
+             controllerAs: 'welcome',
+             templateUrl: function(x){
+                 // silly cache busting technique. The param is never read
+                 return '/templates/icu/dashboard.html?when='+Date.now()
+             },
+             resolve: {
+                 referencedata: function(Referencedata) { return Referencedata; },
+             },
          });
      }]);
