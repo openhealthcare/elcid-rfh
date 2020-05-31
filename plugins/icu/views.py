@@ -69,4 +69,5 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
         context['wards'] = wards
         context['icu_patients'] = ICUHandoverLocation.objects.all().count()
+
         return context
