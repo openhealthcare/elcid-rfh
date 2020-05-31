@@ -95,6 +95,12 @@ a.list-group-item:hover, a.list-group-item:focus {
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
   background-color: #343637; }
 
+.text-muted a {
+  color: #cbc9c8; }
+
+.text-muted a:hover {
+  color: #343637; }
+
 .patient-row .label-warning {
   margin-top: 5px;
   display: inline-block;
