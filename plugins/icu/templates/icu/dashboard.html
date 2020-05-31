@@ -5,7 +5,7 @@
 
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h1>ICU at the Royal Free Trust</h1>
+          <h1>ICU at the Royal Free Hospital ({{ icu_patients }} patients)</h1>
         </div> <!-- heading -->
         <div class="panel-body">
 
@@ -13,7 +13,9 @@
 
             <div class="row">
               <div class="col-md-12">
-                <h1>{{ ward.name }}</h1>
+                <h1>
+                  <a href="{{ ward.link }}">{{ ward.name }}</a>
+                </h1>
               </div>
             </div>
 
@@ -69,7 +71,7 @@
   },
   bar: {
   width: {
-  ratio: 0.3 // this makes bar width 50% of length between ticks
+  ratio: 0.2 // this makes bar width 50% of length between ticks
   }
   // or
   //width: 100 // this makes bar width 100px
