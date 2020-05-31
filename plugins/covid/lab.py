@@ -227,9 +227,11 @@ def get_covid_result_ticker(patient):
         ).order_by('-datetime_ordered')
 
         for test in tests:
-            if len(data) < 3:
-                if not resulted(test):
-                    continue
+            if len(data) > 2:
+                continue
+
+            if not resulted(test):
+                continue
 
             timestamp = get_resulted_datetime(test).strftime('%d/%m/%Y %H:%M')
             value     = get_result(test)
