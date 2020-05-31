@@ -1,4 +1,4 @@
-t"""
+"""
 Management command to fetch all appointments for our patients
 """
 import traceback

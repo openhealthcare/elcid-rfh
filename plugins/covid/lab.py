@@ -1,10 +1,13 @@
 """
 Helpers for working with Covid 19 testing
 """
+from plugins.labtests import models as lab_test_models
+
 
 class CovidTest(object):
     TEST_NAME        = None
     OBSERVATION_NAME = None
+    SPECIMEN_NAME    = None
     POSITIVE_RESULTS = []
     NEGATIVE_RESULTS = []
 
@@ -19,6 +22,7 @@ class CovidTest(object):
 class Coronavirus2019Test(CovidTest):
     TEST_NAME        = '2019 NOVEL CORONAVIRUS'
     OBSERVATION_NAME = '2019 nCoV'
+    SPECIMEN_NAME    = '2019 nCoV Specimen Type'
 
     POSITIVE_RESULTS = [
         '*****Amended Result*****~Detected',
@@ -100,6 +104,22 @@ def _get_covid_test(test):
             return t
 
 
+def get_specimen_type(test):
+    """
+    Given the plugins.labgests.models.LabTest instance TEST which is a
+    COVID 19 test, return the value of the relevant specemin type, or None
+    """
+    covid_test = _get_covid_test(test)
+    if covid_test.SPECIMEN_NAME:
+        observations = test.observation_set.filter(
+            observation_name=covid_test.SPECIMEN_NAME
+        )
+        if observations.count() == 0:
+            return
+
+        return observations[0].observation_value
+
+
 def get_result(test):
     """
     Given the plugins.labtests.models.LabTest instance TEST, which is a
@@ -115,16 +135,24 @@ def get_result(test):
     return observations[0].observation_value
 
 
-def get_resulted_date(test):
+def get_resulted_datetime(test):
     """
     Given the plugins.labtests.models.LabTest instance TEST, which is a
-    COVID 19 test, return the date of the relevant observation
+    COVID 19 test, return the datetime of the relevant observation
     """
     covid_test = _get_covid_test(test)
     observations = test.observation_set.filter(
         observation_name=covid_test.OBSERVATION_NAME
     )
-    return observations[0].observation_datetime.date()
+    return observations[0].observation_datetime
+
+
+def get_resulted_date(test):
+    """
+    Given the plugins.labtests.models.LabTest instance TEST, which is a
+    COVID 19 test, return the date of the relevant observation
+    """
+    return get_resulted_datetime(test).date()
 
 
 def resulted(test):
@@ -145,3 +173,44 @@ def positive(test):
     covid_test = _get_covid_test(test)
     result = get_result(test)
     return result in covid_test.POSITIVE_RESULTS
+
+
+def get_covid_result_ticker(patient):
+    """
+    Given a PATIENT, return a list of dictionaries representing the last
+    3 results for each test type, with a timestamp, result string, and test name.
+    """
+    ticker = []
+
+    for test in COVID_19_TESTS:
+        data = []
+
+        tests = lab_test_models.LabTest.objects.filter(
+            test_name=test.TEST_NAME, patient=patient
+        ).order_by('-datetime_ordered')
+
+        for test in tests:
+            if len(data) < 3:
+                if not resulted(test):
+                    continue
+
+            timestamp = get_resulted_datetime(test).striftime('%d/%m/%Y %H:%M')
+            value     = get_result(test)
+            specimen  = get_specimen(test)
+
+            result_string = "{}".format(value)
+
+            if specimen:
+                result_string += " ({})".format(specimen)
+
+            data.append(
+                {
+                    'timestamp': timestamp,
+                    'name': _get_covid_test(test).OBSERVATION_NAME,
+                    'value': result_string
+                }
+            )
+
+    ticker = sorted(ticker, key=lambda i: i['timestamp'])
+
+    return ticker

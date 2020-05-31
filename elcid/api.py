@@ -18,8 +18,10 @@ from opal.core.views import json_response
 from opal.core import serialization
 
 from intrahospital_api import loader
-from elcid import models as emodels
+from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
+
+from elcid import models as emodels
 
 
 _ALWAYS_SHOW_AS_TABULAR = [
@@ -275,36 +277,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         Some results are displayed as a ticker in chronological
         order.
         """
-        ticker = []
-        tests = lab_test_models.LabTest.objects.filter(
-            test_name='2019 NOVEL CORONAVIRUS',
-            patient=patient
-        ).order_by('-datetime_ordered')
-        for test in tests:
-            if len(ticker) < 3:
-                observations = {
-                    t.observation_name: t for t in test.observation_set.all()
-                }
-                value = observations['2019 nCoV'].observation_value
-                if value == 'Pending':
-                    continue
-
-                specimen = observations.get('2019 nCoV Specimen Type', None)
-                timestamp = test.datetime_ordered.strftime('%d/%m/%Y %H:%M')
-                result_string = "{}".format(value)
-
-                if specimen:
-                    result_string += " ({})".format(specimen.observation_value)
-
-                ticker.append(
-                    {
-                        'timestamp': timestamp,
-                        'name': '2019 nCoV',
-                        'value': result_string
-                    }
-                )
-
-        return ticker
+        return covid_lab.get_covid_result_ticker(patient)
 
     def get_recent_dates_to_observations(self, qs):
         """
