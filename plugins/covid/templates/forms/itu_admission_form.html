@@ -1,5 +1,21 @@
 {% load forms %}
-{% datepicker field="ITUAdmission.date_of_admission" %}
-{% input field="ITUAdmission.apache_score_on_arrival" %}
-{% checkbox field="ITUAdmission.intubated" %}
-{% datepicker field="ITUAdmission.date_of_intubation" %}
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="ITUAdmission.date_of_admission" style="vertical"%}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="ITUAdmission.apache_score_on_arrival" style="vertical"%}
+    <p class="text-muted">
+      <a href="https://www.mdcalc.com/apache-ii-score" target="_blank">
+        How to calculate the APACHE II score
+      </a>
+    </p>
+  </div>
+</div><div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% checkbox field="ITUAdmission.intubated" style="vertical"%}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="ITUAdmission.date_of_intubation" style="vertical"%}
+  </div>
+</div>
