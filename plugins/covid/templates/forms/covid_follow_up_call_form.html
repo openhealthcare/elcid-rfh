@@ -13,21 +13,18 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-md-4 col-md-offset-1">
-    {% checkbox field="CovidFollowUpCall.unreachable" %}
-  </div>
-  <div class="col-md-4 col-md-offset-1">
-    {% checkbox field="CovidFollowUpCall.unable_to_complete" %}
-  </div>
-</div>
-
-<div class="row" ng-show="editing.covid_follow_up_call.unable_to_complete">
   <div class="col-md-10 col-md-offset-1">
-    {% textarea field="CovidFollowUpCall.incomplete_reason" %}
+    {% select field="CovidFollowUpCall.follow_up_outcome" style="vertical" %}
   </div>
 </div>
 
-<section ng-hide="editing.covid_follow_up_call.unable_to_complete">
+<div class="row" ng-show="editing.covid_follow_up_call.follow_up_outcome == '{{ models.CovidFollowUpCall.UNABLE_TO_COMPLETE }}'">
+  <div class="col-md-10 col-md-offset-1">
+    {% textarea field="CovidFollowUpCall.incomplete_reason" style="vertical" %}
+  </div>
+</div>
+
+<section ng-hide="editing.covid_follow_up_call.follow_up_outcome == '{{ models.CovidFollowUpCall.UNABLE_TO_COMPLETE }}' || editing.covid_follow_up_call.follow_up_outcome == '{{ models.CovidFollowUpCall.UNREACHABLEg}}' ">
   <hr />
 
   <div class="row">
@@ -223,7 +220,7 @@
   </div>
   <div class="row">
     <div class="col-md-4 col-md-offset-1">
-      {% input field="CovidFollowUpCall.current_cfs" style="vertical" %}
+      {% select field="CovidFollowUpCall.current_cfs" style="vertical" %}
     </div>
   </div>
 
@@ -241,9 +238,6 @@
     <div class="col-md-4 col-md-offset-1">
       {% select field="CovidFollowUpCall.depressed" style="vertical" %}
     </div>
-    <div class="col-md-10 col-md-offset-1">
-      {% checkbox field="CovidFollowUpCall.psych_referral" %}
-    </div>
   </div>
 
   <div class="row">
@@ -252,19 +246,21 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-4 col-md-offset-1">
-      {% select field="CovidFollowUpCall.haem_clinic" style="vertical" %}
-      {% select field="CovidFollowUpCall.call_satisfaction" style="vertical" %}
-    </div>
-    <div class="col-md-4 col-md-offset-1">
-      {% select field="CovidFollowUpCall.diabetic_team" style="vertical" %}
-      {% checkbox field="CovidFollowUpCall.recontact" style="vertical"%}
-    </div>
-  </div>
-  <div class="row">
     <div class="col-md-10 col-md-offset-1">
       {% select field="CovidFollowUpCall.follow_up_outcome" style="vertical"%}
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+      {% select field="CovidFollowUpCall.call_satisfaction" style="vertical" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-10 col-md-offset-1">
+      {% checkbox field="CovidFollowUpCall.recontact" style="vertical"%}
+    </div>
+  </div>
+
 
 </section>
