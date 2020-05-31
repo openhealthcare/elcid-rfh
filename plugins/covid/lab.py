@@ -5,9 +5,10 @@ from plugins.labtests import models as lab_test_models
 
 
 class CovidTest(object):
-    TEST_NAME        = None
-    OBSERVATION_NAME = None
-    SPECIMEN_NAME    = None
+    TEST_NAME        = None # Name of the test (human readable & used to filter)
+    OBSERVATION_NAME = None # Observation field that contains result value
+    SPECIMEN_NAME    = None # Observation field that contains specimen details
+    TEST_CODE        = None # Used by lab & micro to refer to the test
     POSITIVE_RESULTS = []
     NEGATIVE_RESULTS = []
 
@@ -23,6 +24,7 @@ class Coronavirus2019Test(CovidTest):
     TEST_NAME        = '2019 NOVEL CORONAVIRUS'
     OBSERVATION_NAME = '2019 nCoV'
     SPECIMEN_NAME    = '2019 nCoV Specimen Type'
+    TEST_CODE        = 'NCOV'
 
     POSITIVE_RESULTS = [
         '*****Amended Result*****~Detected',
@@ -71,6 +73,8 @@ class CrickInstituteTest(CovidTest):
 class ReferenceLabTest(CovidTest):
     TEST_NAME        = 'CORONAVIRUS REF LAB'
     OBSERVATION_NAME = 'SARS CoV-2 RNA'
+    TEST_CODE        = 'RCOV'
+    SPECIMEN_NAME    = 'Specimen type'
 
     POSITIVE_RESULTS = [
         'POSITIVE',
@@ -86,10 +90,25 @@ class ReferenceLabTest(CovidTest):
     ]
 
 
+class CepheidTest(CovidTest):
+    TEST_NAME        = 'CORONAVIRUS CEPHEID'
+    OBSERVATION_NAME = 'SARS CoV-2 RNA'
+    TEST_CODE        = 'XCOV'
+
+
+class AbbotTest(CovidTest):
+    TEST_NAME        = 'CORONAVIRUS ABBOTT'
+    OBSERVATION_NAME = 'SARS CoV-2 RNA'
+    TEST_CODE        = 'ACOV'
+    SPECIMEN_NAME    = 'Specimen Type'
+
+
 COVID_19_TESTS = [
     Coronavirus2019Test,
     CrickInstituteTest,
-    ReferenceLabTest
+    ReferenceLabTest,
+    CepheidTest,
+    AbbotTest
 ]
 COVID_19_TEST_NAMES = [t.TEST_NAME for t in COVID_19_TESTS]
 
@@ -114,10 +133,11 @@ def get_specimen_type(test):
         observations = test.observation_set.filter(
             observation_name=covid_test.SPECIMEN_NAME
         )
-        if observations.count() == 0:
-            return
-
-        return observations[0].observation_value
+        if observations.count > 0:
+            return observations[0].observation_value
+    else:
+        #Nasopharygeal swab
+        return test.site
 
 
 def get_result(test):
