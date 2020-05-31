@@ -12,6 +12,13 @@ from plugins.covid.models import CovidPatient
 from plugins.icu import constants
 from plugins.icu.models import ICUWard, ICUHandoverLocation
 
+WARD_LISTS = {
+    'South': 'icu',
+    'East': 'icu_east',
+    'West': 'icu_west',
+    'SHDU': 'icu_shdu'
+}
+
 
 class ICUDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'icu/dashboard.html'
@@ -49,7 +56,8 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             'patient_count' : patient_count,
             'covid_patients': covid_patients,
             'stay'          : [ticks, timeseries],
-            'yticks'        : list(range(1, max_stay+1))
+            'yticks'        : list(range(1, max_stay+1)),
+            'link'          : '/#/list/{}'.format(WARD_LISTS[ward_name])
         }
         return info
 
@@ -60,4 +68,5 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             wards.append(self.get_ward_info(ward_name))
 
         context['wards'] = wards
+        context['icu_patients'] = ICUHandoverLocation.objects.all().count()
         return context
