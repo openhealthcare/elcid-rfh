@@ -40,17 +40,36 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         deaths_timeseries   = ['Deaths']
         deaths_ticks        = ['x']
 
+        ordered_timeseries  = ['Tests ordered']
+        ordered_ticks       = ['x']
+
+        patients_timeseries = ['Patients tested']
+        patients_ticks      = ['x']
+
         for day in models.CovidReportingDay.objects.all().order_by('date'):
+            day_string = day.date.strftime('%Y-%m-%d')
+
             if day.patients_positive:
-                positive_ticks.append(day.date.strftime('%Y-%m-%d'))
+                positive_ticks.append(day_string)
                 positive_timeseries.append(day.patients_positive)
 
             if day.deaths:
-                deaths_ticks.append(day.date.strftime('%Y-%m-%d'))
+                deaths_ticks.append(day_string)
                 deaths_timeseries.append(day.deaths)
+
+            if day.tests_ordered:
+                ordered_ticks.append(day_string)
+                ordered_timeseries.append(day.tests_ordered)
+
+            if day.patients_resulted:
+                patients_ticks.append(day_string)
+                patients_timeseries.append(day.patients_resulted)
+
 
         context['positive_data'] = [positive_ticks, positive_timeseries]
         context['deaths_data']   = [deaths_ticks, deaths_timeseries]
+        context['orders_data']   = [ordered_ticks, ordered_timeseries]
+        context['patients_data'] = [patients_ticks, patients_timeseries]
 
         context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
 

@@ -57,7 +57,7 @@
 
           <div class="row content-offset">
             <div class="col-md-5">
-              <h2>Daily Novel COVID-19 Positive</h2>
+              <h2>Daily Positive</h2>
               <p>Daily number of patients testing positive for COVID-19 for the first time</p>
               <div id="positive_graph"></div>
             </div>
@@ -120,7 +120,7 @@
             </div> <!-- Column -->
 
             <div class="col-md-4">
-              <h2>Daily Patients First Tested</h2>
+              <h2>Daily Patients</h2>
               <h1>{{ yesterday.patients_resulted | intcomma }}</h1>
               <p>
                 Number of patients with a first COVID-19 test resulted on {{ yesterday.date }}
@@ -128,6 +128,25 @@
             </div> <!-- Column -->
 
           </div> <!-- row -->
+
+
+          <div class="row content-offset">
+            <div class="col-md-5">
+              <h2>Daily Orders</h2>
+              <p>Daily number of COVID-19 tests ordered</p>
+              <div id="orders_graph"></div>
+            </div>
+
+            <div class="col-md-5 col-md-offset-1">
+              <h2>Daily Patients</h2>
+              <p>Daily number of patients who have had tests for COVID-19 resulted for the first time</p>
+              <div id="patients_graph"></div>
+            </div>
+          </div> <!-- row -->
+
+
+
+
 
           {% if can_download %}
             <div class="row content-offset">
@@ -171,4 +190,6 @@
   }
   render_graph('positive_graph', {{ positive_data | safe }});
   render_graph('deaths_graph', {{ deaths_data | safe }});
+  render_graph('orders_graph', {{ orders_data | safe }});
+  render_graph('patients_graph', {{ patients_data | safe }});
 </script>
