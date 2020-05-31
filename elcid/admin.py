@@ -1,5 +1,10 @@
+"""
+Admin for elCID models
+"""
 from django.contrib import admin
-from elcid.models import BloodCultureIsolate
 from reversion.admin import VersionAdmin
+
+from elcid.models import BloodCultureIsolate
+
 
 admin.site.register(BloodCultureIsolate, VersionAdmin)
