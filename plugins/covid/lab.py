@@ -85,6 +85,7 @@ class ReferenceLabTest(CovidTest):
     NEGATIVE_RESULTS = [
         'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS CoV-2 Not detected in this sample',
         'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS Co-2 Not detected in this sample',
+        'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS CoV-2 Undetected in this sample',
         'NOT detected',
         'Undetected'
     ]
@@ -95,12 +96,28 @@ class CepheidTest(CovidTest):
     OBSERVATION_NAME = 'SARS CoV-2 RNA'
     TEST_CODE        = 'XCOV'
 
+    POSITIVE_RESULTS = [
+        'POSITIVE'
+    ]
+
+    NEGATIVE_RESULTS = [
+        'NOT detected'
+    ]
+
 
 class AbbotTest(CovidTest):
     TEST_NAME        = 'CORONAVIRUS ABBOTT'
     OBSERVATION_NAME = 'SARS CoV-2 RNA'
     TEST_CODE        = 'ACOV'
     SPECIMEN_NAME    = 'Specimen Type'
+
+    POSITIVE_RESULTS = [
+        'POSITIVE'
+    ]
+
+    NEGATIVE_RESULTS = [
+        'NOT Detected'
+    ]
 
 
 COVID_19_TESTS = [
