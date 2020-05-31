@@ -150,7 +150,7 @@ def get_specimen_type(test):
         observations = test.observation_set.filter(
             observation_name=covid_test.SPECIMEN_NAME
         )
-        if observations.count > 0:
+        if observations.count() > 0:
             return observations[0].observation_value
     else:
         #Nasopharygeal swab
@@ -233,7 +233,7 @@ def get_covid_result_ticker(patient):
 
             timestamp = get_resulted_datetime(test).strftime('%d/%m/%Y %H:%M')
             value     = get_result(test)
-            specimen  = get_specimen(test)
+            specimen  = get_specimen_type(test)
 
             result_string = "{}".format(value)
 
@@ -247,6 +247,8 @@ def get_covid_result_ticker(patient):
                     'value': result_string
                 }
             )
+
+        ticker += data
 
     ticker = sorted(ticker, key=lambda i: i['timestamp'])
 
