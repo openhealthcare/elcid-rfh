@@ -2,6 +2,7 @@
 Calculates statistics for the Covid 19 Dashboard
 """
 import collections
+import datetime
 
 from django.utils import timezone
 
@@ -100,6 +101,13 @@ def calculate_daily_reports():
             deaths=day.deaths
         )
         covid_day.save()
+
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    if yesterday not in days:
+        models.CovidReportingDay.objects.create(
+            day=yesterday, tests_ordered=0, tests_resulted=0,
+            patients_resulted=0, pateints_positive=0, deaths=0
+        )
 
 
 def calculate():
