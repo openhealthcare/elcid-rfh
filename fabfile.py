@@ -618,13 +618,14 @@ def clean_old_backups():
 def copy_backup(current_env):
     private_settings = get_private_settings()
     string_args = {}
-    string_args["backup_storage_address"] = private_settings["backup_storage_address"]
-    string_args["backup_storage_password"] = private_settings["backup_storage_password"]
-    string_args["backup_storage_username"] = private_settings["backup_storage_username"]
+    string_args["backup_storage_address"]   = private_settings["backup_storage_address"]
+    string_args["backup_storage_password"]  = private_settings["backup_storage_password"]
+    string_args["backup_storage_username"]  = private_settings["backup_storage_username"]
     string_args["backup_storage_directory"] = private_settings["backup_storage_directory"]
-    string_args["dump_location"] = current_env.backup_name
-    string_args["dump_name"] = current_env.backup_file_name
-    cmd = "smbclient '{backup_storage_address}' {backup_storage_password} -U {backup_storage_username} -D {backup_storage_directory} -c 'put {dump_location} {dump_name}'"
+    string_args["backup_storage_ip"]        = private_settings["backup_storage_ip"]
+    string_args["dump_location"]            = current_env.backup_name
+    string_args["dump_name"]                = current_env.backup_file_name
+    cmd = "smbclient '{backup_storage_address}' {backup_storage_password} -U {backup_storage_username} -I {backup_storage_ip} -D {backup_storage_directory} -c 'put {dump_location} {dump_name}'"
     cmd = cmd.format(**string_args)
 
     if not os.path.isfile(current_env.backup_name):
