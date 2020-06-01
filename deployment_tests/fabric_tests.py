@@ -648,6 +648,7 @@ class CopyBackupTestCase(FabfileTestCase):
             "backup_storage_username": "some_user",
             "backup_storage_password": "some_password",
             "backup_storage_directory": "some_directory"
+            "backup_storage_ip": "some_ip"
         }
         get_private_settings.return_value = correct_dict
         dt.datetime.now.return_value = datetime.datetime(
@@ -657,7 +658,7 @@ class CopyBackupTestCase(FabfileTestCase):
         prod_env = fabfile.Env("some_branch")
 
         expected = "".join([
-            "smbclient '\\some_address' some_password -U some_user -D",
+            "smbclient '\\some_address' some_password -U some_user -I some_ip -D",
             " some_directory -c 'put /usr/lib/ohc/var/back.07.09.2017.elcidrfh_some_branch.sql",
             " back.07.09.2017.elcidrfh_some_branch.sql'"
         ])
