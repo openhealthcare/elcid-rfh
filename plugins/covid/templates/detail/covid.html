@@ -1,6 +1,88 @@
 {% load panels %}
+{% load forms %}
 {% load elcid_panels %}
 <section>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-default" ng-controller="CovidTestSummaryView as summaryView">
+        <div class="panel-heading">
+          <h3>{% icon 'fa fa-crosshairs' %} Key Results</h3>
+        </div>
+        <div class="panel-footer overflow-x-auto">
+
+          <!-- Ticker -->
+          <div class="content-offset-below-20" ng-show="summaryView.data.ticker.length">
+            <div class="row" ng-repeat="test in summaryView.data.ticker">
+              <div class="col-md-4">[[ test.timestamp ]]</div>
+              <div class="col-md-4">[[ test.name ]]</div>
+              <div class="col-md-4">[[ test.value ]]</div>
+            </div>
+          </div>
+
+          <table ng-show="summaryView.data.obs_values.length" class="col-md-12 table">
+            <thead>
+              <tr>
+                <th></th>
+                <th class="col-md-2"></th>
+                <th class="text-center col-md-2" ng-repeat="date in summaryView.data.recent_dates track by $index">
+                  [[ date | displayDate ]]
+                </th>
+                {% comment %}
+                  <th class="text-center">
+                    3 week trend
+                  </th>
+                {% endcomment %}
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="row" ng-repeat="item in summaryView.data.obs_values">
+                <td class="text-center col-md-2">
+                  [[ item.name ]]
+                <td class="text-center col-md-2" ng-repeat="date in summaryView.data.recent_dates track by $index">
+                  [[ item.latest_results[date] ]]
+                </td>
+                {% comment %}
+                  <td class="text-center">
+                    <div spark-line="item.graph_values"></div>
+                  </td>
+                {% endcomment %}
+              </tr>
+            </tbody>
+          </table>
+        </div> <!-- panel footer -->
+      </div> <!-- panel -->
+    </div> <!-- Col 6 -->
+
+    <div class="col-md-6">
+      <div class="panel panel-default" ng-controller="AdmissionView as admissionView">
+        <div class="panel-heading">
+          <h3>{% icon 'fa fa-hospital-o' %}Recent Admissions</h3>
+        </div>
+        <div class="panel-footer">
+          <section ng-repeat="item in admissionView.admissions" ng-show="item.patient_class == 'INPATIENT' ">
+          <div class="row" >
+            <div class="col-md-4">
+              [[ item.admit_datetime | displayDateTime ]]
+              <span ng-show="item.discharge_datetime"><br /> [[ item.discharge_datetime | displayDateTime ]]</span>
+            </div>
+            <div class="col-md-4">
+              [[ item.speciality_name ]]
+              <br />
+              [[ item.consultant_name ]]
+            </div>
+            <div class="col-md-4">
+              [[ item.hospital ]]
+            </div>
+          </div>
+          <hr />
+          </section>
+        </div>
+      </div>
+
+    </div> <!-- col 6 -->
+
+  </div>
+
   <div class="row">
     <div class="col-md-12">{% wide_panel models.CovidAdmission %}</div>
     <div class="col-md-6">{% record_panel models.CovidSmokingHistory %}</div>
@@ -14,5 +96,6 @@
     <div class="col-md-6">{% record_panel models.CovidCXR %}</div>
     <div class="col-md-6">{% record_panel models.CovidCT %}</div>
     <div class="col-md-12">{% record_timeline models.CovidFollowUpCall 'when' %}</div>
+    <div class="col-md-12">{% record_panel models.CovidFollowupActions %}</div>
   </div>
 </section>

@@ -138,7 +138,12 @@ a.list-group-item {
   }
 }
 
-
+.text-muted a {
+    color: $obsidian-light;
+}
+.text-muted a:hover {
+    color: $obsidian;
+}
 
 .patient-row{
   .label-warning{

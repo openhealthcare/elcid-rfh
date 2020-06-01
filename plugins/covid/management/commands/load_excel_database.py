@@ -21,6 +21,10 @@ def no_yes(val):
         return True
     if val == '2':
         return None
+
+    if val == "0 (started on admission)":
+        return False
+
     raise ValueError('What is {}'.format(val))
 
 

@@ -371,21 +371,21 @@ class CovidFollowUpCall(EpisodeSubrecord):
     TREND_CHOICES        = enum('Same', 'Better', 'Worse')
     Y_N_NA               = enum('Yes', 'No', 'N/A')
     LIMITED_BY_CHOICES   = enum('SOB', 'Fatigue', 'Other')
+
+    UNABLE_TO_COMPLETE   = 'Unable to complete'
+    UNREACHABLE          = 'Unreachable'
     FOLLOWUP_CHOICES     = enum(
+        UNREACHABLE,
+        UNABLE_TO_COMPLETE,
+        'Further Follow Up',
         'Discharge',
-        'Repeat CXR and F/U Call',
-        'CT Chest',
-        'PFTs',
-        'Resp OPD',
-        'Refer back to Primary Care'
     )
 
     when               = models.DateTimeField(blank=True, null=True)
     clinician          = models.CharField(blank=True, null=True, max_length=255) # Default to user
     position           =  models.CharField(
         blank=True, null=True, max_length=255, choices=POSITION_CHOICES)
-    unreachable        = models.NullBooleanField()
-    unable_to_complete = models.NullBooleanField()
+
     incomplete_reason  = models.TextField(blank=True, null=True)
 
     smoking_status     = models.CharField(
@@ -437,11 +437,12 @@ class CovidFollowUpCall(EpisodeSubrecord):
     focal_weakness            = models.NullBooleanField()
 
     # Quality of life at follow up
-    back_to_normal            = models.NullBooleanField()
+    back_to_normal            = models.NullBooleanField(verbose_name="Do you feel back to normal?")
     why_not_back_to_normal    = models.TextField(blank=True, null=True)
     baseline_health_proximity = models.IntegerField(
-        blank=True, null=True, verbose_name="How close to 100% of usual health do you feel")
+        blank=True, null=True, verbose_name="How close to 100% of usual health do you feel?")
     back_to_work              = models.CharField(
+        verbose_name="If working, are you back to work?",
         blank=True, null=True, max_length=20, choices=Y_N_NA)
 
     current_et                = models.CharField(
@@ -462,10 +463,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     depressed                 = models.CharField(
         blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
 
-    psych_referral            = models.NullBooleanField()
     other_concerns            = models.TextField(blank=True, null=True)
-    haem_clinic               = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)
-    diabetic_team             = models.CharField(blank=True, null=True, max_length=20, choices=Y_N_NA)# TODO What is thsi
     call_satisfaction         = models.CharField(
         blank=True, null=True, max_length=20, choices=Y_N_NA,
         verbose_name="Patient satisfied with call?"
@@ -474,3 +472,31 @@ class CovidFollowUpCall(EpisodeSubrecord):
         verbose_name="Would you be willing to be contacted again to take part in research?"
     )
     follow_up_outcome         = models.CharField(blank=True, null=True, max_length=50, choices=FOLLOWUP_CHOICES)
+
+
+class CovidFollowupActions(EpisodeSubrecord):
+
+    _is_singleton = True
+    _icon         = 'fa fa-pencil-square'
+
+    cxr                  = models.NullBooleanField(verbose_name="CXR")
+    ecg                  = models.NullBooleanField(verbose_name="ECG")
+    echocardiogram       = models.NullBooleanField()
+    ct_chest             = models.NullBooleanField(verbose_name="CT Chest")
+    pft                  = models.NullBooleanField(verbose_name="PFT")
+    exercise             = models.NullBooleanField(verbose_name="Exercise Testing")
+    repeat_bloods        = models.NullBooleanField()
+    other_investigations = models.CharField(blank=True, null=True, max_length=255)
+
+    anticoagulation      = models.NullBooleanField()
+    cardiology           = models.NullBooleanField()
+    elderly_care         = models.NullBooleanField()
+    fatigue_services     = models.NullBooleanField()
+    hepatology           = models.NullBooleanField()
+    neurology            = models.NullBooleanField()
+    primary_care         = models.NullBooleanField()
+    psychology           = models.NullBooleanField()
+    psychiatry           = models.NullBooleanField()
+    respiratory          = models.NullBooleanField()
+    rehabilitation       = models.NullBooleanField()
+    other_referral       = models.CharField(blank=True, null=True, max_length=255)
