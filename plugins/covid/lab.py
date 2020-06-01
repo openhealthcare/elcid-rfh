@@ -236,7 +236,7 @@ def get_covid_result_ticker(patient):
             if not resulted(test):
                 continue
 
-            timestamp = get_resulted_datetime(test).strftime('%d/%m/%Y %H:%M')
+            timestamp = get_resulted_datetime(test)
             value     = get_result(test)
             specimen  = get_specimen_type(test)
 
@@ -247,14 +247,15 @@ def get_covid_result_ticker(patient):
 
             data.append(
                 {
+                    'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
                     'timestamp': timestamp,
-                    'name': _get_covid_test(test).OBSERVATION_NAME,
-                    'value': result_string
+                    'name'     : _get_covid_test(test).OBSERVATION_NAME,
+                    'value'    : result_string
                 }
             )
 
         ticker += data
 
-    ticker = sorted(ticker, key=lambda i: i['timestamp'])
+    ticker = list(reversed(sorted(ticker, key=lambda i: i['timestamp'])))
 
     return ticker
