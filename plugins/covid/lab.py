@@ -152,9 +152,12 @@ def get_specimen_type(test):
         )
         if observations.count() > 0:
             return observations[0].observation_value
-    else:
-        #Nasopharygeal swab
-        return test.site
+
+    clean_site = test.cleaned_site
+    if clean_site == 'Nasopharygeal swab':
+        clean_site = 'NPS'
+
+    return clean_site
 
 
 def get_result(test):
