@@ -647,7 +647,7 @@ class CopyBackupTestCase(FabfileTestCase):
             "backup_storage_address": "\\some_address",
             "backup_storage_username": "some_user",
             "backup_storage_password": "some_password",
-            "backup_storage_directory": "some_directory"
+            "backup_storage_directory": "some_directory",
             "backup_storage_ip": "some_ip"
         }
         get_private_settings.return_value = correct_dict
