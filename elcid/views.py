@@ -260,3 +260,20 @@ class AddAntifungalPatients(LoginRequiredMixin, TemplateView):
                 reason=models.ChronicAntifungal.DISPENSARY_REPORT
             )
         return HttpResponseRedirect(self.get_redirect_url())
+
+
+class ElcidDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'elcid/dashboard.html'
+
+    def get_context_data(self, *a, **k):
+        from plugins.labtests import models as labmodels
+
+        context = super(ElcidDashboardView, self).get_context_data(*a, **k)
+
+        context['patients'] = Patient.objects.all().count()
+        context['clinical_advice'] = models.MicrobiologyInput.objects.all().count()
+
+        context['observations'] = labmodels.Observation.objects.all().count()
+        context['tests'] = labmodels.LabTest.objects.all().count()
+
+        return context

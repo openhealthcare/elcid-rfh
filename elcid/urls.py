@@ -28,6 +28,10 @@ urlpatterns = [
         r'^elcid/antifungal_add_patients',
         views.AddAntifungalPatients.as_view(),
         name="add_antifungal_patients"
+    ),
+    url('templates/elcid/dashboard.html',
+        views.ElcidDashboardView.as_view(),
+        name='elcid_dashboard'
     )
 ]
 
