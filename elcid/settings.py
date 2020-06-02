@@ -397,7 +397,7 @@ HOSPITAL_DB = dict(
 )
 
 
-EXTRACT_ASYNC = False
+EXTRACT_ASYNC = True
 
 
 REST_FRAMEWORK = {
