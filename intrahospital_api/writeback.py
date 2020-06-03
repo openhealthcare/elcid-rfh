@@ -107,7 +107,11 @@ def write_advice_upstream(advice_id):
     """
     Given the ID of a MicrobiologyInput entry, write it upstream.
     """
-    advice      = MicrobiologyInput.objects.get(id=advice_id)
+    advice = MicrobiologyInput.objects.get(id=advice_id)
+
+    if not advice.agreed_plan and not advice.infection_control:
+        return
+
     demographic = advice.episode.patient.demographics()
 
     params = {
