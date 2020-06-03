@@ -11,7 +11,7 @@
 
 ## Integration: Read
 
-elCID reads data from with a number of upstream systems
+elCID reads data from a number of upstream systems:
 
 * Cerner Demographics
 * Cerner Appointments
