@@ -4,7 +4,7 @@ elCID implementation specific models!
 import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.db import models
+from django.db import models, transaction
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
@@ -477,6 +477,13 @@ def update_chronic_antifungal_reason_for_interaction(
     if instance.reason_for_interaction == asr:
         instance.episode.patient.chronicantifungal_set.create(
             reason=ChronicAntifungal.REASON_TO_INTERACTION
+        )
+    if instance.reason_for_interaction == MicrobiologyInput.ICU_REASON_FOR_INTERACTION:
+        from intrahospital_api import tasks
+        # wait for all transactions to complete then launch the celery task
+        # http://celery.readthedocs.io/en/latest/userguide/tasks.html#database-transactions
+        transaction.on_commit(
+            lambda: tasks.write_advice_upstream.delay(instance.id)
         )
 
 

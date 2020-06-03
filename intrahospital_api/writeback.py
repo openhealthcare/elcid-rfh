@@ -7,7 +7,7 @@ import datetime
 from django.conf import settings
 from django.template.loader import get_template
 
-from elcid.models import Demographics
+from elcid.models import Demographics, MicrobiologyInput
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from plugins.covid.lab import get_covid_result_ticker
 from plugins.icu.loader import get_upstream_mrns
@@ -103,10 +103,11 @@ def write_result_summary():
     return
 
 
-def write_advice_upstream(advice):
+def write_advice_upstream(advice_id):
     """
-    Given an ADVICE entry, write it upstream.
+    Given the ID of a MicrobiologyInput entry, write it upstream.
     """
+    advice      = MicrobiologyInput.objects.get(id=advice_id)
     demographic = advice.episode.patient.demographics()
 
     params = {
