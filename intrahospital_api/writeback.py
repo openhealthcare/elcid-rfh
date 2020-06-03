@@ -114,7 +114,7 @@ def write_advice_upstream(advice_id):
         'elcid_version'           : settings.VERSION_NUMBER,
         'elcid_clinical_advice_id': advice.id,
         'elcid_patient_id'        : advice.episode.patient_id,
-        'written_by'              : initials,
+        'written_by'              : advice.initials,
         'datetime_inserted'       : datetime.datetime.now(),
         'hospital_number'         : demographic.hospital_number,
         'patient_forename'        : demographic.first_name,
@@ -125,4 +125,5 @@ def write_advice_upstream(advice_id):
     }
 
     api = ProdAPI()
-    api.execute_hospital_insert(ADVICE_INSERT, params=params)
+    if settings.WRITEBACK_ON:
+        api.execute_hospital_insert(ADVICE_INSERT, params=params)
