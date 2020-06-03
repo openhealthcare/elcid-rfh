@@ -23,7 +23,7 @@ The mechanics of communicating with upstream databases is handled by
 the `intrahospital_api` module, which exposes some interfaces for making
 queries, and creating patients.
 
-The appointment, ecnounters and ICU integrations are self-contained within their
+The appointment, encounters and ICU integrations are self-contained within their
 respective plugins and use the `intrahospital` API to initiate creating
 a patient and configuring connections to upstream databases.
 
