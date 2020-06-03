@@ -1,3 +1,2 @@
 {% for test in ticker %}
-{{ test.date_str }} {{ test.name }} {{ test.value }}
-{% endfor %}
+{{ test.date_str }} {{ test.name | ljust:"25" }} {{ test.value }}{% endfor %}

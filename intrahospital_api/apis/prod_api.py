@@ -371,9 +371,9 @@ class ProdApi(base_api.BaseApi):
         ) as conn:
             with conn.cursor() as cur:
                 logger.info(
-                    "Running upstream insert {} {}".format(query, params)
+                    "Running upstream insert {} {}".format(insert, params)
                 )
-                cur.execute(query, params)
+                cur.execute(insert, params)
                 conn.commit()
 
     def execute_hospital_query(self, query, params=None):

@@ -42,7 +42,7 @@ def get_upstream_mrns():
     """
     api = ProdAPI()
 
-    return [p['Patient_MRN'] for p in api.execute_hospital_query(Q_GET_ICU_MRNS]
+    return [p['Patient_MRN'] for p in api.execute_hospital_query(Q_GET_ICU_MRNS)]
 
 
 @transaction.atomic
