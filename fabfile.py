@@ -465,6 +465,26 @@ def write_cron_lab_tests(new_env):
         output, CRON_TEST_LOAD
     ))
 
+def write_cron_write_upstream_results(new_env):
+    """
+    Creates a cron job that runs the 'write_upstream_results' management command
+    """
+    print("Writing cron {}_write_upstream_results".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_write_upstream_results.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_write_upstream_results".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
 
 def write_cron_lab_pre_load(new_env):
     """
@@ -991,6 +1011,7 @@ def deploy_prod(old_branch, old_database_name=None):
     dump_database(old_env, dbname, old_env.release_backup_name)
 
     write_cron_backup(new_env)
+    write_cron_write_upstream_results(new_env)
     old_status = run_management_command("status_report", old_env)
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
     new_status = run_management_command("status_report", new_env)

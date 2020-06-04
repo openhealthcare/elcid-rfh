@@ -1538,7 +1538,7 @@ class DeployProdTestCase(FabfileTestCase):
         )
 
         self.assertEqual(
-            print_function.call_count, 0
+            print_function.call_count, 1
         )
 
         diff_status.assert_called_once_with("new_status", "old_status")

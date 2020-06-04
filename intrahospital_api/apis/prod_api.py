@@ -357,6 +357,25 @@ class ProdApi(base_api.BaseApi):
                 "You need to set proper credentials to use the prod api"
             )
 
+    def execute_hospital_insert(self, insert, params=None):
+        """
+        Given an INSERT query, and optional PARAMS, execute and commit
+        an insert on the upstream hospital database.
+        """
+        with pytds.connect(
+            self.hospital_settings["ip_address"],
+            self.hospital_settings["database"],
+            self.hospital_settings["username"],
+            self.hospital_settings["password"],
+            as_dict=True
+        ) as conn:
+            with conn.cursor() as cur:
+                logger.info(
+                    "Running upstream insert {} {}".format(insert, params)
+                )
+                cur.execute(insert, params)
+                conn.commit()
+
     def execute_hospital_query(self, query, params=None):
         with pytds.connect(
             self.hospital_settings["ip_address"],

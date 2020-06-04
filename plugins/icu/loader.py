@@ -20,6 +20,11 @@ FROM VIEW_ElCid_ITU_Handover
 WHERE discharged = 'No'
 """
 
+Q_GET_ICU_MRNS = """
+SELECT *
+FROM VIEW_ElCid_ITU_Handover
+WHERE discharged = 'No'
+"""
 
 def get_upstream_data():
     """
@@ -28,6 +33,16 @@ def get_upstream_data():
     api = ProdAPI()
 
     return api.execute_hospital_query(Q_GET_ICU_HANDOVER)
+
+
+def get_upstream_mrns():
+    """
+    Return a list of MRNs of patients currently undischarged on
+    the ICU Handover database
+    """
+    api = ProdAPI()
+
+    return [p['Patient_MRN'] for p in api.execute_hospital_query(Q_GET_ICU_MRNS)]
 
 
 @transaction.atomic
