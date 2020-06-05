@@ -40,5 +40,6 @@ class CovidPlugin(plugins.OpalPlugin):
         return []
 
     apis = [
-        ('covid_service_test_summary', api.CovidServiceTestSummaryAPI)
+        ('covid_service_test_summary', api.CovidServiceTestSummaryAPI),
+        ('covid_cxr', api.CovidCXRViewSet),
     ]

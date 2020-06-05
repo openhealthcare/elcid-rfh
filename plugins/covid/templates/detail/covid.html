@@ -54,30 +54,44 @@
     </div> <!-- Col 6 -->
 
     <div class="col-md-6">
-      <div class="panel panel-default" ng-controller="AdmissionView as admissionView">
+      <div class="panel panel-default" patient-api target="admissions" endpoint="admissions">
         <div class="panel-heading">
           <h3>{% icon 'fa fa-hospital-o' %}Recent Admissions</h3>
         </div>
         <div class="panel-footer">
-          <section ng-repeat="item in admissionView.admissions" ng-show="item.patient_class == 'INPATIENT' ">
-          <div class="row" >
-            <div class="col-md-4">
-              [[ item.admit_datetime | displayDateTime ]]
-              <span ng-show="item.discharge_datetime"><br /> [[ item.discharge_datetime | displayDateTime ]]</span>
+          <section ng-repeat="item in admissions" ng-show="item.patient_class == 'INPATIENT' ">
+            <div class="row" >
+              <div class="col-md-4">
+                [[ item.admit_datetime | displayDateTime ]]
+                <span ng-show="item.discharge_datetime"><br /> [[ item.discharge_datetime | displayDateTime ]]</span>
+              </div>
+              <div class="col-md-4">
+                [[ item.speciality_name ]]
+                <br />
+                [[ item.consultant_name ]]
+              </div>
+              <div class="col-md-4">
+                [[ item.hospital ]]
+              </div>
             </div>
-            <div class="col-md-4">
-              [[ item.speciality_name ]]
-              <br />
-              [[ item.consultant_name ]]
-            </div>
-            <div class="col-md-4">
-              [[ item.hospital ]]
-            </div>
-          </div>
-          <hr />
+            <hr />
           </section>
         </div>
       </div>
+
+      <section patient-api target="reports" endpoint="covid_cxr">
+        <div class="panel panel-default" ng-show="reports.length > 0">
+        <div class="panel-heading">
+          <h3>{% icon 'fa fa-eye' %}Covid CXR</h3>
+        </div>
+        <div class="panel-footer">
+          <div class="row" ng-repeat="item in reports">
+            <div class="col-md-3">[[ item.date_reported | displayDateTime ]]</div>
+            <div class="col-md-9" markdown="obx_result"></div>
+          </div>
+        </div>
+        </div>
+        </section>
 
     </div> <!-- col 6 -->
 

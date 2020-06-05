@@ -24,6 +24,30 @@ directives.directive("bloodCultureResultDisplay", function(BloodCultureLoader){
   };
 });
 
+directives.directive('patientApi', function($http, $window){
+    "use strict";
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs){
+            var endpoint = attrs.endpoint;
+            var target   = attrs.target;
+
+            var url = '/api/v0.1/' + endpoint + '/' + '' + scope.patient.id + '' + '/';
+
+            $http({cache: true, url: url, method: 'GET'}).then(
+                function(response){
+                    scope[target] = response.data;
+                },
+                function(){
+                    $window.alert('Error loading data from the server')
+                }
+            )
+
+        }
+    }
+});
+
+
 
 directives.directive("sparkLine", function () {
   "use strict";

@@ -1,0 +1,40 @@
+<div ng-controller="ImagingView as imagingView" class="col-md-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+
+      <div class="row">
+        <div class="col-md-12">
+          <h3>
+            <i class="fa fa-eye"></i>
+            Imaging Reports
+            <span class="pull-right">
+              <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">
+                PACS
+                <i class="fa fa-external-link" aria-hidden="true"></i>
+              </a>
+            </span>
+          </h3>
+        </div>
+      </div>
+    </div>
+    <!-- End Panel Header -->
+
+    <table class="table table-bordered table-striped">
+      <tr>
+        <th>Reported</th>
+        <th>Result</th>
+        <th>Report</th>
+      </tr>
+      <tr ng-repeat="item in imagingView.imaging">
+        <td>[[ item.date_reported | displayDateTime ]]</td>
+        <td>
+          [[ item.result_description ]]
+        </td>
+        <td>
+          <span markdown="obx_result"></span>
+        </td>
+      </tr>
+    </table>
+
+  </div>
+</div>
