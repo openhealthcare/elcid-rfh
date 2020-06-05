@@ -17,12 +17,12 @@ from elcid.models import Demographics
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
 
-MAIN_DEMOGRAPHICS_VIEW = "VIEW_CRS_Patient_Masterfile"
+PATIENT_MASTERFILE_VIEW = "VIEW_CRS_Patient_Masterfile"
 
 PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY date_inserted DESC;"
 
-MAIN_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
+PATIENT_MASTERFILE_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
@@ -156,6 +156,7 @@ class MainDemographicsRow(object):
             else:
                 result[field] = getattr(self, "get_{}".format(field))()
         return result
+
 
 
 class PathologyRow(object):
@@ -423,13 +424,13 @@ class ProdApi(base_api.BaseApi):
         )
 
     @property
-    def main_demographics_query(self):
-        return MAIN_DEMOGRAPHICS_QUERY.format(view=MAIN_DEMOGRAPHICS_VIEW)
+    def patient_masterfile_query(self):
+        return PATIENT_MASTERFILE_QUERY.format(view=PATIENT_MASTERFILE_VIEW)
 
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
 
-        demographics_result = self.main_demographics(hospital_number)
+        demographics_result = self.patient_masterfile(hospital_number)
 
         if not demographics_result:
             demographics_result = self.pathology_demographics(hospital_number)
@@ -440,9 +441,9 @@ class ProdApi(base_api.BaseApi):
 
     @timing
     @db_retry
-    def main_demographics(self, hospital_number):
+    def patient_masterfile(self, hospital_number):
         rows = list(self.execute_hospital_query(
-            self.main_demographics_query,
+            self.patient_masterfile_query,
             params=dict(hospital_number=hospital_number)
         ))
         if not len(rows):

@@ -520,11 +520,11 @@ class ProdApiTestcase(OpalTestCase):
 
         self.assertIsNone(result)
 
-    def test_main_demographics_success(self):
+    def test_patient_masterfile_success(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_hospital_query") as execute_query:
             execute_query.return_value = [FAKE_MAIN_DEMOGRAPHICS_ROW]
-            result = api.main_demographics("123")
+            result = api.patient_masterfile("123")
 
         self.assertEqual(
             result["first_name"], "TEST"
@@ -558,19 +558,19 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.call_args[1]["params"], dict(hospital_number="123")
         )
 
-    def test_main_demographics_fail(self):
+    def test_patient_masterfile_fail(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_hospital_query") as execute_query:
             execute_query.return_value = []
-            result = api.main_demographics("A1' 23")
+            result = api.patient_masterfile("A1' 23")
 
         self.assertIsNone(result)
 
     def test_demographics_found_in_main(self):
         api = self.get_api()
-        with mock.patch.object(api, "main_demographics") as main_demographics:
+        with mock.patch.object(api, "patient_masterfile") as patient_masterfile:
             with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
-                main_demographics.return_value = dict(first_name="Wilma")
+                patient_masterfile.return_value = dict(first_name="Wilma")
                 result = api.demographics("111")
 
         self.assertEqual(
@@ -578,14 +578,14 @@ class ProdApiTestcase(OpalTestCase):
             dict(first_name="Wilma", external_system=constants.EXTERNAL_SYSTEM)
         )
 
-        main_demographics.assert_called_once_with("111")
+        patient_masterfile.assert_called_once_with("111")
         self.assertFalse(pathology_demographics.called)
 
     def test_demographics_found_in_pathology(self):
         api = self.get_api()
-        with mock.patch.object(api, "main_demographics") as main_demographics:
+        with mock.patch.object(api, "patient_masterfile") as patient_masterfile:
             with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
-                main_demographics.return_value = None
+                patient_masterfile.return_value = None
                 pathology_demographics.return_value = dict(first_name="Wilma")
                 result = api.demographics("111")
 
@@ -594,7 +594,7 @@ class ProdApiTestcase(OpalTestCase):
             dict(first_name="Wilma", external_system=constants.EXTERNAL_SYSTEM)
         )
 
-        main_demographics.assert_called_once_with("111")
+        patient_masterfile.assert_called_once_with("111")
         pathology_demographics.assert_called_once_with("111")
 
     def test_demographics_not_found_in_either(self):
