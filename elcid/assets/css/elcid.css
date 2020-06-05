@@ -268,4 +268,7 @@ div.add-isolate:hover {
 .icu-handover ul li {
   list-style: disc inside; }
 
+.panel.panel-primary .panel-heading a {
+  color: #343637; }
+
 /*# sourceMappingURL=elcid.css.map */

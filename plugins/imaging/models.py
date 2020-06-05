@@ -77,7 +77,7 @@ class Imaging(models.Model):
         'date_reported',
         'requesting_user_code',
         'requesting_user_name',
-        'cerner_visitid',
+        'cerner_visit_id',
         'result_code',
         'result_description',
         'result_status',
@@ -85,4 +85,9 @@ class Imaging(models.Model):
     ]
 
     def to_dict(self):
-        return {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+        dicted = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+
+        if 'Reported By:' in dicted['obx_result']:
+            dicted['obx_result'] = dicted['obx_result'].split('Reported By:')[0]
+
+        return dicted

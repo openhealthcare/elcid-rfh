@@ -60,6 +60,14 @@ class CovidPatient(models.Model):
     date_first_positive = models.DateField()
 
 
+class CovidReportCode(models.Model):
+    """
+    Store the CovidReport Code of an image report
+    """
+    report     = models.ForeignKey('imaging.Imaging', on_delete=models.CASCADE)
+    covid_code = models.CharField(blank=True, null=True, max_length=10)
+
+
 class CovidAdmission(EpisodeSubrecord):
     """
     An admission to hospital and associated details

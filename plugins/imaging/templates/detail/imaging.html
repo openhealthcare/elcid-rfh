@@ -3,10 +3,16 @@
     <div class="panel-heading">
 
       <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-12">
           <h3>
             <i class="fa fa-eye"></i>
-            Imaging
+            Imaging Reports
+            <span class="pull-right">
+              <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">
+                PACS
+                <i class="fa fa-external-link" aria-hidden="true"></i>
+              </a>
+            </span>
           </h3>
         </div>
       </div>
@@ -19,14 +25,14 @@
         <th>Result</th>
         <th>Report</th>
       </tr>
-      <tr ng-repeat="report in imagingView.imaging">
-        <td>[[ reoprt.date_reported | displayDateTime ]]</td>
+      <tr ng-repeat="item in imagingView.imaging">
+        <td>[[ item.date_reported | displayDateTime ]]</td>
         <td>
-          [[ report.result_code ]] <br />
-          [[ report.result_description ]] <br />
-          [[ report.result_status ]]
+          [[ item.result_description ]]
         </td>
-        <td>[[ report.obx_result ]]</td>
+        <td>
+          <span markdown="obx_result"></span>
+        </td>
       </tr>
     </table>
 

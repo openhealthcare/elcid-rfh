@@ -9,7 +9,7 @@ from plugins.imaging import api
 class AdmissionsPlugin(plugins.OpalPlugin):
     javascripts = {
         'opal.controllers': [
-            'js/imaging/imaging_view_controller.js'
+            'js/imaging/imaging_view.controller.js'
         ]
     }
 
