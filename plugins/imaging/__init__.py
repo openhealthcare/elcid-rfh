@@ -4,4 +4,4 @@ elCID Imaging plugin
 import logging
 
 
-logger = logging.getLogger('imgaging')
+logger = logging.getLogger('imaging')
