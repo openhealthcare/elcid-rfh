@@ -35,6 +35,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         patient_count = patients.count()
         covid_patients = CovidPatient.objects.filter(patient__in=[p.patient for p in patients]).count()
 
+
         stays       = [(today - p.admitted).days +1 for p in patients if p.admitted]
         staycounter = collections.defaultdict(int)
 
@@ -44,11 +45,15 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         timeseries = ['Patients']
         ticks      = ['x']
 
-        max_stay   = max(staycounter.values())
+        if patient_count > 0:
+            max_stay = max(staycounter.values())
+        else:
+            max_stay = 0
 
         for stay in sorted(staycounter.keys()):
             ticks.append(stay)
             timeseries.append(staycounter[stay])
+
 
         info = {
             'name'          : ward_name,
