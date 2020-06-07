@@ -37,6 +37,9 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
         'hospital_number', 'nhs_number', 'surname', 'first_name',
         'middle_name', 'post_code',
     )
+    religion = models.CharField(blank=True, null=True, max_length=100)
+    main_language = models.CharField(blank=True, null=True, max_length=100)
+    nationality = models.CharField(blank=True, null=True, max_length=100)
 
     @classmethod
     def get_modal_footer_template(cls):
@@ -44,6 +47,82 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
 
     class Meta:
         verbose_name_plural = "Demographics"
+
+
+class ContactInformation(PatientSubrecord, ExternallySourcedModel):
+    _is_singleton = True
+    _icon = 'fa fa-phone'
+    _exclude_from_extract = True
+    address_line_1 = models.CharField(blank=True, null=True, max_length=100)
+    address_line_2 = models.CharField(blank=True, null=True, max_length=100)
+    address_line_3 = models.CharField(blank=True, null=True, max_length=100)
+    address_line_4 = models.CharField(blank=True, null=True, max_length=100)
+    postcode = models.CharField(blank=True, null=True, max_length=20)
+    home_telephone = models.CharField(blank=True, null=True, max_length=100)
+    work_telephone = models.CharField(blank=True, null=True, max_length=100)
+    mobile_telephone = models.CharField(blank=True, null=True, max_length=100)
+    email = models.CharField(blank=True, null=True, max_length=100)
+
+
+class NextOfKinDetails(PatientSubrecord, ExternallySourcedModel):
+    """
+    Next of kin details from the Patient_Masterfile upstream table
+    """
+    _is_singleton = True
+    _icon = 'fa fa-users'
+    _exclude_from_extract = True
+
+    nok_type = models.CharField(blank=True, null=True, max_length=100)
+    surname = models.CharField(blank=True, null=True, max_length=100)
+    forename_1  = models.CharField(blank=True, null=True, max_length=100)
+    forename_2  = models.CharField(blank=True, null=True, max_length=100)
+    relationship = models.CharField(blank=True, null=True, max_length=100)
+    address_1 = models.CharField(blank=True, null=True, max_length=100)
+    address_2 = models.CharField(blank=True, null=True, max_length=100)
+    address_3 = models.CharField(blank=True, null=True, max_length=100)
+    address_4 = models.CharField(blank=True, null=True, max_length=100)
+    postcode = models.CharField(blank=True, null=True, max_length=20)
+    work_telephone = models.CharField(blank=True, null=True, max_length=100)
+    home_telephone = models.CharField(blank=True, null=True, max_length=100)
+
+
+class GPDetails(PatientSubrecord, ExternallySourcedModel):
+    """
+    GP details from the Patient_Masterfile upstream table
+    """
+
+    _is_singleton = True
+    _icon = 'fa-user-circle-o'
+    _exclude_from_extract = True
+
+    crs_gp_masterfile_id = models.IntegerField(blank=True, null=True)
+    national_code = models.CharField(blank=True, null=True, max_length=20)
+    practice_code = models.CharField(blank=True, null=True, max_length=20)
+    title = models.CharField(blank=True, null=True, max_length=100)
+    initials = models.CharField(blank=True, null=True, max_length=100)
+    surname = models.CharField(blank=True, null=True, max_length=100)
+    address_1 = models.CharField(blank=True, null=True, max_length=100)
+    address_2 = models.CharField(blank=True, null=True, max_length=100)
+    address_3 = models.CharField(blank=True, null=True, max_length=100)
+    address_4 = models.CharField(blank=True, null=True, max_length=100)
+    postcode = models.CharField(blank=True, null=True, max_length=20)
+    telephone = models.CharField(blank=True, null=True, max_length=100)
+
+
+class MasterFileMeta(models.Model):
+    """
+    Meta data about the Patient_Masterfile upstream table
+    """
+    patient = models.ForeignKey(omodels.Patient, on_delete=models.CASCADE)
+    insert_date = models.DateTimeField(blank=True, null=True)
+    last_updated = models.DateTimeField(blank=True, null=True)
+    merged = models.CharField(blank=True, null=True, max_length=20)
+    merge_comments = models.TextField(blank=True, null=True)
+    active_inactive = models.CharField(blank=True, null=True, max_length=20)
+
+    @classmethod
+    def get_api_name(cls):
+        return camelcase_to_underscore(cls._meta.object_name)
 
 
 class DuplicatePatient(PatientSubrecord):
