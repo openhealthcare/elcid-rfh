@@ -571,19 +571,6 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
             }]
         }
 
-    def test_update_patient_from_batch_integration(self):
-        loader.update_patient_from_batch(
-            emodels.Demographics.objects.all(),
-            self.data_deltas
-        )
-        self.assertEqual(
-            self.patient.demographics_set.first().first_name, "Jane"
-        )
-        obs = self.patient.lab_tests.get().observation_set.first()
-        self.assertEqual(
-            obs.observation_value, "Positive"
-        )
-
 
 class AnyLoadsRunningTestCase(ApiTestCase):
     def test_any_loads_running_initial_patient_load(self):

@@ -311,13 +311,7 @@ def update_patient_from_batch(demographics_set, data_delta):
         return
 
     patient = patient_demographics_set.first().patient
-    logger.info("updating patient demographics for {}".format(
-        patient.id
-    ))
-    logger.info(json.dumps(upstream_demographics, indent=2))
-    update_demographics.update_patient_information(
-        patient, upstream_demographics
-    )
+
     logger.info("updating patient results for {}".format(
         patient.id
     ))
