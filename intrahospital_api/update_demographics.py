@@ -99,7 +99,7 @@ def have_demographics_changed(
     return not upstream_demographics == our_dict
 
 
-def update_patient_demographics(patient, upstream_demographics_dict=None):
+def update_patient_information(patient, upstream_demographics_dict=None):
     """
     Updates a patient with the upstream demographics, if they have changed.
     """
@@ -123,15 +123,15 @@ def update_patient_demographics(patient, upstream_demographics_dict=None):
         )
 
 
-def update_all_demographics():
+def update_all_patient_information():
     """
-    Runs update_patient_demographics for all_patients.
+    Runs update_patient_information for all_patients.
 
     Called by the management command sync_demographics which runs periodically
     """
     for patient in Patient.objects.all():
         try:
-            update_patient_demographics(patient)
+            update_patient_information(patient)
         except:
             msg = 'Exception syncing upstream demographics \n {}'
             logger.error(msg.format(traceback.format_exc()))

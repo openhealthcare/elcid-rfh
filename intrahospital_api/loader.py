@@ -315,7 +315,7 @@ def update_patient_from_batch(demographics_set, data_delta):
         patient.id
     ))
     logger.info(json.dumps(upstream_demographics, indent=2))
-    update_demographics.update_patient_demographics(
+    update_demographics.update_patient_information(
         patient, upstream_demographics
     )
     logger.info("updating patient results for {}".format(
@@ -386,9 +386,9 @@ def sync_patient(patient):
     logger.info(
         "tests synced for {}".format(patient.id)
     )
-    update_demographics.update_patient_demographics(patient)
+    update_demographics.update_patient_information(patient)
     logger.info(
-        "demographics synced for {}".format(patient.id)
+        "patient information synced for {}".format(patient.id)
     )
 
 
@@ -410,7 +410,7 @@ def _load_patient(patient, patient_load):
         logger.info(
             "tests updated for {} {}".format(patient.id, patient_load.id)
         )
-        update_demographics.update_patient_demographics(patient)
+        update_demographics.update_patient_information(patient)
         logger.info(
             "demographics updated for {} {}".format(
                 patient.id, patient_load.id
