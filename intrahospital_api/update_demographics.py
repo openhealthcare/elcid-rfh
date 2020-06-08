@@ -126,6 +126,11 @@ def update_patient_information(patient):
     # matched with WinPath but who's hospital_number has
     # then been changed by the admin.
     if upstream_patient_information is None:
+        logger.info(
+            "No patient info found for {} skipping update information".format(
+                patient.id
+            )
+        )
         return
 
     upstream_demographics_dict = upstream_patient_information[
@@ -133,7 +138,7 @@ def update_patient_information(patient):
     ]
     demographics = patient.demographics_set.all()[0]
 
-    upstream_gp_detals = upstream_patient_information[
+    upstream_gp_details = upstream_patient_information[
         models.GPDetails.get_api_name()
     ]
     gp_details = patient.gpdetails_set.all()[0]
@@ -162,21 +167,35 @@ def update_patient_information(patient):
         demographics.update_from_dict(
             upstream_demographics_dict, api.user, force=True
         )
-        for field, value in upstream_gp_detals.items():
+        for field, value in upstream_gp_details.items():
             setattr(gp_details, field, value)
+            gp_details.updated_by = api.user
             gp_details.save()
 
         for field, value in upstream_contact_information.items():
             setattr(contact_information, field, value)
+            contact_information.updated_by = api.user
             contact_information.save()
 
         for field, value in upstream_next_of_kin_details.items():
             setattr(next_of_kin_details, field, value)
+            next_of_kin_details.updated_by = api.user
             next_of_kin_details.save()
 
         for field, value in upstream_master_file.items():
             setattr(master_file_meta, field, value)
             master_file_meta.save()
+        logger.info(
+            "Patient info for {} is updated".format(
+                patient.id
+            )
+        )
+    else:
+        logger.info(
+            "Patient info for {} is unchanged".format(
+                patient.id
+            )
+        )
 
 
 

@@ -406,7 +406,7 @@ def _load_patient(patient, patient_load):
         )
         update_demographics.update_patient_information(patient)
         logger.info(
-            "demographics updated for {} {}".format(
+            "patient information updated for {} {}".format(
                 patient.id, patient_load.id
             )
         )

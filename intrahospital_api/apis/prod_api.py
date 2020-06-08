@@ -177,6 +177,7 @@ def get_contact_information(row):
     for our_field, their_field in mapping.items():
         result[our_field] = row[their_field]
 
+    result["external_system"] = EXTERNAL_SYSTEM
     return result
 
 
@@ -199,6 +200,7 @@ def get_next_of_kin_details(row):
     for our_field, their_field in mapping.items():
         result[our_field] = row[their_field]
 
+    result["external_system"] = EXTERNAL_SYSTEM
     return result
 
 def get_gp_details(row):
@@ -220,6 +222,7 @@ def get_gp_details(row):
     for our_field, their_field in mapping.items():
         result[our_field] = row[their_field]
 
+    result["external_system"] = EXTERNAL_SYSTEM
     return result
 
 
