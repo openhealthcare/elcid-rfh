@@ -85,6 +85,9 @@ class NextOfKinDetails(PatientSubrecord, ExternallySourcedModel):
     work_telephone = models.CharField(blank=True, null=True, max_length=100)
     home_telephone = models.CharField(blank=True, null=True, max_length=100)
 
+    class Meta:
+        verbose_name = "Next Of Kin"
+
 
 class GPDetails(PatientSubrecord, ExternallySourcedModel):
     """
@@ -92,7 +95,7 @@ class GPDetails(PatientSubrecord, ExternallySourcedModel):
     """
 
     _is_singleton = True
-    _icon = 'fa-user-circle-o'
+    _icon = 'fa fa-user-circle-o'
     _exclude_from_extract = True
 
     crs_gp_masterfile_id = models.IntegerField(blank=True, null=True)
@@ -107,6 +110,9 @@ class GPDetails(PatientSubrecord, ExternallySourcedModel):
     address_4 = models.CharField(blank=True, null=True, max_length=100)
     postcode = models.CharField(blank=True, null=True, max_length=20)
     telephone = models.CharField(blank=True, null=True, max_length=100)
+
+    class Meta:
+        verbose_name = "GP"
 
 
 class MasterFileMeta(models.Model):
