@@ -339,10 +339,12 @@ class DevApi(base_api.BaseApi):
         return some_dt.strftime('%d/%m/%Y')
 
     def patient_masterfile(self, hospital_number):
+        demographics_dict = prod_api.MainDemographicsRow(
+            RAW_MASTER_FILE_DATA
+        ).get_demographics_dict()
+        demographics_dict.update(self.demographics(hospital_number))
         return {
-            Demographics.get_api_name(): prod_api.MainDemographicsRow(
-                RAW_MASTER_FILE_DATA
-            ).get_demographics_dict(),
+            Demographics.get_api_name(): demographics_dict,
             ContactInformation.get_api_name(): prod_api.get_contact_information(RAW_MASTER_FILE_DATA),
             NextOfKinDetails.get_api_name(): prod_api.get_next_of_kin_details(RAW_MASTER_FILE_DATA),
             GPDetails.get_api_name(): prod_api.get_gp_details(RAW_MASTER_FILE_DATA),
