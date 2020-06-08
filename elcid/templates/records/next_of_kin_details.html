@@ -1,40 +1,59 @@
 <span ng-show="item.forename_1 || item.forename_2 || item.surname">
   [[ item.forename_1 ]] [[ item.forename_2 ]] [[ item.surname ]]
+  <span ng-show="item.relationship">
+    ([[ item.relationship ]])
+</span>
    <br />
 </span>
-<span ng-show="item.nok_type">
-  [[ item.nok_type ]]
- <br />
-</span>
-<span ng-show="item.relationship">
-    [[ item.relationship ]]
-   <br />
-</span>
-<span ng-show="item.address_1">
-    [[ item.address_1 ]]
-   <br />
-</span>
-<span ng-show="item.address_2">
-    [[ item.address_2 ]]
-   <br />
-</span>
-<span ng-show="item.address_3">
-    [[ item.address_3 ]]
-   <br />
-</span>
-<span ng-show="item.address_4">
-    [[ item.address_4 ]]
-   <br />
-</span>
-<span ng-show="item.postcode">
-    [[ item.postcode ]]
-   <br />
-</span>
-<span ng-show="item.work_telephone">
-    [[ item.work_telephone ]]
-   <br />
-</span>
-<span ng-show="item.mobile_telephone">
+
+<div class="row">
+  <div class="col-md-4">
+    <b>Address</b>
+  </div>
+  <div class="col-md-8">
+    <span ng-show="item.address_1">
+      [[ item.address_1 ]]
+     <br />
+  </span>
+  <span ng-show="item.address_2">
+      [[ item.address_2 ]]
+     <br />
+  </span>
+  <span ng-show="item.address_3">
+      [[ item.address_3 ]]
+     <br />
+  </span>
+  <span ng-show="item.address_4">
+      [[ item.address_4 ]]
+     <br />
+  </span>
+  <span ng-show="item.postcode">
+      [[ item.postcode ]]
+     <br />
+  </span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    <b>Mobile</b>
+  </div>
+  <div class="col-md-8">
     [[ item.mobile_telephone ]]
-   <br />
-</span>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    <b>Work</b>
+  </div>
+  <div class="col-md-8">
+    [[ item.work_telephone ]]
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    <b>Type</b>
+  </div>
+  <div class="col-md-8">
+    [[ item.nok_type ]]
+  </div>
+</div>
