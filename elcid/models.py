@@ -50,9 +50,13 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
 
 
 class ContactInformation(PatientSubrecord, ExternallySourcedModel):
+    """
+    Address and contact details from the Patient_Masterfile upstream table
+    """
     _is_singleton = True
     _icon = 'fa fa-phone'
     _exclude_from_extract = True
+
     address_line_1 = models.CharField(blank=True, null=True, max_length=100)
     address_line_2 = models.CharField(blank=True, null=True, max_length=100)
     address_line_3 = models.CharField(blank=True, null=True, max_length=100)
