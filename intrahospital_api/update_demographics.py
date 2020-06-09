@@ -17,9 +17,27 @@ api = get_api()
 
 def update_external_demographics(
     external_demographics,
-    external_demographics_dict,
+    demographics_dict,
 ):
-    external_demographics_dict.pop('external_system')
+    external_demographics_fields = [
+        "hospital_number",
+        "nhs_number",
+        "surname",
+        "first_name",
+        "title",
+        "date_of_birth",
+        "sex",
+        "ethnicity",
+        "death_indicator",
+        "date_of_death"
+    ]
+
+    external_demographics_dict = {}
+    for field in external_demographics_fields:
+        result = demographics_dict.get(field)
+        if result:
+            external_demographics_dict[field] = result
+
     external_demographics.update_from_dict(
         external_demographics_dict, api.user, force=True
     )
