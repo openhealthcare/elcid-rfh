@@ -1,0 +1,59 @@
+{% load humanize %}
+<div class="content-offset">
+  <div class="col-md-8 col-md-offset-2 content-offset">
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h1>{{ OPAL_BRAND_NAME }} </h1>
+      </div> <!-- heading -->
+      <div class="panel-body">
+
+          <div class="row">
+
+            <div class="col-md-5">
+              <h2>Patients</h2>
+              <h1>{{ patients |intcomma }}</h1>
+              <p>
+                Total number of patients on the system.
+              </p>
+            </div> <!-- Column -->
+
+            <div class="col-md-5 col-md-offset-1">
+              <h2>Advice</h2>
+              <h1>{{ clinical_advice |intcomma }}</h1>
+              <p>
+                Total number of pieces of clinical advice recorded.
+              </p>
+            </div> <!-- Column -->
+
+          </div> <!-- row -->
+
+
+          <div class="row">
+
+            <div class="col-md-5">
+              <h2>Tests</h2>
+              <h1>{{ tests |intcomma }}</h1>
+              <p>
+                Total number of lab tests.
+              </p>
+            </div> <!-- Column -->
+
+            <div class="col-md-5 col-md-offset-1">
+              <h2>Observations</h2>
+              <h1>{{ observations |intcomma }}</h1>
+              <p>
+                Total number of lab test observations.
+              </p>
+            </div> <!-- Column -->
+
+          </div> <!-- row -->
+
+
+
+      </div>   <!-- panel body -->
+    </div>     <!-- Panel -->
+
+
+  </div>
+</div>
