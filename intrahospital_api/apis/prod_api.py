@@ -18,7 +18,7 @@ from elcid.models import (
     MasterFileMeta
 )
 from elcid.utils import timing
-from plugins.lab import models as lmodels
+from lab import models as lmodels
 
 from intrahospital_api.apis import base_api
 from intrahospital_api import logger
