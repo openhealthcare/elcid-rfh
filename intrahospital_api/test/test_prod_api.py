@@ -378,15 +378,61 @@ class PathologyRowTestCase(OpalTestCase):
         self.assertEqual(result, expected)
 
 
-FAKE_MAIN_DEMOGRAPHICS_ROW = {
-    u'PATIENT_NUMBER': u'20552710',
-    u'NHS_NUMBER': u'111',
-    u'FORENAME1': u'TEST',
-    u'SURNAME': u'ZZZTEST',
-    u'DOB': datetime(1980, 10, 10, 0, 0),
-    u'SEX': u'F',
-    u'ETHNIC_GROUP': u'D',
-    u'TITLE': u'Ms',
+RAW_MASTER_FILE_DATA = {
+    "ID": 1,
+    "CRS_GP_MASTERFILE_ID": 2,
+    "PATIENT_NUMBER": "123",
+    "NHS_NUMBER": "456",
+    "TITLE": "Mrs",
+    "FORENAME1": "Gemima",
+    "FORENAME2": "Philipa",
+    "SURNAME": "Rogers",
+    "DOB": datetime(2015, 7, 18, 16, 26),
+    "ADDRESS_LINE1": "1 Church rd",
+    "ADDRESS_LINE2": "Whittington",
+    "ADDRESS_LINE3": "West Weybridge",
+    "ADDRESS_LINE4": "East Anglia",
+    "POSTCODE": "N12 5BC",
+    "GP_NATIONAL_CODE": "234",
+    "GP_PRACTICE_CODE": "345",
+    "HOME_TELEPHONE": "0970 123 5467",
+    "WORK_TELEPHONE": "0170 123 5467",
+    "MOBILE_TELEPHONE": "0870 123 5467",
+    "EMAIL": "rogers@gmail.com",
+    "SEX": "F",
+    "RELIGION": "Agnostic",
+    "ETHNIC_GROUP": "D",
+    "MAIN_LANGUAGE": "",
+    "NATIONALITY": "",
+    "MARITAL_STATUS": "",
+    "DEATH_FLAG": "",
+    "DATE_OF_DEATH": "",
+    "NOK_TYPE": "",
+    "NOK_SURNAME": "",
+    "NOK_FORENAME1": "",
+    "NOK_FORENAME2": "",
+    "NOK_relationship": "",
+    "NOK_address1": "",
+    "NOK_address2": "",
+    "NOK_address3": "",
+    "NOK_address4": "",
+    "NOK_Postcode": "",
+    "nok_home_telephone": "",
+    "nok_work_telephone": "",
+    "ACTIVE_INACTIVE": "",
+    "MERGED": "",
+    "MERGE_COMMENTS": "",
+    "LAST_UPDATED": "",
+    "INSERT_DATE": "",
+    "gp_title": "",
+    "GP_INITIALS": "",
+    "GP_SURNAME": "",
+    "GP_ADDRESS1": "",
+    "GP_ADDRESS2": "",
+    "GP_ADDRESS3": "",
+    "GP_ADDRESS4": "",
+    "GP_POSTCODE": "",
+    "GP_TELEPHONE": "",
 }
 
 
@@ -520,30 +566,30 @@ class ProdApiTestcase(OpalTestCase):
 
         self.assertIsNone(result)
 
-    def test_main_demographics_success(self):
+    def test_patient_masterfile_success(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_hospital_query") as execute_query:
-            execute_query.return_value = [FAKE_MAIN_DEMOGRAPHICS_ROW]
-            result = api.main_demographics("123")
+            execute_query.return_value = [RAW_MASTER_FILE_DATA]
+            result = api.patient_masterfile("123")["demographics"]
 
         self.assertEqual(
-            result["first_name"], "TEST"
+            result["first_name"], "Gemima"
         )
 
         self.assertEqual(
-            result["surname"], "ZZZTEST"
+            result["surname"], "Rogers"
         )
         self.assertEqual(
-            result["hospital_number"], "20552710"
+            result["hospital_number"], "123"
         )
         self.assertEqual(
-            result["date_of_birth"], "10/10/1980"
+            result["date_of_birth"], "18/07/2015"
         )
         self.assertEqual(
             result["sex"], "Female"
         )
         self.assertEqual(
-            result["title"], "Ms"
+            result["title"], "Mrs"
         )
         self.assertEqual(
             result["ethnicity"], "Mixed - White and Black Caribbean"
@@ -558,19 +604,19 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.call_args[1]["params"], dict(hospital_number="123")
         )
 
-    def test_main_demographics_fail(self):
+    def test_patient_masterfile_fail(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_hospital_query") as execute_query:
             execute_query.return_value = []
-            result = api.main_demographics("A1' 23")
+            result = api.patient_masterfile("A1' 23")
 
         self.assertIsNone(result)
 
     def test_demographics_found_in_main(self):
         api = self.get_api()
-        with mock.patch.object(api, "main_demographics") as main_demographics:
+        with mock.patch.object(api, "patient_masterfile") as patient_masterfile:
             with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
-                main_demographics.return_value = dict(first_name="Wilma")
+                patient_masterfile.return_value = dict(demographics=dict(first_name="Wilma"))
                 result = api.demographics("111")
 
         self.assertEqual(
@@ -578,23 +624,26 @@ class ProdApiTestcase(OpalTestCase):
             dict(first_name="Wilma", external_system=constants.EXTERNAL_SYSTEM)
         )
 
-        main_demographics.assert_called_once_with("111")
+        patient_masterfile.assert_called_once_with("111")
         self.assertFalse(pathology_demographics.called)
 
     def test_demographics_found_in_pathology(self):
         api = self.get_api()
-        with mock.patch.object(api, "main_demographics") as main_demographics:
+        with mock.patch.object(api, "patient_masterfile") as patient_masterfile:
             with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
-                main_demographics.return_value = None
+                patient_masterfile.return_value = None
                 pathology_demographics.return_value = dict(first_name="Wilma")
                 result = api.demographics("111")
 
         self.assertEqual(
             result,
-            dict(first_name="Wilma", external_system=constants.EXTERNAL_SYSTEM)
+            dict(
+                first_name="Wilma",
+                external_system=constants.EXTERNAL_SYSTEM
+            )
         )
 
-        main_demographics.assert_called_once_with("111")
+        patient_masterfile.assert_called_once_with("111")
         pathology_demographics.assert_called_once_with("111")
 
     def test_demographics_not_found_in_either(self):

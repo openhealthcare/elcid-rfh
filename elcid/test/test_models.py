@@ -52,6 +52,8 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'middle_name': None,
             'title': '',
             'marital_status': u'',
+            'main_language': None,
+            'nationality': None,
             'religion': None,
             'created': None,
             'updated': None,
@@ -70,7 +72,6 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'external_system': None,
             'external_identifier': None
         }
-
         self.assertEqual(expected_data, self.demographics.to_dict(self.user))
 
     def test_update_from_dict(self):
