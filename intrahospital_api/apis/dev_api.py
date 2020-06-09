@@ -1,10 +1,14 @@
 from intrahospital_api import constants
-from intrahospital_api.apis import base_api
+from intrahospital_api.apis import base_api, prod_api
 from datetime import date, timedelta, datetime
 from lab import models as lmodels
+from elcid.models import (
+    Demographics, ContactInformation, NextOfKinDetails, GPDetails,
+    MasterFileMeta
+)
 import random
 
-RAW_DATA = {
+RAW_TEST_DATA = {
     u'Abnormal_Flag': u'',
     u'Accession_number': u'73151060487',
     u'CRS_ADDRESS_LINE1': u'Jameson Centre',
@@ -97,6 +101,64 @@ RAW_DATA = {
     'obr_id': 2000000,
     'result_source': 'RF',
     u'visible': u'Y'
+}
+
+# this data may not be representative of upstream data
+RAW_MASTER_FILE_DATA = {
+    "ID": 1,
+    "CRS_GP_MASTERFILE_ID": 2,
+    "PATIENT_NUMBER": "123",
+    "NHS_NUMBER": "456",
+    "TITLE": "Mrs",
+    "FORENAME1": "Gemima",
+    "FORENAME2": "Philipa",
+    "SURNAME": "Rogers",
+    "DOB": datetime(2015, 7, 18, 16, 26),
+    "ADDRESS_LINE1": "1 Church rd",
+    "ADDRESS_LINE2": "Whittington",
+    "ADDRESS_LINE3": "West Weybridge",
+    "ADDRESS_LINE4": "East Anglia",
+    "POSTCODE": "N12 5BC",
+    "GP_NATIONAL_CODE": "234",
+    "GP_PRACTICE_CODE": "345",
+    "HOME_TELEPHONE": "0970 123 5467",
+    "WORK_TELEPHONE": "0170 123 5467",
+    "MOBILE_TELEPHONE": "0870 123 5467",
+    "EMAIL": "rogers@gmail.com",
+    "SEX": "F",
+    "RELIGION": "Agnostic",
+    "ETHNIC_GROUP": "G",
+    "MAIN_LANGUAGE": "Spanish",
+    "NATIONALITY": "",
+    "MARITAL_STATUS": "",
+    "DEATH_FLAG": "",
+    "DATE_OF_DEATH": "",
+    "NOK_TYPE": "UNKNOWN",
+    "NOK_SURNAME": "WILSON",
+    "NOK_FORENAME1": "JOSHUA",
+    "NOK_FORENAME2": "MAXIMILLIAN",
+    "NOK_relationship": "FATHER",
+    "NOK_address1": "1 Station Rd",
+    "NOK_address2": "Whistable",
+    "NOK_address3": "Kent",
+    "NOK_address4": "UK",
+    "NOK_Postcode": "CT5",
+    "nok_home_telephone": "0204 456 6780",
+    "nok_work_telephone": "0205 567 890",
+    "ACTIVE_INACTIVE": "",
+    "MERGED": "",
+    "MERGE_COMMENTS": "",
+    "LAST_UPDATED": None,
+    "INSERT_DATE": None,
+    "gp_title": "DR",
+    "GP_INITIALS": "S",
+    "GP_SURNAME": "PATEL",
+    "GP_ADDRESS1": "12 HABOUR WALK",
+    "GP_ADDRESS2": "EASTLY",
+    "GP_ADDRESS3": "",
+    "GP_ADDRESS4": "",
+    "GP_POSTCODE": "EA19 4BJ",
+    "GP_TELEPHONE": "",
 }
 
 
@@ -276,6 +338,19 @@ class DevApi(base_api.BaseApi):
         )
         return some_dt.strftime('%d/%m/%Y')
 
+    def patient_masterfile(self, hospital_number):
+        demographics_dict = prod_api.MainDemographicsRow(
+            RAW_MASTER_FILE_DATA
+        ).get_demographics_dict()
+        demographics_dict.update(self.demographics(hospital_number))
+        return {
+            Demographics.get_api_name(): demographics_dict,
+            ContactInformation.get_api_name(): prod_api.get_contact_information(RAW_MASTER_FILE_DATA),
+            NextOfKinDetails.get_api_name(): prod_api.get_next_of_kin_details(RAW_MASTER_FILE_DATA),
+            GPDetails.get_api_name(): prod_api.get_gp_details(RAW_MASTER_FILE_DATA),
+            MasterFileMeta.get_api_name(): prod_api.get_master_file_meta(RAW_MASTER_FILE_DATA),
+        }
+
     def demographics(self, hospital_number):
         # will always be found unless you prefix it with 'x'
         if hospital_number.startswith('x'):
@@ -426,7 +501,7 @@ class DevApi(base_api.BaseApi):
         return result
 
     def raw_data(self, hospital_number, **filter_kwargs):
-        return [RAW_DATA]
+        return [RAW_TEST_DATA]
 
     def data_deltas(self, some_datetime):
         return []

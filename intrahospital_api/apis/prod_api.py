@@ -1,28 +1,38 @@
-import datetime
-import json
-from functools import wraps
-import pytds
-import itertools
-import time
+"""
+API for production
+"""
 from collections import defaultdict
+import datetime
+from functools import wraps
+import itertools
+import json
+import time
+
+from django.conf import settings
+from django.utils import timezone
+import pytds
 from pytds.tds import OperationalError
+
+from elcid.models import (
+    Demographics, ContactInformation, NextOfKinDetails, GPDetails,
+    MasterFileMeta
+)
+from elcid.utils import timing
+from plugins.lab import models as lmodels
+
 from intrahospital_api.apis import base_api
 from intrahospital_api import logger
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from elcid.utils import timing
-from lab import models as lmodels
-from django.conf import settings
-from elcid.models import Demographics
 
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
 
-MAIN_DEMOGRAPHICS_VIEW = "VIEW_CRS_Patient_Masterfile"
+PATIENT_MASTERFILE_VIEW = "VIEW_CRS_Patient_Masterfile"
 
 PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY date_inserted DESC;"
 
-MAIN_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
+PATIENT_MASTERFILE_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
@@ -95,15 +105,10 @@ def db_retry(f):
 
 
 class MainDemographicsRow(object):
-    DEMOGRAPHICS_FIELDS = [
-        "hospital_number",
-        "nhs_number",
-        "first_name",
-        "surname",
+    MODIFIED_DEMOGRAPHICS_FIELDS = [
         "date_of_birth",
         "sex",
         "ethnicity",
-        "title",
         "date_of_death",
         "death_indicator"
     ]
@@ -112,8 +117,13 @@ class MainDemographicsRow(object):
         'hospital_number': 'PATIENT_NUMBER',
         'nhs_number'     : 'NHS_NUMBER',
         'first_name'     : 'FORENAME1',
+        'middle_name'    : 'FORENAME2',
         'surname'        : 'SURNAME',
-        'title'          : 'TITLE'
+        'title'          : 'TITLE',
+        'religion'       : 'RELIGION',
+        'marital_status' : 'MARITAL_STATUS',
+        'nationality'    : 'NATIONALITY',
+        'main_language'    : 'MAIN_LANGUAGE',
     }
 
     def __init__(self, db_row):
@@ -148,14 +158,104 @@ class MainDemographicsRow(object):
 
     def get_demographics_dict(self):
         result = {}
-        for field in self.DEMOGRAPHICS_FIELDS:
-            if field in self.DIRECT_UPSTREAM_FIELDS_TO_ELCID_FIELDS:
-                result[field] = self.db_row.get(
-                    self.DIRECT_UPSTREAM_FIELDS_TO_ELCID_FIELDS[field]
-                )
-            else:
-                result[field] = getattr(self, "get_{}".format(field))()
+        for field in self.MODIFIED_DEMOGRAPHICS_FIELDS:
+            result[field] = getattr(self, "get_{}".format(field))()
+
+        for field in self.DIRECT_UPSTREAM_FIELDS_TO_ELCID_FIELDS:
+            result[field] = self.db_row.get(
+                self.DIRECT_UPSTREAM_FIELDS_TO_ELCID_FIELDS[field]
+            )
+
         return result
+
+def get_contact_information(row):
+    mapping = {
+        "address_line_1": "ADDRESS_LINE1",
+        "address_line_2": "ADDRESS_LINE2",
+        "address_line_3": "ADDRESS_LINE3",
+        "address_line_4": "ADDRESS_LINE4",
+        "postcode": "POSTCODE",
+        "home_telephone": "HOME_TELEPHONE",
+        "work_telephone": "WORK_TELEPHONE",
+        "mobile_telephone": "MOBILE_TELEPHONE",
+        "email": "EMAIL"
+    }
+    result = {}
+    for our_field, their_field in mapping.items():
+        result[our_field] = row[their_field]
+
+    result["external_system"] = EXTERNAL_SYSTEM
+    return result
+
+
+def get_next_of_kin_details(row):
+    mapping = {
+        "nok_type": "NOK_TYPE",
+        "surname": "NOK_SURNAME",
+        "forename_1": "NOK_FORENAME1",
+        "forename_2": "NOK_FORENAME2",
+        "relationship": "NOK_relationship",
+        "address_1": "NOK_address1",
+        "address_2": "NOK_address2",
+        "address_3": "NOK_address3",
+        "address_4": "NOK_address4",
+        "postcode": "NOK_Postcode",
+        "home_telephone": "nok_home_telephone",
+        "work_telephone": "nok_work_telephone",
+    }
+    result = {}
+    for our_field, their_field in mapping.items():
+        result[our_field] = row[their_field]
+
+    result["external_system"] = EXTERNAL_SYSTEM
+    return result
+
+def get_gp_details(row):
+    mapping = {
+        "crs_gp_masterfile_id": "CRS_GP_MASTERFILE_ID",
+        "national_code": "GP_NATIONAL_CODE",
+        "practice_code": "GP_PRACTICE_CODE",
+        "title": "gp_title",
+        "initials": "GP_INITIALS",
+        "surname": "GP_SURNAME",
+        "address_1": "GP_ADDRESS1",
+        "address_2": "GP_ADDRESS2",
+        "address_3": "GP_ADDRESS3",
+        "address_4": "GP_ADDRESS4",
+        "postcode": "GP_POSTCODE",
+        "telephone": "GP_TELEPHONE"
+    }
+    result = {}
+    for our_field, their_field in mapping.items():
+        result[our_field] = row[their_field]
+
+    result["external_system"] = EXTERNAL_SYSTEM
+    return result
+
+
+def get_master_file_meta(row):
+    mapping = {
+        "insert_date": "INSERT_DATE",
+        "last_updated": "LAST_UPDATED",
+        "merged": "MERGED",
+        "merge_comments": "MERGE_COMMENTS",
+        "active_inactive": "ACTIVE_INACTIVE",
+    }
+    result = {}
+    for our_field, their_field in mapping.items():
+        result[our_field] = row[their_field]
+
+    if result["last_updated"]:
+        result["last_updated"] = timezone.make_aware(
+            result["last_updated"]
+        )
+
+    if result["insert_date"]:
+        result["insert_date"] = timezone.make_aware(
+            result["insert_date"]
+        )
+
+    return result
 
 
 class PathologyRow(object):
@@ -442,13 +542,17 @@ class ProdApi(base_api.BaseApi):
         )
 
     @property
-    def main_demographics_query(self):
-        return MAIN_DEMOGRAPHICS_QUERY.format(view=MAIN_DEMOGRAPHICS_VIEW)
+    def patient_masterfile_query(self):
+        return PATIENT_MASTERFILE_QUERY.format(view=PATIENT_MASTERFILE_VIEW)
 
     def demographics(self, hospital_number):
         hospital_number = hospital_number.strip()
+        demographics_result = None
 
-        demographics_result = self.main_demographics(hospital_number)
+        master_file_result = self.patient_masterfile(hospital_number)
+
+        if master_file_result:
+            demographics_result = master_file_result[Demographics.get_api_name()]
 
         if not demographics_result:
             demographics_result = self.pathology_demographics(hospital_number)
@@ -459,15 +563,21 @@ class ProdApi(base_api.BaseApi):
 
     @timing
     @db_retry
-    def main_demographics(self, hospital_number):
+    def patient_masterfile(self, hospital_number):
         rows = list(self.execute_hospital_query(
-            self.main_demographics_query,
+            self.patient_masterfile_query,
             params=dict(hospital_number=hospital_number)
         ))
         if not len(rows):
             return
 
-        return MainDemographicsRow(rows[0]).get_demographics_dict()
+        return {
+            Demographics.get_api_name(): MainDemographicsRow(rows[0]).get_demographics_dict(),
+            ContactInformation.get_api_name(): get_contact_information(rows[0]),
+            NextOfKinDetails.get_api_name(): get_next_of_kin_details(rows[0]),
+            GPDetails.get_api_name(): get_gp_details(rows[0]),
+            MasterFileMeta.get_api_name(): get_master_file_meta(rows[0]),
+        }
 
     @timing
     @db_retry
