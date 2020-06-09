@@ -1,21 +1,28 @@
-import datetime
-import json
-from functools import wraps
-import pytds
-import itertools
-import time
+"""
+API for production
+"""
 from collections import defaultdict
-from pytds.tds import OperationalError
-from intrahospital_api.apis import base_api
-from intrahospital_api import logger
-from intrahospital_api.constants import EXTERNAL_SYSTEM
-from elcid.utils import timing
-from lab import models as lmodels
+import datetime
+from functools import wraps
+import itertools
+import json
+import time
+
 from django.conf import settings
+from django.utils import timezone
+import pytds
+from pytds.tds import OperationalError
+
 from elcid.models import (
     Demographics, ContactInformation, NextOfKinDetails, GPDetails,
     MasterFileMeta
 )
+from elcid.utils import timing
+from plugins.lab import models as lmodels
+
+from intrahospital_api.apis import base_api
+from intrahospital_api import logger
+from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
