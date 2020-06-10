@@ -76,10 +76,50 @@ class DischargeSummary(models.Model):
     }
 
     FIELDS_TO_SERIALIZE = [
+        'sql_internal_id',
+        'date_of_admission',
+        'date_of_discharge',
+        'last_updated',
+        'ward_name',
+        'consultant_name',
+        'consultant_department',
+        'admission_diagnosis',
+        'ae_diagnosis',
+        'hsep_problems_diagnosis',
+        'hsep_actions',
+        'other_diagnoses',
+        'findings',
+        'procedures',
+        'investigation_results',
+        'management',
+        'future_management',
+        'allergies',
+        'letter_type1',
+        'letter_type2',
+        'final_letter',
     ]
 
+    RN_FIELDS = [
+        'admission_diagnosis',
+        'ae_diagnosis',
+        'hsep_problems_diagnosis',
+        'hsep_actions',
+        'other_diagnoses',
+        'findings',
+        'procedures',
+        'investigation_results',
+        'management',
+        'future_management',
+    ]
+
+
     def to_dict(self):
-        return {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+        result = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+        result['meds'] = [m.to_dict() for m in self.medications.all()]
+        for fname in self.RN_FIELDS:
+            if result[fname]:
+                result[fname] = result[fname].replace('\r\n', '\n')
+        return result
 
 
 class DischargeMedication(models.Model):
@@ -113,3 +153,17 @@ class DischargeMedication(models.Model):
         'STATUS'         : 'status',
         'STATUS_COMMENTS': 'status_comments'
     }
+
+    FIELDS_TO_SERIALIZE = [
+        'drug_name',
+        'dose',
+        'route',
+        'frequency',
+        'duration',
+        'status',
+        'status_comments'
+    ]
+
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}

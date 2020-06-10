@@ -11,6 +11,8 @@ class DischargeSummaryViewSet(LoginRequiredViewset):
     base_name = 'dischargesummaries'
 
     def retrieve(self, request, pk):
-        patient    = get_object_or_404(Patient.objects.all(), pk=pk)
-        data = {}
-        return json_response([{}])
+        patient = get_object_or_404(Patient.objects.all(), pk=pk)
+        data    = [
+            d.to_dict() for d in patient.dischargesummaries.all().order_by('-date_of_discharge')
+        ]
+        return json_response(data)

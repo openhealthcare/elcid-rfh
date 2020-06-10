@@ -1,0 +1,99 @@
+<section patient-api target="discharges" endpoint="dischargesummaries">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-12">
+          <h3>
+            <i class="fa fa-hospital-o"></i>
+            Discharge Summaries ([[ discharges.length ]])
+          </h3>
+        </div>
+      </div>
+    </div> <!-- heading -->
+    <ul class="list-group">
+      <li class="list-group-item" ng-repeat="item in discharges">
+          <h3>
+            [[ item.date_of_admission | displayDate ]] - [[ item.date_of_discharge | displayDate ]]
+            [[ item.consultant_department ]]
+            [[ item.consultant_name ]]
+            [[ item.ward_name ]]
+          </h3>
+          <p class="text-muted">
+            <small>
+              Last Updated: [[ item.last_updated | displayDateTime ]]
+            </small>
+          </p>
+
+          <section ng-show="item.admission_diagnosis">
+            <p><b>Admission Diagnosis:</b></p>
+            <p markdown="admission_diagnosis"></p>
+          </section>
+
+          <section ng-show="item.ae_diagnosis">
+            <p><b>A&E Diagnosis:</b></p>
+            <p markdown="ae_diagnosis"></p>
+          </section>
+
+          <section ng-show="item.hsep_problems_diagnosis">
+            <p><b>HSEP Problems Dignosis</b></p>
+            <p markdown="hsep_problems_diagnosis"></p>
+          </section>
+
+          <section ng-show="item.hsep_actions">
+            <p><b>HSEP Actions:</b></p>
+            <p markdown="hsep_actions"></p>
+          </section>
+
+          <section ng-show="item.other_diagnoses">
+            <p><b>Other Diagnoses:</b></p>
+            <p markdown="other_diagnoses"></p>
+          </section>
+
+          <section ng-show="item.findings">
+            <p><b>Findings:</b></p>
+            <p markdown="findings"></p>
+          </section>
+
+          <section ng-show="item.procedures">
+            <p><b>Procedures:</b></p>
+            <p markdown="procedures"></p>
+          </section>
+
+          <section ng-show="item.investigation_results">
+            <p><b>Investigation Results:</b></p>
+            <p markdown="investigation_results"></p>
+          </section>
+
+          <section ng-show="item.management">
+            <p><b>Management:</b></p>
+            <p markdown="management"></p>
+          </section>
+
+          <section ng-show="item.future_management">
+            <p><b>Future Management:</b></p>
+            <p markdown="future_management"></p>
+          </section>
+
+          <p><b>Allergies:</b></p>
+          <p>[[ item.allergies ]]</p>
+
+          <table class="table table-bordered table-striped" ng-show="item.meds.length">
+            <tr>
+              <th>Medication</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Status Comments</th>
+            </tr>
+            <tr ng-repeat="med in item.meds" >
+              <td>
+                [[ med.drug_name ]] [[ med.dose ]] [[ med.route ]] [[ med.frequency ]]
+              </td>
+              <td>[[ med.duration ]]</td>
+              <td>[[ med.status ]]</td>
+              <td>[[ med.status_comments]]</td>
+            </tr>
+          </table>
+      </li>
+    </ul>
+  </div> <!-- panel -->
+</section>
