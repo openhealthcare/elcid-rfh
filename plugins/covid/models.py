@@ -161,11 +161,6 @@ class CovidAdmission(EpisodeSubrecord):
         verbose_name='Treatment Escalation Plan Status'
     )
 
-    smoking_status       = models.CharField(
-        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking Status On Admission'
-    )
-
     # Respiratory support
     maximum_resp_support = models.CharField(
         blank=True, null=True, max_length=200, choices=MAX_RESP_SUPPORT_CHOICES
@@ -201,9 +196,17 @@ class CovidSmokingHistory(EpisodeSubrecord):
         'Other drugs'
     )
 
+    admission_status  = models.CharField(
+        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
+        verbose_name='Smoking Status On Admission'
+    )
     pack_year_history = models.TextField(blank=True, null=True)
     vape              = models.NullBooleanField(verbose_name="Vape Smoked")
     other_drugs       = models.NullBooleanField(verbose_name="Other Drugs Smoked")
+    followup_status   = models.CharField(
+        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
+        verbose_name='Smoking staus at follow up'
+    )
 
 
 class CovidSocialHistory(PatientSubrecord):
@@ -396,11 +399,6 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     incomplete_reason  = models.TextField(blank=True, null=True)
 
-    smoking_status     = models.CharField(
-        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking staus at follow up'
-    )
-
     changes_to_medication     = models.NullBooleanField(
         verbose_name="Changes to medication post discharge")
     medication_change_details = models.TextField(blank=True, null=True)
@@ -467,9 +465,42 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     # Psychological scores
     interest                  = models.CharField(
+        verbose_name="Little interest or pleasure in doing things",
         blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
     depressed                 = models.CharField(
+        verbose_name="Feeling down, depressed or hopeless",
         blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
+
+    tsq1 = models.NullBooleanField(
+        verbose_name='Upsetting thoughts or memories about your hospital admission that have come into your mind against your will'
+    )
+    tsq2 = models.NullBooleanField(
+        verbose_name='Upsetting dreams about the event'
+    )
+    tsq3 = models.NullBooleanField(
+        verbose_name='Acting or feeling as though it is happening again'
+    )
+    tsq4 = models.NullBooleanField(
+        verbose_name='Feeling upset by reminders of the event'
+    )
+    tsq5 = models.NullBooleanField(
+        verbose_name='Bodily reactions such as fast heartbeat, sweatiness, dizziness when reminded of the event'
+    )
+    tsq6 = models.NullBooleanField(
+        verbose_name='Difficulty falling or staying asleep'
+    )
+    tsq7 = models.NullBooleanField(
+        verbose_name='Irritability or bursts of anger'
+    )
+    tsq8 = models.NullBooleanField(
+        verbose_name='Difficulty concentrating'
+    )
+    tsq9 = models.NullBooleanField(
+        verbose_name='Being more aware of potential danger to yourself and others'
+    )
+    tsq10 = models.NullBooleanField(
+        verbose_name='Being jumpy or startled at something unexpected'
+    )
 
     other_concerns            = models.TextField(blank=True, null=True)
     call_satisfaction         = models.CharField(
@@ -482,10 +513,13 @@ class CovidFollowUpCall(EpisodeSubrecord):
     follow_up_outcome         = models.CharField(blank=True, null=True, max_length=50, choices=FOLLOWUP_CHOICES)
 
 
-class CovidFollowupActions(EpisodeSubrecord):
+class CovidFollowUpActions(EpisodeSubrecord):
 
     _is_singleton = True
     _icon         = 'fa fa-pencil-square'
+
+    class Meta:
+        verbose_name = 'Covid Follow Up Actions'
 
     cxr                  = models.NullBooleanField(verbose_name="CXR")
     ecg                  = models.NullBooleanField(verbose_name="ECG")
@@ -496,15 +530,39 @@ class CovidFollowupActions(EpisodeSubrecord):
     repeat_bloods        = models.NullBooleanField()
     other_investigations = models.CharField(blank=True, null=True, max_length=255)
 
-    anticoagulation      = models.NullBooleanField()
-    cardiology           = models.NullBooleanField()
-    elderly_care         = models.NullBooleanField()
-    fatigue_services     = models.NullBooleanField()
-    hepatology           = models.NullBooleanField()
-    neurology            = models.NullBooleanField()
-    primary_care         = models.NullBooleanField()
-    psychology           = models.NullBooleanField()
-    psychiatry           = models.NullBooleanField()
-    respiratory          = models.NullBooleanField()
-    rehabilitation       = models.NullBooleanField()
-    other_referral       = models.CharField(blank=True, null=True, max_length=255)
+    anticoagulation       = models.NullBooleanField()
+    anticoagulation_gp    = models.NullBooleanField()
+    anticoagulation_done  = models.NullBooleanField()
+    cardiology            = models.NullBooleanField()
+    cardiology_gp         = models.NullBooleanField()
+    cardiology_done       = models.NullBooleanField()
+    elderly_care          = models.NullBooleanField()
+    elderly_care_gp       = models.NullBooleanField()
+    elderly_care_done     = models.NullBooleanField()
+    fatigue_services      = models.NullBooleanField()
+    fatigue_services_gp   = models.NullBooleanField()
+    fatigue_services_done = models.NullBooleanField()
+    hepatology            = models.NullBooleanField()
+    hepatology_gp         = models.NullBooleanField()
+    hepatology_done       = models.NullBooleanField()
+    neurology             = models.NullBooleanField()
+    neurology_gp          = models.NullBooleanField()
+    neurology_done        = models.NullBooleanField()
+    primary_care          = models.NullBooleanField()
+    primary_care_gp       = models.NullBooleanField()
+    primary_care_done     = models.NullBooleanField()
+    psychology            = models.NullBooleanField()
+    psychology_gp         = models.NullBooleanField()
+    psychology_done       = models.NullBooleanField()
+    psychiatry            = models.NullBooleanField()
+    psychiatry_gp         = models.NullBooleanField()
+    psychiatry_done       = models.NullBooleanField()
+    respiratory           = models.NullBooleanField()
+    respiratory_gp        = models.NullBooleanField()
+    respiratory_done      = models.NullBooleanField()
+    rehabilitation        = models.NullBooleanField()
+    rehabilitation_gp     = models.NullBooleanField()
+    rehabilitation_done   = models.NullBooleanField()
+    other_referral        = models.CharField(blank=True, null=True, max_length=255)
+    other_referral_gp     = models.NullBooleanField()
+    other_referral_done   = models.NullBooleanField()

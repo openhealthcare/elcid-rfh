@@ -1,3 +1,11 @@
+<div class="row" ng-show="item.admission_status">
+  <div class="col-md-6">
+    <b>Staus on admission</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.admission_status ]]
+  </div>
+</div>
 <div class="row" ng-show="item.pack_year_history">
   <div class="col-md-6">
     <b>Pack Year History:</b>
@@ -14,3 +22,11 @@
      Other Drugs Smoked
    <br />
 </span>
+<div class="row" ng-show="item.followup_status">
+  <div class="col-md-6">
+    <b>Staus at followup</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.followup_status ]]
+  </div>
+</div>
