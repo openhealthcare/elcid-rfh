@@ -22,15 +22,6 @@
 
 <section ng-hide="item.follow_up_outcome == 'Unable to complete' || item.follow_up_outcome == 'Unreachable'">
 
-  <div class="row ">
-    <div class="col-md-3">
-      <b>Smoking Status:</b>
-    </div>
-    <div class="col-md-3">
-      [[ item.smoking_status ]]
-    </div>
-  </div>
-
   <section ng-show="item.changes_to_medication">
     <hr />
     <div class="row" >

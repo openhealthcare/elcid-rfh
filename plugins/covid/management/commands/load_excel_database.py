@@ -143,7 +143,6 @@ class Command(BaseCommand):
             'news2'               : patient['NEWS2 score on arrival'],
             'clinical_frailty'    : patient['Clinical frailty score on admission'],
             'tep_status'          : tep_status(patient),
-            'smoking_status'      : smoking_status(patient),
             'maximum_resp_support': max_resp(patient),
             'max_fio2_non_nc'     : numeric(patient['Max FiO2 (non-NC)']),
             'max_fio2_nc'         : numeric(patient['Max FiO2 (if NC)']),
@@ -155,8 +154,9 @@ class Command(BaseCommand):
         admission.created_by_id = 1
         admission.save()
 
-        if patient['Pack year history']:
            smokinghistory = episode.covidsmokinghistory_set.get()
+
+           smokinghistory.admisison_status = smoking_status(patient),
            smokinghistory.pack_year_history = patient['Pack year history']
            smokinghistory.created_by_id = 1
            smokinghistory.save()

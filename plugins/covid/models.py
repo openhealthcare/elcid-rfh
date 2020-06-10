@@ -161,11 +161,6 @@ class CovidAdmission(EpisodeSubrecord):
         verbose_name='Treatment Escalation Plan Status'
     )
 
-    smoking_status       = models.CharField(
-        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking Status On Admission'
-    )
-
     # Respiratory support
     maximum_resp_support = models.CharField(
         blank=True, null=True, max_length=200, choices=MAX_RESP_SUPPORT_CHOICES
@@ -201,9 +196,17 @@ class CovidSmokingHistory(EpisodeSubrecord):
         'Other drugs'
     )
 
+    admission_status  = models.CharField(
+        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
+        verbose_name='Smoking Status On Admission'
+    )
     pack_year_history = models.TextField(blank=True, null=True)
     vape              = models.NullBooleanField(verbose_name="Vape Smoked")
     other_drugs       = models.NullBooleanField(verbose_name="Other Drugs Smoked")
+    followup_status   = models.CharField(
+        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
+        verbose_name='Smoking staus at follow up'
+    )
 
 
 class CovidSocialHistory(PatientSubrecord):
@@ -396,11 +399,6 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     incomplete_reason  = models.TextField(blank=True, null=True)
 
-    smoking_status     = models.CharField(
-        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking staus at follow up'
-    )
-
     changes_to_medication     = models.NullBooleanField(
         verbose_name="Changes to medication post discharge")
     medication_change_details = models.TextField(blank=True, null=True)
@@ -482,10 +480,13 @@ class CovidFollowUpCall(EpisodeSubrecord):
     follow_up_outcome         = models.CharField(blank=True, null=True, max_length=50, choices=FOLLOWUP_CHOICES)
 
 
-class CovidFollowupActions(EpisodeSubrecord):
+class CovidFollowUpActions(EpisodeSubrecord):
 
     _is_singleton = True
     _icon         = 'fa fa-pencil-square'
+
+    class Meta:
+        verbose_name = 'Covid Follow Up Actions'
 
     cxr                  = models.NullBooleanField(verbose_name="CXR")
     ecg                  = models.NullBooleanField(verbose_name="ECG")
