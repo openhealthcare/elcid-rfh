@@ -74,7 +74,12 @@ def load_dischargesummaries(patient):
                     )
                 )
                 if fieldtype == DateTimeField:
-                    v = timezone.make_aware(v)
+                    try:
+                        v = timezone.make_aware(v)
+                    except AttributeError:
+                        # Only some of the "DateTime" fields are typed as such
+                        v = datetime.datetime.strptime(v, '%d/%m/%Y %H%M%S')
+                        v = timezone.make_aware(v)
 
                 parsed[DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v
 
