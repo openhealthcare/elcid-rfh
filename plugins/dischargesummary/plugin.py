@@ -3,7 +3,7 @@ Plugin definition for the dischargesummary plugin
 """
 from opal.core import plugins
 
-from plugins.admissions import api
+from plugins.dischargesummary import api
 
 
 class AdmissionsPlugin(plugins.OpalPlugin):
