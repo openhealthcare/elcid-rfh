@@ -548,6 +548,27 @@ def write_cron_calculate_dashboard(new_env):
     ))
 
 
+def write_cron_classify_covid(new_env):
+    """
+    Creates a cron job that classifies covid patients
+    """
+    print("Writing cron {}_classify_covid".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_classify_covid.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_classify_covid".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
 def write_cron_icu_load(new_env):
     """
     Creates a cron job that runs the ICU Handover loader
@@ -564,6 +585,27 @@ def write_cron_icu_load(new_env):
         project_dir=new_env.project_directory
     )
     cron_file = "/etc/cron.d/{0}_icu_load".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
+def write_cron_admission_load(new_env):
+    """
+    Creates a cron job that runs the admission loader
+    """
+    print("Writing cron {}_admission_load".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_admission_load.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_admission_load".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
         output, cron_file
     ))
@@ -836,8 +878,10 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     write_cron_sync_demographics(new_env)
     write_cron_icu_load(new_env)
     write_cron_appointment_load(new_env)
+    write_cron_admission_load(new_env)
     write_cron_disk_check(new_env)
     write_cron_calculate_dashboard(new_env)
+    write_cron_classify_covid(new_env)
 
     # django setup
     run_management_command("collectstatic --noinput", new_env)
