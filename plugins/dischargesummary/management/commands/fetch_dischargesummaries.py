@@ -1,21 +1,21 @@
 """
-Management command to fetch imaging for all our patients
+Management command to fetch discharge summaries for our patients
 """
 import traceback
 
 from django.core.management import BaseCommand
 from opal.models import Patient
 
-from plugins.imaging import loader, logger
+from plugins.dischargesummary import loader, logger
 
 
 class Command(BaseCommand):
 
-    def handle(self, *args, **kwargs):
+    def handle(self, *a, **k):
         for patient in Patient.objects.all():
             try:
-                loader.load_imaging(patient)
+                loader.load_dischargesummaries(patient)
             except:
-                msg = 'Exception loading admissions for {} \n {}'
+                msg = 'Exception loading dischargesummaries for {} \n {}'
                 logger.error(msg.format(patient.id, traceback.format_exc()))
         return
