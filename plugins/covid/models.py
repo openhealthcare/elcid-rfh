@@ -465,9 +465,42 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     # Psychological scores
     interest                  = models.CharField(
+        verbose_name="Little interest or pleasure in doing things",
         blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
     depressed                 = models.CharField(
+        verbose_name="Feeling down, depressed or hopeless",
         blank=True, null=True, max_length=50, choices=ZERO_TO_THREE)
+
+    tsq1 = models.NullBooleanField(
+        verbose_name='Upsetting thoughts or memories about your hospital admission that have come into your mind against your will'
+    )
+    tsq2 = models.NullBooleanField(
+        verbose_name='Upsetting dreams about the event'
+    )
+    tsq3 = models.NullBooleanField(
+        verbose_name='Acting or feeling as though it is happening again'
+    )
+    tsq4 = models.NullBooleanField(
+        verbose_name='Feeling upset by reminders of the event'
+    )
+    tsq5 = models.NullBooleanField(
+        verbose_name='Bodily reactions such as fast heartbeat, sweatiness, dizziness when reminded of the event'
+    )
+    tsq6 = models.NullBooleanField(
+        verbose_name='Difficulty falling or staying asleep'
+    )
+    tsq7 = models.NullBooleanField(
+        verbose_name='Irritability or bursts of anger'
+    )
+    tsq8 = models.NullBooleanField(
+        verbose_name='Difficulty concentrating'
+    )
+    tsq9 = models.NullBooleanField(
+        verbose_name='Being more aware of potential danger to yourself and others'
+    )
+    tsq10 = models.NullBooleanField(
+        verbose_name='Being jumpy or startled at something unexpected'
+    )
 
     other_concerns            = models.TextField(blank=True, null=True)
     call_satisfaction         = models.CharField(

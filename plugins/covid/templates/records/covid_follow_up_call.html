@@ -132,6 +132,61 @@
       <div class="col-md-6"><span ng-show="item.depressed"><b>Down, Depressed, Hopeless</b></span></div>
       <div class="col-md-6">[[ item.depressed ]]</div>
     </div>
+    <div class="row" ng-show="item.tsq1 || item.tsq2 || item.tsq3 || item.tsq4 || item.tsq5 || item.tsq6 || item.tsq7 || item.tsq8 || item.tsq9 || item.tsq10 ">
+      <div class="col-md-12 content-offset-25">
+        <p><b>Trauma Screening:</b></p>
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq1">
+      <div class="col-md-10">
+        Upsetting thoughts or memories about your hospital admission that have come into your mind against your will
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq2">
+      <div class="col-md-10">
+        Upsetting dreams about the event
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq3">
+      <div class="col-md-10">
+        Acting or feeling as though it is happening again
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq4">
+      <div class="col-md-10">
+        Feeling upset by reminders of the event
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq5">
+      <div class="col-md-10">
+        Bodily reactions such as fast heartbeat, sweatiness, dizziness when reminded of the event
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq6">
+      <div class="col-md-10">
+        Difficulty falling or staying asleep
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq7">
+      <div class="col-md-10">
+        Irritability or bursts of anger
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq8">
+      <div class="col-md-10">
+        Difficulty concentrating
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq9">
+      <div class="col-md-10">
+        Being more aware of potential danger to yourself and others
+      </div>
+    </div>
+    <div class="row" ng-show="item.tsq10">
+      <div class="col-md-10">
+        Being jumpy or startled at something unexpected
+      </div>
+    </div>
 
     <hr />
   </section>
@@ -149,12 +204,14 @@
     <hr />
   </section>
 
-  <div class="row">
-    <div class="col-md-8">
-      <p><b>Patient Satisfied With Call:</b></p>
-      [[ item.call_satisfaction ]]
+  <section ng-show="item.call_satisfaction">
+    <div class="row">
+      <div class="col-md-8">
+        <p><b>Patient Satisfied With Call:</b></p>
+        [[ item.call_satisfaction ]]
+      </div>
     </div>
-  </div>
+  </section>
   <div class="row">
     <div class="col-md-8">
       <p><b>Contactable For Research:</b></p>

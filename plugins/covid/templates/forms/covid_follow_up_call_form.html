@@ -234,6 +234,9 @@
   <div class="row">
     <div class="col-md-12 text-center content-offset-below-25">
       <h4>Psychological Scores</h4>
+      <p>
+        Over the last 2 weeks, how often have you been bothered by the following problems?
+      </p>
     </div>
   </div>
   <div class="row">
@@ -244,6 +247,23 @@
       {% select field="CovidFollowUpCall.depressed" style="vertical" %}
     </div>
   </div>
+  <div class="row">
+    <div class="col-md-12 text-center">
+      <p>Have you experienced any of the following at least twice in the last week?</p>
+    </div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq1" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq2" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq3" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq4" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq5" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq6" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq7" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq8" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq9" %}</div>
+    <div class="col-md-10 col-md-offset-1">{% checkbox field="CovidFollowUpCall.tsq10" %}</div>
+  </div>
+
+  <hr />
 
   <div class="row">
     <div class="col-md-10 col-md-offset-1">
