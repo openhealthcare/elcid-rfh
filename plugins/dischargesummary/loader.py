@@ -96,7 +96,7 @@ def load_dischargesummaries(patient):
         with transaction.atomic():
             our_summary.save()
             our_summary.medications.all().delete()
-            save_summary_meds(our_summary, data)
+            save_summary_meds(our_summary, meds)
 
         logger.info('Saved DischargeSummary {}'.format(our_summary.pk))
 
