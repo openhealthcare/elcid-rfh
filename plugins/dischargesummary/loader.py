@@ -19,8 +19,6 @@ SELECT *
 FROM VIEW_ElCid_Freenet_TTA_Main
 WHERE
 RF1_NUMBER = @mrn
-AND
-LAST_UPDATED > @last_updated
 """
 
 Q_GET_MEDS_FOR_SUMMARY = """
