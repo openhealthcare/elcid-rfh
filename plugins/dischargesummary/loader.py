@@ -53,15 +53,9 @@ def load_dischargesummaries(patient):
 
     summary_count = patient.dischargesummaries.count()
 
-    if summary_count == 0:
-        summary_date = datetime.datetime(1971, 1, 1, 1, 1, 1)
-    else:
-        summary_date = patient.dischargesummaries.all().order_by(
-            'last_updated').last().date_updated
-
     summaries = api.execute_hospital_query(
         Q_GET_SUMMARIES,
-        params={'mrn': demographic.hospital_number, 'last_updated': summary_date}
+        params={'mrn': demographic.hospital_number}
     )
 
     for summary in summaries:
@@ -71,8 +65,8 @@ def load_dischargesummaries(patient):
             params={'tta_id': summary['SQL_Internal_ID']}
         )
 
-        our_summary = DischargeSummary(patient=patient)
 
+        parsed = {}
         for k, v in summary.items():
             if v: # Ignore empty values
 
@@ -84,13 +78,21 @@ def load_dischargesummaries(patient):
                 if fieldtype == DateTimeField:
                     v = timezone.make_aware(v)
 
-                setattr(
-                    our_summary,
-                    DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
-                    v
-                )
+                parsed[DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v
+
+
+        our_summary, _ = DischargeSummary.objects.get_or_create(
+            patient=patient,
+            date_of_admission=parsed['date_of_admission'],
+            date_of_discharge=parsed['date_of_discharge']
+        )
+
+        for k, v in parsed.items():
+            setattr(our_summary, k, v)
+
         with transaction.atomic():
             our_summary.save()
+            our_summary.medications.all().delete()
             save_summary_meds(our_summary, data)
 
         logger.info('Saved DischargeSummary {}'.format(our_summary.pk))
