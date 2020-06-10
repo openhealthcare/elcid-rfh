@@ -596,7 +596,7 @@ def write_cron_admission_load(new_env):
     """
     print("Writing cron {}_admission_load".format(PROJECT_NAME))
     template = jinja_env.get_template(
-        'etc/conf_templates/cron_admisssion_load.jinja2'
+        'etc/conf_templates/cron_admission_load.jinja2'
     )
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(
