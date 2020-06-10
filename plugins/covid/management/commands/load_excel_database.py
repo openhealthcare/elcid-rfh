@@ -154,12 +154,12 @@ class Command(BaseCommand):
         admission.created_by_id = 1
         admission.save()
 
-           smokinghistory = episode.covidsmokinghistory_set.get()
+        smokinghistory = episode.covidsmokinghistory_set.get()
 
-           smokinghistory.admisison_status = smoking_status(patient),
-           smokinghistory.pack_year_history = patient['Pack year history']
-           smokinghistory.created_by_id = 1
-           smokinghistory.save()
+        smokinghistory.admisison_status = smoking_status(patient),
+        smokinghistory.pack_year_history = patient['Pack year history']
+        smokinghistory.created_by_id = 1
+        smokinghistory.save()
 
         socialhistory, _ = models.CovidSocialHistory.objects.get_or_create(patient=episode.patient, created_by_id=1)
 
