@@ -632,6 +632,48 @@ def write_cron_appointment_load(new_env):
     ))
 
 
+def write_cron_imaging_load(new_env):
+    """
+    Creates a cron job that runs the imaging loader
+    """
+    print("Writing cron {}_imaging_load".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_imaging_load.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_imaging_load".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
+def write_cron_discharge_load(new_env):
+    """
+    Creates a cron job that runs the discharge summary loader
+    """
+    print("Writing cron {}_discharge_load".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_discharge_load.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_discharge_load".format(PROJECT_NAME)
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
 def write_cron_disk_check(new_env):
     """
     Creates a cron job that checks our disk space
@@ -878,6 +920,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     write_cron_sync_demographics(new_env)
     write_cron_icu_load(new_env)
     write_cron_appointment_load(new_env)
+    write_cron_imaging_load(new_env)
+    write_cron_discharge_load(new_env)
     write_cron_admission_load(new_env)
     write_cron_disk_check(new_env)
     write_cron_calculate_dashboard(new_env)
