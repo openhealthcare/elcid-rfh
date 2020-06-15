@@ -89,6 +89,8 @@ def max_resp(patient):
 
 class Command(BaseCommand):
 
+    def add_arguments(self, parser):
+        parser.add_argument('file')
 
     def load_patient(self, patient):
         mrn = patient['Hospital (Internal) Number']
@@ -180,7 +182,7 @@ class Command(BaseCommand):
         }
         carers = patient.get('If carers, 1  = OD 2 = BD 3 = TDS 4 = QDS')
         if carers:
-            socialhistory.carers = CARERS[carers]
+            socialhistory.carers = CARERS.get(carers)
 
         shielding = patient.get('Shielding status (0 = not shielding 1 = voluntary 2 = extremely vulnerable 3 = HCP issued letter)')
         SHIELDING = {
@@ -250,7 +252,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.flush()
 
-        with open('/Users/david/src/ohc/data/COVID-19/Database-Table 1.csv', 'r') as fh:
+        with open(kwargs['file'], 'r') as fh:
             reader = csv.DictReader(fh)
             patients = 0
             imported = 0
