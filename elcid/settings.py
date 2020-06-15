@@ -386,7 +386,6 @@ COVERAGE_EXCLUDE_MODULES = ('elcid.migrations', 'elcid.tests',
                             'opal.wsgi')
 
 
-
 # The intrahospital api is what we use to connect to the rest of the hospital
 INTRAHOSPITAL_API = 'intrahospital_api.apis.dev_api.DevApi'
 
