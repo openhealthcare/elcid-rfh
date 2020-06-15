@@ -348,7 +348,7 @@ class LabTestResultsViewTestCase(OpalTestCase):
         }
 
         expected_BC_observations = [
-            {'name': 'ORGANISM', 'value': 'Staph. Aureus'}
+            {'name': 'ORGANISM', 'value': 'Staph. Aureus', 'units': None}
         ]
 
         expected_test_order = ['FULL BLOOD COUNT', 'BLOOD CULTURE']
