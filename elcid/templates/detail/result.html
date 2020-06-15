@@ -40,7 +40,7 @@
 
               <div class="col-md-9">
                 <div class="row" ng-repeat="observation in instance.observations">
-                  <div class="col-md-4">[[ observation.name ]]</div>
+                  <div class="col-md-4">[[ observation.name ]] [[ observation.units ]]</div>
                   <div class="col-md-8">
                     <p class="tilde-replacement-paragraph"
                        ng-repeat="par_obs in resultView.splitObservation(observation.value) track by $index">
@@ -72,7 +72,10 @@
 
               <tr ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
                 <td class="col-xs-3">[[ observation_name ]]</td>
-                <td class="col-xs-1">[[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]</td>
+                <td class="col-xs-1">
+                  [[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]
+                  [[ resultView.lab_tests[test_name].instances.observation_units[observation_name] ]]
+                </td>
 
                 <td class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
                   <span

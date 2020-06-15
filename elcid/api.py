@@ -152,6 +152,7 @@ class LabTestResultsView(LoginRequiredViewset):
         test_datetimes     = set()
         observation_names  = set()
         observation_ranges = {}
+        observation_units  = {}
         lab_numbers        = {}
         data               = defaultdict(lambda: defaultdict(lambda: None))
 
@@ -160,14 +161,18 @@ class LabTestResultsView(LoginRequiredViewset):
             lab_numbers[serialization.serialize_datetime(instance.datetime_ordered)] = instance.lab_number
 
             for observation in instance.observation_set.all():
+                name = observation.observation_name.rstrip('.')
                 if not self.is_empty_value(observation.observation_value):
 
-                    if observation.observation_name.rstrip('.') not in observation_ranges:
+                    if name not in observation_ranges:
                         if observation.reference_range != " -":
-                            observation_ranges[observation.observation_name.rstrip('.')] = observation.reference_range
+                            observation_ranges[name] = observation.reference_range
 
-                    observation_names.add(observation.observation_name.rstrip('.'))
-                    data[observation.observation_name.rstrip('.')][serialization.serialize_datetime(instance.datetime_ordered)] = {
+                    if name not in observation_units:
+                        observation_units[name] = observation.units
+
+                    observation_names.add(name)
+                    data[name][serialization.serialize_datetime(instance.datetime_ordered)] = {
                         'value'        : observation.observation_value,
                         'range'        : observation.reference_range,
                         'display_class': self.display_class_for_observation(observation)
@@ -182,6 +187,7 @@ class LabTestResultsView(LoginRequiredViewset):
             'observation_names' : list(sorted(observation_names)),
             'lab_numbers'       : lab_numbers,
             'observation_ranges': observation_ranges,
+            'observation_units' : observation_units,
             'observation_series': data
         }
 
@@ -195,7 +201,8 @@ class LabTestResultsView(LoginRequiredViewset):
                 serialised_observations.append(
                     {
                         'name' : o.observation_name.rstrip('.'),
-                        'value': o.observation_value
+                        'value': o.observation_value,
+                        'units': o.units
                     }
                 )
 
