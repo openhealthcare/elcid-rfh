@@ -16,4 +16,9 @@ urlpatterns = [
         views.CovidCohortDownloadView.as_view(),
         name='covid_download'
     ),
+    url(
+        'covid/letter/(?P<pk>\d+)/?$',
+        views.CovidLetter.as_view(),
+        name='covid_letter'
+    ),
 ]
