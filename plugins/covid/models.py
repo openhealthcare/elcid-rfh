@@ -368,7 +368,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     """
     _icon = 'fa fa-phone'
 
-    ONE_TO_TEN           = enum('1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
+    ONE_TO_TEN           = enum('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
     ONE_TO_NINE          = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
     ONE_TO_FIVE          = enum('1', '2', '3', '4', '5')
     ZERO_TO_THREE        = (
