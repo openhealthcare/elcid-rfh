@@ -372,10 +372,10 @@ class CovidFollowUpCall(EpisodeSubrecord):
     ONE_TO_NINE          = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
     ONE_TO_FIVE          = enum('1', '2', '3', '4', '5')
     ZERO_TO_THREE        = (
-        ('0', 'Not At All'),
-        ('1', 'Several days'),
-        ('2', 'More than half the days'),
-        ('3', 'Nearly every day')
+        ('0', '(0) Not At All'),
+        ('1', '(1) Several days'),
+        ('2', '(2) More than half the days'),
+        ('3', '(3) Nearly every day')
     )
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
