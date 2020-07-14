@@ -103,16 +103,28 @@
       </span>
 
     </div>
+  </div>
+  <div class="row">
 
     <div class="col-md-3"><b>Baseline Health Proximity</b></div>
     <div class="col-md-3">[[ item.baseline_health_proximity ]]</div>
     <div class="col-md-3"><b>Back To Work</b></div>
     <div class="col-md-3">[[ item.back_to_work ]]</div>
 
+  </div>
+  <div class="row">
+
     <div class="col-md-3"><b>Exercise Tolerance</b></div>
-    <div class="col-md-3">[[ item.current_et ]]</div>
+    <div class="col-md-3">
+      [[ item.current_et ]]
+      <span ng-show="item.current_et">m</span>
+    </div>
     <div class="col-md-3"><b>MRC Dyspnoea Scale</b></div>
     <div class="col-md-3">[[ item.mrc_dyspnoea_scale ]]</div>
+
+  </div>
+  <div class="row">
+
     <div class="col-md-3"><b>Limited By</b></div>
     <div class="col-md-3">[[ item.limited_by ]]</div>
     <div class="col-md-3"><b>Clinical Frailty Score</b></div>

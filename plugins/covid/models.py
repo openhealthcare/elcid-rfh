@@ -453,7 +453,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     current_et                = models.CharField(
         blank=True, null=True, max_length=50, help_text='Metres',
-        verbose_name="Current ET") # Exercise tolerance?
+        verbose_name="Current ET (metres)") # Exercise tolerance?
     mrc_dyspnoea_scale        = models.CharField(
         blank=True, null=True, max_length=50, choices=ONE_TO_FIVE,
         verbose_name="MRC Dyspnoea Scale")
