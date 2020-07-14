@@ -103,16 +103,28 @@
       </span>
 
     </div>
+  </div>
+  <div class="row">
 
     <div class="col-md-3"><b>Baseline Health Proximity</b></div>
     <div class="col-md-3">[[ item.baseline_health_proximity ]]</div>
     <div class="col-md-3"><b>Back To Work</b></div>
     <div class="col-md-3">[[ item.back_to_work ]]</div>
 
+  </div>
+  <div class="row">
+
     <div class="col-md-3"><b>Exercise Tolerance</b></div>
-    <div class="col-md-3">[[ item.current_et ]]</div>
+    <div class="col-md-3">
+      [[ item.current_et ]]
+      <span ng-show="item.current_et">m</span>
+    </div>
     <div class="col-md-3"><b>MRC Dyspnoea Scale</b></div>
     <div class="col-md-3">[[ item.mrc_dyspnoea_scale ]]</div>
+
+  </div>
+  <div class="row">
+
     <div class="col-md-3"><b>Limited By</b></div>
     <div class="col-md-3">[[ item.limited_by ]]</div>
     <div class="col-md-3"><b>Clinical Frailty Score</b></div>
@@ -219,5 +231,107 @@
       <span ng-hide="item.recontact">No</span>
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <section ng-show="item.cxr || item.ecg || item.echocardiogram || item.ct_chest || item.pft || item.exercise || item.repeat_bloods || item.other_investigations ">
+
+        <p><b>Further Investigations</b></p>
+
+        <span ng-show="item.cxr">
+          CXR
+          <br />
+        </span>
+        <span ng-show="item.ecg">
+          ECG
+          <br />
+        </span>
+        <span ng-show="item.echocardiogram">
+          Echocardiogram
+          <br />
+        </span>
+        <span ng-show="item.ct_chest">
+          CT Chest
+          <br />
+        </span>
+        <span ng-show="item.pft">
+          PFT
+          <br />
+        </span>
+        <span ng-show="item.exercise">
+          Exercise Testing
+          <br />
+        </span>
+        <span ng-show="item.repeat_bloods">
+          Repeat Bloods
+          <br />
+        </span>
+        <span ng-show="item.other_investigations">
+          [[ item.other_investigations ]]
+          <br />
+        </span>
+      </section>
+
+    </div>
+
+    <div class="col-md-6">
+
+      <section ng-show="item.anticoagulation || item.cardiology || item.elderly_care || item.fatigue_services || item.hepatology || item.neurology || item.primary_care || item.psychology || item.psychiatry || item.respiratory || item.rehabilitation || item.other_referral ">
+
+        <p><b>Referrals</b></p>
+
+        <span ng-show="item.anticoagulation">
+          Anticoagulation
+          <br />
+        </span>
+        <span ng-show="item.cardiology">
+          Cardiology
+          <br />
+        </span>
+        <span ng-show="item.elderly_care">
+          Elderly Care
+          <br />
+        </span>
+        <span ng-show="item.fatigue_services">
+          Fatigue Services
+          <br />
+        </span>
+        <span ng-show="item.hepatology">
+          Hepatology
+          <br />
+        </span>
+        <span ng-show="item.neurology">
+          Neurology
+          <br />
+        </span>
+        <span ng-show="item.primary_care">
+          Primary Care
+          <br />
+        </span>
+        <span ng-show="item.psychology">
+          Psychology
+          <br />
+        </span>
+        <span ng-show="item.psychiatry">
+          Psychiatry
+          <br />
+        </span>
+        <span ng-show="item.respiratory">
+          Respiratory
+          <br />
+        </span>
+        <span ng-show="item.rehabilitation">
+          Rehabilitation
+          <br />
+        </span>
+        <span ng-show="item.other_referral">
+          [[ item.other_referral ]]
+          <br />
+        </span>
+      </section>
+    </div>
+  </div>
+
+
 
 </section>

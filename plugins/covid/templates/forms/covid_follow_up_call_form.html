@@ -247,6 +247,15 @@
       {% select field="CovidFollowUpCall.depressed" style="vertical" %}
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-md-5 col-md-offset-1">
+      <p class="text-muted">
+        If score 3 or greater, needs referral to psych
+      </p>
+    </div>
+  </div>
+
   <div class="row">
     <div class="col-md-12 text-center">
       <p>Have you experienced any of the following at least twice in the last week?</p>
@@ -286,6 +295,162 @@
       {% checkbox field="CovidFollowUpCall.recontact" style="vertical"%}
     </div>
   </div>
+
+
+<h4 class="text-center">Further Investigations</h4>
+{% checkbox field="CovidFollowUpCall.cxr" %}
+{% checkbox field="CovidFollowUpCall.ecg" %}
+{% checkbox field="CovidFollowUpCall.echocardiogram" %}
+{% checkbox field="CovidFollowUpCall.ct_chest" %}
+{% checkbox field="CovidFollowUpCall.pft" %}
+{% checkbox field="CovidFollowUpCall.exercise" %}
+{% checkbox field="CovidFollowUpCall.repeat_bloods" %}
+{% input field="CovidFollowUpCall.other_investigations" %}
+
+<h4 class="text-center content-offset content-offset-below">Referrals</h4>
+<div class="row">
+  <div class="col-md-4">
+    <b>Service</b>
+  </div>
+  <div class="col-md-2">
+    <b>GP</b>
+  </div>
+  <div class="col-md-2">
+    <b>Done</b>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.anticoagulation" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.anticoagulation_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.anticoagulation_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.cardiology" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.cardiology_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.cardiology_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.elderly_care" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.elderly_care_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.elderly_care_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.fatigue_services" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.fatigue_services_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.fatigue_services_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.hepatology" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.hepatology_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.hepatology_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.neurology" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.neurology_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.neurology_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.primary_care" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.primary_care_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.primary_care_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.psychology" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.psychology_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.psychology_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.psychiatry" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.psychiatry_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.psychiatry_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.respiratory" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.respiratory_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.respiratory_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4">
+    {% checkbox field="CovidFollowUpCall.rehabilitation" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.rehabilitation_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.rehabilitation_done" label="" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-3 col-md-offset-1">
+    {% input field="CovidFollowUpCall.other_referral" style="vertical" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.other_referral_gp" label="" %}
+  </div>
+  <div class="col-md-2">
+    {% checkbox field="CovidFollowUpCall.other_referral_done" label="" %}
+  </div>
+</div>
 
 
 </section>

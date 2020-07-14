@@ -368,14 +368,14 @@ class CovidFollowUpCall(EpisodeSubrecord):
     """
     _icon = 'fa fa-phone'
 
-    ONE_TO_TEN           = enum('1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
+    ONE_TO_TEN           = enum('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
     ONE_TO_NINE          = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
     ONE_TO_FIVE          = enum('1', '2', '3', '4', '5')
     ZERO_TO_THREE        = (
-        ('0', 'Not At All'),
-        ('1', 'Several days'),
-        ('2', 'More than half the days'),
-        ('3', 'Nearly every day')
+        ('0', '(0) Not At All'),
+        ('1', '(1) Several days'),
+        ('2', '(2) More than half the days'),
+        ('3', '(3) Nearly every day')
     )
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
@@ -453,7 +453,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     current_et                = models.CharField(
         blank=True, null=True, max_length=50, help_text='Metres',
-        verbose_name="Current ET") # Exercise tolerance?
+        verbose_name="Current ET (metres)") # Exercise tolerance?
     mrc_dyspnoea_scale        = models.CharField(
         blank=True, null=True, max_length=50, choices=ONE_TO_FIVE,
         verbose_name="MRC Dyspnoea Scale")
@@ -512,57 +512,48 @@ class CovidFollowUpCall(EpisodeSubrecord):
     )
     follow_up_outcome         = models.CharField(blank=True, null=True, max_length=50, choices=FOLLOWUP_CHOICES)
 
+    cxr                       = models.NullBooleanField(verbose_name="CXR")
+    ecg                       = models.NullBooleanField(verbose_name="ECG")
+    echocardiogram            = models.NullBooleanField()
+    ct_chest                  = models.NullBooleanField(verbose_name="CT Chest")
+    pft                       = models.NullBooleanField(verbose_name="PFT")
+    exercise                  = models.NullBooleanField(verbose_name="Exercise Testing")
+    repeat_bloods             = models.NullBooleanField()
+    other_investigations      = models.CharField(blank=True, null=True, max_length=255)
 
-class CovidFollowUpActions(EpisodeSubrecord):
-
-    _is_singleton = True
-    _icon         = 'fa fa-pencil-square'
-
-    class Meta:
-        verbose_name = 'Covid Follow Up Actions'
-
-    cxr                  = models.NullBooleanField(verbose_name="CXR")
-    ecg                  = models.NullBooleanField(verbose_name="ECG")
-    echocardiogram       = models.NullBooleanField()
-    ct_chest             = models.NullBooleanField(verbose_name="CT Chest")
-    pft                  = models.NullBooleanField(verbose_name="PFT")
-    exercise             = models.NullBooleanField(verbose_name="Exercise Testing")
-    repeat_bloods        = models.NullBooleanField()
-    other_investigations = models.CharField(blank=True, null=True, max_length=255)
-
-    anticoagulation       = models.NullBooleanField()
-    anticoagulation_gp    = models.NullBooleanField()
-    anticoagulation_done  = models.NullBooleanField()
-    cardiology            = models.NullBooleanField()
-    cardiology_gp         = models.NullBooleanField()
-    cardiology_done       = models.NullBooleanField()
-    elderly_care          = models.NullBooleanField()
-    elderly_care_gp       = models.NullBooleanField()
-    elderly_care_done     = models.NullBooleanField()
-    fatigue_services      = models.NullBooleanField()
-    fatigue_services_gp   = models.NullBooleanField()
-    fatigue_services_done = models.NullBooleanField()
-    hepatology            = models.NullBooleanField()
-    hepatology_gp         = models.NullBooleanField()
-    hepatology_done       = models.NullBooleanField()
-    neurology             = models.NullBooleanField()
-    neurology_gp          = models.NullBooleanField()
-    neurology_done        = models.NullBooleanField()
-    primary_care          = models.NullBooleanField()
-    primary_care_gp       = models.NullBooleanField()
-    primary_care_done     = models.NullBooleanField()
-    psychology            = models.NullBooleanField()
-    psychology_gp         = models.NullBooleanField()
-    psychology_done       = models.NullBooleanField()
-    psychiatry            = models.NullBooleanField()
-    psychiatry_gp         = models.NullBooleanField()
-    psychiatry_done       = models.NullBooleanField()
-    respiratory           = models.NullBooleanField()
-    respiratory_gp        = models.NullBooleanField()
-    respiratory_done      = models.NullBooleanField()
-    rehabilitation        = models.NullBooleanField()
-    rehabilitation_gp     = models.NullBooleanField()
-    rehabilitation_done   = models.NullBooleanField()
-    other_referral        = models.CharField(blank=True, null=True, max_length=255)
-    other_referral_gp     = models.NullBooleanField()
-    other_referral_done   = models.NullBooleanField()
+    anticoagulation            = models.NullBooleanField()
+    anticoagulation_gp         = models.NullBooleanField()
+    anticoagulation_done       = models.NullBooleanField()
+    cardiology                 = models.NullBooleanField()
+    cardiology_gp              = models.NullBooleanField()
+    cardiology_done            = models.NullBooleanField()
+    elderly_care               = models.NullBooleanField()
+    elderly_care_gp            = models.NullBooleanField()
+    elderly_care_done          = models.NullBooleanField()
+    fatigue_services           = models.NullBooleanField()
+    fatigue_services_gp        = models.NullBooleanField()
+    fatigue_services_done      = models.NullBooleanField()
+    hepatology                 = models.NullBooleanField()
+    hepatology_gp              = models.NullBooleanField()
+    hepatology_done            = models.NullBooleanField()
+    neurology                  = models.NullBooleanField()
+    neurology_gp               = models.NullBooleanField()
+    neurology_done             = models.NullBooleanField()
+    primary_care               = models.NullBooleanField()
+    primary_care_gp            = models.NullBooleanField()
+    primary_care_done          = models.NullBooleanField()
+    psychology                 = models.NullBooleanField()
+    psychology_gp              = models.NullBooleanField()
+    psychology_done            = models.NullBooleanField()
+    psychiatry                 = models.NullBooleanField()
+    psychiatry_gp              = models.NullBooleanField()
+    psychiatry_done            = models.NullBooleanField()
+    respiratory                = models.NullBooleanField()
+    respiratory_gp             = models.NullBooleanField()
+    respiratory_done           = models.NullBooleanField()
+    rehabilitation             = models.NullBooleanField()
+    rehabilitation_gp          = models.NullBooleanField()
+    rehabilitation_done        = models.NullBooleanField()
+    other_referral             = models.CharField(blank=True, null=True, max_length=255)
+    other_referral_gp          = models.NullBooleanField()
+    other_referral_done        = models.NullBooleanField()
