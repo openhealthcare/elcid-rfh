@@ -385,11 +385,13 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     UNABLE_TO_COMPLETE   = 'Unable to complete'
     UNREACHABLE          = 'Unreachable'
+    FOLLOWUP             = 'Further Follow Up'
+    DISCHARGE            = 'Discharge'
     FOLLOWUP_CHOICES     = enum(
         UNREACHABLE,
         UNABLE_TO_COMPLETE,
-        'Further Follow Up',
-        'Discharge',
+        FOLLOWUP,
+        DISCHARGE
     )
 
     when               = models.DateTimeField(blank=True, null=True)
@@ -557,3 +559,71 @@ class CovidFollowUpCall(EpisodeSubrecord):
     other_referral             = models.CharField(blank=True, null=True, max_length=255)
     other_referral_gp          = models.NullBooleanField()
     other_referral_done        = models.NullBooleanField()
+
+    gp_copy                    = models.TextField(
+        blank=True, null=True, verbose_name="Copy for clinic letter"
+    )
+
+    def other_symptoms(self):
+        symptom_fields = [
+            'chest_pain',
+            'chest_tightness',
+            'myalgia',
+            'anosmia',
+            'loss_of_taste',
+            'chills',
+            'anorexia',
+            'abdominal_pain',
+            'diarrhoea',
+            'peripheral_oedema',
+            'confusion',
+            'focal_weakness'
+        ]
+        return [self._get_field_title(n) for n in symptom_fields if getattr(self, n)]
+
+    def further_investigations(self):
+        investigation_fields =  [
+            'cxr',
+            'ecg',
+            'echocardiogram',
+            'ct_chest',
+            'pft',
+            'exercise',
+            'repeat_bloods',
+        ]
+
+        investigations = [
+            self._get_field_title(n) for n in investigation_fields if getattr(self, n)
+        ]
+        if self.other_investigations:
+            investigations.append(self.other_investigations)
+
+        return investigations
+
+    def referrals(self):
+        referral_fields = [
+            'anticoagulation',
+            'cardiology',
+            'elderly_care',
+            'fatigue_services',
+            'hepatology',
+            'neurology',
+            'primary_care',
+            'psychiatry',
+            'respiratory',
+            'rehabilitation',
+        ]
+        referred = [
+            self._get_field_title(n) for n in referral_fields if getattr(self, n)
+        ]
+
+        if self.other_referral:
+            referred.append(self.other_referral)
+
+        return referred
+
+    def phq_score(self):
+        return int(self.interest[1:2]) + int(self.depressed[1:2])
+
+    def tsq_score(self):
+        return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
