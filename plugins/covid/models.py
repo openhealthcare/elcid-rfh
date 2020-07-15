@@ -626,4 +626,4 @@ class CovidFollowUpCall(EpisodeSubrecord):
         return int(self.interest[1:2]) + int(self.depressed[1:2])
 
     def tsq_score(self):
-        return len([i for i in range(1, 11) if getattr(self, f'tsq{i}')])
+        return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
