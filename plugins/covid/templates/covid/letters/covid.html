@@ -1,4 +1,84 @@
 {% extends 'letters/base.html' %}
 {% block letter_content %}
-{{ object.patient.demographics.name }}
+  <section>
+    <p>
+    Royal Free Hospital<br />
+    Pond St, <br />
+    Hampstead, <br />
+    London <br />
+    NW3 2QG
+    </p>
+
+    <!--
+    <p>
+      {% with GP=object.patient.gpdetails_set.get %}
+        {{ GP }}
+        {{ GP.title }} {{ GP.initials }} {{ GP.surname }}<br />
+        {{ GP.address_1}} <br />
+        {{ GP.postcode }}
+      {% endwith %}
+    </p>
+ -->
+
+    <h2>Regarding   {{ object.episode.patient.demographics.name }}</h2>
+    <p>
+      Dear GP colleague,
+    </p>
+    <p>
+      We called this patient on {{ object.when | date:'j M Y' }} as part of our Covid 6 week Follow Up Clinic.
+    </p>
+    <p><b>Smoking Status:</b> {{ object.episode.covidsmokinghistory_set.get.followup_status }}</p>
+    <p><b>Covid-19 Symptoms</b></p>
+    <p>
+      Fatigue:         {{ object.fatigue_trend }}<br />
+      Breathlessness:  {{ object.breathlessness_trend }}<br />
+      Cough:           {{ object.cough_trend }}<br />
+      Sleep Quality:   {{ object.sleep_quality_trend }}
+    </p>
+    {% if object.other_symptoms %}
+    <p>
+      The patient also stated they were experiencing the following symptoms:
+      {{ object.other_symptoms|join:", " }}.
+    </p>
+  {% endif %}
+
+    <p><b>Psych Scores</b></p>
+    <p>The patient scored {{ object.phq_score }}/6 on the PHQ2.</p>
+    <p>The patient scored {{ object.tsq_score }}/10 on the TSQ.</p>
+
+    {% if object.psychology %}
+    <p>
+      The team felt referral to psychology was needed.
+    </p>
+    {% endif %}
+
+    {% if object.further_investigations %}
+      <p><b>Further Actions</b></p>
+      <p>
+        The patient has been booked for {{ object.further_investigations|join:", " }}.
+      </p>
+    {% endif %}
+
+    {% if object.follow_up_outcome == object.FOLLOWUP %}
+      <p>We will be continuing to follow up with the patien.t</p>
+    {% endif %}
+
+    {% if object.follow_up_outcome == object.DISCHARGE %}
+      <p>The patient has been discharged from our service.</p>
+    {% endif %}
+
+    {% if object.referrals %}
+      <p>
+        The patient has been referred to the following services:
+        {{ object.referrals|join:', ' }}.
+      </p>
+    {% endif %}
+
+    {% if object.gp_copy %}
+      <p><b>Other Comments</b></p>
+      {{ object.gp_copy }}
+    {% endif %}
+
+  </section>
+
 {% endblock %}

@@ -102,5 +102,5 @@ class CovidCohortDownloadView(LoginRequiredMixin, View):
 
 class CovidLetter(LoginRequiredMixin, DetailView):
     # accessed at /letters/#/covid/letter/10/
-    model = opal_models.Episode
+    model         = models.CovidFollowUpCall
     template_name = 'covid/letters/covid.html'
