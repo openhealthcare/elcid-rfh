@@ -43,6 +43,14 @@
       Date:
       {{ object.when | date:'j M Y' }}
     </p>
+    <h3>Admission</h3>
+    {% with admission=object.episode.covidadmission_set.get %}
+      <p>
+        {{ admission.date_of_admission }} - {{ admission.date_of_discharge }}
+      </p>
+
+    <p>Predominant symptoms: {{ admission.predominant_symptom }}</p>
+    {% endwith %}
     <!--
     <h3>Follow up questions</h3>
     {% with admission=object.episode.covidadmission_set.get %}
