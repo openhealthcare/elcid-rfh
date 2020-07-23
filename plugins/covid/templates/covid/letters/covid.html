@@ -54,9 +54,9 @@
       <p>Pack years: {% if smoking.pack_year_history %}{{ smoking.pack_year_history }}{% endif %}</p>
       {% endwith %}
       {% with social=object.episode.patient.covidsocialhistory_set.get %}
-        <p>Social circumstances: {{ social.social_circumstances }}</p>
+        <p>Social circumstances: {% if  social.social_circumstances %}{{ social.social_circumstances }}{% endif %}</p>
         <p>Carers: {% if social.carers %}{{ social.carers }}{% endif %}</p>
-        <p>Shielding status: {{ social.shielding_status }}</p>
+        <p>Shielding status: {% if  social.shielding_status %}{{ social.shielding_status }}{% endif %}</p>
       {% endwith %}
       <p>Changes to medication post discharge: {% if object.changes_to_medication %}{{ object.changes_to_medication }}{% endif %}</p>
       {% if object.medication_change_details %}
@@ -115,6 +115,10 @@
 
   {% if object.why_not_back_to_normal %}
     <p>{{ object.why_not_back_to_normal }}</p>
+  {% endif %}
+
+  {% if object.other_concerns %}
+    <p>{{ object.other_concerns }}</p>
   {% endif %}
 
     <p><b>Psych Scores</b></p>
