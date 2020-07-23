@@ -1,14 +1,6 @@
 {% extends 'letters/base.html' %}
 {% block letter_content %}
   <section>
-    <p>
-    Royal Free Hospital<br />
-    Pond St, <br />
-    Hampstead, <br />
-    London <br />
-    NW3 2QG
-    </p>
-
     <!--
     <p>
       {% with GP=object.patient.gpdetails_set.get %}
@@ -20,26 +12,109 @@
     </p>
  -->
 
-    <h2>Regarding   {{ object.episode.patient.demographics.name }}</h2>
+    <h2>Post Covid Telephone Follow Up</h2>
+    {% with demographics=object.episode.patient.demographics %}
     <p>
-      Dear GP colleague,
+      Patient Name:
+      {{ demographics.name }}
     </p>
     <p>
-      We called this patient on {{ object.when | date:'j M Y' }} as part of our Covid 6 week Follow Up Clinic.
+      DOB:
+      {{ demographics.date_of_birth }}
     </p>
-    <p><b>Smoking Status:</b> {{ object.episode.covidsmokinghistory_set.get.followup_status }}</p>
-    <p><b>Covid-19 Symptoms</b></p>
     <p>
-      Fatigue:         {{ object.fatigue_trend }}<br />
-      Breathlessness:  {{ object.breathlessness_trend }}<br />
-      Cough:           {{ object.cough_trend }}<br />
-      Sleep Quality:   {{ object.sleep_quality_trend }}
+      MRN:
+      {{ demographics.hospital_number }}
     </p>
+    <p>
+      NHS Number:
+      {{ demographics.nhs_number }}
+    </p>
+    {% endwith %}
+
+    <h3>This call</h3>
+
+    <p>
+      Clinician completing call:
+      {{ object.clinician }}
+    </p>
+
+    <p>
+      Date:
+      {{ object.when | date:'j M Y' }}
+    </p>
+
+    <h3>Follow up questions</h3>
+    {% with admission=object.episode.covidadmission_set.get %}
+      <p>Height: {{ admission.height }}m</p>
+      <p>Weight: {{ admission.weight }}kg</p>
+      <p>Ethnicity: {{ object.ethnicity }}</p>
+      {% with smoking=object.episode.covidsmokinghistory_set.get %}
+      <p>Smoking status: {{ smoking.followup_status }}</p>
+      <p>Pack years: {{ smoking.pack_year_history }}</p>
+      {% endwith %}
+      {% with social=object.episode.patient.covidsocialhistory_set.get %}
+        <p>Social circumstances: {{ social.social_circumstances }}</p>
+        <p>Carers: {{ social.carers }}</p>
+        <p>Shielding status: {{ social.shielding_status }}</p>
+      {% endwith %}
+      <p>Changes to medication post discharge: {{ object.changes_to_medication }}</p>
+      {% if object.medication_change_details %}
+        <p>{{ object.medication_change_details }}</p>
+      {% endif %}
+    {% endwith %}
+
+    <h3>Ongoing Covid-19 Symptoms</h3>
+
+      <table class="table table-striped table-bordered ">
+        <tr>
+          <th>Symptom</th>
+          <th>Current</th>
+          <th>Max</th>
+          <th>Trajectory</th>
+        </tr>
+        <tr>
+          <td>Fatigue</td>
+          <td>{{ object.current_fatigue }}</td>
+          <td>{{ object.max_fatigue }}</td>
+          <td>{{ object.fatigue_trend }}</td>
+        </tr>
+        <tr>
+          <td>Breathlessness</td>
+          <td>{{ object.current_breathlessness }}</td>
+          <td>{{ object.max_breathlessness }}</td>
+          <td>{{ object.breathlessness_trend }}</td>
+        </tr>
+        <tr>
+          <td>Cough</td>
+          <td>{{ object.current_cough }}</td>
+          <td>{{ object.max_cough }}</td>
+          <td>{{ object.cough_trend }}</td>
+        </tr>
+        <tr>
+          <td>Sleep Quality</td>
+          <td>{{ object.current_sleep_quality }}</td>
+          <td>{{ object.max_sleep_quality }}</td>
+          <td>{{ object.sleep_quality_trend }}</td>
+        </tr>
+      </table>
     {% if object.other_symptoms %}
     <p>
       The patient also stated they were experiencing the following symptoms:
+      <br />
       {{ object.other_symptoms|join:", " }}.
     </p>
+  {% endif %}
+
+  <h3>Recovery</h3>
+  {% if object.back_to_normal %}
+    <p>The patient stated that they feel back to normal.</p>
+  {% else %}
+    <p>The patient stated that they did not feel back to normal.</p>
+  {% endif %}
+
+  {% if object.why_not_back_to_normal %}
+    <p>{{ object.why_not_back_to_normal }}</p>
   {% endif %}
 
     <p><b>Psych Scores</b></p>
@@ -60,7 +135,7 @@
     {% endif %}
 
     {% if object.follow_up_outcome == object.FOLLOWUP %}
-      <p>We will be continuing to follow up with the patien.t</p>
+      <p>We will be continuing to follow up with the patient.</p>
     {% endif %}
 
     {% if object.follow_up_outcome == object.DISCHARGE %}

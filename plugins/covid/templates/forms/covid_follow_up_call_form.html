@@ -24,8 +24,15 @@
   </div>
 </div>
 
+
 <section ng-hide="editing.covid_follow_up_call.follow_up_outcome == '{{ models.CovidFollowUpCall.UNABLE_TO_COMPLETE }}' || editing.covid_follow_up_call.follow_up_outcome == '{{ models.CovidFollowUpCall.UNREACHABLEg}}' ">
   <hr />
+
+  <div class="row">
+    <div class="col-md-5 col-md-offset-1">
+      {% select field="CovidFollowUpCall.ethnicity" style="vertical" lookuplist="ethnicity_list" %}
+    </div>
+  </div>
 
   <div class="row">
     <div class="col-md-12 text-center content-offset-below-25">

@@ -401,6 +401,8 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     incomplete_reason  = models.TextField(blank=True, null=True)
 
+    ethnicity = models.CharField(blank=True, null=True, max_length=240)
+
     changes_to_medication     = models.NullBooleanField(
         verbose_name="Changes to medication post discharge")
     medication_change_details = models.TextField(blank=True, null=True)
@@ -623,6 +625,8 @@ class CovidFollowUpCall(EpisodeSubrecord):
         return referred
 
     def phq_score(self):
+        if self.interest is None or self.depressed is None:
+            return None
         return int(self.interest[1:2]) + int(self.depressed[1:2])
 
     def tsq_score(self):
