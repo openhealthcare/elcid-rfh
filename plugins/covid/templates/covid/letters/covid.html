@@ -50,8 +50,8 @@
       <p>Weight: {{ admission.weight }} {% if admission.weight %}kg{% endif %}</p>
       <p>Ethnicity: {% if object.ethnicity %}{{ object.ethnicity }}{% endif %}</p>
       {% with smoking=object.episode.covidsmokinghistory_set.get %}
-      <p>Smoking status: {{ smoking.followup_status }}</p>
-      <p>Pack years: {{ smoking.pack_year_history }}</p>
+      <p>Smoking status: {% if smoking.followup_status %}{{ smoking.followup_status }}{% endif %}</p>
+      <p>Pack years: {% if smoking.pack_year_history %}{{ smoking.pack_year_history }}{% endif %}</p>
       {% endwith %}
       {% with social=object.episode.patient.covidsocialhistory_set.get %}
         <p>Social circumstances: {{ social.social_circumstances }}</p>
@@ -75,27 +75,27 @@
         </tr>
         <tr>
           <td>Fatigue</td>
-          <td>{{ object.current_fatigue }}</td>
-          <td>{{ object.max_fatigue }}</td>
-          <td>{{ object.fatigue_trend }}</td>
+          <td>{% if  object.current_fatigue %}{{ object.current_fatigue }}{% endif %}</td>
+          <td>{% if  object.max_fatigue %}{{ object.max_fatigue }}{% endif %}</td>
+          <td>{% if  object.fatigue_trend %}{{ object.fatigue_trend }}{% endif %}</td>
         </tr>
         <tr>
           <td>Breathlessness</td>
-          <td>{{ object.current_breathlessness }}</td>
-          <td>{{ object.max_breathlessness }}</td>
-          <td>{{ object.breathlessness_trend }}</td>
+          <td>{% if  object.current_breathlessness %}{{ object.current_breathlessness }}{% endif %}</td>
+          <td>{% if  object.max_breathlessness %}{{ object.max_breathlessness }}{% endif %}</td>
+          <td>{% if  object.breathlessness_trend %}{{ object.breathlessness_trend }}{% endif %}</td>
         </tr>
         <tr>
           <td>Cough</td>
-          <td>{{ object.current_cough }}</td>
-          <td>{{ object.max_cough }}</td>
-          <td>{{ object.cough_trend }}</td>
+          <td>{% if  object.current_cough %}{{ object.current_cough }}{% endif %}</td>
+          <td>{% if  object.max_cough %}{{ object.max_cough }}{% endif %}</td>
+          <td>{% if  object.cough_trend %}{{ object.cough_trend }}{% endif %}</td>
         </tr>
         <tr>
           <td>Sleep Quality</td>
-          <td>{{ object.current_sleep_quality }}</td>
-          <td>{{ object.max_sleep_quality }}</td>
-          <td>{{ object.sleep_quality_trend }}</td>
+          <td>{% if  object.current_sleep_quality %}{{ object.current_sleep_quality }}{% endif %}</td>
+          <td>{% if  object.max_sleep_quality %}{{ object.max_sleep_quality }}{% endif %}</td>
+          <td>{% if  object.sleep_quality_trend %}{{ object.sleep_quality_trend }}{% endif %}</td>
         </tr>
       </table>
     {% if object.other_symptoms %}
