@@ -46,19 +46,19 @@
 
     <h3>Follow up questions</h3>
     {% with admission=object.episode.covidadmission_set.get %}
-      <p>Height: {{ admission.height }}m</p>
-      <p>Weight: {{ admission.weight }}kg</p>
-      <p>Ethnicity: {{ object.ethnicity }}</p>
+      <p>Height: {{ admission.height }} {% if admission.height %}m{% endif %}</p>
+      <p>Weight: {{ admission.weight }} {% if admission.weight %}kg{% endif %}</p>
+      <p>Ethnicity: {% if object.ethnicity %}{{ object.ethnicity }}{% endif %}</p>
       {% with smoking=object.episode.covidsmokinghistory_set.get %}
       <p>Smoking status: {{ smoking.followup_status }}</p>
       <p>Pack years: {{ smoking.pack_year_history }}</p>
       {% endwith %}
       {% with social=object.episode.patient.covidsocialhistory_set.get %}
         <p>Social circumstances: {{ social.social_circumstances }}</p>
-        <p>Carers: {{ social.carers }}</p>
+        <p>Carers: {% if social.carers %}{{ social.carers }}{% endif %}</p>
         <p>Shielding status: {{ social.shielding_status }}</p>
       {% endwith %}
-      <p>Changes to medication post discharge: {{ object.changes_to_medication }}</p>
+      <p>Changes to medication post discharge: {% if object.changes_to_medication %}{{ object.changes_to_medication }}{% endif %}</p>
       {% if object.medication_change_details %}
         <p>{{ object.medication_change_details }}</p>
       {% endif %}
