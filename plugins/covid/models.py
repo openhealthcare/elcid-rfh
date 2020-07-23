@@ -394,6 +394,20 @@ class CovidFollowUpCall(EpisodeSubrecord):
         DISCHARGE
     )
 
+    REFERRAL_FIELDS = [
+        'anticoagulation',
+        'cardiology',
+        'elderly_care',
+        'fatigue_services',
+        'hepatology',
+        'neurology',
+        'primary_care',
+        'psychiatry',
+        'respiratory',
+        'rehabilitation',
+    ]
+
+
     when               = models.DateTimeField(blank=True, null=True)
     clinician          = models.CharField(blank=True, null=True, max_length=255) # Default to user
     position           =  models.CharField(
@@ -603,26 +617,23 @@ class CovidFollowUpCall(EpisodeSubrecord):
         return investigations
 
     def referrals(self):
-        referral_fields = [
-            'anticoagulation',
-            'cardiology',
-            'elderly_care',
-            'fatigue_services',
-            'hepatology',
-            'neurology',
-            'primary_care',
-            'psychiatry',
-            'respiratory',
-            'rehabilitation',
-        ]
         referred = [
-            self._get_field_title(n) for n in referral_fields if getattr(self, n)
+            self._get_field_title(n) for n in self.REFERRAL_FIELDS
+            if getattr(self, n) and not getattr(self, '{}_gp'.format(n))
         ]
 
         if self.other_referral:
             referred.append(self.other_referral)
 
         return referred
+
+    def gp_referrals(self):
+        referred = [
+            self._get_field_title(n) for n in self.REFERRAL_FIELDS
+            if getattr(self, n) and getattr(self, '{}_gp'.format(n))
+        ]
+        return referred
+
 
     def phq_score(self):
         if self.interest is None or self.depressed is None:
