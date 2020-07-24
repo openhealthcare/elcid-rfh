@@ -87,7 +87,11 @@ class Imaging(models.Model):
     def to_dict(self):
         dicted = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
 
-        if 'Reported By:' in dicted['obx_result']:
-            dicted['obx_result'] = dicted['obx_result'].split('Reported By:')[0]
+        if dicted['obx_result'] is None:
+            dicted['obx_result'] = ""
+        elif 'Reported By:' in dicted['obx_result']:
+            dicted['obx_result'] = dicted['obx_result'].split(
+                'Reported By:'
+            )[0]
 
         return dicted
