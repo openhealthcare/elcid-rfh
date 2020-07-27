@@ -25,6 +25,81 @@
 
 <section ng-hide="item.follow_up_outcome == 'Unable to complete' || item.follow_up_outcome == 'Unreachable'">
 
+    <div class="row">
+      <div class="col-md-6">
+        <b>Height:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.height ]] <span ng-show="item.height">m</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <b>Weight:</b>
+      </div>
+      <div class="col-md-6">
+        [[ item.weight ]] <span ng-show="item.weight">kg</span>
+      </div>
+    </div>
+
+<div class="row">
+  <div class="col-md-6">
+    <b>Social Circumstances:</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.social_circumstances ]]
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <b>Carers:</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.carers ]]
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <b>Shielding Status:</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.shielding_status ]]
+  </div>
+</div>
+<div class="row" ng-show="item.admission_status">
+  <div class="col-md-6">
+    <b>Smoking staus on admission</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.admission_status ]]
+  </div>
+</div>
+<div class="row" ng-show="item.pack_year_history">
+  <div class="col-md-6">
+    <b>Pack Year History:</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.pack_year_history ]]
+  </div>
+</div>
+<span ng-show="item.vape">
+     Vape Smoked
+   <br />
+</span>
+<span ng-show="item.other_drugs">
+     Other Drugs Smoked
+   <br />
+</span>
+<div class="row" ng-show="item.followup_status">
+  <div class="col-md-6">
+    <b>Smoking taus at followup</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.followup_status ]]
+  </div>
+</div>
+
+
   <section ng-show="item.changes_to_medication">
     <hr />
     <div class="row" >

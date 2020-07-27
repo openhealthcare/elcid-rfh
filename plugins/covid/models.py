@@ -141,8 +141,6 @@ class CovidAdmission(EpisodeSubrecord):
         blank=True, null=True, max_length=200, choices=SYMPTOM_CHOICES)
 
     # Observations at admisssion
-    height               = models.CharField(blank=True, null=True, max_length=20, help_text='m')
-    weight               = models.CharField(blank=True, null=True, max_length=20, help_text='kg')
     respiratory_rate     = models.IntegerField(blank=True, null=True, help_text='Breaths/min')
     heart_rate           = models.IntegerField(blank=True, null=True, help_text='Beats/min')
     sao2                 = models.CharField(blank=True, null=True, max_length=255, verbose_name="SaO2")
@@ -180,71 +178,6 @@ class CovidAdmission(EpisodeSubrecord):
 
     systemic_corticosteroirds = models.NullBooleanField(verbose_name='Treated With Systemic Corticosteroids')
 
-
-class CovidSmokingHistory(EpisodeSubrecord):
-    """
-    Smoking history
-    """
-    _icon         = 'fa fa-fire'
-    _is_singleton = True
-
-    class Meta:
-        verbose_name = 'Smoking History'
-
-    OTHER_SMOKING_CHOICES = enum(
-        'Vape',
-        'Other drugs'
-    )
-
-    admission_status  = models.CharField(
-        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking Status On Admission'
-    )
-    pack_year_history = models.TextField(blank=True, null=True)
-    vape              = models.NullBooleanField(verbose_name="Vape Smoked")
-    other_drugs       = models.NullBooleanField(verbose_name="Other Drugs Smoked")
-    followup_status   = models.CharField(
-        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking staus at follow up'
-    )
-
-
-class CovidSocialHistory(PatientSubrecord):
-    _icon         = 'fa fa-users'
-    _is_singleton = True
-
-    class Meta:
-        verbose_name = 'Social History'
-
-    CIRCUMSTANCES_CHOICES = enum(
-        'Independent',
-        'Family help',
-        'Carers',
-        'NH/RH'
-    )
-
-    CARER_CHOICES = enum(
-        'OD',
-        'BD',
-        'TDS',
-        'QDS'
-    )
-    SHIELDING_CHOICES = enum(
-        'Not',
-        'Voluntary Shielding',
-        'Extremely Vulnerable',
-        'Letter Issued by HCP'
-    )
-
-    social_circumstances = models.CharField(
-        blank=True, null=True, max_length=200, choices=CIRCUMSTANCES_CHOICES
-    )
-    carers               = models.CharField(
-        blank=True, null=True, max_length=200, choices=CARER_CHOICES
-    )
-    shielding_status     = models.CharField( # TODO WHAT ARE THESE
-        max_length=200, blank=True, null=True, choices=SHIELDING_CHOICES
-    )
 
 
 class LungFunctionTest(EpisodeSubrecord):
@@ -301,67 +234,6 @@ class CovidComorbidities(EpisodeSubrecord):
     anaemia                                = models.NullBooleanField()
 
 
-class CovidTrialEnrollment(EpisodeSubrecord):
-    """
-    Was this patient enrolled on a trial
-    """
-    _is_singleton = True
-    _icon         = 'fa fa-user-md'
-
-    enrolled = models.NullBooleanField()
-    details  = models.TextField(blank=True, null=True)
-
-
-class ITUAdmission(EpisodeSubrecord):
-    """
-    Details of ITU Admission
-    """
-    _icon = 'fa fa-heartbeat'
-
-    class Meta:
-        verbose_name = 'ITU Admission'
-
-    date_of_admission       = models.DateField(blank=True, null=True)
-    apache_score_on_arrival = models.CharField(
-        blank=True, null=True, max_length=244, verbose_name='APACHE II score on ITU arrival')
-    intubated               = models.NullBooleanField()
-    date_of_intubation      = models.DateField(blank=True, null=True)
-
-
-class CovidCXR(EpisodeSubrecord):
-    """
-    Covid chest x ray
-    """
-    _icon = 'fa fa-crosshairs'
-
-    class Meta:
-        verbose_name = 'Covid CXR'
-
-    SEVERITY_CHOICES = enum(
-        'Mild',
-        'Moderate',
-        'Severe'
-    )
-
-    date = models.DateField(blank=True, null=True)
-    covid_code = models.CharField(blank=True, null=True, max_length=20, choices=COVID_CODE_CHOICES)
-
-
-class CovidCT(EpisodeSubrecord):
-    """
-    Covid CT Scans
-    """
-    _icon = 'fa fa-crosshairs'
-
-    class Meta:
-        verbose_name = 'Covid CT'
-
-    date       = models.DateField(blank=True, null=True)
-    pe         = models.NullBooleanField(verbose_name="Pulmonary Embolism")
-    thrombosis = models.NullBooleanField()
-    report     = models.TextField(blank=True, null=True)
-
-
 class CovidFollowUpCall(EpisodeSubrecord):
     """
     A phone call to a patient seeking follow up on their COVID-19 admission
@@ -394,6 +266,31 @@ class CovidFollowUpCall(EpisodeSubrecord):
         DISCHARGE
     )
 
+    CIRCUMSTANCES_CHOICES = enum(
+        'Independent',
+        'Family help',
+        'Carers',
+        'NH/RH'
+    )
+
+    CARER_CHOICES = enum(
+        'OD',
+        'BD',
+        'TDS',
+        'QDS'
+    )
+    SHIELDING_CHOICES = enum(
+        'Not',
+        'Voluntary Shielding',
+        'Extremely Vulnerable',
+        'Letter Issued by HCP'
+    )
+
+    OTHER_SMOKING_CHOICES = enum(
+        'Vape',
+        'Other drugs'
+    )
+
     REFERRAL_FIELDS = [
         'anticoagulation',
         'cardiology',
@@ -416,6 +313,29 @@ class CovidFollowUpCall(EpisodeSubrecord):
     incomplete_reason  = models.TextField(blank=True, null=True)
 
     ethnicity = models.CharField(blank=True, null=True, max_length=240)
+    height    = models.CharField(blank=True, null=True, max_length=20, help_text='m')
+    weight    = models.CharField(blank=True, null=True, max_length=20, help_text='kg')
+
+    social_circumstances = models.CharField(
+        blank=True, null=True, max_length=200, choices=CIRCUMSTANCES_CHOICES
+    )
+    carers               = models.CharField(
+        blank=True, null=True, max_length=200, choices=CARER_CHOICES
+    )
+    shielding_status     = models.CharField( # TODO WHAT ARE THESE
+        max_length=200, blank=True, null=True, choices=SHIELDING_CHOICES
+    )
+    admission_status  = models.CharField(
+        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
+        verbose_name='Smoking Status On Admission'
+    )
+    pack_year_history = models.TextField(blank=True, null=True)
+    vape              = models.NullBooleanField(verbose_name="Vape Smoked")
+    other_drugs       = models.NullBooleanField(verbose_name="Other Drugs Smoked")
+    followup_status   = models.CharField(
+        blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
+        verbose_name='Smoking staus at follow up'
+    )
 
     changes_to_medication     = models.NullBooleanField(
         verbose_name="Changes to medication post discharge")
@@ -521,13 +441,28 @@ class CovidFollowUpCall(EpisodeSubrecord):
     )
 
     other_concerns            = models.TextField(blank=True, null=True)
+
+    pulse_oximeter = models.CharField(
+        verbose_name="If A&E patient, were you discharged with a pulse oximeter?",
+        blank=True, null=True, max_length=20, choices=Y_N_NA)
+    haem_anticoag = models.CharField(
+        verbose_name="(If patient had PE/DVT), have you been offered an appointment with the haematology team/anticoagulation clinic?",
+        blank=True, null=True, max_length=20, choices=Y_N_NA)
+    diabetic = models.CharField(
+        verbose_name="(If diabetic), were you started on insulin during your admission? If so, do you have support or follow-up from hospital diabetic team/community team/your GP?",
+        blank=True, null=True, max_length=20, choices=Y_N_NA)
+    online_information = models.CharField(
+        verbose_name="Do you want any online information on post-COVID support?",
+        blank=True, null=True, max_length=20, choices=Y_N_NA)
+
     call_satisfaction         = models.CharField(
         blank=True, null=True, max_length=20, choices=Y_N_NA,
-        verbose_name="Patient satisfied with call?"
+        verbose_name="Did you find this call useful?"
     )
     recontact                 = models.NullBooleanField(
         verbose_name="Would you be willing to be contacted again to take part in research?"
     )
+
     follow_up_outcome         = models.CharField(blank=True, null=True, max_length=50, choices=FOLLOWUP_CHOICES)
 
     cxr                       = models.NullBooleanField(verbose_name="CXR")
@@ -634,7 +569,6 @@ class CovidFollowUpCall(EpisodeSubrecord):
         ]
         return referred
 
-
     def phq_score(self):
         if self.interest is None or self.depressed is None:
             return None
@@ -642,3 +576,25 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     def tsq_score(self):
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
+
+
+class CovidFollowUpCallFollowUpCall(EpisodeSubrecord):
+    """
+    A phone call to a patient seeking follow up on their COVID-19 admission Follow up Call
+    """
+    _icon = 'fa fa-phone'
+
+    POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
+
+    when              = models.DateTimeField(blank=True, null=True)
+    clinician         = models.CharField(blank=True, null=True, max_length=255) # Default to user
+    position          =  models.CharField(
+        blank=True, null=True, max_length=255, choices=POSITION_CHOICES)
+
+    bloods            = models.NullBooleanField()
+    imaging           = models.NullBooleanField()
+    symptoms          = models.NullBooleanField()
+    other             = models.CharField(blank=True, null=True, max_length=255)
+
+    details           = models.TextField(
+        blank=True, null=True, verbose_name="Call Details")

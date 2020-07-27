@@ -21,4 +21,10 @@ urlpatterns = [
         views.CovidLetter.as_view(),
         name='covid_letter'
     ),
+    url(
+        'covid/followup-letter/(?P<pk>\d+)/?$',
+        views.CovidFollowupLetter.as_view(),
+        name='covid_followup_letter'
+    ),
+
 ]

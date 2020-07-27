@@ -2,22 +2,22 @@
 {% block letter_content %}
   <section>
     <!--
-    <p>
-      {% with GP=object.patient.gpdetails_set.get %}
-        {{ GP }}
-        {{ GP.title }} {{ GP.initials }} {{ GP.surname }}<br />
-        {{ GP.address_1}} <br />
-        {{ GP.postcode }}
-      {% endwith %}
-    </p>
- -->
+        <p>
+          {% with GP=object.patient.gpdetails_set.get %}
+            {{ GP }}
+            {{ GP.title }} {{ GP.initials }} {{ GP.surname }}<br />
+            {{ GP.address_1}} <br />
+            {{ GP.postcode }}
+          {% endwith %}
+        </p>
+        -->
 
-    <h2>Post Covid Telephone Follow Up</h2>
-    {% with demographics=object.episode.patient.demographics %}
-    <p>
-      Patient Name:
-      {{ demographics.name }}
-    </p>
+        <h2>Post Covid Telephone Follow Up</h2>
+        {% with demographics=object.episode.patient.demographics %}
+          <p>
+            Patient Name:
+            {{ demographics.name }}
+          </p>
     <p>
       DOB:
       {{ demographics.date_of_birth }}
@@ -30,9 +30,9 @@
       NHS Number:
       {{ demographics.nhs_number }}
     </p>
-    {% endwith %}
+  {% endwith %}
 
-    <h3>This call</h3>
+  <h3>This call</h3>
 
     <p>
       Clinician completing call:
@@ -50,108 +50,104 @@
       </p>
 
     <p>Predominant symptoms: {{ admission.predominant_symptom }}</p>
-    {% endwith %}
-    <!--
-    <h3>Follow up questions</h3>
-    -->
+  {% endwith %}
+  <!--
+      <h3>Follow up questions</h3>
+      -->
 
-    {% with admission=object.episode.covidadmission_set.get %}
-      {% with smoking=object.episode.covidsmokinghistory_set.get %}
-      <p>Smoking status: {% if smoking.followup_status %}{{ smoking.followup_status }}{% endif %}</p>
-      <p>Pack years: {% if smoking.pack_year_history %}{{ smoking.pack_year_history }}{% endif %}</p>
-      {% endwith %}
-    {% endwith %}
+    <p>Smoking status: {% if object.followup_status %}{{ object.followup_status }}{% endif %}</p>
+    <p>Pack years: {% if object.pack_year_history %}{{ object.pack_year_history }}{% endif %}</p>
 
     <h3>Ongoing Covid-19 Symptoms</h3>
 
-      <table class="table table-striped table-bordered ">
-        <tr>
-          <th>Symptom</th>
-          <th>Trajectory</th>
-        </tr>
-        <tr>
-          <td>Fatigue</td>
-          <td>{% if  object.fatigue_trend %}{{ object.fatigue_trend }}{% endif %}</td>
-        </tr>
-        <tr>
-          <td>Breathlessness</td>
-          <td>{% if  object.breathlessness_trend %}{{ object.breathlessness_trend }}{% endif %}</td>
-        </tr>
-        <tr>
-          <td>Cough</td>
-          <td>{% if  object.cough_trend %}{{ object.cough_trend }}{% endif %}</td>
-        </tr>
-        <tr>
-          <td>Sleep Quality</td>
-          <td>{% if  object.sleep_quality_trend %}{{ object.sleep_quality_trend }}{% endif %}</td>
-        </tr>
-      </table>
+    <table class="table table-striped table-bordered ">
+      <tr>
+        <th>Symptom</th>
+        <th>Trajectory</th>
+      </tr>
+      <tr>
+        <td>Fatigue</td>
+        <td>{% if  object.fatigue_trend %}{{ object.fatigue_trend }}{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Breathlessness</td>
+        <td>{% if  object.breathlessness_trend %}{{ object.breathlessness_trend }}{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Cough</td>
+        <td>{% if  object.cough_trend %}{{ object.cough_trend }}{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Sleep Quality</td>
+        <td>{% if  object.sleep_quality_trend %}{{ object.sleep_quality_trend }}{% endif %}</td>
+      </tr>
+    </table>
     {% if object.other_symptoms %}
-    <p>
-      The patient also stated they were experiencing the following symptoms:
-      <br />
-      {{ object.other_symptoms|join:", " }}.
-    </p>
-  {% endif %}
+      <p>
+        The patient also stated they were experiencing the following symptoms:
+        <br />
+        {{ object.other_symptoms|join:", " }}.
+      </p>
+    {% endif %}
 
-  <h3>Recovery</h3>
-  {% if object.back_to_normal %}
-    <p>The patient stated that they feel back to normal.</p>
-  {% else %}
-    <p>The patient stated that they did not feel back to normal.</p>
-  {% endif %}
+    <h3>Recovery</h3>
+    {% if object.back_to_normal %}
+      <p>The patient stated that they feel back to normal.</p>
+    {% else %}
+      <p>The patient stated that they did not feel back to normal.</p>
+    {% endif %}
 
-  {% if object.why_not_back_to_normal %}
-    <p>{{ object.why_not_back_to_normal }}</p>
-  {% endif %}
+    {% if object.why_not_back_to_normal %}
+      <p>{{ object.why_not_back_to_normal }}</p>
+    {% endif %}
 
-  {% if object.other_concerns %}
-    <p>{{ object.other_concerns }}</p>
-  {% endif %}
+    {% if object.other_concerns %}
+      <p>{{ object.other_concerns }}</p>
+    {% endif %}
 
     <p><b>Psych Scores</b></p>
     <p>The patient scored {{ object.phq_score }}/6 on the PHQ2.</p>
     <p>The patient scored {{ object.tsq_score }}/10 on the TSQ.</p>
 
     {% if object.psychology %}
-    <p>
-      The team felt referral to psychology was needed.
-    </p>
+      <p>
+        The team felt referral to psychology was needed.
+      </p>
     {% endif %}
 
     {% if object.further_investigations %}
       <p><b>Further Actions</b></p>
-      <p>
-        The patient has been booked for {{ object.further_investigations|join:", " }}.
-      </p>
-    {% endif %}
+    <p>
+      The patient has been booked for {{ object.further_investigations|join:", " }}.
+    </p>
+  {% endif %}
 
-    {% if object.follow_up_outcome == object.FOLLOWUP %}
-      <p>We will be continuing to follow up with the patient.</p>
-    {% endif %}
+  {% if object.follow_up_outcome == object.FOLLOWUP %}
+    <p>We will be continuing to follow up with the patient.</p>
+  {% endif %}
 
-    {% if object.follow_up_outcome == object.DISCHARGE %}
-      <p>The patient has been discharged from our service.</p>
-    {% endif %}
+  {% if object.follow_up_outcome == object.DISCHARGE %}
+    <p>The patient has been discharged from our service.</p>
+  {% endif %}
 
-    {% if object.referrals %}
-      <p>
-        The patient has been referred to the following services:
-        {{ object.referrals|join:', ' }}.
-      </p>
-    {% endif %}
+  {% if object.referrals %}
+    <p>
+      The patient has been referred to the following services:
+      {{ object.referrals|join:', ' }}.
+    </p>
+  {% endif %}
 
-    {% if object.gp_referrals %}
-      <p>
-        We request that you refer the patient to the following services:
-        {{ object.gp_referrals|join:', ' }}.
-      </p>
-    {% endif %}
+  {% if object.gp_referrals %}
+    <p>
+      We request that you refer the patient to the following services:
+      {{ object.gp_referrals|join:', ' }}.
+    </p>
+  {% endif %}
 
-    {% if object.gp_copy %}
-      <p><b>Other Comments</b></p>
-      {{ object.gp_copy }}
-    {% endif %}
+  {% if object.gp_copy %}
+    <p><b>Other Comments</b></p>
+    {{ object.gp_copy }}
+  {% endif %}
 
   </section>
 

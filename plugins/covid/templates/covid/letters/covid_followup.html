@@ -1,0 +1,53 @@
+{% extends 'letters/base.html' %}
+{% block letter_content %}
+  <section>
+    <h2>Post Covid Telephone Follow Up Follow Up</h2>
+    {% with demographics=object.episode.patient.demographics %}
+      <p>
+        Patient Name:
+        {{ demographics.name }}
+      </p>
+    <p>
+      DOB:
+      {{ demographics.date_of_birth }}
+    </p>
+    <p>
+      MRN:
+      {{ demographics.hospital_number }}
+    </p>
+    <p>
+      NHS Number:
+      {{ demographics.nhs_number }}
+    </p>
+  {% endwith %}
+
+  <h3>This call</h3>
+
+    <p>
+      Clinician completing call:
+      {{ object.clinician }}
+    </p>
+
+    <p>
+      Date:
+      {{ object.when | date:'j M Y' }}
+    </p>
+
+    <h3>Reason for call:</h3>
+    {% if object.bloods %}
+      <p>Bloods</p>
+    {% endif %}
+    {% if object.imaging %}
+      <p>Imaging</p>
+    {% endif %}
+    {% if object.symptoms %}
+      <p>Symptoms</p>
+    {% endif %}
+    {% if object.other %}
+      <p>{{ object.other }}</p>
+    {% endif %}
+
+    {{ object.details }}
+
+  </section>
+{% endblock %}

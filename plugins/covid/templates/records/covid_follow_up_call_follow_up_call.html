@@ -1,0 +1,33 @@
+<h3>
+  <b>
+    [[ item.when | displayDate ]] [[ item.clinician ]]
+  </b>
+  <span ng-show="item.position">(</span>
+  [[ item.position ]]
+  <span ng-show="item.position">)</span>
+  <span class="pull-right">
+    <a href="/letters/#/covid/followup-letter/[[ item.id ]]/" target="_blank"><i class="fa fa-envelope"></i></a>
+  </span>
+</h3>
+
+<span ng-show="item.bloods">
+     Bloods
+   <br />
+</span>
+<span ng-show="item.imaging">
+     Imaging
+   <br />
+</span>
+<span ng-show="item.symptoms">
+     Symptoms
+   <br />
+</span>
+<span ng-show="item.other">
+    [[ item.other ]]
+   <br />
+</span>
+
+<span ng-show="item.gp_copy">
+    [[ item.details ]]
+   <br />
+</span>

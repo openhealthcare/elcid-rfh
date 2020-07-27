@@ -1,0 +1,31 @@
+{% load forms %}
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% datetimepicker field="CovidFollowUpCallFollowUpCall.when" style="vertical" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="CovidFollowUpCallFollowUpCall.clinician" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% select field="CovidFollowUpCallFollowUpCall.position" style="vertical" %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4 col-md-4-offset-1">
+    <h3 class="text-center">Reason for call:</h3>
+
+    {% checkbox field="CovidFollowUpCallFollowUpCall.bloods"  %}
+    {% checkbox field="CovidFollowUpCallFollowUpCall.imaging" %}
+    {% checkbox field="CovidFollowUpCallFollowUpCall.symptoms" %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-9 col-md-offset-1">
+    {% input field="CovidFollowUpCallFollowUpCall.other" style="vertical" %}
+    {% textarea field="CovidFollowUpCallFollowUpCall.details" style="vertical" %}
+  </div>
+</div>
