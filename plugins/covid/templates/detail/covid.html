@@ -81,17 +81,17 @@
 
       <section patient-api target="reports" endpoint="covid_cxr">
         <div class="panel panel-default" ng-show="reports.length > 0">
-        <div class="panel-heading">
-          <h3>{% icon 'fa fa-eye' %}Covid CXR</h3>
-        </div>
-        <div class="panel-footer">
-          <div class="row" ng-repeat="item in reports">
-            <div class="col-md-3">[[ item.date_reported | displayDateTime ]]</div>
-            <div class="col-md-9" markdown="obx_result"></div>
+          <div class="panel-heading">
+            <h3>{% icon 'fa fa-eye' %}Covid CXR</h3>
+          </div>
+          <div class="panel-footer">
+            <div class="row" ng-repeat="item in reports">
+              <div class="col-md-3">[[ item.date_reported | displayDateTime ]]</div>
+              <div class="col-md-9" markdown="obx_result"></div>
+            </div>
           </div>
         </div>
-        </div>
-        </section>
+      </section>
 
     </div> <!-- col 6 -->
 
@@ -99,16 +99,10 @@
 
   <div class="row">
     <div class="col-md-12">{% wide_panel models.CovidAdmission %}</div>
-    <div class="col-md-6">{% record_panel models.CovidSmokingHistory %}</div>
-    <div class="col-md-6">{% record_panel models.CovidSocialHistory %}</div>
     <div class="col-md-12">
       {% record_panel models.CovidComorbidities %}
-      {% record_panel models.CovidTrialEnrollment %}
     </div>
-    <div class="col-md-6">{% record_panel models.ITUAdmission %}</div>
-    <div class="col-md-6">{% record_panel models.LungFunctionTest %}</div>
-    <div class="col-md-6">{% record_panel models.CovidCXR %}</div>
-    <div class="col-md-6">{% record_panel models.CovidCT %}</div>
+
     <div class="col-md-12">
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -126,5 +120,6 @@
       </div>
     </div>
     <div class="col-md-12">{% record_timeline models.CovidFollowUpCall 'when' %}</div>
+    <div class="col-md-12">{% record_timeline models.CovidFollowUpCallFollowUpCall 'when' %}</div>
   </div>
 </section>

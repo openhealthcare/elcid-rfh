@@ -104,3 +104,9 @@ class CovidLetter(LoginRequiredMixin, DetailView):
     # accessed at /letters/#/covid/letter/10/
     model         = models.CovidFollowUpCall
     template_name = 'covid/letters/covid.html'
+
+
+class CovidFollowupLetter(LoginRequiredMixin, DetailView):
+    # accessed at /letters/#/covid-followup/letter/10/
+    model         = models.CovidFollowUpCallFollowUpCall
+    template_name = 'covid/letters/covid_followup.html'

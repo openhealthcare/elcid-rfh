@@ -133,8 +133,6 @@ class Command(BaseCommand):
             'focal_weakness'      : no_yes(patient['Focal weakness (0 = no, 1 = yes)']),
             'other'               : patient['Other'],
             'predominant_symptom' : patient['Predominant symptom'],
-            'height'              : patient['Height (m)'],
-            'weight'              : patient['Weight (kg)'],
             'respiratory_rate'    : numeric(patient['Respiratory rate on admission (breaths/min)']),
             'heart_rate'          : numeric(patient['Heart rate on admission (beats/min)']),
             'sao2'                : patient['SaO2'],
@@ -156,43 +154,43 @@ class Command(BaseCommand):
         admission.created_by_id = 1
         admission.save()
 
-        smokinghistory = episode.covidsmokinghistory_set.get()
+        # smokinghistory = episode.covidsmokinghistory_set.get()
 
-        smokinghistory.admisison_status = smoking_status(patient),
-        smokinghistory.pack_year_history = patient['Pack year history']
-        smokinghistory.created_by_id = 1
-        smokinghistory.save()
+        # smokinghistory.admisison_status = smoking_status(patient),
+        # smokinghistory.pack_year_history = patient['Pack year history']
+        # smokinghistory.created_by_id = 1
+        # smokinghistory.save()
 
-        socialhistory, _ = models.CovidSocialHistory.objects.get_or_create(patient=episode.patient, created_by_id=1)
+        # socialhistory, _ = models.CovidSocialHistory.objects.get_or_create(patient=episode.patient, created_by_id=1)
 
-        CIRCUMSTANCES = {
-            '0': 'Independent',
-            '1': 'Family help',
-            '2': 'Carers',
-            '3': 'NH/RH'
-        }
-        socialhistory.social_circumstances = CIRCUMSTANCES.get(
-            patient['Social circumstances (0 = independent, 1 = family help, 2 = carers, 3 = NH/RH)'])
+        # CIRCUMSTANCES = {
+        #     '0': 'Independent',
+        #     '1': 'Family help',
+        #     '2': 'Carers',
+        #     '3': 'NH/RH'
+        # }
+        # socialhistory.social_circumstances = CIRCUMSTANCES.get(
+        #     patient['Social circumstances (0 = independent, 1 = family help, 2 = carers, 3 = NH/RH)'])
 
-        CARERS = {
-            '1': 'OD',
-            '2': 'BD',
-            '3': 'TDS',
-            '4': 'QDS'
-        }
-        carers = patient.get('If carers, 1  = OD 2 = BD 3 = TDS 4 = QDS')
-        if carers:
-            socialhistory.carers = CARERS.get(carers)
+        # CARERS = {
+        #     '1': 'OD',
+        #     '2': 'BD',
+        #     '3': 'TDS',
+        #     '4': 'QDS'
+        # }
+        # carers = patient.get('If carers, 1  = OD 2 = BD 3 = TDS 4 = QDS')
+        # if carers:
+        #     socialhistory.carers = CARERS.get(carers)
 
-        shielding = patient.get('Shielding status (0 = not shielding 1 = voluntary 2 = extremely vulnerable 3 = HCP issued letter)')
-        SHIELDING = {
-            '0': 'Not',
-            '1': 'Voluntary Shielding',
-            '2': 'Extremely Vulnerable',
-            '3': 'Letter Issued by HCP'
-        }
-        socialhistory.shielding_status = SHIELDING.get(shielding)
-        socialhistory.save()
+        # shielding = patient.get('Shielding status (0 = not shielding 1 = voluntary 2 = extremely vulnerable 3 = HCP issued letter)')
+        # SHIELDING = {
+        #     '0': 'Not',
+        #     '1': 'Voluntary Shielding',
+        #     '2': 'Extremely Vulnerable',
+        #     '3': 'Letter Issued by HCP'
+        # }
+        # socialhistory.shielding_status = SHIELDING.get(shielding)
+        # socialhistory.save()
 
         comorbidities = episode.covidcomorbidities_set.get()
         comorbidities.created_by_id = 1
