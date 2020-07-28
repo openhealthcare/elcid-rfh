@@ -313,8 +313,8 @@ class CovidFollowUpCall(EpisodeSubrecord):
     incomplete_reason  = models.TextField(blank=True, null=True)
 
     ethnicity = models.CharField(blank=True, null=True, max_length=240)
-    height    = models.CharField(blank=True, null=True, max_length=20, help_text='m')
-    weight    = models.CharField(blank=True, null=True, max_length=20, help_text='kg')
+    height    = models.CharField(blank=True, null=True, max_length=20, verbose_name='Height (m)')
+    weight    = models.CharField(blank=True, null=True, max_length=20, verbose_name='Weight (kg)')
 
     social_circumstances = models.CharField(
         blank=True, null=True, max_length=200, choices=CIRCUMSTANCES_CHOICES
@@ -585,6 +585,9 @@ class CovidFollowUpCallFollowUpCall(EpisodeSubrecord):
     _icon = 'fa fa-phone'
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
+
+    class Meta:
+        verbose_name = 'Covid Follow Up Subsequent Call'
 
     when              = models.DateTimeField(blank=True, null=True)
     clinician         = models.CharField(blank=True, null=True, max_length=255) # Default to user
