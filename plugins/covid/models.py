@@ -253,6 +253,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
     TREND_CHOICES        = enum('Same', 'Better', 'Worse')
     Y_N_NA               = enum('Yes', 'No', 'N/A')
+    Y_N_NOT_SURE         = enum('Yes', 'No', 'Not sure')
     LIMITED_BY_CHOICES   = enum('SOB', 'Fatigue', 'Other')
 
     UNABLE_TO_COMPLETE   = 'Unable to complete'
@@ -277,7 +278,8 @@ class CovidFollowUpCall(EpisodeSubrecord):
         'OD',
         'BD',
         'TDS',
-        'QDS'
+        'QDS',
+        '24h'
     )
 
     SHIELDING_CHOICES = enum(
@@ -457,7 +459,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         blank=True, null=True, max_length=20, choices=Y_N_NA)
 
     call_satisfaction         = models.CharField(
-        blank=True, null=True, max_length=20, choices=Y_N_NA,
+        blank=True, null=True, max_length=20, choices=Y_N_NOT_SURE,
         verbose_name="Did you find this call useful?"
     )
     recontact                 = models.NullBooleanField(
