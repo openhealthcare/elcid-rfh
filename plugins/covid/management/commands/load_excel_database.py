@@ -120,6 +120,13 @@ def max_resp(patient):
     return STATUSES[value]
 
 
+def is_empty(some_value):
+    """
+    Returns True if some value is none or an empty string
+    """
+    return some_value is None or some_value == ""
+
+
 class CSVRow(object):
     """
     The csv in question has duplicate headers, if we
@@ -474,18 +481,21 @@ class Command(BaseCommand):
 
         covid_follow_up_call.limited_by = limited_by
         covid_follow_up_call.current_cfs = patient["Current CFS (0-9)"]
-        covid_follow_up_call.interest = to_choice(
-            patient["Little interest/pleasure in doing things (0-3)"],
-            covid_follow_up_call.ZERO_TO_THREE
-        )
+        if not is_empty(patient["Little interest/pleasure in doing things (0-3)"]):
+            covid_follow_up_call.interest = to_choice(
+                patient["Little interest/pleasure in doing things (0-3)"],
+                covid_follow_up_call.ZERO_TO_THREE
+            )
 
         if patient["Down, depressed, hopeless (0-3)"] == "4":
             # This is a flaw in the source data
             return
-        covid_follow_up_call.depressed = to_choice(
-            patient["Down, depressed, hopeless (0-3)"],
-            covid_follow_up_call.ZERO_TO_THREE
-        )
+
+        if not is_empty(patient["Down, depressed, hopeless (0-3)"]):
+            covid_follow_up_call.depressed = to_choice(
+                patient["Down, depressed, hopeless (0-3)"],
+                covid_follow_up_call.ZERO_TO_THREE
+            )
         covid_follow_up_call.tsq1 = no_yes(patient["TSQ1 (0 = no 1 = yes)"])
         covid_follow_up_call.tsq2 = no_yes(patient["TSQ2 (0 = no 1 = yes)"])
         covid_follow_up_call.tsq3 = no_yes(patient["TSQ3 (0 = no 1 = yes)"])
