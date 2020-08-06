@@ -1,0 +1,19 @@
+{% load forms %}
+{% if settings.PDF_ASYNC %}
+<span ng-controller="AsyncLoad as asyncLoad">
+  <button class="btn btn-lg btn-primary" ng-show="!asyncLoad.state" ng-click="asyncLoad.load('{{ url }}')">
+    {% icon "fa-file-pdf-o" %} Create PDF
+  </button>
+  <button class="btn btn-lg btn-secondary" ng-show="asyncLoad.state === asyncLoad.states.LOADING">
+    <i class="fa fa-cog fa-spin" ></i> Creating PDF
+  </button>
+  <a href="/letters/async/[[ asyncLoad.taskId ]]/" target="_blank" class="btn btn-lg btn-secondary" ng-show="asyncLoad.state === asyncLoad.states.RESOLVED">
+    <i class="glyphicon glyphicon-download"></i>
+      Ready - Download your pdf
+  </a>
+</span>
+{% else %}
+<a href="{{ url }}" target="_blank" class="btn btn-lg btn-primary screen-only">
+  {% icon "fa-file-pdf-o" %} PDF
+</a>
+{% endif %}

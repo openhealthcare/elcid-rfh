@@ -405,6 +405,7 @@ HOSPITAL_DB = dict(
 
 
 EXTRACT_ASYNC = False
+PDF_ASYNC = False
 WRITEBACK_ON = True
 
 REST_FRAMEWORK = {
@@ -413,6 +414,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
 
 if 'test' not in sys.argv:
     try:
