@@ -1,4 +1,9 @@
 {% extends 'letters/base.html' %}
+{% load letters %}
+
+{% block actions %}
+  {% pdf_link 'covid_letter_pdf' pk=view.object.pk %}
+{% endblock %}
 {% block letter_content %}
   <section>
     <!--

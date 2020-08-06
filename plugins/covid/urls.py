@@ -5,6 +5,7 @@ from django.conf.urls import url
 
 from plugins.covid import views
 
+
 urlpatterns = [
     url(
         'templates/covid/dashboard.html',
@@ -22,9 +23,13 @@ urlpatterns = [
         name='covid_letter'
     ),
     url(
+        'covid/letter/pdf/(?P<pk>\d+)/?$',
+        views.CovidPDFLetter.as_view(),
+        name='covid_letter_pdf'
+    ),
+    url(
         'covid/followup-letter/(?P<pk>\d+)/?$',
         views.CovidFollowupLetter.as_view(),
         name='covid_followup_letter'
     ),
-
 ]

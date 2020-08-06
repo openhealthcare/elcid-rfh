@@ -8,9 +8,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.views.generic import TemplateView, View, DetailView
+from plugins.letters.views import PdfMixin
 
-from opal import models as opal_models
-from elcid import patient_lists
 
 from plugins.covid import models, constants
 
@@ -104,6 +103,10 @@ class CovidLetter(LoginRequiredMixin, DetailView):
     # accessed at /letters/#/covid/letter/10/
     model         = models.CovidFollowUpCall
     template_name = 'covid/letters/covid.html'
+
+
+class CovidPDFLetter(PdfMixin, CovidLetter):
+    pass
 
 
 class CovidFollowupLetter(LoginRequiredMixin, DetailView):
