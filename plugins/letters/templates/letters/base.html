@@ -2,12 +2,14 @@
 <div class="container content-offset content-offset-below detail">
 {% block content %}
 <div class="row content-offset">
+  {% block actions %}
+  <div class="pull-right col-md-2">
   {% block copy_button %}
-    <div class="pull-right col-md-2">
-      <button clipboard data-clipboard-target=".letter" class="btn btn-lg btn-primary screen-only">
-        {% icon "fa-clipboard" %} Copy
-      </button>
-    </div>
+    <button clipboard data-clipboard-target=".letter" class="btn btn-lg btn-primary screen-only">
+      {% icon "fa-clipboard" %} Copy
+    </button>
+  {% endblock %}
+  </div>
   {% endblock %}
   <div class="letter col-md-9">
     {% block letter_content %}
