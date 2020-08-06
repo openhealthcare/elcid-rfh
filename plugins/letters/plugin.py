@@ -5,6 +5,7 @@ from opal.core import plugins
 
 from plugins.letters.urls import urlpatterns
 
+
 class LettersPlugin(plugins.OpalPlugin):
     """
     Main entrypoint to expose this plugin to our Opal application.
@@ -15,10 +16,11 @@ class LettersPlugin(plugins.OpalPlugin):
         'opal.letters': [
             'js/letters/app.js',
             'js/letters/controllers/blank_controller.js',
+            'js/letters/controllers/async_load_controller.js',
             'js/letters/controllers/redirect_controller.js',
         ]
     }
 
     stylesheets = [
-        "css/letters.css"
+        "css/letters.css",
     ]
