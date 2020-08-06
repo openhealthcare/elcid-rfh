@@ -1,7 +1,21 @@
 {% extends 'letters/base.html' %}
 {% block letter_content %}
   <section>
-    <!--
+
+    <p>
+      <b>Centre for Respiratory Medicine</b><br />
+      Dr Paul Dilworth, Dr James Goldring, Professor Marc Lipman,<br />
+      Dr Anant Patel, Professor John Hurst, Dr Swapna Mandal, Dr<br />
+      Simon Brill, Dr James Murray, Dr Helen Garthwaite and Dr<br />
+      James Brown<br />
+      Tel: 0207 317 7560/0207 472 6260<br />
+      Fax:0207 317 7561 Fax (internal): 31928
+    </p>
+
+    <p>
+      <b>Private &amp; Confidential</b>
+    </p>
+
         <p>
           {% with GP=object.patient.gpdetails_set.get %}
             {{ GP }}
@@ -10,7 +24,43 @@
             {{ GP.postcode }}
           {% endwith %}
         </p>
-        -->
+
+    <p>
+      Date: {{ today }}
+    </p>
+    <p>
+      MRN: {{ object.episode.patient.demographics.hospital_number }}
+    </p>
+
+    <p>
+      We have contacted one of your patients today for a telephone consultation as they have recently
+      been admitted to Royal Free London NHS Foundation Trust with COVID-19. We attach the
+      consultation for you records. We have highlighted specific issues that we would be grateful for you to
+      action in the grey box at the end of the consultation document.
+    </p>
+    <p>
+      You may find the following resources useful to offer to some of your patients:
+      <br />
+      https://covidpatientsupport.lthtr.nhs.uk/#/
+      <br />
+      https://www.post-covid.org.uk/get-support/
+    </p>
+
+    <p>
+      Yours sincerely,
+    </p>
+    <p>
+      Centre for Respiratory Medicine<br />
+      The Grove Centre<br />
+      Royal Free Hospital<br />
+      Pond Street<br />
+      London<br />
+      NW3 2QG<br />
+      www.royalfree.nhs.uk<br />
+      Switchboard: 020 7794 0500<br />
+      Fax: 020 7830 2468
+    </p>
+
 
         <h2>Post Covid Telephone Follow Up</h2>
         {% with demographics=object.episode.patient.demographics %}
