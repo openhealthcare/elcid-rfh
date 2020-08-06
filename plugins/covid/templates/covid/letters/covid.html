@@ -17,7 +17,7 @@
     </p>
 
         <p>
-          {% with GP=object.patient.gpdetails_set.get %}
+          {% with GP=object.episode.patient.gpdetails_set.get %}
             {{ GP }}
             {{ GP.title }} {{ GP.initials }} {{ GP.surname }}<br />
             {{ GP.address_1}} <br />
