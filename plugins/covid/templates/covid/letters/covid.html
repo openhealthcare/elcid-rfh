@@ -18,9 +18,11 @@
 
         <p>
           {% with GP=object.episode.patient.gpdetails_set.get %}
-            {{ GP }}
             {{ GP.title }} {{ GP.initials }} {{ GP.surname }}<br />
-            {{ GP.address_1}} <br />
+            {% if GP.address_1 %}{{ GP.address_1}} <br />{% endif %}
+            {% if GP.address_2 %}{{ GP.address_2}} <br />{% endif %}
+            {% if GP.address_3 %}{{ GP.address_3}} <br />{% endif %}
+            {% if GP.address_4 %}{{ GP.address_4}} <br />{% endif %}
             {{ GP.postcode }}
           {% endwith %}
         </p>
