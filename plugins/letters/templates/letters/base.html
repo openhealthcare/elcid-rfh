@@ -1,15 +1,17 @@
 {% load forms %}
-<div class="container content-offset content-offset-below detail">
+<div class="letter-container container content-offset content-offset-below detail">
 {% block content %}
-<div class="row content-offset">
+<div class="row">
+  {% block actions %}
+  <div class="pull-right col-md-2 content-offset">
   {% block copy_button %}
-    <div class="pull-right col-md-2">
-      <button clipboard data-clipboard-target=".letter" class="btn btn-lg btn-primary screen-only">
-        {% icon "fa-clipboard" %} Copy
-      </button>
-    </div>
+    <button clipboard data-clipboard-target=".letter" class="btn btn-lg btn-primary screen-only">
+      {% icon "fa-clipboard" %} Copy
+    </button>
   {% endblock %}
-  <div class="letter col-md-9">
+  </div>
+  {% endblock %}
+  <div class="letter col-md-9 content-offset">
     {% block letter_content %}
     {% endblock %}
   </div>
