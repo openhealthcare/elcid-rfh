@@ -208,15 +208,15 @@
 
   <hr />
 
-  <section ng-show="item.interest !== '0' || item.depressed !== '0'">
+  <section ng-show="(item.interest || item.depressed) && (item.interest !== '0' || item.depressed !== '0')">
     <div class="row content-offset-below-20">
       <div class="col-md-12">
         <p><b>Psychological:</b></p>
       </div>
-      <div class="col-md-6" ng-show="item.interest !== '0'"><b>Little Interest Or Pleasure In Doing Things</b></div>
-      <div class="col-md-6" ng-show="item.interest !== '0'">[[ item.interest ]]</div>
-      <div class="col-md-6" ng-show="item.depressed !== '0'"><b>Down, Depressed, Hopeless</b></div>
-      <div class="col-md-6" ng-show="item.depressed !== '0'">[[ item.depressed ]]</div>
+      <div class="col-md-6" ng-show="item.interest && item.interest !== '0'"><b>Little Interest Or Pleasure In Doing Things</b></div>
+      <div class="col-md-6" ng-show="item.interest && item.interest !== '0'">[[ item.interest ]]</div>
+      <div class="col-md-6" ng-show="item.depressed && item.depressed !== '0'"><b>Down, Depressed, Hopeless</b></div>
+      <div class="col-md-6" ng-show="item.depressed && item.depressed !== '0'">[[ item.depressed ]]</div>
     </div>
     <div class="row" ng-show="item.tsq1 || item.tsq2 || item.tsq3 || item.tsq4 || item.tsq5 || item.tsq6 || item.tsq7 || item.tsq8 || item.tsq9 || item.tsq10 ">
       <div class="col-md-12 content-offset-25">
