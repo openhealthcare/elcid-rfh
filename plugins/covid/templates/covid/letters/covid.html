@@ -34,23 +34,26 @@
 
   <h3>This call</h3>
 
+    {% if object.clinician %}
     <p>
       Clinician completing call:
       {{ object.clinician }}
     </p>
+    {% endif object.clinician %}
 
     <p>
       Date:
       {{ object.when | date:'j M Y' }}
     </p>
-    <h3>Admission</h3>
     {% with admission=object.episode.covidadmission_set.get %}
+    <h3>Admission</h3>
+    {% if admission.date_of_admission or admission.date_of_discharge %}
       <p>
         {{ admission.date_of_admission }} - {{ admission.date_of_discharge }}
       </p>
-
+    {% endif %}
+    {% endwith %}
     <p>Predominant symptoms: {{ admission.predominant_symptom }}</p>
-  {% endwith %}
   <!--
       <h3>Follow up questions</h3>
       -->
