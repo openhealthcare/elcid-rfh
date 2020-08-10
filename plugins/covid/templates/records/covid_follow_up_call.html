@@ -180,28 +180,28 @@
   </div>
   <div class="row">
 
-    <div class="col-md-3"><b>Baseline Health Proximity</b></div>
+    <div class="col-md-3"><b>Baseline Health Proximity:</b></div>
     <div class="col-md-3">[[ item.baseline_health_proximity ]]</div>
-    <div class="col-md-3"><b>Back To Work</b></div>
+    <div class="col-md-3"><b>Back To Work:</b></div>
     <div class="col-md-3">[[ item.back_to_work ]]</div>
 
   </div>
   <div class="row">
 
-    <div class="col-md-3"><b>Exercise Tolerance</b></div>
+    <div class="col-md-3"><b>Exercise Tolerance:</b></div>
     <div class="col-md-3">
       [[ item.current_et | title ]]
       <span ng-show="item.current_et && !item.current_et === 'unlimited'">m</span>
     </div>
-    <div class="col-md-3"><b>MRC Dyspnoea Scale</b></div>
+    <div class="col-md-3"><b>MRC Dyspnoea Scale:</b></div>
     <div class="col-md-3">[[ item.mrc_dyspnoea_scale ]]</div>
 
   </div>
   <div class="row">
 
-    <div class="col-md-3"><b>Limited By</b></div>
+    <div class="col-md-3"><b>Limited By:</b></div>
     <div class="col-md-3">[[ item.limited_by ]]</div>
-    <div class="col-md-3"><b>Clinical Frailty Score</b></div>
+    <div class="col-md-3"><b>Clinical Frailty Score:</b></div>
     <div class="col-md-3">[[ item.current_cfs ]]</div>
 
   </div>
@@ -213,9 +213,9 @@
       <div class="col-md-12">
         <p><b>Psychological:</b></p>
       </div>
-      <div class="col-md-6" ng-show="item.interest && item.interest !== '0'"><b>Little Interest Or Pleasure In Doing Things</b></div>
+      <div class="col-md-6" ng-show="item.interest && item.interest !== '0'"><b>Little Interest Or Pleasure In Doing Things:</b></div>
       <div class="col-md-6" ng-show="item.interest && item.interest !== '0'">[[ item.interest ]]</div>
-      <div class="col-md-6" ng-show="item.depressed && item.depressed !== '0'"><b>Down, Depressed, Hopeless</b></div>
+      <div class="col-md-6" ng-show="item.depressed && item.depressed !== '0'"><b>Down, Depressed, Hopeless:</b></div>
       <div class="col-md-6" ng-show="item.depressed && item.depressed !== '0'">[[ item.depressed ]]</div>
     </div>
     <div class="row" ng-show="item.tsq1 || item.tsq2 || item.tsq3 || item.tsq4 || item.tsq5 || item.tsq6 || item.tsq7 || item.tsq8 || item.tsq9 || item.tsq10 ">
