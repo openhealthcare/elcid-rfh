@@ -574,13 +574,22 @@ class Command(BaseCommand):
                 patients += 1
 
                 try:
-                    worked = self.load_patient(patient)
-                    if worked:
-                        imported += 1
+                    self.load_patient(patient)
                 except:
                     raise
 
             print('Patients: {}'.format(patients))
-            print('Imported: {}'.format(imported))
+            print('Imported episodes: {}'.format(
+                Episode.objects.filter(
+                    category_name=CovidEpisode.display_name
+                ).count()
+            ))
+            print('Imported admissions: {}'.format(
+                models.CovidAdmission.objects.objects.all().count()
+            ))
+            print('Imported follow up calls: {}'.format(
+                models.CovidFollowUpCall.objects.all().count()
+            ))
+
 
         return
