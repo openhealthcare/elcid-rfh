@@ -108,11 +108,15 @@
       <p>{{ object.other_concerns }}</p>
     {% endif %}
 
+    {% if not object.phq_score == None and not object.tsq_score is None %}
     <p><b>Psych Scores</b></p>
     {% if not object.phq_score == None %}
     <p>The patient scored {{ object.phq_score }}/6 on the PHQ2.</p>
     {% endif %}
+    {% if not object.phq_score == None %}
     <p>The patient scored {{ object.tsq_score }}/10 on the TSQ.</p>
+    {% endif %}
+    {% endif %}
 
     {% if object.psychology %}
       <p>
