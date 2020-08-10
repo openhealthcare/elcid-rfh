@@ -68,10 +68,18 @@
 </div>
 <div class="row" ng-show="item.admission_status">
   <div class="col-md-6">
-    <b>Smoking staus on admission</b>
+    <b>Smoking Staus On Admission:</b>
   </div>
   <div class="col-md-6">
     [[ item.admission_status ]]
+  </div>
+</div>
+<div class="row" ng-show="item.followup_status">
+  <div class="col-md-6">
+    <b>Smoking Staus At Follow Up:</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.followup_status ]]
   </div>
 </div>
 <div class="row" ng-show="item.pack_year_history">
@@ -90,33 +98,22 @@
      Other Drugs Smoked
    <br />
 </span>
-<div class="row" ng-show="item.followup_status">
-  <div class="col-md-6">
-    <b>Smoking taus at followup</b>
-  </div>
-  <div class="col-md-6">
-    [[ item.followup_status ]]
-  </div>
-</div>
-
-
-  <section ng-show="item.changes_to_medication">
-    <hr />
-    <div class="row" >
-      <div class="col-md-8">
-        <b>Changes to medication post discharge</b>
-        <br />
-        [[ item.medication_change_details ]]
-      </div>
+<section ng-show="item.changes_to_medication">
+  <hr />
+  <div class="row" >
+    <div class="col-md-8">
+      <b>Changes to medication post discharge</b>
+      <br />
+      [[ item.medication_change_details ]]
     </div>
-  </section>
+  </div>
+</section>
 
   <hr />
 
   <div class="row">
     <div class="col-md-12">
       <p><b>Symptoms At Followup:</b></p>
-      <br />
       <span ng-show="item.myalgia">Myalgia<br /></span>
       <span ng-show="item.anosmia">Anosmia<br /></span>
       <span ng-show="item.anorexia">Anorexia<br /></span>
@@ -130,7 +127,7 @@
       <span ng-show="item.loss_of_taste">Loss Of Taste<br /></span>
     </div>
 
-    <div class="col-md-12">
+    <div class="col-md-12 content-offset-20">
       <table class="table table-striped table-bordered ">
         <tr>
           <th>Symptom</th>
@@ -167,45 +164,44 @@
   </div>
 
   <div class="row">
-    <div class="col-md-12 content-offset-below-25">
+    <div class="col-md-12 content-offset-below-20">
       <p><b>Quality Of Life:</b></p>
-      <br />
-
       <span ng-show="item.back_to_normal">
         Back To Normal
         <br />
       </span>
-      <span ng-show="item.why_not_back_to_normal">
+      <span ng-show="!item.back_to_normal || item.why_not_back_to_normal">
+        Not Back To Normal<span ng-show="item.why_not_back_to_normal">:
         [[ item.why_not_back_to_normal ]]
+        </span>
         <br />
       </span>
-
     </div>
   </div>
   <div class="row">
 
-    <div class="col-md-3"><b>Baseline Health Proximity</b></div>
+    <div class="col-md-3"><b>Baseline Health Proximity:</b></div>
     <div class="col-md-3">[[ item.baseline_health_proximity ]]</div>
-    <div class="col-md-3"><b>Back To Work</b></div>
+    <div class="col-md-3"><b>Back To Work:</b></div>
     <div class="col-md-3">[[ item.back_to_work ]]</div>
 
   </div>
   <div class="row">
 
-    <div class="col-md-3"><b>Exercise Tolerance</b></div>
+    <div class="col-md-3"><b>Exercise Tolerance:</b></div>
     <div class="col-md-3">
-      [[ item.current_et ]]
-      <span ng-show="item.current_et">m</span>
+      [[ item.current_et | title ]]
+      <span ng-show="item.current_et && !item.current_et === 'unlimited'">m</span>
     </div>
-    <div class="col-md-3"><b>MRC Dyspnoea Scale</b></div>
+    <div class="col-md-3"><b>MRC Dyspnoea Scale:</b></div>
     <div class="col-md-3">[[ item.mrc_dyspnoea_scale ]]</div>
 
   </div>
   <div class="row">
 
-    <div class="col-md-3"><b>Limited By</b></div>
+    <div class="col-md-3"><b>Limited By:</b></div>
     <div class="col-md-3">[[ item.limited_by ]]</div>
-    <div class="col-md-3"><b>Clinical Frailty Score</b></div>
+    <div class="col-md-3"><b>Clinical Frailty Score:</b></div>
     <div class="col-md-3">[[ item.current_cfs ]]</div>
 
   </div>
@@ -213,14 +209,14 @@
   <hr />
 
   <section ng-show="item.interest || item.depressed">
-    <div class="row" >
+    <div class="row content-offset-below-20">
       <div class="col-md-12">
         <p><b>Psychological:</b></p>
       </div>
-      <div class="col-md-6"><span ng-show="item.interest"><b>Little Interest Or Pleasure In Doing Things</b></span></div>
-      <div class="col-md-6">[[ item.interest ]]</div>
-      <div class="col-md-6"><span ng-show="item.depressed"><b>Down, Depressed, Hopeless</b></span></div>
-      <div class="col-md-6">[[ item.depressed ]]</div>
+      <div class="col-md-6" ng-show="item.interest"><b>Little Interest Or Pleasure In Doing Things:</b></div>
+      <div class="col-md-6" ng-show="item.interest">[[ item.interest ]]</div>
+      <div class="col-md-6" ng-show="item.depressed"><b>Down, Depressed, Hopeless:</b></div>
+      <div class="col-md-6" ng-show="item.depressed">[[ item.depressed ]]</div>
     </div>
     <div class="row" ng-show="item.tsq1 || item.tsq2 || item.tsq3 || item.tsq4 || item.tsq5 || item.tsq6 || item.tsq7 || item.tsq8 || item.tsq9 || item.tsq10 ">
       <div class="col-md-12 content-offset-25">
@@ -295,21 +291,22 @@
   </section>
 
   <section ng-show="item.call_satisfaction">
-    <div class="row">
+    <div class="row content-offset-below-20">
       <div class="col-md-8">
         <p><b>Patient Satisfied With Call:</b></p>
         [[ item.call_satisfaction ]]
       </div>
     </div>
   </section>
-  <div class="row">
-    <div class="col-md-8">
-      <p><b>Contactable For Research:</b></p>
-      <span ng-show="item.recontact">Yes</span>
-      <span ng-hide="item.recontact">No</span>
+  <section>
+    <div class="row content-offset-20">
+      <div class="col-md-8">
+        <p><b>Contactable For Research:</b></p>
+        <span ng-show="item.recontact">Yes</span>
+        <span ng-show="item.recontact !== null && !item.recontact">No</span>
+      </div>
     </div>
-  </div>
-
+  </section>
   <div class="row">
     <div class="col-md-6">
       <section ng-show="item.cxr || item.ecg || item.echocardiogram || item.ct_chest || item.pft || item.exercise || item.repeat_bloods || item.other_investigations ">
@@ -353,7 +350,6 @@
     </div>
 
     <div class="col-md-6">
-
       <section ng-show="item.anticoagulation || item.cardiology || item.elderly_care || item.fatigue_services || item.hepatology || item.neurology || item.primary_care || item.psychology || item.psychiatry || item.respiratory || item.rehabilitation || item.other_referral ">
 
         <p><b>Referrals</b></p>
