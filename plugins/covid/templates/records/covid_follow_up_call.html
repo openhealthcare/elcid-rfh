@@ -74,6 +74,14 @@
     [[ item.admission_status ]]
   </div>
 </div>
+<div class="row" ng-show="item.followup_status">
+  <div class="col-md-6">
+    <b>Smoking staus at follow up</b>
+  </div>
+  <div class="col-md-6">
+    [[ item.followup_status ]]
+  </div>
+</div>
 <div class="row" ng-show="item.pack_year_history">
   <div class="col-md-6">
     <b>Pack Year History:</b>
@@ -90,26 +98,16 @@
      Other Drugs Smoked
    <br />
 </span>
-<div class="row" ng-show="item.followup_status">
-  <div class="col-md-6">
-    <b>Smoking status at followup</b>
-  </div>
-  <div class="col-md-6">
-    [[ item.followup_status ]]
-  </div>
-</div>
-
-
-  <section ng-show="item.changes_to_medication">
-    <hr />
-    <div class="row" >
-      <div class="col-md-8">
-        <b>Changes to medication post discharge</b>
-        <br />
-        [[ item.medication_change_details ]]
-      </div>
+<section ng-show="item.changes_to_medication">
+  <hr />
+  <div class="row" >
+    <div class="col-md-8">
+      <b>Changes to medication post discharge</b>
+      <br />
+      [[ item.medication_change_details ]]
     </div>
-  </section>
+  </div>
+</section>
 
   <hr />
 
