@@ -105,6 +105,11 @@ class CovidLetter(LoginRequiredMixin, DetailView):
     model         = models.CovidFollowUpCall
     template_name = 'covid/letters/covid.html'
 
+    def get_context_data(self, *a, **k):
+        ctx = super().get_context_data(*a, **k)
+        ctx['today'] = datetime.date.today()
+        return ctx
+
 
 class CovidFollowupLetter(LoginRequiredMixin, DetailView):
     # accessed at /letters/#/covid-followup/letter/10/

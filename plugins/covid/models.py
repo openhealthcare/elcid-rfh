@@ -281,6 +281,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         'QDS',
         '24h'
     )
+
     SHIELDING_CHOICES = enum(
         'Not',
         'Voluntary Shielding',
