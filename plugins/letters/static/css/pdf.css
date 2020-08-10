@@ -1,0 +1,17 @@
+/* This style sheet is only used when pdfs are created */
+.outer-container .letter-base.container.content-offset {
+    margin-top: 0;
+}
+
+.letter-base .letter {
+    padding-top: 0;
+}
+
+.page-break{
+    page-break-after: always;
+}
+
+table { page-break-inside:avoid }
+tr    { page-break-inside:avoid; page-break-after:auto }
+thead { display:table-header-group }
+tfoot { display:table-footer-group }
