@@ -202,13 +202,19 @@ class Command(BaseCommand):
 
         try:
             date_of_admission = datetime.datetime.strptime(patient['Date of admission'], '%d/%m/%Y %H:%M')
-        except ValueError: # Junk in the raw data
-            date_of_admission = None
+        except ValueError: # Sometimes its just a date
+            try:
+                date_of_admission = to_date(patient['Date of admission'])
+            except ValueError: # And sometimes it junk
+                date_of_admission = None
 
         try:
             date_of_discharge = datetime.datetime.strptime(patient['Date of discharge'], '%d/%m/%Y %H:%M')
-        except ValueError: # Junk in the raw data
-            date_of_discharge = None
+        except ValueError:  # Sometimes its just a date
+            try:
+                date_of_discharge = to_date(patient['Date of discharge'])
+            except ValueError: # And sometimes it junk
+                date_of_discharge = None
 
         admission_args = {
             'episode'             : episode,
@@ -368,7 +374,17 @@ class Command(BaseCommand):
         covid_follow_up_call.weight = patient["Weight (kg)"]
         covid_follow_up_call.ethnicity = patient.get_list("Ethnicity")[1]
 
+        covid_follow_up_call.followup_status = to_choice(
+            patient["Smoking status (Never = 0, Ex-smoker = 1, Current = 2)"],
+            models.SMOKING_CHOICES
+        )
         covid_follow_up_call.pack_year_history = patient["Pack year"]
+
+        if patient["Other substances smoked? 0=nothing, 1= vape, 2= other drugs"] == "1":
+            covid_follow_up_call.vape = True
+
+        if patient["Other substances smoked? 0=nothing, 1= vape, 2= other drugs"] == "2":
+            covid_follow_up_call.other_drugs = True
 
         social = patient["Social circumstances (0 = independent, 1 = family help, 2 = carers, 3 = NH/RH)"]
 
@@ -478,6 +494,8 @@ class Command(BaseCommand):
         limited_by = limited_by.replace("1", "SOB")
         limited_by = limited_by.replace("2", "Fatigue")
         limited_by = limited_by.replace("3", "Other")
+        # make the parenthesis look nicer
+        limited_by = limited_by.replace("Other(", "Other (")
 
         covid_follow_up_call.limited_by = limited_by
         covid_follow_up_call.current_cfs = patient["Current CFS (0-9)"]
