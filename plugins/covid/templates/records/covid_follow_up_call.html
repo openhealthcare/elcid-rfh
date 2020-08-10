@@ -303,7 +303,7 @@
       <div class="col-md-8">
         <p><b>Contactable For Research:</b></p>
         <span ng-show="item.recontact">Yes</span>
-        <span ng-hide="item.recontact">No</span>
+        <span ng-show="item.recontact !== null && !item.recontact">No</span>
       </div>
     </div>
   </section>
