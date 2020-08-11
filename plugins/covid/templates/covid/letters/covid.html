@@ -48,22 +48,29 @@
       https://www.post-covid.org.uk/get-support/
     </p>
 
-    <p>
-      Yours sincerely,
-    </p>
-    <p>
-      Centre for Respiratory Medicine<br />
-      The Grove Centre<br />
-      Royal Free Hospital<br />
-      Pond Street<br />
-      London<br />
-      NW3 2QG<br />
-      www.royalfree.nhs.uk<br />
-      Switchboard: 020 7794 0500<br />
-      Fax: 020 7830 2468
-    </p>
+    <div class="print-avoid-break print-page-break">
+      <p>
+        Yours sincerely,
+      </p>
+      <p>
+        Centre for Respiratory Medicine<br />
+        The Grove Centre<br />
+        Royal Free Hospital<br />
+        Pond Street<br />
+        London<br />
+        NW3 2QG<br />
+        www.royalfree.nhs.uk<br />
+        Switchboard: 020 7794 0500<br />
+        Fax: 020 7830 2468
+      </p>
+    </div>
 
+    <div class="screen-only">
+      <div class="content-offset row"></div>
+      <div class="content-offset row"></div>
+    </div>
 
+    <div class="print-avoid-break"></div>
         <h2>Post Covid Telephone Follow Up</h2>
         {% with demographics=object.episode.patient.demographics %}
           <p>
@@ -83,8 +90,8 @@
       {{ demographics.nhs_number }}
     </p>
   {% endwith %}
-
-  <h3>This call</h3>
+  <div class="print-avoid-break">
+    <h3>This call</h3>
 
     <p>
       Clinician completing call:
@@ -107,9 +114,9 @@
       <h3>Follow up questions</h3>
       -->
 
-    <p>Smoking status: {% if object.followup_status %}{{ object.followup_status }}{% endif %}</p>
-    <p>Pack years: {% if object.pack_year_history %}{{ object.pack_year_history }}{% endif %}</p>
-
+     <p>Smoking status: {% if object.followup_status %}{{ object.followup_status }}{% endif %}</p>
+     <p>Pack years: {% if object.pack_year_history %}{{ object.pack_year_history }}{% endif %}</p>
+    </div>
     <h3>Ongoing Covid-19 Symptoms</h3>
 
     <table class="table table-striped table-bordered ">
@@ -142,30 +149,34 @@
       </p>
     {% endif %}
 
-    <h3>Recovery</h3>
-    {% if object.back_to_normal %}
-      <p>The patient stated that they feel back to normal.</p>
-    {% else %}
-      <p>The patient stated that they did not feel back to normal.</p>
-    {% endif %}
+    <div class="print-avoid-break">
+      <h3>Recovery</h3>
+      {% if object.back_to_normal %}
+        <p>The patient stated that they feel back to normal.</p>
+      {% else %}
+        <p>The patient stated that they did not feel back to normal.</p>
+      {% endif %}
 
-    {% if object.why_not_back_to_normal %}
-      <p>{{ object.why_not_back_to_normal }}</p>
-    {% endif %}
+      {% if object.why_not_back_to_normal %}
+        <p>{{ object.why_not_back_to_normal }}</p>
+      {% endif %}
 
-    {% if object.other_concerns %}
-      <p>{{ object.other_concerns }}</p>
-    {% endif %}
+      {% if object.other_concerns %}
+        <p>{{ object.other_concerns }}</p>
+      {% endif %}
+    </div>
 
-    <p><b>Psych Scores</b></p>
-    <p>The patient scored {{ object.phq_score }}/6 on the PHQ2.</p>
-    <p>The patient scored {{ object.tsq_score }}/10 on the TSQ.</p>
+    <div class="print-avoid-break">
+      <p><b>Psych Scores</b></p>
+      <p>The patient scored {{ object.phq_score }}/6 on the PHQ2.</p>
+      <p>The patient scored {{ object.tsq_score }}/10 on the TSQ.</p>
 
-    {% if object.psychology %}
-      <p>
-        The team felt referral to psychology was needed.
-      </p>
-    {% endif %}
+      {% if object.psychology %}
+        <p>
+          The team felt referral to psychology was needed.
+        </p>
+      {% endif %}
+    </div>
 
     {% if object.further_investigations %}
       <p><b>Further Actions</b></p>
