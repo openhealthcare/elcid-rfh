@@ -355,7 +355,13 @@ class Command(BaseCommand):
         comorbidities.save()
 
         # Covid Follow Up Call
-        covid_follow_up_call = episode.covidfollowupcall_set.create()
+        covid_follow_up_call = models.CovidFollowUpCall(episode=episode)
+
+        # If there is no date of telephone call, then the row in the csv is empty
+        # skip it.
+        if not patient["Date of telephone call"]:
+            return
+
         covid_follow_up_call.when = to_date(patient["Date of telephone call"])
         unable_to_complete_reasons = [
             "", "language", "refused", "died", "unreachable", "frail"
@@ -568,13 +574,22 @@ class Command(BaseCommand):
                 patients += 1
 
                 try:
-                    worked = self.load_patient(patient)
-                    if worked:
-                        imported += 1
+                    self.load_patient(patient)
                 except:
                     raise
 
             print('Patients: {}'.format(patients))
-            print('Imported: {}'.format(imported))
+            print('Imported episodes: {}'.format(
+                Episode.objects.filter(
+                    category_name=CovidEpisode.display_name
+                ).count()
+            ))
+            print('Imported admissions: {}'.format(
+                models.CovidAdmission.objects.all().count()
+            ))
+            print('Imported follow up calls: {}'.format(
+                models.CovidFollowUpCall.objects.all().count()
+            ))
+
 
         return
