@@ -555,13 +555,11 @@ class Command(BaseCommand):
         print('{} {}'.format(str(our_patient), our_patient.demographics().hospital_number))
         return True
 
-    def flush(self):
-        Episode.objects.filter(category_name=CovidEpisode.display_name).delete()
-
     @transaction.atomic
     def handle(self, *args, **kwargs):
-        self.flush()
-
+        existing_ep_ids = set(Episode.objects.filter(
+            category_name=CovidEpisode.display_name
+        ).values_list("id", flat=True))
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
@@ -582,14 +580,19 @@ class Command(BaseCommand):
             print('Imported episodes: {}'.format(
                 Episode.objects.filter(
                     category_name=CovidEpisode.display_name
+                ).exclude(
+                    id__in=existing_ep_ids
                 ).count()
             ))
             print('Imported admissions: {}'.format(
-                models.CovidAdmission.objects.all().count()
+                models.CovidAdmission.objects.exclude(
+                    episode_id__in=existing_ep_ids
+                ).count()
             ))
             print('Imported follow up calls: {}'.format(
-                models.CovidFollowUpCall.objects.all().count()
+                models.CovidFollowUpCall.objects.exclude(
+                    episode_id__in=existing_ep_ids
+                ).count()
             ))
-
 
         return
