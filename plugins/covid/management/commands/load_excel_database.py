@@ -14,7 +14,7 @@ from plugins.covid.episode_categories import CovidEpisode
 
 
 def no_yes(val):
-    if val == "":
+    if val is None or val == "":
         return
     if val == '0':
         return False
@@ -30,7 +30,7 @@ def no_yes(val):
 
 
 def numeric(val):
-    if val == '':
+    if val is None or val == '':
         return
     if val == 'N/A':
         return
@@ -112,8 +112,11 @@ def max_resp(patient):
         '3': 'NIV',
         '4': 'IV'
     }
-    value = patient['Maximum resp support (0=no support, 1 = O2, 2 = CPAP, 3 = NIV, 4 = IV)']
-    if value == '':
+    field_name = 'Maximum resp support (0=no support, 1 = O2, 2 = CPAP, 3 = NIV, 4 = IV)'
+    # This is true if the person went to the emergency department but did not become
+    # an inpatient
+    value = patient.get(field_name)
+    if value is None or value == '':
         return
     if value == 'normally uses NIV':
         return
@@ -158,8 +161,16 @@ class CSVRow(object):
             else:
                 existing.add(i)
 
+    def get(self, field_name, default_result=None):
+        field_name = field_name.strip()
+        if field_name not in self.headers:
+            return default_result
+        else:
+            return self[field_name]
+
     def __getitem__(self, field_name, idx=None):
         field_name = field_name.strip()
+
         if field_name in self.duplicates:
             raise ValueError("Field {} is a duplicate".format(field_name))
 
@@ -205,13 +216,19 @@ class Command(BaseCommand):
 
         episode = our_patient.episode_set.create(category_name=CovidEpisode.display_name)
 
-        try:
-            date_of_admission = datetime.datetime.strptime(patient['Date of admission'], '%d/%m/%Y %H:%M')
-        except ValueError: # Sometimes its just a date
+        # if a patient went to the emergency department but never became an inpatient
+        # they have no date of admission
+        date_of_admission = patient.get('Date of admission')
+        if date_of_admission:
             try:
-                date_of_admission = to_date(patient['Date of admission'])
-            except ValueError: # And sometimes it junk
-                date_of_admission = None
+                date_of_admission = datetime.datetime.strptime(
+                    patient['Date of admission'], '%d/%m/%Y %H:%M'
+                )
+            except ValueError: # Sometimes its just a date
+                try:
+                    date_of_admission = to_date(patient['Date of admission'])
+                except ValueError: # And sometimes it junk
+                    date_of_admission = None
 
         try:
             date_of_discharge = datetime.datetime.strptime(patient['Date of discharge'], '%d/%m/%Y %H:%M')
@@ -254,11 +271,14 @@ class Command(BaseCommand):
             'clinical_frailty'    : patient['Clinical frailty score on admission'],
             'tep_status'          : tep_status(patient),
             'maximum_resp_support': max_resp(patient),
-            'max_fio2_non_nc'     : numeric(patient['Max FiO2 (non-NC)']),
-            'max_fio2_nc'         : numeric(patient['Max FiO2 (if NC)']),
-            'days_on_oxygen'      : numeric(patient['Total number of days on oxygen']),
-            'final_spo2'          : patient['Last available SpO2 prior to discharge'],
-            'systemic_corticosteroirds': no_yes(patient['Treated with systemic corticosteroids (0 = no 1 = yes 2 = unknown)']),
+
+            # fields below are not present in the emergency department data when the patient
+            # did not become an inpatient
+            'days_on_oxygen'      : numeric(patient.get('Total number of days on oxygen')),
+            'final_spo2'          : patient.get('Last available SpO2 prior to discharge'),
+            'max_fio2_non_nc'     : numeric(patient.get('Max FiO2 (non-NC)')),
+            'max_fio2_nc'         : numeric(patient.get('Max FiO2 (if NC)')),
+            'systemic_corticosteroirds': no_yes(patient.get('Treated with systemic corticosteroids (0 = no 1 = yes 2 = unknown)')),
         }
         if admission_args["duration_of_symptoms"] == "n/a":
             admission_args["duration_of_symptoms"] = None
@@ -375,15 +395,17 @@ class Command(BaseCommand):
         unable_to_complete_reasons = [
             "", "language", "refused", "died", "unreachable", "frail"
         ]
-        incomplete = patient[
+        # This field does not appear in the emergency department csv
+        incomplete = patient.get(
             "Unable to complete (1: language 2: refused 3: died 4: unreachable 5:frail)"
-        ]
-        if "UCH" in incomplete:
-            covid_follow_up_call.incomplete_reason = incomplete
-        else:
-            covid_follow_up_call.incomplete_reason = to_choice(
-                incomplete, [(i, i) for i in unable_to_complete_reasons]
-            )
+        )
+        if incomplete:
+            if "UCH" in incomplete:
+                covid_follow_up_call.incomplete_reason = incomplete
+            else:
+                covid_follow_up_call.incomplete_reason = to_choice(
+                    incomplete, [(i, i) for i in unable_to_complete_reasons]
+                )
 
         covid_follow_up_call.height = patient["Height (m)"]
         covid_follow_up_call.weight = patient["Weight (kg)"]
@@ -484,9 +506,9 @@ class Command(BaseCommand):
             "How close to 100% of usual health do you feel"
         ]))
 
-        if bhp in ["Not sure", "prefer not to say"]:
+        if bhp in ["Not sure", "prefer not to say", "unsure", 'Feels worse']:
             bhp = None
-        elif bhp == "80-85":
+        elif bhp == "80-85" or bhp == "85-90":
             # skip this and go back and query the source data
             return
         elif bhp is not None and bhp[-1] == "%":
@@ -568,7 +590,8 @@ class Command(BaseCommand):
         existing_ep_ids = set(Episode.objects.filter(
             category_name=CovidEpisode.display_name
         ).values_list("id", flat=True))
-
+        # existing_ep_ids = set()
+        # Episode.objects.filter(category_name=CovidEpisode.display_name).delete()
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
