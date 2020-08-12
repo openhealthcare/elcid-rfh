@@ -6,6 +6,7 @@ import datetime
 from django.db import transaction
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from opal.models import Patient, Episode
 
 from plugins.covid import models
@@ -198,7 +199,11 @@ class Command(BaseCommand):
         except Patient.DoesNotExist:
             return False
 
-        episode, _ = our_patient.episode_set.get_or_create(category_name=CovidEpisode.display_name)
+        if our_patient.episode_set.filter(category_name=CovidEpisode.display_name).exists():
+            msg = "{} already has a COVID episode, creating another one, please investigate"
+            self.stdout.write(self.style.ERROR(msg.format(mrn)))
+
+        episode = our_patient.episode_set.create(category_name=CovidEpisode.display_name)
 
         try:
             date_of_admission = datetime.datetime.strptime(patient['Date of admission'], '%d/%m/%Y %H:%M')
@@ -362,7 +367,11 @@ class Command(BaseCommand):
         if not patient["Date of telephone call"]:
             return
 
-        covid_follow_up_call.when = to_date(patient["Date of telephone call"])
+        call_date = to_date(patient["Date of telephone call"])
+        if call_date:
+            call_dt = datetime.datetime.combine(call_date, datetime.time.min)
+            covid_follow_up_call.when = timezone.make_aware(call_dt)
+
         unable_to_complete_reasons = [
             "", "language", "refused", "died", "unreachable", "frail"
         ]
@@ -552,7 +561,6 @@ class Command(BaseCommand):
         )
         covid_follow_up_call.save()
 
-        print('{} {}'.format(str(our_patient), our_patient.demographics().hospital_number))
         return True
 
     @transaction.atomic
@@ -560,6 +568,7 @@ class Command(BaseCommand):
         existing_ep_ids = set(Episode.objects.filter(
             category_name=CovidEpisode.display_name
         ).values_list("id", flat=True))
+
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
