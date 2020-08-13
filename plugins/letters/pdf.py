@@ -2,7 +2,7 @@ import os
 import tempfile
 from django.contrib.staticfiles import finders
 from django.conf import settings
-from opal.core import application
+from opal.core import plugins, application
 from opal.utils import camelcase_to_underscore
 from weasyprint import HTML, CSS
 from django.template.loader import render_to_string
@@ -16,6 +16,10 @@ def get_opal_css():
         "bootstrap-3.1.0/css/bootstrap.css",
         "css/opal.css"
     ]
+
+    for plugin in plugins.OpalPlugin.list():
+        stylesheets.extend(plugin.get_styles())
+
     stylesheets.extend(
         application.get_app().get_styles()
     )
@@ -71,6 +75,6 @@ def render_detail_view_to_string(view_cls, some_object):
 
 def render_detail_view_to_pdf(view_cls, some_object):
     file_name = view_to_file_name(view_cls, some_object, "pdf")
-    view_as_string = render_detail_view_to_string(view_cls, some_object)
+    view_as_string = render_detail_view_to_string(view_cls, some_object).strip()
     css = get_opal_css()
     return write_page_to_pdf_file(file_name, view_as_string, css)
