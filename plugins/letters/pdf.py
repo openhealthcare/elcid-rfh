@@ -19,7 +19,6 @@ def get_opal_css():
     stylesheets.extend(
         application.get_app().get_styles()
     )
-    stylesheets.append("css/pdf.css")
     return stylesheets
 
 
