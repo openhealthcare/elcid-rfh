@@ -573,7 +573,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     def phq_score(self):
         if self.interest is None or self.depressed is None:
             return None
-        return int(self.interest[0]) + int(self.depressed[0])
+        return int(self.interest[1:2]) + int(self.depressed[1:2])
 
     def tsq_score(self):
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
