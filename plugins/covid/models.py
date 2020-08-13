@@ -253,7 +253,6 @@ class CovidFollowUpCall(EpisodeSubrecord):
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
     TREND_CHOICES        = enum('Same', 'Better', 'Worse')
     Y_N_NA               = enum('Yes', 'No', 'N/A')
-    Y_N_NOT_SURE         = enum('Yes', 'No', 'Not sure')
     LIMITED_BY_CHOICES   = enum('SOB', 'Fatigue', 'Other')
 
     UNABLE_TO_COMPLETE   = 'Unable to complete'
@@ -278,8 +277,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         'OD',
         'BD',
         'TDS',
-        'QDS',
-        '24h'
+        'QDS'
     )
 
     SHIELDING_CHOICES = enum(
@@ -459,7 +457,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         blank=True, null=True, max_length=20, choices=Y_N_NA)
 
     call_satisfaction         = models.CharField(
-        blank=True, null=True, max_length=20, choices=Y_N_NOT_SURE,
+        blank=True, null=True, max_length=20, choices=Y_N_NA,
         verbose_name="Did you find this call useful?"
     )
     recontact                 = models.NullBooleanField(
@@ -575,12 +573,9 @@ class CovidFollowUpCall(EpisodeSubrecord):
     def phq_score(self):
         if self.interest is None or self.depressed is None:
             return None
-        return int(self.interest) + int(self.depressed)
+        return int(self.interest[0]) + int(self.depressed[0])
 
     def tsq_score(self):
-        scores = [i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))]
-        if len([i for i in scores if is None):
-            return None
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
 
 
