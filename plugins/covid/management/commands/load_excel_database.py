@@ -590,8 +590,7 @@ class Command(BaseCommand):
         existing_ep_ids = set(Episode.objects.filter(
             category_name=CovidEpisode.display_name
         ).values_list("id", flat=True))
-        # existing_ep_ids = set()
-        # Episode.objects.filter(category_name=CovidEpisode.display_name).delete()
+
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
