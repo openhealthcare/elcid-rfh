@@ -67,7 +67,7 @@ def to_choice(some_numeric, choices):
     if some_numeric is None:
         return
     if some_numeric:
-        return choices[int(some_numeric)][0]
+        return choices[int(some_numeric)][1]
 
 
 def tep_status(patient):
