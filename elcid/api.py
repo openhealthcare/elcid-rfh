@@ -297,10 +297,8 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         that can be cast into a number
         """
         date_to_observation = {}
-        # this should never be the case, but
-        # we don't create the data so cater for it
-        qs = qs.exclude(observation_datetime=None)
-        for i in qs.order_by("-observation_datetime"):
+
+        for i in qs:
             if i.value_numeric is not None:
                 dt = i.observation_datetime
                 obs_date = dt.date()
@@ -321,6 +319,12 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
             test__test_name=lab_test_name
         ).filter(
             observation_name=observation_name
+        ).exclude(
+            observation_datetime=None
+        ).order_by(
+            "-observation_datetime"
+        ).select_related(
+            'test'
         )
 
     def get_PROCALCITONIN_Procalcitonin(self, observation):
