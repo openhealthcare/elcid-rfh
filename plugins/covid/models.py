@@ -328,14 +328,14 @@ class CovidFollowUpCall(EpisodeSubrecord):
     )
     admission_status  = models.CharField(
         blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking Status On Admission'
+        verbose_name='Smoking status on admission'
     )
     pack_year_history = models.TextField(blank=True, null=True)
     vape              = models.NullBooleanField(verbose_name="Vape Smoked")
     other_drugs       = models.NullBooleanField(verbose_name="Other Drugs Smoked")
     followup_status   = models.CharField(
         blank=True, null=True, max_length=200, choices=SMOKING_CHOICES,
-        verbose_name='Smoking staus at follow up'
+        verbose_name='Smoking status at follow up'
     )
 
     changes_to_medication     = models.NullBooleanField(
