@@ -968,8 +968,13 @@ class ChronicAntifungal(models.Model):
 
     @classmethod
     def antifungal_episodes(cls):
-        # patients should stay on the list for ~6 months
-        active_from_date = timezone.now() - datetime.timedelta(183)
+        # patients should stay on the list for four weeks
+        today = datetime.date.today()
+        active_from_date = timezone.make_aware(
+            datetime.datetime(
+                today.year, today.month, today.day, 0, 0
+            )
+        ) - datetime.timedelta(28)
         return omodels.Episode.objects.filter(
             patient__chronicantifungal__updated_dt__gte=active_from_date
         ).filter(
