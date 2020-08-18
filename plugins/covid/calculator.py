@@ -10,6 +10,8 @@ from elcid.models import Demographics
 from plugins.labtests.models import LabTest
 
 from plugins.covid import constants, lab, models
+from elcid.utils import timing
+
 
 class Day(object):
 
@@ -22,7 +24,7 @@ class Day(object):
 
 
 
-def calculate_daily_reports():
+def calculate():
     """
     Calculate five numbers for each day:
 
@@ -51,6 +53,8 @@ def calculate_daily_reports():
         test_name__in=lab.COVID_19_TEST_NAMES).order_by(
             'datetime_ordered').first().datetime_ordered.date()
 
+    covid_patients = []
+
     for test in coronavirus_tests:
         if test.patient_id in junk_patient_ids:
             continue # We are uninterested in tests performed on Scooby Doo etc
@@ -63,22 +67,20 @@ def calculate_daily_reports():
             days[day].tests_resulted += 1
 
             if test.patient_id in resulted_patients_seen:
-                pass # This patient has already had a result, we only count them once
+                pass  # This patient has already had a result, we only count them once
             else:
                 resulted_patients_seen.add(test.patient_id)
                 days[day].patients_resulted += 1
 
             if lab.positive(test):
                 if test.patient_id in positive_patients_seen:
-                    continue # This is not the first positive test so ignore it
+                    continue  # This is not the first positive test so ignore it
                 else:
                     positive_patients_seen.add(test.patient_id)
                     days[day].patients_positive += 1
-                    covid_patient = models.CovidPatient(
+                    covid_patients.append(models.CovidPatient(
                         patient=test.patient, date_first_positive=day
-                    )
-                    covid_patient.save()
-
+                    ))
 
     deceased_patients = Demographics.objects.filter(
         death_indicator=True,
@@ -87,9 +89,11 @@ def calculate_daily_reports():
     )
     for demographic in deceased_patients:
         if demographic.patient_id in junk_patient_ids:
-            continue # We are uninterested in the death of Scooby Doo etc
+            continue  # We are uninterested in the death of Scooby Doo etc
 
         days[demographic.date_of_death].deaths += 1
+
+    covid_days = []
 
     for date, day in days.items():
         covid_day = models.CovidReportingDay(
@@ -100,24 +104,28 @@ def calculate_daily_reports():
             patients_positive=day.patients_positive,
             deaths=day.deaths
         )
-        covid_day.save()
+        covid_days.append(covid_day)
 
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
     if yesterday not in days:
-        models.CovidReportingDay.objects.create(
+        covid_days.append(models.CovidReportingDay(
             date=yesterday, tests_ordered=0, tests_resulted=0,
             patients_resulted=0, patients_positive=0, deaths=0
-        )
+        ))
+
+    refresh(covid_patients, covid_days)
 
 
-def calculate():
-    """
-    Main entrypoint for calculating figures related to Covid 19.
-    """
+@timing
+def refresh(covid_patients, covid_days):
+    flush()
+    models.CovidPatient.objects.bulk_create(covid_patients)
+    models.CovidReportingDay.objects.bulk_create(covid_days)
+    dashboard = models.CovidDashboard(last_updated=timezone.now())
+    dashboard.save()
+
+
+def flush():
     models.CovidDashboard.objects.all().delete()
     models.CovidReportingDay.objects.all().delete()
     models.CovidPatient.objects.all().delete()
-
-    calculate_daily_reports()
-    dashboard = models.CovidDashboard(last_updated=timezone.now())
-    dashboard.save()
