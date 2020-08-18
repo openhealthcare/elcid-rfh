@@ -396,3 +396,37 @@ div.add-isolate:hover{
 .panel.panel-primary .panel-heading a {
     color: $obsidian;
 }
+
+// the css for the print letter this is here because
+// in opal 0.17.1 stylesheets for plugins are screen only
+@media print{
+    @page {
+        size: auto;
+        margin-top: 2cm;
+        margin-bottom: 2cm;
+    }
+
+    .outer-container .letter-container.container.content-offset {
+        margin-top: 0;
+    }
+
+    .letter-container .letter {
+        padding-top: 0;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    .print-page-break{
+        page-break-after: always;
+    }
+
+    .print-avoid-break{
+        page-break-inside: avoid
+    }
+
+    table { page-break-inside:avoid }
+    tr    { page-break-inside:avoid; page-break-after:auto }
+    thead { display:table-header-group }
+    tfoot { display:table-footer-group }
+}
