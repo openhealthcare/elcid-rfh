@@ -5,6 +5,7 @@ import collections
 import datetime
 
 from django.utils import timezone
+from django.db import transaction
 
 from elcid.models import Demographics
 from plugins.labtests.models import LabTest
@@ -117,6 +118,7 @@ def calculate():
 
 
 @timing
+@transaction.atomic
 def refresh(covid_patients, covid_days):
     flush()
     models.CovidPatient.objects.bulk_create(covid_patients)
