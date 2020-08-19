@@ -197,6 +197,10 @@ class CSVRow(object):
 
 
 class Command(BaseCommand):
+    episodes_created = 0
+    admissions_created = 0
+    admissions_updated = 0
+    followup_calls_created = 0
 
     def add_arguments(self, parser):
         parser.add_argument('file')
@@ -210,11 +214,12 @@ class Command(BaseCommand):
         except Patient.DoesNotExist:
             return False
 
-        if our_patient.episode_set.filter(category_name=CovidEpisode.display_name).exists():
-            msg = "{} already has a COVID episode, creating another one, please investigate"
-            self.stdout.write(self.style.ERROR(msg.format(mrn)))
+        episode, created = our_patient.episode_set.get_or_create(
+            category_name=CovidEpisode.display_name
+        )
 
-        episode = our_patient.episode_set.create(category_name=CovidEpisode.display_name)
+        if created:
+            self.episodes_created += 1
 
         # if a patient went to the emergency department but never became an inpatient
         # they have no date of admission
@@ -238,7 +243,8 @@ class Command(BaseCommand):
                 date_of_discharge = None
 
         admission_args = {
-            'episode'             : episode,
+            'created_by_id'       : 1,
+            'created'             : timezone.now(),
             'date_of_admission'   : date_of_admission,
             'date_of_discharge'   : date_of_discharge,
             'duration_of_symptoms': numeric(patient['Duration of symptoms at admission (days)']),
@@ -283,9 +289,12 @@ class Command(BaseCommand):
             admission_args["duration_of_symptoms"] = None
             return
 
-        admission, _ = models.CovidAdmission.objects.get_or_create(**admission_args)
-        admission.created_by_id = 1
-        admission.save()
+        _, created = episode.covidadmission_set.get_or_create()
+        if created:
+            self.admissions_created += 1
+        else:
+            self.admissions_updated += 1
+        episode.covidadmission_set.update(**admission_args)
 
         # smokinghistory = episode.covidsmokinghistory_set.get()
 
@@ -379,12 +388,23 @@ class Command(BaseCommand):
         comorbidities.save()
 
         # Covid Follow Up Call
-        covid_follow_up_call = models.CovidFollowUpCall(episode=episode)
 
         # If there is no date of telephone call, then the row in the csv is empty
         # skip it.
         if not patient["Date of telephone call"]:
             return
+
+        covid_follow_up_call = models.CovidFollowUpCall(
+            episode=episode, created_by_id=1, created=timezone.now()
+        )
+
+        if episode.covidfollowupcall_set.exists():
+            # At the moment this happens for the resp database as the same
+            # episod has multiple follow up calls.
+            # This is a data issue that needs to be fixed on their end
+            raise ValueError("Covid follow up call exists for {}".format(
+                episode.id
+            ))
 
         call_date = to_date(patient["Date of telephone call"])
         if call_date:
@@ -585,15 +605,12 @@ class Command(BaseCommand):
             patient["Would you be happy to be contacted again (0 = no 1 =yes)?"]
         )
         covid_follow_up_call.save()
+        self.followup_calls_created += 1
 
         return True
 
     @transaction.atomic
     def handle(self, *args, **kwargs):
-        existing_ep_ids = set(Episode.objects.filter(
-            category_name=CovidEpisode.display_name
-        ).values_list("id", flat=True))
-
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
@@ -611,22 +628,8 @@ class Command(BaseCommand):
                     raise
 
             print('Patients: {}'.format(patients))
-            print('Imported episodes: {}'.format(
-                Episode.objects.filter(
-                    category_name=CovidEpisode.display_name
-                ).exclude(
-                    id__in=existing_ep_ids
-                ).count()
-            ))
-            print('Imported admissions: {}'.format(
-                models.CovidAdmission.objects.exclude(
-                    episode_id__in=existing_ep_ids
-                ).count()
-            ))
-            print('Imported follow up calls: {}'.format(
-                models.CovidFollowUpCall.objects.exclude(
-                    episode_id__in=existing_ep_ids
-                ).count()
-            ))
-
+            print('Created episodes: {}'.format(self.episodes_created))
+            print('Created admissions: {}'.format(self.admissions_created))
+            print('Updated admissions: {}'.format(self.admissions_updated))
+            print('Created followups: {}'.format(self.followup_calls_created))
         return
