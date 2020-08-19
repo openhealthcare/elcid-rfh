@@ -218,17 +218,16 @@ class Command(BaseCommand):
 
         # if a patient went to the emergency department but never became an inpatient
         # they have no date of admission
-        date_of_admission = patient.get('Date of admission')
-        if date_of_admission:
+        date_of_admission = patient.get('Date of admission', None)
+        try:
+            date_of_admission = datetime.datetime.strptime(
+                patient['Date of admission'], '%d/%m/%Y %H:%M'
+            )
+        except ValueError: # Sometimes its just a date
             try:
-                date_of_admission = datetime.datetime.strptime(
-                    patient['Date of admission'], '%d/%m/%Y %H:%M'
-                )
-            except ValueError: # Sometimes its just a date
-                try:
-                    date_of_admission = to_date(patient['Date of admission'])
-                except ValueError: # And sometimes it junk
-                    date_of_admission = None
+                date_of_admission = to_date(patient['Date of admission'])
+            except ValueError: # And sometimes it junk
+                date_of_admission = None
 
         try:
             date_of_discharge = datetime.datetime.strptime(patient['Date of discharge'], '%d/%m/%Y %H:%M')
@@ -410,6 +409,10 @@ class Command(BaseCommand):
         covid_follow_up_call.height = patient["Height (m)"]
         covid_follow_up_call.weight = patient["Weight (kg)"]
         covid_follow_up_call.ethnicity = patient.get_list("Ethnicity")[1]
+        covid_follow_up_call.ethnicity_code = to_choice(
+            patient["Ethnicity code (BrC=1, OC=2, BrA=3, OA=4, BB=5, BO=6, O=7)"],
+            [("", "",)] + list(covid_follow_up_call.ETHNICITY_CODE)
+        )
 
         covid_follow_up_call.followup_status = to_choice(
             patient["Smoking status (Never = 0, Ex-smoker = 1, Current = 2)"],

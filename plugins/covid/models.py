@@ -249,6 +249,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         ('2', '(2) More than half the days'),
         ('3', '(3) Nearly every day')
     )
+    ETHNICITY_CODE       = enum("BrC", "OC", "BrA", "OA", "BB", "BO", "O")
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
     TREND_CHOICES        = enum('Same', 'Better', 'Worse')
@@ -316,6 +317,9 @@ class CovidFollowUpCall(EpisodeSubrecord):
     incomplete_reason  = models.TextField(blank=True, null=True)
 
     ethnicity = models.CharField(blank=True, null=True, max_length=240)
+    ethnicity_code = models.CharField(
+        blank=True, null=True, max_length=200, choices=ETHNICITY_CODE
+    )
     height    = models.CharField(blank=True, null=True, max_length=20, verbose_name='Height (m)')
     weight    = models.CharField(blank=True, null=True, max_length=20, verbose_name='Weight (kg)')
 
