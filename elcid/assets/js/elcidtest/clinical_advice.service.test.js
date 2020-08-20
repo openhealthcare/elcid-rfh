@@ -13,7 +13,7 @@ describe('ClinicalAdvice', function(){
     it('should construct the editing object with item', function(){
       item = {
         id: 1,
-        makeCopy(){
+        makeCopy: function(){
           return {
             id: 1,
             micro_input_icu_round_relation: {
