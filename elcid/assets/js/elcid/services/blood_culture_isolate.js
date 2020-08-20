@@ -12,9 +12,10 @@ angular.module('opal.services').service(
       this.isolateUrl = baseUrl + item.id + "/"
       this.isNew = false;
       this.editing = _.clone(item);
+      var self = this;
       _.each(dateFields, function(dateField){
-        if(this.editing[dateField]){
-          this.editing[dateField] = moment(this.editing[dateField], DATE_FORMAT).toDate();
+        if(self.editing[dateField]){
+          self.editing[dateField] = moment(self.editing[dateField], DATE_FORMAT).toDate();
         }
       });
     }
@@ -56,10 +57,11 @@ angular.module('opal.services').service(
     save: function(){
       var deferred = $q.defer();
       var method = "post";
+      var self = this;
       var toSave = _.clone(this.editing);
       _.each(dateFields, function(dateField){
         if(toSave[dateField]){
-          toSave[dateField] = moment(this.editing[dateField]).format(DATE_FORMAT);
+          toSave[dateField] = moment(self.editing[dateField]).format(DATE_FORMAT);
         }
       });
 
