@@ -1,11 +1,12 @@
 angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
   $scope, $modal, $http, $q, BloodCultureIsolate
 ) {
+  "use strict";
   /*
   * open a panel when the user clicks on it and close and refresh when they are done
   */
-  const ctrl = "GeneralEditCtrl";
-  const templateUrl = "/templates/blood_culture_isolate_form.html"
+  var ctrl = "GeneralEditCtrl";
+  var templateUrl = "/templates/blood_culture_isolate_form.html"
   var self = this;
 
   this.open = function(blood_culture_set, isolate){
@@ -34,7 +35,7 @@ angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
 
   this.refresh = function(bcs){
     var deferred = $q.defer();
-    $http.get("/api/v0.1/blood_culture_set/" + bcs.id + "/").then(result => {
+    $http.get("/api/v0.1/blood_culture_set/" + bcs.id + "/").then(function(result){
       var bcs_idx = _.findIndex($scope.patient.blood_culture_set, {id: bcs.id})
       $scope.patient.blood_culture_set[bcs_idx].isolates = result.data.isolates;
       deferred.resolve();

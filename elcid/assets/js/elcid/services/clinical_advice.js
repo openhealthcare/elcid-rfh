@@ -1,36 +1,38 @@
 angular.module('opal.services').service('ClinicalAdvice', function($http, $q, $window, Referencedata){
-  const baseUrl = "/api/v0.1/microbiology_input/"
+  "use strict";
+  var baseUrl = "/api/v0.1/microbiology_input/";
 
-  class ClinicalAdvice{
-    constructor(item){
-      this.item = item;
-      this.isNew = true;
-      this.unique_id = _.uniqueId();
+  var ClinicalAdvice = function(item){
+    this.item = item;
+    this.isNew = true;
+    this.unique_id = _.uniqueId();
 
-      // the editing object if item is not populated
-      this.editing = {
-        micro_input_icu_round_relation: {
-          observation: {},
-          icu_round: {}
-        }
-      };
-
-      if(item && item.id){
-        this.isNew = false;
-        this.editing = item.makeCopy();
-        if(item.micro_input_icu_round_relation){
-          this.editing.micro_input_icu_round_relation = {
-            observation: _.clone(item.micro_input_icu_round_relation.observation),
-            icu_round: _.clone(item.micro_input_icu_round_relation.icu_round)
-          };
-        }
+    // the editing object if item is not populated
+    this.editing = {
+      micro_input_icu_round_relation: {
+        observation: {},
+        icu_round: {}
       }
-      else{
-        this.editing.when = new Date();
+    };
+
+    if(item && item.id){
+      this.isNew = false;
+      this.editing = item.makeCopy();
+      if(item.micro_input_icu_round_relation){
+        this.editing.micro_input_icu_round_relation = {
+          observation: _.clone(item.micro_input_icu_round_relation.observation),
+          icu_round: _.clone(item.micro_input_icu_round_relation.icu_round)
+        };
       }
     }
+    else{
+      this.editing.when = new Date();
+    }
+  }
 
-    elementName(prefix){
+
+  ClinicalAdvice.prototype = {
+    elementName: function(prefix){
       /*
       because we have elements permanently in the inline
       form and in the modal unique element names
@@ -38,9 +40,9 @@ angular.module('opal.services').service('ClinicalAdvice', function($http, $q, $w
       will not work
       */
       return prefix + this.unique_id;
-    }
+    },
 
-    save(episode){
+    save: function(episode){
       var method;
       var self = this;
       var attrs = this.item.castToType(this.editing);
@@ -75,9 +77,9 @@ angular.module('opal.services').service('ClinicalAdvice', function($http, $q, $w
                 deferred.reject();
             });
         return deferred.promise
-    }
+    },
 
-    delete(){
+    delete: function(){
       var deferred = $q.defer();
       var url = baseUrl + this.item.id + '/';
       var self = this;
