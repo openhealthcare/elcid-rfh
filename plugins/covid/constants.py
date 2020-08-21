@@ -16,3 +16,18 @@ DOWNLOAD_USERS = [
     'emmanuel.wey',
     'marclipman'
 ]
+
+
+COVID_FOLLOWUP_APPOINTMENT_TYPES = [
+    'Resp COVID Telephone New',
+    'Resp COVID19 Post Discharge New',
+    'Resp COVID19 Post Discharge F/Up'
+
+    # the below are appointment types about covid
+    # but not follow up
+    # 'COVID 19 Virtaul Clinic New',
+    # 'COVID-19 Patient Screening New',
+    # 'COVID-19 Patient Swabbing New',
+    # 'Drop In OP - COVID19 New',
+    # 'Infectious Diseases Covid Swab New',
+]
