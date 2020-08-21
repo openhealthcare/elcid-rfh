@@ -1,0 +1,32 @@
+<div class="container content-offset">
+  <div class="panel panel-primary panel-container">
+    <div class="panel-heading patient-list-header">
+      <h2><i class="fa fa-user-md"></i>Covid Followup Clinic List</h2>
+    </div>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-8 col-md-push-2">
+          {% for appointment, episode in admission_and_episode %}
+            {% ifchanged appointment.start_datetime.date %}
+            <h3 class="text-right content-offset">{{ appointment.start_datetime.date }}</h3>
+            {% endifchanged %}
+            <div class="row content-offset-below-10">
+              <a class="" href="{{ episode.get_absolute_url }}">
+                <div class="col-md-7 col-md-push-1">
+                  {{ appointment.patient.demographics.name.upper }}
+                </div>
+                <div class="col-md-3">
+                  {{ appointment.patient.demographics.hospital_number }}
+                </div>
+                <div class="col-md-2 text-right">
+                  {{ appointment.start_datetime.time }}
+                </div>
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -3,16 +3,18 @@ Views for our covid plugin
 """
 import csv
 import datetime
-
+from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.views.generic import TemplateView, View, DetailView
-
+from django.views.generic import (
+    TemplateView, View, DetailView, ListView
+)
 from opal import models as opal_models
 from elcid import patient_lists
 
-from plugins.covid import models, constants
+from plugins.covid import models, constants, episode_categories
+from plugins.appointments.models import Appointment
 
 
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
@@ -115,3 +117,32 @@ class CovidFollowupLetter(LoginRequiredMixin, DetailView):
     # accessed at /letters/#/covid-followup/letter/10/
     model         = models.CovidFollowUpCallFollowUpCall
     template_name = 'covid/letters/covid_followup.html'
+
+
+class CovidUpcomingFollowups(LoginRequiredMixin, ListView):
+    template_name = "covid/covid_upcoming_followups.html"
+
+    def get_queryset(self, *args, **kwargs):
+        now = timezone.now()
+        appointment_types = constants.COVID_FOLLOWUP_APPOINTMENT_TYPES
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+        ).filter(
+            start_datetime__gte=now
+        ).order_by("start_datetime")
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx["admission_and_episode"] = []
+
+        for admission in ctx["object_list"]:
+            episode = admission.patient.episode_set.filter(
+                category_name=episode_categories.CovidEpisode.display_name
+            ).first()
+
+            # There should always be an episode but if there is not, skip it.
+            if episode:
+                ctx["admission_and_episode"].append(
+                    (admission, episode,)
+                )
+        return ctx
