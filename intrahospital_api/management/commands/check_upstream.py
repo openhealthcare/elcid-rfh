@@ -32,27 +32,37 @@ TRUST_TABLES = {
 }
 
 
-class WarningField:
+class DisplayField:
     """
-    A class to flag that a field should be marked
-    as needing a warning in the template
+    A class that sorts out whether a field is in error or
+    not and provides flags for the template.
+
+    A warning is flagged for 2 reasons.
+        1. A table is throwing an error when we try and query it
+        2. A table was updated within the last 48 hours but not
+           in the last 24 hours.
+
+    An old warning is flagged if a table has not been updated in the
+    last 48 hours.
     """
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, counts, last_updated):
+        self.counts = counts
+        self.last_updated = last_updated
+        self.warning = False
+        self.old_warning = False
+        self.colour = "black"
+        two_days_ago = timezone.now() - datetime.timedelta(2)
 
-    def __str__(self):
-        return str(self.value)
+        if isinstance(counts, str):
+            self.warning = True
 
-    def __eq__(self, k):
-        if not isinstance(k, WarningField):
-            return False
-        return self.value == k.value
-
-    @property
-    def warning(self):
-        if isinstance(self.value, str) or self.value == 0:
-            return True
-        return False
+        if counts == 0:
+            if self.last_updated > two_days_ago:
+                self.warning = True
+                self.colour = "red"
+            else:
+                self.old_warning = True
+                self.colour = "brown"
 
 
 class Command(BaseCommand):
@@ -61,13 +71,18 @@ class Command(BaseCommand):
 
     def send_email(self, ctx):
         warning = False
+        old_warning = False
         if any([i.warning for i in ctx.values()]):
             warning = True
+        elif any([i.old_warning for i in ctx.values()]):
+            old_warning = True
 
         title = f"{settings.OPAL_BRAND_NAME} view counts"
 
         if warning:
             title = f"{title} WARNING"
+        elif old_warning:
+            title = f"{title} OLD WARNING"
         html_message = render_to_string(
             self.template_name, {
                 "context": ctx,
@@ -85,42 +100,54 @@ class Command(BaseCommand):
             html_message=html_message,
         )
 
+    def updated_recently(self, view, field, trust=False):
+        query = f"SELECT MAX({field}) FROM {view}"
+        try:
+            if trust:
+                last_updated = self.api.execute_trust_query(query)
+            else:
+                last_updated = self.api.execute_hospital_query(query)
+            return last_updated[0]
+        except Exception as e:
+            return str(e)
+
+    def count_last_24_hours(self, view, field, trust=False):
+        query = f"SELECT COUNT(*) FROM {view} WHERE {field} > @since"
+        params = {"since": self.yesterday}
+        try:
+            if trust:
+                cnt = self.api.execute_trust_query(query, params)
+
+            else:
+                cnt = self.api.execute_hospital_query(query, params)
+            return cnt[0]
+        except Exception as e:
+            return str(e)
+
     def get_context_data(self):
-        api = get_api()
-        counts = {k: 0 for k in HOSPITAL_TABLES.keys()}
-
-        for k in TRUST_TABLES.keys():
-            counts[k] = 0
-
-        last_24_hours = timezone.now() - datetime.timedelta(1)
+        display_fields = {}
 
         for view, field in HOSPITAL_TABLES.items():
-            query = f"SELECT COUNT(*) FROM {view} WHERE {field} > @since"
-            try:
-                cnt = api.execute_hospital_query(
-                    query, params={"since": last_24_hours}
-                )
-                counts[view] = cnt[0]
-            except Exception as e:
-                counts[view] = str(e)
-
+            display_fields[view] = DisplayField(
+                self.count_last_24_hours(view, field, trust=False),
+                self.updated_recently(view, field, trust=False)
+            )
         for view, field in TRUST_TABLES.items():
-            query = f"SELECT COUNT(*) FROM {view} WHERE {field} > @since"
-            try:
-                cnt = api.execute_trust_query(
-                    query, params={"since": last_24_hours}
-                )
-                counts[view] = cnt[0]
-            except Exception as e:
-                counts[view] = str(e)
-        return {k: WarningField(i) for k, i in counts.items()}
+            display_fields[view] = DisplayField(
+                self.count_last_24_hours(view, field, trust=True),
+                self.updated_recently(view, field, trust=True)
+            )
+
+        return display_fields
 
     def handle(self, *args, **kwargs):
         try:
+            self.api = get_api()
+            self.yesterday = timezone.now() - datetime.timedelta(1)
             ctx = self.get_context_data()
             self.send_email(ctx)
         except Exception as e:
-            logger.error('Failed to check upstream with "{e}"')
+            logger.error(f'Failed to check upstream with "{e}"')
 
 
 
