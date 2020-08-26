@@ -1,6 +1,38 @@
 {% extends 'letters/base.html' %}
 {% block letter_content %}
   <section>
+  <p>
+      <b>Centre for Respiratory Medicine</b><br />
+      Dr Paul Dilworth, Dr James Goldring, Professor Marc Lipman,<br />
+      Dr Anant Patel, Professor John Hurst, Dr Swapna Mandal, Dr<br />
+      Simon Brill, Dr James Murray, Dr Helen Garthwaite and Dr<br />
+      James Brown<br />
+      Tel: 0207 317 7560/0207 472 6260<br />
+      Fax:0207 317 7561 Fax (internal): 31928
+    </p>
+
+    <p>
+      <b>Private &amp; Confidential</b>
+    </p>
+
+        <p>
+          {% with GP=object.episode.patient.gpdetails_set.get %}
+            {{ GP.title }} {{ GP.initials }} {{ GP.surname }}<br />
+            {% if GP.address_1 %}{{ GP.address_1}} <br />{% endif %}
+            {% if GP.address_2 %}{{ GP.address_2}} <br />{% endif %}
+            {% if GP.address_3 %}{{ GP.address_3}} <br />{% endif %}
+            {% if GP.address_4 %}{{ GP.address_4}} <br />{% endif %}
+            {{ GP.postcode }}
+          {% endwith %}
+        </p>
+
+    <p>
+      Date: {{ today }}
+    </p>
+    <p>
+      MRN: {{ object.episode.patient.demographics.hospital_number }}
+    </p>
+
     <h2>Post Covid Telephone Follow Up Follow Up</h2>
     {% with demographics=object.episode.patient.demographics %}
       <p>
