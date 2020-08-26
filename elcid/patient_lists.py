@@ -80,6 +80,15 @@ class RnohWardround(RfhPatientList, TaggedPatientList):
     schema = []
 
 
+class Hepatobiliary(RfhPatientList, TaggedPatientList):
+    display_name  = 'Hepatobiliary Service'
+    direct_add    = True
+    order         = 18
+    tag           = 'hepatobiliary'
+    template_name = 'episode_list.html'
+    schema        = []
+
+
 class CDIFF(RfhPatientList, TaggedPatientList):
     display_name = 'CDIFF Round'
     direct_add = True
