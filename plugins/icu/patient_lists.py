@@ -26,7 +26,7 @@ class AutoICUSouthList(RfhPatientList, PatientList):
 
     @classmethod
     def visible_to(klass, user):
-        return user.is_superuser
+        return True
 
 
 class AutoICUEastList(RfhPatientList, PatientList):
@@ -46,7 +46,7 @@ class AutoICUEastList(RfhPatientList, PatientList):
 
     @classmethod
     def visible_to(klass, user):
-        return user.is_superuser
+        return True
 
 
 class AutoICUWestList(RfhPatientList, PatientList):
@@ -66,4 +66,4 @@ class AutoICUWestList(RfhPatientList, PatientList):
 
     @classmethod
     def visible_to(klass, user):
-        return user.is_superuser
+        return True
