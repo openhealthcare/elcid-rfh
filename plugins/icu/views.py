@@ -13,9 +13,9 @@ from plugins.icu import constants
 from plugins.icu.models import ICUWard, ICUHandoverLocation
 
 WARD_LISTS = {
-    'South': 'icu',
-    'East': 'icu_east',
-    'West': 'icu_west',
+    'South': 'autoic_u_south',
+    'East': 'autoic_u_east',
+    'West': 'autoic_u_west',
     'SHDU': 'icu_shdu'
 }
 
