@@ -9,10 +9,10 @@ email_title_warning = (
     "elCID Royal Free Hospital ICU & Bacteraemia lab test counts WARNING"
 )
 
-@mock.patch(f"{path}.logger")
+@mock.patch("{}.logger".format(path))
 class CheckLabTestsTestCase(OpalTestCase):
-    @mock.patch(f"{path}.send_email")
-    @mock.patch(f"{path}.loader.sync_patient")
+    @mock.patch("{}.send_email".format(path))
+    @mock.patch("{}.loader.sync_patient".format(path))
     def test_handle_none(self, sync_patient, send_email, logger):
         cmd = check_lab_test_counts.Command()
         cmd.handle()
@@ -30,8 +30,8 @@ class CheckLabTestsTestCase(OpalTestCase):
             ctx,
         )
 
-    @mock.patch(f"{path}.send_email")
-    @mock.patch(f"{path}.loader.sync_patient")
+    @mock.patch("{}.send_email".format(path))
+    @mock.patch("{}.loader.sync_patient".format(path))
     def test_handle_changed(self, sync_patient, send_email, logger):
         patient, episode = self.new_patient_and_episode_please()
         episode.set_tag_names([Bacteraemia.tag], None)
@@ -59,8 +59,8 @@ class CheckLabTestsTestCase(OpalTestCase):
             ctx,
         )
 
-    @mock.patch(f"{path}.send_mail")
-    @mock.patch(f"{path}.loader.sync_patient")
+    @mock.patch("{}.send_mail".format(path))
+    @mock.patch("{}.loader.sync_patient".format(path))
     def test_template_compile(self, sync_patient, send_mail, logger):
         cmd = check_lab_test_counts.Command()
         cmd.handle()

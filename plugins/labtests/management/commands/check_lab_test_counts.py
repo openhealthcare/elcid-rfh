@@ -43,9 +43,11 @@ def sync_patients(patients):
 
 def create_email(patients, before_observation_count, after_observation_count):
     template_name = "email/table_email.html"
-    title = f"{settings.OPAL_BRAND_NAME} ICU & Bacteraemia lab test counts"
+    title = "{} ICU & Bacteraemia lab test counts".format(
+        settings.OPAL_BRAND_NAME
+    )
     if not before_observation_count == after_observation_count:
-        title = f"{title} WARNING"
+        title = "{} WARNING".format(title)
 
     table_context = {
         "Patient count": len(patients),
@@ -60,7 +62,9 @@ def send_email(title, template_name, context):
     html_message = render_to_string(template_name, context)
     plain_message = strip_tags(html_message)
     admin_emails = ", ".join([i[1] for i in settings.ADMINS])
-    logger.info(f"sending email {title} to {admin_emails}")
+    logger.info("sending email {} to {}".format(
+        title, admin_emails
+    ))
     send_mail(
         title,
         plain_message,
