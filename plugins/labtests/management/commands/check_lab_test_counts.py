@@ -4,6 +4,7 @@ add ITU lists and bacteraemia.
 
 It resyncs those patients and sends an email with the result
 """
+from collections import OrderedDict
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
@@ -49,11 +50,11 @@ def create_email(patients, before_observation_count, after_observation_count):
     if not before_observation_count == after_observation_count:
         title = "{} WARNING".format(title)
 
-    table_context = {
-        "Patient count": len(patients),
-        "Before patient sync count": before_observation_count,
-        "After patient sync count": after_observation_count,
-    }
+    table_context = OrderedDict((
+        ("Patient count", len(patients),),
+        ("Before patient sync count", before_observation_count,),
+        ("After patient sync count", after_observation_count,),
+    ))
 
     send_email(title, template_name, {"table_context": table_context, "title": title})
 
