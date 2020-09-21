@@ -16,6 +16,7 @@ WARD_LISTS = {
     'South': 'autoic_u_south',
     'East': 'autoic_u_east',
     'West': 'autoic_u_west',
+    'ICU 2': 'autoic_u_2',
     'SHDU': 'icu_shdu'
 }
 
