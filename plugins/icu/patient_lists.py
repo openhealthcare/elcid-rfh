@@ -67,3 +67,23 @@ class AutoICUWestList(RfhPatientList, PatientList):
     @classmethod
     def visible_to(klass, user):
         return True
+
+
+class AutoICU2List(RfhPatientList, PatientList):
+    is_read_only  = True
+    schema        = []
+    template_name = 'episode_list.html'
+    display_name  = 'Auto ICU 2'
+    order         = 31
+
+    @property
+    def queryset(self):
+        patients = Patient.objects.filter(icuhandoverlocation__ward='ICU2')
+        return Episode.objects.filter(
+            patient__in=patients,
+            category_name=InfectionService.display_name
+        ).distinct()
+
+    @classmethod
+    def visible_to(klass, user):
+        return True
