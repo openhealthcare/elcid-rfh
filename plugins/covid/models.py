@@ -249,7 +249,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         ('2', '(2) More than half the days'),
         ('3', '(3) Nearly every day')
     )
-    ETHNICITY_CODE       = enum("BrC", "OC", "BrA", "OA", "BB", "BO", "O")
+    ETHNICITY_CODE       = enum("White", "Black", "Asian", "Other")
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
     TREND_CHOICES        = enum('Same', 'Better', 'Worse')
