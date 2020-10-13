@@ -40,6 +40,8 @@ def numeric(val):
 
 
 def to_date(val):
+    if val == 'N/A':
+        return
     # dates come in 2 formats
     # either 01/12/2020
     # or 6/30/20
@@ -60,8 +62,10 @@ def to_date(val):
 
 def to_choice(some_numeric, choices):
     """
-    choices is of the form of a choice field on a model
-    ie a list of tuples
+    Given a value from the data, and a tuple of Django field choices,
+    return None or the choice value.
+
+    Assumes the data is 0 indexed.
     """
     some_numeric = numeric(some_numeric)
     if some_numeric is None:
@@ -102,6 +106,18 @@ def smoking_status(patient):
         return
 
     return STATUSES[value]
+
+def ethnicity_code_choice(value):
+    CHOICES = {
+        '1': 'White',
+        '2': 'Black',
+        '3': 'Asian',
+        '4': 'Other'
+    }
+    if value == '':
+        return
+
+    return CHOICES[value]
 
 
 def max_resp(patient):
@@ -206,6 +222,18 @@ class Command(BaseCommand):
         parser.add_argument('file')
 
     def load_patient(self, patient):
+        # TODO: Fix these:
+        if patient['Focal weakness (0 = no, 1 = yes)'] == '22':
+            return
+
+        if patient["Date of telephone call"] == '1':
+            return
+
+        if patient["Same (0), better (1) or worse (2) than discharge5"] == '3':
+            return
+
+        # End skips
+
         mrn = patient['Hospital (Internal) Number']
         if not mrn.strip():
             return False
@@ -336,7 +364,11 @@ class Command(BaseCommand):
 
         comorbidities = episode.covidcomorbidities_set.get()
         comorbidities.created_by_id = 1
-        comorbidities.hypertension = no_yes(patient['PMH hypertension (No = 0, Yes = 1, Unknown = 2)'])
+        try:
+            comorbidities.hypertension = no_yes(patient["PMH hypertension (No = 0, Yes = 1)"])
+        except ValueError:
+            comorbidities.hypertension = no_yes(patient["PMH hypertension (No = 0, Yes = 1, Unknown = 2)"])
+
         comorbidities.ace_inhibitor = no_yes(patient['Current ACEi use (No = 0, Yes = 1, Unknown = 2)'])
         comorbidities.angiotension_blocker = no_yes(patient['Current Angiotension receptor blocker use (No = 0, Yes = 1, Unknown = 2)'])
 
@@ -429,10 +461,15 @@ class Command(BaseCommand):
         covid_follow_up_call.height = patient["Height (m)"]
         covid_follow_up_call.weight = patient["Weight (kg)"]
         covid_follow_up_call.ethnicity = patient.get_list("Ethnicity")[1]
-        covid_follow_up_call.ethnicity_code = to_choice(
-            patient["Ethnicity code (BrC=1, OC=2, BrA=3, OA=4, BB=5, BO=6, O=7)"],
-            [("", "",)] + list(covid_follow_up_call.ETHNICITY_CODE)
-        )
+
+        try:
+            covid_follow_up_call.ethnicity_code = ethnicity_code_choice(
+                patient["Ethnicity code (White = 1, Black = 2, Asian = 3 Other = 4)"])
+
+        except ValueError:
+            covid_follow_up_call.ethnicity_code = ethnicity_code_choice(
+                patient["Ethnicity code (White = 1, Black = 2 Asian = 3 Other = 4 BrC=1, OC=2, BrA=3, OA=4, BB=5, BO=6, O=7)"])
+
 
         covid_follow_up_call.followup_status = to_choice(
             patient["Smoking status (Never = 0, Ex-smoker = 1, Current = 2)"],
@@ -499,6 +536,7 @@ class Command(BaseCommand):
         # fatigue
         covid_follow_up_call.current_fatigue = patient["Fatigue rating (0-10)"]
         covid_follow_up_call.max_fatigue = patient["Max fatigue"]
+
         covid_follow_up_call.fatigue_trend = to_choice(
             patient["Same (0), better (1) or worse (2) than discharge5"],
             covid_follow_up_call.TREND_CHOICES
@@ -539,7 +577,12 @@ class Command(BaseCommand):
             bhp = bhp.replace("%", "")
 
         if bhp is not None:
-            covid_follow_up_call.baseline_health_proximity = int(float(bhp))
+            # TODO: Fix these in the source data
+            try:
+                bhp = int(float(bhp))
+            except ValueError:
+                return
+            covid_follow_up_call.baseline_health_proximity = bhp
 
         covid_follow_up_call.back_to_work = to_choice(
             patient["If working are you back to work (Yes = 0 no = 1 N/A = 2)"], covid_follow_up_call.Y_N_NA
@@ -609,8 +652,13 @@ class Command(BaseCommand):
 
         return True
 
+    def flush(self):
+        models.CovidAdmission.objects.all().delete()
+        models.CovidFollowUpCall.objects.all().delete()
+
     @transaction.atomic
     def handle(self, *args, **kwargs):
+        self.flush()
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
@@ -625,6 +673,7 @@ class Command(BaseCommand):
                 try:
                     self.load_patient(patient)
                 except:
+                    print('Patient {} {}'.format(patients, patient['Hospital (Internal) Number']))
                     raise
 
             print('Patients: {}'.format(patients))
