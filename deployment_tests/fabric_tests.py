@@ -590,23 +590,6 @@ class RestartTestCase(FabfileTestCase):
         local.assert_called_once_with("sudo service nginx restart")
 
 
-@mock.patch('fabfile.local')
-@mock.patch('fabfile.print', create=True)
-class CronTestCase(FabfileTestCase):
-    def test_write_cron_lab_tests(
-        self, print_function, local
-    ):
-        prod_env = fabfile.Env("some_branch")
-        fabfile.write_cron_lab_tests(prod_env)
-        local.assert_called_once_with("echo '1,16,31,46 * * * * ohc \
-/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/python \
-/usr/lib/ohc/elcidrfh-some_branch/manage.py \
-batch_load >> /usr/lib/ohc/log/cron.log 2>&1' | sudo tee \
-/etc/cron.d/elcid_batch_test_load")
-        print_function.assert_called_once_with(
-            'Writing cron elcid_batch_test_load'
-        )
-
     @mock.patch("fabfile.os")
     def test_write_cron_backup(self, os, print_function, local):
         os.path.abspath.return_value = "/somthing/somewhere/fabfile.py"
