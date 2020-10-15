@@ -177,6 +177,7 @@ INSTALLED_APPS = (
     'plugins.covid',
     'plugins.imaging',
     'plugins.dischargesummary',
+    'plugins.monitoring',
     'intrahospital_api',
     'elcid',
     'passwordreset',
