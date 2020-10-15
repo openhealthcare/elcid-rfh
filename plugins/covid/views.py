@@ -29,48 +29,61 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
             'deaths'
         ]
         for sum_field in sum_fields:
-            context[sum_field] = models.CovidReportingDay.objects.all(
+            context[sum_field] = models.CovidReportingDay.objects.filter(
+                date__gte=datetime.date(2020, 1, 1),
+                date__lt=datetime.date.today() + datetime.timedelta(days=1)
             ).aggregate(Sum(sum_field))['{}__sum'.format(sum_field)]
 
-        yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=1))
+        yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=2))
         context['yesterday'] = yesterday
 
-        positive_timeseries = ['Positive Tests']
-        positive_ticks      = ['x']
+        ticks      = ['x']
 
-        deaths_timeseries   = ['Deaths']
-        deaths_ticks        = ['x']
+        positive_timeseries   = ['Positive Tests']
+        deaths_timeseries     = ['Deaths']
+        ordered_timeseries    = ['Tests ordered']
+        patients_timeseries   = ['Patients tested']
+        positivity_timeseries = ['Positivity']
 
-        ordered_timeseries  = ['Tests ordered']
-        ordered_ticks       = ['x']
+        for day in models.CovidReportingDay.objects.filter(
+                date__gte=datetime.date(2020, 1, 1),
+                date__lt=datetime.date.today() + datetime.timedelta(days=1)
+        ).order_by('date'):
 
-        patients_timeseries = ['Patients tested']
-        patients_ticks      = ['x']
-
-        for day in models.CovidReportingDay.objects.all().order_by('date'):
-            day_string = day.date.strftime('%Y-%m-%d')
+            ticks.append(day.date.strftime('%Y-%m-%d'))
 
             if day.patients_positive:
-                positive_ticks.append(day_string)
                 positive_timeseries.append(day.patients_positive)
+            else:
+                positive_timeseries.append(0)
 
             if day.deaths:
-                deaths_ticks.append(day_string)
                 deaths_timeseries.append(day.deaths)
+            else:
+                deaths_timeseries.append(0)
 
             if day.tests_ordered:
-                ordered_ticks.append(day_string)
                 ordered_timeseries.append(day.tests_ordered)
+            else:
+                ordered_timeseries.append(0)
 
             if day.patients_resulted:
-                patients_ticks.append(day_string)
                 patients_timeseries.append(day.patients_resulted)
+            else:
+                patients_timeseries.append(0)
+
+            if not day.patients_positive:
+                positivity_timeseries.append(0)
+            else:
+                perc = float("{:.2f}".format((day.patients_positive / day.tests_ordered)*100))
+                positivity_timeseries.append(perc)
 
 
-        context['positive_data'] = [positive_ticks, positive_timeseries]
-        context['deaths_data']   = [deaths_ticks, deaths_timeseries]
-        context['orders_data']   = [ordered_ticks, ordered_timeseries]
-        context['patients_data'] = [patients_ticks, patients_timeseries]
+        context['positive_data']   = [ticks, positive_timeseries]
+        context['deaths_data']     = [ticks, deaths_timeseries]
+        context['orders_data']     = [ticks, ordered_timeseries]
+        context['patients_data']   = [ticks, patients_timeseries]
+        context['positivity_data'] = [ticks, positivity_timeseries]
 
         context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
 
