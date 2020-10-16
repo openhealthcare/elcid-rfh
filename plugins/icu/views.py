@@ -34,8 +34,8 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         patients = ICUHandoverLocation.objects.filter(ward=ward_name)
 
         patient_count = patients.count()
-        covid_patients = CovidPatient.objects.filter(patient__in=[p.patient for p in patients]).count()
-
+        covid_patients = CovidPatient.objects.filter(
+            patient__in=[p.patient for p in patients]).count()
 
         stays       = [(today - p.admitted).days +1 for p in patients if p.admitted]
         staycounter = collections.defaultdict(int)
