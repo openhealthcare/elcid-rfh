@@ -1,6 +1,8 @@
 """
-Management command to look and see if patients have follow up
-appointments upstream and if so to create those patients
+Management command to create follow up episodes.
+
+We look and see if patients have follow up appointments in Cerner without elCID episodes
+and for positive swabs without episodes.
 """
 from django.core.management.base import BaseCommand
 from opal.models import Patient
