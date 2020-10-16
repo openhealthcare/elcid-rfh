@@ -46,13 +46,6 @@
 },
 {
     "pk": 1,
-    "model": "opal.microbiology_organism",
-    "fields": {
-        "name": "Some organism"
-    }
-},
-{
-    "pk": 1,
     "model": "opal.travel_reason",
     "fields": {
         "name": "Some reason"
