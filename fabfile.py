@@ -699,7 +699,7 @@ def write_cron_create_covid_episodes(new_env):
     """
     Creates a cron job that creates covid episodes
     """
-    print("Writing cron {}_disk_space".format(PROJECT_NAME))
+    print("Writing cron {}_create_covid_episodes".format(PROJECT_NAME))
     template = jinja_env.get_template(
         'etc/conf_templates/cron_create_covid_episodes.jinja2'
     )
