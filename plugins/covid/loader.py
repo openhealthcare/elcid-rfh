@@ -48,6 +48,7 @@ def pre_load_covid_patients():
         create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
 
+
 def create_followup_episodes():
     api = ProdAPI()
     results = set()
@@ -68,8 +69,8 @@ def create_followup_episodes():
                 demographics__hospital_number=mrn
             ).first()
             if not patient:
-                create_rfh_patient_from_hospital_number(mrn, CovidEpisode)
-            else:
-                patient.episode_set.create(
-                    category_name=CovidEpisode.display_name
-                )
+                patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
+
+            patient.episode_set.create(
+                category_name=CovidEpisode.display_name
+            )
