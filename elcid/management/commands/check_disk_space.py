@@ -1,11 +1,14 @@
 """
 Management command to check disk space on a server.
 """
+import datetime
 import subprocess
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
+
+from plugins.monitoring.models import Fact
 
 
 def raise_the_alarm():
@@ -26,4 +29,17 @@ class Command(BaseCommand):
         out, er = p3.communicate()
         if out:
             raise_the_alarm()
+
+        p1 = subprocess.Popen(["df", "-h"], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["grep", "sda2"], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["awk", "{print $5}"], stdin=p2.stdout, stdout=subprocess.PIPE)
+        out, err = p3.communicate()
+        disk_usage = int(out[:2])
+
+        Fact(
+            when=datetime.datetime.now(),
+            label="Disk Usage Percentage",
+            value_int=disk_usage
+        ).save()
+
         return
