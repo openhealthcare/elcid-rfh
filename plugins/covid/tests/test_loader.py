@@ -5,11 +5,9 @@ from plugins.covid import loader
 from plugins.covid import episode_categories
 
 
-base_str = "plugins.covid.loader"
 
-
-@mock.patch(f"{base_str}.create_rfh_patient_from_hospital_number")
-@mock.patch(f"{base_str}.ProdAPI")
+@mock.patch("plugins.covid.loader.create_rfh_patient_from_hospital_number")
+@mock.patch("plugins.covid.loader.ProdAPI")
 class CreateFollowUpEpisodeTestCase(OpalTestCase):
     def test_create_patient_who_does_not_exist(
         self,
