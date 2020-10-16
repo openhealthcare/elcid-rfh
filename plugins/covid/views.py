@@ -75,7 +75,7 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
             if not day.patients_positive:
                 positivity_timeseries.append(0)
             else:
-                perc = float("{:.2f}".format((day.patients_positive / day.tests_ordered)*100))
+                perc = float("{:.2f}".format((day.patients_positive / day.patients_resulted)*100))
                 positivity_timeseries.append(perc)
 
 
