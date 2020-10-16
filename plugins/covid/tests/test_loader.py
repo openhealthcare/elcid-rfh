@@ -3,6 +3,7 @@ from opal.core.test import OpalTestCase
 from opal.models import Episode, Patient
 from plugins.covid import loader
 from plugins.covid import episode_categories
+from elcid.episode_categories import InfectionService
 
 
 
@@ -19,7 +20,7 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
         ]
         loader.create_followup_episodes()
         create_rfh_patient_from_hospital_number.assert_called_once_with(
-            "111", episode_categories.CovidEpisode
+            "111", InfectionService
         )
 
     def test_create_episode_which_does_not_exist(
