@@ -35,7 +35,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
         handover_patient_count = handover_patients.count()
         covid_patients = CovidPatient.objects.filter(
-            patient__in=[p.patient for p in handover_patients]
+            patient_id__in=[p.patient_id for p in handover_patients]
         ).count()
 
         stays       = [
