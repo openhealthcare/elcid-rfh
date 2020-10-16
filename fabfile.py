@@ -958,7 +958,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     write_cron_calculate_dashboard(new_env)
     write_cron_classify_covid(new_env)
 
-#    write_cron_create_covid_episodes(new_env)
+    write_cron_create_covid_episodes(new_env)
 
 
 
