@@ -40,9 +40,6 @@ class ViewsTest(OpalTestCase):
     def test_episode_detail_template_view(self):
         self.assertStatusCode('/templates/episode_detail.html/1', 200)
 
-    def test_add_patient_template_view(self):
-        self.assertStatusCode('/templates/modals/add_episode.html/', 200)
-
     def test_delete_item_confirmation_template_view(self):
         self.assertStatusCode('/templates/delete_item_confirmation_modal.html/', 200)
 
