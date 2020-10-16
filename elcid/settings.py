@@ -177,6 +177,7 @@ INSTALLED_APPS = (
     'plugins.covid',
     'plugins.imaging',
     'plugins.dischargesummary',
+    'plugins.monitoring',
     'intrahospital_api',
     'elcid',
     'passwordreset',
@@ -306,6 +307,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'labtests': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        }
     }
 }
 
@@ -374,7 +380,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.53'
+VERSION_NUMBER = '0.57'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

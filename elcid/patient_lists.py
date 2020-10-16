@@ -80,6 +80,15 @@ class RnohWardround(RfhPatientList, TaggedPatientList):
     schema = []
 
 
+class Hepatobiliary(RfhPatientList, TaggedPatientList):
+    display_name  = 'Hepatobiliary Service'
+    direct_add    = True
+    order         = 18
+    tag           = 'hepatobiliary'
+    template_name = 'episode_list.html'
+    schema        = []
+
+
 class CDIFF(RfhPatientList, TaggedPatientList):
     display_name = 'CDIFF Round'
     direct_add = True
@@ -88,31 +97,31 @@ class CDIFF(RfhPatientList, TaggedPatientList):
     schema = []
 
 
-class ICU(RfhPatientList, TaggedPatientList):
-    display_name = 'ICU South'
-    direct_add = True
-    order = 1
-    tag = "icu"
-    template_name = 'episode_list.html'
-    schema = []
+# class ICU(RfhPatientList, TaggedPatientList):
+#     display_name = 'ICU South'
+#     direct_add = True
+#     order = 1
+#     tag = "icu"
+#     template_name = 'episode_list.html'
+#     schema = []
 
 
-class ICUEast(RfhPatientList, TaggedPatientList):
-    display_name = 'ICU East'
-    direct_add = True
-    order = 2
-    tag = "icu_east"
-    template_name = 'episode_list.html'
-    schema = []
+# class ICUEast(RfhPatientList, TaggedPatientList):
+#     display_name = 'ICU East'
+#     direct_add = True
+#     order = 2
+#     tag = "icu_east"
+#     template_name = 'episode_list.html'
+#     schema = []
 
 
-class ICUWest(RfhPatientList, TaggedPatientList):
-    display_name = 'ICU West'
-    direct_add = True
-    order = 3
-    tag = "icu_west"
-    template_name = 'episode_list.html'
-    schema = []
+# class ICUWest(RfhPatientList, TaggedPatientList):
+#     display_name = 'ICU West'
+#     direct_add = True
+#     order = 3
+#     tag = "icu_west"
+#     template_name = 'episode_list.html'
+#     schema = []
 
 
 class ICUSHDU(RfhPatientList, TaggedPatientList):

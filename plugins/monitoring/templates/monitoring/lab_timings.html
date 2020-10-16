@@ -1,0 +1,64 @@
+<style>
+  .c3-line {
+    stroke-width: 2px;
+  }
+</style>
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>WinPath Sync Performance Dashboard</h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+         <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>New Observations </h2>
+              <p>Released to Cerner during the previous 48hrs released to elCID in the previous 2 hours</p>
+              <div id="48hr_new_obs_graph"></div>
+            </div>
+          </div> <!-- row -->
+         <script>render_graph('48hr_new_obs_graph', {{ load_new_obs_data | safe }}, 'line');</script>
+
+         <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Load Time (minutes)</h2>
+              <p>Time taken to sync the previous 48 hours of results from WinPath</p>
+              <div id="load_time_graph"></div>
+            </div>
+          </div> <!-- row -->
+         <script>render_graph('load_time_graph', {{ sync_minutes_data | safe }}, 'line');</script>
+
+         <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Observations, last 48 hours</h2>
+              <p>Number of observations in the previous 48 hours as reported by Azure database</p>
+              <div id="48hr_count_graph"></div>
+            </div>
+          </div> <!-- row -->
+         <script>render_graph('48hr_count_graph', {{ sync_48hr_count_data | safe }}, 'line');</script>
+
+         <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Patient Cohort</h2>
+              <div id="patient_cohort_graph"></div>
+            </div>
+          </div> <!-- row -->
+         <script>render_graph('patient_cohort_graph', {{ patient_cohort_data | safe }}, 'line');</script>
+
+         <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Total Observations</h2>
+              <div id="total_obs_graph"></div>
+            </div>
+          </div> <!-- row -->
+         <script>render_graph('total_obs_graph', {{ total_obs_data | safe }}, 'line');</script>
+
+
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+    </div>
+  </div>
+</div>

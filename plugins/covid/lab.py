@@ -37,23 +37,21 @@ class Coronavirus2019Test(CovidTest):
     ]
 
     NEGATIVE_RESULTS = [
-        'NOT detected',
         'NOT detected ~ SARS CoV-2 RNA NOT Detected. ~ Please note that the testing of upper respiratory ~ tract specimens alone may not exclude SARS CoV-2 ~ infection. ~ If there is a high clinical index of suspicion, ~ please send a lower respiratory specimen (sputum, ~ BAL, EndoTracheal aspirate) to exclude SARS CoV-2 ~ where possible.',
-        'NOT detected~SARS CoV-2 RNA NOT Detected.~Please note that the testing of upper respiratory~tract specimens alone may not exclude SARS CoV-2~infection.~If there is a high clinical index of suspicion,~please send a lower respiratory specimen (sputum,~BAL, EndoTracheal aspirate) to exclude SARS CoV-2~where possible.',
-        'NOT detected~result from ref lab',
-        'undetected',
-        'UNDETECTED',
-        'Undetectd',
-        'Undetected',
-        'Undetected - result from ref lab',
-        'Undetected - results from ref lab',
-        'Undetected~results form ref lab',
         'Undetected~results from ref lab',
-        'Undetetced',
-        'Not Detected',
-        'Not detected',
-        'Not detected- PHE Ref Lab report (14/03/2020)',
+        'NOT detected~',
+        'Undetected - result from ref lab',
+        'Undetected~results form ref lab',
         'SARS CoV-2 not detected - result from PHE',
+        'Undetetced',
+        'NOT detected',
+        'Not detected- PHE Ref Lab report (14/03/2020)',
+        'Undetectd',
+        'Undetected - results from ref lab',
+        'NOT detected~SARS CoV-2 RNA NOT Detected.~Please note that the testing of upper respiratory~tract specimens alone may not exclude SARS CoV-2~infection.~If there is a high clinical index of suspicion,~please send a lower respiratory specimen (sputum,~BAL, EndoTracheal aspirate) to exclude SARS CoV-2~where possible.',
+        'Undetected',
+        'NOT detected ~ *****Amended Result*****',
+        'NOT detected~result from ref lab'
     ]
 
 
@@ -77,17 +75,26 @@ class ReferenceLabTest(CovidTest):
     SPECIMEN_NAME    = 'Specimen type'
 
     POSITIVE_RESULTS = [
+        'Detected~2019 nCoV ORF1ab Detected (Ct value: >30)~Please note, the Ct values for detection of SARS~CoV-2 viral RNA are indicative of the viral load~in the sample, but are not quantitative PCR~values. The Ct values obtained should therefore be~interpreted with caution.~SARS CoV-2 Detected in this sample',
+        '*****Amended Result***** 08/06/20~Detected',
+        'Detected~ ~2019 nCoV ORF1ab Detected (Ct value: 20-30)~Please note, the Ct value for detection of SARS~CoV-2 viral RNA are indicative of the viral load~in the sample, but are not quantitative PCR~values. The Ct values obtained should therefore be~interpreted with caution.~SARS CoV-2 Detected in this sample',
+        '2019 nCoV RdRp Detected',
+        '2019 nCoV RdRp gene Detected',
         'POSITIVE',
-        'Detected',
-        'Detected~ ~2019 nCoV ORF1ab Detected (Ct value: 20-30)~Please note, the Ct value for detection of SARS~CoV-2 viral RNA are indicative of the viral load~in the sample, but are not quantitative PCR~values. The Ct values obtained should therefore be~interpreted with caution.~SARS CoV-2 Detected in this sample'
+        'Detected'
     ]
 
     NEGATIVE_RESULTS = [
-        'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS CoV-2 Not detected in this sample',
-        'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS Co-2 Not detected in this sample',
-        'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS CoV-2 Undetected in this sample',
         'NOT detected',
-        'Undetected'
+        'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS CoV-2 Not detected in this sample',
+        'Undetected~SARS CoV-2 NOT detected in this sample',
+        '2019 nCoV ORF1ab undetected',
+        'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS CoV-2 Undetected in this sample',
+        'Undetected',
+        'Undetected~ ~2019 nCoV ORF1ab Undetected~SARS Co-2 Not detected in this sample',
+        'Undetected~2019 nCoV ORF1ab Undetected~SARS CoV-2 NOT detected in this sample~Please note that the result from testing the~respiratory sample from this patient is pending',
+        'Undetected~2019 nCoV ORF1ab Undetected~SARS CoV-2 NOT detected in this sample',
+        '2019 nCoV RdRp gene Undetected'
     ]
 
 
@@ -101,7 +108,8 @@ class CepheidTest(CovidTest):
     ]
 
     NEGATIVE_RESULTS = [
-        'NOT detected'
+        'NOT detected',
+        'NOT Detected'
     ]
 
 

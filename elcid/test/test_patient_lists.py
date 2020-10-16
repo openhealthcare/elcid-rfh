@@ -151,9 +151,6 @@ class TestPatientList(AbstractPatientListTestCase):
             patient_lists.CDIFF.comparator_service, "EpisodeAddedComparator"
         )
         self.assertEqual(
-            patient_lists.ICU.comparator_service, "EpisodeAddedComparator"
-        )
-        self.assertEqual(
             patient_lists.Acute.comparator_service, "EpisodeAddedComparator"
         )
         self.assertEqual(

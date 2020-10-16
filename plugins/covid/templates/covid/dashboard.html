@@ -56,13 +56,15 @@
           </div> <!-- row -->
 
           <div class="row content-offset">
-            <div class="col-md-5">
+            <div class="col-md-12">
               <h2>Daily Positive</h2>
               <p>Daily number of patients testing positive for COVID-19 for the first time</p>
               <div id="positive_graph"></div>
             </div>
+          </div>
 
-            <div class="col-md-5 col-md-offset-1">
+          <div class="row content-offset">
+            <div class="col-md-12">
               <h2>Daily Deaths</h2>
               <p>Daily number of deaths of patients who have tested positive for COVID-19</p>
               <div id="deaths_graph"></div>
@@ -131,21 +133,28 @@
 
 
           <div class="row content-offset">
-            <div class="col-md-5">
+            <div class="col-md-12">
               <h2>Daily Orders</h2>
               <p>Daily number of COVID-19 tests ordered</p>
               <div id="orders_graph"></div>
             </div>
+          </div>
 
-            <div class="col-md-5 col-md-offset-1">
+          <div class="row content-offset">
+            <div class="col-md-12">
               <h2>Daily Patients</h2>
               <p>Daily number of patients who have had tests for COVID-19 resulted for the first time</p>
               <div id="patients_graph"></div>
             </div>
           </div> <!-- row -->
 
-
-
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Daily Positivity</h2>
+              <p>Percentage of tests resulted for the first time that are positive</p>
+              <div id="positivity_graph"></div>
+            </div>
+          </div> <!-- row -->
 
 
           {% if can_download %}
@@ -169,14 +178,21 @@
 </div>
 <script>
 
-  var render_graph = function(element_id, data){
+  var render_graph = function(element_id, data, type){
+
+  if (!type){
+    type = 'bar';
+  }
 
   var config = {
   bindto: document.getElementById(element_id),
   data: {
   columns: data,
-  type: 'bar',
+  type: type,
   x: 'x',
+  },
+  zoom: {
+  enabled:true
   },
   axis: {
   x: {
@@ -185,6 +201,11 @@
   }
   },
   }
+
+  if (type == 'line') {
+  config['point'] = {show: false};
+  }
+
   c3.generate(config)
 
   }
@@ -192,4 +213,5 @@
   render_graph('deaths_graph', {{ deaths_data | safe }});
   render_graph('orders_graph', {{ orders_data | safe }});
   render_graph('patients_graph', {{ patients_data | safe }});
+  render_graph('positivity_graph', {{ positivity_data | safe }}, 'line');
 </script>

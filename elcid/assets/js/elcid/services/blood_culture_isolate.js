@@ -1,64 +1,67 @@
 angular.module('opal.services').service(
   'BloodCultureIsolate', function($http, $q, $window, Referencedata){
+  "use strict";
   var DATE_FORMAT = 'DD/MM/YYYY'
 
-  const baseUrl = "/elcid/v0.1/blood_culture_isolate/";
+  var baseUrl = "/elcid/v0.1/blood_culture_isolate/";
 
   var dateFields = ["date_positive"];
 
-  class BloodCultureIsolate{
-    constructor(blood_culture_set, item){
-      if(item){
-        this.isolateUrl = baseUrl + item.id + "/"
-        this.isNew = false;
-        this.editing = _.clone(item);
-        _.each(dateFields, dateField => {
-          if(this.editing[dateField]){
-            this.editing[dateField] = moment(this.editing[dateField], DATE_FORMAT).toDate();
-          }
-        });
-      }
-      else{
-        this.isolateUrl = baseUrl;
-        this.editing = {
-          consistency_token: "",
-          blood_culture_set_id: blood_culture_set.id
+  var BloodCultureIsolate = function(blood_culture_set, item){
+    if(item){
+      this.isolateUrl = baseUrl + item.id + "/"
+      this.isNew = false;
+      this.editing = _.clone(item);
+      var self = this;
+      _.each(dateFields, function(dateField){
+        if(self.editing[dateField]){
+          self.editing[dateField] = moment(self.editing[dateField], DATE_FORMAT).toDate();
         }
-        this.isNew = true;
-      }
-
-      var isolate = this;
-
-      Referencedata.load().then(function(referenceData){
-        // lists should be alphabetical but with
-        // Negative always as the last result
-        // if the list contains negative
-        var lists = [
-          "gramstainoutcome_list",
-          "quickfishoutcome_list",
-          "gpcstaphoutcome_list",
-          "gpcstrepoutcome_list"
-        ]
-        var lookupLists = referenceData.toLookuplists();
-
-        _.each(lists, list => {
-          isolate[list] = lookupLists[list];
-          var removed = _.without(isolate[list], 'Negative');
-          if(removed.length !== isolate[list].length){
-            removed.push("Negative");
-            isolate[list] = removed;
-          }
-        });
       });
     }
+    else{
+      this.isolateUrl = baseUrl;
+      this.editing = {
+        consistency_token: "",
+        blood_culture_set_id: blood_culture_set.id
+      }
+      this.isNew = true;
+    }
 
-    save(){
+    var isolate = this;
+
+    Referencedata.load().then(function(referenceData){
+      // lists should be alphabetical but with
+      // Negative always as the last result
+      // if the list contains negative
+      var lists = [
+        "gramstainoutcome_list",
+        "quickfishoutcome_list",
+        "gpcstaphoutcome_list",
+        "gpcstrepoutcome_list"
+      ]
+      var lookupLists = referenceData.toLookuplists();
+
+      _.each(lists, function(list){
+        isolate[list] = lookupLists[list];
+        var removed = _.without(isolate[list], 'Negative');
+        if(removed.length !== isolate[list].length){
+          removed.push("Negative");
+          isolate[list] = removed;
+        }
+      });
+    });
+  }
+
+  BloodCultureIsolate.prototype = {
+    save: function(){
       var deferred = $q.defer();
       var method = "post";
+      var self = this;
       var toSave = _.clone(this.editing);
-      _.each(dateFields, dateField => {
+      _.each(dateFields, function(dateField){
         if(toSave[dateField]){
-          toSave[dateField] = moment(this.editing[dateField]).format(DATE_FORMAT);
+          toSave[dateField] = moment(self.editing[dateField]).format(DATE_FORMAT);
         }
       });
 
@@ -80,9 +83,9 @@ recently changed it - refresh the page and try again');
       );
 
       return deferred.promise;
-    }
+    },
 
-    delete(){
+    delete: function(){
       var deferred = $q.defer();
       $http.delete(this.isolateUrl).then(
         function() {

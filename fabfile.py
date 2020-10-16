@@ -890,6 +890,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     if backup_name and not os.path.isfile(backup_name):
         raise ValueError("unable to find backup {}".format(backup_name))
 
+    local("sudo rm /etc/cron.d/elcid*")
+
     # the new env that is going to be live
     new_env = Env(new_branch)
 
@@ -935,21 +937,6 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     # symlink the celery conf
     services_create_celery_conf(new_env)
 
-    # Cron jobs
-    write_cron_lab_tests(new_env)
-    write_cron_lab_pre_load(new_env)
-    write_cron_sync_demographics(new_env)
-    write_cron_icu_load(new_env)
-    write_cron_appointment_load(new_env)
-    write_cron_imaging_load(new_env)
-    write_cron_discharge_load(new_env)
-    write_cron_admission_load(new_env)
-    write_cron_disk_check(new_env)
-    write_cron_calculate_dashboard(new_env)
-    write_cron_classify_covid(new_env)
-    write_cron_lab_tests(new_env)
-    write_cron_create_covid_appointments(new_env)
-
     # django setup
     run_management_command("collectstatic --noinput", new_env)
     run_management_command("migrate --noinput", new_env)
@@ -957,6 +944,22 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     run_management_command("load_lookup_lists", new_env)
     restart_supervisord(new_env)
     restart_nginx()
+
+    # Cron jobs
+    write_cron_lab_tests(new_env)
+    write_cron_lab_pre_load(new_env)
+    write_cron_sync_demographics(new_env)
+    write_cron_icu_load(new_env)
+    # write_cron_appointment_load(new_env)
+    # write_cron_imaging_load(new_env)
+    # write_cron_discharge_load(new_env)
+#    write_cron_admission_load(new_env)
+    write_cron_disk_check(new_env)
+    write_cron_calculate_dashboard(new_env)
+    write_cron_classify_covid(new_env)
+    write_cron_lab_tests(new_env)
+    write_cron_create_covid_appointments(new_env)
+
 
 
 def infer_current_branch():
@@ -1121,10 +1124,10 @@ def deploy_prod(old_branch, old_database_name=None):
 
     dump_database(old_env, dbname, old_env.release_backup_name)
 
-    write_cron_backup(new_env)
-    write_cron_write_upstream_results(new_env)
     old_status = run_management_command("status_report", old_env)
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
+    write_cron_backup(new_env)
+    write_cron_write_upstream_results(new_env)
     new_status = run_management_command("status_report", new_env)
 
     diff_status(new_status, old_status)
