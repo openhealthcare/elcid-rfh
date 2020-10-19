@@ -118,6 +118,7 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
     )
 
     load_patient(patient)
+    return patient
 
 
 def load_patient(patient, run_async=None):

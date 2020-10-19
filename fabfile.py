@@ -695,6 +695,27 @@ def write_cron_disk_check(new_env):
     ))
 
 
+def write_cron_create_covid_episodes(new_env):
+    """
+    Creates a cron job that creates covid episodes
+    """
+    print("Writing cron {}_create_covid_episodes".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_create_covid_episodes.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_create_covid_episodes".format(
+        PROJECT_NAME
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
 
 def send_error_email(error, some_env):
     print("Sending error email")
@@ -936,6 +957,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     write_cron_disk_check(new_env)
     write_cron_calculate_dashboard(new_env)
     write_cron_classify_covid(new_env)
+
+    write_cron_create_covid_episodes(new_env)
 
 
 
