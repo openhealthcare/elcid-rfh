@@ -1,0 +1,201 @@
+<h3>
+  <b>
+    [[ item.when | displayDate ]] [[ item.clinician ]]
+  </b>
+  <span ng-show="item.position">(</span>
+  [[ item.position ]]
+  <span ng-show="item.position">)</span>
+  <span class="pull-right">
+    <a href="/letters/#/covid/six-month-followup-letter/[[ item.id ]]/" target="_blank"><i class="fa fa-envelope"></i></a>
+  </span>
+</h3>
+<span ng-show="item.cxr_completed">
+  CXR Completed
+   <br />
+</span>
+<span ng-show="item.bloods_completed">
+  Bloods Completed
+   <br />
+</span>
+<span ng-show="item.incomplete_reason">
+  Incomplete:<br />
+  [[ item.incomplete_reason ]]
+   <br />
+</span>
+    <div class="col-md-12">
+      <table class="table table-striped table-bordered ">
+        <tr>
+          <th>Symptom</th>
+          <th>Current</th>
+          <th>Max</th>
+          <th>Trajectory</th>
+        </tr>
+        <tr>
+          <td>Fatigue</td>
+          <td>[[ item.current_fatigue ]]</td>
+          <td>[[ item.max_fatigue ]]</td>
+          <td>[[ item.fatigue_trend ]]</td>
+        </tr>
+        <tr>
+          <td>Breathlessness</td>
+          <td>[[ item.current_breathlessness ]]</td>
+          <td>[[ item.max_breathlessness ]]</td>
+          <td>[[ item.breathlessness_trend ]]</td>
+        </tr>
+        <tr>
+          <td>Cough</td>
+          <td>[[ item.current_cough ]]</td>
+          <td>[[ item.max_cough ]]</td>
+          <td>[[ item.cough_trend ]]</td>
+        </tr>
+        <tr>
+          <td>Sleep Quality</td>
+          <td>[[ item.current_sleep_quality ]]</td>
+          <td>[[ item.max_sleep_quality ]]</td>
+          <td>[[ item.sleep_quality_trend ]]</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+<span ng-show="item.poor_sleep_noise">
+     Poor Sleep: Noise
+   <br />
+</span>
+<span ng-show="item.poor_sleep_medications">
+     Poor Sleep: Medications
+   <br />
+</span>
+<span ng-show="item.poor_sleep_other">
+  Poor Sleep: [[ item.poor_sleep_other ]]
+   <br />
+</span>
+
+<span ng-show="item.chest_pain">
+     Chest Pain
+   <br />
+</span>
+<span ng-show="item.chest_tightness">
+     Chest Tightness
+   <br />
+</span>
+<span ng-show="item.myalgia">
+     Myalgia
+   <br />
+</span>
+<span ng-show="item.confusion">
+     Confusion
+   <br />
+</span>
+<span ng-show="item.peripheral_oedema">
+     Peripheral Oedema
+   <br />
+</span>
+<span ng-show="item.focal_weakness">
+     Focal Weakness
+   <br />
+</span>
+<span ng-show="item.anosmia">
+     Anosmia
+   <br />
+</span>
+<span ng-show="item.diarrhoea">
+     Diarrhoea
+   <br />
+</span>
+<span ng-show="item.abdominal_pain">
+     Abdominal pain
+   <br />
+</span>
+<span ng-show="item.anorexia">
+     Anorexia
+   <br />
+</span>
+<span ng-show="item.back_to_normal">
+     Feels back to normal.
+   <br />
+</span>
+<span ng-show="item.why_not_back_to_normal">
+  Not Back To Normal: [[ item.why_not_back_to_normal ]]
+   <br />
+</span>
+<span ng-show="item.baseline_health_proximity">
+  [[ item.baseline_health_proximity ]] of normal health.
+   <br />
+</span>
+<span ng-show="item.back_to_work">
+  Back to work
+   <br />
+</span>
+<span ng-show="item.current_et">
+  Exercise Tolerance: [[ item.current_et ]]
+   <br />
+</span>
+<span ng-show="item.mrc_dyspnoea_scale">
+  MRC Dyspnoea: [[ item.mrc_dyspnoea_scale ]]
+   <br />
+</span>
+<span ng-show="item.current_cfs">
+  CFS: [[ item.current_cfs ]]
+   <br />
+</span>
+<span ng-show="item.interest">
+    [[ item.interest ]]
+   <br />
+</span>
+<span ng-show="item.depressed">
+    [[ item.depressed ]]
+   <br />
+</span>
+<span ng-show="item.tsq1">
+     Upsetting thoughts or memories about your hospital admission that have come into your mind against your will
+   <br />
+</span>
+<span ng-show="item.tsq2">
+     Upsetting dreams about the event
+   <br />
+</span>
+<span ng-show="item.tsq3">
+     Acting or feeling as though it is happening again
+   <br />
+</span>
+<span ng-show="item.tsq4">
+     Feeling upset by reminders of the event
+   <br />
+</span>
+<span ng-show="item.tsq5">
+     Bodily reactions such as fast heartbeat, sweatiness, dizziness when reminded of the event
+   <br />
+</span>
+<span ng-show="item.tsq6">
+     Difficulty falling or staying asleep
+   <br />
+</span>
+<span ng-show="item.tsq7">
+     Irritability or bursts of anger
+   <br />
+</span>
+<span ng-show="item.tsq8">
+     Difficulty concentrating
+   <br />
+</span>
+<span ng-show="item.tsq9">
+     Being more aware of potential danger to yourself and others
+   <br />
+</span>
+<span ng-show="item.tsq10">
+     Being jumpy or startled at something unexpected
+   <br />
+</span>
+<span ng-show="item.other_concerns">
+    [[ item.other_concerns ]]
+   <br />
+</span>
+<span ng-show="item.call_satisfaction">
+    [[ item.call_satisfaction ]]
+   <br />
+</span>
+<span ng-show="item.recontact">
+     Would you be willing to be contacted again to take part in research?
+   <br />
+</span>
