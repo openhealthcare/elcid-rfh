@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
         without_followups = Patient.objects.filter(
             covid_patient__date_first_positive__isnull=False
-        ).exclude(episode__category_name=CovidEpisode.display_name).count()
+        ).exclude(episode__category_name=CovidEpisode.display_name)
 
         for patient in without_followups:
             patient.create_episode(category_name=CovidEpisode.display_name)
