@@ -1,0 +1,143 @@
+{% load forms %}
+{% datetimepicker field="CovidSixMonthFollowUp.when" %}
+{% input field="CovidSixMonthFollowUp.clinician" %}
+{% input field="CovidSixMonthFollowUp.position" %}
+{% radio field="CovidSixMonthFollowUp.cxr_completed" %}
+{% radio field="CovidSixMonthFollowUp.bloods_completed" %}
+{% textarea field="CovidSixMonthFollowUp.incomplete_reason" %}
+  <div class="row content-offset-below-25">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Symptom</b>
+    </div>
+    <div class="col-md-2">
+      <b>Current</b>
+    </div>
+    <div class="col-md-2">
+      <b>Max</b>
+    </div>
+    <div class="col-md-3">
+      <b>Trajectory</b>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Fatigue</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.current_fatigue" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.max_fatigue" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidSixMonthFollowUp.fatigue_trend" label="" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Breathlessness</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.current_breathlessness" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.max_breathlessness" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidSixMonthFollowUp.breathlessness_trend" label="" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Cough</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.current_cough" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.max_cough" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidSixMonthFollowUp.cough_trend" label="" %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3 col-md-offset-1">
+      <b>Sleep Quality</b>
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.current_sleep_quality" label="" %}
+    </div>
+    <div class="col-md-2">
+      {% select field="CovidSixMonthFollowUp.max_sleep_quality" label="" %}
+    </div>
+    <div class="col-md-3">
+      {% select field="CovidSixMonthFollowUp.sleep_quality_trend" label="" %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <p><b>Reason For Poor Sleep</b></p>
+    </div>
+    <div class="col-md-3">
+      {% checkbox field="CovidSixMonthFollowUp.poor_sleep_noise" label="Noise" %}
+    </div>
+    <div class="col-md-3">
+      {% checkbox field="CovidSixMonthFollowUp.poor_sleep_medications" label="Observation/Medication"%}
+    </div>
+    <div class="col-md-5">
+      {% input field="CovidSixMonthFollowUp.poor_sleep_other" label="Other"%}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6"><p><b>Other Symptoms</b></p></div>
+  </div>
+  {% checkbox field="CovidSixMonthFollowUp.chest_pain" %}
+  {% checkbox field="CovidSixMonthFollowUp.chest_tightness" %}
+  {% checkbox field="CovidSixMonthFollowUp.myalgia" %}
+  {% checkbox field="CovidSixMonthFollowUp.confusion" %}
+  {% checkbox field="CovidSixMonthFollowUp.peripheral_oedema" %}
+  {% checkbox field="CovidSixMonthFollowUp.focal_weakness" %}
+  {% checkbox field="CovidSixMonthFollowUp.anosmia" %}
+  {% checkbox field="CovidSixMonthFollowUp.diarrhoea" %}
+  {% checkbox field="CovidSixMonthFollowUp.abdominal_pain" %}
+  {% checkbox field="CovidSixMonthFollowUp.anorexia" %}
+
+
+{% checkbox field="CovidSixMonthFollowUp.back_to_normal" %}
+{% textarea field="CovidSixMonthFollowUp.why_not_back_to_normal" %}
+{% input field="CovidSixMonthFollowUp.baseline_health_proximity" %}
+{% radio field="CovidSixMonthFollowUp.back_to_work" %}
+{% input field="CovidSixMonthFollowUp.current_et" %}
+{% radio field="CovidSixMonthFollowUp.mrc_dyspnoea_scale" %}
+{% radio field="CovidSixMonthFollowUp.limited_by" %}
+{% radio field="CovidSixMonthFollowUp.current_cfs" %}
+{% select field="CovidSixMonthFollowUp.interest" %}
+{% select field="CovidSixMonthFollowUp.depressed" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq1" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq2" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq3" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq4" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq5" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq6" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq7" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq8" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq9" %}
+{% checkbox field="CovidSixMonthFollowUp.tsq10" %}
+{% textarea field="CovidSixMonthFollowUp.other_concerns" %}
+{% input field="CovidSixMonthFollowUp.call_satisfaction" %}
+{% checkbox field="CovidSixMonthFollowUp.recontact" %}
+{% radio field="CovidSixMonthFollowUp.haem_fu" %}
+{% radio field="CovidSixMonthFollowUp.cardiology_fu" %}
+{% radio field="CovidSixMonthFollowUp.ipat_fu" %}
+{% radio field="CovidSixMonthFollowUp.smoking_fu" %}
+{% radio field="CovidSixMonthFollowUp.ct_chest" %}
+{% radio field="CovidSixMonthFollowUp.pulmonary_function" %}
+{% radio field="CovidSixMonthFollowUp.msk_input" %}
+{% radio field="CovidSixMonthFollowUp.patient_type" %}
+{% radio field="CovidSixMonthFollowUp.resp_clinic" %}
+{% radio field="CovidSixMonthFollowUp.calls_post_discharge" %}
+{% radio field="CovidSixMonthFollowUp.cxrs" %}
+{% textarea field="CovidSixMonthFollowUp.gp_copy" %}

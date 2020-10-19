@@ -1,0 +1,128 @@
+{% extends 'letters/base.html' %}
+{% block letter_content %}
+  <section>
+  <p>
+      <b>Centre for Respiratory Medicine</b><br />
+      Dr Paul Dilworth, Dr James Goldring, Professor Marc Lipman,<br />
+      Dr Anant Patel, Professor John Hurst, Dr Swapna Mandal, Dr<br />
+      Simon Brill, Dr James Murray, Dr Helen Garthwaite and Dr<br />
+      James Brown<br />
+      Tel: 0207 317 7560/0207 472 6260<br />
+      Fax:0207 317 7561 Fax (internal): 31928
+    </p>
+
+    <p>
+      <b>Private &amp; Confidential</b>
+    </p>
+
+        <p>
+          {% with GP=object.episode.patient.gpdetails_set.get %}
+            {{ GP.title }} {{ GP.initials }} {{ GP.surname }}<br />
+            {% if GP.address_1 %}{{ GP.address_1}} <br />{% endif %}
+            {% if GP.address_2 %}{{ GP.address_2}} <br />{% endif %}
+            {% if GP.address_3 %}{{ GP.address_3}} <br />{% endif %}
+            {% if GP.address_4 %}{{ GP.address_4}} <br />{% endif %}
+            {{ GP.postcode }}
+          {% endwith %}
+        </p>
+
+    <p>
+      Date: {{ today }}
+    </p>
+    <p>
+      MRN: {{ object.episode.patient.demographics.hospital_number }}
+    </p>
+
+    <h2>Post Covid Telephone Follow Up Follow Up</h2>
+    {% with demographics=object.episode.patient.demographics %}
+      <p>
+        Patient Name:
+        {{ demographics.name }}
+      </p>
+    <p>
+      DOB:
+      {{ demographics.date_of_birth }}
+    </p>
+    <p>
+      MRN:
+      {{ demographics.hospital_number }}
+    </p>
+    <p>
+      NHS Number:
+      {{ demographics.nhs_number }}
+    </p>
+  {% endwith %}
+
+  <h3>This call</h3>
+
+    <p>
+      Clinician completing call:
+      {{ object.clinician }}
+    </p>
+
+    <p>
+      Date:
+      {{ object.when | date:'j M Y' }}
+    </p>
+
+    <h3>Ongoing Covid-19 Symptoms</h3>
+
+    <table class="table table-striped table-bordered ">
+      <tr>
+        <th>Symptom</th>
+        <th>Trajectory</th>
+      </tr>
+      <tr>
+        <td>Fatigue</td>
+        <td>{% if  object.fatigue_trend %}{{ object.fatigue_trend }}{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Breathlessness</td>
+        <td>{% if  object.breathlessness_trend %}{{ object.breathlessness_trend }}{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Cough</td>
+        <td>{% if  object.cough_trend %}{{ object.cough_trend }}{% endif %}</td>
+      </tr>
+      <tr>
+        <td>Sleep Quality</td>
+        <td>{% if  object.sleep_quality_trend %}{{ object.sleep_quality_trend }}{% endif %}</td>
+      </tr>
+    </table>
+    {% if object.other_symptoms %}
+      <p>
+        The patient also stated they were experiencing the following symptoms:
+        <br />
+        {{ object.other_symptoms|join:", " }}.
+      </p>
+    {% endif %}
+
+    <div class="print-avoid-break">
+      <h3>Recovery</h3>
+      {% if object.back_to_normal %}
+        <p>The patient stated that they feel back to normal.</p>
+      {% else %}
+        <p>The patient stated that they did not feel back to normal.</p>
+      {% endif %}
+
+      {% if object.why_not_back_to_normal %}
+        <p>{{ object.why_not_back_to_normal }}</p>
+      {% endif %}
+
+      {% if object.other_concerns %}
+        <p>{{ object.other_concerns }}</p>
+      {% endif %}
+    </div>
+
+    <div class="print-avoid-break">
+      <p><b>Psych Scores</b></p>
+      <p>The patient scored {{ object.phq_score }}/6 on the PHQ2.</p>
+      <p>The patient scored {{ object.tsq_score }}/10 on the TSQ.</p>
+    </div>
+
+  {% if object.gp_copy %}
+    <p><b>Other Comments</b></p>
+    {{ object.gp_copy }}
+  {% endif %}
+  </section>
+{% endblock %}
