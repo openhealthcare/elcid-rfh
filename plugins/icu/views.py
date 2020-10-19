@@ -30,7 +30,10 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         """
         today = datetime.date.today()
 
-        beds     = ICUWard.objects.get(name=ward_name).beds
+        try:
+            beds     = ICUWard.objects.get(name=ward_name).beds
+        except ICUWard.DoesNotExist:
+            beds = None
         handover_patients = ICUHandoverLocation.objects.filter(ward=ward_name)
 
         handover_patient_count = handover_patients.count()
