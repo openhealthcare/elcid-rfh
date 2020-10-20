@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.utils import timezone
 from opal.models import Patient
 
 from elcid.models import Demographics
@@ -80,7 +81,7 @@ class Command(BaseCommand):
         create_email(**kw)
 
         # Save as Facts
-        when = datetime.datetime.fromtimestamp(t1)
+        when = timezone.make_aware(datetime.datetime.fromtimestamp(t1))
         Fact(
             when=when,
             label='Total Patients',
