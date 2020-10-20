@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
         p1 = subprocess.Popen(["df", "-h"], stdout=subprocess.PIPE)
         p2 = subprocess.Popen(["grep", "sda2"], stdin=p1.stdout, stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(["awk", "{print $5}"], stdin=p2.stdout, stdout=subprocess.PIPE)
+        p3 = subprocess.Popen(["awk", "{print $5}"], stdin=p2.stdout, stdout=subprocess.PIPE)
         out, err = p3.communicate()
         disk_usage = int(out[:2])
 
