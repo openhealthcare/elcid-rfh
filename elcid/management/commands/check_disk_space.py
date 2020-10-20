@@ -7,6 +7,7 @@ import subprocess
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from plugins.monitoring.models import Fact
 
@@ -37,7 +38,7 @@ class Command(BaseCommand):
         disk_usage = int(out[:2])
 
         Fact(
-            when=datetime.datetime.now(),
+            when=timezone.make_aware(datetime.datetime.now()),
             label="Disk Usage Percentage",
             value_int=disk_usage
         ).save()
