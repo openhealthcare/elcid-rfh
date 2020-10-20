@@ -54,7 +54,7 @@ def create_followup_episodes():
     results = set()
     for appointment in constants.COVID_FOLLOWUP_APPOINTMENT_TYPES:
         results_for_type = api.execute_hospital_query(
-            Q_GET_COVID_IDS, params={'appointment_type': appointment}
+            Q_COVID_APPOINTMENTS, params={'appointment_type': appointment}
         )
         results.update(i["vPatient_Number"] for i in results_for_type)
 
