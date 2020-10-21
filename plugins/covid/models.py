@@ -796,9 +796,9 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     cxrs = models.CharField(
         blank=True, null=True, max_length=250,
         choices=enum('One', 'Two or more'),
-        verbose_name="How many CXRs did the patient require?")
+        verbose_name="How many post discharge CXRs did the patient require?")
 
-    gp_copy                    = models.TextField(
+    gp_copy = models.TextField(
         blank=True, null=True, verbose_name="Copy for clinic letter"
     )
 
@@ -816,3 +816,11 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
             'focal_weakness'
         ]
         return [self._get_field_title(n) for n in symptom_fields if getattr(self, n)]
+
+    def phq_score(self):
+        if self.interest is None or self.depressed is None:
+            return None
+        return int(self.interest[1:2]) + int(self.depressed[1:2])
+
+    def tsq_score(self):
+        return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
