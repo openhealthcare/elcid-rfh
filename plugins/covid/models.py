@@ -798,6 +798,16 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
         choices=enum('One', 'Two or more'),
         verbose_name="How many post discharge CXRs did the patient require?")
 
+    online_useful = models.CharField(
+        blank=True, null=True, max_length=250,
+        choices=YN_NA,
+        verbose_name="Did you find the online covid resource information useful?")
+
+    app_useful = models.CharField(
+        blank=True, null=True, max_length=250,
+        choices=YN_NA,
+        verbose_name="Did you find the COVID recovery application useful?")
+
     gp_copy = models.TextField(
         blank=True, null=True, verbose_name="Copy for clinic letter"
     )
