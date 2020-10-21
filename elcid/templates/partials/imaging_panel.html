@@ -13,7 +13,7 @@
           {% include models.Imaging.get_detail_template %}
           </div>
           <div class="col-md-3">
-            <i class="fa fa-pencil edit pull-right pointer" ng-click="parent.recordEditor.editItem('{{ models.Imaging.get_api_name }}', $index)"></i>
+            <i class="fa fa-pencil edit pull-right pointer" ng-click="parent.recordEditor.editItem('{{ models.Imaging.get_api_name }}', item)"></i>
           </div>
         </div>
       </li>
