@@ -34,6 +34,7 @@ class LabTest(models.Model):
 
     class Meta:
         ordering = ['-datetime_ordered']
+        index_together = ["patient", "test_name", "test_code"]
 
     def update_from_api_dict(self, patient, data):
         """
