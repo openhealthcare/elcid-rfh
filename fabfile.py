@@ -189,29 +189,27 @@ def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
 def pip_create_deployment_env(branch_name):
     print("Creating deployment environment")
     private_settings = get_private_settings()
-    proxy = private_settings["proxy"]
     new_env = Env(branch_name)
     pip_create_virtual_env(
         new_env.deployment_env_path, remove_existing=True
     )
     pip = "{}/bin/pip".format(new_env.deployment_env_path)
-    local("{0} install pip==9.0.1 --proxy {1}".format(pip, proxy))
-    local("{0} install -r requirements-deployment.txt --proxy {1}".format(
-        pip, private_settings["proxy"]
-    ))
+    local("{0} install pip==9.0.1".format(pip))
+    local("{0} install -r requirements-deployment.txt".format(pip))
+
 
 
 def pip_install_requirements(new_env, proxy):
     print("Installing requirements")
 
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
-    local("{0} install pip==18.0 --proxy {1}".format(pip, proxy))
+    local("{0} install pip==18.0".format(pip))
 
     # get's us round the connection pool
     # from
     # https://github.com/pypa/pip/issues/1805
-    local("{0} install requests==2.20.1 --proxy {1}".format(pip, proxy))
-    local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
+    local("{0} install requests==2.20.1".format(pip))
+    local("{0} install -r requirements.txt".format(pip))
 
 
 def pip_set_project_directory(some_env):
@@ -932,7 +930,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     pip_set_project_directory(new_env)
     pip_create_deployment_env(new_branch)
 
-    pip_install_requirements(new_env, private_settings["proxy"])
+    pip_install_requirements(new_env)
 
     # create a database
     postgres_create_database(new_env, remove_existing)
