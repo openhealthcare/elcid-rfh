@@ -3,9 +3,8 @@ This deals with deployment for the rfh.
 
 Before you being make sure that in ../private_settings.json
 you have
-    1) the proxy address
-    2) a db_password
-    3) an empty dictionary called additional_settings or a dictionary
+    1) a db_password
+    2) an empty dictionary called additional_settings or a dictionary
        of any other variables you want set in your local settings
 
 Make sure the you have a back up directory which is read writeable
@@ -199,7 +198,7 @@ def pip_create_deployment_env(branch_name):
 
 
 
-def pip_install_requirements(new_env, proxy):
+def pip_install_requirements(new_env):
     print("Installing requirements")
 
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
@@ -805,7 +804,6 @@ def get_private_settings():
 
         required_fields = [
             "db_password",
-            "proxy",
             "additional_settings",  # required even if its just an empty dict
 
             # the details of the network drive we putting the backups on
@@ -886,7 +884,6 @@ def create_private_settings():
     with open(PRIVATE_SETTINGS, "w") as privado:
         json.dump(
             dict(
-                proxy="",
                 db_password="",
                 host_string="",
                 backup_storage_address="",
