@@ -6,6 +6,25 @@ from opal.core.fields import enum
 from opal.models import Patient, PatientSubrecord, EpisodeSubrecord
 
 
+def calculate_phq_score(interest, depressed):
+    """
+    Some PHQ Scores have the user visible text, some the integer.
+    This is an unintended side effect of the way Opal 18.4 adjusted
+    the handling of choices fields.
+
+    Calculate the correct score value regardless of how it is stored
+    in the database.
+    """
+    if interest is None or depressed is None:
+        return None
+    try:
+        interest = int(interest)
+        depressed = int(depressed)
+        return interest + depressed
+    except ValueError:
+        return int(interest[1:2]) + int(depressed[1:2])
+
+
 COVID_CODE_CHOICES = enum(
     'Normal',
     'Classic/Probable',
@@ -577,9 +596,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         return referred
 
     def phq_score(self):
-        if self.interest is None or self.depressed is None:
-            return None
-        return int(self.interest[1:2]) + int(self.depressed[1:2])
+        return calculate_phq_score(self.interest, self.depressed)
 
     def tsq_score(self):
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
@@ -828,9 +845,7 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
         return [self._get_field_title(n) for n in symptom_fields if getattr(self, n)]
 
     def phq_score(self):
-        if self.interest is None or self.depressed is None:
-            return None
-        return int(self.interest[1:2]) + int(self.depressed[1:2])
+        return calculate_phq_score(self.interest, self.depressed)
 
     def tsq_score(self):
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
