@@ -1,6 +1,7 @@
 """
 Views for our covid plugin
 """
+import collections
 import csv
 import datetime
 
@@ -11,8 +12,9 @@ from django.views.generic import TemplateView, View, DetailView
 
 from opal import models as opal_models
 from elcid import patient_lists
+from plugins.admissions.models import Encounter
 
-from plugins.covid import models, constants
+from plugins.covid import models, constants, lab
 
 
 def rolling_average(series):
@@ -133,6 +135,63 @@ class CovidAMTDashboardView(LoginRequiredMixin, TemplateView):
         context['covid_data'] = [ticks, covid_timeseries, covid_avg]
         context['non_covid_data'] = [ticks, non_covid_timeseries, non_covid_avg]
 
+        return context
+
+
+class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
+    template_name = 'covid/recent_positives.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        hundred = models.CovidPatient.objects.exclude(patient_id=54289
+        ).filter(
+            patient__encounters__pv1_2_patient_class='INPATIENT',
+            patient__encounters__pv1_45_discharge_date_time=None
+        ).order_by('-date_first_positive').distinct()
+
+        covid_patients = []
+
+        rfh_patients = 0
+        barnet_patients = 0
+        other_patients = 0
+
+        rfh_wards = collections.defaultdict(int)
+        barnet_wards = collections.defaultdict(int)
+
+        for patient in hundred:
+
+            admissions = [e.to_dict() for e in Encounter.objects.filter(
+                patient=patient.patient,
+                pv1_2_patient_class='INPATIENT',
+                pv1_45_discharge_date_time=None
+            )]
+            for admission in admissions:
+                if admission['hospital'] == 'Royal Free Hospital':
+                    rfh_patients += 1
+                    rfh_wards[admission['ward']] += 1
+                elif admission['hospital'] == 'Barnet Hospital':
+                    barnet_patients += 1
+                    barnet_wards[admission['ward']] += 1
+                else:
+                    other_patients += 1
+
+            covid_patients.append(
+                {
+                    'covid_patient': patient,
+                    'ticker'       : lab.get_covid_result_ticker(patient.patient),
+                    'current_admissions': admissions,
+                    'demographics': patient.patient.demographics
+                }
+            )
+
+        context['covid_patients'] = covid_patients
+
+        context['rfh_patients'] = rfh_patients
+        context['barnet_patients'] = barnet_patients
+        context['other_patients'] = other_patients
+        context['rfh_wards'] = dict(sorted(rfh_wards.items(), key=lambda item: -item[1]))
+        context['barnet_wards'] = dict(sorted(barnet_wards.items(), key=lambda item: -item[1]))
         return context
 
 
