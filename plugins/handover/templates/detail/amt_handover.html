@@ -1,0 +1,68 @@
+<section patient-api target="handovers" endpoint="amthandovers">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-12">
+          <h3>
+            <i class="fa fa-hospital-o"></i>
+            AMT Handovers ([[ handovers.length ]])
+          </h3>
+        </div>
+      </div>
+    </div> <!-- heading -->
+  </div>
+
+  <div class="panel panel-default" ng-repeat="item in handovers">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-12">
+          <h4>
+            <i class="fa fa-calendar-o"></i>
+            [[ item.referral_added ]]
+            <span ng-show="item.referral_source || item.referral_other">
+              ([[ item.referral_source]] [[ item.referral_other]])
+            </span>
+          </h4>
+        </div>
+      </div>
+    </div> <!-- heading -->
+    <div class="panel-footer">
+      <div class="row">
+        <div class="col-md-4">
+          <p><b>Discharged: </b>[[ item.discharged]]</p>
+          <p><b>Status: </b>[[ item.status]]</p>
+          <p><b>Rota: </b>[[ item.rota]]</p>
+          <p><b>Team: </b>[[ item.team]]</p>
+          <p><b>Shift: </b>[[ item.shift]]</p>
+
+          <p><b>Presenting complaint:</b><br/>[[ item.presenting_complaint]]</p>
+
+        </div>
+        <div class="col-md-4">
+          <p><b>Location </b> [[ item.actual_location]]</p>
+          <p><b>Bed Number </b> [[ item.bed_number]]</p>
+          <p><b>Planned location </b> [[ item.planned_location]]</p>
+          <p><b>cerner_visit_id </b> [[ item.cerner_visit_id]]</p>
+          <p><b>Review Datetime: </b> [[ item.review_datetime]]</p>
+
+
+          <p>
+            <b>Clerking: </b>
+            [[ item.clerked_datetime]]
+          </p>
+
+          <p><b>PTWR: </b>[[ item.ptwr_datetime]] [[ item.ptwr_consultant]]</p>
+        </div>
+        <div class="col-md-4">
+          <p><b>Consultant Diagnosis:</b><br/>[[ item.consultant_diagnosis]]</p>
+          <p><b>Management Plan:</b><br/>[[ item.management_plan]]</p>
+          <p><b>Outcome:</b><br/>[[ item.outcome]]</p>
+          <p><b>Discharge Destination: </b>[[ item.discharge_destination]]</p>
+          <p><b>Outcome Datetime: </b>[[ item.outcome_datetime]]</p>
+        </div>
+
+      </div> <!-- Row -->
+
+    </div> <!-- footer -->
+  </div>
+</section>

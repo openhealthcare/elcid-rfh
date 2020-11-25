@@ -32,4 +32,6 @@ app.config(
              .when('/ICU/',                  static_template_route('/templates/icu/dashboard.html'))
              .when('/elcid/',                static_template_route('/templates/elcid/dashboard.html'))
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
+             .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
+
      }]);

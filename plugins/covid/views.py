@@ -15,6 +15,19 @@ from elcid import patient_lists
 from plugins.covid import models, constants
 
 
+def rolling_average(series):
+    """
+    Return a 7 day rolling average for a series
+    """
+    rolling = [0,0,0,0,0,0]
+    for i in range(6, len(series)-6):
+        total = sum(series[i:i+6])/7
+        print(total)
+        rolling.append(total)
+    return rolling
+
+
+
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
 
@@ -86,6 +99,39 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         context['positivity_data'] = [ticks, positivity_timeseries]
 
         context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
+
+        return context
+
+
+class CovidAMTDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'covid/amt_dashboard.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        ticks = ['x']
+        take_timeseries = ['Acute Take']
+        take_avg        = ['Acute Take 7 Day Rolling Average']
+        covid_timeseries = ['Acute Covid Take']
+        covid_avg        = ['Acute Covid Take 7 Day Rolling Average']
+        non_covid_timeseries = ['Acute Non Covid Take']
+        non_covid_avg        = ['Acute Non Covid Take 7 Day Rolling Average']
+
+        for day in models.CovidAcuteMedicalDashboardReportingDay.objects.all().order_by('date'):
+            ticks.append(day.date.strftime('%Y-%m-%d'))
+
+            take_timeseries.append(day.patients_referred)
+            covid_timeseries.append(day.covid)
+            non_covid_timeseries.append(day.non_covid)
+
+        take_avg += rolling_average(take_timeseries[1:])
+        covid_avg += rolling_average(covid_timeseries[1:])
+        non_covid_avg += rolling_average(non_covid_timeseries[1:])
+
+        context['take_data'] = [ticks, take_timeseries, take_avg]
+        print(context['take_data'])
+        context['covid_data'] = [ticks, covid_timeseries, covid_avg]
+        context['non_covid_data'] = [ticks, non_covid_timeseries, non_covid_avg]
 
         return context
 

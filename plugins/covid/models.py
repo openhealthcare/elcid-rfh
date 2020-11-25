@@ -87,6 +87,17 @@ class CovidReportCode(models.Model):
     covid_code = models.CharField(blank=True, null=True, max_length=10)
 
 
+class CovidAcuteMedicalDashboardReportingDay(models.Model):
+    """
+    We prepare a dashboard of the acute medical take as it pertains to
+    Covid
+    """
+    date              = models.DateField()
+    patients_referred = models.IntegerField()
+    covid             = models.IntegerField()
+    non_covid         = models.IntegerField()
+
+
 class CovidAdmission(EpisodeSubrecord):
     """
     An admission to hospital and associated details

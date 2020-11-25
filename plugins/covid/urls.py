@@ -12,6 +12,11 @@ urlpatterns = [
         name='covid_dashboard'
     ),
     url(
+        'templates/covid/amt_dashboard.html',
+        views.CovidAMTDashboardView.as_view(),
+        name='covid_amt_dashboard'
+    ),
+    url(
         'covid/cohort-download/',
         views.CovidCohortDownloadView.as_view(),
         name='covid_download'

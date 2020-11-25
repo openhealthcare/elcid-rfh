@@ -178,6 +178,7 @@ INSTALLED_APPS = (
     'plugins.imaging',
     'plugins.dischargesummary',
     'plugins.monitoring',
+    'plugins.handover',
     'intrahospital_api',
     'elcid',
     'passwordreset',
@@ -311,7 +312,13 @@ LOGGING = {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
+        },
+        'handover': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
         }
+
     }
 }
 
