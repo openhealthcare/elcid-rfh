@@ -2,6 +2,6 @@ TB_ROLE = "tb_professional"
 TB_TAG = "tb_tag"
 
 
-TB_EPISODE_TYPES = [
+TB_APPOINTMENT_CODES = [
     "RESP CLINIC"  # These need to be added
 ]

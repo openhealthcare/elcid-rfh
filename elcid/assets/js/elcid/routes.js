@@ -14,7 +14,6 @@ var static_template_route = function(url){
           referencedata: function(Referencedata) { return Referencedata; },
       },
   }
-
 };
 
 app.config(
@@ -32,4 +31,5 @@ app.config(
              .when('/ICU/',                  static_template_route('/templates/icu/dashboard.html'))
              .when('/elcid/',                static_template_route('/templates/elcid/dashboard.html'))
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
+             .when('/tb/appointment_list/',  static_template_route('/templates/tb/appointment_list.html'))
      }]);

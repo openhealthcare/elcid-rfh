@@ -14,7 +14,7 @@ WHERE Derived_Appointment_Type = @appointment_type
 def create_tb_episodes():
     api = ProdAPI()
     results = set()
-    for appointment in constants.TB_EPISODE_TYPES:
+    for appointment in constants.TB_APPOINTMENT_CODES:
         results_for_type = api.execute_hospital_query(
             Q_TB_APPOINTMENTS, params={'appointment_type': appointment}
         )

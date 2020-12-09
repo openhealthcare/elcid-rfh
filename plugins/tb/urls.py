@@ -37,5 +37,10 @@ urlpatterns = [
         r'^tb/other_medication/$',
         views.OtherMedicationModal.as_view(),
         name="other_medication_modal"
+    ),
+    url(
+        r'^tb/appointment_list.html$',
+        views.AppointmentList.as_view(),
+        name="tb_appointment_list"
     )
 ]

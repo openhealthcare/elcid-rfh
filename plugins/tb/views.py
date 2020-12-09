@@ -1,14 +1,15 @@
 """
 Views for the TB Opal Plugin
 """
-import datetime
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 from plugins.tb.models import PatientConsultation
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
+from plugins.appointments.models import Appointment
 from plugins.tb.utils import get_tb_summary_information
-
+from plugins.tb import episode_categories, constants
 from plugins.tb.models import Treatment
 from elcid.models import Diagnosis
 from opal import views
@@ -119,3 +120,32 @@ class TbMedicationModal(AbstractModalView):
 class OtherMedicationModal(AbstractModalView):
     template_name = "modals/other_medication.html"
     model = Treatment
+
+
+class AppointmentList(LoginRequiredMixin, ListView):
+    template_name = "tb/appointment_list.html"
+
+    def get_queryset(self, *args, **kwargs):
+        today = timezone.now().date()
+        appointment_types = constants.TB_APPOINTMENT_CODES
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+        ).filter(
+            start_datetime__gte=today
+        ).order_by("start_datetime")
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx["admission_and_episode"] = []
+
+        for admission in ctx["object_list"]:
+            episode = admission.patient.episode_set.filter(
+                category_name=episode_categories.TbEpisode.display_name
+            ).first()
+
+            # There should always be an episode but if there is not, skip it.
+            if episode:
+                ctx["admission_and_episode"].append(
+                    (admission, episode,)
+                )
+        return ctx
