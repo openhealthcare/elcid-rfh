@@ -71,7 +71,6 @@ class CreatePrivateSettingsTestCase(unittest.TestCase):
         self.assertEqual(
             called,
             dict(
-                proxy="",
                 db_password="",
                 host_string="",
                 additional_settings={},
@@ -105,13 +104,11 @@ class FabfileTestCase(unittest.TestCase):
 
 @mock.patch("fabfile.local")
 @mock.patch("fabfile.pip_create_virtual_env")
-@mock.patch("fabfile.get_private_settings")
 class TestCreateDeploymentEnv(unittest.TestCase):
     def test_pip_create_deployment_env(
-        self, get_private_settings, pip_create_virtual_env, local
+        self, pip_create_virtual_env, local
     ):
         env = fabfile.Env("some_branch")
-        get_private_settings.return_value = dict(proxy="blah")
         fabfile.pip_create_deployment_env("some_branch")
         pip_create_virtual_env.assert_called_once_with(
             env.deployment_env_path, remove_existing=True
@@ -119,13 +116,13 @@ class TestCreateDeploymentEnv(unittest.TestCase):
         call_args_list = local.call_args_list
         self.assertEqual(
             call_args_list[0][0][0],
-            "{}/bin/pip install pip==9.0.1 --proxy blah".format(
+            "{}/bin/pip install pip==9.0.1".format(
                 env.deployment_env_path
             )
         )
         self.assertEqual(
             call_args_list[1][0][0],
-            "{}/bin/pip install -r requirements-deployment.txt --proxy blah".format(
+            "{}/bin/pip install -r requirements-deployment.txt".format(
                 env.deployment_env_path
             )
         )
@@ -258,19 +255,19 @@ exists"
 
     def test_pip_install_requirements(self, local, print_statement):
         fabfile.pip_install_requirements(
-            self.env, "some_proxy"
+            self.env
         )
         first_call = local.call_args_list[0][0][0]
         self.assertEqual(
             first_call,
             "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/pip install \
-pip==18.0 --proxy some_proxy"
+pip==18.0"
         )
         second_call = local.call_args_list[1][0][0]
         self.assertEqual(
             second_call,
             '/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/pip install \
-requests==2.20.1 --proxy some_proxy'
+requests==2.20.1'
         )
 
 
@@ -278,7 +275,7 @@ requests==2.20.1 --proxy some_proxy'
         self.assertEqual(
             third_call,
             "/home/ohc/.virtualenvs/elcidrfh-some_branch/bin/pip install -r \
-requirements.txt --proxy some_proxy"
+requirements.txt"
         )
 
     def test_set_project_directory(self, local, print_statement):
@@ -873,7 +870,6 @@ class DeployTestCase(FabfileTestCase):
 
     ):
         pv = dict(
-            proxy="1.2.3",
             host_string="0.0.0.0"
         )
         get_python_3.return_value = "python3"
@@ -896,7 +892,7 @@ class DeployTestCase(FabfileTestCase):
             "some_branch"
         )
         pip_set_project_directory.assert_called_once_with(self.env)
-        pip_install_requirements.assert_called_once_with(self.env, "1.2.3")
+        pip_install_requirements.assert_called_once_with(self.env)
         install_apt_dependencies.assert_called_once_with()
         kill_running_processes.assert_called_once_with()
 
@@ -996,7 +992,6 @@ class DeployTestCase(FabfileTestCase):
         os
     ):
         pv = dict(
-            proxy="1.2.3",
             host_string="0.0.0.0"
         )
         get_private_settings.return_value = pv
@@ -1021,7 +1016,7 @@ class DeployTestCase(FabfileTestCase):
         pip_create_deployment_env.assert_called_once_with("some_branch")
         pip_set_project_directory.assert_called_once_with(self.env)
         pip_install_requirements.assert_called_once_with(
-            self.env, "1.2.3"
+            self.env
         )
 
         postgres_create_database.assert_called_once_with(
