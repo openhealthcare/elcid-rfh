@@ -108,7 +108,7 @@ class AMTHandover(models.Model):
     outcome_datetime      = models.DateTimeField(blank=True, null=True)
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
-        'Id'                        : 'sqlserver_id',
+        'id'                        : 'sqlserver_id',
         'Version'                   : 'handover_version',
         'specialty'                 : 'specialty',
         'SQL_Insert_Date'           : 'sqlserver_insert_datetime',
