@@ -50,7 +50,9 @@ def load_amt_handover():
 
         patient = Patient.objects.get(demographics__hospital_number=mrn)
 
-        handover, _ = AMTHandover.objects.get_or_create(patient=patient)
+        handover = AMTHandover()
+
+        handover.patient = patient
 
         for k, v in result.items():
             setattr(
