@@ -25,6 +25,9 @@ def get_upstream_data():
     """
     Fetch the upstream handover
     """
+    api = ProdAPI()
+
+    return api.execute_hospital_query(Q_GET_AMT_HANDOVER)
 
 
 @transaction.atomic
