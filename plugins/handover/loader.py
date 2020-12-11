@@ -48,7 +48,7 @@ def load_amt_handover():
 
             logger.info('Created patient for {}'.format(mrn))
 
-        patient = Patient.objects.get(demographics__hospital_number=mrn)
+        patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
 
         handover = AMTHandover()
 
