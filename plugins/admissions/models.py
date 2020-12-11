@@ -153,5 +153,6 @@ class Encounter(models.Model):
             serialized['last_update_type'] = constants.MESSAGE_CODES[self.msh_9_msg_type]
 
         serialized['hospital'] = constants.BUILDING_CODES.get(self.pv1_3_building, self.pv1_3_building)
+        serialized['patient_id'] = self.patient_id
 
         return serialized

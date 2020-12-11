@@ -12,9 +12,11 @@ from django.views.generic import TemplateView, View, DetailView
 
 from opal import models as opal_models
 from elcid import patient_lists
+from plugins.admissions import constants as admission_constants
 from plugins.admissions.models import Encounter
 
 from plugins.covid import models, constants, lab
+
 
 
 def rolling_average(series):
@@ -141,58 +143,63 @@ class CovidAMTDashboardView(LoginRequiredMixin, TemplateView):
 class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/recent_positives.html'
 
+    def get_queryset(self):
+        return models.CovidPatient.objects.exclude(patient_id=54289
+        ).filter(
+            patient__encounters__pv1_2_patient_class='INPATIENT',
+            patient__encounters__pv1_45_discharge_date_time=None,
+            patient__encounters__pv1_3_building='RFH'
+        ).exclude(
+            patient__encounters__pv1_3_ward='RAL AE'
+        ).order_by('-date_first_positive').distinct()
+
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        hundred = models.CovidPatient.objects.exclude(patient_id=54289
-        ).filter(
-            patient__encounters__pv1_2_patient_class='INPATIENT',
-            patient__encounters__pv1_45_discharge_date_time=None
-        ).order_by('-date_first_positive').distinct()
+        patients = self.get_queryset()
 
         covid_patients = []
 
-        rfh_patients = 0
-        barnet_patients = 0
-        other_patients = 0
+        rfh_wards  = collections.defaultdict(int)
+        recent_pos = collections.defaultdict(int)
 
-        rfh_wards = collections.defaultdict(int)
-        barnet_wards = collections.defaultdict(int)
+        for patient in patients:
 
-        for patient in hundred:
-
-            admissions = [e.to_dict() for e in Encounter.objects.filter(
+            admission = Encounter.objects.filter(
                 patient=patient.patient,
                 pv1_2_patient_class='INPATIENT',
-                pv1_45_discharge_date_time=None
-            )]
-            for admission in admissions:
-                if admission['hospital'] == 'Royal Free Hospital':
-                    rfh_patients += 1
-                    rfh_wards[admission['ward']] += 1
-                elif admission['hospital'] == 'Barnet Hospital':
-                    barnet_patients += 1
-                    barnet_wards[admission['ward']] += 1
-                else:
-                    other_patients += 1
+                pv1_45_discharge_date_time=None,
+                pv1_3_building='RFH'
+            ).order_by('-pv1_44_admit_date_time').first().to_dict()
+
+            rfh_wards[admission['ward']] += 1
+
+            if patient.date_first_positive == datetime.date(2020, 11, 22):
+                recent_pos[admission['ward']] += 1
 
             covid_patients.append(
                 {
                     'covid_patient': patient,
                     'ticker'       : lab.get_covid_result_ticker(patient.patient),
-                    'current_admissions': admissions,
+                    'current_admission': admission,
                     'demographics': patient.patient.demographics
                 }
             )
 
+        wards = []
+        for ward, count in dict(sorted(rfh_wards.items(), key=lambda item: -item[1])).items():
+            w = {'name': ward, 'count': count}
+            if ward in recent_pos:
+                w['recent_pos'] = recent_pos[ward]
+            wards.append(w)
+
         context['covid_patients'] = covid_patients
 
-        context['rfh_patients'] = rfh_patients
-        context['barnet_patients'] = barnet_patients
-        context['other_patients'] = other_patients
-        context['rfh_wards'] = dict(sorted(rfh_wards.items(), key=lambda item: -item[1]))
-        context['barnet_wards'] = dict(sorted(barnet_wards.items(), key=lambda item: -item[1]))
+        context['wards'] = wards
+        context['recent_pos'] = recent_pos
         return context
+
+
 
 
 class CovidCohortDownloadView(LoginRequiredMixin, View):
