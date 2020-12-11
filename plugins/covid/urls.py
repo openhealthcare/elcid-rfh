@@ -22,8 +22,6 @@ urlpatterns = [
         name='covid_recent_positives'
     ),
 
-
-
     url(
         'covid/cohort-download/',
         views.CovidCohortDownloadView.as_view(),
