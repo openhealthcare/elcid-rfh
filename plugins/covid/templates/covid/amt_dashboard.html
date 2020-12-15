@@ -1,0 +1,76 @@
+{% load humanize %}
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>COVID-19 AMT the Royal Free Trust</h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Acute Take</h2>
+              <p>Daily Acute Medical Take (midnight - 23:59:59)</p>
+              <div id="take_graph"></div>
+            </div>
+          </div>
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Covid Cohort</h2>
+              <p>Daily Covid Acute Medical Take (midnight - 23:59:59)</p>
+              <div id="covid_graph"></div>
+            </div>
+          </div>
+
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Non Covid Cohort</h2>
+              <p>Daily Non Covid Acute Medical Take (midnight - 23:59:59)</p>
+              <div id="non_covid_graph"></div>
+            </div>
+          </div>
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+
+
+    </div>
+  </div>
+</div>
+<script>
+
+  var render_graph = function(element_id, data){
+
+  var config = {
+  bindto: document.getElementById(element_id),
+  point: {show: false},
+  data: {
+  columns: data,
+  x: 'x',
+  type: 'bar',
+  types: {},
+  },
+  zoom: {
+  enabled:true
+  },
+  axis: {
+  x: {
+  type: 'timeseries',
+  tick: {format: '%Y-%m-%d', rotate: 45}
+  }
+  },
+  }
+
+
+  config['data']['types'][data[2][0]] = 'line'
+
+  c3.generate(config)
+
+  }
+  render_graph('take_graph', {{ take_data | safe }});
+  render_graph('covid_graph', {{ covid_data | safe }});
+  render_graph('non_covid_graph', {{ non_covid_data | safe }});
+</script>

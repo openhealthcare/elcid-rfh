@@ -733,6 +733,54 @@ def write_cron_create_covid_episodes(new_env):
         output, cron_file
     ))
 
+def write_cron_load_amt_handover(new_env):
+    """
+    Creates a cron job that loads the AMT handover list
+    """
+    print("Writing cron {}_sync_amt_handover".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_sync_amt_handover.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_sync_amt_handover".format(
+        PROJECT_NAME
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+def write_cron_calculte_amt_dashboard(new_env):
+    """
+    Creates a cron job that calculates the AMT dashboard
+    """
+    print("Writing cron {}_calculate_amt_dashboard".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_calculate_amt_dashboard.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_calculate_amt_dashboard".format(
+        PROJECT_NAME
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
+
+
+
 def send_error_email(error, some_env):
     print("Sending error email")
     run_management_command(
@@ -972,6 +1020,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     write_cron_backup_size(new_env)
     write_cron_calculate_dashboard(new_env)
     write_cron_classify_covid(new_env)
+    write_cron_load_amt_handover(new_env)
+    write_cron_calculte_amt_dashboard(new_env)
 
     write_cron_create_covid_episodes(new_env)
 

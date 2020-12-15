@@ -9,11 +9,16 @@ from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings
-from intrahospital_api import models
 from opal.models import Patient
 
 from elcid import models as emodels
 from elcid.utils import timing
+from plugins.admissions.loader import load_encounters
+from plugins.appointments.loader import load_appointments
+from plugins.imaging.loader import load_imaging
+from plugins.dischargesummary.loader import load_dischargesummaries
+
+from intrahospital_api import models
 from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
@@ -390,27 +395,41 @@ def sync_patient(patient):
 @transaction.atomic
 def _load_patient(patient, patient_load):
     logger.info(
-        "started patient {} ipl {}".format(patient.id, patient_load.id)
+        "Started patient {} Initial Load {}".format(patient.id, patient_load.id)
     )
     try:
         hospital_number = patient.demographics_set.first().hospital_number
+
         results = api.results_for_hospital_number(hospital_number)
         logger.info(
             "loaded results for patient {} {}".format(
                 patient.id, patient_load.id
             )
         )
-        logger.info(json.dumps(results, indent=2))
         update_lab_tests.update_tests(patient, results)
         logger.info(
             "tests updated for {} {}".format(patient.id, patient_load.id)
         )
+
         update_demographics.update_patient_information(patient)
         logger.info(
             "patient information updated for {} {}".format(
                 patient.id, patient_load.id
             )
         )
+
+        load_imaging(patient)
+        logger.info('Completed initial imaging load for {}'.format(patient.id))
+
+        load_encounters(patient)
+        logger.info('Completed initial encounter load for {}'.format(patient.id))
+
+        load_appointments(patient)
+        logger.info('Completed initial appointment load for {}'.format(patient.id))
+
+        load_dischargesummaries(patient)
+        logger.info('Completed initial discharge summary load for {}'.format(patient.id))
+
     except:
         patient_load.failed()
         raise

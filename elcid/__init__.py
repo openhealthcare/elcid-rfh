@@ -86,4 +86,14 @@ class Application(application.OpalApplication):
         if standard_add_patient_menu_item.for_user(user):
             menu_items.append(standard_add_patient_menu_item)
 
+        if user.is_superuser:
+            menu_items.append(
+                menus.MenuItem(
+                    href='/#/beta/',
+                    display='Beta',
+                    icon='fa fa-bath',
+                    activepattern='beta'
+                )
+            )
+
         return menu_items
