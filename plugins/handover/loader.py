@@ -147,7 +147,7 @@ def sync_amt_handover():
 
     for handover in discharged:
         upstream = api.execute_hospital_query(
-            Q_GET_HANDOVER_BY_ID, id=handover.sqlserver_id)[0]
+            Q_GET_HANDOVER_BY_ID, params={'id': handover.sqlserver_id})[0]
 
         handover.delete()
         create_handover_from_upstream(upstream)
