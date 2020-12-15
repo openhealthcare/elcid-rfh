@@ -187,7 +187,6 @@ def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
 @task
 def pip_create_deployment_env(branch_name):
     print("Creating deployment environment")
-    private_settings = get_private_settings()
     new_env = Env(branch_name)
     pip_create_virtual_env(
         new_env.deployment_env_path, remove_existing=True
