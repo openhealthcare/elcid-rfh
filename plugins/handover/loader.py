@@ -134,7 +134,7 @@ def sync_amt_handover():
 
             logger.info('Created patient for {}'.format(mrn))
 
-        create_handover_from_upstream(result)
+        create_handover_from_upstream(handover)
 
         amt_status = patient.patientamthandoverstatus_set.get()
         if not amt_statush.has_handover:
