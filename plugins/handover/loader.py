@@ -116,6 +116,8 @@ def sync_amt_handover():
     - Replace our local copy of the AMT handover for current patients
     - Update any that we think are current that have been discharged upstream
     """
+    api = ProdAPI()
+
     current_patients = api.execute_hospital_query(Q_GET_CURRENT)
 
     current_ids = [h['id'] for h in current_patients]
