@@ -97,7 +97,7 @@ def create_handover_from_upstream(data):
     handover.patient = Patient.objects.filter(
         demographics__hospital_number=data['MRN']).first()
 
-    for k, v in result.items():
+    for k, v in data.items():
         setattr(
             handover,
             AMTHandover.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
