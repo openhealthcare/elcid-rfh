@@ -18,7 +18,7 @@ SELECT *
 FROM
 HandoverDB.View_Live_Acute_Medical_Team
 WHERE
-Date_Referral_Added >= 2020-01-01
+Discharged = 'Y'
 """
 
 def get_upstream_data():
@@ -31,13 +31,15 @@ def get_upstream_data():
 
 
 @transaction.atomic
-def load_amt_handover():
+def load_discharged_amt_handover():
     """
-    Fetch upstream AMT this year
+    Fetch upstream AMT patients who have been discharged
+
+    This function is intended as a one time initial load.
     """
     results = get_upstream_data()
 
-    AMTHandover.objects.all().delete()
+    AMTHandover.objects.filter(discharged='Y').delete()
 
     for result in results:
 
@@ -85,8 +87,6 @@ WHERE
 id = @id
 """
 
-
-
 def create_handover_from_upstream(data):
     """
     Given an upstream data dictionary returned by the API,
@@ -115,6 +115,8 @@ def sync_amt_handover():
 
     - Replace our local copy of the AMT handover for current patients
     - Update any that we think are current that have been discharged upstream
+
+    This function is called from a management command + cron job
     """
     api = ProdAPI()
 
