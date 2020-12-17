@@ -26,7 +26,6 @@ def rolling_average(series):
     rolling = [0,0,0,0,0,0]
     for i in range(6, len(series)-6):
         total = sum(series[i:i+6])/7
-        print(total)
         rolling.append(total)
     return rolling
 
@@ -107,7 +106,7 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class CovidAMTDashboardView(LoginRequiredMixin, TemplateView):
+class CovidAMTDashboardView(TemplateView):
     template_name = 'covid/amt_dashboard.html'
 
     def get_context_data(self, *a, **k):
@@ -133,7 +132,6 @@ class CovidAMTDashboardView(LoginRequiredMixin, TemplateView):
         non_covid_avg += rolling_average(non_covid_timeseries[1:])
 
         context['take_data'] = [ticks, take_timeseries, take_avg]
-        print(context['take_data'])
         context['covid_data'] = [ticks, covid_timeseries, covid_avg]
         context['non_covid_data'] = [ticks, non_covid_timeseries, non_covid_avg]
 
