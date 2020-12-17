@@ -1,11 +1,16 @@
+{% extends 'static_page.html' %}
 {% load humanize %}
+{% block navbar %}
+  <style>.outer-container {display: none}</style>
+{% endblock %}
+{% block static_content %}
 <div class="content-offset">
   <div class="row ">
     <div class="col-md-8 col-md-offset-2 content-offset">
 
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h1>COVID-19 AMT the Royal Free Trust</h1>
+          <h1>COVID-19 Acute Medical Take (Royal Free Trust)</h1>
         </div> <!-- heading -->
         <div class="panel-body">
 
@@ -74,3 +79,5 @@
   render_graph('covid_graph', {{ covid_data | safe }});
   render_graph('non_covid_graph', {{ non_covid_data | safe }});
 </script>
+
+{% endblock %}

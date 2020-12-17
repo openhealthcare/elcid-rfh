@@ -12,7 +12,7 @@ urlpatterns = [
         name='covid_dashboard'
     ),
     url(
-        'templates/covid/amt_dashboard.html',
+        'covid/amt-dashboard/',
         views.CovidAMTDashboardView.as_view(),
         name='covid_amt_dashboard'
     ),
