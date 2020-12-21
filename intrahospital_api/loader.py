@@ -427,6 +427,7 @@ def _load_patient(patient, patient_load):
             load_appointments(patient)
             logger.info('Completed initial appointment load for {}'.format(patient.id))
     except:
+        logger.error(f"Unable to load patient {patient.id}")
         patient_load.failed()
         raise
     else:
