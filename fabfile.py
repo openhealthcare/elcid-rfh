@@ -1135,28 +1135,7 @@ def dump_and_copy(branch_name):
         )
 
 
-def is_load_running(env):
-    return json.loads(
-        run_management_command("batch_load_running", env)
-    )["status"]
-
-
 def dump_database(env, db_name, backup_name):
-    # we only care about whether a batch is running if the cron job
-    # exists
-    if os.path.exists(CRON_TEST_LOAD):
-        start = datetime.datetime.now()
-        while is_load_running(env):
-            if (datetime.datetime.now() - start).seconds > 3600:
-                raise FabException(
-                    "Database synch failed as it has been running for > \
-an hour"
-                )
-            print(
-                "One or more loads are currently running, sleeping for 30 secs"
-            )
-            time.sleep(30)
-
     pg = "pg_dump {db_name} -U {db_user} > {bu_name}"
     local(
         pg.format(

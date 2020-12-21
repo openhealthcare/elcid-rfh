@@ -1374,7 +1374,6 @@ class GenerateSecretKeyTestCase(FabfileTestCase):
         self.assertEqual(len(result), 50)
 
 
-@mock.patch("fabfile.is_load_running")
 @mock.patch("fabfile.local")
 @mock.patch("fabfile.time")
 @mock.patch("fabfile.datetime")
@@ -1382,21 +1381,18 @@ class GenerateSecretKeyTestCase(FabfileTestCase):
 @mock.patch("fabfile.print", create=True)
 class DumpDatabaseTestCase(FabfileTestCase):
     def test_status_found(
-        self, print_fun, os, dt, time, local, is_load_running
+        self, print_fun, os, dt, time, local
     ):
-        is_load_running.return_value = None
         os.path.return_value = True
         fabfile.dump_database(self.env, "db_name", "backup_name")
-        self.assertEqual(is_load_running.call_count, 1)
         self.assertFalse(time.sleep.called)
         local.assert_called_once_with(
             "pg_dump db_name -U ohc > backup_name"
         )
 
     def test_timed_out(
-        self, print_fun, os, dt, time, local, is_load_running
+        self, print_fun, os, dt, time, local
     ):
-        is_load_running.return_value = True
         os.path.return_value = True
         first_call = datetime.datetime.now()
         second_call = first_call + datetime.timedelta(seconds=3640)
@@ -1409,10 +1405,9 @@ class DumpDatabaseTestCase(FabfileTestCase):
         )
 
     def test_fails_first_time_works_the_next(
-        self, print_fun, os, dt, time, local, is_load_running
+        self, print_fun, os, dt, time, local
     ):
         dt.datetime.now.return_value = datetime.datetime.now()
-        is_load_running.side_effect = [True, None]
         os.path.return_value = True
         fabfile.dump_database(self.env, "db_name", "backup_name")
 
@@ -1426,11 +1421,10 @@ class DumpDatabaseTestCase(FabfileTestCase):
         )
 
     def no_cron_job(
-        self, print_fun, os, dt, time, local, is_load_running
+        self, print_fun, os, dt, time, local
     ):
         os.path.return_value = False
         fabfile.dump_database("db_name", "backup_name")
-        self.assertFalse(is_load_running.called)
         self.assertFalse(time.called)
         self.assertFalse(dt.called)
         local.assert_called_once_with(
