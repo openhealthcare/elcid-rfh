@@ -128,12 +128,29 @@ class AbbotTest(CovidTest):
     ]
 
 
+class RapidCovidAndRespiratory(CovidTest):
+    TEST_NAME        = 'RAPID COVID + RESPIRATORY'
+    OBSERVATION_NAME = 'SARS CoV-2 RNA'
+    TEST_CODE        = 'XCOV'
+
+    POSITIVE_RESULTS = [
+        'POSITIVE'
+    ]
+
+    NEGATIVE_RESULTS = [
+        'NOT detected',
+        'Negative'
+    ]
+
+
+
 COVID_19_TESTS = [
     Coronavirus2019Test,
     CrickInstituteTest,
     ReferenceLabTest,
     CepheidTest,
-    AbbotTest
+    AbbotTest,
+    RapidCovidAndRespiratory
 ]
 COVID_19_TEST_NAMES = [t.TEST_NAME for t in COVID_19_TESTS]
 
