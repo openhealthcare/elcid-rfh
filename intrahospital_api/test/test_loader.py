@@ -101,37 +101,6 @@ class _InitialLoadTestCase(ApiTestCase):
                 call_args_list[1][0], ("running 2/2",)
             )
 
-    @override_settings(
-        INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
-    )
-    def test_integration(self):
-        with mock.patch.object(loader.logger, "info"):
-            loader._initial_load()
-
-            self.assertIsNotNone(
-                self.patient_1.demographics_set.first().hospital_number
-            )
-
-            self.assertIsNotNone(
-                self.patient_2.demographics_set.first().hospital_number
-            )
-
-            self.assertEqual(
-                imodels.InitialPatientLoad.objects.first().patient.id,
-                self.patient_1.id
-            )
-            self.assertEqual(
-                imodels.InitialPatientLoad.objects.last().patient.id,
-                self.patient_2.id
-            )
-            upstream_patients = lab_test_models.LabTest.objects.values_list(
-                "patient_id", flat=True
-            ).distinct()
-            self.assertEqual(
-                set([self.patient_1.id, self.patient_2.id]),
-                set(upstream_patients)
-            )
-
 
 class GetBatchStartTime(ApiTestCase):
     def test_batch_load_first(self):
