@@ -64,23 +64,6 @@ def log_errors(name):
     logger.error(error)
 
 
-def any_loads_running():
-    """
-        returns a boolean as to whether any loads are
-        running, for use by things that synch databases
-    """
-    patient_loading = models.InitialPatientLoad.objects.filter(
-        state=models.InitialPatientLoad.RUNNING
-    ).exists()
-
-    batch_loading = models.BatchPatientLoad.objects.filter(
-        state=models.BatchPatientLoad.RUNNING
-    ).exists()
-    result = patient_loading or batch_loading
-    logger.info("Checking loads are running {}".format(result))
-    return result
-
-
 @timing
 def load_demographics(hospital_number):
     started = timezone.now()
