@@ -426,9 +426,6 @@ def _load_patient(patient, patient_load):
 
             load_appointments(patient)
             logger.info('Completed initial appointment load for {}'.format(patient.id))
-
-            load_dischargesummaries(patient)
-            logger.info('Completed initial discharge summary load for {}'.format(patient.id))
     except:
         patient_load.failed()
         raise
