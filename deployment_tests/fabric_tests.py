@@ -1375,58 +1375,15 @@ class GenerateSecretKeyTestCase(FabfileTestCase):
 
 
 @mock.patch("fabfile.local")
-@mock.patch("fabfile.time")
 @mock.patch("fabfile.datetime")
 @mock.patch("fabfile.os")
 @mock.patch("fabfile.print", create=True)
 class DumpDatabaseTestCase(FabfileTestCase):
     def test_status_found(
-        self, print_fun, os, dt, time, local
+        self, print_fun, os, dt, local
     ):
         os.path.return_value = True
         fabfile.dump_database(self.env, "db_name", "backup_name")
-        self.assertFalse(time.sleep.called)
-        local.assert_called_once_with(
-            "pg_dump db_name -U ohc > backup_name"
-        )
-
-    def test_timed_out(
-        self, print_fun, os, dt, time, local
-    ):
-        os.path.return_value = True
-        first_call = datetime.datetime.now()
-        second_call = first_call + datetime.timedelta(seconds=3640)
-        dt.datetime.now.side_effect = [first_call, second_call]
-        with self.assertRaises(fabfile.FabException) as fe:
-            fabfile.dump_database(self.env, "db_name", "backup_name")
-        self.assertEqual(
-            str(fe.exception),
-            "Database synch failed as it has been running for > an hour"
-        )
-
-    def test_fails_first_time_works_the_next(
-        self, print_fun, os, dt, time, local
-    ):
-        dt.datetime.now.return_value = datetime.datetime.now()
-        os.path.return_value = True
-        fabfile.dump_database(self.env, "db_name", "backup_name")
-
-        print_fun.assert_called_once_with(
-            "One or more loads are currently running, sleeping for 30 secs"
-        )
-        time.sleep.assert_called_once_with(30)
-
-        local.assert_called_once_with(
-            "pg_dump db_name -U ohc > backup_name"
-        )
-
-    def no_cron_job(
-        self, print_fun, os, dt, time, local
-    ):
-        os.path.return_value = False
-        fabfile.dump_database("db_name", "backup_name")
-        self.assertFalse(time.called)
-        self.assertFalse(dt.called)
         local.assert_called_once_with(
             "pg_dump db_name -U ohc > backup_name"
         )
