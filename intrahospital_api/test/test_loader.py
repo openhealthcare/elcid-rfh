@@ -101,36 +101,77 @@ class _InitialLoadTestCase(ApiTestCase):
                 call_args_list[1][0], ("running 2/2",)
             )
 
-    @override_settings(
-        INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
-    )
-    def test_integration(self):
-        with mock.patch.object(loader.logger, "info"):
-            loader._initial_load()
+@mock.patch(
+    "intrahospital_api.loader.api.results_for_hospital_number",
+    __name__="results_for_hospital_number"
+)
+@mock.patch(
+    "intrahospital_api.loader.update_demographics.update_patient_information",
+    __name__="update_patient_information"
+)
+@mock.patch(
+    "intrahospital_api.loader.load_imaging",
+    __name__="load_imaging"
+)
+@mock.patch(
+    "intrahospital_api.loader.load_encounters",
+    __name__="load_encounters"
+)
+@mock.patch(
+    "intrahospital_api.loader.load_appointments",
+    __name__="load_appointments"
+)
+@mock.patch(
+    "intrahospital_api.loader.load_dischargesummaries",
+    __name__="load_dischargesummaries"
+)
+@mock.patch(
+    "intrahospital_api.loader.logger",
+)
+class _LoadPatientTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.initial_patient_load = self.patient.initialpatientload_set.create(
+            started=timezone.now()
+        )
 
-            self.assertIsNotNone(
-                self.patient_1.demographics_set.first().hospital_number
-            )
+    def test_fail(
+        self,
+        logger,
+        *args
+    ):
+        for i in args:
+            i.side_effect = ValueError('failed')
+        loader._load_patient(self.patient, self.initial_patient_load)
+        methods_names = ", ".join([
+            "results",
+            "update_patient_information",
+            "load_imaging",
+            "load_encounters",
+            "load_appointments",
+            "load_dischargesummaries"
+        ])
+        logger.error.assert_called_once_with(
+            f"Initial patient load for patient id {self.patient.id} failed on {methods_names}"
+        )
+        self.initial_patient_load.state = self.initial_patient_load.FAILURE
 
-            self.assertIsNotNone(
-                self.patient_2.demographics_set.first().hospital_number
-            )
-
-            self.assertEqual(
-                imodels.InitialPatientLoad.objects.first().patient.id,
-                self.patient_1.id
-            )
-            self.assertEqual(
-                imodels.InitialPatientLoad.objects.last().patient.id,
-                self.patient_2.id
-            )
-            upstream_patients = lab_test_models.LabTest.objects.values_list(
-                "patient_id", flat=True
-            ).distinct()
-            self.assertEqual(
-                set([self.patient_1.id, self.patient_2.id]),
-                set(upstream_patients)
-            )
+    def test_success(self, logger, *args):
+        loader._load_patient(self.patient, self.initial_patient_load)
+        call_args_list = [i[0][0] for i in logger.info.call_args_list]
+        expected = [
+            f'Started patient {self.patient.id} Initial Load {self.initial_patient_load.id}',
+            f'Loaded results for patient id {self.patient.id}',
+            f'Tests updated for patient id {self.patient.id}',
+            f'Completed update_patient_information for patient id {self.patient.id}',
+            f'Completed load_imaging for patient id {self.patient.id}',
+            f'Completed load_encounters for patient id {self.patient.id}',
+            f'Completed load_appointments for patient id {self.patient.id}',
+            f'Completed load_dischargesummaries for patient id {self.patient.id}'
+        ]
+        self.assertEqual(
+            call_args_list, expected
+        )
 
 
 class GetBatchStartTime(ApiTestCase):

@@ -391,47 +391,46 @@ def sync_patient(patient):
         "patient information synced for {}".format(patient.id)
     )
 
-
-@transaction.atomic
+@timing
 def _load_patient(patient, patient_load):
     logger.info(
         "Started patient {} Initial Load {}".format(patient.id, patient_load.id)
     )
+    failed = []
     try:
-        hospital_number = patient.demographics_set.first().hospital_number
-
-        results = api.results_for_hospital_number(hospital_number)
-        logger.info(
-            "loaded results for patient {} {}".format(
-                patient.id, patient_load.id
+        with transaction.atomic():
+            hospital_number = patient.demographics_set.first().hospital_number
+            results = api.results_for_hospital_number(hospital_number)
+            logger.info(
+                f"Loaded results for patient id {patient.id}"
             )
-        )
-        update_lab_tests.update_tests(patient, results)
-        logger.info(
-            "tests updated for {} {}".format(patient.id, patient_load.id)
-        )
-
-        update_demographics.update_patient_information(patient)
-        logger.info(
-            "patient information updated for {} {}".format(
-                patient.id, patient_load.id
+            update_lab_tests.update_tests(patient, results)
+            logger.info(
+                f"Tests updated for patient id {patient.id}"
             )
-        )
+    except Exception:
+        failed.append('results')
 
-        load_imaging(patient)
-        logger.info('Completed initial imaging load for {}'.format(patient.id))
+    loaders = [
+        update_demographics.update_patient_information,
+        load_imaging,
+        load_encounters,
+        load_appointments,
+        load_dischargesummaries
+    ]
 
-        load_encounters(patient)
-        logger.info('Completed initial encounter load for {}'.format(patient.id))
+    for loader in loaders:
+        loader_name = loader.__name__
+        try:
+            with transaction.atomic():
+                loader(patient)
+                logger.info(f'Completed {loader_name} for patient id {patient.id}')
+        except:
+            failed.append(loader_name)
 
-        load_appointments(patient)
-        logger.info('Completed initial appointment load for {}'.format(patient.id))
-
-        load_dischargesummaries(patient)
-        logger.info('Completed initial discharge summary load for {}'.format(patient.id))
-
-    except:
+    if failed:
+        failed_loaders = ", ".join(failed)
+        logger.error(f"Initial patient load for patient id {patient.id} failed on {failed_loaders}")
         patient_load.failed()
-        raise
     else:
         patient_load.complete()
