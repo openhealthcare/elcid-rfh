@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import DateTimeField
 from django.utils import timezone
 
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import get_api
 
 from plugins.dischargesummary import logger
 from plugins.dischargesummary.models import (
@@ -45,7 +45,7 @@ def load_dischargesummaries(patient):
     """
     Given a PATIENT load upstream discharge summary data and save it.
     """
-    api = ProdAPI()
+    api = get_api()
 
     demographic = patient.demographics()
 

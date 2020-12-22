@@ -154,7 +154,7 @@ class LoadAppointmentTestCase(OpalTestCase):
             'HL7_Message_ID'            : '4567',
         }
 
-        with mock.patch.object(loader, 'ProdAPI') as mock_api:
+        with mock.patch.object(loader, 'get_api') as mock_api:
             mock_api.return_value.execute_hospital_query.return_value = [appointment_data]
 
             loader.load_appointments(self.patient)
@@ -181,7 +181,7 @@ class LoadAppointmentTestCase(OpalTestCase):
             'HL7_Message_ID'            : '4567',
         }
 
-        with mock.patch.object(loader, 'ProdAPI') as mock_api:
+        with mock.patch.object(loader, 'get_api') as mock_api:
             mock_api.return_value.execute_hospital_query.return_value = [appointment_data]
 
             loader.load_appointments(self.patient)

@@ -7,7 +7,7 @@ from django.db.models import DateTimeField
 from django.utils import timezone
 
 from elcid.models import Demographics
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import get_api
 
 from plugins.appointments.models import Appointment
 from plugins.appointments import logger
@@ -101,7 +101,7 @@ def load_appointments(patient):
     """
     Load any upstream appointment data we may not have for PATIENT
     """
-    api = ProdAPI()
+    api = get_api()
 
     demographic = patient.demographics()
 

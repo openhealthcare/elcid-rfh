@@ -6,7 +6,7 @@ from opal.models import Patient
 
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import get_api
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 
 from plugins.icu import logger
@@ -25,7 +25,7 @@ def get_upstream_data():
     """
     Fetch the upstream handover
     """
-    api = ProdAPI()
+    api = get_api()
 
     return api.execute_hospital_query(Q_GET_AMT_HANDOVER)
 
@@ -118,7 +118,7 @@ def sync_amt_handover():
 
     This function is called from a management command + cron job
     """
-    api = ProdAPI()
+    api = get_api()
 
     current_patients = api.execute_hospital_query(Q_GET_CURRENT)
 

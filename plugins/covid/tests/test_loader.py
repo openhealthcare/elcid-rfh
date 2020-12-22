@@ -8,14 +8,14 @@ from elcid.episode_categories import InfectionService
 
 
 @mock.patch("plugins.covid.loader.create_rfh_patient_from_hospital_number")
-@mock.patch("plugins.covid.loader.ProdAPI")
+@mock.patch("plugins.covid.loader.get_api")
 class CreateFollowUpEpisodeTestCase(OpalTestCase):
     def test_create_patient_who_does_not_exist(
         self,
-        ProdAPI,
+        get_api,
         create_rfh_patient_from_hospital_number
     ):
-        ProdAPI.return_value.execute_hospital_query.return_value = [
+        get_api.return_value.execute_hospital_query.return_value = [
             {"vPatient_Number": "111"}
         ]
         loader.create_followup_episodes()
@@ -25,12 +25,12 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
 
     def test_create_episode_which_does_not_exist(
         self,
-        ProdAPI,
+        get_api,
         create_rfh_patient_from_hospital_number
     ):
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(hospital_number="111")
-        ProdAPI.return_value.execute_hospital_query.return_value = [
+        get_api.return_value.execute_hospital_query.return_value = [
             {"vPatient_Number": "111"}
         ]
         loader.create_followup_episodes()
@@ -51,10 +51,10 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
 
     def test_do_nothing_if_episode_exists(
         self,
-        ProdAPI,
+        get_api,
         create_rfh_patient_from_hospital_number
     ):
-        ProdAPI.return_value.execute_hospital_query.return_value = [
+        get_api.return_value.execute_hospital_query.return_value = [
             {"vPatient_Number": "111"}
         ]
         patient, episode = self.new_patient_and_episode_please()

@@ -4,7 +4,7 @@ Loading Covid data from upstream
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import get_api
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.appointments import loader as appointment_loader
 from plugins.covid.episode_categories import CovidEpisode
@@ -29,7 +29,7 @@ def pre_load_covid_patients():
     If any of these are not currently part of the elCID cohort,
     create these patients.
     """
-    api = ProdAPI()
+    api = get_api()
 
     patient_mrns = set()
 
@@ -50,7 +50,7 @@ def pre_load_covid_patients():
 
 
 def create_followup_episodes():
-    api = ProdAPI()
+    api = get_api()
     results = set()
     for appointment in constants.COVID_FOLLOWUP_APPOINTMENT_TYPES:
         results_for_type = api.execute_hospital_query(

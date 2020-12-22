@@ -6,7 +6,7 @@ import datetime
 from django.db.models import DateTimeField
 from django.utils import timezone
 
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import get_api
 
 from plugins.admissions.models import Encounter
 from plugins.admissions import logger
@@ -62,7 +62,7 @@ def load_encounters(patient):
     """
     Load any upstream admission data we may not have for PATIENT
     """
-    api = ProdAPI()
+    api = get_api()
 
     demographic = patient.demographics()
 

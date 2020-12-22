@@ -6,7 +6,7 @@ import datetime
 from django.db.models import DateTimeField
 from django.utils import timezone
 
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import get_api
 
 from plugins.imaging.models import Imaging, PatientImagingStatus
 from plugins.imaging import logger
@@ -25,8 +25,7 @@ def load_imaging(patient):
     """
     Given a PATIENT, load any upstream imaging reports we do not have
     """
-    api = ProdAPI()
-
+    api = get_api()
     demographic = patient.demographics()
 
     imaging_count = patient.imaging.count()

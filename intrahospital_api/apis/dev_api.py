@@ -505,3 +505,6 @@ class DevApi(base_api.BaseApi):
 
     def data_deltas(self, some_datetime):
         return []
+
+    def execute_hospital_query(self, *args, **kwargs):
+        return []

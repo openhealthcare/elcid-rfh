@@ -6,9 +6,10 @@ import datetime
 
 from django.conf import settings
 from django.template.loader import get_template
+from intrahospital_api import get_api
 
 from elcid.models import Demographics, MicrobiologyInput
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import get_api
 from plugins.covid.lab import get_covid_result_ticker
 from plugins.icu.loader import get_upstream_mrns
 
@@ -86,7 +87,7 @@ def write_result_summary():
         (d, serialise_summary(d.patient)) for d in demographics
     ]
 
-    api = ProdAPI()
+    api = get_api()
 
     for demographic, summary_text in summaries:
         params = {
@@ -128,6 +129,6 @@ def write_advice_upstream(advice_id):
         'datetime_issued'         : advice.when
     }
 
-    api = ProdAPI()
+    api = get_api()
     if settings.WRITEBACK_ON:
         api.execute_hospital_insert(ADVICE_INSERT, params=params)
