@@ -1492,16 +1492,6 @@ class DeployProdTestCase(FabfileTestCase):
         self.assertEqual(
             run_management_command.call_count, 2
         )
-        first_call = run_management_command.call_args_list[0][0]
-        self.assertEqual(
-            first_call, ("status_report", old_env,)
-        )
-
-        second_call = run_management_command.call_args_list[1][0]
-        self.assertEqual(
-            second_call, ("status_report", new_env,)
-        )
-
         self.assertEqual(
             print_function.call_count, 1
         )

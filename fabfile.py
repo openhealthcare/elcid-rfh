@@ -888,40 +888,6 @@ def clone_branch(branch_name):
     )
 
 
-def diff_status(old_status_json, new_status_json):
-    old_status = json.loads(old_status_json)
-    new_status = json.loads(new_status_json)
-
-    for time_period in ["all_time", "last_week"]:
-        flawed = False
-        print("looking at {}".format(time_period))
-        new_time_period = new_status[time_period]
-        old_time_period = old_status[time_period]
-        missing = list(
-            set(new_time_period.keys()) - set(old_time_period.keys())
-        )
-
-        for m in missing:
-            flawed = True
-            print("missing {} from old".format(m))
-
-        for k, v in old_time_period.items():
-            if k not in new_time_period:
-                flawed = True
-                print("missing {} from new".format(k))
-            else:
-                new_result = new_time_period[k]
-                if not v == new_result:
-                    flawed = True
-                    print(
-                        "for {} we used to have {} but now have {}".format(
-                            k, v, new_result
-                        )
-                    )
-        if not flawed:
-            print("no difference")
-
-
 @task
 def create_private_settings():
     if os.path.isfile(PRIVATE_SETTINGS):
@@ -1040,14 +1006,8 @@ with {1}'
 
 @task
 def deploy_test(backup_name=None):
-
     new_branch = infer_current_branch()
     _deploy(new_branch, backup_name, remove_existing=True)
-    new_status = run_management_command("status_report", Env(new_branch))
-    print("=" * 20)
-    print("new environment was")
-    print(new_status)
-    print("=" * 20)
 
 
 def validate_private_settings():
@@ -1189,10 +1149,6 @@ def deploy_prod(old_branch, old_database_name=None):
 
     dump_database(old_env, dbname, old_env.release_backup_name)
 
-    old_status = run_management_command("status_report", old_env)
     _deploy(new_branch, old_env.release_backup_name, remove_existing=False)
     write_cron_backup(new_env)
     write_cron_write_upstream_results(new_env)
-    new_status = run_management_command("status_report", new_env)
-
-    diff_status(new_status, old_status)
