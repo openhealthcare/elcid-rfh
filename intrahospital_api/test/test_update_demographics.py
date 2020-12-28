@@ -170,7 +170,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         demographics.save()
 
     def test_update_patient_information_have_changed(self, patient_masterfile):
-        updated = datetime.datetime(2020, 1, 1)
+        updated = timezone.make_aware(datetime.datetime(2020, 1, 1))
         upstream = timezone.make_aware(datetime.datetime(2020, 1, 2))
         patient_masterfile.return_value = dict(
             demographics=dict(first_name="Janey"),
