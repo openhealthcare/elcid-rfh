@@ -41,6 +41,11 @@ class RollingAverageTestCase(OpalTestCase):
 
         self.assertEqual([0,0,0,0,0,0,3,4], rolling)
 
+    def test_rolling_avg_small(self):
+        series = [2,3,4]
+        rolling = views.rolling_average(series)
+        self.assertEqual([0,0,0], rolling)
+
 
 class CovidDashboardViewTestCase(OpalTestCase):
 
@@ -65,3 +70,27 @@ class CovidDashboardViewTestCase(OpalTestCase):
             ['Positive Tests', 1]
         ]
         self.assertEqual(positivity_data, ctx['positive_data'])
+
+
+class CovidAMTDashboardViewTestCase(OpalTestCase):
+
+
+    def test_context_data(self):
+        models.CovidAcuteMedicalDashboardReportingDay.objects.create(
+            date=datetime.date.today(),
+            patients_referred=4,
+            covid=2,
+            non_covid=2
+        )
+
+        view = views.CovidAMTDashboardView()
+        view.request = self.rf.get('/covid-amt/')
+
+        ctx = view.get_context_data()
+
+        take_data = [
+            ['x', datetime.date.today().strftime('%Y-%m-%d')],
+            ['Acute Take', 4],
+            ['Acute Take 7 Day Rolling Average', 0]
+        ]
+        self.assertEqual(take_data, ctx['take_data'])
