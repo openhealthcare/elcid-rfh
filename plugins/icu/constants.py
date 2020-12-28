@@ -7,6 +7,6 @@ WARD_NAMES = [
     'South',
     'East',
     'West',
-    'ICU 2',
+    'ICU2',
     'SHDU'
 ]
