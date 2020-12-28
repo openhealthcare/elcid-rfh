@@ -24,8 +24,8 @@ def rolling_average(series):
     Return a 7 day rolling average for a series
     """
     rolling = [0,0,0,0,0,0]
-    for i in range(6, len(series)-6):
-        total = sum(series[i:i+6])/7
+    for i in range(6, len(series)):
+        total = sum(series[i-6:i+1])/7
         rolling.append(total)
     return rolling
 
