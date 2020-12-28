@@ -68,25 +68,10 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
 
             ticks.append(day.date.strftime('%Y-%m-%d'))
 
-            if day.patients_positive:
-                positive_timeseries.append(day.patients_positive)
-            else:
-                positive_timeseries.append(0)
-
-            if day.deaths:
-                deaths_timeseries.append(day.deaths)
-            else:
-                deaths_timeseries.append(0)
-
-            if day.tests_ordered:
-                ordered_timeseries.append(day.tests_ordered)
-            else:
-                ordered_timeseries.append(0)
-
-            if day.patients_resulted:
-                patients_timeseries.append(day.patients_resulted)
-            else:
-                patients_timeseries.append(0)
+            positive_timeseries.append(day.patients_positive)
+            deaths_timeseries.append(day.deaths)
+            ordered_timeseries.append(day.tests_ordered)
+            patients_timeseries.append(day.patients_resulted)
 
             if not day.patients_positive:
                 positivity_timeseries.append(0)
