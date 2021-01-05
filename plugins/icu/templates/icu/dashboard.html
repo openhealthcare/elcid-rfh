@@ -8,6 +8,25 @@
           <h1>ICU at the Royal Free Hospital ({{ icu_patients }} patients)</h1>
         </div> <!-- heading -->
         <div class="panel-body">
+          <div class="row">
+            <div class="col-md-3">
+              <table class="table table-striped">
+                <tr>
+                  <th>Ward</th><th>Patients</th>
+                </tr>
+                {% for ward in wards %}
+                  <tr>
+                    <td>
+                      <a href="{{ ward.link }}">
+                        {{ ward.name }}
+                      </a>
+                    </td>
+                    <td>{{ ward.patient_count }}</td>
+                  </tr>
+                {% endfor %}
+              </table>
+            </div>
+          </div>
 
           {% for ward in wards %}
 
