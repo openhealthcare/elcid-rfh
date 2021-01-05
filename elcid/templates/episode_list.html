@@ -20,6 +20,13 @@
                   <i class="fa fa-angle-down"></i>
                 </button>
                 <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="list-dropdown">
+
+                  {% for path, name in upstream_lists %}
+                  <li>
+                    <a href="{{ path }}">{{ name }}</a>
+                  </li>
+                  {% endfor %}
+
                   {% for list in lists %}
                   {% if list.get_slug != list_slug %}
                   <li>
