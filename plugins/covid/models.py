@@ -392,25 +392,25 @@ class CovidFollowUpCall(EpisodeSubrecord):
     max_breathlessness        = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     breathlessness_trend      = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_cough             = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     max_cough                 = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     cough_trend               = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_fatigue           = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     max_fatigue               = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     fatigue_trend             = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_sleep_quality     = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     max_sleep_quality         = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     sleep_quality_trend       = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
 
     # Symptoms at follow up
     chest_pain                = models.NullBooleanField(help_text='Chest pain')
@@ -689,25 +689,25 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     max_breathlessness        = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     breathlessness_trend      = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_cough             = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     max_cough                 = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     cough_trend               = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_fatigue           = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     max_fatigue               = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     fatigue_trend             = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_sleep_quality     = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     max_sleep_quality         = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     sleep_quality_trend       = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
 
     poor_sleep_noise       = models.NullBooleanField()
     poor_sleep_medications = models.NullBooleanField()
