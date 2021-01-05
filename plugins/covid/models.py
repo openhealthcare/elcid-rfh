@@ -208,6 +208,9 @@ class CovidAdmission(EpisodeSubrecord):
 
     systemic_corticosteroirds = models.NullBooleanField(verbose_name='Treated With Systemic Corticosteroids')
 
+    days_on_optiflow = models.IntegerField(blank=True, null=True,
+                                           verbose_name='Total Number Of Days On Optiflow')
+    other_drugs      = models.TextField(blank=True, null=True)
 
 
 class LungFunctionTest(EpisodeSubrecord):
@@ -272,7 +275,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
 
     ONE_TO_TEN           = enum('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
     ONE_TO_NINE          = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
-    ONE_TO_FIVE          = enum('1', '2', '3', '4', '5')
+    MRC_CHOICES          = enum('1', '2', '3', '4', '5', 'N/A')
     ZERO_TO_THREE        = (
         ('0', '(0) Not At All'),
         ('1', '(1) Several days'),
@@ -282,7 +285,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     ETHNICITY_CODE       = enum("White", "Black", "Asian", "Other")
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
-    TREND_CHOICES        = enum('Same', 'Better', 'Worse')
+    TREND_CHOICES        = enum('Same', 'Better', 'Worse', 'Back to baseline')
     Y_N_NA               = enum('Yes', 'No', 'N/A')
     Y_N_NOT_SURE         = enum('Yes', 'No', 'Not sure')
     LIMITED_BY_CHOICES   = enum('SOB', 'Fatigue', 'Other')
@@ -303,6 +306,12 @@ class CovidFollowUpCall(EpisodeSubrecord):
         'Family help',
         'Carers',
         'NH/RH'
+    )
+
+    EXERCISE_CHOICES = enum(
+        'Reduced',
+        'Back to baseline',
+        'Unlimited'
     )
 
     CARER_CHOICES = enum(
@@ -427,10 +436,12 @@ class CovidFollowUpCall(EpisodeSubrecord):
         blank=True, null=True, max_length=20, choices=Y_N_NA)
 
     current_et                = models.CharField(
-        blank=True, null=True, max_length=50, help_text='Metres',
-        verbose_name="Current ET (metres)") # Exercise tolerance?
+        choices=EXERCISE_CHOICES,
+        blank=True, null=True, max_length=50,
+        verbose_name="Current ET")
+
     mrc_dyspnoea_scale        = models.CharField(
-        blank=True, null=True, max_length=50, choices=ONE_TO_FIVE,
+        blank=True, null=True, max_length=50, choices=MRC_CHOICES,
         verbose_name="MRC Dyspnoea Scale")
     limited_by                = models.CharField(blank=True, null=True,
                                                  max_length=50, choices=LIMITED_BY_CHOICES)
@@ -649,11 +660,12 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     YN_DECLINED_CHOICES = enum('Yes', 'No', 'Declined')
     Y_N_NOT_SURE        = enum('Yes', 'No', 'Not sure')
     YN_NA               = enum('Yes', 'No', 'N/A')
-    ONE_TO_FIVE         = enum('1', '2', '3', '4', '5')
+    MRC_CHOICES         = enum('1', '2', '3', '4', '5', 'N/A')
     ONE_TO_NINE         = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
     ZERO_TO_TEN         = enum('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
-    TREND_CHOICES       = enum('Same', 'Better', 'Worse')
+    TREND_CHOICES       = enum('Same', 'Better', 'Worse', 'Back to Baseline')
     LIMITED_BY_CHOICES  = enum('SOB', 'Fatigue', 'Other')
+    EXERCISE_CHOICES    = enum('Reduced', 'Back to baseline', 'Unlimited')
     ZERO_TO_THREE       = (
         ('0', '(0) Not At All'),
         ('1', '(1) Several days'),
@@ -720,10 +732,11 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
         verbose_name="If working, are you back to work?",
         blank=True, null=True, max_length=20, choices=YN_NA)
     current_et                = models.CharField(
-        blank=True, null=True, max_length=50, help_text='Metres',
-        verbose_name="Current ET (metres)") # Exercise tolerance?
+        blank=True, null=True, max_length=50,
+        choices=EXERCISE_CHOICES,
+        verbose_name="Current ET")
     mrc_dyspnoea_scale        = models.CharField(
-        blank=True, null=True, max_length=50, choices=ONE_TO_FIVE,
+        blank=True, null=True, max_length=50, choices=MRC_CHOICES,
         verbose_name="MRC Dyspnoea Scale")
     limited_by                = models.CharField(blank=True, null=True,
                                                  max_length=50, choices=LIMITED_BY_CHOICES)
