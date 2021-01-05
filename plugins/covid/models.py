@@ -282,7 +282,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     ETHNICITY_CODE       = enum("White", "Black", "Asian", "Other")
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
-    TREND_CHOICES        = enum('Same', 'Better', 'Worse')
+    TREND_CHOICES        = enum('Same', 'Better', 'Worse', 'Back to baseline')
     Y_N_NA               = enum('Yes', 'No', 'N/A')
     Y_N_NOT_SURE         = enum('Yes', 'No', 'Not sure')
     LIMITED_BY_CHOICES   = enum('SOB', 'Fatigue', 'Other')
@@ -383,25 +383,25 @@ class CovidFollowUpCall(EpisodeSubrecord):
     max_breathlessness        = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     breathlessness_trend      = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_cough             = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     max_cough                 = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     cough_trend               = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_fatigue           = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     max_fatigue               = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     fatigue_trend             = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_sleep_quality     = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     max_sleep_quality         = models.CharField(
         blank=True, null=True, max_length=5, choices=ONE_TO_TEN)
     sleep_quality_trend       = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
 
     # Symptoms at follow up
     chest_pain                = models.NullBooleanField(help_text='Chest pain')
@@ -652,7 +652,7 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     ONE_TO_FIVE         = enum('1', '2', '3', '4', '5')
     ONE_TO_NINE         = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
     ZERO_TO_TEN         = enum('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
-    TREND_CHOICES       = enum('Same', 'Better', 'Worse')
+    TREND_CHOICES       = enum('Same', 'Better', 'Worse', 'Back to baseline')
     LIMITED_BY_CHOICES  = enum('SOB', 'Fatigue', 'Other')
     ZERO_TO_THREE       = (
         ('0', '(0) Not At All'),
@@ -677,25 +677,25 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     max_breathlessness        = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     breathlessness_trend      = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_cough             = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     max_cough                 = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     cough_trend               = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_fatigue           = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     max_fatigue               = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     fatigue_trend             = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
     current_sleep_quality     = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     max_sleep_quality         = models.CharField(
         blank=True, null=True, max_length=5, choices=ZERO_TO_TEN)
     sleep_quality_trend       = models.CharField(
-        blank=True, null=True, max_length=10, choices=TREND_CHOICES)
+        blank=True, null=True, max_length=40, choices=TREND_CHOICES)
 
     poor_sleep_noise       = models.NullBooleanField()
     poor_sleep_medications = models.NullBooleanField()
