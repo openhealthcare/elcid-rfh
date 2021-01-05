@@ -8,5 +8,5 @@ from plugins.handover import api
 
 class HandoverPlugin(plugins.OpalPlugin):
     apis = [
-        ('amthandovers', api.AMTHandoverViewSet)
+        ('amthandovers', api.AMTHandoverViewSet),
     ]

@@ -28,6 +28,21 @@ app.config(
                  referencedata: function(Referencedata) { return Referencedata; },
              },
          })
+             .when('/list/upstream/:slug', {
+                 controller: 'PatientListCtrl',
+                 resolve: {
+                     episodedata: function(patientListLoader, $route){
+                         return patientListLoader('upstream/'+$route.current.params.slug)
+                     },
+                     metadata: function(Metadata){ return Metadata.load(); },
+                     profile: function(UserProfile){ return UserProfile.load(); },
+                 },
+                 templateUrl: function(params){
+                     var target =  '/templates/patient_list.html';
+                     target += '/upstream/' + params.slug;
+                     return target;
+                 }
+             })
              .when('/covid-19/',             static_template_route('/templates/covid/dashboard.html'))
              .when('/recent-covid-pos/',      static_template_route('/templates/covid/recent_positives.html'))
              .when('/ICU/',                  static_template_route('/templates/icu/dashboard.html'))

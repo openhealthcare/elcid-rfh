@@ -14,6 +14,7 @@ source =
        plugins/letters
        plugins/monitoring
        plugins/tb
+       plugins/upstream_lists
 
 omit =
     */migrations/*
@@ -34,6 +35,7 @@ omit =
     plugins/labtests/tests/*
     plugins/letters/tests/*
     plugins/monitoring/tests/*
+    plugins/upstream_lists/tests/*
     plugins/tb/tests/*
     fabfile.py
 
