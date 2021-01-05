@@ -12,7 +12,7 @@
       completed [[item.planned_end_date | daysSince]] ago
     </span>
     <span ng-show="item.stoppedEarly">
-      stopped on day [[ item.start_date | daysTo:item.end_date:true ]]/[[ item.start_date | daysTo:item.planned_end_date:true ]]
+      stopped on day [[ item | totalDays ]]/[[ item.start_date | daysTo:item.planned_end_date:true ]]
     </span>
   </span>
 </span>
