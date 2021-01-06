@@ -446,7 +446,7 @@ class Antimicrobial(EpisodeSubrecord):
     _modal = 'lg'
 
     EMPIRIC = "Empiric"
-    TARGETTED = "Targetted"
+    TARGETTED = "Targeted"
     PREEMPTIVE = "Pre-emptive"
 
     TREATMENT_REASON = enum(EMPIRIC, TARGETTED, PREEMPTIVE)
