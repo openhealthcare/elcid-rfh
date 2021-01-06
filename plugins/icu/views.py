@@ -12,14 +12,6 @@ from plugins.covid.models import CovidPatient
 from plugins.icu import constants
 from plugins.icu.models import ICUWard, ICUHandoverLocation
 
-WARD_LISTS = {
-    'South': 'autoic_u_south',
-    'East': 'autoic_u_east',
-    'West': 'autoic_u_west',
-    'ICU 2': 'autoic_u_2',
-    'SHDU': 'icu_shdu'
-}
-
 
 class ICUDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'icu/dashboard.html'
@@ -69,14 +61,15 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             'covid_patients': covid_patients,
             'stay'          : [ticks, timeseries],
             'yticks'        : list(range(1, y_axis_upper_bound)),
-            'link'          : '/#/list/{}'.format(WARD_LISTS[ward_name])
+            'link'          : f'/#/list/upstream/{ward_name}'
         }
         return info
 
     def get_context_data(self, *a, **k):
         context = super(ICUDashboardView, self).get_context_data(*a, **k)
         wards = []
-        for ward_name in constants.WARD_NAMES:
+        for ward_name in ICUHandoverLocation.objects.all().values_list(
+                'ward', flat=True).distinct():
             wards.append(self.get_ward_info(ward_name))
 
         context['wards'] = wards

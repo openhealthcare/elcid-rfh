@@ -9,11 +9,16 @@ from django.db import transaction
 from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings
-from intrahospital_api import models
 from opal.models import Patient
 
 from elcid import models as emodels
 from elcid.utils import timing
+from plugins.admissions.loader import load_encounters
+from plugins.appointments.loader import load_appointments
+from plugins.imaging.loader import load_imaging
+from plugins.dischargesummary.loader import load_dischargesummaries
+
+from intrahospital_api import models
 from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
@@ -57,23 +62,6 @@ def _initial_load():
 def log_errors(name):
     error = "unable to run {} \n {}".format(name, traceback.format_exc())
     logger.error(error)
-
-
-def any_loads_running():
-    """
-        returns a boolean as to whether any loads are
-        running, for use by things that synch databases
-    """
-    patient_loading = models.InitialPatientLoad.objects.filter(
-        state=models.InitialPatientLoad.RUNNING
-    ).exists()
-
-    batch_loading = models.BatchPatientLoad.objects.filter(
-        state=models.BatchPatientLoad.RUNNING
-    ).exists()
-    result = patient_loading or batch_loading
-    logger.info("Checking loads are running {}".format(result))
-    return result
 
 
 @timing
@@ -386,33 +374,46 @@ def sync_patient(patient):
         "patient information synced for {}".format(patient.id)
     )
 
-
-@transaction.atomic
+@timing
 def _load_patient(patient, patient_load):
     logger.info(
-        "started patient {} ipl {}".format(patient.id, patient_load.id)
+        "Started patient {} Initial Load {}".format(patient.id, patient_load.id)
     )
+    failed = []
     try:
-        hospital_number = patient.demographics_set.first().hospital_number
-        results = api.results_for_hospital_number(hospital_number)
-        logger.info(
-            "loaded results for patient {} {}".format(
-                patient.id, patient_load.id
+        with transaction.atomic():
+            hospital_number = patient.demographics_set.first().hospital_number
+            results = api.results_for_hospital_number(hospital_number)
+            logger.info(
+                f"Loaded results for patient id {patient.id}"
             )
-        )
-        logger.info(json.dumps(results, indent=2))
-        update_lab_tests.update_tests(patient, results)
-        logger.info(
-            "tests updated for {} {}".format(patient.id, patient_load.id)
-        )
-        update_demographics.update_patient_information(patient)
-        logger.info(
-            "patient information updated for {} {}".format(
-                patient.id, patient_load.id
+            update_lab_tests.update_tests(patient, results)
+            logger.info(
+                f"Tests updated for patient id {patient.id}"
             )
-        )
-    except:
+    except Exception:
+        failed.append('results')
+
+    loaders = [
+        update_demographics.update_patient_information,
+        load_imaging,
+        load_encounters,
+        load_appointments,
+        load_dischargesummaries
+    ]
+
+    for loader in loaders:
+        loader_name = loader.__name__
+        try:
+            with transaction.atomic():
+                loader(patient)
+                logger.info(f'Completed {loader_name} for patient id {patient.id}')
+        except:
+            failed.append(loader_name)
+
+    if failed:
+        failed_loaders = ", ".join(failed)
+        logger.error(f"Initial patient load for patient id {patient.id} failed on {failed_loaders}")
         patient_load.failed()
-        raise
     else:
         patient_load.complete()

@@ -147,6 +147,7 @@ TEMPLATES = [
                 'opal.context_processors.models',
                 'elcid.context_processors.permissions',
                 'lab.context_processors.lab_tests',
+                'plugins.upstream_lists.context_processors.upstream_lists',
             ],
         },
     },
@@ -178,6 +179,8 @@ INSTALLED_APPS = (
     'plugins.imaging',
     'plugins.dischargesummary',
     'plugins.monitoring',
+    'plugins.handover',
+    'plugins.upstream_lists',
     'intrahospital_api',
     'elcid',
     'passwordreset',
@@ -311,7 +314,13 @@ LOGGING = {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
+        },
+        'handover': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
         }
+
     }
 }
 
@@ -380,7 +389,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.59'
+VERSION_NUMBER = '0.67'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

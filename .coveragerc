@@ -3,10 +3,18 @@ source =
        elcid
        intrahospital_api
        lab
+       plugins/admissions
        plugins/appointments
        plugins/covid
+       plugins/dischargesummary
+       plugins/handover
        plugins/icu
+       plugins/imaging
        plugins/labtests
+       plugins/letters
+       plugins/monitoring
+       plugins/tb
+       plugins/upstream_lists
 
 omit =
     */migrations/*
@@ -17,8 +25,18 @@ omit =
     elcid/local_settings.py
     elcid/templates/acceptance/*
     lab/tests/*
+    plugins/admissions/tests/*
+    plugins/appointments/tests/*
+    plugins/covid/tests/*
+    plugins/dischargesummary/tests/*
+    plugins/handover/tests/*
+    plugins/icu/tests/*
+    plugins/imaging/tests/*
     plugins/labtests/tests/*
-    plugins/*/migrations/*
+    plugins/letters/tests/*
+    plugins/monitoring/tests/*
+    plugins/upstream_lists/tests/*
+    plugins/tb/tests/*
     fabfile.py
 
 

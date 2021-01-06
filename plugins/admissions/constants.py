@@ -9,6 +9,7 @@ MESSAGE_CODES = {
     'A16': 'Pending Discharge',
     'A03': 'Discharge a patient',
     'A17': 'Swap Patients',
+    'A17B': 'UNKNOWN',
     'A04': 'Register a patient',
     'A21': 'Go on leave of absence',
     'A05': 'Pre-admit a patient',

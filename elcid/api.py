@@ -16,6 +16,7 @@ from opal.core.api import (
 )
 from opal.core.views import json_response
 from opal.core import serialization
+from opal.models import Episode
 
 from intrahospital_api import loader
 from plugins.covid import lab as covid_lab
@@ -502,6 +503,7 @@ class BloodCultureIsolateApi(SubrecordViewSet):
             bc.to_dict(request.user),
             status_code=status.HTTP_201_CREATED
         )
+
 
 
 elcid_router = OPALRouter()

@@ -82,8 +82,22 @@ class Application(application.OpalApplication):
 
     @classmethod
     def get_menu_items(cls, user):
+        if not user or not user.is_authenticated:
+            return []
+
         menu_items = super(Application, cls).get_menu_items(user)
+
         if standard_add_patient_menu_item.for_user(user):
             menu_items.append(standard_add_patient_menu_item)
+
+        if user.is_superuser:
+            menu_items.append(
+                menus.MenuItem(
+                    href='/#/beta/',
+                    display='Beta',
+                    icon='fa fa-bath',
+                    activepattern='beta'
+                )
+            )
 
         return menu_items

@@ -1,0 +1,94 @@
+<div class="content-offset">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h1>
+        Covid Positive Inpatients:
+        {{ covid_patients|length }}
+      </h1>
+    </div> <!-- heading -->
+    <div class="panel-body">
+
+      <div class="row">
+        <div class="col-md-6">
+          <h2>Covid Bed Pressure</h2>
+          <table class="table table-striped">
+            <tr>
+              <th>Ward</th>
+              <th>Count</th>
+              <th>New Positive</th>
+            </tr>
+            {% for ward in wards  %}
+              <tr>
+                <td>
+                  {{ ward.name }}
+                </td>
+                <td>
+                  {{ ward.count}}
+                </td>
+                <td>
+                  {% if ward.recent_pos %}
+                    <b>{{ ward.recent_pos }}</b>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+        <h2>
+          Covid Positive Patients
+        </h2>
+        <table class="table table-striped">
+          <tr>
+            <th>
+              Patient
+            </th>
+            <th>
+              Covid Results
+            </th>
+            <th>
+              Admission
+            </th>
+          </tr>
+          {% for patient in covid_patients %}
+            <tr>
+              <td>
+                <p>
+                  <a href="/#/patient/{{ patient.covid_patient.patient.id }}">
+                    {{ patient.demographics.name }} {{ patient.demographics.date_of_birth }}
+                  </a>
+                </p>
+                <p>
+                  Date first: positive: {{ patient.covid_patient.date_first_positive }}
+                </p>
+              </td>
+              <td>
+                {% for result in patient.ticker %}
+                  <p>
+                    {{ result.date_str }} {{ result.name }} {{ result.value }}
+                  </p>
+                {% endfor %}
+              </td>
+              <td>
+                <p>
+                  {{ patient.current_admission.admit_datetime }}
+                  <br />
+                  {{ patient.current_admission.ward }}
+                  <br />
+                  {{ patient.current_admission.room }} &nbsp;
+                  {{ patient.current_admission.bed }}
+                  <br />
+                  {{ patient.current_admission.specialty_name }}
+                  {{ patient.current_admission.consultant_name }}
+                </p>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+        </div>
+      </div>
+    </div> <!-- Panel -->
+  </div>

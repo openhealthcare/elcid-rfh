@@ -3,9 +3,8 @@ This deals with deployment for the rfh.
 
 Before you being make sure that in ../private_settings.json
 you have
-    1) the proxy address
-    2) a db_password
-    3) an empty dictionary called additional_settings or a dictionary
+    1) a db_password
+    2) an empty dictionary called additional_settings or a dictionary
        of any other variables you want set in your local settings
 
 Make sure the you have a back up directory which is read writeable
@@ -188,30 +187,27 @@ def pip_create_virtual_env(virtual_env_path, remove_existing, python_path=None):
 @task
 def pip_create_deployment_env(branch_name):
     print("Creating deployment environment")
-    private_settings = get_private_settings()
-    proxy = private_settings["proxy"]
     new_env = Env(branch_name)
     pip_create_virtual_env(
         new_env.deployment_env_path, remove_existing=True
     )
     pip = "{}/bin/pip".format(new_env.deployment_env_path)
-    local("{0} install pip==9.0.1 --proxy {1}".format(pip, proxy))
-    local("{0} install -r requirements-deployment.txt --proxy {1}".format(
-        pip, private_settings["proxy"]
-    ))
+    local("{0} install pip==9.0.1".format(pip))
+    local("{0} install -r requirements-deployment.txt".format(pip))
 
 
-def pip_install_requirements(new_env, proxy):
+
+def pip_install_requirements(new_env):
     print("Installing requirements")
 
     pip = "{}/bin/pip".format(new_env.virtual_env_path)
-    local("{0} install pip==18.0 --proxy {1}".format(pip, proxy))
+    local("{0} install pip==18.0".format(pip))
 
     # get's us round the connection pool
     # from
     # https://github.com/pypa/pip/issues/1805
-    local("{0} install requests==2.20.1 --proxy {1}".format(pip, proxy))
-    local("{0} install -r requirements.txt --proxy {1}".format(pip, proxy))
+    local("{0} install requests==2.20.1".format(pip))
+    local("{0} install -r requirements.txt".format(pip))
 
 
 def pip_set_project_directory(some_env):
@@ -758,6 +754,54 @@ def write_cron_create_covid_episodes(new_env):
         output, cron_file
     ))
 
+def write_cron_load_amt_handover(new_env):
+    """
+    Creates a cron job that loads the AMT handover list
+    """
+    print("Writing cron {}_sync_amt_handover".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_sync_amt_handover.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_sync_amt_handover".format(
+        PROJECT_NAME
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+def write_cron_calculte_amt_dashboard(new_env):
+    """
+    Creates a cron job that calculates the AMT dashboard
+    """
+    print("Writing cron {}_calculate_amt_dashboard".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_calculate_amt_dashboard.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_calculate_amt_dashboard".format(
+        PROJECT_NAME
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
+
+
+
 def send_error_email(error, some_env):
     print("Sending error email")
     run_management_command(
@@ -828,7 +872,6 @@ def get_private_settings():
 
         required_fields = [
             "db_password",
-            "proxy",
             "additional_settings",  # required even if its just an empty dict
 
             # the details of the network drive we putting the backups on
@@ -909,7 +952,6 @@ def create_private_settings():
     with open(PRIVATE_SETTINGS, "w") as privado:
         json.dump(
             dict(
-                proxy="",
                 db_password="",
                 host_string="",
                 backup_storage_address="",
@@ -953,7 +995,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     pip_set_project_directory(new_env)
     pip_create_deployment_env(new_branch)
 
-    pip_install_requirements(new_env, private_settings["proxy"])
+    pip_install_requirements(new_env)
 
     # create a database
     postgres_create_database(new_env, remove_existing)
@@ -1000,6 +1042,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     write_cron_backup_size(new_env)
     write_cron_calculate_dashboard(new_env)
     write_cron_classify_covid(new_env)
+    write_cron_load_amt_handover(new_env)
+    write_cron_calculte_amt_dashboard(new_env)
 
     write_cron_create_covid_episodes(new_env)
 
@@ -1113,28 +1157,7 @@ def dump_and_copy(branch_name):
         )
 
 
-def is_load_running(env):
-    return json.loads(
-        run_management_command("batch_load_running", env)
-    )["status"]
-
-
 def dump_database(env, db_name, backup_name):
-    # we only care about whether a batch is running if the cron job
-    # exists
-    if os.path.exists(CRON_TEST_LOAD):
-        start = datetime.datetime.now()
-        while is_load_running(env):
-            if (datetime.datetime.now() - start).seconds > 3600:
-                raise FabException(
-                    "Database synch failed as it has been running for > \
-an hour"
-                )
-            print(
-                "One or more loads are currently running, sleeping for 30 secs"
-            )
-            time.sleep(30)
-
     pg = "pg_dump {db_name} -U {db_user} > {bu_name}"
     local(
         pg.format(
