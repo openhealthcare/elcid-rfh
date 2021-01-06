@@ -3,5 +3,8 @@ TB_TAG = "tb_tag"
 
 
 TB_APPOINTMENT_CODES = [
-    "RESP CLINIC"  # These need to be added
+    "Thoracic TB F/Up",
+    "Thoracic TB New",
+    "Thoracic TB Nurse F/Up",
+    "Thoracic TB Nurse New"
 ]

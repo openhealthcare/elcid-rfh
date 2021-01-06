@@ -1,6 +1,8 @@
 """
 Views for the TB Opal Plugin
 """
+import datetime
+
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
@@ -130,14 +132,17 @@ class AppointmentList(LoginRequiredMixin, ListView):
         appointment_types = constants.TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
-        ).filter(
-            start_datetime__gte=today
-        ).order_by("start_datetime")
+
+           # ).filter(start_datetime__lte=today,
+           #          start_datetime__gte=today-datetime.timedelta(days=90)
+       ).filter(
+           start_datetime__gte=today
+
+        ).order_by("-start_datetime")
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["admission_and_episode"] = []
-
         for admission in ctx["object_list"]:
             episode = admission.patient.episode_set.filter(
                 category_name=episode_categories.TbEpisode.display_name
@@ -148,4 +153,5 @@ class AppointmentList(LoginRequiredMixin, ListView):
                 ctx["admission_and_episode"].append(
                     (admission, episode,)
                 )
+
         return ctx
