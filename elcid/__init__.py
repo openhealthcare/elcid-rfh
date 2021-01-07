@@ -87,6 +87,10 @@ class Application(application.OpalApplication):
 
         menu_items = super(Application, cls).get_menu_items(user)
 
+        for item in menu_items:
+            if item.href == '/#/list/':
+                item.href = '/#/list/bacteraemia'
+
         if standard_add_patient_menu_item.for_user(user):
             menu_items.append(standard_add_patient_menu_item)
 
