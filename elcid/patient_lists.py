@@ -341,3 +341,44 @@ class EcoliList(OrganismPatientlist, RfhPatientList, PatientList):
             observation_value__iregex='\y{}\y'.format("coli")
         )
         return qs
+
+
+class BCFBloodstreamInfectionBSI(RfhPatientList, TaggedPatientList):
+    display_name = 'BCF Bloodstream Infection BSI'
+    direct_add = True
+    tag = "bcf_bsi"
+    template_name = 'episode_list.html'
+    schema = []
+    order = 10
+
+class BCFChronicInfection(RfhPatientList, TaggedPatientList):
+    display_name = 'BCF Chronic Infection'
+    direct_add = True
+    tag = "bcf_chronic_infection"
+    template_name = 'episode_list.html'
+    schema = []
+    order = 10
+
+class BCFOrthopaedic(RfhPatientList, TaggedPatientList):
+    display_name = 'BCF Orthopaedic'
+    direct_add = True
+    tag = "bcf_orthopaedic"
+    template_name = 'episode_list.html'
+    schema = []
+    order = 10
+
+class BCFDiabeticFoot(RfhPatientList, TaggedPatientList):
+    display_name = 'BCF Diabetic Foot'
+    direct_add = True
+    tag = "bcf_diabetic_foot"
+    template_name = 'episode_list.html'
+    schema = []
+    order = 10
+
+class BCFOpat(RfhPatientList, TaggedPatientList):
+    display_name = 'BCF OPAT'
+    direct_add = True
+    tag = "bcf_opat"
+    template_name = 'episode_list.html'
+    schema = []
+    order = 10
