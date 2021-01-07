@@ -22,9 +22,22 @@ def no_yes(val):
         return True
     if val == '2':
         return None
+    if val in ['No', 'no']:
+        return False
+    if val in ['Yes', 'yes']:
+        return True
 
     if val == "0 (started on admission)":
         return False
+
+    if val == '1 (?TIA)':
+        return True
+
+    # Todo junk
+    if val in ['10', '3']:
+        return
+    if val == 'No thoughts of suicide/self-harm':
+        return
 
     raise ValueError('What is {}'.format(val))
 
@@ -32,10 +45,15 @@ def no_yes(val):
 def numeric(val):
     if val is None or val == '':
         return
+
+    # Todo junk
     if val == 'N/A':
         return
     if val == 'Not written':
         return
+    if val == 'Unknown due to ITU admission':
+        return
+
     return val
 
 
@@ -55,9 +73,14 @@ def to_date(val):
                 int(split[1])  # day
             )
         else:
-            return datetime.datetime.strptime(
-                val, "%d/%m/%Y"
-            ).date()
+            try:
+                return datetime.datetime.strptime(
+                    val, "%d/%m/%Y"
+                ).date()
+            except ValueError:
+                return datetime.datetime.strptime(
+                    val, '%d\\%m\\%Y'
+                ).date()
 
 
 def to_choice(some_numeric, choices):
@@ -67,11 +90,21 @@ def to_choice(some_numeric, choices):
 
     Assumes the data is 0 indexed.
     """
+    if some_numeric in ['5000', '6', '9', '10', 'S']:
+        return
+
     some_numeric = numeric(some_numeric)
     if some_numeric is None:
         return
     if some_numeric:
-        return choices[int(some_numeric)][1]
+        try:
+            return choices[int(some_numeric)][1]
+        except IndexError:
+            # Todo junk
+            print(some_numeric)
+            raise
+
+
 
 
 def tep_status(patient):
@@ -114,6 +147,8 @@ def ethnicity_code_choice(value):
         '3': 'Asian',
         '4': 'Other'
     }
+    if value == '0':
+        return
     if value == '':
         return
 
@@ -217,34 +252,44 @@ class Command(BaseCommand):
     admissions_created = 0
     admissions_updated = 0
     followup_calls_created = 0
+    missing_mrns = 0
+    patient_not_on_elcid = 0
 
     def add_arguments(self, parser):
         parser.add_argument('file')
 
     def load_patient(self, patient):
-        # TODO: Fix these:
-        if patient['Focal weakness (0 = no, 1 = yes)'] == '22':
-            return
+        # # TODO: Fix these:
+        # if patient['Focal weakness (0 = no, 1 = yes)'] == '22':
+        #     return
 
-        if patient["Date of telephone call"] == '1':
-            return
+        # if patient["Date of telephone call"] == '1':
+        #     return
 
-        if patient["Same (0), better (1) or worse (2) than discharge5"] == '3':
-            return
+        # if patient["Same (0), better (1) or worse (2) than discharge5"] == '3':
+        #     return
 
         # End skips
 
         mrn = patient['Hospital (Internal) Number']
         if not mrn.strip():
-            return False
-        try:
-            our_patient = Patient.objects.get(demographics__hospital_number=mrn)
-        except Patient.DoesNotExist:
+            self.missing_mrns += 1
             return False
 
-        episode, created = our_patient.episode_set.get_or_create(
-            category_name=CovidEpisode.display_name
-        )
+        try:
+            our_patient = Patient.objects.get(demographics__hospital_number=mrn)
+            #Todo missing
+        except Patient.DoesNotExist:
+            self.patient_not_on_elcid += 1
+            return False
+
+        try:
+            episode, created = our_patient.episode_set.get_or_create(
+                category_name=CovidEpisode.display_name
+            )
+        except Episode.MultipleObjectsReturned:
+            print(our_patient)
+            raise
 
         if created:
             self.episodes_created += 1
@@ -430,13 +475,13 @@ class Command(BaseCommand):
             episode=episode, created_by_id=1, created=timezone.now()
         )
 
-        if episode.covidfollowupcall_set.exists():
-            # At the moment this happens for the resp database as the same
-            # episod has multiple follow up calls.
-            # This is a data issue that needs to be fixed on their end
-            raise ValueError("Covid follow up call exists for {}".format(
-                episode.id
-            ))
+        # if episode.covidfollowupcall_set.exists():
+        #     # At the moment this happens for the resp database as the same
+        #     # episod has multiple follow up calls.
+        #     # This is a data issue that needs to be fixed on their end
+        #     raise ValueError("Covid follow up call exists for {}".format(
+        #         episode.id
+        #     ))
 
         call_date = to_date(patient["Date of telephone call"])
         if call_date:
@@ -462,13 +507,17 @@ class Command(BaseCommand):
         covid_follow_up_call.weight = patient["Weight (kg)"]
         covid_follow_up_call.ethnicity = patient.get_list("Ethnicity")[1]
 
+
         try:
             covid_follow_up_call.ethnicity_code = ethnicity_code_choice(
                 patient["Ethnicity code (White = 1, Black = 2, Asian = 3 Other = 4)"])
 
         except ValueError:
-            covid_follow_up_call.ethnicity_code = ethnicity_code_choice(
-                patient["Ethnicity code (White = 1, Black = 2 Asian = 3 Other = 4 BrC=1, OC=2, BrA=3, OA=4, BB=5, BO=6, O=7)"])
+            try:
+                covid_follow_up_call.ethnicity_code = ethnicity_code_choice(
+                    patient["Ethnicity code (White = 1, Black = 2 Asian = 3 Other = 4 BrC=1, OC=2, BrA=3, OA=4, BB=5, BO=6, O=7)"])
+            except ValueError:
+                pass # Barnet doesn't have codings
 
 
         covid_follow_up_call.followup_status = to_choice(
@@ -485,7 +534,7 @@ class Command(BaseCommand):
 
         social = patient["Social circumstances (0 = independent, 1 = family help, 2 = carers, 3 = NH/RH)"]
 
-        compound_results = set(['1&2', "1,2"])
+        compound_results = set(['1&2', "1,2", "1 & 2"])
         # turn this into carers
         if social in compound_results:
             covid_follow_up_call.social_circumstances = "Independent & family help"
@@ -496,6 +545,9 @@ class Command(BaseCommand):
 
         carers = patient["If carers, 1  = OD 2 = BD 3 = TDS 4 = QDS"]
 
+        if carers == '2x/wk + family':
+            carers = '1'
+
         if carers == "24h":
             covid_follow_up_call.carers = carers
         else:
@@ -503,23 +555,32 @@ class Command(BaseCommand):
                 carers, [("", "",)] + list(covid_follow_up_call.CARER_CHOICES)
             )
 
-        covid_follow_up_call.changes_to_medication = no_yes(
-            patient["Any changes in medication since discharge (0 =no, 1 = yes)"]
-        )
+        try:
+            covid_follow_up_call.changes_to_medication = no_yes(
+                patient["Any changes in medication since discharge (0 =no, 1 = yes)"]
+            )
+        except ValueError: # Barnet !
+            covid_follow_up_call.changes_to_medication = no_yes(
+                patient["Any changes in medication since discharge"]
+            )
+
         covid_follow_up_call.medication_change_details = patient["If yes, what"]
 
         shielding = patient[
             "Shielding status (0 = not shielding 1 = voluntary 2 = extremely vulnerable 3 = HCP issued letter)"
         ]
-        covid_follow_up_call.shielding_status = to_choice(
-            shielding, covid_follow_up_call.SHIELDING_CHOICES
-        )
+        if shielding != 'loss of taste/smell':
+
+            covid_follow_up_call.shielding_status = to_choice(
+                shielding, covid_follow_up_call.SHIELDING_CHOICES
+            )
 
         # breathlessness
         covid_follow_up_call.current_breathlessness = patient[
             "Breathlessness rating (0-10)"
         ]
         covid_follow_up_call.max_breathlessness = patient["Max breathlessness"]
+
         covid_follow_up_call.breathlessness_trend = to_choice(
             patient["Same (0), better (1) or worse (2) than discharge"],
             covid_follow_up_call.TREND_CHOICES
@@ -560,7 +621,10 @@ class Command(BaseCommand):
         covid_follow_up_call.peripheral_oedema = no_yes(patient["Peripheral oedema (0 = no  yes = 1)"])
         covid_follow_up_call.abdominal_pain = no_yes(patient["Abdo pain (0 = no 1 = yes)"])
         covid_follow_up_call.focal_weakness = no_yes(patient["Focal weakness (0 = no 1  = yes)"])
-        covid_follow_up_call.anorexia = no_yes(patient["Anorexia (0 = no 1 = yes)"])
+        try:
+            covid_follow_up_call.anorexia = no_yes(patient["Anorexia (0 = no 1 = yes)"])
+        except ValueError: # Barnet doesn't have this
+            pass
         covid_follow_up_call.back_to_normal = no_yes(patient["Do you feel back to normal (0 = no 1 = yes)"])
         covid_follow_up_call.why_not_back_to_normal = patient["If not, why not"]
         bhp = (numeric(patient[
@@ -584,9 +648,15 @@ class Command(BaseCommand):
                 return
             covid_follow_up_call.baseline_health_proximity = bhp
 
-        covid_follow_up_call.back_to_work = to_choice(
-            patient["If working are you back to work (Yes = 0 no = 1 N/A = 2)"], covid_follow_up_call.Y_N_NA
-        )
+        try:
+            covid_follow_up_call.back_to_work = to_choice(
+                patient["If working are you back to work (Yes = 0 no = 1 N/A = 2)"], covid_follow_up_call.Y_N_NA
+            )
+        except ValueError: # Barnet
+            covid_follow_up_call.back_to_work = to_choice(
+                patient["If working are you back to work (Yes = 0 no = 1  n/a = 2)"], covid_follow_up_call.Y_N_NA
+            )
+
         covid_follow_up_call.current_et = patient["Current ET (metres)"]
         covid_follow_up_call.mrc_dyspnoea_scale = patient["MRC dyspnoea scale (1-5)"]
 
@@ -631,13 +701,27 @@ class Command(BaseCommand):
         covid_follow_up_call.other_concerns = patient["Other concerns?"]
 
         NA_Y_N = [('N/A', 'N/A',), ("Yes", "Yes",), ("No", "No",)]
-        covid_follow_up_call.haem_anticoag = to_choice(
-            patient["Haematology/anticoagulation clinic (0 = N/A 1 = yes 2 = no)"],
-            NA_Y_N
-        )
-        covid_follow_up_call.diabetic = to_choice(
-            patient["Diabetic team required (0 = n/a 1 = yes 2 = no)"], NA_Y_N
-        )
+        try:
+            covid_follow_up_call.haem_anticoag = to_choice(
+                patient["Haematology/anticoagulation clinic (0 = N/A 1 = yes 2 = no)"],
+                NA_Y_N
+            )
+        except ValueError: # Barnet
+            covid_follow_up_call.haem_anticoag = to_choice(
+                patient["Haematology/anticoagulation clinic (0 = n/a  1 = yes 2 = no)"],
+                NA_Y_N
+            )
+
+        try:
+            covid_follow_up_call.diabetic = to_choice(
+                patient["Diabetic team required (0 = n/a 1 = yes 2 = no)"], NA_Y_N
+            )
+        except ValueError: # Barnet
+            covid_follow_up_call.diabetic = to_choice(
+                patient["Diabetic team required (0 = n/a  1 = yes 2 = no)"], NA_Y_N
+            )
+
+
         Y_N_NOT_SURE = [("", ""), ("Yes", "Yes",), ("No", "No",), ("Not Sure", "Not sure",)]
         covid_follow_up_call.call_satisfaction = to_choice(
             patient["Did you find this call useful (1 =yes 2 =no 3=not sure)?"],
@@ -658,7 +742,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **kwargs):
-        self.flush()
+#        self.flush()
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
@@ -677,6 +761,8 @@ class Command(BaseCommand):
                     raise
 
             print('Patients: {}'.format(patients))
+            print(f'Missing MRN: {self.missing_mrns}')
+            print(f'Patients not on elCID: {self.patient_not_on_elcid}')
             print('Created episodes: {}'.format(self.episodes_created))
             print('Created admissions: {}'.format(self.admissions_created))
             print('Updated admissions: {}'.format(self.admissions_updated))
