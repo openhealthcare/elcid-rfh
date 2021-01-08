@@ -369,44 +369,6 @@ class Command(BaseCommand):
             self.admissions_updated += 1
         episode.covidadmission_set.update(**admission_args)
 
-        # smokinghistory = episode.covidsmokinghistory_set.get()
-
-        # smokinghistory.admisison_status = smoking_status(patient),
-        # smokinghistory.pack_year_history = patient['Pack year history']
-        # smokinghistory.created_by_id = 1
-        # smokinghistory.save()
-
-        # socialhistory, _ = models.CovidSocialHistory.objects.get_or_create(patient=episode.patient, created_by_id=1)
-
-        # CIRCUMSTANCES = {
-        #     '0': 'Independent',
-        #     '1': 'Family help',
-        #     '2': 'Carers',
-        #     '3': 'NH/RH'
-        # }
-        # socialhistory.social_circumstances = CIRCUMSTANCES.get(
-        #     patient['Social circumstances (0 = independent, 1 = family help, 2 = carers, 3 = NH/RH)'])
-
-        # CARERS = {
-        #     '1': 'OD',
-        #     '2': 'BD',
-        #     '3': 'TDS',
-        #     '4': 'QDS'
-        # }
-        # carers = patient.get('If carers, 1  = OD 2 = BD 3 = TDS 4 = QDS')
-        # if carers:
-        #     socialhistory.carers = CARERS.get(carers)
-
-        # shielding = patient.get('Shielding status (0 = not shielding 1 = voluntary 2 = extremely vulnerable 3 = HCP issued letter)')
-        # SHIELDING = {
-        #     '0': 'Not',
-        #     '1': 'Voluntary Shielding',
-        #     '2': 'Extremely Vulnerable',
-        #     '3': 'Letter Issued by HCP'
-        # }
-        # socialhistory.shielding_status = SHIELDING.get(shielding)
-        # socialhistory.save()
-
         comorbidities = episode.covidcomorbidities_set.get()
         comorbidities.created_by_id = 1
         try:
@@ -474,14 +436,6 @@ class Command(BaseCommand):
         covid_follow_up_call = models.CovidFollowUpCall(
             episode=episode, created_by_id=1, created=timezone.now()
         )
-
-        # if episode.covidfollowupcall_set.exists():
-        #     # At the moment this happens for the resp database as the same
-        #     # episod has multiple follow up calls.
-        #     # This is a data issue that needs to be fixed on their end
-        #     raise ValueError("Covid follow up call exists for {}".format(
-        #         episode.id
-        #     ))
 
         call_date = to_date(patient["Date of telephone call"])
         if call_date:
