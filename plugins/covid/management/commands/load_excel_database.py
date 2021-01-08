@@ -257,19 +257,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('file')
+        parser.add_argument('--barnet')
 
     def load_patient(self, patient):
-        # # TODO: Fix these:
-        # if patient['Focal weakness (0 = no, 1 = yes)'] == '22':
-        #     return
-
-        # if patient["Date of telephone call"] == '1':
-        #     return
-
-        # if patient["Same (0), better (1) or worse (2) than discharge5"] == '3':
-        #     return
-
-        # End skips
 
         mrn = patient['Hospital (Internal) Number']
         if not mrn.strip():
@@ -434,7 +424,8 @@ class Command(BaseCommand):
             return
 
         covid_follow_up_call = models.CovidFollowUpCall(
-            episode=episode, created_by_id=1, created=timezone.now()
+            episode=episode, created_by_id=1, created=timezone.now(),
+            hospital_site=self.hospital_site
         )
 
         call_date = to_date(patient["Date of telephone call"])
@@ -696,7 +687,11 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **kwargs):
-#        self.flush()
+
+        self.hospital_site = 'RFH'
+        if 'barnet' in kwargs:
+            self.hospital_site = 'Barnet'
+
         with open(kwargs['file'], 'r') as fh:
             reader = list(csv.reader(fh))
             headers = reader[0]
