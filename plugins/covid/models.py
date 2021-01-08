@@ -285,6 +285,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     ETHNICITY_CODE       = enum("White", "Black", "Asian", "Other")
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
+    HOSP_CHOICES         = enum('RFH', 'Barnet')
     TREND_CHOICES        = enum('Same', 'Better', 'Worse', 'Back to baseline')
     Y_N_NA               = enum('Yes', 'No', 'N/A')
     Y_N_NOT_SURE         = enum('Yes', 'No', 'Not sure')
@@ -352,6 +353,9 @@ class CovidFollowUpCall(EpisodeSubrecord):
     clinician          = models.CharField(blank=True, null=True, max_length=255) # Default to user
     position           =  models.CharField(
         blank=True, null=True, max_length=255, choices=POSITION_CHOICES)
+    hospital_site      = models.CharField(
+        max_length=255, blank=True, null=True, choices=HOSP_CHOICES
+    )
 
     incomplete_reason  = models.TextField(blank=True, null=True)
 
