@@ -397,6 +397,10 @@ div.add-isolate:hover{
     color: $obsidian;
 }
 
+.extract-panel .row {
+    margin-left: 0px;
+    margin-right: 0px;
+}
 .extract-panel select.form-control {
     max-width: 250px;
 }
