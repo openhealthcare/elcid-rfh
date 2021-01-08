@@ -396,3 +396,7 @@ div.add-isolate:hover{
 .panel.panel-primary .panel-heading a {
     color: $obsidian;
 }
+
+.extract-panel select.form-control {
+    max-width: 250px;
+}
