@@ -44,6 +44,15 @@ class ICUHandoverLocation(models.Model):
     admitted = models.DateField(blank=True, null=True)
 
 
+class ICUHandoverLocationHistory(models.Model):
+    """
+    Stores a log of every location a patient has had in ICU
+    """
+    patient         = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    location_string = models.CharField(max_length=255)
+    timestamp       = models.DateTimeField()
+
+
 class ICUHandover(PatientSubrecord):
     """
     This models mirrors the view we have of the upstream
