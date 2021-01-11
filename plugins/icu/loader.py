@@ -1,7 +1,10 @@
 """
 Load ICU Handover records from upstream
 """
+import datetime
+
 from django.db import transaction
+from django.utils import timezone
 from opal.models import Patient
 
 from elcid.models import Demographics
@@ -10,7 +13,9 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 
 from plugins.icu import logger
-from plugins.icu.models import ICUHandover, ICUHandoverLocation, parse_icu_location
+from plugins.icu.models import (
+    ICUHandover, ICUHandoverLocation, parse_icu_location, ICUHandoverLocationHistory
+)
 from plugins.icu.episode_categories import ICUHandoverEpisode
 
 
@@ -90,5 +95,26 @@ def load_icu_handover():
         handover_location.bed      = bed
         handover_location.admitted = result['Date_ITU_Admission'].date()
         handover_location.save()
+
+        if ICUHandoverLocationHistory.objects.filter(patient=patient).exists():
+            last = ICUHandoverLocationHistory.objects.filter(patient=patient).order_by('-timestamp')
+            if last[0].location_string == result['Location']:
+                pass
+            else:
+                ICUHandoverLocationHistory.objects.create(
+                    patient=patient,
+                    location_string=result['Location'],
+                    timestamp=timezone.make_aware(datetime.datetime.now())
+                )
+
+
+        else:
+            ICUHandoverLocationHistory.objects.create(
+                patient=patient,
+                location_string=result['Location'],
+                timestamp=timezone.make_aware(datetime.datetime.now())
+            )
+
+
 
         logger.info('Stored ICU Handover record for {}'.format(mrn))

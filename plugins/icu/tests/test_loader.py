@@ -90,3 +90,101 @@ class LoadICUHandoverTestCase(OpalTestCase):
         loader.load_icu_handover()
 
         self.assertEqual(1, models.ICUHandoverLocation.objects.count())
+
+    def test_location_history_unchanged(self, upstream):
+        p, e = self.new_patient_and_episode_please()
+        demographics = p.demographics()
+        demographics.hospital_number = 'F-556'
+        demographics.save()
+
+        upstream.return_value = [{
+            'Patient_MRN'       : 'F-556',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
+        }]
+
+        loader.load_icu_handover()
+
+        self.assertEqual(
+            1,
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).count()
+        )
+
+
+        upstream.return_value = [{
+            'Patient_MRN'       : 'F-556',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
+        }]
+        loader.load_icu_handover()
+
+        self.assertEqual(
+            1,
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).count())
+
+        self.assertEqual(
+            'ICU4_South_Bed-15',
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).get().location_string
+        )
+
+
+    def test_location_history_changed(self, upstream):
+        p, e = self.new_patient_and_episode_please()
+        demographics = p.demographics()
+        demographics.hospital_number = 'F-556'
+        demographics.save()
+
+        upstream.return_value = [{
+            'Patient_MRN'       : 'F-556',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
+        }]
+
+        loader.load_icu_handover()
+        self.assertEqual(
+            1,
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).count())
+
+        upstream.return_value = [{
+            'Patient_MRN'       : 'F-556',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_West_Bed-5',
+        }]
+        loader.load_icu_handover()
+        self.assertEqual(
+            2,
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).count())
+        self.assertEqual(
+            'ICU4_West_Bed-5',
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).last().location_string
+        )
+
+    def test_location_history_changed_unchanged(self, upstream):
+        p, e = self.new_patient_and_episode_please()
+        demographics = p.demographics()
+        demographics.hospital_number = 'F-556'
+        demographics.save()
+
+        upstream.return_value = [{
+            'Patient_MRN'       : 'F-556',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_South_Bed-15',
+        }]
+
+        loader.load_icu_handover()
+
+        upstream.return_value = [{
+            'Patient_MRN'       : 'F-556',
+            'Date_ITU_Admission': datetime.datetime.now(),
+            'Location'          : 'ICU4_West_Bed-5',
+        }]
+        loader.load_icu_handover()
+        loader.load_icu_handover()
+
+        self.assertEqual(
+            2,
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).count())
+        self.assertEqual(
+            'ICU4_West_Bed-5',
+            models.ICUHandoverLocationHistory.objects.filter(patient=p).last().location_string
+        )
