@@ -8,12 +8,10 @@ def parse_icu_location(location_string):
     """
     Return a tuple of (hospital, ward, bed) from a location string
     """
-    parts = location_string.split('_')
-    if len(parts) == 3:
-        hospital, ward, bed = parts
-    else:
-        hospital = None
-        ward, bed = parts
+    parts = location_string.rsplit('_', maxsplit=1)
+
+    hospital = None
+    ward, bed = parts
 
     bed = bed.split('-')[1]
 
