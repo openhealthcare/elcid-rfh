@@ -109,7 +109,7 @@ def load_icu_handover():
 
 
         else:
-            i = ICUHandoverLocationHistory.objects.create(
+            ICUHandoverLocationHistory.objects.create(
                 patient=patient,
                 location_string=result['Location'],
                 timestamp=timezone.make_aware(datetime.datetime.now())
