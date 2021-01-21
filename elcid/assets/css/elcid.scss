@@ -21,6 +21,10 @@ body{
     height: calc(100% - 30px);
 }
 
+.green {
+    color: $green;
+}
+
 .outer-container .container-fluid {
     padding-left: 0px;
     padding-right: 0px;
@@ -403,4 +407,10 @@ div.add-isolate:hover{
 }
 .extract-panel select.form-control {
     max-width: 250px;
+}
+
+#icu-switcher {
+    position: fixed;
+    right: 0px;
+    margin-top: 28px;
 }

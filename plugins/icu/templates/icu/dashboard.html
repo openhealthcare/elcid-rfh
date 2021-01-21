@@ -1,80 +1,100 @@
 {% load humanize %}
 <div class="content-offset">
   <div class="row ">
-    <div class="col-md-8 col-md-offset-2 content-offset">
+    <div class="col-md-12 ">
 
       <div class="panel panel-default">
         <div class="panel-heading">
           <h1>ICU at the Royal Free Hospital ({{ icu_patients }} patients)</h1>
         </div> <!-- heading -->
-        <div class="panel-body">
-          <div class="row">
-            <div class="col-md-3">
-              <table class="table table-striped">
-                <tr>
-                  <th>Ward</th><th>Patients</th>
-                </tr>
-                {% for ward in wards %}
-                  <tr>
-                    <td>
-                      <a href="{{ ward.link }}">
-                        {{ ward.name }}
-                      </a>
-                    </td>
-                    <td>{{ ward.patient_count }}</td>
-                  </tr>
-                {% endfor %}
-              </table>
-            </div>
+        <div id="icu-switcher"
+             class="col-md-1"
+             >
+            {% for ward in wards %}
+              <p>
+                <a class="pointer" target="#{{ ward.name }}" scroll-on-click >
+                  {{ ward.name }} ({{ ward.patient_count }})
+                </a>
+              </p>
+              {% endfor %}
           </div>
 
-          {% for ward in wards %}
+        <div class="panel-body" id="icu-panel">
 
-            <div class="row">
-              <div class="col-md-12">
-                <h1>
-                  <a href="{{ ward.link }}">{{ ward.name }}</a>
-                </h1>
-              </div>
+          <div class="row">
+            <div class="col-md-11" style="border-right: 1px solid grey;">
+
+              {% for ward in wards %}
+                <div class="row">
+                  <div class="col-md-9">
+                    <h2 id="{{ ward.name }}">
+                      <a href="{{ ward.link }}">
+                        {{ ward.name}}
+                      </a>
+                      <small>
+                        {{ ward.patient_count }} ({{ ward.covid_patients }} Covid +ve)
+                      </small>
+                    </h2>
+                    <table class="table table-striped">
+                      <tr>
+                        <th>MRN</th>
+                        <th>Name</th>
+                        <th>DOB</th>
+                        <th>Bed</th>
+                        <th>Last Review</th>
+                        <th>By</th>
+                        <th></th>
+                      </tr>
+                      {% for patient in ward.patients %}
+                        <tr>
+                          <td>
+                            {{ patient.demographics.hospital_number }}
+                          </td>
+                          <td>
+                            <a href="/#/patient/{{ patient.demographics.patient_id }}"
+                               class="orange-link">
+                              {{ patient.demographics.name}}
+                            </a>
+                          </td>
+                          <td>
+                            {{ patient.demographics.date_of_birth }}
+                          </td>
+                          <td>
+                            {{ patient.handoverlocation.bed }}
+                          </td>
+                          <td>
+                            {{ patient.last_review.when }}
+                          </td>
+                          <td>
+                            {{ patient.last_review.initials }}
+                          </td>
+                          <td>
+                            {% ifequal patient.last_review.when.date today %}
+                              <i class="fa fa-sticky-note green fa-2x"></i>
+                            {% endifequal %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </table>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="content-offset-75">
+                      <div id="{{ ward.name}}_graph"></div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
             </div>
 
-            <div class="row">
 
-
-              <div class="col-md-2">
-                <h3>Patients</h3>
-                <h1>{{ ward.patient_count }}</h1>
-                <p>
-                  {% if ward.beds %}
-                    <br />
-                    ({{ ward.beds }} beds)
-                  {% endif %}
-                </p>
-              </div>
-
-              <div class="col-md-2 col-md-offset-1">
-                <h3>Covid +ve</h3>
-                <h1>{{ ward.covid_patients }}</h1>
-                <p>
-                  Number of patients with +ve Covid results
-                </p>
-              </div>
-
-
-              <div class="col-md-5 col-md-offset-1">
-                <div id="{{ ward.name}}_graph"></div>
-              </div>
-
-            </div> <!-- row -->
-
-            {% endfor %}
-
+          </div>
 
         </div>   <!-- panel body -->
       </div>     <!-- Panel -->
 
 
     </div>
+
   </div>
 </div>
 <script>
@@ -102,7 +122,7 @@
   x: {
   label: {text: 'Days since ICU Admission', position: 'outer-middle'}
   }
-}
+  }
   }
 
   c3.generate(config)
