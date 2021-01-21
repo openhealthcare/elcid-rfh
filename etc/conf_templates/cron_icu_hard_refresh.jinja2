@@ -1,0 +1,1 @@
+35 5 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py hard_refresh_icu_current >> /usr/lib/ohc/log/cron_sync.log 2>&1
