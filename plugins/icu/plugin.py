@@ -12,7 +12,7 @@ class ICUPlugin(plugins.OpalPlugin):
 
     @classmethod
     def get_menu_items(self, user):
-        if not user:
+        if not user or not user.is_authenticated:
             return []
 
         dashboard = menus.MenuItem(
