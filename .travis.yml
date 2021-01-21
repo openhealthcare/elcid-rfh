@@ -4,6 +4,8 @@ stages:
 jobs:
    include:
       - stage: app_test
+        node_js:
+          - "10"
         dist: trusty
         language: python
         python:
@@ -40,4 +42,3 @@ jobs:
           - pytest -q deployment_tests/fabric_tests.py
         notifications:
           slack: ohcuk:6spaME3CB7f2PGrMAcklYWqp
-
