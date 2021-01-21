@@ -3,6 +3,10 @@ body {
   height: calc(100% - 30px);
 }
 
+.green {
+  color: #9cc96b;
+}
+
 .outer-container .container-fluid {
   padding-left: 0px;
   padding-right: 0px;
@@ -355,4 +359,8 @@ div.add-isolate:hover {
   max-width: 250px;
 }
 
-/*# sourceMappingURL=elcid.css.map */
+#icu-switcher {
+  position: fixed;
+  right: 0px;
+  margin-top: 28px;
+}

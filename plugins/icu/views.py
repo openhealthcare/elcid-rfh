@@ -6,7 +6,10 @@ import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+from opal.models import Episode, Clinical_advice_reason_for_interaction
 
+from elcid.episode_categories import InfectionService
+from elcid.models import MicrobiologyInput
 from plugins.covid.models import CovidPatient
 
 from plugins.icu import constants
@@ -61,18 +64,44 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             'covid_patients': covid_patients,
             'stay'          : [ticks, timeseries],
             'yticks'        : list(range(1, y_axis_upper_bound)),
-            'link'          : f'/#/list/upstream/{ward_name}'
+            'link'          : f'/#/list/upstream/{ward_name}',
+            'patients'      : self.get_patient_info(ward_name)
         }
+        return info
+
+    def get_patient_info(self, ward_name):
+        info = []
+        icu_round_reason = Clinical_advice_reason_for_interaction.objects.get(
+            name=MicrobiologyInput.ICU_REASON_FOR_INTERACTION
+        )
+        episodes = Episode.objects.filter(
+            patient__icuhandoverlocation__ward=ward_name,
+            category_name=InfectionService.display_name
+        ).order_by('patient__icuhandoverlocation__bed')
+
+        for episode in episodes:
+            patient = episode.patient
+            record = {
+                'episode'     : episode,
+                'demographics': patient.demographics(),
+                'last_review' : episode.microbiologyinput_set.filter(
+                    reason_for_interaction_fk=icu_round_reason
+                ).order_by('when').last(),
+                'handoverlocation' : patient.icuhandoverlocation_set.get()
+            }
+            info.append(record)
+
         return info
 
     def get_context_data(self, *a, **k):
         context = super(ICUDashboardView, self).get_context_data(*a, **k)
         wards = []
-        for ward_name in ICUHandoverLocation.objects.all().values_list(
-                'ward', flat=True).distinct():
+        for ward_name in sorted(ICUHandoverLocation.objects.all().values_list(
+                'ward', flat=True).distinct()):
             wards.append(self.get_ward_info(ward_name))
 
         context['wards'] = wards
         context['icu_patients'] = ICUHandoverLocation.objects.all().count()
+        context['today'] = datetime.date.today()
 
         return context
