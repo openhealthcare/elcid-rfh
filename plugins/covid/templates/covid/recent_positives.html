@@ -38,7 +38,6 @@
                 Discharge
               </th>
             </tr>
-            <tr>
               {% for patient in patients %}
               {% ifequal patient.encounter.patient_class 'INPATIENT' %}
               {% include 'covid/partials/recent_positive_row.html' %}
@@ -74,7 +73,6 @@
                 Discharge
               </tho>
             </tr>
-            <tr>
               {% for patient in patients %}
               {% ifequal patient.encounter.patient_class 'EMERGENCY' %}
               {% include 'covid/partials/recent_positive_row.html' %}
