@@ -1,0 +1,48 @@
+<tr>
+  <td>
+    {{ patient.demographics.hospital_number }}
+  </td>
+  <td>
+    <p>
+      <a href="/#/patient/{{ patient.covid_patient.patient.id }}">
+        {{ patient.demographics.name }}
+      </a>
+    </p>
+  </td>
+  <td>
+    {{ patient.demographics.date_of_birth }}
+  </td>
+  <td>
+    <p>
+      {{ patient.covid_patient.date_first_positive }}
+    </p>
+  </td>
+  <td>
+    {% for result in patient.ticker %}
+    <p>
+      {{ result.date_str }} {{ result.name }} {{ result.value }}
+    </p>
+    {% endfor %}
+  </td>
+  <td>
+    <p>
+      {{ patient.encounter.admit_datetime }}
+      {{ patient.encounter.ward }} {{ encounter.room }} {{ encounter.bed }}
+    </p>
+  </td>
+  <td>
+    <p>
+      {{ patient.encounter.speciality_name }}
+      {{ patient.encounter.consultant_name }}
+
+      <!-- {{ patient.encounter.last_update_type }} -->
+    </p>
+  </td>
+  <td>
+    <p>
+      {% if patient.encounter.discharge_datetime %}
+        {{ patient.encounter.discharge_datetime }}
+      {% endif %}
+    </p>
+  </td>
+</tr>

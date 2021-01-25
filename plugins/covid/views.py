@@ -128,61 +128,55 @@ class CovidAMTDashboardView(TemplateView):
 
 class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/recent_positives.html'
+    days_back = 10
 
     def get_queryset(self):
-        return models.CovidPatient.objects.exclude(patient_id=54289
-        ).filter(
-            patient__encounters__pv1_2_patient_class='INPATIENT',
-            patient__encounters__pv1_45_discharge_date_time=None,
-            patient__encounters__pv1_3_building='RFH'
+        start = datetime.date.today() - datetime.timedelta(days=self.days_back)
+
+        return models.CovidPatient.objects.filter(
+            date_first_positive__gt=start
         ).exclude(
-            patient__encounters__pv1_3_ward='RAL AE'
+            patient_id=54289 # Test patient
+        ).exclude(
+            patient__demographics__death_indicator=True
+        ).filter(
+            # Have they ever even been to the Free or are they
+            # Barnet / Chase Farm only?
+            patient__encounters__pv1_3_building='RFH'
         ).order_by('-date_first_positive').distinct()
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        patients = self.get_queryset()
+        covid_patients = self.get_queryset()
+        patients = []
 
-        covid_patients = []
+        for covid_patient in covid_patients:
 
-        rfh_wards  = collections.defaultdict(int)
-        recent_pos = collections.defaultdict(int)
+            encounter = Encounter.objects.filter(
+                patient=covid_patient.patient,
+                pv1_3_building='RFH',
+                pv1_44_admit_date_time__gt=datetime.date.today() - datetime.timedelta(days=self.days_back+28)
+            ).exclude(
+                msh_9_msg_type__startswith='S', # Appointment scheduling noise
+            ).exclude(
+                pv1_2_patient_class='OUTPATIENT'
+            ).exclude(
+                pv1_2_patient_class='RECURRING'
+            ).order_by('-pv1_44_admit_date_time').first()
 
-        for patient in patients:
+            if encounter:
 
-            admission = Encounter.objects.filter(
-                patient=patient.patient,
-                pv1_2_patient_class='INPATIENT',
-                pv1_45_discharge_date_time=None,
-                pv1_3_building='RFH'
-            ).order_by('-pv1_44_admit_date_time').first().to_dict()
+                patients.append(
+                    {
+                        'covid_patient' : covid_patient,
+                        'ticker'        : lab.get_covid_result_ticker(covid_patient.patient),
+                        'demographics'  : covid_patient.patient.demographics,
+                        'encounter'     : encounter.to_dict()
+                    }
+                )
 
-            rfh_wards[admission['ward']] += 1
-
-            if patient.date_first_positive == datetime.date(2020, 11, 22):
-                recent_pos[admission['ward']] += 1
-
-            covid_patients.append(
-                {
-                    'covid_patient': patient,
-                    'ticker'       : lab.get_covid_result_ticker(patient.patient),
-                    'current_admission': admission,
-                    'demographics': patient.patient.demographics
-                }
-            )
-
-        wards = []
-        for ward, count in dict(sorted(rfh_wards.items(), key=lambda item: -item[1])).items():
-            w = {'name': ward, 'count': count}
-            if ward in recent_pos:
-                w['recent_pos'] = recent_pos[ward]
-            wards.append(w)
-
-        context['covid_patients'] = covid_patients
-
-        context['wards'] = wards
-        context['recent_pos'] = recent_pos
+        context['patients'] = patients
         return context
 
 

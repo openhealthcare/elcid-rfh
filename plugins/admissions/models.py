@@ -32,47 +32,63 @@ class Encounter(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='encounters')
 
     # Note: Field - level comments here are from the documentation provided by the integration team
-    upstream_id                        = models.IntegerField(blank=True, null=True)              # Internal SQL Database identifier - Primary Key
-    msh_7                              = models.DateTimeField(blank=True, null=True)             # HL7 Message Datetime sent from Cerner
-    msh_9_msg_type                     = models.CharField(blank=True, null=True, max_length=4)   # Last HL7 Message update Type
+    # Internal SQL Database identifier - Primary Key
+    upstream_id                        = models.IntegerField(blank=True, null=True)
+    # HL7 Message Datetime sent from Cerner
+    msh_7                              = models.DateTimeField(blank=True, null=True)
+    # Last HL7 Message update Type
+    msh_9_msg_type                     = models.CharField(blank=True, null=True, max_length=4)
     evn_2_movement_date                = models.DateTimeField(blank=True, null=True)             # Cerner Event Datetime
     pid_3_mrn                          = models.CharField(blank=True, null=True, max_length=255) # Patient Hospital Number
     pid_3_nhs                          = models.CharField(blank=True, null=True, max_length=255) # Patient NHS Number
     pid_18_account_number              = models.CharField(blank=True, null=True, max_length=25)  # Encounter ID
     pv1_2_patient_class                = models.CharField(blank=True, null=True, max_length=50)
-    pv1_3_hospital                     = models.CharField(blank=True, null=True, max_length=50)  # Cerner Facility - Not very usefull
+    # Cerner Facility - Not very usefull
+    pv1_3_hospital                     = models.CharField(blank=True, null=True, max_length=50)
     pv1_3_ward                         = models.CharField(blank=True, null=True, max_length=50)  # Location
     pv1_3_room                         = models.CharField(blank=True, null=True, max_length=50)
     pv1_3_bed                          = models.CharField(blank=True, null=True, max_length=50)
     pv1_3_ambulatory_indicator         = models.CharField(blank=True, null=True, max_length=50)
-    pv1_3_building                     = models.CharField(blank=True, null=True, max_length=50)  # Cerner building - much better for identifying by site
+    # Cerner building - much better for identifying by site
+    pv1_3_building                     = models.CharField(blank=True, null=True, max_length=50)
     pv1_4_admission_type               = models.CharField(blank=True, null=True, max_length=50)
     pv1_6_hospital                     = models.CharField(blank=True, null=True, max_length=50)  # Previous Facility
     pv1_6_ward                         = models.CharField(blank=True, null=True, max_length=50)  # Previous Location
     pv1_6_room                         = models.CharField(blank=True, null=True, max_length=50)  # Previous Room
     pv1_6_bed                          = models.CharField(blank=True, null=True, max_length=50)  # Previous Bed
-    pv1_7_consultant_code              = models.CharField(blank=True, null=True, max_length=50)  # Encounter clinician NACS code
+    # Encounter clinician NACS code
+    pv1_7_consultant_code              = models.CharField(blank=True, null=True, max_length=50)
     consultant_name                    = models.CharField(blank=True, null=True, max_length=50)  # Encounter clinician name
     # Encounter Speciality code
     # 3 digit = National speciality
     # 5 digit = local Treat function where 1st 3 digits in the parent national speciality code
     pv1_10_speciality_code             = models.CharField(blank=True, null=True, max_length=50)
-    speciality_name                    = models.CharField(blank=True, null=True, max_length=50)  # Encounter Speciality Description
+    # Encounter Speciality Description
+    speciality_name                    = models.CharField(blank=True, null=True, max_length=50)
     pv1_14_admission_source            = models.CharField(blank=True, null=True, max_length=50)
     pv1_18_visit_patient_type_original = models.CharField(blank=True, null=True, max_length=50)
     pv1_18_visit_patient_type_product  = models.CharField(blank=True, null=True, max_length=50)
-    pv1_19_hsn                         = models.CharField(blank=True, null=True, max_length=50)  # Cerner Encounter Visit ID
+    # Cerner Encounter Visit ID
+    pv1_19_hsn                         = models.CharField(blank=True, null=True, max_length=50)
     pv1_41_account_status              = models.CharField(blank=True, null=True, max_length=50)
-    pd1_3_practice_code                = models.CharField(blank=True, null=True, max_length=50)  # Registered GP Practice Code
-    pd1_4_national_code                = models.CharField(blank=True, null=True, max_length=50)  # Registered GP National Code
-    pv1_44_admit_date_time             = models.DateTimeField(blank=True, null=True)             # Cerner Encounter Admission Datetime
-    pv1_45_discharge_date_time         = models.DateTimeField(blank=True, null=True)             # Cerner Encounter Discharge Datetime
+    # Registered GP Practice Code
+    pd1_3_practice_code                = models.CharField(blank=True, null=True, max_length=50)
+    # Registered GP National Code
+    pd1_4_national_code                = models.CharField(blank=True, null=True, max_length=50)
+    # Cerner Encounter Admission Datetime
+    pv1_44_admit_date_time             = models.DateTimeField(blank=True, null=True)
+    # Cerner Encounter Discharge Datetime
+    pv1_45_discharge_date_time         = models.DateTimeField(blank=True, null=True)
     pv2_2_patient_type                 = models.CharField(blank=True, null=True, max_length=50)
     fin_hsn                            = models.CharField(blank=True, null=True, max_length=50)
-    last_updated                       = models.DateTimeField(blank=True, null=True)             # SQL database update timestamp
-    insert_date                        = models.DateTimeField(blank=True, null=True)             # SQL database insert timestamp
-    parent_mrn                         = models.CharField(blank=True, null=True, max_length=20)  # MRN of parent record following a Cerner Merge
-    comments                           = models.TextField(blank=True, null=True)                 # Comments explaining that the patient was merged
+    # SQL database update timestamp
+    last_updated                       = models.DateTimeField(blank=True, null=True)
+    # SQL database insert timestamp
+    insert_date                        = models.DateTimeField(blank=True, null=True)
+    # MRN of parent record following a Cerner Merge
+    parent_mrn                         = models.CharField(blank=True, null=True, max_length=20)
+    # Comments explaining that the patient was merged
+    comments                           = models.TextField(blank=True, null=True)
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'ID'                                : 'upstream_id',
