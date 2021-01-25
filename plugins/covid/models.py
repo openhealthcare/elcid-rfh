@@ -98,6 +98,20 @@ class CovidAcuteMedicalDashboardReportingDay(models.Model):
     non_covid         = models.IntegerField()
 
 
+class CovidVaccination(PatientSubrecord):
+    """
+    Vaccination details for this patient
+    """
+    VACCINE_CHOICES = enum(
+        'Pfizer-BioNTech',
+        'Moderna',
+        'Oxford Astrazeneca',
+    )
+    vaccine     = models.CharField(max_length=200, blank=True, null=True, choices=VACCINE_CHOICES)
+    dose_1_date = models.DateField(blank=True, null=True)
+    dose_2_date = models.DateField(blank=True, null=True)
+
+
 class CovidAdmission(EpisodeSubrecord):
     """
     An admission to hospital and associated details
