@@ -166,7 +166,11 @@ class Encounter(models.Model):
         }
 
         if self.msh_9_msg_type:
-            serialized['last_update_type'] = constants.MESSAGE_CODES[self.msh_9_msg_type]
+            try:
+                serialized['last_update_type'] = constants.MESSAGE_CODES[self.msh_9_msg_type]
+            except KeyError:
+                logger.error(f'Unknown Message Code {self.msh_9_msg_type}')
+                serialized['last_update_type'] = 'UNKNOWN'
 
         serialized['hospital'] = constants.BUILDING_CODES.get(self.pv1_3_building, self.pv1_3_building)
         serialized['patient_id'] = self.patient_id
