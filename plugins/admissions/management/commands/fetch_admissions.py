@@ -1,28 +1,34 @@
 """
 Management command to fetch all encounters for our patients
 """
+import datetime
+import time
 import traceback
 
 from django.core.management import BaseCommand
+from django.utils import timezone
 from opal.models import Patient
 
-from plugins.admissions import loader, logger
+from plugins.monitoring.models import Fact
 
+from plugins.admissions import loader, logger, models
 
 class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
-        failure_count = 0
-        for patient in Patient.objects.all():
-            try:
-                loader.load_encounters(patient)
-            except Exception:
-                failure_count += 1
+        try:
+            t1 = time.time()
+            loader.load_recent_encounters()
+            t2 = time.time()
 
-        if failure_count:
-            msg = "Failed to load admissions for {} patients \n".format(
-                failure_count
-            )
-            msg += "Last exception \n{}".format(traceback.format_exc())
+            when             = timezone.make_aware(datetime.datetime.fromtimestamp(t1))
+            minutes_taken    = int(int(t2-t1)/60)
+            total_encounters = models.Encounter.objects.all().count()
+
+            Fact(when=when, label='Encounter Load Minutes', value=minutes_taken).save()
+            Fact(when=when, label='Total Encounters', value=total_encounters).save()
+
+        except Exception:
+            msg += "Loading encounters:  \n{}".format(traceback.format_exc())
             logger.error(msg)
         return
