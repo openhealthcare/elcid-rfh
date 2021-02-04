@@ -118,7 +118,7 @@ def load_recent_encounters():
     """
     api = ProdAPI()
 
-    timestamp = datetime.datetime.now() - datetime.timedelta(days=2)
+    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
 
     encounters = api.execute_hospital_query(
         Q_GET_RECENT_ENCOUNTERS,
