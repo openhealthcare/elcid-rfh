@@ -1059,7 +1059,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     # write_cron_appointment_load(new_env)
     # write_cron_imaging_load(new_env)
     # write_cron_discharge_load(new_env)
-#    write_cron_admission_load(new_env)
+    write_cron_admission_load(new_env)
     write_cron_disk_check(new_env)
     write_cron_backup_size(new_env)
     write_cron_calculate_dashboard(new_env)
