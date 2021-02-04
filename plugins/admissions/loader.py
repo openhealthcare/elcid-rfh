@@ -5,11 +5,21 @@ import datetime
 
 from django.db.models import DateTimeField
 from django.utils import timezone
+from opal.models import Patient
 
+from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
 from plugins.admissions.models import Encounter
 from plugins.admissions import logger
+
+
+Q_GET_RECENT_ENCOUNTERS = """
+SELECT *
+FROM CRS_ENCOUNTERS
+WHERE
+LAST_UPDATED > @timestamp
+"""
 
 
 Q_GET_ALL_PATIENT_ENCOUNTERS = """
@@ -76,7 +86,7 @@ def load_encounters(patient):
 
     encounters = api.execute_hospital_query(
         Q_GET_ALL_PATIENT_ENCOUNTERS,
-        params={'mrn': demographic.hospital_number, 'insert_date': insert_date}
+        params={'mrn': demographic.hospital_number}
     )
     for encounter in encounters:
         save_encounter(encounter, patient)
@@ -87,3 +97,37 @@ def load_encounters(patient):
             status = patient.patientencounterstatus_set.get()
             status.has_encounters = True
             status.save()
+
+
+def load_recent_encounters():
+    """
+    Query upstream for all encounters updated in a recent period.
+
+    Updated is either more recent, or equivalent to inserted.
+    This way we catch new encounters, and updates to existing encounters
+    with a single query.
+
+    We filter the data returned from upstream against patients in the
+    elCID cohord, discarding data about patients not in our cohort.
+
+    It is unfortnately unworkably slow to either query for our patients
+    by identifier.
+
+    If the patient is one we are interested in we either create or update
+    our copy of the encounter data using the upstream ID.
+    """
+    api = ProdAPI()
+
+    timestamp = datetime.datetime.now() - datetime.timedelta(days=2)
+
+    encounters = api.execute_hospital_query(
+        Q_GET_RECENT_ENCOUNTERS,
+        params={'timestamp': timestamp}
+    )
+    for encounter in encounters:
+        mrn = encounter['PID_3_MRN']
+
+        if Demographics.objects.filter(hospital_number=mrn).exists():
+            patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
+
+            save_encounter(encounter, patient)
