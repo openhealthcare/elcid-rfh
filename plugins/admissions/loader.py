@@ -15,8 +15,8 @@ from plugins.admissions import logger
 Q_GET_ALL_PATIENT_ENCOUNTERS = """
 SELECT *
 FROM CRS_ENCOUNTERS
-WHERE PID_3_MRN = @mrn
-AND insert_date > @insert_date
+WHERE
+PID_3_MRN = @mrn
 """
 
 
@@ -25,7 +25,13 @@ def save_encounter(encounter, patient):
     Given a dictionary of ENCOUNTER data from the upstream database,
     and the PATIENT for whom it concerns, save it.
     """
-    our_encounter = Encounter(patient=patient)
+    our_encounter, created = Encounter.objects.get_or_create(
+        patient=patient, upstream_id=encounter['ID']
+    )
+
+    if not created:
+        logger.info('Updating existing encounter')
+
     for k, v in encounter.items():
 
         if v: # Ignore for empty / nullvalues
@@ -55,7 +61,8 @@ def save_encounter(encounter, patient):
 
     our_encounter.save()
     logger.info('Saved encounter {}'.format(our_encounter.pk))
-    return
+
+    return our_encounter, created
 
 
 def load_encounters(patient):
@@ -64,14 +71,8 @@ def load_encounters(patient):
     """
     api = ProdAPI()
 
-    demographic = patient.demographics()
-
+    demographic     = patient.demographics()
     encounter_count = patient.encounters.count()
-
-    if encounter_count > 0:
-        insert_date = patient.encounters.all().order_by('insert_date').last().insert_date
-    else:
-        insert_date = datetime.datetime(1971, 1, 1, 1, 1, 1)
 
     encounters = api.execute_hospital_query(
         Q_GET_ALL_PATIENT_ENCOUNTERS,
