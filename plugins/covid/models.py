@@ -290,11 +290,11 @@ class CovidFollowUpCall(EpisodeSubrecord):
     ONE_TO_TEN           = enum('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
     ONE_TO_NINE          = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
     MRC_CHOICES          = enum('1', '2', '3', '4', '5', 'N/A')
-    ZERO_TO_THREE        = (
-        ('0', '(0) Not At All'),
-        ('1', '(1) Several days'),
-        ('2', '(2) More than half the days'),
-        ('3', '(3) Nearly every day')
+    ZERO_TO_THREE        = enum(
+        '(0) Not At All',
+        '(1) Several days',
+        '(2) More than half the days',
+        '(3) Nearly every day'
     )
     ETHNICITY_CODE       = enum("White", "Black", "Asian", "Other")
 
@@ -684,11 +684,11 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     TREND_CHOICES       = enum('Same', 'Better', 'Worse', 'Back to Baseline')
     LIMITED_BY_CHOICES  = enum('SOB', 'Fatigue', 'Other')
     EXERCISE_CHOICES    = enum('Reduced', 'Back to baseline', 'Unlimited')
-    ZERO_TO_THREE       = (
-        ('0', '(0) Not At All'),
-        ('1', '(1) Several days'),
-        ('2', '(2) More than half the days'),
-        ('3', '(3) Nearly every day')
+    ZERO_TO_THREE       = enum(
+        '(0) Not At All',
+        '(1) Several days',
+        '(2) More than half the days',
+        '(3) Nearly every day'
     )
 
     when               = models.DateTimeField(blank=True, null=True)
