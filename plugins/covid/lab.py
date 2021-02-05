@@ -197,6 +197,12 @@ def get_result(test):
     )
     if observations.count() == 0:
         return
+
+    # Lateral flow tests sometimes have a blank first line
+    # followed by a useful second line. Sometimes not.
+    if observations.count() == 2:
+        if observations[0].observation_value == '.{}':
+            return observations[1].observation_value
     return observations[0].observation_value
 
 
