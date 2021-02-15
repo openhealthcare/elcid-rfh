@@ -23,12 +23,14 @@
       <ul class="list-group">
         <li class="list-group-item " ng-repeat="test_name in resultView.test_order"
             ng-show="resultView.show(test_name)">
-          <h5 class="">[[ test_name ]]</h5>
+          <h5 class="">
+            [[ test_name ]]
+          </h5>
 
           <div ng-if="resultView.lab_tests[test_name].long_form">
 
-            <div ng-repeat="instance in resultView.lab_tests[test_name].instances | limitTo:10"
-                 class="row content-offset-below-10">
+            <div ng-repeat="instance in resultView.lab_tests[test_name].instances"
+                 class="row content-offset-below-10" ng-show="resultView.showAll[test_name] || $index < 11">
 
               <div class="col-md-3">
                 [[ instance.lab_number ]]
@@ -50,6 +52,14 @@
                 </div>
               </div>
 
+            </div>
+
+            <div ng-show="!resultView.showAll[test_name] && resultView.lab_tests[test_name].instances.length > 10">
+              <a ng-click="resultView.toggleShowAll(test_name)"
+                 class="orange-link pointer"
+                 >
+                Show [[ resultView.lab_tests[test_name].instances.length - 10 ]] more
+              </a>
             </div>
 
           </div>
