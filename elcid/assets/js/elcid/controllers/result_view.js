@@ -5,15 +5,16 @@ angular.module('opal.controllers').controller('ResultView', function(
     var vm = this;
 
     this.labTests = [];
+    this.showAll = {};
 
     this.parseFloat = parseFloat;
     this.Math = window.Math;
 
     this.splitObservation = function(observation){
-      if(observation){
-        return observation.split('~');
-      }
-      return [];
+        if(observation){
+            return observation.split('~');
+        }
+        return [];
     }
 
     this.isNumber = _.isNumber;
@@ -49,6 +50,10 @@ angular.module('opal.controllers').controller('ResultView', function(
 
         });
     };
+
+    this.toggleShowAll = function(what){
+        vm.showAll[what] = true;
+    }
 
     vm.getLabTests($scope.patient);
 });
