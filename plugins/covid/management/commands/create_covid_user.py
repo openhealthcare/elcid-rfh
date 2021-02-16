@@ -35,7 +35,6 @@ class Command(BaseCommand):
 
         user.first_name = username
         user.email = email
-        user.is_staff = True
         user.save()
 
         profile, _ = UserProfile.objects.get_or_create(user=user)
