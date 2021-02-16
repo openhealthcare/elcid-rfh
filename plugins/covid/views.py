@@ -311,6 +311,9 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
                 if observation:
                     labs.append(observation.observation_value.split('~')[0])
                     labs.append(observation.observation_datetime)
+                else:
+                    labs += ["", ""]
+
 
         return labs
 
