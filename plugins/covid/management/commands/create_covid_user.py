@@ -34,6 +34,7 @@ class Command(BaseCommand):
         user.set_password(password)
 
         user.first_name = username
+        user.email = email
         user.is_staff = True
         user.save()
 
