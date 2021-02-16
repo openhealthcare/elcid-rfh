@@ -122,8 +122,13 @@ class CovidAMTDashboardView(TemplateView):
         non_covid_avg += rolling_average(non_covid_timeseries[1:])
 
         context['take_data'] = [ticks, take_timeseries, take_avg]
+        context['take7_data'] = [['x'] + ticks[-7:], ['7 Day Take'] + take_timeseries[-7:]]
+
         context['covid_data'] = [ticks, covid_timeseries, covid_avg]
+        context['covid7_data'] = [['x'] + ticks[-7:], ['7 Day Covid Take'] + covid_timeseries[-7:]]
+
         context['non_covid_data'] = [ticks, non_covid_timeseries, non_covid_avg]
+        context['non_covid7_data'] = [['x'] + ticks[-7:], ['7 Day Non Covid Take'] + non_covid_timeseries[-7:]]
 
         return context
 
