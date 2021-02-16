@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('email')
 
-    def handle(self, *a, **k):
+    def handle(self, *args, **kwargs):
 
         email = kwargs['email']
         username, _ = email.split('@')
