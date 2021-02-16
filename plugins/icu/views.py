@@ -87,7 +87,8 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
                 'last_review' : episode.microbiologyinput_set.filter(
                     reason_for_interaction_fk=icu_round_reason
                 ).order_by('when').last(),
-                'handoverlocation' : patient.icuhandoverlocation_set.get()
+                'handoverlocation' : patient.icuhandoverlocation_set.get(),
+                'infection_note' : episode.infectionservicenote_set.get().text
             }
             info.append(record)
 
