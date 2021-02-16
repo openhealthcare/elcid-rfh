@@ -1112,3 +1112,10 @@ class MicroInputICURoundRelation(models.Model):
         if self.icu_round_id:
             self.icu_round.delete()
         self.delete()
+
+
+class InfectionServiceNote(EpisodeSubrecord):
+    _is_singleton = True
+    _icon = 'fa fa-sticky-note'
+
+    text = models.CharField(max_length=200, blank=True, null=True)

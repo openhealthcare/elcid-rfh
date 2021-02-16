@@ -44,6 +44,7 @@
                         <th>Last Review</th>
                         <th>By</th>
                         <th></th>
+                        <th></th>
                       </tr>
                       {% for patient in ward.patients %}
                         <tr>
@@ -70,8 +71,13 @@
                           </td>
                           <td>
                             {% ifequal patient.last_review.when.date today %}
-                              <i class="fa fa-sticky-note green fa-2x"></i>
+                              <i class="fa fa-comments green fa-2x"></i>
                             {% endifequal %}
+                          </td>
+                          <td>
+                            {% if patient.infection_note %}
+                            <i class="fa fa-sticky-note fa-lg" title="{{ patient.infection_note }}"></i>
+                            {% endif %}
                           </td>
                         </tr>
                       {% endfor %}
