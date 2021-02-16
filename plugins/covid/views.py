@@ -54,8 +54,8 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
                 date__lt=datetime.date.today() + datetime.timedelta(days=1)
             ).aggregate(Sum(sum_field))['{}__sum'.format(sum_field)]
 
-#        yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=1))
-        yesterday = None
+        yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=1))
+#        yesterday = None
         context['yesterday'] = yesterday
 
         ticks      = ['x']
