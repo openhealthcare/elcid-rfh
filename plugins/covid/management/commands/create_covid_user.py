@@ -64,5 +64,5 @@ Feel free to contact support@openhealthcare.org.uk if you encounter any issues."
             title,
             plain_message,
             settings.DEFAULT_FROM_EMAIL,
-            email
+            [email]
         )
