@@ -213,6 +213,8 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'elcid_id',
         'MRN',
         'date_of_birth',
+        'death_indicator',
+        'date_of_death',
         'sex',
         'ethnicity_pas',
         'ethnicity_fu',
@@ -274,26 +276,6 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'temperature'
     ]
 
-# National Early Warning Score
-# Continuous
-
-# Died during hospitalisation
-# Binary
-
-# Time to death
-# Continuous
-
-# Invasive ventilation
-# Binary
-
-# Time to ventilation
-# Continuous
-
-# Non-invasive ventilation
-# Binary
-
-# Time to Non-invasive ventilation
-# Continuous
 
     def get_admission_labs(self, patient, admission_date):
 
@@ -360,6 +342,8 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             patient.id,
             demographics.hospital_number,
             str(demographics.date_of_birth),
+            demographics.death_indicator,
+            str(demographics.date_of_death),
             demographics.sex,
             demographics.ethnicity,
             call.ethnicity,
