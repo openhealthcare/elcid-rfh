@@ -396,7 +396,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             admission.heart_rate,
             admission.respiratory_rate,
             admission.sao2,
-            admission.fio2,
+            admission.fi02,
             admission,temperature,
         ])
 
