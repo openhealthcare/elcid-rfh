@@ -257,7 +257,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('file')
-        parser.add_argument('--barnet')
+        parser.add_argument('--barnet', action='store_true')
 
     def load_patient(self, patient):
 
@@ -689,7 +689,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
 
         self.hospital_site = 'RFH'
-        if 'barnet' in kwargs:
+
+        if kwargs['barnet']:
             self.hospital_site = 'Barnet'
 
         with open(kwargs['file'], 'r') as fh:
