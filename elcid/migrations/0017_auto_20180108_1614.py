@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         ('elcid', '0016_auto_20171212_1252'),
     ]
 
+    run_before = [
+        ('opal', '0038_auto_20191206_1449'),
+    ]
+
     operations = [
         migrations.AlterField(
             model_name='antimicrobial',
