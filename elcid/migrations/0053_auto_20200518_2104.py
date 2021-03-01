@@ -69,6 +69,10 @@ class Migration(migrations.Migration):
         ('elcid', '0052_auto_20200518_2059'),
     ]
 
+    run_before = [
+        ('opal', '0038_auto_20191206_1449'),
+    ]
+
     operations = [
         migrations.RunPython(
             forwards, backwards
