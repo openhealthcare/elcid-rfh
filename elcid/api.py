@@ -297,7 +297,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
     def get_antifungal_observations(self, patient):
         """
-        If the patient is on the chronic antifungal list, add some observations
+        If the patient is on the chronic or acute antifungal lists, add some observations
         """
         ticker = []
 
