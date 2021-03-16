@@ -226,6 +226,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'ethnicity_coded',
         'height',
         'weight',
+        'hospital_site',
         'date_of_admission',
         'duration_of_symptoms',
         'cough',
@@ -278,7 +279,37 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'admission_respiratory_rate',
         'admission_sao2',
         'admission_fio2',
-        'temperature'
+        'temperature',
+        'social_circumstances',
+        'shielding_status',
+        'changes_to_medication',
+        'followup_breathlessness',
+        'max_breathlessness',
+        'followup_cough',
+        'max_cough',
+        'followup_fatigue',
+        'max_fatigue',
+        'followup_sleep_quality',
+        'max_sleep_quality',
+        'followup_chest_pain',
+        'followup_chest_tightness',
+        'followup_myalgia',
+        'followup_anosmia',
+        'followup_loss_of_taste',
+        'followup_chills',
+        'followup_anorexia',
+        'followup_abdominal_pain',
+        'followup_diarrhoea',
+        'followup_peripheral_oedema',
+        'followup_confusion',
+        'followup_focal_weakness',
+        'followup_back_to_normal',
+        'followup_baseline_health_proximity',
+        'followup_back_to_work',
+        'followup_current_et',
+        'followup_mrc_dyspnoea_scale',
+        'followup_current_cfs',
+        'follow_up_outcome'
     ]
 
 
@@ -358,6 +389,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             call.ethnicity_code,
             call.height,
             call.weight,
+            call.hospital_site,
             admission.date_of_admission,
             admission.duration_of_symptoms,
             admission.cough,
@@ -390,15 +422,47 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         )
         row.append(';'.join([report.covid_code for report in coded_reports]))
 
-        row.append([
+        row += [
             admission.systolic_bp,
             admission.diastolic_bp,
             admission.heart_rate,
             admission.respiratory_rate,
             admission.sao2,
             admission.fi02,
-            admission,temperature,
-        ])
+            admission.temperature,
+        ]
+        row += [
+            call.social_circumstances,
+            call.shielding_status,
+            call.changes_to_medication,
+            call.current_breathlessness,
+            call.max_breathlessness,
+            call.current_cough,
+            call.max_cough,
+            call.current_fatigue,
+            call.max_fatigue,
+            call.current_sleep_quality,
+            call.max_sleep_quality,
+            call.chest_pain,
+            call.chest_tightness,
+            call.myalgia,
+            call.anosmia,
+            call.loss_of_taste,
+            call.chills,
+            call.anorexia,
+            call.abdominal_pain,
+            call.diarrhoea,
+            call.peripheral_oedema,
+            call.confusion,
+            call.focal_weakness,
+            call.back_to_normal,
+            call.baseline_health_proximity,
+            call.back_to_work,
+            call.current_et,
+            call.mrc_dyspnoea_scale,
+            call.current_cfs,
+            call.follow_up_outcome
+        ]
 
         return row
 
@@ -413,7 +477,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
 
         if self.request.user.username in constants.DOWNLOAD_USERS:
 
-            for patient in models.CovidPatient.objects.all()[:10]:
+            for patient in models.CovidPatient.objects.all():
                 writer.writerow(self.get_row(patient))
 
         return response
