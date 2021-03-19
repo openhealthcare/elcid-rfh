@@ -144,8 +144,8 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
             date_first_positive__gt=start
         ).exclude(
             patient_id=54289 # Test patient
-        ).exclude(
-            patient__demographics__death_indicator=True
+#        ).exclude(
+#            patient__demographics__death_indicator=True
         ).filter(
             # Have they ever even been to the Free or are they
             # Barnet / Chase Farm only?
@@ -157,6 +157,7 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
 
         covid_patients = self.get_queryset()
         patients = []
+        other_patients = []
 
         for covid_patient in covid_patients:
 
@@ -173,7 +174,6 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
             ).order_by('-pv1_44_admit_date_time').first()
 
             if encounter:
-
                 patients.append(
                     {
                         'covid_patient' : covid_patient,
@@ -182,8 +182,18 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
                         'encounter'     : encounter.to_dict()
                     }
                 )
+            else:
+                other_patients.append(
+                     {
+                        'covid_patient' : covid_patient,
+                        'ticker'        : lab.get_covid_result_ticker(covid_patient.patient),
+                        'demographics'  : covid_patient.patient.demographics,
+                        'encounter'     : None
+                    }
+                )
 
         context['patients'] = patients
+        context['other_patients'] = other_patients
         return context
 
 

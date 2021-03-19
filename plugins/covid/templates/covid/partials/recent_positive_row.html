@@ -1,4 +1,4 @@
-<tr>
+<tr {% if patient.demographics.death_indicator %} class="text-muted" {% endif %} >
   <td>
     {{ patient.demographics.hospital_number }}
   </td>
@@ -34,7 +34,7 @@
     <p>
       {{ patient.encounter.speciality_name }}
       {{ patient.encounter.consultant_name }}
-
+      {{ patient.encounter.patient_class }}
       <!-- {{ patient.encounter.last_update_type }} -->
     </p>
   </td>
