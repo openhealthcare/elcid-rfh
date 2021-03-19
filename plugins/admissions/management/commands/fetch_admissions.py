@@ -25,10 +25,10 @@ class Command(BaseCommand):
             minutes_taken    = int(int(t2-t1)/60)
             total_encounters = models.Encounter.objects.all().count()
 
-            Fact(when=when, label='Encounter Load Minutes', value=minutes_taken).save()
-            Fact(when=when, label='Total Encounters', value=total_encounters).save()
+            Fact(when=when, label='Encounter Load Minutes', value_int=minutes_taken).save()
+            Fact(when=when, label='Total Encounters', value_int=total_encounters).save()
 
         except Exception:
-            msg += "Loading encounters:  \n{}".format(traceback.format_exc())
+            msg = "Loading encounters:  \n{}".format(traceback.format_exc())
             logger.error(msg)
         return
