@@ -316,13 +316,9 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
                 data = []
                 tests = lab_test_models.LabTest.objects.filter(
                     test_name=test_name, patient=patient
-                ).order_by('-datetime_ordered')
+                ).order_by('-datetime_ordered')[:2]
 
                 for test in tests:
-                    # Don't flood the display, only the last 3 results
-                    if len(data) > 2:
-                        continue
-
                     observations = test.observation_set.all()
 
                     timestamp = observations[0].observation_datetime
@@ -334,7 +330,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
                         if observation.observation_name in self.ANTIFUNGAL_TESTS[test_name]:
                             result_string += ' {} {}'.format(
                                 self.ANTIFUNGAL_SHORT_NAMES[observation.observation_name],
-                                observation.observation_value
+                                observation.observation_value.split('~')[0]
                             )
 
                     display_name = '{} {}'.format(
@@ -342,7 +338,6 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
                         test.site.replace('&', ' ').split(' ')[0]
                     )
 
-                    data.append(True)
                     ticker.append(
                         {
                             'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
@@ -352,8 +347,6 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
                         }
                     )
 
-            ticker = list(reversed(sorted(ticker, key=lambda i: i['timestamp'])))
-
         return ticker
 
 
@@ -362,7 +355,11 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         Some results are displayed as a ticker in chronological
         order.
         """
-        return covid_lab.get_covid_result_ticker(patient) + self.get_antifungal_observations(patient)
+        ticker =  covid_lab.get_covid_result_ticker(patient)
+        ticker += self.get_antifungal_observations(patient)
+        ticker = list(reversed(sorted(ticker, key=lambda i: i['timestamp'])))
+
+        return ticker
 
     def get_recent_dates_to_observations(self, qs):
         """
