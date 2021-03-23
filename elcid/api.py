@@ -295,14 +295,49 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
     NUM_RESULTS = 5
 
+
+    def _get_antifungal_ticker_dict(self, test):
+        """
+        Given a lab test instance, return a dict in the lab results ticker format
+        """
+        observations = test.observation_set.all()
+
+        timestamp = observations[0].observation_datetime
+        test_name = test.test_name
+
+        result_string = ''
+
+        for observation in observations:
+
+            if observation.observation_name in self.ANTIFUNGAL_TESTS[test_name]:
+                result_string += ' {} {}'.format(
+                    self.ANTIFUNGAL_SHORT_NAMES[observation.observation_name],
+                    observation.observation_value.split('~')[0]
+                )
+
+        display_name = '{} {}'.format(
+            self.ANTIFUNGAL_SHORT_NAMES[test_name],
+            test.site.replace('&', ' ').split(' ')[0]
+        )
+
+
+        return {
+            'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
+            'timestamp': timestamp,
+            'name'     : display_name,
+            'value'    : result_string.strip()
+        }
+
     def get_antifungal_observations(self, patient):
         """
-        If the patient is on the chronic or acute antifungal lists, add some observations
+        If the patient is on the chronic or acute antifungal lists, add some observations.
+
+        Specifically up to 3 per sample site for the tests in self.ANTIFUNGAL_TESTS
         """
         ticker = []
 
         is_antifungal = Tagging.objects.filter(
-        episode__patient=patient, archived=False, value=patient_lists.Antifungal.tag).exists()
+            episode__patient=patient, archived=False, value=patient_lists.Antifungal.tag).exists()
 
         if not is_antifungal:
             antifungal_episodes = emodels.ChronicAntifungal.antifungal_episodes()
@@ -312,40 +347,20 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
         if is_antifungal:
 
+            ticker_test_counts = defaultdict(int)
+
             for test_name in self.ANTIFUNGAL_TESTS:
                 data = []
                 tests = lab_test_models.LabTest.objects.filter(
                     test_name=test_name, patient=patient
-                ).order_by('-datetime_ordered')[:2]
+                ).order_by('-datetime_ordered')
 
                 for test in tests:
-                    observations = test.observation_set.all()
+                    test_tuple = (test.test_name, test.site.replace('&', ' ').split(' ')[0])
 
-                    timestamp = observations[0].observation_datetime
-
-                    result_string = ''
-
-                    for observation in observations:
-
-                        if observation.observation_name in self.ANTIFUNGAL_TESTS[test_name]:
-                            result_string += ' {} {}'.format(
-                                self.ANTIFUNGAL_SHORT_NAMES[observation.observation_name],
-                                observation.observation_value.split('~')[0]
-                            )
-
-                    display_name = '{} {}'.format(
-                        self.ANTIFUNGAL_SHORT_NAMES[test_name],
-                        test.site.replace('&', ' ').split(' ')[0]
-                    )
-
-                    ticker.append(
-                        {
-                            'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
-                            'timestamp': timestamp,
-                            'name'     : display_name,
-                            'value'    : result_string.strip()
-                        }
-                    )
+                    if ticker_test_counts[test_tuple] < 3:
+                        ticker_test_counts[test_tuple] += 1
+                        ticker.append(self._get_antifungal_ticker_dict(test))
 
         return ticker
 
