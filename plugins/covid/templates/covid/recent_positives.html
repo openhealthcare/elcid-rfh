@@ -4,7 +4,7 @@
       <h1>
         Recent Covid Positives ({{ patients|length }})
       </h1>
-      <h4>Inpatients and A&E at RFH from the last {{ view.days_back }} days.</h4>
+      <h4>New RFH positives from the last {{ view.days_back }} days.</h4>
     </div> <!-- heading -->
     <div class="panel-body">
 
@@ -14,71 +14,39 @@
             Inpatient
           </h2>
           <table class="table table-striped">
-            <tr>
-              <th>
-                MRN
-              </th>
-              <th>
-                Name
-              </th>
-              <th>
-                DOB
-              </th>
-              <th>
-                Date Positive
-              </th>
-              <th>
-                Covid Results
-              </th>
-              <th>
-                Admission
-              </th>
-              <th></th> <!-- Encounter Speciality -->
-              <th>
-                Discharge
-              </th>
-            </tr>
-              {% for patient in patients %}
-              {% ifequal patient.encounter.patient_class 'INPATIENT' %}
-              {% include 'covid/partials/recent_positive_row.html' %}
-              {% endifequal %}
-              {% endfor %}
+            {% include 'covid/partials/recent_positive_header.html' %}
+            {% for patient in patients %}
+            {% ifequal patient.encounter.patient_class 'INPATIENT' %}
+            {% include 'covid/partials/recent_positive_row.html' %}
+            {% endifequal %}
+            {% endfor %}
           </table>
 
           <h2>
             Emergency
           </h2>
           <table class="table table-striped">
-            <tr>
-              <th>
-                MRN
-              </th>
-              <th>
-                Name
-              </th>
-              <th>
-                DOB
-              </th>
-              <th>
-                Date Positive
-              </th>
-              <th>
-                Covid Results
-              </th>
-              <th>
-                Admission
-              </th>
-              <th></th> <!-- Encounter Speciality -->
-              <th>
-                Discharge
-              </tho>
-            </tr>
-              {% for patient in patients %}
-              {% ifequal patient.encounter.patient_class 'EMERGENCY' %}
-              {% include 'covid/partials/recent_positive_row.html' %}
-              {% endifequal %}
-              {% endfor %}
+            {% include 'covid/partials/recent_positive_header.html' %}
+            {% for patient in patients %}
+            {% ifequal patient.encounter.patient_class 'EMERGENCY' %}
+            {% include 'covid/partials/recent_positive_row.html' %}
+            {% endifequal %}
+            {% endfor %}
           </table>
+
+          {% if other_patients|length > 0 %}
+          <h2>
+            Other
+          </h2>
+          <table class="table table-striped">
+            {% include 'covid/partials/recent_positive_header.html' %}
+            {% for patient in other_patients %}
+            {% ifequal patient.encounter.patient_class 'EMERGENCY' %}
+            {% include 'covid/partials/recent_positive_row.html' %}
+            {% endifequal %}
+            {% endfor %}
+          </table>
+          {% endif %}
 
         </div>
       </div>

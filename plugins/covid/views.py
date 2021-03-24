@@ -144,8 +144,8 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
             date_first_positive__gt=start
         ).exclude(
             patient_id=54289 # Test patient
-        ).exclude(
-            patient__demographics__death_indicator=True
+#        ).exclude(
+#            patient__demographics__death_indicator=True
         ).filter(
             # Have they ever even been to the Free or are they
             # Barnet / Chase Farm only?
@@ -157,6 +157,7 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
 
         covid_patients = self.get_queryset()
         patients = []
+        other_patients = []
 
         for covid_patient in covid_patients:
 
@@ -173,7 +174,6 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
             ).order_by('-pv1_44_admit_date_time').first()
 
             if encounter:
-
                 patients.append(
                     {
                         'covid_patient' : covid_patient,
@@ -182,8 +182,18 @@ class CovidRecentPositivesView(LoginRequiredMixin, TemplateView):
                         'encounter'     : encounter.to_dict()
                     }
                 )
+            else:
+                other_patients.append(
+                     {
+                        'covid_patient' : covid_patient,
+                        'ticker'        : lab.get_covid_result_ticker(covid_patient.patient),
+                        'demographics'  : covid_patient.patient.demographics,
+                        'encounter'     : None
+                    }
+                )
 
         context['patients'] = patients
+        context['other_patients'] = other_patients
         return context
 
 
@@ -224,10 +234,40 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'ethnicity_pas',
         'ethnicity_fu',
         'ethnicity_coded',
+        'post_code',
         'height',
         'weight',
         'hospital_site',
+        'hypertension',
+        'ace_inhibitor',
+        'angiotension_blocker',
+        'nsaid',
+        'ihd',
+        'heart_failure',
+        'arrhythmia',
+        'cerebrovascular_disease',
+        'type_1_diabetes',
+        'type_2_diabetes',
+        'copd',
+        'asthma',
+        'ild',
+        'other_lung_condition',
+        'ckd',
+        'active_malignancy',
+        'active_malignancy_on_immunosuppression',
+        'hiv',
+        'autoimmunne_with_immunosuppression',
+        'autoimmunne_without_immunosuppression',
+        'gord',
+        'depression',
+        'anxiety',
+        'other_mental_health',
+        'obesity',
+        'dyslipidaemia',
+        'anaemia',
+        'smoking_status_at_admission',
         'date_of_admission',
+        'date_of_discharge',
         'duration_of_symptoms',
         'cough',
         'shortness_of_breath',
@@ -279,7 +319,8 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'admission_respiratory_rate',
         'admission_sao2',
         'admission_fio2',
-        'temperature',
+        'admission_temperature',
+        'follow_up_date',
         'social_circumstances',
         'shielding_status',
         'changes_to_medication',
@@ -358,6 +399,8 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         patient       = covid_patient.patient
         covid_episode = patient.episode_set.get(category_name='COVID-19')
         demographics  = patient.demographics()
+        contact       = patient.contactinformation_set.get()
+        comorbidities = covid_episode.covidcomorbidities_set.get()
 
         if covid_episode.covidadmission_set.count() == 1:
             admission = covid_episode.covidadmission_set.get()
@@ -387,10 +430,40 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             demographics.ethnicity,
             call.ethnicity,
             call.ethnicity_code,
+            contact.post_code,
             call.height,
             call.weight,
             call.hospital_site,
+            comorbidities.hypertension,
+            comorbidities.ace_inhibitor,
+            comorbidities.angiotension_blocker,
+            comorbidities.nsaid,
+            comorbidities.ihd,
+            comorbidities.heart_failure,
+            comorbidities.arrhythmia,
+            comorbidities.cerebrovascular_disease,
+            comorbidities.type_1_diabetes,
+            comorbidities.type_2_diabetes,
+            comorbidities.copd,
+            comorbidities.asthma,
+            comorbidities.ild,
+            comorbidities.other_lung_condition,
+            comorbidities.ckd,
+            comorbidities.active_malignancy,
+            comorbidities.active_malignancy_on_immunosuppression,
+            comorbidities.hiv,
+            comorbidities.autoimmunne_with_immunosuppression,
+            comorbidities.autoimmunne_without_immunosuppression,
+            comorbidities.gord,
+            comorbidities.depression,
+            comorbidities.anxiety,
+            comorbidities.other_mental_health,
+            comorbidities.obesity,
+            comorbidities.dyslipidaemia,
+            comorbidities.anaemia,
+            call.admission_status,
             admission.date_of_admission,
+            admission.date_of_discharge,
             admission.duration_of_symptoms,
             admission.cough,
             admission.shortness_of_breath,
@@ -430,8 +503,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             admission.sao2,
             admission.fi02,
             admission.temperature,
-        ]
-        row += [
+            call.when,
             call.social_circumstances,
             call.shielding_status,
             call.changes_to_medication,
@@ -463,6 +535,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             call.current_cfs,
             call.follow_up_outcome
         ]
+
 
         return row
 

@@ -16,8 +16,9 @@ from opal.core.api import (
 )
 from opal.core.views import json_response
 from opal.core import serialization
-from opal.models import Episode
+from opal.models import Episode, Tagging
 
+from elcid import patient_lists
 from intrahospital_api import loader
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
@@ -278,14 +279,102 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         ("PROCALCITONIN", ["Procalcitonin"]),
     ),)
 
+    ANTIFUNGAL_TESTS = OrderedDict((
+        ("BETA D GLUCAN TEST", ["Beta Glucan test:", "Beta Glucan concentration"]),
+        ("GALACTOMANNAN AGN. ELISA", ["Galactomannan Agn. ELISA", "Galactomannan Agn. INDEX"])
+    ))
+
+    ANTIFUNGAL_SHORT_NAMES = {
+        "BETA D GLUCAN TEST": "Beta D Glucan",
+        "GALACTOMANNAN AGN. ELISA": "Galactomannan",
+        "Beta Glucan test:": "",
+        "Beta Glucan concentration": "Concentration",
+        "Galactomannan Agn. ELISA": "Agn. ELISA",
+        "Galactomannan Agn. INDEX": "Agn. INDEX"
+    }
+
     NUM_RESULTS = 5
+
+
+    def _get_antifungal_ticker_dict(self, test):
+        """
+        Given a lab test instance, return a dict in the lab results ticker format
+        """
+        observations = test.observation_set.all()
+
+        timestamp = observations[0].observation_datetime
+        test_name = test.test_name
+
+        result_string = ''
+
+        for observation in observations:
+
+            if observation.observation_name in self.ANTIFUNGAL_TESTS[test_name]:
+                result_string += ' {} {}'.format(
+                    self.ANTIFUNGAL_SHORT_NAMES[observation.observation_name],
+                    observation.observation_value.split('~')[0]
+                )
+
+        display_name = '{} {}'.format(
+            self.ANTIFUNGAL_SHORT_NAMES[test_name],
+            test.site.replace('&', ' ').split(' ')[0]
+        )
+
+
+        return {
+            'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
+            'timestamp': timestamp,
+            'name'     : display_name,
+            'value'    : result_string.strip()
+        }
+
+    def get_antifungal_observations(self, patient):
+        """
+        If the patient is on the chronic or acute antifungal lists, add some observations.
+
+        Specifically up to 3 per sample site for the tests in self.ANTIFUNGAL_TESTS
+        """
+        ticker = []
+
+        is_antifungal = Tagging.objects.filter(
+            episode__patient=patient, archived=False, value=patient_lists.Antifungal.tag).exists()
+
+        if not is_antifungal:
+            antifungal_episodes = emodels.ChronicAntifungal.antifungal_episodes()
+            is_antifungal = antifungal_episodes.filter(
+                patient=patient
+            ).exists()
+
+        if is_antifungal:
+
+            ticker_test_counts = defaultdict(int)
+
+            for test_name in self.ANTIFUNGAL_TESTS:
+                data = []
+                tests = lab_test_models.LabTest.objects.filter(
+                    test_name=test_name, patient=patient
+                ).order_by('-datetime_ordered')
+
+                for test in tests:
+                    test_tuple = (test.test_name, test.site.replace('&', ' ').split(' ')[0])
+
+                    if ticker_test_counts[test_tuple] < 3:
+                        ticker_test_counts[test_tuple] += 1
+                        ticker.append(self._get_antifungal_ticker_dict(test))
+
+        return ticker
+
 
     def get_ticker_observations(self, patient):
         """
         Some results are displayed as a ticker in chronological
         order.
         """
-        return covid_lab.get_covid_result_ticker(patient)
+        ticker =  covid_lab.get_covid_result_ticker(patient)
+        ticker += self.get_antifungal_observations(patient)
+        ticker = list(reversed(sorted(ticker, key=lambda i: i['timestamp'])))
+
+        return ticker
 
     def get_recent_dates_to_observations(self, qs):
         """
