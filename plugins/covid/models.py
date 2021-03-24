@@ -22,7 +22,10 @@ def calculate_phq_score(interest, depressed):
         depressed = int(depressed)
         return interest + depressed
     except ValueError:
-        return int(interest[1:2]) + int(depressed[1:2])
+        try:
+            return int(interest[1:2]) + int(depressed[1:2])
+        except ValueError:
+            return None
 
 
 COVID_CODE_CHOICES = enum(

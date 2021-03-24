@@ -320,17 +320,53 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'admission_sao2',
         'admission_fio2',
         'admission_temperature',
+        'admission_news2',
+        'admission_tep_status',
+        'admission_maximum_resp_support',
+        'admission_max_fio2_non_nc',
+        'admission_max_fio2_nc',
+        'admission_days_on_cpap',
+        'admission_days_on_niv',
+        'admission_days_on_iv',
+        'admission_days_on_ippv',
+        'admission_days_on_oxygen',
+        'followup_lymphocytes',
+        'followup_lymphocytes_date',
+        'followup_neutrophils',
+        'followup_neutrophils_date',
+        'followup_crp',
+        'followup_crp_date',
+        'followup_ferritin',
+        'followup_ferritin_date',
+        'followup_ddimer',
+        'followup_ddimer_date',
+        'followup_cardiac_troponin_t',
+        'followup_cardiac_troponin_t_date',
+        'followup_nt_pro_bnp',
+        'followup_nt_pro_bnp_date',
+        'followup_alt',
+        'followup_alt_date',
+        'followup_ast',
+        'followup_ast_date',
+        'followup_alkaline_phosphatase',
+        'followup_alkaline_phosphatase_date',
+        'followup_creatinine',
+        'followup_creatinin_date',
         'follow_up_date',
         'social_circumstances',
         'shielding_status',
         'changes_to_medication',
         'followup_breathlessness',
+        'followup_breathlessness_trend',
         'max_breathlessness',
         'followup_cough',
+        'followup_cough_trend',
         'max_cough',
         'followup_fatigue',
+        'followup_fatigue_trend',
         'max_fatigue',
         'followup_sleep_quality',
+        'followup_sleep_quality_trend',
         'max_sleep_quality',
         'followup_chest_pain',
         'followup_chest_tightness',
@@ -350,18 +386,12 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'followup_current_et',
         'followup_mrc_dyspnoea_scale',
         'followup_current_cfs',
+        'followup_phq_score',
+        'followup_tsq_score',
         'follow_up_outcome'
     ]
 
-
-    def get_admission_labs(self, patient, admission_date):
-
-        if admission_date is None:
-            return [''] * 22 # empty
-
-        labs = []
-
-        test_codes = [
+    TEST_CODES = [
             ("FULL BLOOD COUNT", ["Lymphocytes", "Neutrophils"],),
             ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
             ("IRON STUDIES (FER)", ["Ferritin"]),
@@ -372,7 +402,14 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             ("UREA AND ELECTROLYTES", ["Creatinine"])
         ]
 
-        for test_name, observations in test_codes:
+    def get_admission_labs(self, patient, admission_date):
+
+        if admission_date is None:
+            return [''] * 22 # empty
+
+        labs = []
+
+        for test_name, observations in self.TEST_CODES:
             for obs_code in observations:
 
                 observation = Observation.objects.filter(
@@ -391,8 +428,37 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
                 else:
                     labs += ["", ""]
 
+        return labs
+
+    def get_followup_labs(self, patient, followup_date):
+        if followup_date is None:
+            return [''] * 22 # empty
+
+        labs = []
+
+        for test_name, observations in self.TEST_CODES:
+            for obs_code in observations:
+
+                observation = Observation.objects.filter(
+                    test__patient=patient,
+                ).filter(
+                    test__test_name=test_name
+                ).filter(
+                    observation_name=obs_code
+                ).filter(
+                    observation_datetime__gte=followup_date-datetime.timedelta(days=14)
+                ).filter(
+                    observation_datetime__lte=followup_date+datetime.timedelta(days=14)
+                ).order_by('observation_datetime').first()
+
+                if observation:
+                    labs.append(observation.observation_value.split('~')[0])
+                    labs.append(observation.observation_datetime)
+                else:
+                    labs += ["", ""]
 
         return labs
+
 
     def get_row(self, covid_patient):
 
@@ -430,7 +496,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             demographics.ethnicity,
             call.ethnicity,
             call.ethnicity_code,
-            contact.post_code,
+            contact.postcode,
             call.height,
             call.weight,
             call.hospital_site,
@@ -503,17 +569,36 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             admission.sao2,
             admission.fi02,
             admission.temperature,
+            admission.news2,
+            admission.tep_status,
+            admission.maximum_resp_support,
+            admission.max_fio2_non_nc,
+            admission.max_fio2_nc,
+            admission.days_on_cpap,
+            admission.days_on_niv,
+            admission.days_on_iv,
+            admission.days_on_ippv,
+            admission.days_on_oxygen,
+            ]
+
+        row += self.get_followup_labs(patient, call.when)
+
+        row += [
             call.when,
             call.social_circumstances,
             call.shielding_status,
             call.changes_to_medication,
             call.current_breathlessness,
+            call.breathlessness_trend,
             call.max_breathlessness,
             call.current_cough,
+            call.cough_trend,
             call.max_cough,
             call.current_fatigue,
+            call.fatigue_trend,
             call.max_fatigue,
             call.current_sleep_quality,
+            call.sleep_quality_trend,
             call.max_sleep_quality,
             call.chest_pain,
             call.chest_tightness,
@@ -533,6 +618,8 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             call.current_et,
             call.mrc_dyspnoea_scale,
             call.current_cfs,
+            call.phq_score(),
+            call.tsq_score(),
             call.follow_up_outcome
         ]
 
