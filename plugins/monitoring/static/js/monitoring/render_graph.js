@@ -3,7 +3,6 @@ var render_graph = function(element_id, data, type){
     if (!type){
         type = 'bar';
     }
-
     var config = {
         bindto: document.getElementById(element_id),
         data: {

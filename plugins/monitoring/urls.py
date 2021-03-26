@@ -11,4 +11,9 @@ urlpatterns = [
         views.LabTimings.as_view(),
         name='lab_sync_dashboard'
     ),
+    url(
+        'templates/monitoring/system_stats.html',
+        views.SystemStats.as_view(),
+        name='system_stats_dashboard'
+    )
 ]

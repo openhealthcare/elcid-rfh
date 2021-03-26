@@ -1,0 +1,25 @@
+<style>
+  .c3-line {
+    stroke-width: 2px;
+  }
+</style>
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>System stats dashboard</h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+          <div class="row">
+              <div class="col-md-12">
+                <h2>Recent backup sizes (Mb)</h2>
+                <div id="back_up_size"></div>
+              </div>
+            </div> <!-- row -->
+          <script>render_graph('back_up_size', {{ back_up_size | safe }}, 'line');</script>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
