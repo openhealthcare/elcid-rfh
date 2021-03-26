@@ -21,10 +21,10 @@ class Command(BaseCommand):
                 settings.VERSION_NUMBER.replace('.', ''))
         )
 
-        mb = int(size_bytes/1073741824)
-
+        mb = size_bytes/1073741824
+        mb = "{:.2f}".format(mb)
         Fact(
             when=timezone.make_aware(datetime.datetime.now()),
             label="Backup size (MB)",
-            value_int=mb
+            value_float=mb
         ).save()
