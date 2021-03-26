@@ -3,7 +3,6 @@ from intrahospital_api import loader
 from intrahospital_api import constants
 from elcid import models
 from elcid.episode_categories import InfectionService
-from lab import models as lmodels
 from django.db import transaction
 from django.conf import settings
 
