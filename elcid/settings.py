@@ -228,7 +228,6 @@ ADD_PATIENT_LAB_TESTS = True
 #### END API Settings
 
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('lab.tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )
