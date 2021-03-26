@@ -105,7 +105,7 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
         start=datetime.date.today()
     )
 
-    load_patient(patient)
+    load_patient(patient, run_async=False)
     return patient
 
 
