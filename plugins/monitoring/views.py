@@ -39,3 +39,12 @@ class LabTimings(LoginRequiredMixin, TemplateView):
         context['total_obs_data']       = graph_data_for_label('Total Observations')
 
         return context
+
+
+class SystemStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/system_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['back_up_size']    = graph_data_for_label('Backup size (MB)')
+        return context
