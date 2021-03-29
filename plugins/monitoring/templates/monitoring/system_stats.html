@@ -13,11 +13,18 @@
         <div class="panel-body">
           <div class="row">
               <div class="col-md-12">
-                <h2>Recent backup sizes (Mb)</h2>
+                <h2>Backup size (GB)</h2>
                 <div id="back_up_size"></div>
               </div>
-            </div> <!-- row -->
+          </div> <!-- row -->
+          <div class="row">
+              <div class="col-md-12">
+                <h2>Disk Usage (%)</h2>
+                <div id="disk_usage"></div>
+              </div>
+          </div> <!-- row -->
           <script>render_graph('back_up_size', {{ back_up_size | safe }}, 'line');</script>
+          <script>render_graph('disk_usage', {{ disk_usage | safe }}, 'line');</script>
         </div>
       </div>
     </div>
