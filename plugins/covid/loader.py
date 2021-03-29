@@ -1,14 +1,16 @@
+"""
+Loading Covid data from upstream
+"""
 import datetime
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
-from plugins.appointments import loader as appointment_loader
 from plugins.covid.episode_categories import CovidEpisode
 from plugins.covid import constants
 
-from plugins.covid import lab, loader
+from plugins.covid import lab
 
 Q_GET_COVID_IDS = """
 SELECT DISTINCT Patient_Number FROM tQuest.Pathology_Result_view
