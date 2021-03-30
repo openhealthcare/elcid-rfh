@@ -352,7 +352,11 @@ class Command(BaseCommand):
             admission_args["duration_of_symptoms"] = None
             return
 
-        _, created = episode.covidadmission_set.get_or_create()
+        try:
+            _, created = episode.covidadmission_set.get_or_create()
+        except models.MultipleObjectsReturned:
+            print(episode)
+            raise
         if created:
             self.admissions_created += 1
         else:
