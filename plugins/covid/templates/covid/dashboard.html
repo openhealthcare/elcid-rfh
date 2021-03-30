@@ -156,6 +156,15 @@
             </div>
           </div> <!-- row -->
 
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Weekly age ratios</h2>
+              <p>Ratio of different age groups who have resulted positive for the first time.</p>
+              <p>Starts in the first week there was a positive test and only includes weeks with more than 20 first time positive results</p>
+              <div id="weekly_age_shift"></div>
+            </div>
+          </div> <!-- row -->
+
 
           {% if can_download %}
             <div class="row content-offset">
@@ -221,4 +230,21 @@
   render_graph('orders_graph', {{ orders_data | safe }});
   render_graph('patients_graph', {{ patients_data | safe }});
   render_graph('positivity_graph', {{ positivity_data | safe }}, 'line');
+
+
+  {# We do a different type because  its not a timeseries #}
+  var weekly_age_change = {{ weekly_age_change |safe }};
+  weekly_age_change.tooltip = {
+    format: {
+      value: function(value, ratio, id, index){
+        return "" + value + "% (" + weekly_age_change.extra.raw_values[id][index] + ")";
+      },
+      title: function(x){
+        return "Week " + x + " (" + weekly_age_change.extra.week_label[x-1] + ")";
+      }
+    }
+  }
+  weekly_age_change["bindto"] = document.getElementById("weekly_age_shift");
+  c3.generate(weekly_age_change);
+
 </script>

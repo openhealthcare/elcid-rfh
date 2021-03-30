@@ -121,3 +121,76 @@ def calculate():
     calculate_daily_reports()
     dashboard = models.CovidDashboard(last_updated=timezone.now())
     dashboard.save()
+
+
+def get_week_range():
+    last_monday = None
+    today = datetime.date.today()
+    for i in range(7):
+        previous = today - datetime.timedelta(i)
+        if previous.isoweekday() == 1:
+            last_monday = previous
+            break
+    rows = [(today, last_monday,)]
+    start = (today - last_monday).days + 1
+    until = 800 - start
+    for i in range(start, until, 7):
+        between = datetime.timedelta(days=i)
+        next_week = datetime.timedelta(days=i+6)
+        rows.append((today-between, today-next_week,))
+    return rows
+
+
+def get_week(date_first_positive, week_range):
+    week_range = get_week_range()
+    for upper, lower in week_range:
+        ordered = date_first_positive
+        if ordered >= lower and ordered <= upper:
+            return (upper, lower,)
+
+
+def age_range(age):
+    ranges = models.CovidPositivesAgeDateRange.AGE_RANGES_TO_START_END
+    for title, age_range in ranges.items():
+        lower, upper = age_range
+        if not upper:
+            return title
+        if age >= lower and age <= upper:
+            return title
+
+
+def calculate_week_shift():
+    models.CovidPositivesAgeDateRange.objects.all().delete()
+    week_to_age_range = collections.defaultdict(
+        lambda: collections.defaultdict(int)
+    )
+    coronavirus_tests = LabTest.objects.filter(
+        test_name__in=lab.COVID_19_TEST_NAMES
+    )
+    coronavirus_tests = coronavirus_tests.order_by('datetime_ordered')
+    coronavirus_tests = coronavirus_tests.prefetch_related(
+        "patient__demographics_set"
+    ).prefetch_related(
+        "observation_set"
+    )
+    covid_patients = models.CovidPatient.objects.all().prefetch_related(
+        'patient__demographics_set'
+    )
+    week_range = get_week_range()
+
+    for covid_patient in covid_patients:
+        demographics = covid_patient.patient.demographics_set.all()[0]
+        if demographics.date_of_birth:
+            first_positive = covid_patient.date_first_positive
+            demo_age = age_range(demographics.get_age(first_positive))
+            week = get_week(first_positive, week_range)
+            week_to_age_range[week][demo_age] += 1
+
+    for week_range, age_to_demo_ids in sorted(week_to_age_range.items(), key=lambda x: x[0][0]):
+        covid_positives_age_date_range = models.CovidPositivesAgeDateRange(
+            date_start=week_range[0],
+            date_end=week_range[1]
+        )
+        for field_title, count in age_to_demo_ids.items():
+            setattr(covid_positives_age_date_range, field_title, count)
+        covid_positives_age_date_range.save()

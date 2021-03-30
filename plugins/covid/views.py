@@ -4,6 +4,7 @@ Views for our covid plugin
 import collections
 import csv
 import datetime
+import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
@@ -38,6 +39,64 @@ def rolling_average(series):
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
 
+    def get_weekly_age_shift(self):
+        covid_positives_age_date_range = models.CovidPositivesAgeDateRange.objects.order_by(
+            "date_start"
+        )
+        ages = collections.defaultdict(list)
+        ages_as_percent = collections.defaultdict(list)
+        week_label = []
+        for cvadr in covid_positives_age_date_range:
+            for field_name in cvadr.AGE_RANGES_TO_START_END.keys():
+                field_label = cvadr._meta.get_field(field_name).verbose_name
+                field_value = getattr(cvadr, field_name)
+                if cvadr.is_significant():
+                    ages[field_label].append(field_value)
+                    ages_as_percent[field_label].append(cvadr.as_percent(field_value))
+                else:
+                    ages[field_label].append(0)
+                    ages_as_percent[field_label].append(0)
+            from_date = cvadr.date_start.strftime("%-d %b")
+            to_date = cvadr.date_end.strftime("%-d %b")
+            week_label.append(f"{from_date} - {to_date}")
+        columns = [['x'] + [i+1 for i in range(len(week_label))]]
+        for field_name, values in ages_as_percent.items():
+            columns.append([field_name] + values)
+        return json.dumps({
+            "data": {
+                'x': "x",
+                'columns': columns,
+                'type': 'bar',
+                'groups': [
+                    list(ages.keys())
+                ]
+            },
+            "axis": {
+                "x": {
+                    "type": 'category',
+                    "tick": {
+                        "rotate": 45,
+                        "multiline": False
+                    }
+                },
+                "y": {
+                    "min": 0,
+                    "max": 100,
+                    "padding": {"top": 0, "bottom": 0}
+                }
+            },
+            'bar': {
+                'width': {
+                    'ratio': 0.9
+                }
+            },
+            # These are used in js to calculate the tooltip
+            'extra': {
+                'raw_values': ages,
+                'week_label': week_label
+            }
+        })
+
     def get_context_data(self, *a, **k):
         context = super(CovidDashboardView, self).get_context_data(*a, **k)
 
@@ -54,8 +113,8 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
                 date__lt=datetime.date.today() + datetime.timedelta(days=1)
             ).aggregate(Sum(sum_field))['{}__sum'.format(sum_field)]
 
-        yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=1))
-#        yesterday = None
+        # yesterday = models.CovidReportingDay.objects.get(date = datetime.date.today() - datetime.timedelta(days=1))
+        yesterday = None
         context['yesterday'] = yesterday
 
         ticks      = ['x']
@@ -90,6 +149,8 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         context['orders_data']     = [ticks, ordered_timeseries]
         context['patients_data']   = [ticks, patients_timeseries]
         context['positivity_data'] = [ticks, positivity_timeseries]
+
+        context["weekly_age_change"] = self.get_weekly_age_shift()
 
         context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
 
@@ -129,7 +190,6 @@ class CovidAMTDashboardView(TemplateView):
 
         context['non_covid_data'] = [ticks, non_covid_timeseries, non_covid_avg]
         context['non_covid7_data'] = [['x'] + ticks[-7:], ['7 Day Non Covid Take'] + non_covid_timeseries[-7:]]
-
         return context
 
 
