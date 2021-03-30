@@ -14,9 +14,10 @@ from opal import models as opal_models
 from elcid import patient_lists
 from plugins.admissions import constants as admission_constants
 from plugins.admissions.models import Encounter
+from plugins.icu.models import ICUHandover
+from plugins.labtests.models import Observation
 
 from plugins.covid import models, constants, lab
-from plugins.labtests.models import Observation
 
 
 
@@ -298,6 +299,8 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'admission_lymphocytes_date',
         'admission_neutrophils',
         'admission_neutrophils_date',
+        'admission_wbc',
+        'admission_wbc_date',
         'admission_crp',
         'admission_crp_date',
         'admission_ferritin',
@@ -334,10 +337,15 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'admission_days_on_iv',
         'admission_days_on_ippv',
         'admission_days_on_oxygen',
+        'admission_corticosteroids',
+        'admission_other_drugs',
+        'last_icu_admission',
         'followup_lymphocytes',
         'followup_lymphocytes_date',
         'followup_neutrophils',
         'followup_neutrophils_date',
+        'followup_wbc',
+        'followup_wbc_date',
         'followup_crp',
         'followup_crp_date',
         'followup_ferritin',
@@ -396,7 +404,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
     ]
 
     TEST_CODES = [
-            ("FULL BLOOD COUNT", ["Lymphocytes", "Neutrophils"],),
+            ("FULL BLOOD COUNT", ["Lymphocytes", "Neutrophils", "WBC"],),
             ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
             ("IRON STUDIES (FER)", ["Ferritin"]),
             ("D-DIMER", ["D-DIMER"]),
@@ -583,7 +591,15 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             admission.days_on_iv,
             admission.days_on_ippv,
             admission.days_on_oxygen,
+            admission.systemic_corticosteroirds,
+            admission.other_drugs
             ]
+
+        icu = ICUHandover.objects.filter(patient=patient).last()
+        if icu:
+            row.append(str(icu.date_itu_admission))
+        else:
+            row.append("")
 
         row += self.get_followup_labs(patient, call.when)
 
