@@ -42,9 +42,12 @@ def pre_load_covid_patients():
 
         patient_mrns.update([r['Patient_Number'] for r in results])
 
-    for mrn in patient_mrns:
+    all_mrns = set(
+        Demographics.objects.values_list('hospital_number', flat=True)
+    )
 
-        if Demographics.objects.filter(hospital_number=mrn).exists():
+    for mrn in patient_mrns:
+        if mrn in all_mrns:
             continue
         create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
