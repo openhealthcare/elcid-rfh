@@ -930,3 +930,28 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+
+
+class DemographicsTestCase(OpalTestCase):
+    def setUp(self):
+        patient, _ = self.new_patient_and_episode_please()
+        self.demographics = patient.demographics()
+
+    @mock.patch("elcid.models.datetime")
+    def test_age(self, dt):
+        dt.date.today.return_value = datetime.date(2019, 12, 1)
+        self.demographics.date_of_birth = datetime.date(1990, 12, 1)
+        self.demographics.save()
+        self.assertEqual(self.demographics.get_age(), 29)
+        self.assertEqual(
+            self.demographics.get_age(datetime.date(2009, 11, 30)),
+            18
+        )
+        self.assertEqual(
+            self.demographics.get_age(datetime.date(2009, 12, 1)),
+            19
+        )
+        self.assertEqual(
+            self.demographics.get_age(datetime.date(2009, 12, 2)),
+            19
+        )
