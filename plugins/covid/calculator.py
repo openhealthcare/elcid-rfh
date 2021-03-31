@@ -165,15 +165,6 @@ def calculate_week_shift():
     week_to_age_range = collections.defaultdict(
         lambda: collections.defaultdict(int)
     )
-    coronavirus_tests = LabTest.objects.filter(
-        test_name__in=lab.COVID_19_TEST_NAMES
-    )
-    coronavirus_tests = coronavirus_tests.order_by('datetime_ordered')
-    coronavirus_tests = coronavirus_tests.prefetch_related(
-        "patient__demographics_set"
-    ).prefetch_related(
-        "observation_set"
-    )
     covid_patients = models.CovidPatient.objects.all().prefetch_related(
         'patient__demographics_set'
     )
@@ -189,8 +180,8 @@ def calculate_week_shift():
 
     for week_range, age_to_demo_ids in sorted(week_to_age_range.items(), key=lambda x: x[0][0]):
         covid_positives_age_date_range = models.CovidPositivesAgeDateRange(
-            date_start=week_range[0],
-            date_end=week_range[1]
+            date_end=week_range[0],
+            date_start=week_range[1]
         )
         for field_title, count in age_to_demo_ids.items():
             setattr(covid_positives_age_date_range, field_title, count)
