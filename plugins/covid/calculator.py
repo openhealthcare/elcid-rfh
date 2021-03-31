@@ -108,6 +108,7 @@ def calculate_daily_reports():
             date=yesterday, tests_ordered=0, tests_resulted=0,
             patients_resulted=0, patients_positive=0, deaths=0
         )
+    calculate_week_shift()
 
 
 def calculate():
