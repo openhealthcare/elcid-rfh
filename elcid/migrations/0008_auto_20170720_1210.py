@@ -30,7 +30,7 @@ def migrate_backwards(app, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('elcid', '0007_organism'),
+        ('elcid', '0006_auto_20170220_1108'),
         ('opal', '0031_auto_20170719_1018'),
     ]
 

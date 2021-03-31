@@ -1,20 +1,20 @@
 """
 Loading Covid data from upstream
 """
+import datetime
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
-from plugins.appointments import loader as appointment_loader
 from plugins.covid.episode_categories import CovidEpisode
 from plugins.covid import constants
 
-from plugins.covid import lab, loader
+from plugins.covid import lab
 
 Q_GET_COVID_IDS = """
 SELECT DISTINCT Patient_Number FROM tQuest.Pathology_Result_view
-WHERE OBR_exam_code_Text = @test_name
+WHERE OBR_exam_code_Text = @test_name AND date_inserted > @since
 """
 
 Q_COVID_APPOINTMENTS = """
@@ -30,23 +30,26 @@ def pre_load_covid_patients():
     create these patients.
     """
     api = ProdAPI()
-
+    last_90_days = datetime.datetime.now() - datetime.timedelta(90)
     patient_mrns = set()
 
     for test_name in lab.COVID_19_TEST_NAMES:
 
         results = api.execute_trust_query(
-            Q_GET_COVID_IDS, params={'test_name': test_name})
+            Q_GET_COVID_IDS,
+            params={'test_name': test_name, 'since': last_90_days}
+        )
 
         patient_mrns.update([r['Patient_Number'] for r in results])
 
+    all_mrns = set(
+        Demographics.objects.values_list('hospital_number', flat=True)
+    )
+
     for mrn in patient_mrns:
-
-        if Demographics.objects.filter(hospital_number=mrn).exists():
+        if mrn in all_mrns:
             continue
-
         create_rfh_patient_from_hospital_number(mrn, InfectionService)
-
 
 
 def create_followup_episodes():
