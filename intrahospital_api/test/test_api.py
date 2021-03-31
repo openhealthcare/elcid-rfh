@@ -22,46 +22,19 @@ class PatientToDict(OpalTestCase):
         self.maxDiff = None
         patient, episode = self.new_patient_and_episode_please()
         episode.set_tag_names(["something"], self.user)
-        emodels.UpstreamLabTest.objects.create(
-            patient=patient,
-            external_system=constants.EXTERNAL_SYSTEM
-
-        )
-        emodels.QuickFISH.objects.create(
-            patient=patient
-        )
         emodels.Imaging.objects.create(episode=episode, site="elbow")
         patient.demographics_set.update(
             first_name="Wilma",
             hospital_number="1"
         )
-
         to_dicted = patient.to_dict(self.user)
-
-        # Remove lab tests
-        to_dicted.pop("lab_test")
-        to_dicted["episodes"][episode.id].pop("lab_test")
-
-        # Add End
         to_dicted["episodes"][episode.id]['end'] = '30'
-
+        # Add End
         result = api.patient_to_dict(patient, self.user)
         result.pop("is_antifungal")
-        found_lab_tests_for_patient = result.pop("lab_test")
-        found_lab_tests_for_episode = result["episodes"][episode.id].pop(
-            "lab_test"
-        )
 
         self.assertEqual(
             to_dicted, result
-        )
-        self.assertEqual(len(found_lab_tests_for_patient), 1)
-        self.assertEqual(
-            found_lab_tests_for_patient[0]["lab_test_type"],
-            emodels.QuickFISH.get_display_name()
-        )
-        self.assertEqual(
-            found_lab_tests_for_episode, found_lab_tests_for_patient
         )
 
     def test_contains_empty_episode_subrecords(self):
@@ -72,16 +45,6 @@ class PatientToDict(OpalTestCase):
         result = api.patient_to_dict(patient, self.user)
         self.assertEqual(
             result["episodes"][episode.id]["antimicrobial"], []
-        )
-
-    def test_contains_empty_patient_subrecords(self):
-        """
-        We populate empty subrecords with an empty list
-        """
-        patient, episode = self.new_patient_and_episode_please()
-        result = api.patient_to_dict(patient, self.user)
-        self.assertEqual(
-            result["lab_test"], []
         )
 
     @mock.patch("intrahospital_api.api.patient_to_dict")

@@ -146,7 +146,6 @@ TEMPLATES = [
                 'opal.context_processors.settings',
                 'opal.context_processors.models',
                 'elcid.context_processors.permissions',
-                'lab.context_processors.lab_tests',
                 'plugins.upstream_lists.context_processors.upstream_lists',
             ],
         },
@@ -169,7 +168,6 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'compressor',
     'opal.core.search',
-    'lab',
     'plugins.letters',
     'plugins.labtests',
     'plugins.admissions',
@@ -230,7 +228,6 @@ ADD_PATIENT_LAB_TESTS = True
 #### END API Settings
 
 if 'test' in sys.argv:
-    INSTALLED_APPS += ('lab.tests',)
     PASSWORD_HASHERS = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
     )

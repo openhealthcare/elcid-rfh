@@ -1,7 +1,6 @@
 from intrahospital_api import constants
 from intrahospital_api.apis import base_api, prod_api
 from datetime import date, timedelta, datetime
-from lab import models as lmodels
 from elcid.models import (
     Demographics, ContactInformation, NextOfKinDetails, GPDetails,
     MasterFileMeta
@@ -487,7 +486,7 @@ class DevApi(base_api.BaseApi):
                     ),
                     external_identifier=self.get_external_identifier(),
                     external_system=constants.EXTERNAL_SYSTEM,
-                    status=lmodels.LabTest.COMPLETE,
+                    status="complete",
                     site=u'^&                              ^',
                     test_code=i.lower().replace(" ", "_"),
                     test_name=i,

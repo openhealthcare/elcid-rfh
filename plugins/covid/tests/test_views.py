@@ -2,6 +2,7 @@
 Tests for plugins.covid.views
 """
 import datetime
+from django.urls import reverse
 
 from opal.core.test import OpalTestCase
 
@@ -94,3 +95,22 @@ class CovidAMTDashboardViewTestCase(OpalTestCase):
             ['Acute Take 7 Day Rolling Average', 0]
         ]
         self.assertEqual(take_data, ctx['take_data'])
+
+
+class CovidDashboardViewTestCase(OpalTestCase):
+    def setUp(self):
+        self.url = reverse("covid_dashboard")
+        # initialise the property
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+
+    def test_get(self):
+        self.assertEqual(
+            self.client.get(self.url).status_code,
+            200
+        )
