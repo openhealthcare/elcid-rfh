@@ -912,6 +912,7 @@ class CovidPositivesAgeDateRange(models.Model):
     ages_35_49 = models.IntegerField(default=0, verbose_name="35 - 49")
     ages_50_69 = models.IntegerField(default=0, verbose_name="50 - 69")
     ages_70_plus = models.IntegerField(default=0, verbose_name="70+")
+    created = models.DateTimeField(auto_now_add=True)
 
     def sum(self):
         return sum(
@@ -922,4 +923,7 @@ class CovidPositivesAgeDateRange(models.Model):
         return self.sum() > 20
 
     def as_percent(self, some_num):
+        total = self.sum()
+        if not total:
+            return 0
         return round(float(some_num)/self.sum() * 100, 1)
