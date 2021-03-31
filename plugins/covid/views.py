@@ -417,7 +417,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
     def get_admission_labs(self, patient, admission_date):
 
         if admission_date is None:
-            return [''] * 22 # empty
+            return [''] * 24 # empty
 
         labs = []
 
