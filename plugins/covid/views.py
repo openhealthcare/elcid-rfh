@@ -63,6 +63,11 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         columns = [['x'] + [i+1 for i in range(len(week_label))]]
         for field_name, values in ages_as_percent.items():
             columns.append([field_name] + values)
+
+        colors = dict(zip(
+            ages.keys(),
+            ["#0091C9", "#D36C08", "#a0c7ea", "#9cc96b", "#864200"]
+        ))
         return json.dumps({
             "data": {
                 'x': "x",
@@ -70,7 +75,8 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
                 'type': 'bar',
                 'groups': [
                     list(ages.keys())
-                ]
+                ],
+                'colors': colors,
             },
             "axis": {
                 "x": {
