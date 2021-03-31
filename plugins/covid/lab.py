@@ -192,17 +192,15 @@ def get_result(test):
     field.
     """
     covid_test = _get_covid_test(test)
-    observations = test.observation_set.all()
-    observations = [
-        i for i in observations if i.observation_name==covid_test.OBSERVATION_NAME
-    ]
-
-    if len(observations) == 0:
+    observations = test.observation_set.filter(
+        observation_name=covid_test.OBSERVATION_NAME
+    )
+    if observations.count() == 0:
         return
 
     # Lateral flow tests sometimes have a blank first line
     # followed by a useful second line. Sometimes not.
-    if len(observations) == 2:
+    if observations.count() == 2:
         if observations[0].observation_value == '.{}':
             return observations[1].observation_value
     return observations[0].observation_value
