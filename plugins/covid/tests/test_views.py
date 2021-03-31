@@ -114,3 +114,18 @@ class CovidDashboardViewTestCase(OpalTestCase):
             self.client.get(self.url).status_code,
             200
         )
+
+    def test_weekly_age_change_render(self):
+        today = datetime.date.today()
+        start_date = today - datetime.timedelta(7)
+        covid_positives_age_date_range = models.CovidPositivesAgeDateRange(
+           date_start=start_date, date_end=today
+        )
+        for field_name in models.CovidPositivesAgeDateRange.AGE_RANGES_TO_START_END.keys():
+            setattr(covid_positives_age_date_range, field_name, 30)
+        covid_positives_age_date_range.save()
+        self.assertEqual(
+            self.client.get(self.url).status_code,
+            200
+        )
+
