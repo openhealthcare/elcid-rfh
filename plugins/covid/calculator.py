@@ -45,11 +45,11 @@ def calculate_daily_reports():
     coronavirus_tests = LabTest.objects.filter(
         test_name__in=lab.COVID_19_TEST_NAMES
     )
-    coronavirus_tests = coronavirus_tests.order_by('datetime_ordered')
+    coronavirus_tests = coronavirus_tests.order_by('datetime_ordered').prefetch_related(
+        'observation_set'
+    )
 
-    first_test_date = LabTest.objects.filter(
-        test_name__in=lab.COVID_19_TEST_NAMES).order_by(
-            'datetime_ordered').first().datetime_ordered.date()
+    first_test_date = coronavirus_tests[0].datetime_ordered.date()
 
     for test in coronavirus_tests:
         if test.patient_id in junk_patient_ids:
