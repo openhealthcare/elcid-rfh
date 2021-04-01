@@ -124,30 +124,32 @@ def calculate():
     dashboard.save()
 
 
-def get_week_range():
-    last_monday = None
+def get_week_range(first_covid_positive_test):
+    """
+    Return a list of weeks (a tuple of monday, sunday)
+    from the Monday before the first covid positive test
+    until the Sunday after today
+    """
+    first_week_range = get_week(first_covid_positive_test)
     today = datetime.date.today()
+    current_week_range = get_week(today)
+    iterations = (current_week_range[1] - first_week_range[0]).days
+    result = []
+
+    for i in range(0, iterations, 7):
+        result.append(get_week(first_week_range[0] + datetime.timedelta(i)))
+    return result
+
+
+def get_week(some_date):
+    """
+    For a given date return a range of the Monday before to
+    the Sunday after.
+    """
     for i in range(7):
-        previous = today - datetime.timedelta(i)
+        previous = some_date - datetime.timedelta(i)
         if previous.isoweekday() == 1:
-            last_monday = previous
-            break
-    rows = [(today, last_monday,)]
-    start = (today - last_monday).days + 1
-    until = 800 - start
-    for i in range(start, until, 7):
-        between = datetime.timedelta(days=i)
-        next_week = datetime.timedelta(days=i+6)
-        rows.append((today-between, today-next_week,))
-    return rows
-
-
-def get_week(date_first_positive, week_range):
-    week_range = get_week_range()
-    for upper, lower in week_range:
-        ordered = date_first_positive
-        if ordered >= lower and ordered <= upper:
-            return (upper, lower,)
+            return (previous, previous + datetime.timedelta(6),)
 
 
 def age_range(age):
@@ -162,20 +164,23 @@ def age_range(age):
 
 def calculate_week_shift():
     models.CovidPositivesAgeDateRange.objects.all().delete()
-    week_to_age_range = collections.defaultdict(
-        lambda: collections.defaultdict(int)
-    )
-    covid_patients = models.CovidPatient.objects.all().prefetch_related(
+    covid_patients = models.CovidPatient.objects.all().order_by("date_first_positive").prefetch_related(
         'patient__demographics_set'
     )
-    week_range = get_week_range()
+    week_range = get_week_range(covid_patients[0].date_first_positive)
 
+    week_to_age_range = collections.defaultdict(dict)
+    # initialise the week range as a list of all weeks between
+    # the first positive test and now with 0s as the values
+    for week in week_range:
+        for age_title in models.CovidPositivesAgeDateRange.AGE_RANGES_TO_START_END.keys():
+            week_to_age_range[week][age_title] = 0
     for covid_patient in covid_patients:
         demographics = covid_patient.patient.demographics_set.all()[0]
         if demographics.date_of_birth:
             first_positive = covid_patient.date_first_positive
             demo_age = age_range(demographics.get_age(first_positive))
-            week = get_week(first_positive, week_range)
+            week = get_week(first_positive)
             week_to_age_range[week][demo_age] += 1
 
     for week_range, age_to_demo_ids in sorted(week_to_age_range.items(), key=lambda x: x[0][0]):
