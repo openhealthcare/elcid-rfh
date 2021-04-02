@@ -4,6 +4,7 @@ Models for the Covid plugin
 from django.db import models
 from opal.core.fields import enum
 from opal.models import Patient, PatientSubrecord, EpisodeSubrecord
+from plugins.covid import constants
 
 
 def calculate_phq_score(interest, depressed):
@@ -64,6 +65,8 @@ class CovidReportingDay(models.Model):
     HELP_DEATH             = "Number of patients who died on this day having tested positive for COVID 19"
 
     date              = models.DateField(help_text=HELP_DATE)
+    location          = models.CharField(max_length=257, choices=enum(constants.LOCATIONS))
+
     tests_ordered     = models.IntegerField(help_text=HELP_TESTS_ORDERED)
     tests_resulted    = models.IntegerField(help_text=HELP_TESTS_RESULTED)
     patients_resulted = models.IntegerField(help_text=HELP_PATIENTS_RESULTED)
@@ -79,6 +82,9 @@ class CovidPatient(models.Model):
     patient             = models.ForeignKey(
         Patient, on_delete=models.CASCADE, related_name='covid_patient'
     )
+    location          = models.CharField(max_length=257, choices=enum(constants.LOCATIONS))
+    rfh                 = models.BooleanField(default=False)
+    barnet              = models.BooleanField(default=False)
     date_first_positive = models.DateField()
 
 
@@ -905,6 +911,8 @@ class CovidPositivesAgeDateRange(models.Model):
         "ages_70_plus": (70, None)
     }
     AGE_RANGES = enum(*AGE_RANGES_TO_START_END.keys())
+
+    location = models.CharField(max_length=256, choices=enum(constants.LOCATIONS))
     date_start = models.DateField()
     date_end = models.DateField()
     ages_0_24 = models.IntegerField(default=0, verbose_name="0 - 24")

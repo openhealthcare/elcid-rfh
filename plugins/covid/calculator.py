@@ -3,6 +3,7 @@ Calculates statistics for the Covid 19 Dashboard
 """
 import collections
 import datetime
+from elcid.utils import timing
 
 from django.utils import timezone
 
@@ -21,8 +22,7 @@ class Day(object):
         self.deaths            = 0
 
 
-
-def calculate_daily_reports():
+def calculate_daily_reports(tests_qs, location):
     """
     Calculate five numbers for each day:
 
@@ -42,10 +42,10 @@ def calculate_daily_reports():
         )
     ]
 
-    coronavirus_tests = LabTest.objects.filter(
+    tests_qs = tests_qs.filter(
         test_name__in=lab.COVID_19_TEST_NAMES
     )
-    coronavirus_tests = coronavirus_tests.order_by('datetime_ordered').prefetch_related(
+    coronavirus_tests = tests_qs.order_by('datetime_ordered').prefetch_related(
         'observation_set'
     )
 
@@ -75,7 +75,9 @@ def calculate_daily_reports():
                     positive_patients_seen.add(test.patient_id)
                     days[day].patients_positive += 1
                     covid_patient = models.CovidPatient(
-                        patient=test.patient, date_first_positive=day
+                        patient=test.patient,
+                        date_first_positive=day,
+                        location=location
                     )
                     covid_patient.save()
 
@@ -92,25 +94,30 @@ def calculate_daily_reports():
         days[demographic.date_of_death].deaths += 1
 
     for date, day in days.items():
-        covid_day = models.CovidReportingDay(
+        models.CovidReportingDay(
+            location=location,
             date=date,
             tests_ordered=day.tests_ordered,
             tests_resulted=day.tests_resulted,
             patients_resulted=day.patients_resulted,
             patients_positive=day.patients_positive,
             deaths=day.deaths
-        )
-        covid_day.save()
+        ).save()
 
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
     if yesterday not in days:
-        models.CovidReportingDay.objects.create(
-            date=yesterday, tests_ordered=0, tests_resulted=0,
-            patients_resulted=0, patients_positive=0, deaths=0
-        )
-    calculate_week_shift()
+        models.CovidReportingDay(
+            date=yesterday,
+            tests_ordered=0,
+            tests_resulted=0,
+            patients_resulted=0,
+            patients_positive=0,
+            deaths=0,
+            location=location
+        ).save()
+    calculate_week_shift(location)
 
-
+@timing
 def calculate():
     """
     Main entrypoint for calculating figures related to Covid 19.
@@ -118,8 +125,16 @@ def calculate():
     models.CovidDashboard.objects.all().delete()
     models.CovidReportingDay.objects.all().delete()
     models.CovidPatient.objects.all().delete()
+    models.CovidPositivesAgeDateRange.objects.all().delete()
 
-    calculate_daily_reports()
+    all_lab_tests = LabTest.objects.all()
+    barnet_lab_tests = LabTest.objects.filter(lab_number__contains="K")
+    rfh_lab_tests = LabTest.objects.filter(lab_number__contains="L")
+
+    calculate_daily_reports(all_lab_tests, "ALL")
+    calculate_daily_reports(barnet_lab_tests, "BARNET")
+    calculate_daily_reports(rfh_lab_tests, "RFH")
+
     dashboard = models.CovidDashboard(last_updated=timezone.now())
     dashboard.save()
 
@@ -162,9 +177,12 @@ def age_range(age):
             return title
 
 
-def calculate_week_shift():
-    models.CovidPositivesAgeDateRange.objects.all().delete()
-    covid_patients = models.CovidPatient.objects.all().order_by("date_first_positive").prefetch_related(
+def calculate_week_shift(location):
+    covid_patients = models.CovidPatient.objects.filter(
+        location=location
+    ).order_by(
+        "date_first_positive"
+    ).prefetch_related(
         'patient__demographics_set'
     )
     week_range = get_week_range(covid_patients[0].date_first_positive)
@@ -186,7 +204,8 @@ def calculate_week_shift():
     for week_range, age_to_demo_ids in sorted(week_to_age_range.items(), key=lambda x: x[0][0]):
         covid_positives_age_date_range = models.CovidPositivesAgeDateRange(
             date_end=week_range[0],
-            date_start=week_range[1]
+            date_start=week_range[1],
+            location=location
         )
         for field_title, count in age_to_demo_ids.items():
             setattr(covid_positives_age_date_range, field_title, count)
