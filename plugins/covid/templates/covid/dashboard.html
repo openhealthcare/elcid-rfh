@@ -2,16 +2,38 @@
 <div class="content-offset">
   <div class="row ">
     <div class="col-md-8 col-md-offset-2 content-offset">
-
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h1>COVID-19 at the Royal Free Trust</h1>
-          <p>Last updated {{ dashboard.last_updated }}</p>
+          <div class="row">
+            <div class="col-md-6">
+              <h1>COVID-19 at
+                {% if request.GET.location == 'RFH' %}
+                  The Royal Free Hospital
+                {% elif request.GET.location == 'BARNET' %}
+                  Barnet Hospital
+                {% else %}
+                  The Royal Free Trust
+                {% endif %}
+              </h1>
+              <p>Last updated {{ dashboard.last_updated }}</p>
+            </div>
+            <div class="col-md-6">
+              <ul class="nav nav-pills">
+                <li class="{% if request.GET.location == 'RFH' %}active {% endif %}pull-right">
+                  <a href="/#/covid-19/?location=RFH">The Royal Free Hospital</a>
+                </li>
+                <li class="{% if request.GET.location == 'BARNET' %}active {% endif %}pull-right">
+                  <a href="/#/covid-19/?location=BARNET">Barnet Hospital</a>
+                </li>
+                <li class="{% if not request.GET.location %}active {% endif %}pull-right">
+                  <a href="/#/covid-19/">The Royal Free Trust</a>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div> <!-- heading -->
         <div class="panel-body">
-
           <div class="row">
-
             <div class="col-md-5">
               <h2>Cases</h2>
               <h1>{{ patients_positive |intcomma }}</h1>
