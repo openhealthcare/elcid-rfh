@@ -9,6 +9,7 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.http.response import HttpResponseBadRequest
 from django.views.generic import TemplateView, View, DetailView
 
 from opal import models as opal_models
@@ -40,8 +41,10 @@ def rolling_average(series):
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
 
-    def get_weekly_age_shift(self):
-        covid_positives_age_date_range = models.CovidPositivesAgeDateRange.objects.order_by(
+    def get_weekly_age_shift(self, location):
+        covid_positives_age_date_range = models.CovidPositivesAgeDateRange.objects.filter(
+            location=location
+        ).order_by(
             "date_start"
         )
         ages = collections.defaultdict(list)
@@ -63,7 +66,6 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         columns = [['x'] + [i+1 for i in range(len(week_label))]]
         for field_name, values in ages_as_percent.items():
             columns.append([field_name] + values)
-
         return {
             "columns": json.dumps(columns),
             "ages_as_percent": json.dumps(ages_as_percent),
@@ -74,6 +76,9 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         context = super(CovidDashboardView, self).get_context_data(*a, **k)
 
         context['dashboard'] = models.CovidDashboard.objects.first()
+        location = self.request.GET.get("location", "ALL")
+        if location not in constants.LOCATIONS:
+            raise HttpResponseBadRequest("Unknown location")
 
         sum_fields = [
             'tests_ordered', 'tests_resulted',
@@ -82,12 +87,15 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         ]
         for sum_field in sum_fields:
             context[sum_field] = models.CovidReportingDay.objects.filter(
+                location=location,
                 date__gte=datetime.date(2020, 1, 1),
                 date__lt=datetime.date.today() + datetime.timedelta(days=1)
             ).aggregate(Sum(sum_field))['{}__sum'.format(sum_field)]
 
         day_before = datetime.date.today() - datetime.timedelta(days=1)
-        yesterday = models.CovidReportingDay.objects.filter(date=day_before).first()
+        yesterday = models.CovidReportingDay.objects.filter(
+            date=day_before, location=location
+        ).first()
 
         # this should always be the case in prod but is not in dev.
         if not yesterday:
@@ -103,6 +111,7 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         positivity_timeseries = ['Positivity']
 
         for day in models.CovidReportingDay.objects.filter(
+                location=location,
                 date__gte=datetime.date(2020, 1, 1),
                 date__lt=datetime.date.today() + datetime.timedelta(days=1)
         ).order_by('date'):
@@ -127,10 +136,9 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         context['patients_data']   = [ticks, patients_timeseries]
         context['positivity_data'] = [ticks, positivity_timeseries]
 
-        context["weekly_age_change"] = self.get_weekly_age_shift()
+        context["weekly_age_change"] = self.get_weekly_age_shift(location)
 
         context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
-
         return context
 
 

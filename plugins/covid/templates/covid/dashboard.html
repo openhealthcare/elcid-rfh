@@ -1,25 +1,52 @@
 {% load humanize %}
 <div class="content-offset">
-  <div class="row ">
+  <div class="row">
     <div class="col-md-8 col-md-offset-2 content-offset">
-
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h1>COVID-19 at the Royal Free Trust</h1>
-          <p>Last updated {{ dashboard.last_updated }}</p>
-        </div> <!-- heading -->
-        <div class="panel-body">
-
           <div class="row">
-
+            <div class="col-md-6">
+              <h1>
+                COVID-19 at {% if request.GET.location == 'RFH' %} The Royal
+                Free Hospital {% elif request.GET.location == 'BARNET' %} Barnet
+                Hospital {% else %} The Royal Free Trust {% endif %}
+              </h1>
+              <p>Last updated {{ dashboard.last_updated }}</p>
+            </div>
+            <div class="col-md-6">
+              <ul class="nav nav-pills">
+                <li
+                  class="{% if request.GET.location == 'RFH' %}active {% endif %}pull-right"
+                >
+                  <a href="/#/covid-19/?location=RFH"
+                    >The Royal Free Hospital</a
+                  >
+                </li>
+                <li
+                  class="{% if request.GET.location == 'BARNET' %}active {% endif %}pull-right"
+                >
+                  <a href="/#/covid-19/?location=BARNET">Barnet Hospital</a>
+                </li>
+                <li
+                  class="{% if not request.GET.location %}active {% endif %}pull-right"
+                >
+                  <a href="/#/covid-19/">The Royal Free Trust</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- heading -->
+        <div class="panel-body">
+          <div class="row">
             <div class="col-md-5">
               <h2>Cases</h2>
               <h1>{{ patients_positive |intcomma }}</h1>
               <p>
-                Total number of patients with a positive
-                COVID-19 test result
+                Total number of patients with a positive COVID-19 test result
               </p>
-            </div> <!-- Column -->
+            </div>
+            <!-- Column -->
 
             <div class="col-md-5 col-md-offset-1">
               <h2>Deaths</h2>
@@ -28,21 +55,21 @@
                 Total deaths of patients who have died after testing positive
                 for COVID-19
               </p>
-            </div> <!-- Column -->
-
-          </div> <!-- row -->
-
+            </div>
+            <!-- Column -->
+          </div>
+          <!-- row -->
 
           <div class="row content-offset">
-
             <div class="col-md-5">
               <h2>Daily Cases</h2>
               <h1>{{ yesterday.patients_positive | intcomma }}</h1>
               <p>
-                Number of patients who first tested positive for COVID-19
-                on {{ yesterday.date }}
+                Number of patients who first tested positive for COVID-19 on {{
+                yesterday.date }}
               </p>
-            </div> <!-- Column -->
+            </div>
+            <!-- Column -->
 
             <div class="col-md-5 col-md-offset-1">
               <h2>Daily Deaths</h2>
@@ -51,14 +78,18 @@
                 Number of deaths on {{ yesterday.date }} of patients who have
                 tested positive for COVID-19
               </p>
-            </div> <!-- Column -->
-
-          </div> <!-- row -->
+            </div>
+            <!-- Column -->
+          </div>
+          <!-- row -->
 
           <div class="row content-offset">
             <div class="col-md-12">
               <h2>Daily Positive</h2>
-              <p>Daily number of patients testing positive for COVID-19 for the first time</p>
+              <p>
+                Daily number of patients testing positive for COVID-19 for the
+                first time
+              </p>
               <div id="positive_graph"></div>
             </div>
           </div>
@@ -66,71 +97,65 @@
           <div class="row content-offset">
             <div class="col-md-12">
               <h2>Daily Deaths</h2>
-              <p>Daily number of deaths of patients who have tested positive for COVID-19</p>
+              <p>
+                Daily number of deaths of patients who have tested positive for
+                COVID-19
+              </p>
               <div id="deaths_graph"></div>
             </div>
-          </div> <!-- row -->
-
-
-
+          </div>
+          <!-- row -->
 
           <div class="row">
-
             <div class="col-md-4">
               <h2>Tests Ordered</h2>
               <h1>{{ tests_ordered |intcomma }}</h1>
-              <p>
-                Total number of COVID-19 tests ordered
-              </p>
-            </div> <!-- Column -->
+              <p>Total number of COVID-19 tests ordered</p>
+            </div>
+            <!-- Column -->
 
             <div class="col-md-4">
               <h2>Tests Resulted</h2>
               <h1>{{ tests_resulted |intcomma }}</h1>
-              <p>
-                Total number of COVID-19 tests resulted
-              </p>
-            </div> <!-- Column -->
+              <p>Total number of COVID-19 tests resulted</p>
+            </div>
+            <!-- Column -->
 
             <div class="col-md-4">
               <h2>Patients Tested</h2>
               <h1>{{ patients_resulted |intcomma }}</h1>
-              <p>
-                Total number of patients with a COVID-19 test result
-              </p>
-            </div> <!-- Column -->
-
-          </div> <!-- row -->
+              <p>Total number of patients with a COVID-19 test result</p>
+            </div>
+            <!-- Column -->
+          </div>
+          <!-- row -->
 
           <div class="row content-offset">
-
             <div class="col-md-4">
               <h2>Daily Tests Ordered</h2>
               <h1>{{ yesterday.tests_ordered | intcomma }}</h1>
-              <p>
-                Number of COVID-19 tests ordered on
-                on {{ yesterday.date }}
-              </p>
-            </div> <!-- Column -->
+              <p>Number of COVID-19 tests ordered on on {{ yesterday.date }}</p>
+            </div>
+            <!-- Column -->
 
             <div class="col-md-4">
               <h2>Daily Tests Resulted</h2>
               <h1>{{ yesterday.tests_resulted | intcomma }}</h1>
-              <p>
-                Number of COVID-19 tests resulted on {{ yesterday.date }}
-              </p>
-            </div> <!-- Column -->
+              <p>Number of COVID-19 tests resulted on {{ yesterday.date }}</p>
+            </div>
+            <!-- Column -->
 
             <div class="col-md-4">
               <h2>Daily Patients</h2>
               <h1>{{ yesterday.patients_resulted | intcomma }}</h1>
               <p>
-                Number of patients with a first COVID-19 test resulted on {{ yesterday.date }}
+                Number of patients with a first COVID-19 test resulted on {{
+                yesterday.date }}
               </p>
-            </div> <!-- Column -->
-
-          </div> <!-- row -->
-
+            </div>
+            <!-- Column -->
+          </div>
+          <!-- row -->
 
           <div class="row content-offset">
             <div class="col-md-12">
@@ -143,52 +168,69 @@
           <div class="row content-offset">
             <div class="col-md-12">
               <h2>Daily Patients</h2>
-              <p>Daily number of patients who have had tests for COVID-19 resulted for the first time</p>
+              <p>
+                Daily number of patients who have had tests for COVID-19
+                resulted for the first time
+              </p>
               <div id="patients_graph"></div>
             </div>
-          </div> <!-- row -->
+          </div>
+          <!-- row -->
 
           <div class="row content-offset">
             <div class="col-md-12">
               <h2>Daily Positivity</h2>
-              <p>Percentage of tests resulted for the first time that are positive</p>
+              <p>
+                Percentage of tests resulted for the first time that are
+                positive
+              </p>
               <div id="positivity_graph"></div>
             </div>
-          </div> <!-- row -->
+          </div>
+          <!-- row -->
 
           <div class="row content-offset">
             <div class="col-md-12">
               <h2>Weekly Age Ratios</h2>
-              <p>Ratio of different age groups who have resulted positive for the first time</p>
-              <p>Starts in the first week there was a positive test and only includes weeks with more than 20 first time positive results</p>
+              <p>
+                Ratio of different age groups who have resulted positive for the
+                first time
+              </p>
+              <p>
+                Starts in the first week there was a positive test and only
+                includes weeks with more than 20 first time positive results
+              </p>
               <div id="weekly_age_shift"></div>
             </div>
-          </div> <!-- row -->
-
+          </div>
+          <!-- row -->
 
           {% if can_download %}
-            <div class="row content-offset">
-              <div class="col-md-6">
-                <a class="btn btn-lg btn-primary"
-                   href="{% url 'covid_download' %}">
-                  <i class="glyphicon glyphicon-download"></i>
-                  Download
-                </a>
-              </div>
-              <div class="col-md-6">
-                <a class="btn btn-lg btn-primary"
-                   href="{% url 'covid_extract_download' %}">
-                  <i class="glyphicon glyphicon-download"></i>
-                  Report
-                </a>
-              </div>
+          <div class="row content-offset">
+            <div class="col-md-6">
+              <a
+                class="btn btn-lg btn-primary"
+                href="{% url 'covid_download' %}"
+              >
+                <i class="glyphicon glyphicon-download"></i>
+                Download
+              </a>
             </div>
+            <div class="col-md-6">
+              <a
+                class="btn btn-lg btn-primary"
+                href="{% url 'covid_extract_download' %}"
+              >
+                <i class="glyphicon glyphicon-download"></i>
+                Report
+              </a>
+            </div>
+          </div>
           {% endif %}
-
-        </div>   <!-- panel body -->
-      </div>     <!-- Panel -->
-
-
+        </div>
+        <!-- panel body -->
+      </div>
+      <!-- Panel -->
     </div>
   </div>
 </div>
@@ -237,5 +279,4 @@
     {{ weekly_age_change.ages_as_percent |safe }},
     {{ weekly_age_change.week_labels |safe }}
   )
-
 </script>
