@@ -231,20 +231,11 @@
   render_graph('patients_graph', {{ patients_data | safe }});
   render_graph('positivity_graph', {{ positivity_data | safe }}, 'line');
 
-
-  {# We do a different type because  its not a timeseries #}
-  var weekly_age_change = {{ weekly_age_change |safe }};
-  weekly_age_change.tooltip = {
-    format: {
-      value: function(value, ratio, id, index){
-        return "" + value + "% (" + weekly_age_change.extra.raw_values[id][index] + ")";
-      },
-      title: function(x){
-        return "Week " + x + " (" + weekly_age_change.extra.week_label[x-1] + ")";
-      }
-    }
-  }
-  weekly_age_change["bindto"] = document.getElementById("weekly_age_shift");
-  c3.generate(weekly_age_change);
+  covidDashboard.renderWeekGraph(
+    'weekly_age_shift',
+    {{ weekly_age_change.columns |safe }},
+    {{ weekly_age_change.ages_as_percent |safe }},
+    {{ weekly_age_change.week_labels |safe }}
+  )
 
 </script>

@@ -64,45 +64,11 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         for field_name, values in ages_as_percent.items():
             columns.append([field_name] + values)
 
-        colors = dict(zip(
-            ages.keys(),
-            ["#0091C9", "#D36C08", "#a0c7ea", "#9cc96b", "#864200"]
-        ))
-        return json.dumps({
-            "data": {
-                'x': "x",
-                'columns': columns,
-                'type': 'bar',
-                'groups': [
-                    list(ages.keys())
-                ],
-                'colors': colors,
-            },
-            "axis": {
-                "x": {
-                    "type": 'category',
-                    "tick": {
-                        "rotate": 45,
-                        "multiline": False
-                    }
-                },
-                "y": {
-                    "min": 0,
-                    "max": 100,
-                    "padding": {"top": 0, "bottom": 0}
-                }
-            },
-            'bar': {
-                'width': {
-                    'ratio': 0.9
-                }
-            },
-            # These are used in js to calculate the tooltip
-            'extra': {
-                'raw_values': ages,
-                'week_label': week_label
-            }
-        })
+        return {
+            "columns": json.dumps(columns),
+            "ages_as_percent": json.dumps(ages_as_percent),
+            "week_labels": week_label
+        }
 
     def get_context_data(self, *a, **k):
         context = super(CovidDashboardView, self).get_context_data(*a, **k)
