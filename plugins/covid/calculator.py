@@ -108,7 +108,6 @@ def calculate_daily_reports():
             date=yesterday, tests_ordered=0, tests_resulted=0,
             patients_resulted=0, patients_positive=0, deaths=0
         )
-    calculate_week_shift()
 
 
 def calculate():
@@ -120,6 +119,7 @@ def calculate():
     models.CovidPatient.objects.all().delete()
 
     calculate_daily_reports()
+    calculate_week_shift()
     dashboard = models.CovidDashboard(last_updated=timezone.now())
     dashboard.save()
 
@@ -163,6 +163,10 @@ def age_range(age):
 
 
 def calculate_week_shift():
+    """
+    For each week calculates the numbers of patients
+    in different age ranges.
+    """
     models.CovidPositivesAgeDateRange.objects.all().delete()
     covid_patients = models.CovidPatient.objects.all().order_by("date_first_positive").prefetch_related(
         'patient__demographics_set'
