@@ -41,32 +41,42 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
 
     def get_weekly_age_shift(self):
-        covid_positives_age_date_range = models.CovidPositivesAgeDateRange.objects.order_by(
+        ages            = collections.defaultdict(list)
+        ages_as_percent = collections.defaultdict(list)
+        week_label      = []
+
+        weeks = models.CovidPositivesAgeDateRange.objects.order_by(
             "date_start"
         )
-        ages = collections.defaultdict(list)
-        ages_as_percent = collections.defaultdict(list)
-        week_label = []
-        for cvadr in covid_positives_age_date_range:
-            for field_name in cvadr.AGE_RANGES_TO_START_END.keys():
-                field_label = cvadr._meta.get_field(field_name).verbose_name
-                field_value = getattr(cvadr, field_name)
-                if cvadr.is_significant():
+
+        for week in weeks:
+
+            for field_name in week.AGE_RANGES_TO_START_END.keys():
+
+                field_label = week._meta.get_field(field_name).verbose_name
+                field_value = getattr(week, field_name)
+
+                if week.is_significant():
+
                     ages[field_label].append(field_value)
-                    ages_as_percent[field_label].append(cvadr.as_percent(field_value))
+                    ages_as_percent[field_label].append(week.as_percent(field_value))
+
                 else:
                     ages[field_label].append(0)
                     ages_as_percent[field_label].append(0)
-            from_date = cvadr.date_start.strftime("%-d %b")
-            to_date = cvadr.date_end.strftime("%-d %b")
+
+            from_date = week.date_start.strftime("%-d %b")
+            to_date = week.date_end.strftime("%-d %b")
             week_label.append(f"{from_date} - {to_date}")
+
         columns = [['x'] + [i+1 for i in range(len(week_label))]]
+
         for field_name, values in ages_as_percent.items():
             columns.append([field_name] + values)
 
         return {
             "columns": json.dumps(columns),
-            "ages_as_percent": json.dumps(ages_as_percent),
+            "ages_as_percent": json.dumps(ages),
             "week_labels": week_label
         }
 
