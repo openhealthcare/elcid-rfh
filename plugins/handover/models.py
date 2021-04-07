@@ -182,3 +182,112 @@ class AMTHandover(models.Model):
     def to_dict(self):
         dicted = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
         return dicted
+
+
+class PatientNursingHandoverSatus(PatientSubrecord):
+    _is_singleton = True
+
+    has_handover = models.BooleanField(default=False)
+
+
+class NursingHandover(models.Model):
+    """
+    This model mirrors the upstream Freenet Nursing handover database.
+
+    We import data from a view that cleans the raw table(s) used.
+
+    We store the data here as closely as possible even though we do not
+    use all of it at this time.
+
+    The denormalised demographic data is here for audit puroposes only -
+    we match on the MRN field to our elCID record and display all
+    demographics from there.
+    """
+    # We link the upstream data to our system via a single foreign key to the
+    # Patient object. In practice we take the MRN fields and match them
+    # with patient.demographics().hospital_number
+    patient = models.ForeignKey(
+        Patient, on_delete=models.CASCADE, related_name='nursing_handover')
+
+    sqlserver_uniqueid             = models.IntegerField()
+    database_version               = models.IntegerField()
+    os_user                        = models.CharField(max_length=255, blank=True, null=True)
+    handover_list_code             = models.CharField(max_length=255, blank=True, null=True)
+    handover_list_desc             = models.CharField(max_length=255, blank=True, null=True)
+    sqlserver_insert_datetime      = models.DateTimeField(blank=True, null=True)
+    sqlserver_lastupdated_datetime = models.DateTimeField(blank=True, null=True)
+    patient_mrn                    = models.CharField(max_length=255, blank=True, null=True)
+    patient_surname                = models.CharField(max_length=255, blank=True, null=True)
+    patient_forename               = models.CharField(max_length=255, blank=True, null=True)
+    patient_dob                    = models.CharField(max_length=255, blank=True, null=True)
+    ward_code                      = models.CharField(max_length=255, blank=True, null=True)
+    bedno                          = models.CharField(max_length=255, blank=True, null=True)
+    consultant_code                = models.CharField(max_length=255, blank=True, null=True)
+    diagnosis                      = models.CharField(max_length=16000, blank=True, null=True)
+    clinical_instructions          = models.CharField(max_length=16000, blank=True, null=True)
+    results_to_be_reviewed         = models.CharField(max_length=16000, blank=True, null=True)
+    therapy_input_date             = models.DateTimeField(blank=True, null=True)
+    therapy_input_dietician        = models.CharField(max_length=16000, blank=True, null=True)
+    therapy_input_ot               = models.CharField(max_length=16000, blank=True, null=True)
+    therapy_input_pt               = models.CharField(max_length=16000, blank=True, null=True)
+    therapy_input_slt              = models.CharField(max_length=16000, blank=True, null=True)
+    therapy_input_neuro            = models.CharField(max_length=16000, blank=True, null=True)
+    pharmacy_input                 = models.CharField(max_length=16000, blank=True, null=True)
+
+    UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
+        'SQLserver_UniqueID'            : 'sqlserver_uniqueid',
+        'Database_Version'              : 'database_version',
+        'os_user'                       : 'os_user',
+        'Handover_List_Code'            : 'handover_list_code',
+        'Handover_List_Desc'            : 'handover_list_desc',
+        'SQLserver_Insert_DateTime'     : 'sqlserver_insert_datetime',
+        'SQLserver_LastUpdated_DateTime': 'sqlserver_lastupdated_datetime',
+        'Patient_MRN'                   : 'patient_mrn',
+        'patient_surname'               : 'patient_surname',
+        'patient_forename'              : 'patient_forename',
+        'patient_dob'                   : 'patient_dob',
+        'Ward_Code'                     : 'ward_code',
+        'bedno'                         : 'bedno',
+        'consultant_Code'               : 'consultant_code',
+        'diagnosis'                     : 'diagnosis',
+        'clinical_instructions'         : 'clinical_instructions',
+        'results_to_be_reviewed'        : 'results_to_be_reviewed',
+        'Therapy_Input_Date'            : 'therapy_input_date',
+        'Therapy_Input_Dietician'       : 'therapy_input_dietician',
+        'Therapy_Input_OT'              : 'therapy_input_ot',
+        'Therapy_Input_PT'              : 'therapy_input_pt',
+        'Therapy_Input_SLT'             : 'therapy_input_slt',
+        'Therapy_Input_Neuro'           : 'therapy_input_neuro',
+        'Pharmacy_Input'                : 'pharmacy_input'
+    }
+
+    FIELDS_TO_SERIALIZE = [
+        'sqlserver_uniqueid',
+        'database_version',
+        'os_user',
+        'handover_list_code',
+        'handover_list_desc',
+        'sqlserver_insert_datetime',
+        'sqlserver_lastupdated_datetime',
+        'patient_mrn',
+        'patient_surname',
+        'patient_forename',
+        'patient_dob',
+        'ward_code',
+        'bedno',
+        'consultant_code',
+        'diagnosis',
+        'clinical_instructions',
+        'results_to_be_reviewed',
+        'therapy_input_date',
+        'therapy_input_dietician',
+        'therapy_input_ot',
+        'therapy_input_pt',
+        'therapy_input_slt',
+        'therapy_input_neuro',
+        'pharmacy_input'
+    ]
+
+    def to_dict(self):
+        dicted = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+        return dicted

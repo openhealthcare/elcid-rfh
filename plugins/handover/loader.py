@@ -10,7 +10,7 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 
 from plugins.icu import logger
-from plugins.handover.models import AMTHandover
+from plugins.handover.models import AMTHandover, NursingHandover
 
 
 Q_GET_AMT_HANDOVER = """
@@ -153,3 +153,57 @@ def sync_amt_handover():
 
         handover.delete()
         create_handover_from_upstream(upstream)
+
+
+Q_GET_ALL_NURSING_HANDOVER = """
+SELECT *
+FROM
+VIEW_ElCid_Nursing_Handover
+"""
+
+
+@transaction.atomic
+def sync_nursing_handover():
+    """
+    Load patients from the upstream handover database
+    """
+    api = ProdAPI()
+
+    handovers = api.execute_hospital_query(Q_GET_ALL_NURSING_HANDOVER)
+
+    for handover in handovers:
+
+        mrn = handover['Patient_MRN']
+
+        if NursingHandover.objects.filter(
+                sqlserver_uniqueid=handover['SQLserver_UniqueID']
+        ).exists():
+            NursingHandover.objects.get(
+                sqlserver_uniqueid=handover['SQLserver_UniqueID']
+            ).delete()
+
+        if not Demographics.objects.filter(hospital_number=mrn).exists():
+            create_rfh_patient_from_hospital_number(mrn, InfectionService)
+
+            logger.info('Created patient for {}'.format(mrn))
+
+        handover = NursingHandover()
+
+        handover.patient = Patient.objects.filter(
+            demographics__hospital_number=mrn
+        ).first()
+
+        for k, v in handover.items():
+            setattr(
+                handover,
+                NursingHandover.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                v
+            )
+
+        handover.save()
+
+        status = handover.patientnursinghandoverstatus_set.get()
+
+        if not status.has_handover:
+            status.has_handover = True
+            status.save()
