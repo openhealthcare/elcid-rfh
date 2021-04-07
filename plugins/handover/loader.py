@@ -187,22 +187,22 @@ def sync_nursing_handover():
 
             logger.info('Created patient for {}'.format(mrn))
 
-        handover = NursingHandover()
+        our_handover = NursingHandover()
 
-        handover.patient = Patient.objects.filter(
+        our_handover.patient = Patient.objects.filter(
             demographics__hospital_number=mrn
         ).first()
 
         for k, v in handover.items():
             setattr(
-                handover,
+                our_handover,
                 NursingHandover.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
                 v
             )
 
-        handover.save()
+        our_handover.save()
 
-        status = handover.patientnursinghandoverstatus_set.get()
+        status = our_handover.patient.patientnursinghandoverstatus_set.get()
 
         if not status.has_handover:
             status.has_handover = True
