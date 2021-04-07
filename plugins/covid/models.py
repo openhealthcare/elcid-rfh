@@ -4,6 +4,7 @@ Models for the Covid plugin
 from django.db import models
 from opal.core.fields import enum
 from opal.models import Patient, PatientSubrecord, EpisodeSubrecord
+from plugins.covid import constants
 
 
 def calculate_phq_score(interest, depressed):
@@ -63,12 +64,29 @@ class CovidReportingDay(models.Model):
     HELP_PATIENTS_POSITIVE = "Number of patients who first had a COVID 19 test positve result on this day"
     HELP_DEATH             = "Number of patients who died on this day having tested positive for COVID 19"
 
-    date              = models.DateField(help_text=HELP_DATE)
-    tests_ordered     = models.IntegerField(help_text=HELP_TESTS_ORDERED)
-    tests_resulted    = models.IntegerField(help_text=HELP_TESTS_RESULTED)
-    patients_resulted = models.IntegerField(help_text=HELP_PATIENTS_RESULTED)
-    patients_positive = models.IntegerField(help_text=HELP_PATIENTS_POSITIVE)
-    deaths            = models.IntegerField(help_text=HELP_DEATH)
+    date = models.DateField(help_text=HELP_DATE)
+
+    tests_ordered = models.IntegerField(
+        default=0,
+        help_text=HELP_TESTS_ORDERED
+    )
+    tests_resulted = models.IntegerField(
+        default=0,
+        help_text=HELP_TESTS_RESULTED
+    )
+    patients_resulted = models.IntegerField(
+        default=0,
+        help_text=HELP_PATIENTS_RESULTED
+    )
+    patients_positive = models.IntegerField(
+        default=0,
+        help_text=HELP_PATIENTS_POSITIVE
+    )
+    deaths = models.IntegerField(
+        default=0,
+        help_text=HELP_DEATH
+    )
+    location = models.CharField(max_length=256, choices=enum(constants.LOCATIONS))
 
 
 class CovidPatient(models.Model):
@@ -80,6 +98,8 @@ class CovidPatient(models.Model):
         Patient, on_delete=models.CASCADE, related_name='covid_patient'
     )
     date_first_positive = models.DateField()
+    barnet = models.BooleanField(default=False)
+    rfh = models.BooleanField(default=False)
 
 
 class CovidReportCode(models.Model):
@@ -894,3 +914,38 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
 
     def tsq_score(self):
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
+
+
+class CovidPositivesAgeDateRange(models.Model):
+    AGE_RANGES_TO_START_END = {
+        "ages_0_24": (0, 24,),
+        "ages_25_34": (25, 34,),
+        "ages_35_49": (35, 49,),
+        "ages_50_69": (50, 69),
+        "ages_70_plus": (70, None)
+    }
+    AGE_RANGES = enum(*AGE_RANGES_TO_START_END.keys())
+    date_start = models.DateField()
+    date_end = models.DateField()
+    created = models.DateTimeField(auto_now_add=True)
+    location = models.CharField(max_length=256, choices=enum(constants.LOCATIONS))
+
+    ages_0_24 = models.IntegerField(default=0, verbose_name="0 - 24")
+    ages_25_34 = models.IntegerField(default=0, verbose_name="25 - 34")
+    ages_35_49 = models.IntegerField(default=0, verbose_name="35 - 49")
+    ages_50_69 = models.IntegerField(default=0, verbose_name="50 - 69")
+    ages_70_plus = models.IntegerField(default=0, verbose_name="70+")
+
+    def sum(self):
+        return sum(
+            getattr(self, field) for field in self.AGE_RANGES_TO_START_END.keys()
+        )
+
+    def is_significant(self):
+        return self.sum() > 20
+
+    def as_percent(self, some_num):
+        total = self.sum()
+        if not total:
+            return 0
+        return round(float(some_num)/self.sum() * 100, 1)

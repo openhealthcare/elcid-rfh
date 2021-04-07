@@ -4,10 +4,12 @@ Views for our covid plugin
 import collections
 import csv
 import datetime
+import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.http.response import HttpResponseBadRequest
 from django.views.generic import TemplateView, View, DetailView
 
 from opal import models as opal_models
@@ -39,10 +41,44 @@ def rolling_average(series):
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
 
+    def get_weekly_age_shift(self, location):
+        covid_positives_age_date_range = models.CovidPositivesAgeDateRange.objects.filter(
+            location=location
+        ).order_by(
+            "date_start"
+        )
+        ages = collections.defaultdict(list)
+        ages_as_percent = collections.defaultdict(list)
+        week_label = []
+        for cvadr in covid_positives_age_date_range:
+            for field_name in cvadr.AGE_RANGES_TO_START_END.keys():
+                field_label = cvadr._meta.get_field(field_name).verbose_name
+                field_value = getattr(cvadr, field_name)
+                if cvadr.is_significant():
+                    ages[field_label].append(field_value)
+                    ages_as_percent[field_label].append(cvadr.as_percent(field_value))
+                else:
+                    ages[field_label].append(0)
+                    ages_as_percent[field_label].append(0)
+            from_date = cvadr.date_start.strftime("%-d %b")
+            to_date = cvadr.date_end.strftime("%-d %b")
+            week_label.append(f"{from_date} - {to_date}")
+        columns = [['x'] + [i+1 for i in range(len(week_label))]]
+        for field_name, values in ages_as_percent.items():
+            columns.append([field_name] + values)
+        return {
+            "columns": json.dumps(columns),
+            "ages_as_percent": json.dumps(ages_as_percent),
+            "week_labels": week_label
+        }
+
     def get_context_data(self, *a, **k):
         context = super(CovidDashboardView, self).get_context_data(*a, **k)
 
         context['dashboard'] = models.CovidDashboard.objects.first()
+        location = self.request.GET.get("location", "ALL")
+        if location not in constants.LOCATIONS:
+            raise HttpResponseBadRequest("Unknown location")
 
         sum_fields = [
             'tests_ordered', 'tests_resulted',
@@ -51,12 +87,15 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         ]
         for sum_field in sum_fields:
             context[sum_field] = models.CovidReportingDay.objects.filter(
+                location=location,
                 date__gte=datetime.date(2020, 1, 1),
                 date__lt=datetime.date.today() + datetime.timedelta(days=1)
             ).aggregate(Sum(sum_field))['{}__sum'.format(sum_field)]
 
         day_before = datetime.date.today() - datetime.timedelta(days=1)
-        yesterday = models.CovidReportingDay.objects.filter(date=day_before).first()
+        yesterday = models.CovidReportingDay.objects.filter(
+            date=day_before, location=location
+        ).first()
 
         # this should always be the case in prod but is not in dev.
         if not yesterday:
@@ -72,6 +111,7 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         positivity_timeseries = ['Positivity']
 
         for day in models.CovidReportingDay.objects.filter(
+                location=location,
                 date__gte=datetime.date(2020, 1, 1),
                 date__lt=datetime.date.today() + datetime.timedelta(days=1)
         ).order_by('date'):
@@ -96,8 +136,9 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         context['patients_data']   = [ticks, patients_timeseries]
         context['positivity_data'] = [ticks, positivity_timeseries]
 
-        context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
+        context["weekly_age_change"] = self.get_weekly_age_shift(location)
 
+        context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
         return context
 
 
@@ -134,7 +175,6 @@ class CovidAMTDashboardView(TemplateView):
 
         context['non_covid_data'] = [ticks, non_covid_timeseries, non_covid_avg]
         context['non_covid7_data'] = [['x'] + ticks[-7:], ['7 Day Non Covid Take'] + non_covid_timeseries[-7:]]
-
         return context
 
 

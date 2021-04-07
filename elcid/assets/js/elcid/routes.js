@@ -42,7 +42,17 @@ app.config(
                      return target;
                  }
              })
-             .when('/covid-19/',             static_template_route('/templates/covid/dashboard.html'))
+             .when('/covid-19/', {
+                  controller: 'WelcomeCtrl',
+                  templateUrl: function(params){
+                    var target =  '/templates/covid/dashboard.html';
+                    target += "?when=" + Date.now();
+                    if(params.location){
+                      target += "&location=" + params.location
+                    }
+                    return target;
+                  }
+              })
              .when('/recent-covid-pos/',     static_template_route('/templates/covid/recent_positives.html'))
              .when('/ICU/',                  static_template_route('/templates/icu/dashboard.html'))
              .when('/elcid/',                static_template_route('/templates/elcid/dashboard.html'))

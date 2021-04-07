@@ -31,3 +31,9 @@ COVID_FOLLOWUP_APPOINTMENT_TYPES = [
     # 'Drop In OP - COVID19 New',
     # 'Infectious Diseases Covid Swab New',
 ]
+
+# LOCATIONS
+ALL = "ALL"
+BARNET = "BARNET"
+RFH = "RFH"
+LOCATIONS = [ALL, BARNET, RFH]

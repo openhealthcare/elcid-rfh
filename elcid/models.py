@@ -44,6 +44,16 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
     def get_modal_footer_template(cls):
         return "partials/demographics_footer.html"
 
+    def get_age(self, date=None):
+        if date is None:
+            date = datetime.date.today()
+
+        if self.date_of_birth:
+            born = self.date_of_birth
+            return date.year - born.year - (
+                (date.month, date.day) < (born.month, born.day)
+            )
+
     class Meta:
         verbose_name_plural = "Demographics"
 
