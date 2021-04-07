@@ -184,7 +184,7 @@ class AMTHandover(models.Model):
         return dicted
 
 
-class PatientNursingHandoverSatus(PatientSubrecord):
+class PatientNursingHandoverStatus(PatientSubrecord):
     _is_singleton = True
 
     has_handover = models.BooleanField(default=False)
