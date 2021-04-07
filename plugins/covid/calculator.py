@@ -110,18 +110,15 @@ def calculate_daily_reports():
         )
 
 
-def calculate():
+def get_week(some_date):
     """
-    Main entrypoint for calculating figures related to Covid 19.
+    For a given date return a range of the Monday before to
+    the Sunday after.
     """
-    models.CovidDashboard.objects.all().delete()
-    models.CovidReportingDay.objects.all().delete()
-    models.CovidPatient.objects.all().delete()
-
-    calculate_daily_reports()
-    calculate_week_shift()
-    dashboard = models.CovidDashboard(last_updated=timezone.now())
-    dashboard.save()
+    for i in range(7):
+        previous = some_date - datetime.timedelta(i)
+        if previous.isoweekday() == 1:
+            return (previous, previous + datetime.timedelta(6),)
 
 
 def get_week_range(first_covid_positive_test):
@@ -141,17 +138,6 @@ def get_week_range(first_covid_positive_test):
     return result
 
 
-def get_week(some_date):
-    """
-    For a given date return a range of the Monday before to
-    the Sunday after.
-    """
-    for i in range(7):
-        previous = some_date - datetime.timedelta(i)
-        if previous.isoweekday() == 1:
-            return (previous, previous + datetime.timedelta(6),)
-
-
 def age_range(age):
     ranges = models.CovidPositivesAgeDateRange.AGE_RANGES_TO_START_END
     for title, age_range in ranges.items():
@@ -162,36 +148,54 @@ def age_range(age):
             return title
 
 
-def calculate_week_shift():
+def calculate_weekly_reports():
     """
-    For each week calculates the numbers of patients
-    in different age ranges.
+    For each week calculate:
+
+    The number of patients in different age ranges.
     """
-    models.CovidPositivesAgeDateRange.objects.all().delete()
     covid_patients = models.CovidPatient.objects.all().order_by("date_first_positive").prefetch_related(
         'patient__demographics_set'
     )
     week_range = get_week_range(covid_patients[0].date_first_positive)
 
-    week_to_age_range = collections.defaultdict(dict)
-    # initialise the week range as a list of all weeks between
-    # the first positive test and now with 0s as the values
-    for week in week_range:
-        for age_title in models.CovidPositivesAgeDateRange.AGE_RANGES_TO_START_END.keys():
-            week_to_age_range[week][age_title] = 0
+    week_to_age_range = collections.defaultdict(lambda: collections.defaultdict(int))
+
     for covid_patient in covid_patients:
+
         demographics = covid_patient.patient.demographics_set.all()[0]
+
         if demographics.date_of_birth:
+
             first_positive = covid_patient.date_first_positive
             demo_age = age_range(demographics.get_age(first_positive))
             week = get_week(first_positive)
+
             week_to_age_range[week][demo_age] += 1
 
-    for week_range, age_to_demo_ids in sorted(week_to_age_range.items(), key=lambda x: x[0][0]):
-        covid_positives_age_date_range = models.CovidPositivesAgeDateRange(
-            date_end=week_range[0],
-            date_start=week_range[1]
+    for week_range, age_to_counts in week_to_age_range.items():
+
+        week = models.CovidPositivesAgeDateRange(
+            date_start=week_range[0],
+            date_end=week_range[1]
         )
-        for field_title, count in age_to_demo_ids.items():
-            setattr(covid_positives_age_date_range, field_title, count)
-        covid_positives_age_date_range.save()
+
+        for field_title, count in age_to_counts.items():
+            setattr(week, field_title, count)
+
+        week.save()
+
+
+def calculate():
+    """
+    Main entrypoint for calculating figures related to Covid 19.
+    """
+    models.CovidDashboard.objects.all().delete()
+    models.CovidReportingDay.objects.all().delete()
+    models.CovidPatient.objects.all().delete()
+    models.CovidPositivesAgeDateRange.objects.all().delete()
+
+    calculate_daily_reports()
+    calculate_weekly_reports()
+    dashboard = models.CovidDashboard(last_updated=timezone.now())
+    dashboard.save()
