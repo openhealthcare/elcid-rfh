@@ -1,0 +1,58 @@
+{% load humanize %}
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-12 ">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>{{ ward_code }} Nursing Handover List at the Royal Free </h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+          <div class="row">
+
+            <div class="col-md-12">
+              <table class="table table-striped">
+                <tr>
+                  <th>Demographics</th>
+                  <th>Admission</th>
+                  <th>Location</th>
+                  <th>Diagnosis</th>
+                  <th>Clinical Instructions</th>
+                </tr>
+                {% for patient in patients %}
+                <tr>
+                  {% with patient.patient.demographics as dem %}
+                  <td>
+                    <a href="/#/patient/{{ patient.patient_id }}/nursing_handover" class="orange-link">
+                      {{ dem.hospital_number }}
+                      <br />
+                      {{ dem.name }}
+                    </a>
+                    <br />
+                    {{ dem.date_of_birth }}
+                  </td>
+                  {% endwith %}
+                  <td>
+                    Added: {{ patient.sqlserver_insert_datetime }}<br />
+                    Edited: {{ patient.sqlserver_lastupdated_datetime }}
+                  </td>
+                  <td>{{ patient.bedno }}</td>
+                  <td>
+                    {{ patient.diagnosis | linebreaks }}
+                  </td>
+                  <td>
+                    {{ patient.clinical_instructions | linebreaks }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </table>
+            </div>
+          </div> <!-- row -->
+
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+
+    </div>
+  </div>
+</div>
