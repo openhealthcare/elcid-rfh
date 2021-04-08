@@ -1,0 +1,41 @@
+{% load humanize %}
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>Nursing Handover Lists at the Royal Free </h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+          <div class="row">
+
+            <div class="col-md-12">
+              <h2>Wards</h2>
+              <table class="table table-striped">
+                <tr>
+                  <th>Ward Name</th>
+                  <th>Patients</th>
+                </tr>
+                {% for ward in wards %}
+                <tr>
+                  <td>
+                    <a class="orange-link" href="/#/nursing-handover/{{ ward.ward_code }}/">
+                      {{ ward.ward_code }}
+                    </a>
+                  </td>
+                  <td>{{ ward.total }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+            </div>
+          </div> <!-- row -->
+
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+
+
+    </div>
+  </div>
+</div>

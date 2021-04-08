@@ -1,0 +1,57 @@
+<section patient-api target="handovers" endpoint="nursinghandovers">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-12">
+          <h3>
+            <i class="fa fa-hospital-o"></i>
+            Nursing Handover
+          </h3>
+        </div>
+      </div>
+    </div> <!-- heading -->
+  </div>
+
+  <div class="panel panel-default" ng-repeat="item in handovers">
+    <div class="panel-footer">
+      <div class="row">
+        <div class="col-md-4">
+          <p>
+            <b>Location: </b>
+            <a href="/#/nursing-handover/[[ item.ward_code ]]/" class="orange-link">
+              [[ item.ward_code ]]
+            </a>
+            [[ item.bedno ]]
+          </p>
+          <p><b>Consultant: </b>[[ item.consultant_code]]</p>
+          <p>
+            <b>Diagnosis: </b>
+            <br />
+            [[ item.diagnosis]]
+          </p>
+          <p>
+            <b>Clinical Instructions: </b>
+            <br />
+            [[ item.clinical_instructions]]
+          </p>
+          <p>
+            <b>Diagnosis: </b>
+            <br />
+            [[ item.results_to_be_reviewed ]]
+          </p>
+
+        </div>
+        <div class="col-md-4">
+          <p ng-show="item.therapy_input_dietician"><b>Dietician:</b><br/>[[ item.therapy_input_dietician ]]</p>
+          <p ng-show="item.therapy_input_ot"><b>OT:</b><br/>[[ item.therapy_input_ot ]]</p>
+          <p ng-show="item.therapy_input_pt"><b>PT:</b><br/>[[ item.therapy_input_pt ]]</p>
+          <p ng-show="item.therapy_input_slt"><b>SLT:</b><br/>[[ item.therapy_input_slt ]]</p>
+          <p ng-show="item.therapy_input_neuro"><b>Neuro:</b><br/>[[ item.therapy_input_neuro ]]</p>
+          <p ng-show="item.pharmacy_input"><b>Pharmacy:</b><br/>[[ item.pharmacy_input ]]</p>
+        </div>
+
+      </div> <!-- Row -->
+
+    </div> <!-- footer -->
+  </div>
+</section>
