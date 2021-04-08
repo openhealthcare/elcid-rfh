@@ -16,3 +16,14 @@ class AMTHandoverViewSet(LoginRequiredViewset):
             h.to_dict() for h in patient.amt_handover.all().order_by('-sqlserver_insert_datetime')
         ]
         return json_response(data)
+
+
+class NursingHandoverViewSet(LoginRequiredViewset):
+    base_name = 'nursinghandovers'
+
+    def retrieve(self, request, pk):
+        patient = get_object_or_404(Patient.objects.all(), pk=pk)
+        data = [
+            h.to_dict() for h in patient.nursing_handover.all().order_by('-sqlserver_insert_datetime')
+        ]
+        return json_response(data)

@@ -50,5 +50,17 @@ app.config(
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
              .when('/tb/appointment_list/',  static_template_route('/templates/tb/appointment_list.html'))
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
+             .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))
+
+             .when('/nursing-handover/:ward_code/',      {
+                 controller: 'WelcomeCtrl',
+                 controllerAs: 'welcome',
+                 templateUrl: function(params){
+                     return '/templates/nursing/ward_detail.html/' + params.ward_code + '/?when=' + Date.now()
+                 },
+                 resolve: {
+                     referencedata: function(Referencedata) { return Referencedata; },
+                 },
+             })
      }]);
