@@ -211,21 +211,27 @@ class NursingHandover(models.Model):
 
     sqlserver_uniqueid             = models.IntegerField()
     database_version               = models.IntegerField()
+
     os_user                        = models.CharField(max_length=255, blank=True, null=True)
     handover_list_code             = models.CharField(max_length=255, blank=True, null=True)
     handover_list_desc             = models.CharField(max_length=255, blank=True, null=True)
+
     sqlserver_insert_datetime      = models.DateTimeField(blank=True, null=True)
     sqlserver_lastupdated_datetime = models.DateTimeField(blank=True, null=True)
+
     patient_mrn                    = models.CharField(max_length=255, blank=True, null=True)
     patient_surname                = models.CharField(max_length=255, blank=True, null=True)
     patient_forename               = models.CharField(max_length=255, blank=True, null=True)
     patient_dob                    = models.CharField(max_length=255, blank=True, null=True)
+
     ward_code                      = models.CharField(max_length=255, blank=True, null=True)
     bedno                          = models.CharField(max_length=255, blank=True, null=True)
+
     consultant_code                = models.CharField(max_length=255, blank=True, null=True)
     diagnosis                      = models.CharField(max_length=16000, blank=True, null=True)
     clinical_instructions          = models.CharField(max_length=16000, blank=True, null=True)
     results_to_be_reviewed         = models.CharField(max_length=16000, blank=True, null=True)
+
     therapy_input_date             = models.DateTimeField(blank=True, null=True)
     therapy_input_dietician        = models.CharField(max_length=16000, blank=True, null=True)
     therapy_input_ot               = models.CharField(max_length=16000, blank=True, null=True)
