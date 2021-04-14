@@ -172,10 +172,9 @@ def get_specimen_type(test):
     """
     covid_test = _get_covid_test(test)
     if covid_test.SPECIMEN_NAME:
-        observations = test.observation_set.filter(
-            observation_name=covid_test.SPECIMEN_NAME
-        )
-        if observations.count() > 0:
+        observations = test.observation_set.all()
+        observations = [i for i in observations if i.observation_name == covid_test.SPECIMEN_NAME]
+        if len(observations):
             return observations[0].observation_value
 
     clean_site = test.cleaned_site
@@ -192,15 +191,17 @@ def get_result(test):
     field.
     """
     covid_test = _get_covid_test(test)
-    observations = test.observation_set.filter(
-        observation_name=covid_test.OBSERVATION_NAME
-    )
-    if observations.count() == 0:
+    observations = test.observation_set.all()
+    observations = [
+        i for i in observations if i.observation_name==covid_test.OBSERVATION_NAME
+    ]
+
+    if len(observations) == 0:
         return
 
     # Lateral flow tests sometimes have a blank first line
     # followed by a useful second line. Sometimes not.
-    if observations.count() == 2:
+    if len(observations) == 2:
         if observations[0].observation_value == '.{}':
             return observations[1].observation_value
     return observations[0].observation_value
@@ -212,9 +213,8 @@ def get_resulted_datetime(test):
     COVID 19 test, return the datetime of the relevant observation
     """
     covid_test = _get_covid_test(test)
-    observations = test.observation_set.filter(
-        observation_name=covid_test.OBSERVATION_NAME
-    )
+    observations = test.observation_set.all()
+    observations = [i for i in observations if i.observation_name == covid_test.OBSERVATION_NAME]
     return observations[0].observation_datetime
 
 
@@ -258,7 +258,9 @@ def get_covid_result_ticker(patient):
 
         tests = lab_test_models.LabTest.objects.filter(
             test_name=test.TEST_NAME, patient=patient
-        ).order_by('-datetime_ordered')
+        ).order_by('-datetime_ordered').prefetch_related(
+            'observation_set'
+        )
 
         for test in tests:
             if len(data) > 2:
