@@ -251,8 +251,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'heart_failure',
         'arrhythmia',
         'cerebrovascular_disease',
-        'type_1_diabetes',
-        'type_2_diabetes',
+        'diabetes',
         'copd',
         'asthma',
         'ild',
@@ -365,6 +364,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
         'followup_creatinine',
         'followup_creatinin_date',
         'follow_up_date',
+        'smoking_status_at_followup',
         'social_circumstances',
         'shielding_status',
         'changes_to_medication',
@@ -520,8 +520,11 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
             comorbidities.heart_failure,
             comorbidities.arrhythmia,
             comorbidities.cerebrovascular_disease,
-            comorbidities.type_1_diabetes,
-            comorbidities.type_2_diabetes,
+        ]
+
+        row.append(comorbidities.type_1_diabetes or comorbidities.type_2_diabetes)
+
+        row += [
             comorbidities.copd,
             comorbidities.asthma,
             comorbidities.ild,
@@ -605,6 +608,7 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
 
         row += [
             call.when,
+            call.followup_status,
             call.social_circumstances,
             call.shielding_status,
             call.changes_to_medication,
@@ -659,6 +663,12 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
 
             for patient in models.CovidPatient.objects.all():
                 writer.writerow(self.get_row(patient))
+
+            syndromic = set([e.patient for e in opal_models.Episode.objects.filter(
+                category_name='COVID-19', patient__covid_patient__isnull=True)])
+
+            for patient in syndromic:
+                writer.writerow(self.get_row(models.CovidPatient(patient=patient)))
 
         return response
 
