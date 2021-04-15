@@ -14,7 +14,8 @@ KNOWN_JUNK_MRNS = [
 DOWNLOAD_USERS = [
     'ohc',
     'emmanuel.wey',
-    'marclipman'
+    'marclipman',
+    'anita.saigal'
 ]
 
 

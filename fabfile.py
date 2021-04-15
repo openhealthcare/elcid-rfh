@@ -523,34 +523,13 @@ def write_cron_sync_demographics(new_env):
     ))
 
 
-def write_cron_calculate_dashboard(new_env):
+def write_cron_covid(new_env):
     """
-    Creates a cron job that calculates dashboard figures
-    """
-    print("Writing cron {}_calculate_dashboard".format(PROJECT_NAME))
-    template = jinja_env.get_template(
-        'etc/conf_templates/cron_calculate_dashboard.jinja2'
-    )
-    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
-    output = template.render(
-        fabric_file=fabfile,
-        virtualenv=new_env.virtual_env_path,
-        unix_user=UNIX_USER,
-        project_dir=new_env.project_directory
-    )
-    cron_file = "/etc/cron.d/{0}_calculate_dashboard".format(PROJECT_NAME)
-    local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
-    ))
-
-
-def write_cron_classify_covid(new_env):
-    """
-    Creates a cron job that classifies covid patients
+    Creates a cron job that performs covid specific tasks
     """
     print("Writing cron {}_classify_covid".format(PROJECT_NAME))
     template = jinja_env.get_template(
-        'etc/conf_templates/cron_classify_covid.jinja2'
+        'etc/conf_templates/cron_covid.jinja2'
     )
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(
@@ -559,7 +538,7 @@ def write_cron_classify_covid(new_env):
         unix_user=UNIX_USER,
         project_dir=new_env.project_directory
     )
-    cron_file = "/etc/cron.d/{0}_classify_covid".format(PROJECT_NAME)
+    cron_file = "/etc/cron.d/{0}_covid".format(PROJECT_NAME)
     local("echo '{0}' | sudo tee {1}".format(
         output, cron_file
     ))
@@ -752,28 +731,6 @@ def write_cron_backup_size(new_env):
         output, "/etc/cron.d/elcid_backup_size"
     ))
 
-
-def write_cron_create_covid_episodes(new_env):
-    """
-    Creates a cron job that creates covid episodes
-    """
-    print("Writing cron {}_create_covid_episodes".format(PROJECT_NAME))
-    template = jinja_env.get_template(
-        'etc/conf_templates/cron_create_covid_episodes.jinja2'
-    )
-    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
-    output = template.render(
-        fabric_file=fabfile,
-        virtualenv=new_env.virtual_env_path,
-        unix_user=UNIX_USER,
-        project_dir=new_env.project_directory
-    )
-    cron_file = "/etc/cron.d/{0}_create_covid_episodes".format(
-        PROJECT_NAME
-    )
-    local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
-    ))
 
 def write_cron_load_amt_handover(new_env):
     """
@@ -1052,22 +1009,25 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     # Cron jobs
     write_cron_lab_tests(new_env)
     write_cron_lab_pre_load(new_env)
+
     write_cron_sync_demographics(new_env)
+
     write_cron_icu_load(new_env)
-    write_cron_tb_patient_load(new_env)
     write_cron_icu_refresh(new_env)
+    write_cron_tb_patient_load(new_env)
+
     # write_cron_appointment_load(new_env)
     # write_cron_imaging_load(new_env)
     # write_cron_discharge_load(new_env)
+
     write_cron_admission_load(new_env)
     write_cron_disk_check(new_env)
     write_cron_backup_size(new_env)
-    write_cron_calculate_dashboard(new_env)
-    write_cron_classify_covid(new_env)
+
+    write_cron_covid(new_env)
+
     write_cron_load_amt_handover(new_env)
     write_cron_calculte_amt_dashboard(new_env)
-
-    write_cron_create_covid_episodes(new_env)
 
 
 
