@@ -208,6 +208,11 @@ class NursingHandover(models.Model):
     # with patient.demographics().hospital_number
     patient = models.ForeignKey(
         Patient, on_delete=models.CASCADE, related_name='nursing_handover')
+    # As the upstream data is a view filtered on ative, we don't gert any record
+    # of when a patient is removed from the nursing handover.
+    # We add our own flag to enable a current nursing handover mirror while
+    # retaining the previous entries.
+    active = models.BooleanField(default=True)
 
     sqlserver_uniqueid             = models.IntegerField()
     database_version               = models.IntegerField()

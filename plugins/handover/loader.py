@@ -169,29 +169,33 @@ def sync_nursing_handover():
     """
     api = ProdAPI()
 
+    previously_active = set(
+        NursingHandover.objects.filter(
+            active=True).values_list(
+                'sqlserver_uniqueid', flat=True)
+    )
+
     handovers = api.execute_hospital_query(Q_GET_ALL_NURSING_HANDOVER)
 
     for handover in handovers:
 
-        mrn = handover['Patient_MRN']
-
-        if NursingHandover.objects.filter(
-                sqlserver_uniqueid=handover['SQLserver_UniqueID']
-        ).exists():
-            NursingHandover.objects.get(
-                sqlserver_uniqueid=handover['SQLserver_UniqueID']
-            ).delete()
+        mrn    = handover['Patient_MRN']
+        sql_id = handover['SQLserver_UniqueID']
 
         if not Demographics.objects.filter(hospital_number=mrn).exists():
             create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
             logger.info('Created patient for {}'.format(mrn))
 
-        our_handover = NursingHandover()
 
         our_handover.patient = Patient.objects.filter(
             demographics__hospital_number=mrn
         ).first()
+
+        our_handover, created = NursingHandover.objects.get_or_create(
+            sqlserver_uniqueid=sql_id,
+            patient=our_handover_patient
+        )
 
         for k, v in handover.items():
             setattr(
@@ -202,8 +206,15 @@ def sync_nursing_handover():
 
         our_handover.save()
 
+        previously_active.remove(sql_id)
+
         status = our_handover.patient.patientnursinghandoverstatus_set.get()
 
         if not status.has_handover:
             status.has_handover = True
             status.save()
+
+    for sql_id in previously_active:
+        handover = NursingHandover.objects.get(sqlserver_uniqueid=sql_id)
+        handover.active = False
+        handover.save()
