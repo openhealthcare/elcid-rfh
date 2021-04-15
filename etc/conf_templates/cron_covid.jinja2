@@ -1,0 +1,4 @@
+12 * * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py classify_followup >> /usr/lib/ohc/log/cron.log 2>&1
+12 * * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py calculate_covid_dashboard >> /usr/lib/ohc/log/cron.log 2>&1
+5 */2 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py create_covid_episodes >> /usr/lib/ohc/log/cron.log 2>&1
+1 19 * * SUN {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py generate_weekly_covid_extract >> /usr/lib/ohc/log/cron.log 2>&1

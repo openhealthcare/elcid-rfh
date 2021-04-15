@@ -1,7 +1,14 @@
-from django.utils import timezone
-import logging
+"""
+Utils for the elCID project
+"""
+import errno
 from functools import wraps
+import logging
+import os
+import sys
 from time import time
+
+from django.utils import timezone
 
 logger = logging.getLogger('elcid.time_logger')
 
@@ -39,3 +46,22 @@ def model_method_logging(f):
         ))
         return result
     return wrap
+
+
+def mkdir_p(path):
+    """
+    Python translation of *nix mkdir -p
+    Will create all components in `path` which do not exist.
+    Arguments:
+    - `path`: str or Path
+    Return: None
+    Exceptions: Exception
+    """
+    try:
+        os.makedirs(str(path))
+    except OSError:
+        _, exc, _ = sys.exc_info()
+        if exc.errno == errno.EEXIST:
+            pass
+        else:
+            raise

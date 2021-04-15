@@ -21,3 +21,4 @@ opal.sqlite.*
 .dir-locals.el
 node_modules
 .vscode
+prepared_downloads
