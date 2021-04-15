@@ -385,6 +385,7 @@ class Command(BaseCommand):
         comorbidities.heart_failure = no_yes(patient['Heart failure  (0 = no, 1 = yes)'])
         comorbidities.arrhythmia = no_yes(patient['AF/arrhythmia  (0 = no, 1 = yes)'])
         comorbidities.cerebrovascular_disease = no_yes(patient['Cerebrovascular disease  (0 = no, 1 = yes)'])
+        comorbidities.type_1_diabetes = no_yes(patient['Diabetes (no = 0, 1 = yes)'])
         comorbidities.copd = no_yes(patient['COPD  (0 = no, 1 = yes)'])
         comorbidities.asthma = no_yes(patient['Asthma  (0 = no, 1 = yes)'])
         comorbidities.ild = no_yes(patient['ILD  (0 = no, 1 = yes)'])

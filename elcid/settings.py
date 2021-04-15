@@ -419,6 +419,8 @@ HOSPITAL_DB = dict(
 EXTRACT_ASYNC = False
 WRITEBACK_ON = True
 
+COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
