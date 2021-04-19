@@ -4,6 +4,7 @@ Views for our covid plugin
 import collections
 import csv
 import datetime
+import json
 
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -39,6 +40,46 @@ def rolling_average(series):
 
 class CovidDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'covid/dashboard.html'
+
+    def get_weekly_age_shift(self):
+        ages            = collections.defaultdict(list)
+        ages_as_percent = collections.defaultdict(list)
+        week_label      = []
+
+        weeks = models.CovidPositivesAgeDateRange.objects.order_by(
+            "date_start"
+        )
+
+        for week in weeks:
+
+            for field_name in week.AGE_RANGES_TO_START_END.keys():
+
+                field_label = week._meta.get_field(field_name).verbose_name
+                field_value = getattr(week, field_name)
+
+                if week.is_significant():
+
+                    ages[field_label].append(field_value)
+                    ages_as_percent[field_label].append(week.as_percent(field_value))
+
+                else:
+                    ages[field_label].append(0)
+                    ages_as_percent[field_label].append(0)
+
+            from_date = week.date_start.strftime("%-d %b")
+            to_date = week.date_end.strftime("%-d %b")
+            week_label.append(f"{from_date} - {to_date}")
+
+        columns = [['x'] + [i+1 for i in range(len(week_label))]]
+
+        for field_name, values in ages_as_percent.items():
+            columns.append([field_name] + values)
+
+        return {
+            "columns": json.dumps(columns),
+            "ages_as_percent": json.dumps(ages),
+            "week_labels": week_label
+        }
 
     def get_context_data(self, *a, **k):
         context = super(CovidDashboardView, self).get_context_data(*a, **k)
@@ -97,6 +138,8 @@ class CovidDashboardView(LoginRequiredMixin, TemplateView):
         context['patients_data']   = [ticks, patients_timeseries]
         context['positivity_data'] = [ticks, positivity_timeseries]
 
+        context["weekly_age_change"] = self.get_weekly_age_shift()
+
         context['can_download'] = self.request.user.username in constants.DOWNLOAD_USERS
 
         return context
@@ -135,7 +178,6 @@ class CovidAMTDashboardView(TemplateView):
 
         context['non_covid_data'] = [ticks, non_covid_timeseries, non_covid_avg]
         context['non_covid7_data'] = [['x'] + ticks[-7:], ['7 Day Non Covid Take'] + non_covid_timeseries[-7:]]
-
         return context
 
 
