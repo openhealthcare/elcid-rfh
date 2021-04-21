@@ -1,0 +1,5 @@
+{% for alert in alerts %}
+<span class="{% if alert.historic %} text-muted {% endif %}">
+  {{ alert.category }} {{ alert.trigger_datetime | date:"j M Y"  }}
+</span>
+{% endfor %}

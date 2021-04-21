@@ -1,0 +1,42 @@
+{% extends 'ipc/base.html' %}
+{% load ipc %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>
+      Side Rooms: Royal Free Hospital
+      <span>
+        ({{ patients|length }} patients)
+      </span>
+    </h1>
+  </div>
+  <div class="panel-body">
+    {% for patient in patients %}
+    <div class="row">
+      <div class="col-md-2">
+        <a href="/#/ipc/ward/{{ patient.ward | slugify }}/" class="orange-link">
+          {{ patient.ward }}
+        </a>
+      </div>
+      <div class="col-md-1">{{ patient.room }}</div>
+      <div class="col-md-1">{{ patient.bed }}</div>
+      {% with patient.patient.demographics as demographics %}
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.hospital_number }}</a>
+      </div>
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.date_of_birth }}</a>
+      </div>
+      <div class="col-md-2">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.name }}</a>
+      </div>
+      {% endwith %}
+      <div class="col-md-2">{{ patient.admitted }}</div>
+      <div class="col-md-2">
+        {% location_alerts patient %}
+      </div>
+    </div> <!-- Row -->
+    {% endfor %}
+  </div>
+</div> <!-- Panel -->
+{% endblock %}

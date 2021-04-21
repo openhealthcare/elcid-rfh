@@ -16,6 +16,19 @@ var static_template_route = function(url){
   }
 };
 
+var param_template_route = function(base, param_name){
+    return {
+        controller: 'WelcomeCtrl',
+        controllerAs: 'welcome',
+        templateUrl: function(params){
+            return base + params[param_name] + '/?when=' + Date.now()
+        },
+        resolve: {
+            referencedata: function(Referencedata) { return Referencedata; },
+        },
+    }
+}
+
 app.config(
     ['$routeProvider',
      function($routeProvider){
@@ -52,6 +65,13 @@ app.config(
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))
+
+             .when('/ipc/',                  static_template_route('/templates/ipc/home.html'))
+             .when('/ipc/wards/',            static_template_route('/templates/ipc/wards.html'))
+             .when('/ipc/ward/:ward_code/',  param_template_route('/templates/ipc/ward/', 'ward_code'))
+             .when('/ipc/siderooms/',        static_template_route('/templates/ipc/siderooms.html'))
+             .when('/ipc/recent-tests/:test_code/', param_template_route('/templates/ipc/recent-tests/', 'test_code'))
+             .when('/ipc/alert/:alert_code/', param_template_route('/templates/ipc/alert/', 'alert_code'))
 
              .when('/nursing-handover/:ward_code/',      {
                  controller: 'WelcomeCtrl',

@@ -364,3 +364,50 @@ div.add-isolate:hover {
   right: 0px;
   margin-top: 28px;
 }
+
+.left-menu {
+  background-color: #4676c5;
+  color: #FFF;
+  width: 10%;
+  float: left;
+  height: initial;
+  top: 50px;
+  position: fixed;
+  min-height: calc(100vh - 50px);
+  padding-left: 1%;
+}
+.left-menu h3 {
+  padding-top: 18px;
+}
+.left-menu a {
+  width: 100%;
+  display: block;
+  padding: 2px;
+  color: #FFF;
+}
+.left-menu a:hover {
+  background: #343637;
+  text-decoration: none;
+}
+
+.right-viewport {
+  width: 90%;
+  float: left;
+  margin-left: 10%;
+  margin-right: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.ward-name-list .row {
+  border-bottom: 1px solid #343637;
+}
+.ward-name-list a {
+  padding: 12px 6px 12px 6px;
+  display: block;
+}
+.ward-name-list a:hover {
+  background: #343637;
+}
+
+/*# sourceMappingURL=elcid.css.map */

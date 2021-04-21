@@ -1,0 +1,80 @@
+{% extends 'ipc/base.html' %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>Infection Prevention & Control: Royal Free Hospital</h1>
+  </div> <!-- Heading -->
+
+  <div class="panel-body">
+
+    {% if alerts %}
+    <h2>New Infection Alerts</h2>
+    {% endif %}
+
+    {% for alert in alerts %}
+    <div class="row {% if not alert.seen %} bg-danger {% endif %}">
+
+      <div class="col-md-1">{{ alert.category }}</div>
+      <div class="col-md-2">{{ alert.trigger_datetime }}</div>
+      <div class="col-md-1">{{ alert.lab_test.lab_number }}</div>
+
+      {% with alert.episode.patient.demographics as demographics %}
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
+          {{ demographics.hospital_number }}</a>
+      </div>
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
+          {{ demographics.date_of_birth }}</a>
+      </div>
+      <div class="col-md-2">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
+          {{ demographics.name }}</a>
+      </div>
+      {% endwith %}
+      <div class="col-md-2">
+        {% with alert.episode.patient.upstreamlocation.get as location %}
+        {{ location.ward }} {{ location.room }} {{ locatoin.bed }}
+        {% endwith %}
+      </div>
+    </div> <!-- Row -->
+    {% endfor %}
+
+    <h2>12 Month Infection Counts</h2>
+    <div class="row">
+      <div class="col-md-12">
+        <div id="overview"></div>
+      </div>
+    </div>
+
+  </div> <!-- Panel body -->
+
+</div> <!-- Panel -->
+
+<script>
+  c3.generate(
+      {
+          bindto: document.getElementById('overview'),
+          data: {
+              columns: {{ overview_data |safe }},
+              x: 'x',
+              type: 'bar'
+          },
+          axis: {
+              x: {
+                  type: 'timeseries',
+                  tick: { format: '%b %Y', rotate: 45}
+              }
+          },
+          point: {
+              show: false
+          },
+          bar: {
+              width: {
+                  ratio: 0.66
+              }
+          }
+      }
+  )
+</script>
+{% endblock %}
