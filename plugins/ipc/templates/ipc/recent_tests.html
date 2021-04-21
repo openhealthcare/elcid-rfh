@@ -1,0 +1,34 @@
+{% extends 'ipc/base.html' %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>Recent {{ test_name }} tests (100)</h1>
+  </div>
+  <div class="panel-body">
+    {% for test in tests %}
+    <div class="row {% if test.alert %}bg-danger {% endif %}">
+      <div class="col-md-2">
+        {{ test.test.datetime_ordered }}
+        {{ test.test.lab_number }}
+      </div>
+      {% with test.patient.demographics as demographics %}
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ test.test.patient_id }}">{{ demographics.hospital_number }}</a>
+      </div>
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ test.test.patient_id }}">{{ demographics.date_of_birth }}</a>
+      </div>
+      <div class="col-md-2">
+        <a class="orange-link" href="/#/patient/{{ test.test.patient_id }}">{{ demographics.name }}</a>
+      </div>
+      <div class="col-md-6">
+        {% for observation in test.get_observations %}
+        {{ observation.observation_value  }}
+        {% endfor %}
+      </div>
+      {% endwith %}
+    </div> <!-- Row -->
+    {% endfor %}
+  </div>
+</div> <!-- Panel -->
+{% endblock %}

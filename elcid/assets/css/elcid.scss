@@ -10,6 +10,7 @@ $bg: #EEE;
 $red  : #f76c51;
 $blue : #5fa2dd;
 $blue-light: #a0c7ea;
+$indigo: rgba(70, 118, 197, 1);
 $green: #9cc96b;
 $obsidian: #343637;
 $obsidian-light: #cbc9c8;
@@ -413,4 +414,57 @@ div.add-isolate:hover{
     position: fixed;
     right: 0px;
     margin-top: 28px;
+}
+
+.left-menu {
+    background-color: $indigo;
+    color: $white;
+
+    width: 10%;
+    float: left;
+    height: initial;
+    top: 50px;
+    position: fixed;
+    min-height: calc(100vh - 50px);
+
+    padding-left: 1%;
+
+    h3 {
+        padding-top: 18px;
+    }
+
+    a {
+        width: 100%;
+        display: block;
+        padding: 2px;
+        color: $white;
+    }
+
+    a:hover {
+        background: $obsidian;
+        text-decoration: none;
+    }
+
+}
+
+.right-viewport {
+    width: 90%;
+    float: left;
+    margin-left: 10%;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.ward-name-list {
+    .row {
+        border-bottom: 1px solid $obsidian;
+    }
+    a {
+        padding: 12px 6px 12px 6px;
+        display: block;
+    }
+    a:hover {
+        background: $obsidian;
+    }
 }

@@ -1,0 +1,3 @@
+"""
+IPC module for elCID
+"""

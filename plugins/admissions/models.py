@@ -176,3 +176,19 @@ class Encounter(models.Model):
         serialized['patient_id'] = self.patient_id
 
         return serialized
+
+
+class UpstreamLocation(models.Model):
+    """
+    For ease of querying, and to prevent multiple occupancy,
+    we de-normalize the upstream location data.
+
+    Two patients cannot occupy the same bed.
+    """
+    patient   = models.ForeignKey(Patient, blank=True, null=True, on_delete=models.SET_NULL, related_name='upstreamlocation')
+    hospital  = models.CharField(blank=True, null=True, max_length=50)
+    building  = models.CharField(blank=True, null=True, max_length=50)
+    ward      = models.CharField(blank=True, null=True, max_length=50)
+    room      = models.CharField(blank=True, null=True, max_length=50)
+    bed       = models.CharField(blank=True, null=True, max_length=50)
+    admitted  = models.DateTimeField(blank=True, null=True)
