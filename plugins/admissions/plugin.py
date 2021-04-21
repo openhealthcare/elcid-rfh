@@ -4,8 +4,10 @@ Plugin definition for the admissions plugin
 from opal.core import plugins
 
 from plugins.admissions import api
+from plugins.admissions.urls import urlpatterns
 
 class AdmissionsPlugin(plugins.OpalPlugin):
+    urls = urlpatterns
 
     javascripts = {
         'opal.controllers': [

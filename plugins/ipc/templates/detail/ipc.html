@@ -1,7 +1,13 @@
+{% load panels %}
+{% load forms %}
 <section>
   <div class="row">
-    <div class="col-md-12">
-      HELLO IPC PATIENT
-    </div> <!-- Col 12 -->
+    <div class="col-md-6">
+      {% record_panel models.InfectionAlert %}
+    </div> <!-- Col 6 -->
+    <div class="col-md-6">
+      {% record_panel models.Location %}
+      <ng-include src="'/templates/admissions/upstream_location/' +  patient.id + '/'">
+    </div>
   </div>
 </section>

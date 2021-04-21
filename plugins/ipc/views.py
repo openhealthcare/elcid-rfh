@@ -17,11 +17,12 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
-        alerts = models.InfectionAlert.objects.filter(seen=False).order_by('-trigger_datetime')
+
+        alerts  = models.InfectionAlert.objects.filter(seen=False).order_by('-trigger_datetime')
+        context['alerts'] = alerts
 
         monthly = collections.defaultdict(lambda: collections.defaultdict(int))
 
-        # TODO: Can we go back to 2018?
         today = datetime.date.today()
         start = datetime.date(today.year-2, today.month, 1)
 
@@ -37,7 +38,11 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
 
         context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs]
 
-        context['alerts'] = alerts
+        context['rfh_patients'] = UpstreamLocation.objects.filter(building='RFH').count()
+        context['rfh_siderooms'] = UpstreamLocation.objects.filter(building='RFH', room__startswith='SR').count()
+        context['weekly_alerts'] = models.InfectionAlert.objects.filter(
+            trigger_datetime__gte=today-datetime.timedelta(days=7)).count()
+
         return context
 
 

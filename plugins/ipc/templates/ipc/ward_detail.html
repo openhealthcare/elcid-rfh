@@ -19,11 +19,11 @@
       <div class="col-md-1">
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.hospital_number }}</a>
       </div>
-      <div class="col-md-1">
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.date_of_birth }}</a>
-      </div>
       <div class="col-md-2">
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.name }}</a>
+      </div>
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.date_of_birth }}</a>
       </div>
       {% endwith %}
       <div class="col-md-2">{{ patient.admitted }}</div>
