@@ -8,7 +8,7 @@
   <div class="panel-body">
 
     {% if alerts %}
-    <h2>New Infection Alerts</h2>
+    <h2>{{ alerts| length }} New Infection Alerts</h2>
     {% endif %}
 
     {% for alert in alerts %}
@@ -23,24 +23,50 @@
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
           {{ demographics.hospital_number }}</a>
       </div>
-      <div class="col-md-1">
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
-          {{ demographics.date_of_birth }}</a>
-      </div>
       <div class="col-md-2">
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
           {{ demographics.name }}</a>
       </div>
+      <div class="col-md-1">
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
+          {{ demographics.date_of_birth }}</a>
+      </div>
       {% endwith %}
       <div class="col-md-2">
         {% with alert.episode.patient.upstreamlocation.get as location %}
-        {{ location.ward }} {{ location.room }} {{ locatoin.bed }}
+        <a href="/#/ipc/ward/{{ location.ward | slugify }}/" class="orange-link">
+          {{ location.ward }}
+        </a>
+        {{ location.room }} {{ location.bed }}
         {% endwith %}
       </div>
     </div> <!-- Row -->
     {% endfor %}
 
-    <h2>12 Month Infection Counts</h2>
+    <h2>Hospital Status</h2>
+    <div class="row text-center">
+      <div class="col-md-4">
+        <h2>Patients</h2>
+        <h1>{{ rfh_patients }}</h1>
+        <p>Total current inpatients</p>
+      </div>
+
+      <div class="col-md-4">
+        <h2>Siderooms</h2>
+        <h1>{{ rfh_siderooms }}</h1>
+        <p>Currently occupied siderooms</p>
+      </div>
+
+      <div class="col-md-4">
+        <h2>Alerts</h2>
+        <h1>{{ weekly_alerts }}</h1>
+        <p>Alerts in the last 7 days</p>
+      </div>
+
+
+    </div>
+
+    <h2>12 Month Infections</h2>
     <div class="row">
       <div class="col-md-12">
         <div id="overview"></div>

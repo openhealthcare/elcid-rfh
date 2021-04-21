@@ -1,6 +1,7 @@
 """
 Management command
 """
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from opal.models import Episode
 
@@ -12,6 +13,7 @@ class Command(BaseCommand):
     def handle(self, *a, **k):
 
         models.InfectionAlert.objects.all().delete() # TODO Remove this
+        ohc_user = User.objects.get(username='ohc')
 
         for test_type in lab.IPC_TESTS:
             print(f"Commencing {test_type.TEST_NAME}")
@@ -28,7 +30,8 @@ class Command(BaseCommand):
                         episode=episode,
                         lab_test=test.test,
                         category=test.ALERT_CATEGORY,
-                        trigger_datetime=test.test.datetime_ordered
+                        trigger_datetime=test.test.datetime_ordered,
+                        created_by=ohc_user
                     )
 
         # TODO: This is not needed outside of demos

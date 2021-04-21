@@ -19,6 +19,8 @@ class InfectionAlert(EpisodeSubrecord):
     Instances of this subrecord are created by background processes
     filtering incoming lab data, and only ever edited by users.
     """
+    _icon = 'fa fa-exclamation-triangle'
+
     MRSA  = 'MRSA'
     CPE   = 'CPE'
     CDIFF = 'DIFF'
