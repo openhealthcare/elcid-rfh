@@ -10,7 +10,7 @@ from opal.models import Patient
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
-from plugins.admissions.models import Encounter
+from plugins.admissions.models import Encounter, TransferHistory
 from plugins.admissions import logger
 
 
@@ -29,6 +29,10 @@ WHERE
 PID_3_MRN = @mrn
 """
 
+Q_GET_ALL_HISTORY = """
+SELECT *
+FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
+"""
 
 def save_encounter(encounter, patient):
     """
@@ -108,7 +112,7 @@ def load_recent_encounters():
     with a single query.
 
     We filter the data returned from upstream against patients in the
-    elCID cohord, discarding data about patients not in our cohort.
+    elCID cohort, discarding data about patients not in our cohort.
 
     It is unfortnately unworkably slow to either query for our patients
     by identifier.
@@ -131,3 +135,24 @@ def load_recent_encounters():
             patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
 
             save_encounter(encounter, patient)
+
+
+def load_transfer_history():
+    """
+    TEMP ONLY
+    """
+    api = ProdApi()
+
+    histories = api.execute_hospital_query(
+        Q_GET_ALL_HISTORY
+    )
+    for history in histories:
+
+        hist = TransferHistory()
+        for k, v in history.items():
+            setattr(
+                hist,
+                TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                v
+            )
+        hist.save()
