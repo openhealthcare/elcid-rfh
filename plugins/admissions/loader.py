@@ -143,7 +143,7 @@ def load_transfer_history():
     """
     api = ProdAPI()
 
-    histories = api.execute_hospital_query(
+    histories = api.execute_warehouse_query(
         Q_GET_ALL_HISTORY
     )
     for history in histories:
