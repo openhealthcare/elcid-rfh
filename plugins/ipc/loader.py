@@ -18,7 +18,7 @@ def load_all_extra_ipc_patients():
     """
     Load historic patients who have had IPC tests
     """
-    api = ProdApi()
+    api = ProdAPI()
     all_tested_mrns = set()
 
     for test in lab.IPC_TESTS:
