@@ -21,7 +21,7 @@ def load_all_extra_ipc_patients():
     api = ProdApi()
     all_tested_mrns = set()
 
-     for test in lab.IPC_TESTS:
+    for test in lab.IPC_TESTS:
         tested_mrns = api.execute_trust_query(
             Q_GET_DISTINCT_MRNS_FOR_TEST,
             params={'test_name': test.TEST_NAME}
