@@ -141,7 +141,7 @@ def load_transfer_history():
     """
     TEMP ONLY
     """
-    api = ProdApi()
+    api = ProdAPI()
 
     histories = api.execute_hospital_query(
         Q_GET_ALL_HISTORY
