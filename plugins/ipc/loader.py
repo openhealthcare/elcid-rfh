@@ -26,7 +26,7 @@ def load_all_extra_ipc_patients():
             Q_GET_DISTINCT_MRNS_FOR_TEST,
             params={'test_name': test.TEST_NAME}
         )
-        all_tested_mrns.update(tested_mrns)
+        all_tested_mrns.update([r['Patient_Number'] for r in tested_mrns])
 
     all_mrns = set(
         Demographics.objects.values_list('hospital_number', flat=True)
