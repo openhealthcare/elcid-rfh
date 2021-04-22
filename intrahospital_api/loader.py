@@ -118,7 +118,7 @@ def load_patient(patient, run_async=None):
     Sync lab tests.
     Sync demographics.
 
-    Will work asynchronously based on your preference.
+    Will work asynchronously if RUN_ASYNC is python truthy
     It will default to settings.ASYNC_API.
     """
     logger.info("starting to load patient {}".format(patient.id))
