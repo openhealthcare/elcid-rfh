@@ -439,6 +439,7 @@ class ProdApi(base_api.BaseApi):
     def __init__(self):
         self.hospital_settings = settings.HOSPITAL_DB
         self.trust_settings = settings.TRUST_DB
+        self.waehouse_settings = settings.WAREHOUSE_DB
         if not all([
             self.hospital_settings.get("ip_address"),
             self.hospital_settings.get("database"),
@@ -508,6 +509,22 @@ class ProdApi(base_api.BaseApi):
         logger.debug(result)
         return result
 
+    def execute_warehouse_query(self, query, params=None):
+        with pytds.connect(
+            self.warehouse_settings["ip_address"],
+            self.warehouse_settings["database"],
+            self.warehouse_settings["username"],
+            self.warehouse_settings["password"],
+            as_dict=True
+        ) as conn:
+            with conn.cursor() as cur:
+                logger.info(
+                    "Running warehouse query {} {}".format(query, params)
+                )
+                cur.execute(query, params)
+                result = cur.fetchall()
+        logger.debug(result)
+        return result
 
     @property
     def pathology_demographics_query(self):
