@@ -1,6 +1,7 @@
 """
 Covid specific urls
 """
+from django.urls import path
 from django.conf.urls import url
 
 from plugins.covid import views
@@ -27,7 +28,6 @@ urlpatterns = [
         views.CovidCohortDownloadView.as_view(),
         name='covid_download'
     ),
-
     url(
         'covid/extract-download/',
         views.CovidExtractDownloadView.as_view(),
@@ -49,4 +49,10 @@ urlpatterns = [
         views.CovidSixMonthFollowupLetter.as_view(),
         name='covid_followup_letter'
     ),
+    path(
+        'templates/covid/clinic_list.html',
+        views.CovidClinicList.as_view(),
+        name="covid_clinic_list"
+    )
+
 ]

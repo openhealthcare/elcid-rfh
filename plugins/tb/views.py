@@ -6,15 +6,18 @@ import datetime
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
-from plugins.tb.models import PatientConsultation
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
-from plugins.appointments.models import Appointment
-from plugins.tb.utils import get_tb_summary_information
-from plugins.tb import episode_categories, constants
-from plugins.tb.models import Treatment
-from elcid.models import Diagnosis
 from opal import views
+
+from elcid.models import Diagnosis
+from plugins.appointments.models import Appointment
+
+from plugins.tb import episode_categories, constants
+from plugins.tb.models import PatientConsultation
+from plugins.tb.models import Treatment
+from plugins.tb.utils import get_tb_summary_information
+
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):

@@ -1,219 +1,213 @@
+{% extends 'covid/base.html' %}
 {% load humanize %}
-<div class="content-offset">
-  <div class="row ">
-    <div class="col-md-8 col-md-offset-2 content-offset">
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>COVID-19 at the Royal Free Trust</h1>
+    <p>Last updated {{ dashboard.last_updated }}</p>
+  </div> <!-- heading -->
+  <div class="panel-body">
 
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h1>COVID-19 at the Royal Free Trust</h1>
-          <p>Last updated {{ dashboard.last_updated }}</p>
-        </div> <!-- heading -->
-        <div class="panel-body">
+    <div class="row">
 
-          <div class="row">
+      <div class="col-md-5">
+        <h2>Cases</h2>
+        <h1>{{ patients_positive |intcomma }}</h1>
+        <p>
+          Total number of patients with a positive
+          COVID-19 test result
+        </p>
+      </div> <!-- Column -->
 
-            <div class="col-md-5">
-              <h2>Cases</h2>
-              <h1>{{ patients_positive |intcomma }}</h1>
-              <p>
-                Total number of patients with a positive
-                COVID-19 test result
-              </p>
-            </div> <!-- Column -->
+      <div class="col-md-5 col-md-offset-1">
+        <h2>Deaths</h2>
+        <h1>{{ deaths |intcomma }}</h1>
+        <p>
+          Total deaths of patients who have died after testing positive
+          for COVID-19
+        </p>
+      </div> <!-- Column -->
 
-            <div class="col-md-5 col-md-offset-1">
-              <h2>Deaths</h2>
-              <h1>{{ deaths |intcomma }}</h1>
-              <p>
-                Total deaths of patients who have died after testing positive
-                for COVID-19
-              </p>
-            </div> <!-- Column -->
-
-          </div> <!-- row -->
+    </div> <!-- row -->
 
 
-          <div class="row content-offset">
+    <div class="row content-offset">
 
-            <div class="col-md-5">
-              <h2>Daily Cases</h2>
-              <h1>{{ yesterday.patients_positive | intcomma }}</h1>
-              <p>
-                Number of patients who first tested positive for COVID-19
-                on {{ yesterday.date }}
-              </p>
-            </div> <!-- Column -->
+      <div class="col-md-5">
+        <h2>Daily Cases</h2>
+        <h1>{{ yesterday.patients_positive | intcomma }}</h1>
+        <p>
+          Number of patients who first tested positive for COVID-19
+          on {{ yesterday.date }}
+        </p>
+      </div> <!-- Column -->
 
-            <div class="col-md-5 col-md-offset-1">
-              <h2>Daily Deaths</h2>
-              <h1>{{ yesterday.deaths | intcomma }}</h1>
-              <p>
-                Number of deaths on {{ yesterday.date }} of patients who have
-                tested positive for COVID-19
-              </p>
-            </div> <!-- Column -->
+      <div class="col-md-5 col-md-offset-1">
+        <h2>Daily Deaths</h2>
+        <h1>{{ yesterday.deaths | intcomma }}</h1>
+        <p>
+          Number of deaths on {{ yesterday.date }} of patients who have
+          tested positive for COVID-19
+        </p>
+      </div> <!-- Column -->
 
-          </div> <!-- row -->
+    </div> <!-- row -->
 
-          <div class="row content-offset">
-            <div class="col-md-12">
-              <h2>Daily Positive</h2>
-              <p>Daily number of patients testing positive for COVID-19 for the first time</p>
-              <div id="positive_graph"></div>
-            </div>
-          </div>
-
-          <div class="row content-offset">
-            <div class="col-md-12">
-              <h2>Daily Deaths</h2>
-              <p>Daily number of deaths of patients who have tested positive for COVID-19</p>
-              <div id="deaths_graph"></div>
-            </div>
-          </div> <!-- row -->
-
-
-
-
-          <div class="row">
-
-            <div class="col-md-4">
-              <h2>Tests Ordered</h2>
-              <h1>{{ tests_ordered |intcomma }}</h1>
-              <p>
-                Total number of COVID-19 tests ordered
-              </p>
-            </div> <!-- Column -->
-
-            <div class="col-md-4">
-              <h2>Tests Resulted</h2>
-              <h1>{{ tests_resulted |intcomma }}</h1>
-              <p>
-                Total number of COVID-19 tests resulted
-              </p>
-            </div> <!-- Column -->
-
-            <div class="col-md-4">
-              <h2>Patients Tested</h2>
-              <h1>{{ patients_resulted |intcomma }}</h1>
-              <p>
-                Total number of patients with a COVID-19 test result
-              </p>
-            </div> <!-- Column -->
-
-          </div> <!-- row -->
-
-          <div class="row content-offset">
-
-            <div class="col-md-4">
-              <h2>Daily Tests Ordered</h2>
-              <h1>{{ yesterday.tests_ordered | intcomma }}</h1>
-              <p>
-                Number of COVID-19 tests ordered on
-                on {{ yesterday.date }}
-              </p>
-            </div> <!-- Column -->
-
-            <div class="col-md-4">
-              <h2>Daily Tests Resulted</h2>
-              <h1>{{ yesterday.tests_resulted | intcomma }}</h1>
-              <p>
-                Number of COVID-19 tests resulted on {{ yesterday.date }}
-              </p>
-            </div> <!-- Column -->
-
-            <div class="col-md-4">
-              <h2>Daily Patients</h2>
-              <h1>{{ yesterday.patients_resulted | intcomma }}</h1>
-              <p>
-                Number of patients with a first COVID-19 test resulted on {{ yesterday.date }}
-              </p>
-            </div> <!-- Column -->
-
-          </div> <!-- row -->
-
-
-          <div class="row content-offset">
-            <div class="col-md-12">
-              <h2>Daily Orders</h2>
-              <p>Daily number of COVID-19 tests ordered</p>
-              <div id="orders_graph"></div>
-            </div>
-          </div>
-
-          <div class="row content-offset">
-            <div class="col-md-12">
-              <h2>Daily Patients</h2>
-              <p>Daily number of patients who have had tests for COVID-19 resulted for the first time</p>
-              <div id="patients_graph"></div>
-            </div>
-          </div> <!-- row -->
-
-          <div class="row content-offset">
-            <div class="col-md-12">
-              <h2>Daily Positivity</h2>
-              <p>Percentage of tests resulted for the first time that are positive</p>
-              <div id="positivity_graph"></div>
-            </div>
-          </div> <!-- row -->
-
-
-          {% if can_download %}
-            <div class="row content-offset">
-              <div class="col-md-6">
-                <a class="btn btn-lg btn-primary"
-                   href="{% url 'covid_download' %}">
-                  <i class="glyphicon glyphicon-download"></i>
-                  Download
-                </a>
-              </div>
-              <div class="col-md-6">
-                <a class="btn btn-lg btn-primary"
-                   href="{% url 'covid_extract_download' %}">
-                  <i class="glyphicon glyphicon-download"></i>
-                  Report
-                </a>
-              </div>
-            </div>
-          {% endif %}
-
-        </div>   <!-- panel body -->
-      </div>     <!-- Panel -->
-
-
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h2>Daily Positive</h2>
+        <p>Daily number of patients testing positive for COVID-19 for the first time</p>
+        <div id="positive_graph"></div>
+      </div>
     </div>
-  </div>
-</div>
+
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h2>Daily Deaths</h2>
+        <p>Daily number of deaths of patients who have tested positive for COVID-19</p>
+        <div id="deaths_graph"></div>
+      </div>
+    </div> <!-- row -->
+
+
+
+
+    <div class="row">
+
+      <div class="col-md-4">
+        <h2>Tests Ordered</h2>
+        <h1>{{ tests_ordered |intcomma }}</h1>
+        <p>
+          Total number of COVID-19 tests ordered
+        </p>
+      </div> <!-- Column -->
+
+      <div class="col-md-4">
+        <h2>Tests Resulted</h2>
+        <h1>{{ tests_resulted |intcomma }}</h1>
+        <p>
+          Total number of COVID-19 tests resulted
+        </p>
+      </div> <!-- Column -->
+
+      <div class="col-md-4">
+        <h2>Patients Tested</h2>
+        <h1>{{ patients_resulted |intcomma }}</h1>
+        <p>
+          Total number of patients with a COVID-19 test result
+        </p>
+      </div> <!-- Column -->
+
+    </div> <!-- row -->
+
+    <div class="row content-offset">
+
+      <div class="col-md-4">
+        <h2>Daily Tests Ordered</h2>
+        <h1>{{ yesterday.tests_ordered | intcomma }}</h1>
+        <p>
+          Number of COVID-19 tests ordered on
+          on {{ yesterday.date }}
+        </p>
+      </div> <!-- Column -->
+
+      <div class="col-md-4">
+        <h2>Daily Tests Resulted</h2>
+        <h1>{{ yesterday.tests_resulted | intcomma }}</h1>
+        <p>
+          Number of COVID-19 tests resulted on {{ yesterday.date }}
+        </p>
+      </div> <!-- Column -->
+
+      <div class="col-md-4">
+        <h2>Daily Patients</h2>
+        <h1>{{ yesterday.patients_resulted | intcomma }}</h1>
+        <p>
+          Number of patients with a first COVID-19 test resulted on {{ yesterday.date }}
+        </p>
+      </div> <!-- Column -->
+
+    </div> <!-- row -->
+
+
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h2>Daily Orders</h2>
+        <p>Daily number of COVID-19 tests ordered</p>
+        <div id="orders_graph"></div>
+      </div>
+    </div>
+
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h2>Daily Patients</h2>
+        <p>Daily number of patients who have had tests for COVID-19 resulted for the first time</p>
+        <div id="patients_graph"></div>
+      </div>
+    </div> <!-- row -->
+
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h2>Daily Positivity</h2>
+        <p>Percentage of tests resulted for the first time that are positive</p>
+        <div id="positivity_graph"></div>
+      </div>
+    </div> <!-- row -->
+
+
+    {% if can_download %}
+    <div class="row content-offset">
+      <div class="col-md-6">
+        <a class="btn btn-lg btn-primary"
+           href="{% url 'covid_download' %}">
+          <i class="glyphicon glyphicon-download"></i>
+          Download
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a class="btn btn-lg btn-primary"
+           href="{% url 'covid_extract_download' %}">
+          <i class="glyphicon glyphicon-download"></i>
+          Report
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>   <!-- panel body -->
+</div>     <!-- Panel -->
+
 <script>
 
   var render_graph = function(element_id, data, type){
 
-  if (!type){
-    type = 'bar';
-  }
+      if (!type){
+          type = 'bar';
+      }
 
-  var config = {
-  bindto: document.getElementById(element_id),
-  data: {
-  columns: data,
-  type: type,
-  x: 'x',
-  },
-  zoom: {
-  enabled:true
-  },
-  axis: {
-  x: {
-  type: 'timeseries',
-  tick: {format: '%Y-%m-%d', rotate: 45}
-  }
-  },
-  }
+      var config = {
+          bindto: document.getElementById(element_id),
+          data: {
+              columns: data,
+              type: type,
+              x: 'x',
+          },
+          zoom: {
+              enabled:true
+          },
+          axis: {
+              x: {
+                  type: 'timeseries',
+                  tick: {format: '%Y-%m-%d', rotate: 45}
+              }
+          },
+      }
 
-  if (type == 'line') {
-  config['point'] = {show: false};
-  }
+      if (type == 'line') {
+          config['point'] = {show: false};
+      }
 
-  c3.generate(config)
+      c3.generate(config)
 
   }
   render_graph('positive_graph', {{ positive_data | safe }});
@@ -222,3 +216,4 @@
   render_graph('patients_graph', {{ patients_data | safe }});
   render_graph('positivity_graph', {{ positivity_data | safe }}, 'line');
 </script>
+{% endblock content%}
