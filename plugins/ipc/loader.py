@@ -36,5 +36,11 @@ def load_all_extra_ipc_patients():
     num_new = len(new_mrns)
     print(f"{num_new} New MRNs")
 
+    i = 0
     for mrn in new_mrns:
+        if i > 5000:
+            return
+
         create_rfh_patient_from_hospital_number(mrn, InfectionService)
+
+        i += 1
