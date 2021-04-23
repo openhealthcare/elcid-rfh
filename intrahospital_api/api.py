@@ -29,9 +29,10 @@ def patient_to_dict(patient, user):
     # way without having to rewrite either patient_detail.js or patient.js
     category_orders = {
         'Infection Service': '30',
-        'ICU Handover': '20',
-        'TB': '10',
-        'COVID-19': '15'
+        'ICU Handover'     : '20',
+        'TB'               : '10',
+        'COVID-19'         : '15',
+        'IPC'              : '25'
     }
     for s in serialised_episodes:
         if s['category_name'] in category_orders:

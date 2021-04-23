@@ -1,15 +1,13 @@
 [[ item.category ]] [[ item.trigger_datetime | displayDateTime ]]
-<br />
 Lab #: [[ item.lab_test_id ]]
-<br />
 <span ng-show="item.seen">
      Seen
    <br />
 </span>
 <span ng-hide="item.seen">
   Unseen
-   <br />
 </span>
 <span ng-show="item.comments">
+   <br />
     [[ item.comments ]]
 </span>
