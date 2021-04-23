@@ -9,17 +9,19 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.utils import timezone
 from django.views.generic import TemplateView, View, DetailView
 
 from opal import models as opal_models
 from elcid import patient_lists
 from plugins.admissions import constants as admission_constants
 from plugins.admissions.models import Encounter
+from plugins.appointments.models import Appointment
 from plugins.icu.models import ICUHandover
 from plugins.labtests.models import Observation
 
 from plugins.covid import models, constants, lab, extract
-
+from plugins.covid.episode_categories import CovidEpisode
 
 
 def rolling_average(series):
@@ -263,3 +265,37 @@ class CovidSixMonthFollowupLetter(LoginRequiredMixin, DetailView):
     # accessed at /letters/#/covid-followup/letter/10/
     model         = models.CovidSixMonthFollowUp
     template_name = 'covid/letters/covid_six_month_followup.html'
+
+
+
+class CovidClinicList(LoginRequiredMixin, TemplateView):
+    template_name = "covid/clinic_list.html"
+
+    def get_queryset(self, *args, **kwargs):
+        today = timezone.now().date()
+        start = today - datetime.timedelta(days=7*6)
+
+        appointment_types = constants.COVID_FOLLOWUP_APPOINTMENT_TYPES
+
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+       ).filter(
+           start_datetime__gte=start
+        ).order_by("-start_datetime")
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+
+        appointments = self.get_queryset()
+
+        for appointment in appointments:
+            episode = appointment.patient.episode_set.filter(
+                category_name=CovidEpisode.display_name
+            ).first()
+
+            if episode:
+                appointment.episode = episode
+
+        ctx['appointments'] = appointments
+
+        return ctx

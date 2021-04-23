@@ -360,7 +360,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # New modular settings!
 # !!! TODO: Are these how we want to discover these ?
 OPAL_OPTIONS_MODULE = 'elcid.options'
-OPAL_BRAND_NAME = 'elCID Royal Free Hospital'
+OPAL_BRAND_NAME = 'elCID Royal Free'
 OPAL_LOG_OUT_MINUTES = 35
 OPAL_LOG_OUT_DURATION = OPAL_LOG_OUT_MINUTES*60*1000
 

@@ -57,11 +57,16 @@ app.config(
              })
              .when('/covid-19/',             static_template_route('/templates/covid/dashboard.html'))
              .when('/recent-covid-pos/',     static_template_route('/templates/covid/recent_positives.html'))
+             .when('/covid-19/clinic-list/', static_template_route('/templates/covid/clinic_list.html'))
+
              .when('/ICU/',                  static_template_route('/templates/icu/dashboard.html'))
              .when('/elcid/',                static_template_route('/templates/elcid/dashboard.html'))
+
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
+
              .when('/tb/appointment_list/',  static_template_route('/templates/tb/appointment_list.html'))
+
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))
