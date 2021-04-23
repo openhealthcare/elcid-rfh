@@ -54,7 +54,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/general_edit.js',
         'js/elcid/controllers/general_delete.js',
         'js/elcid/controllers/remove_patient_step.js',
-
+        'js/elcid/controllers/add_to_service.js',
         'js/elcid/services/demographics_search.js',
         'js/elcid/controllers/tagging_step.js',
         'js/elcid/controllers/investigations.js',
@@ -101,6 +101,14 @@ class Application(application.OpalApplication):
                     display='Beta',
                     icon='fa fa-bath',
                     activepattern='beta'
+                )
+            )
+            menu_items.append(
+                menus.MenuItem(
+                    href='/#/ipc/',
+                    display='IPC',
+                    icon='fa fa-warning',
+                    activepattern='ipc'
                 )
             )
 
