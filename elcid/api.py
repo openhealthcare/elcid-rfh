@@ -10,9 +10,9 @@ from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from rest_framework import viewsets, status
-from opal.core.api import OPALRouter
+from opal.core.api import router as opal_router
 from opal.core.api import (
-    patient_from_pk, LoginRequiredViewset, SubrecordViewSet
+    OPALRouter, patient_from_pk, LoginRequiredViewset, SubrecordViewSet
 )
 from opal.core.views import json_response
 from opal.core import serialization
@@ -595,6 +595,17 @@ class BloodCultureIsolateApi(SubrecordViewSet):
 
 
 
+class AddToServiceViewSet(LoginRequiredViewset):
+    base_name = 'add_to_service'
+
+    @patient_from_pk
+    def update(self, request, patient):
+        patient.create_episode(category_name=request.data['category_name'])
+        return json_response({
+            'status_code': status.HTTP_202_ACCEPTED
+        })
+
+
 elcid_router = OPALRouter()
 elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
@@ -607,3 +618,6 @@ lab_test_router.register(
     'infection_service_summary_api', InfectionServiceTestSummaryApi
 )
 lab_test_router.register('lab_test_results_view', LabTestResultsView)
+
+
+opal_router.register('add_to_service', AddToServiceViewSet)
