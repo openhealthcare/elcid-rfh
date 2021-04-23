@@ -9,3 +9,13 @@ from opal.models import Patient
 class UpstreamLocationSnippet(LoginRequiredMixin, DetailView):
     template_name = 'admissions/partials/upstream_location.html'
     model         = Patient
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        location = self.object.upstreamlocation.get()
+
+        print(location.encounter.id)
+        context['location'] = location
+
+        return context

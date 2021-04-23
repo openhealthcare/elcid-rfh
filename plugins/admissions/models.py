@@ -186,6 +186,7 @@ class UpstreamLocation(models.Model):
     Two patients cannot occupy the same bed.
     """
     patient   = models.ForeignKey(Patient, blank=True, null=True, on_delete=models.SET_NULL, related_name='upstreamlocation')
+    encounter = models.ForeignKey(Encounter, blank=True, null=True, on_delete=models.SET_NULL, related_name='encounter')
     hospital  = models.CharField(blank=True, null=True, max_length=50)
     building  = models.CharField(blank=True, null=True, max_length=50)
     ward      = models.CharField(blank=True, null=True, max_length=50)
@@ -201,13 +202,12 @@ class TransferHistory(models.Model):
 
     Here we replicate the upstream view closely.
     """
-    encounter_slice_id              = models.IntegerField(blank=True, null=True)
     update_datetime                 = models.DateTimeField(blank=True, null=True)
-    # This is some kind of code?
+    # Boolean field as 0/1
     active_transfer                 = models.IntegerField(blank=True, null=True)
-    # This is a bool?
+    # Boolean field as 0/1
     active_spell                    = models.IntegerField(blank=True, null=True)
-    # Probably links to Encounter.pv1_19_hsn
+    # What is this?
     encounter_id                    = models.IntegerField(blank=True, null=True)
     # What is this?
     encounter_slice_id              = models.IntegerField(blank=True, null=True)
@@ -215,11 +215,11 @@ class TransferHistory(models.Model):
     active_transfer_sequence_number = models.IntegerField(blank=True, null=True)
     transfer_start_datetime         = models.DateTimeField(blank=True, null=True)
     transfer_end_datetime           = models.DateTimeField(blank=True, null=True)
-    # What are these ?
+    # Numeric code for a location in the hospital
     transfer_location_code          = models.IntegerField(blank=True, null=True)
     # What are these?
     site_code                       = models.CharField(blank=True, null=True, max_length=255)
-    # Ward?
+    # Ward
     unit                            = models.CharField(blank=True, null=True, max_length=255)
     room                            = models.CharField(blank=True, null=True, max_length=255)
     bed                             = models.CharField(blank=True, null=True, max_length=255)
@@ -234,7 +234,6 @@ class TransferHistory(models.Model):
     trf_inp_th_encntr_slice_act_updt_dt_tm = models.DateTimeField(blank=True, null=True)
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
-        'ENCNTR_SLICE_ID'                       : 'encounter_slice_id',
         'UPDT_DT_TM'                            : 'update_datetime',
         'ACTIVE_TRANSFER'                       : 'active_transfer',
         'ACTIVE_SPELL'                          : 'active_spell',

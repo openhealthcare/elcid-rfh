@@ -36,6 +36,7 @@ class Command(BaseCommand):
             location.hospital  = encounter.pv1_3_hospital
             location.patient   = encounter.patient
             location.admitted  = encounter.pv1_44_admit_date_time
+            location.encounter = encounter
 
             location.save()
             self.stdout.write('.')
