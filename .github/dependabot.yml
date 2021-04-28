@@ -1,0 +1,23 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: django
+    versions:
+    - ">= 2.2.a, < 2.3"
+  - dependency-name: django-compressor
+    versions:
+    - ">= 2.4.a, < 2.5"
+  - dependency-name: djangorestframework
+    versions:
+    - ">= 3.11.a, < 3.12"
+  - dependency-name: djangorestframework
+    versions:
+    - 3.12.2
+  - dependency-name: pbr
+    versions:
+    - 5.5.1
