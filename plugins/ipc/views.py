@@ -53,7 +53,7 @@ class RecentTestsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(*a, **k)
         test = lab.get_test_class_by_code(k['test_code'])
         context['test_name'] = test.TEST_NAME
-        context['tests'] = lab.get_test_instances(test, num=100)
+        context['tests'] = lab.get_test_instances(test, num=500)
         return context
 
 

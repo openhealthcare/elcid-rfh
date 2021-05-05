@@ -88,6 +88,13 @@ HEADERS = [
     'admission_neutrophils_date',
     'admission_wbc',
     'admission_wbc_date',
+    "admission_eosinophils",
+    "admission_eosinophils_date",
+    "admission_hb",
+    "admission_hb_date",
+    "admission_platelets",
+    "admission_platelets_date",
+
     'admission_crp',
     'admission_crp_date',
     'admission_ferritin',
@@ -102,10 +109,30 @@ HEADERS = [
     'admission_alt_date',
     'admission_ast',
     'admission_ast_date',
+    'admission_albumin',
+    'admission_albumin_date',
     'admission_alkaline_phosphatase',
     'admission_alkaline_phosphatase_date',
+    'admission_bilirubin',
+    'admission_bilirubin_date',
     'admission_creatinine',
-    'admission_creatinin_date',
+    'admission_creatinine_date',
+    'admission_urea',
+    'admission_urea_date',
+    'admission_egfr',
+    'admission_egfr_date',
+
+    'admission_inr',
+    'admission_inr_date',
+    'admission_fibrinogen',
+    'admission_fibrinogen_date',
+    'admission_glucose',
+    'admission_glucose_date',
+    'admission_kinase',
+    'admission_kinase_date',
+    'admission_lactate_dehydrogenase',
+    'admission_lactate_dehydrogenase_date',
+
     'cxr_covid_coding',
     'admission_systolic_bp',
     'admission_diastolic_bp',
@@ -133,6 +160,14 @@ HEADERS = [
     'followup_neutrophils_date',
     'followup_wbc',
     'followup_wbc_date',
+
+    "followup_eosinophils",
+    "followup_eosinophils_date",
+    "followup_hb",
+    "followup_hb_date",
+    "followup_platelets",
+    "followup_platelets_date",
+
     'followup_crp',
     'followup_crp_date',
     'followup_ferritin',
@@ -147,10 +182,30 @@ HEADERS = [
     'followup_alt_date',
     'followup_ast',
     'followup_ast_date',
+    'followup_albumin',
+    'followup_albumin_date',
     'followup_alkaline_phosphatase',
     'followup_alkaline_phosphatase_date',
+    'followup_bilirubin',
+    'followup_bilirubin_date',
     'followup_creatinine',
     'followup_creatinin_date',
+    'followup_urea',
+    'followup_urea_date',
+    'followup_egfr',
+    'followup_egfr_date',
+
+    'followup_inr',
+    'followup_inr_date',
+    'followup_fibrinogen',
+    'followup_fibrinogen_date',
+    'followup_glucose',
+    'followup_glucose_date',
+    'followup_kinase',
+    'followup_kinase_date',
+    'followup_lactate_dehydrogenase',
+    'followup_lactate_dehydrogenase_date',
+
     'follow_up_date',
     'smoking_status_at_followup',
     'social_circumstances',
@@ -192,20 +247,25 @@ HEADERS = [
 ]
 
 TEST_CODES = [
-        ("FULL BLOOD COUNT", ["Lymphocytes", "Neutrophils", "WBC"],),
-        ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
-        ("IRON STUDIES (FER)", ["Ferritin"]),
-        ("D-DIMER", ["D-DIMER"]),
-        ("CARDIAC TROPONIN T", ["Cardiac Troponin T"]),
-        ("NT PRO-BNP", ["NT Pro-BNP"]),
-        ("LIVER PROFILE", ["ALT", "AST", "Alkaline Phosphatase"]),
-        ("UREA AND ELECTROLYTES", ["Creatinine"])
+    ("FULL BLOOD COUNT", ["Lymphocytes", "Neutrophils", "WBC", "Eosinophils", "Hb", "Platelets"],),
+    ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
+    ("IRON STUDIES (FER)", ["Ferritin"]),
+    ("D-DIMER", ["D-Dimer"]),
+    ("CARDIAC TROPONIN T", ["Cardiac Troponin T"]),
+    ("NT PRO-BNP", ["NT Pro-BNP"]),
+    ("LIVER PROFILE", ["ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"]),
+    ("UREA AND ELECTROLYTES", ["Creatinine", "Urea", "eGFR (MDRD)"]),
+    ("INR", ["INR"]),
+    ("CLOTTING SCREEN", ["Fibrinogen"]),
+    ("GLUCOSE", ["Glucose"]),
+    ("CREATINE KINASE", ["Creatine Kinase U/L"]),
+    ("LACTATE DEHYDROGENASE", ["LD U/L"])
     ]
 
 def get_admission_labs(patient, admission_date):
 
     if admission_date is None:
-        return [''] * 24 # empty
+        return [''] * 48 # empty
 
     labs = []
 
@@ -232,7 +292,7 @@ def get_admission_labs(patient, admission_date):
 
 def get_followup_labs(patient, followup_date):
     if followup_date is None:
-        return [''] * 22 # empty
+        return [''] * 48 # empty
 
     labs = []
 
@@ -270,8 +330,8 @@ def get_covid_extract_row(covid_patient):
     contact       = patient.contactinformation_set.get()
     comorbidities = covid_episode.covidcomorbidities_set.get()
 
-    if covid_episode.covidadmission_set.count() == 1:
-        admission = covid_episode.covidadmission_set.get()
+    if covid_episode.covidadmission_set.count() > 0:
+        admission = covid_episode.covidadmission_set.order_by('date_of_admission').last()
     elif covid_episode.covidadmission_set.count() == 0:
         admission = models.CovidAdmission()
 
@@ -456,7 +516,12 @@ def generate_extract_file():
     writer.writerow(HEADERS)
 
     for patient in models.CovidPatient.objects.all():
-        writer.writerow(get_covid_extract_row(patient))
+        print(patient)
+        try:
+            writer.writerow(get_covid_extract_row(patient))
+        except:
+            print(f"Error: Patient {patient.patient.id} {patient.patient.demographics().name}")
+            raise
 
     syndromic = set([e.patient for e in opal_models.Episode.objects.filter(
             category_name='COVID-19', patient__covid_patient__isnull=True)])
