@@ -1,59 +1,37 @@
 {% load forms %}
-<div class="container content-offset">
-  <div class="panel panel-primary panel-container">
+<div class="left-menu">
+  <h3>
+    <a href="/#/list/">Patient Lists</a>
+  </h3>
+  <ul style="overflow-y: scroll; height:calc(100vh - 250px); border-bottom: 1px solid white;">
+    {% for path, name in upstream_lists %}
+    <li>
+      <a href="{{ path }}">{{ name }}</a>
+    </li>
+    {% endfor %}
+
+    {% for list in lists %}
+    {% if list.get_slug != list_slug %}
+    <li>
+      <a href="#/list/{{ list.get_slug }}">
+        {{ list.display_name }}
+      </a>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="content-offset right-viewport">
+  <div class="panel panel-default">
     <div class="panel-heading">
       <h2>
         <i class="fa fa-user-md"></i>
         {{ patient_list.display_name }}
-      </h2>
-    </div>
-
-    <div class="panel-body">
-      <div class="row screen-only">
-          <form class="form-inline">
-            <div class="col-md-12">
-            <h1 class="pull-left">
-              <div class="btn-group pull-left" uib-dropdown is-open="status.isopen">
-                <button type="button" class="btn btn-secondary" uib-dropdown-toggle ng-disabled="disabled" id="list-dropdown">
-                  <i class="fa fa-user-md"></i>
-                  {{ patient_list.display_name }}
-                  <i class="fa fa-angle-down"></i>
-                </button>
-                <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="list-dropdown">
-
-                  {% for path, name in upstream_lists %}
-                  <li>
-                    <a href="{{ path }}">{{ name }}</a>
-                  </li>
-                  {% endfor %}
-
-                  {% for list in lists %}
-                  {% if list.get_slug != list_slug %}
-                  <li>
-                    <a href="#/list/{{ list.get_slug }}">
-                      {{ list.display_name }}
-                    </a>
-                  </li>
-                  {% endif %}
-                  {% endfor %}
-                </ul>
-              </div>
-            </h1>
-            <div class="pull-left">
-              {% if patient_list.organism_list %}
-              <div class="row screen-only ">
-                <div class="col-md-12">
-                  <div class="col-md-12 content-offset-25 text-muted">
-                    A rolling 4 month list of patients found with <strong>{{ patient_list.display_name.lower }}</strong> in their blood cultures.
-                  </div>
-                </div>
-              </div>
-              {% endif %}
-            </div>
-            <h1 class="pull-right">
+            <span class="pull-right">
               <div class="btn-group pull-right left-offset-10">
-                  <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
-                  <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+                <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
+                <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
               </div>
               {% if patient_list.display_name == 'Renal' %}
               <a href="/letters/#{% url 'renal_handover' %}" target="_blank" class="btn btn-secondary pull-right">
@@ -65,16 +43,39 @@
                 Bulk add patients
               </a>
               {% endif %}
-            </h1>
-          </div>
-          </form>
-      </div>
-      {% if permissions.view_lab_test_trends %}
-        {% include 'partials/card_with_results.html' %}
-      {% else %}
-        {% include 'partials/card_without_results.html' %}
-      {% endif %}
+            </span>
+      </h2>
+    </div>
 
+    <div class="panel-body">
+      <div class="row screen-only">
+        <form class="form-inline">
+          <div class="col-md-12">
+            <div class="pull-left">
+              {% if patient_list.organism_list %}
+              <div class="row screen-only ">
+                <div class="col-md-12">
+                  <div class="col-md-12 content-offset-text-muted">
+                    A rolling 4 month list of patients found with <strong>{{ patient_list.display_name.lower }}</strong> in their blood cultures.
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+      {# comment #}
+      {% if permissions.view_lab_test_trends %}
+      {# endcomment #}
+
+      {% include 'partials/card_with_results.html' %}
+
+      {# comment #}
+      {% else %}
+      {% include 'partials/card_without_results.html' %}
+      {% endif %}
+      {# endcomment #}
       <div class="empty-list" ng-hide="num_episodes > 0">
         <p class="lead text-center">
           There are no patients on this list.
@@ -90,4 +91,9 @@
 
     </div>
   </div>
-</div>
+
+</div>   <!-- Col 11 -->
+
+
+<!--  <div class="container content-offset"> -->
+  <!-- </div> -->
