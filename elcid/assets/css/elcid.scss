@@ -16,10 +16,11 @@ $obsidian: #343637;
 $obsidian-light: #cbc9c8;
 $navbar-height: 77px;
 $small-text-color: $secondary-background;
+$bootstrap-danger: #f2dede;
 
 body{
     background-color: $bg;
-    height: calc(100% - 30px);
+    height: calc(100%);
 }
 
 .green {
@@ -481,4 +482,7 @@ div.add-isolate:hover{
     a:hover {
         background: $obsidian;
     }
+}
+.table-striped > tbody > tr.bg-danger:nth-child(odd) > td{
+    background-color: $bootstrap-danger;
 }

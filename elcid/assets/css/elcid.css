@@ -1,6 +1,6 @@
 body {
   background-color: #EEE;
-  height: calc(100% - 30px);
+  height: calc(100%);
 }
 
 .green {
@@ -422,6 +422,10 @@ div.add-isolate:hover {
 }
 .ward-name-list a:hover {
   background: #343637;
+}
+
+.table-striped > tbody > tr.bg-danger:nth-child(odd) > td {
+  background-color: #f2dede;
 }
 
 /*# sourceMappingURL=elcid.css.map */
