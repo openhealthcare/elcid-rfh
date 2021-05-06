@@ -5,6 +5,7 @@ elCID Royal Free Hospital implementation
 from opal.core import application
 from opal.core import menus
 from plugins.tb import constants as tb_constants
+from plugins.ipc.constants import IPC_ROLE
 from elcid import episode_categories
 
 
@@ -103,6 +104,15 @@ class Application(application.OpalApplication):
                     activepattern='beta'
                 )
             )
+
+        from opal.models import UserProfile
+        profile = UserProfile.objects.get(user=user)
+
+        roles = set(profile.roles.values_list(
+            'name', flat=True
+        ))
+        if IPC_ROLE in roles:
+
             menu_items.append(
                 menus.MenuItem(
                     href='/#/ipc/',
