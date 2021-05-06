@@ -416,6 +416,13 @@ HOSPITAL_DB = dict(
     view=None
 )
 
+WAREHOUSE_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
 
 EXTRACT_ASYNC = False
 WRITEBACK_ON = True
