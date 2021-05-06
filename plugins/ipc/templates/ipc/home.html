@@ -8,40 +8,54 @@
   <div class="panel-body">
 
     {% if alerts %}
-    <h2>{{ alerts| length }} New Infection Alerts</h2>
+      <h2>{{ alerts| length }} New Infection Alerts</h2>
+
+      <table class="table">
+        <tr>
+          <th>Category</th>
+          <th>Triggered</th>
+          <th>Lab #</th>
+          <th>MRN</th>
+          <th>Name</th>
+          <th>DOB</th>
+          <th>Current Location</th>
+        </tr>
+        {% for alert in alerts %}
+        <tr class="{% if not alert.seen %} bg-danger {% endif %}">
+          <td>{{ alert.category }}</td>
+          <td>{{ alert.trigger_datetime }}</td>
+          <td>{{ alert.lab_test.lab_number }}</td>
+
+          {% with alert.episode.patient.demographics as demographics %}
+          <td>
+            <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
+              {{ demographics.hospital_number }}
+            </a>
+          </td>
+          <td>
+            <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
+              {{ demographics.name }}
+            </a>
+          </td>
+          <td>
+            <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
+              {{ demographics.date_of_birth }}
+            </a>
+          </td>
+          {% endwith %}
+          <td>
+            {% with alert.episode.patient.upstreamlocation.get as location %}
+            <a href="/#/ipc/ward/{{ location.ward | slugify }}/" class="orange-link">
+              {{ location.ward }}
+            </a>
+            {{ location.room }} {{ location.bed }}
+            {% endwith %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+
     {% endif %}
-
-    {% for alert in alerts %}
-    <div class="row {% if not alert.seen %} bg-danger {% endif %}">
-
-      <div class="col-md-1">{{ alert.category }}</div>
-      <div class="col-md-2">{{ alert.trigger_datetime }}</div>
-      <div class="col-md-1">{{ alert.lab_test.lab_number }}</div>
-
-      {% with alert.episode.patient.demographics as demographics %}
-      <div class="col-md-1">
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
-          {{ demographics.hospital_number }}</a>
-      </div>
-      <div class="col-md-2">
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
-          {{ demographics.name }}</a>
-      </div>
-      <div class="col-md-1">
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
-          {{ demographics.date_of_birth }}</a>
-      </div>
-      {% endwith %}
-      <div class="col-md-2">
-        {% with alert.episode.patient.upstreamlocation.get as location %}
-        <a href="/#/ipc/ward/{{ location.ward | slugify }}/" class="orange-link">
-          {{ location.ward }}
-        </a>
-        {{ location.room }} {{ location.bed }}
-        {% endwith %}
-      </div>
-    </div> <!-- Row -->
-    {% endfor %}
 
     <h2>Hospital Status</h2>
     <div class="row text-center">

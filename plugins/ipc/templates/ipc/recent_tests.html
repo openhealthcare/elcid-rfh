@@ -2,33 +2,45 @@
 {% block content %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h1>Recent {{ test_name }} tests (100)</h1>
+    <h1>Recent {{ test_name }} tests ({{ view.num_tests }})</h1>
   </div>
-  <div class="panel-body">
+  <table class="table table-striped">
+    <tr>
+      <th>Ordered</th>
+      <th>Lab #</th>
+      <th>MRN</th>
+      <th>Name</th>
+      <th>DOB</th>
+      <th>Observations</th>
+    </tr>
     {% for test in tests %}
-    <div class="row {% if test.alert %}bg-danger {% endif %}">
-      <div class="col-md-2">
+    <tr class="{% if test.alert %}bg-danger {% endif %}">
+      <td>
         {{ test.test.datetime_ordered }}
+      </td>
+      <td>
         {{ test.test.lab_number }}
-      </div>
+      </td>
       {% with test.patient.demographics as demographics %}
-      <div class="col-md-1">
+      <td>
         <a class="orange-link" href="/#/patient/{{ test.test.patient_id }}">{{ demographics.hospital_number }}</a>
-      </div>
-      <div class="col-md-2">
+      </td>
+      <td>
         <a class="orange-link" href="/#/patient/{{ test.test.patient_id }}">{{ demographics.name }}</a>
-      </div>
-      <div class="col-md-1">
+      </td>
+      <td>
         <a class="orange-link" href="/#/patient/{{ test.test.patient_id }}">{{ demographics.date_of_birth }}</a>
-      </div>
-      <div class="col-md-6">
+      </td>
+      <td>
         {% for observation in test.get_observations %}
         {{ observation.observation_value  }}
         {% endfor %}
-      </div>
+      </td>
       {% endwith %}
-    </div> <!-- Row -->
+    </tr>
     {% endfor %}
-  </div>
+
+  </table>
+
 </div> <!-- Panel -->
 {% endblock %}

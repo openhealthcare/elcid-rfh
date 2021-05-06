@@ -10,33 +10,44 @@
       </span>
     </h1>
   </div>
-  <div class="panel-body">
+  <table class="table table-striped">
+    <tr>
+      <th>Ward</th>
+      <th>Room</th>
+      <th>Bed</th>
+      <th>MRN</th>
+      <th>Name</th>
+      <th>DOB</th>
+      <th>Admitted</th>
+      <th>Alerts</th>
+    </tr>
     {% for patient in patients %}
-    <div class="row">
-      <div class="col-md-2">
+    <tr>
+      <td>
         <a href="/#/ipc/ward/{{ patient.ward | slugify }}/" class="orange-link">
           {{ patient.ward }}
         </a>
-      </div>
-      <div class="col-md-1">{{ patient.room }}</div>
-      <div class="col-md-1">{{ patient.bed }}</div>
+      </td>
+      <td>{{ patient.room }}</td>
+      <td>{{ patient.bed }}</td>
       {% with patient.patient.demographics as demographics %}
-      <div class="col-md-1">
+      <td>
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.hospital_number }}</a>
-      </div>
-      <div class="col-md-2">
+      </td>
+      <td>
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.name }}</a>
-      </div>
-      <div class="col-md-1">
+      </td>
+      <td>
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.date_of_birth }}</a>
-      </div>
+      </td>
       {% endwith %}
-      <div class="col-md-2">{{ patient.admitted }}</div>
-      <div class="col-md-2">
+      <td>{{ patient.admitted }}</td>
+      <td>
         {% location_alerts patient %}
-      </div>
-    </div> <!-- Row -->
+      </td>
+    </tr>
     {% endfor %}
-  </div>
+
+  </table>
 </div> <!-- Panel -->
 {% endblock %}
