@@ -21,7 +21,7 @@ class Command(BaseCommand):
             pv1_45_discharge_date_time__isnull=True,
             pv1_44_admit_date_time__gte=start,
         ).exclude(
-            pv1_6_bed__isnull=True
+            pv1_3_bed__isnull=True
         ).exclude(
             msh_9_msg_type='A23'
         ).order_by('evn_2_movement_date')
