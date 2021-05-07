@@ -486,3 +486,9 @@ div.add-isolate:hover{
 .table-striped > tbody > tr.bg-danger:nth-child(odd) > td{
     background-color: $bootstrap-danger;
 }
+
+.patientlist-list {
+    overflow-y: scroll;
+    height:calc(100vh - 250px);
+    border-bottom: 1px solid white;
+}
