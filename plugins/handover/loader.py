@@ -188,7 +188,7 @@ def sync_nursing_handover():
             logger.info('Created patient for {}'.format(mrn))
 
 
-        our_handover.patient = Patient.objects.filter(
+        our_handover_patient = Patient.objects.filter(
             demographics__hospital_number=mrn
         ).first()
 
