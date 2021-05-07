@@ -12,7 +12,11 @@ from intrahospital_api import get_api
 def patient_to_dict(patient, user):
     subs = list(subrecords.subrecords())
     subs.append(omodels.Tagging)
-    episodes = patient.episode_set.all()
+
+    episodes    = patient.episode_set.all()
+    episode_ids = episodes.values_list('id', flat=True) # Used below for a values list query
+
+    episodes = [e for e in episodes if e.category.episode_visible_to(e, user)]
 
     serialised_episodes = serialize(
         episodes, user, subs
@@ -59,7 +63,7 @@ def patient_to_dict(patient, user):
 
     antifungal_episodes = emodels.ChronicAntifungal.antifungal_episodes()
     d["is_antifungal"] = antifungal_episodes.filter(
-        id__in=episodes.values_list('id', flat=True)
+        id__in=episode_ids
     ).exists()
 
     return d
