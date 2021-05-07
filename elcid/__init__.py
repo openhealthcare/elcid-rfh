@@ -108,11 +108,7 @@ class Application(application.OpalApplication):
         from opal.models import UserProfile
         profile = UserProfile.objects.get(user=user)
 
-        roles = set(profile.roles.values_list(
-            'name', flat=True
-        ))
-        if IPC_ROLE in roles:
-
+        if profile.roles.filter(name=IPC_ROLE).exists():
             menu_items.append(
                 menus.MenuItem(
                     href='/#/ipc/',
