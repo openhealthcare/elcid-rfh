@@ -24,6 +24,8 @@ class Command(BaseCommand):
             pv1_3_bed__isnull=True
         ).exclude(
             msh_9_msg_type='A23'
+        ).exclude(
+            evn_2_movement_date__isnull=True
         ).order_by('evn_2_movement_date')
 
         for encounter in encounters:
