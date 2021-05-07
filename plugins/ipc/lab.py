@@ -119,7 +119,25 @@ class TBPCR(IPCTest):
         return False
 
 
-IPC_TESTS = [CarbapenemaseScreen, CDiffPCR, MRSAScreen, TBCulture, TBPCR]
+class VREScreen(IPCTest):
+    TEST_NAME         = 'VRE SCREEN MC+S'
+    TEST_CODE         = 'VRES'
+    OBSERVATION_NAMES = ['VRE Screen culture']
+    ALERT_CATEGORY    = models.InfectionAlert.VRE
+
+    def alert(self):
+        """
+        VRE Screens are positive when they detail an organism
+        """
+        for observation in self.get_observations():
+            if observation.observation_value.startswith('1'):
+                return True
+
+        return False
+
+
+
+IPC_TESTS = [CarbapenemaseScreen, CDiffPCR, MRSAScreen, TBCulture, TBPCR, VREScreen]
 
 def get_test_instances(test, num=10, greedy=False):
     """

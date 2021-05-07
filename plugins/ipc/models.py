@@ -25,12 +25,14 @@ class InfectionAlert(EpisodeSubrecord):
     CPE   = 'CPE'
     CDIFF = 'DIFF'
     TB    = 'TB'
+    VRE   = 'VRE'
 
     CATEGORY_CHOICES = enum(
         MRSA,
         CPE,
         CDIFF,
-        TB
+        TB,
+        VRE
     )
 
     # Set automatically by processing of lab data

@@ -61,6 +61,13 @@ class Command(BaseCommand):
             ia.seen=False
             ia.save()
 
+        for ia in models.InfectionAlert.objects.filter(
+                category=models.InfectionAlert.VRE).order_by('-trigger_datetime')[:3]:
+
+            ia.seen=False
+            ia.save()
+
+
 
 
 

@@ -35,8 +35,9 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
         cpes   = ['CPE'] + [monthly[k][models.InfectionAlert.CPE] for k in sorted(monthly.keys())[-12:]]
         mrsas  = ['MRSA'] + [monthly[k][models.InfectionAlert.MRSA] for k in sorted(monthly.keys())[-12:]]
         tbs    = ['TB'] + [monthly[k][models.InfectionAlert.TB] for k in sorted(monthly.keys())[-12:]]
+        vres   = ['VRE'] + [monthly[k][models.InfectionAlert.VRE] for k in sorted(monthly.keys())[-12:]]
 
-        context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs]
+        context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs, vres]
 
         context['rfh_patients'] = UpstreamLocation.objects.filter(building='RFH').count()
         context['rfh_siderooms'] = UpstreamLocation.objects.filter(building='RFH', room__startswith='SR').count()
