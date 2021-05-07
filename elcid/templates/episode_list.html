@@ -3,7 +3,7 @@
   <h3>
     <a href="/#/list/">Patient Lists</a>
   </h3>
-  <ul style="overflow-y: scroll; height:calc(100vh - 250px); border-bottom: 1px solid white;">
+  <ul class="patientlist-list">
     {% for path, name in upstream_lists %}
     <li>
       <a href="{{ path }}">{{ name }}</a>
