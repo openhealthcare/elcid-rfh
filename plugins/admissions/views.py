@@ -15,7 +15,6 @@ class UpstreamLocationSnippet(LoginRequiredMixin, DetailView):
 
         location = self.object.upstreamlocation.get()
 
-        print(location.encounter.id)
         context['location'] = location
 
         return context
