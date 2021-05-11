@@ -1,99 +1,102 @@
 {% load forms %}
-<div class="left-menu">
-  <h3>
-    <a href="/#/list/">Patient Lists</a>
-  </h3>
-  <ul class="patientlist-list">
-    {% for path, name in upstream_lists %}
-    <li>
-      <a href="{{ path }}">{{ name }}</a>
-    </li>
-    {% endfor %}
-
-    {% for list in lists %}
-    {% if list.get_slug != list_slug %}
-    <li>
-      <a href="#/list/{{ list.get_slug }}">
-        {{ list.display_name }}
-      </a>
-    </li>
-    {% endif %}
-    {% endfor %}
-  </ul>
-</div>
-
-<div class="content-offset right-viewport">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h2>
-        <i class="fa fa-user-md"></i>
-        {{ patient_list.display_name }}
-            <span class="pull-right">
-              <div class="btn-group pull-right left-offset-10">
-                <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
-                <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
-              </div>
-              {% if patient_list.display_name == 'Renal' %}
-              <a href="/letters/#{% url 'renal_handover' %}" target="_blank" class="btn btn-secondary pull-right">
-                Renal handover list
-              </a>
-              {% endif %}
-              {% if patient_list.display_name == 'Acute Antifungal' %}
-              <a href="{% url 'add_antifungal_patients' %}" class="btn btn-primary pull-right">
-                Bulk add patients
-              </a>
-              {% endif %}
-            </span>
-      </h2>
-    </div>
-
-    <div class="panel-body">
-      <div class="row screen-only">
-        <form class="form-inline">
-          <div class="col-md-12">
-            <div class="pull-left">
-              {% if patient_list.organism_list %}
-              <div class="row screen-only ">
-                <div class="col-md-12">
-                  <div class="col-md-12 content-offset-text-muted">
-                    A rolling 4 month list of patients found with <strong>{{ patient_list.display_name.lower }}</strong> in their blood cultures.
+<div class="episode-list-container row">
+  <div class="left-menu">
+    <h3>
+      <a href="/#/list/">Patient Lists</a>
+    </h3>
+    <ul>
+      {% for path, name in upstream_lists %}
+      <li>
+        <a href="{{ path }}">{{ name }}</a>
+      </li>
+      {% endfor %}
+  
+      {% for list in lists %}
+      {% if list.get_slug != list_slug %}
+      <li>
+        <a href="#/list/{{ list.get_slug }}">
+          {{ list.display_name }}
+        </a>
+      </li>
+      {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  
+  <div class="content-offset right-viewport">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h2>
+          <i class="fa fa-user-md"></i>
+          {{ patient_list.display_name }}
+              <span class="pull-right">
+                <div class="btn-group pull-right left-offset-10">
+                  <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
+                  <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+                </div>
+                {% if patient_list.display_name == 'Renal' %}
+                <a href="/letters/#{% url 'renal_handover' %}" target="_blank" class="btn btn-secondary pull-right">
+                  Renal handover list
+                </a>
+                {% endif %}
+                {% if patient_list.display_name == 'Acute Antifungal' %}
+                <a href="{% url 'add_antifungal_patients' %}" class="btn btn-primary pull-right">
+                  Bulk add patients
+                </a>
+                {% endif %}
+              </span>
+        </h2>
+      </div>
+  
+      <div class="panel-body">
+        <div class="row screen-only">
+          <form class="form-inline">
+            <div class="col-md-12">
+              <div class="pull-left">
+                {% if patient_list.organism_list %}
+                <div class="row screen-only ">
+                  <div class="col-md-12">
+                    <div class="col-md-12 content-offset-text-muted">
+                      A rolling 4 month list of patients found with <strong>{{ patient_list.display_name.lower }}</strong> in their blood cultures.
+                    </div>
                   </div>
                 </div>
+                {% endif %}
               </div>
-              {% endif %}
             </div>
-          </div>
-        </form>
-      </div>
-      {# comment #}
-      {% if permissions.view_lab_test_trends %}
-      {# endcomment #}
-
-      {% include 'partials/card_with_results.html' %}
-
-      {# comment #}
-      {% else %}
-      {% include 'partials/card_without_results.html' %}
-      {% endif %}
-      {# endcomment #}
-      <div class="empty-list" ng-hide="num_episodes > 0">
-        <p class="lead text-center">
-          There are no patients on this list.
-        </p>
-        {% if not patient_list.is_read_only %}
-        <p class="lead text-center">
-          <span class="screen-only">
-            Would you like to <a href="/pathway/#/add_patient">add one</a>?
-          </span>
-        </p>
+          </form>
+        </div>
+        {# comment #}
+        {% if permissions.view_lab_test_trends %}
+        {# endcomment #}
+  
+        {% include 'partials/card_with_results.html' %}
+  
+        {# comment #}
+        {% else %}
+        {% include 'partials/card_without_results.html' %}
         {% endif %}
+        {# endcomment #}
+        <div class="empty-list" ng-hide="num_episodes > 0">
+          <p class="lead text-center">
+            There are no patients on this list.
+          </p>
+          {% if not patient_list.is_read_only %}
+          <p class="lead text-center">
+            <span class="screen-only">
+              Would you like to <a href="/pathway/#/add_patient">add one</a>?
+            </span>
+          </p>
+          {% endif %}
+        </div>
+  
       </div>
-
     </div>
-  </div>
+  
+  </div>   <!-- Col 11 -->
+  
+  
+  <!--  <div class="container content-offset"> -->
+    <!-- </div> -->
 
-</div>   <!-- Col 11 -->
-
-
-<!--  <div class="container content-offset"> -->
-  <!-- </div> -->
+</div>
