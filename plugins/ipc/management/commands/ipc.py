@@ -17,6 +17,7 @@ class Command(BaseCommand):
 
         for test_type in lab.IPC_TESTS:
             print(f"Commencing {test_type.TEST_NAME}")
+            # TODO in prod. shouldn't be all time - where date ordered gt date ordered of most recent alert?
             tests = lab.get_test_instances(test_type, greedy=True)
             print(f"Query returned; processing {test_type.TEST_NAME}")
 
@@ -66,17 +67,3 @@ class Command(BaseCommand):
 
             ia.seen=False
             ia.save()
-
-
-
-
-
-        # tests = lab.get_test_instances(lab.MRSAScreen, num=100)
-
-        # # for obs in tests[0].test.observation_set.all():
-        # #     print(f'"{obs.observation_name}"')
-        # # return
-
-
-        # for test in tests:
-        #     print(test)
