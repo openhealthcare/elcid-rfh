@@ -11,7 +11,7 @@ class IPCTest(object):
 
     TEST_NAME         = None # Name of the test (human readable & used to filter)
     TEST_CODE         = None # Winpath test code used for e.g. urls
-    OBSERVATION_NAMES = []   # Names of the observation used to classify this test
+    OBSERVATION_NAMES = []   # Names of the observation(s) used to classify this test
     ALERT_CATEGORY    = None # The category of alert to use when creating an InfectionAlert for this test
 
     def __init__(self, test):
