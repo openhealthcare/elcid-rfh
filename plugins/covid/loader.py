@@ -2,7 +2,7 @@
 Loading Covid data from upstream
 """
 import datetime
-from opal.models import Patient
+from opal.models import Patient, Episode
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
@@ -74,6 +74,7 @@ def create_followup_episodes():
             if not patient:
                 patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
-            covid_episode, _ = patient.episode_set.get_or_create(
+            covid_episode, _ = Episode.objects.get_or_create(
+                patient=patient,
                 category_name=CovidEpisode.display_name
             )
