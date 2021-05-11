@@ -10,14 +10,18 @@ from elcid.episode_categories import InfectionService
 @mock.patch("plugins.covid.loader.create_rfh_patient_from_hospital_number")
 @mock.patch("plugins.covid.loader.ProdAPI")
 class CreateFollowUpEpisodeTestCase(OpalTestCase):
+
+    @mock.patch("plugins.covid.loader.Episode")
     def test_create_patient_who_does_not_exist(
         self,
+            Episode,
         ProdAPI,
         create_rfh_patient_from_hospital_number
     ):
         ProdAPI.return_value.execute_hospital_query.return_value = [
             {"vPatient_Number": "111"}
         ]
+        Episode.objects.get_or_create.return_value = (None, None)
         loader.create_followup_episodes()
         create_rfh_patient_from_hospital_number.assert_called_once_with(
             "111", InfectionService
