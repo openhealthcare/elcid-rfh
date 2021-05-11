@@ -467,16 +467,28 @@ div.add-isolate:hover {
 }
 
 .patientlist-list::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.patientlist-list:hover::-webkit-scrollbar-track, .touchevents .patientlist-list::-webkit-scrollbar-track {
   background-color: #4676c5;
 }
 
 .patientlist-list::-webkit-scrollbar {
   width: 10px;
+  background-color: transparent;
+}
+
+.patientlist-list:hover::-webkit-scrollbar, .touchevents .patientlist-list::-webkit-scrollbar {
   background-color: #4676c5;
 }
 
 .patientlist-list::-webkit-scrollbar-thumb {
-  background-color: #2d5391;
+  background-color: transparent;
   border-radius: 10px;
+}
+
+.patientlist-list:hover::-webkit-scrollbar-thumb, .touchevents .patientlist-list::-webkit-scrollbar-thumb {
+  background-color: #2d5391;
 }
 /*# sourceMappingURL=elcid.css.map */
