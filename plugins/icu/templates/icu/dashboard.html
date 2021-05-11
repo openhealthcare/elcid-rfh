@@ -1,106 +1,107 @@
 {% load humanize %}
-<div class="left-menu">
-  <h3>
-    <a href="/#/ICU/">ICU</a>
-  </h3>
-  <ul>
-    {% for ward in wards %}
-    <li>
-      <a class="pointer" target="#{{ ward.name }}" scroll-on-click >
-        {{ ward.name }} ({{ ward.patient_count }})
-      </a>
-    </li>
-    {% endfor %}
-
-  </ul>
-</div>
-
-<div class="content-offset right-viewport">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h1>ICU at the Royal Free Hospital ({{ icu_patients }} patients)</h1>
-    </div> <!-- heading -->
-    <div class="panel-body">
-
-      <div class="row">
-        <div class="col-md-12" >
-
-          {% for ward in wards %}
-          <div class="row">
-            <div class="col-md-9">
-              <h2 id="{{ ward.name }}">
-                <a href="{{ ward.link }}">
-                  {{ ward.name}}
-                </a>
-                <small>
-                  {{ ward.patient_count }} ({{ ward.covid_patients }} Covid +ve)
-                </small>
-              </h2>
-              <table class="table table-striped">
-                <tr>
-                  <th>MRN</th>
-                  <th>Name</th>
-                  <th>DOB</th>
-                  <th>Bed</th>
-                  <th>Last Review</th>
-                  <th>By</th>
-                  <th></th>
-                  <th></th>
-                </tr>
-                {% for patient in ward.patients %}
-                <tr>
-                  <td>
-                    {{ patient.demographics.hospital_number }}
-                  </td>
-                  <td>
-                    <a href="/#/patient/{{ patient.demographics.patient_id }}"
-                       class="orange-link">
-                      {{ patient.demographics.name}}
-                    </a>
-                  </td>
-                  <td>
-                    {{ patient.demographics.date_of_birth }}
-                  </td>
-                  <td>
-                    {{ patient.handoverlocation.bed }}
-                  </td>
-                  <td>
-                    {{ patient.last_review.when }}
-                  </td>
-                  <td>
-                    {{ patient.last_review.initials }}
-                  </td>
-                  <td>
-                    {% ifequal patient.last_review.when.date today %}
-                    <i class="fa fa-comments green fa-2x"></i>
-                    {% endifequal %}
-                  </td>
-                  <td>
-                    {% if patient.infection_note %}
-                    <i class="fa fa-sticky-note fa-lg" title="{{ patient.infection_note }}"></i>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endfor %}
-              </table>
-            </div>
-            <div class="col-md-3">
-              <div class="content-offset-75">
-                <div id="{{ ward.name}}_graph"></div>
+<div class="view-port-container row">
+  <div class="left-menu">
+    <h3>
+      <a href="/#/ICU/">ICU</a>
+    </h3>
+    <ul>
+      {% for ward in wards %}
+      <li>
+        <a class="pointer" target="#{{ ward.name }}" scroll-on-click >
+          {{ ward.name }} ({{ ward.patient_count }})
+        </a>
+      </li>
+      {% endfor %}
+  
+    </ul>
+  </div>
+  
+  <div class="content-offset right-viewport">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h1>ICU at the Royal Free Hospital ({{ icu_patients }} patients)</h1>
+      </div> <!-- heading -->
+      <div class="panel-body">
+  
+        <div class="row">
+          <div class="col-md-12" >
+  
+            {% for ward in wards %}
+            <div class="row">
+              <div class="col-md-9">
+                <h2 id="{{ ward.name }}">
+                  <a href="{{ ward.link }}">
+                    {{ ward.name}}
+                  </a>
+                  <small>
+                    {{ ward.patient_count }} ({{ ward.covid_patients }} Covid +ve)
+                  </small>
+                </h2>
+                <table class="table table-striped">
+                  <tr>
+                    <th>MRN</th>
+                    <th>Name</th>
+                    <th>DOB</th>
+                    <th>Bed</th>
+                    <th>Last Review</th>
+                    <th>By</th>
+                    <th></th>
+                    <th></th>
+                  </tr>
+                  {% for patient in ward.patients %}
+                  <tr>
+                    <td>
+                      {{ patient.demographics.hospital_number }}
+                    </td>
+                    <td>
+                      <a href="/#/patient/{{ patient.demographics.patient_id }}"
+                         class="orange-link">
+                        {{ patient.demographics.name}}
+                      </a>
+                    </td>
+                    <td>
+                      {{ patient.demographics.date_of_birth }}
+                    </td>
+                    <td>
+                      {{ patient.handoverlocation.bed }}
+                    </td>
+                    <td>
+                      {{ patient.last_review.when }}
+                    </td>
+                    <td>
+                      {{ patient.last_review.initials }}
+                    </td>
+                    <td>
+                      {% ifequal patient.last_review.when.date today %}
+                      <i class="fa fa-comments green fa-2x"></i>
+                      {% endifequal %}
+                    </td>
+                    <td>
+                      {% if patient.infection_note %}
+                      <i class="fa fa-sticky-note fa-lg" title="{{ patient.infection_note }}"></i>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </table>
+              </div>
+              <div class="col-md-3">
+                <div class="content-offset-75">
+                  <div id="{{ ward.name}}_graph"></div>
+                </div>
               </div>
             </div>
+            {% endfor %}
           </div>
-          {% endfor %}
+  
+  
         </div>
-
-
-      </div>
-
-    </div>   <!-- panel body -->
-  </div>     <!-- Panel -->
-
-</div>   <!-- Col 11 -->
-
+  
+      </div>   <!-- panel body -->
+    </div>     <!-- Panel -->
+  
+  </div>   <!-- Col 11 -->
+</div>
 <script>
 
   var render_graph = function(element_id, data, yticks){
