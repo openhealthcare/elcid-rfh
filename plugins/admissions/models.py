@@ -211,6 +211,8 @@ class TransferHistory(models.Model):
     encounter_id                    = models.IntegerField(blank=True, null=True)
     # What is this?
     encounter_slice_id              = models.IntegerField(blank=True, null=True)
+    spell_number                    = models.IntegerField(blank=True, null=True)
+    mrn                             = models.CharField(blank=True, null=True, max_length=255)
     transfer_sequence_number        = models.IntegerField(blank=True, null=True)
     active_transfer_sequence_number = models.IntegerField(blank=True, null=True)
     transfer_start_datetime         = models.DateTimeField(blank=True, null=True)
@@ -233,12 +235,15 @@ class TransferHistory(models.Model):
     trf_inp_th_encntr_alias_updt_dt_tm     = models.DateTimeField(blank=True, null=True)
     trf_inp_th_encntr_slice_act_updt_dt_tm = models.DateTimeField(blank=True, null=True)
 
+
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'UPDT_DT_TM'                            : 'update_datetime',
         'ACTIVE_TRANSFER'                       : 'active_transfer',
         'ACTIVE_SPELL'                          : 'active_spell',
         'ENCNTR_ID'                             : 'encounter_id',
         'ENCNTR_SLICE_ID'                       : 'encounter_slice_id',
+        'SPELL_NUMBER'                          : 'spell_number',
+        'LOCAL_PATIENT_IDENTIFIER'              : 'mrn',
         'TRANS_HIST_SEQ_NBR'                    : 'transfer_sequence_number',
         'ACTIVE_TRANS_HIST_SEQ_NBR'             : 'active_transfer_sequence_number',
         'TRANS_HIST_START_DT_TM'                : 'transfer_start_datetime',
