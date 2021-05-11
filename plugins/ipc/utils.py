@@ -4,6 +4,10 @@ Utils for the IPC module
 
 import re
 
+
+### Human Sorting code stolen from Ned Batchelor
+### https://nedbatchelder.com/blog/200712/human_sorting.html
+
 def tryint(s):
     try:
         return int(s)
