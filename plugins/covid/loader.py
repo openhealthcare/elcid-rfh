@@ -74,6 +74,6 @@ def create_followup_episodes():
             if not patient:
                 patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
-            patient.episode_set.create(
+            covid_episode, _ = patient.episode_set.get_or_create(
                 category_name=CovidEpisode.display_name
             )
