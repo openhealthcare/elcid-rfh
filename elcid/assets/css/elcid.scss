@@ -492,3 +492,18 @@ div.add-isolate:hover{
     height:calc(100vh - 250px);
     border-bottom: 1px solid white;
 }
+
+.patientlist-list::-webkit-scrollbar-track{
+    background-color: $indigo;
+  }
+
+  .patientlist-list::-webkit-scrollbar{
+    width: 10px;
+    background-color: $indigo;
+  }
+
+  .patientlist-list::-webkit-scrollbar-thumb{
+    background-color: darken($indigo, 15%);
+    border-radius: 10px;
+  }
+
