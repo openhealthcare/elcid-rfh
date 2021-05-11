@@ -148,11 +148,15 @@ def load_transfer_history():
     )
     for history in histories:
 
-        hist = TransferHistory()
-        for k, v in history.items():
-            setattr(
-                hist,
-                TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
-                v
-            )
-        hist.save()
+        try:
+            hist = TransferHistory()
+            for k, v in history.items():
+                setattr(
+                    hist,
+                    TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                    v
+                )
+            hist.save()
+        except:
+            print(history)
+            raise
