@@ -3,7 +3,8 @@ A management command that is run by a cron job
 """
 import datetime
 import time
-
+import json
+from django.db import transaction
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
@@ -35,6 +36,11 @@ def create_email(**kwargs):
     send_email(title, template_name, {"table_context": kwargs, "title": title})
 
 
+@transaction.atomic
+def update_patient(patient, lab_tests):
+    update_lab_tests.update_tests(patient, lab_tests)
+
+
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
@@ -61,13 +67,15 @@ class Command(BaseCommand):
                 hospital_number=item['demographics']["hospital_number"]
             )
 
+            if not item['demographics']["hospital_number"]:
+                continue
+
             if not patient_demographics_set.exists():
                 continue # Not in our cohort
 
-            update_lab_tests.update_tests(
-                patient_demographics_set.first().patient,
-                item["lab_tests"],
-            )
+            item['lab_tests'] = [i for i in item['lab_tests'] if i["test_name"] or i["external_identifier"]]
+            update_patient(patient_demographics_set.first().patient,  item["lab_tests"])
+
 
         t2 = time.time()
 
