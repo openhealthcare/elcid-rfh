@@ -4,6 +4,9 @@ Models for the elCID ICU plugin
 from django.db import models
 from opal.models import Patient, PatientSubrecord
 
+from plugins.icu.episode_categories import ICUHandoverEpisode
+
+
 def parse_icu_location(location_string):
     """
     Return a tuple of (hospital, ward, bed) from a location string
@@ -62,6 +65,8 @@ class ICUHandover(PatientSubrecord):
     We do not rely on the denormalised fields such as name for
     anything other than matching to our patient in elCID on import.
     """
+    _category = ICUHandoverEpisode
+
     # Incidental implementation details
     sqlserver_patientmasterfile_uniqueid = models.TextField(blank=True, null=True)
     sqlserver_uniqueid                   = models.TextField(blank=True, null=True)

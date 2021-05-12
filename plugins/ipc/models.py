@@ -10,6 +10,8 @@ from opal.models import EpisodeSubrecord
 
 from plugins.labtests import models as lab_test_models
 
+from plugins.ipc.episode_categories import IPCEpisode
+
 
 class InfectionAlert(EpisodeSubrecord):
     """
@@ -19,6 +21,7 @@ class InfectionAlert(EpisodeSubrecord):
     Instances of this subrecord are created by background processes
     filtering incoming lab data, and only ever edited by users.
     """
+    _category = IPCEpisode
     _icon = 'fa fa-exclamation-triangle'
 
     MRSA  = 'MRSA'
