@@ -13,8 +13,8 @@ class UpstreamLocationSnippet(LoginRequiredMixin, DetailView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        location = self.object.upstreamlocation.get()
-
-        context['location'] = location
+        if self.object.upstreamlocation.exists():
+            location = self.object.upstreamlocation.get()
+            context['location'] = location
 
         return context
