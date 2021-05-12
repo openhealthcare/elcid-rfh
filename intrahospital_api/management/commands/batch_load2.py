@@ -21,7 +21,6 @@ from plugins.monitoring.models import Fact
 def send_email(title, template_name, context):
     html_message = render_to_string(template_name, context)
     plain_message = strip_tags(html_message)
-    admin_emails = ", ".join([i[1] for i in settings.ADMINS])
     send_mail(
         title,
         plain_message,
