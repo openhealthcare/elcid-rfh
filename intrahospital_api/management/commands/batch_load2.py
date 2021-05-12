@@ -31,7 +31,7 @@ def send_email(title, template_name, context):
 
 def create_email(**kwargs):
     template_name = "email/table_email.html"
-    title = f"{settings.OPAL_BRAND_NAME} new results sync"
+    title = f"{settings.OPAL_BRAND_NAME} results sync"
     send_email(title, template_name, {"table_context": kwargs, "title": title})
 
 
