@@ -35,7 +35,8 @@ class LabTest(models.Model):
     class Meta:
         ordering = ['-datetime_ordered']
 
-    def create_from_api_dict(self, patient, data):
+    @classmethod
+    def translate_to_object(cls, patient, data):
         """
             This is the updateFromDict of the the UpstreamLabTest
 
@@ -59,24 +60,19 @@ class LabTest(models.Model):
                 }]
             }
         """
-        self.patient = patient
-        self.clinical_info = data["clinical_info"]
+        lab_test = cls()
+        lab_test.patient = patient
+        lab_test.clinical_info = data["clinical_info"]
         if data["datetime_ordered"]:
-            self.datetime_ordered = serialization.deserialize_datetime(
+            lab_test.datetime_ordered = serialization.deserialize_datetime(
                 data["datetime_ordered"]
             )
-        self.lab_number = data["external_identifier"]
-        self.status = data["status"]
-        self.test_code = data["test_code"]
-        self.site = data["site"]
-        self.test_name = data["test_name"]
-        self.save()
-        observations = []
-        for obs_dict in data["observations"]:
-            observation =  Observation.translate_to_object(obs_dict)
-            observation.test = self
-            observations.append(observation)
-        Observation.objects.bulk_create(observations)
+        lab_test.lab_number = data["external_identifier"]
+        lab_test.status = data["status"]
+        lab_test.test_code = data["test_code"]
+        lab_test.site = data["site"]
+        lab_test.test_name = data["test_name"]
+        return lab_test
 
     @classmethod
     def get_relevant_tests(self, patient):
