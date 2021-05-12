@@ -135,54 +135,6 @@ class LabTestTestCase(OpalTestCase):
             obs.observation_name, "Aerobic bottle culture"
         )
 
-    def test_create_from_api_dict_replaces_observation(self):
-        lt = self.patient.lab_tests.create(**{
-            "clinical_info":  'testing',
-            "datetime_ordered": timezone.make_aware(datetime.datetime(2015, 6, 17, 4, 15, 10)),
-            "lab_number": "11111",
-            "site": u'^&        ^',
-            "status": "Sucess",
-            "test_code": "AN12",
-            "test_name": "Anti-CV2 (CRMP-5) antibodies",
-        })
-
-        lt.observation_set.create(
-            last_updated=timezone.make_aware(datetime.datetime(2015, 6, 18, 4, 15, 10)),
-            observation_datetime=timezone.make_aware(datetime.datetime(2015, 4, 15, 4, 15, 10)),
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="234"
-        )
-
-        lt.create_from_api_dict(self.patient, self.api_dict)
-
-        obs = lt.observation_set.get()
-
-        # this should have changed
-        self.assertEqual(
-            obs.observation_value,
-            "123"
-        )
-
-        # the below stay the same
-        self.assertEqual(
-            obs.observation_name,
-            "Aerobic bottle culture"
-        )
-        self.assertEqual(
-            obs.observation_number,
-            "12312"
-        )
-        self.assertEqual(
-            obs.reference_range,
-            "3.5 - 11"
-        )
-        self.assertEqual(
-            obs.units,
-            "g"
-        )
-
     def test_patient_deletion_behaviour(self):
         self.create_lab_test()
         self.patient.delete()
