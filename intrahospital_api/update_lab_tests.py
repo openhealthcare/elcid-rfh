@@ -27,6 +27,6 @@ def delete_and_create_lab_test(patient, lab_test):
         patient=patient
     ).delete()
     test = lab_test_models.LabTest()
-    test.update_from_api_dict(patient, lab_test)
+    test.create_from_api_dict(patient, lab_test)
     return test
 
