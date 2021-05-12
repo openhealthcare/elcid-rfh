@@ -6,6 +6,7 @@ from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
 from opal import models
 
+from plugins.tb.episode_categories import TbEpisode
 
 class RecreationalDrug(lookuplists.LookupList):
     pass
@@ -13,6 +14,7 @@ class RecreationalDrug(lookuplists.LookupList):
 
 class SocialHistory(models.EpisodeSubrecord):
     _is_singleton = True
+    _category = TbEpisode
     _icon = 'fa fa-clock-o'
 
     HOMELESSNESS_TYPE_CHOICES = (
@@ -149,6 +151,7 @@ class SocialHistory(models.EpisodeSubrecord):
 
 class Pregnancy(models.PatientSubrecord):
     _is_singleton = True
+    _category = TbEpisode
 
     pregnant = fields.BooleanField(default=False)
     breast_feeding = fields.BooleanField(default=False)
@@ -156,6 +159,7 @@ class Pregnancy(models.PatientSubrecord):
 
 class Nationality(models.PatientSubrecord):
     _is_singleton = True
+    _category = TbEpisode
 
     immigration_concerns = fields.BooleanField(default=False)
     immigration_details = fields.TextField(blank=True)
@@ -175,6 +179,7 @@ class Nationality(models.PatientSubrecord):
 
 class Employment(models.PatientSubrecord):
     _is_singleton = True
+    _category = TbEpisode
 
     FINANICAL_STATUS_CHOICES = (
         ("Nil income", "Nil income"),
@@ -193,6 +198,7 @@ class Employment(models.PatientSubrecord):
 
 class CommuninicationConsiderations(models.PatientSubrecord):
     _is_singleton = True
+    _category = TbEpisode
 
     class Meta:
         verbose_name = "Communication"
@@ -211,6 +217,7 @@ class CommuninicationConsiderations(models.PatientSubrecord):
 
 class AccessConsiderations(models.PatientSubrecord):
     _is_singleton = True
+    _category = TbEpisode
 
     ACCESS_ASSISTANCE = (
         ("provision", "provision",),
@@ -237,6 +244,8 @@ class AccessConsiderations(models.PatientSubrecord):
 
 
 class PatientConsultation(models.PatientConsultation):
+    _category = TbEpisode
+
     plan = fields.TextField(blank=True, default="")
     examination_findings = fields.TextField(
         blank=True, default=""
@@ -248,6 +257,7 @@ class PatientConsultation(models.PatientConsultation):
 
 class ContactDetails(models.PatientSubrecord):
     _is_singleton = True
+    _category = TbEpisode
     _advanced_searchable = False
     _icon = 'fa fa-phone'
 
@@ -263,6 +273,7 @@ class ContactDetails(models.PatientSubrecord):
 
 class NextOfKin(models.PatientSubrecord):
     _icon = 'fa fa-child'
+    _category = TbEpisode
     _advanced_searchable = False
 
     first_name = fields.CharField(blank=True, null=True, max_length=255)
@@ -292,6 +303,8 @@ class LymphNodeSwellingSite(models.EpisodeSubrecord):
 
 class Treatment(models.Treatment):
     _angular_service = 'TreatmentRecord'
+    _category = TbEpisode
+
     planned_end_date = fields.DateField(blank=True, null=True)
     category = fields.CharField(blank=True, null=True, max_length=255)
 
@@ -305,6 +318,7 @@ class TBHistory(models.PatientSubrecord):
     """
     _icon = 'fa fa-clock-o'
     _is_singleton = True
+    _category = TbEpisode
 
     TB_TYPES = (
         ("Active", "Active",),
@@ -386,6 +400,7 @@ class TBHistory(models.PatientSubrecord):
 
 class IndexCase(models.PatientSubrecord):
     _icon = 'fa fa-chain'
+    _category = TbEpisode
 
     POS_NEG = (
         ("+ve", "+ve"),
@@ -487,6 +502,7 @@ class Allergies(models.Allergies):
 
 class Travel(models.EpisodeSubrecord):
     _icon = 'fa fa-plane'
+    _category = TbEpisode
 
     country = ForeignKeyOrFreeText(models.Destination)
     when = fields.CharField(max_length=255, blank=True)
@@ -501,6 +517,8 @@ class Travel(models.EpisodeSubrecord):
 
 class TBLocation(models.EpisodeSubrecord):
     _is_singleton = True
+    _category = TbEpisode
+
     sites = fields.ManyToManyField(TBSite, blank=True)
 
     def to_dict(self, user):
@@ -512,6 +530,7 @@ class TBLocation(models.EpisodeSubrecord):
 class BCG(models.PatientSubrecord):
     _icon = 'fa fa-asterisk'
     _is_singleton = True
+    _category = TbEpisode
 
     BCG_PERIOD = (
         ('Neonatal', 'Neonatal',),
@@ -537,6 +556,7 @@ class BCG(models.PatientSubrecord):
 
 class MantouxTest(models.PatientSubrecord):
     _icon = "fa fa-crosshairs"
+    _category = TbEpisode
 
     MANTOUX_SITES = (
         ("Left Lower Arm", "Left Lower Arm",),
@@ -560,6 +580,7 @@ class MantouxTest(models.PatientSubrecord):
 class TBMeta(models.EpisodeSubrecord):
     _is_singleton = True
     _advanced_searchable = False
+    _category = TbEpisode
 
     contact_tracing_done = fields.BooleanField(default=False)
     directly_observed_therapy = fields.BooleanField(default=False)
@@ -571,6 +592,7 @@ class TBCaseManager(lookuplists.LookupList):
 
 class TBManagement(models.EpisodeSubrecord):
     _is_singleton = True
+    _category = TbEpisode
 
     class Meta:
         verbose_name = "TB Management"
@@ -584,11 +606,14 @@ class TBManagement(models.EpisodeSubrecord):
 
 class AdverseReaction(models.EpisodeSubrecord):
     _icon = 'fa fa-stop-circle-o'
+    _category = TbEpisode
+
     details = fields.TextField(blank=True, default='')
 
 
 class OtherInvestigation(models.EpisodeSubrecord):
     _icon = 'fa fa-crosshairs'
+    _category = TbEpisode
 
     name    = fields.CharField(max_length=256, blank=True, default="")
     date    = fields.DateField(blank=True, null=True)

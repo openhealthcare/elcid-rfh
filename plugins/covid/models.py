@@ -5,6 +5,7 @@ from django.db import models
 from opal.core.fields import enum
 from opal.models import Patient, PatientSubrecord, EpisodeSubrecord
 
+from plugins.covid.episode_categories import CovidEpisode
 
 def calculate_phq_score(interest, depressed):
     """
@@ -105,6 +106,8 @@ class CovidVaccination(PatientSubrecord):
     """
     Vaccination details for this patient
     """
+    _category = CovidEpisode
+
     VACCINE_CHOICES = enum(
         'Pfizer-BioNTech',
         'Moderna',
@@ -120,6 +123,7 @@ class CovidAdmission(EpisodeSubrecord):
     An admission to hospital and associated details
     """
     _icon = 'fa fa-hospital-o'
+    _category = CovidEpisode
 
     class Meta:
         verbose_name = 'Admission'
@@ -235,6 +239,7 @@ class LungFunctionTest(EpisodeSubrecord):
     Lung function test results for this patient
     """
     _icon = 'fa fa-crosshairs'
+    _category = CovidEpisode
 
     date    = models.DateField(blank=True, null=True)
     fev1    = models.CharField(blank=True, null=True, max_length=244, verbose_name='FEV1 %')
@@ -248,6 +253,7 @@ class CovidComorbidities(EpisodeSubrecord):
     """
     _icon         = 'fa fa-history'
     _is_singleton = True
+    _category = CovidEpisode
 
     class Meta:
         verbose_name = 'Comorbidities'
@@ -289,6 +295,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
     A phone call to a patient seeking follow up on their COVID-19 admission
     """
     _icon = 'fa fa-phone'
+    _category = CovidEpisode
 
     ONE_TO_TEN           = enum('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10')
     ONE_TO_NINE          = enum('1', '2', '3', '4', '5', '6', '7', '8', '9')
@@ -650,6 +657,7 @@ class CovidFollowUpCallFollowUpCall(EpisodeSubrecord):
     A phone call to a patient seeking follow up on their COVID-19 admission Follow up Call
     """
     _icon = 'fa fa-phone'
+    _category = CovidEpisode
 
     POSITION_CHOICES     = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
 
@@ -676,6 +684,7 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     patient.
     """
     _icon = 'fa fa-phone'
+    _category = CovidEpisode
 
     POSITION_CHOICES    = enum('Consultant', 'Registrar', 'Associate Specialist', 'Other')
     YN_DECLINED_CHOICES = enum('Yes', 'No', 'Declined')

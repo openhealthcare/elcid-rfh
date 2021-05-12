@@ -20,10 +20,18 @@ def serialize_subrecords(ids, user, subrecords_to_serialise):
             result[id][subrecord.get_api_name()] = []
 
     if issubclass(subrecords_to_serialise[0], omodels.PatientSubrecord):
-        qs_args = dict(patient_id__in=ids)
+        if len(ids) == 1:
+            qs_args = {'patient_id': ids[0]}
+        else:
+            qs_args = {'patient_id__in': ids}
+
         key = "patient_id"
     else:
-        qs_args = dict(episode_id__in=ids)
+        if len(ids) == 1:
+            qs_args = {'episode_id': ids[0]}
+        else:
+            qs_args = {'episode_id__in': ids}
+
         key = "episode_id"
 
     for model in subrecords_to_serialise:
@@ -38,7 +46,7 @@ def serialize_subrecords(ids, user, subrecords_to_serialise):
     return result
 
 
-def serialize_episode_subrecords(episodes, user, subrecords=None):
+def serialize_episode_subrecords(episodes, user, subrecords=None, categories=None):
     """
         serialises episode subrecords.
 
@@ -52,14 +60,24 @@ def serialize_episode_subrecords(episodes, user, subrecords=None):
     if not subrecords:
         e_subrecords = list(episode_subrecords())
     else:  # Get only episode subrecords
-        e_subrecords = [i for i in episode_subrecords() if i in subrecords]
+        if categories:
+            e_subrecords = []
+            for sub in episode_subrecords():
+                if categories:
+                    if hasattr(sub, '_category'):
+                        if sub._category.display_name in categories:
+                            e_subrecords.append(sub)
+                    else:
+                        e_subrecords.append(sub)
+        else:
+            e_subrecords = [i for i in episode_subrecords() if i in subrecords]
 
     return serialize_subrecords(
         [i.id for i in episodes], user, e_subrecords
     )
 
 
-def serialize_patient_subrecords(episodes, user, subrecords=None):
+def serialize_patient_subrecords(episodes, user, subrecords=None, categories=None):
     """
         serialises patient subrecords.
 
@@ -69,11 +87,22 @@ def serialize_patient_subrecords(episodes, user, subrecords=None):
         It will filter those subrecords for PatientSubrecords and serialises
         those.
     """
-    patient_ids = [i.patient_id for i in episodes]
+    patient_ids = list({i.patient_id for i in episodes})
+
     if not subrecords:
         p_subrecords = list(patient_subrecords())
     else:  # Get only the patient subrecords
-        p_subrecords = [i for i in patient_subrecords() if i in subrecords]
+        if categories:
+            p_subrecords = []
+            for sub in patient_subrecords():
+                if categories:
+                    if hasattr(sub, '_category'):
+                        if sub._category.display_name in categories:
+                            p_subrecords.append(sub)
+                    else:
+                        p_subrecords.append(sub)
+        else:
+            p_subrecords = [i for i in patient_subrecords() if i in subrecords]
 
     return serialize_subrecords(
         patient_ids, user, p_subrecords
@@ -103,11 +132,13 @@ def serialize(episodes, user, subrecords=None):
     """
     Return a set of serialize EPISODES.
     """
+    categories = {e.category_name for e in episodes}
+
     patient_subs = serialize_patient_subrecords(
-        episodes, user, subrecords=subrecords
+        episodes, user, subrecords=subrecords, categories=categories
     )
     episode_subs = serialize_episode_subrecords(
-        episodes, user, subrecords=subrecords
+        episodes, user, subrecords=subrecords, categories=categories
     )
     taggings = serialize_tagging(
         episodes, user, subrecords=subrecords

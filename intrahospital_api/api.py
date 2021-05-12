@@ -14,6 +14,7 @@ def patient_to_dict(patient, user):
     subs.append(omodels.Tagging)
 
     episodes    = patient.episode_set.all()
+    categories  = [e.category_name for e in episodes]
     episode_ids = episodes.values_list('id', flat=True) # Used below for a values list query
 
     episodes = [e for e in episodes if e.category.episode_visible_to(e, user)]
@@ -46,6 +47,10 @@ def patient_to_dict(patient, user):
         'id': patient.id,
     }
     for model in subrecords.patient_subrecords():
+        if hasattr(model, '_category'):
+            if not model._category in categories:
+                continue
+
         subs = model.objects.filter(patient_id=patient.id)
         d[model.get_api_name()] = [
             subrecord.to_dict(user) for subrecord in subs
@@ -88,7 +93,4 @@ class PatientViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         patient = get_object_or_404(omodels.Patient.objects.all(), pk=pk)
-        omodels.PatientRecordAccess.objects.create(
-            patient=patient, user=request.user
-        )
         return json_response(patient_to_dict(patient, request.user))
