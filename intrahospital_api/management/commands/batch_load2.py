@@ -3,7 +3,6 @@ A management command that is run by a cron job
 """
 import datetime
 import time
-import json
 from django.db import transaction
 from django.conf import settings
 from django.core.management.base import BaseCommand
