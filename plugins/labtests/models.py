@@ -198,8 +198,3 @@ class Observation(models.Model):
         for f in fields:
             setattr(obs, f, observation_dict.get(f))
         return obs
-
-    def create(self, observation_dict):
-        obs = self.__class__.translate_to_object(observation_dict)
-        obs.save()
-        return obs
