@@ -72,7 +72,6 @@ class Command(BaseCommand):
             if not patient_demographics_set.exists():
                 continue # Not in our cohort
 
-            item['lab_tests'] = [i for i in item['lab_tests'] if i["test_name"] or i["external_identifier"]]
             update_patient(patient_demographics_set.first().patient,  item["lab_tests"])
 
 
@@ -116,3 +115,5 @@ class Command(BaseCommand):
             label='48hr Observations',
             value_int=kw['48hr_obs']
         ).save()
+
+
