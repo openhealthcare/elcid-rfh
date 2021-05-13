@@ -180,6 +180,10 @@ class Observation(models.Model):
 
     @classmethod
     def translate_to_object(cls, observation_dict):
+        """
+        Returns a new unsaved instance of an Observation with the values
+        from observation_dict (datetimes translated from strings into dates).
+        """
         obs = cls()
         obs.last_updated = serialization.deserialize_datetime(
             observation_dict["last_updated"]
