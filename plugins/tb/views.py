@@ -153,8 +153,14 @@ class ClinicList(LoginRequiredMixin, ListView):
 
             # There should always be an episode but if there is not, skip it.
             if episode:
+                consultations = episode.patientconsultation_set.order_by('-when')
+                recent_consultation = consultations.first()
                 ctx["admission_and_episode"].append(
-                    (admission, episode,)
+                    (
+                        admission,
+                        episode,
+                        recent_consultation
+                    )
                 )
 
         return ctx
