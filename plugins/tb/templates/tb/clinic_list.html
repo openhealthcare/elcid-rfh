@@ -28,6 +28,7 @@
       <th>Status</th>
       <th>Patient</th>
       <th>Type</th>
+      <th>Imaging</th>
     </tr>
     <tr>
       <td>
@@ -41,6 +42,12 @@
         </a>
       </td>
       <td>{{ appointment.derived_appointment_type }}</td>
+      <td>
+        <a class="orange-link" target="_blank" href="http://freenet/carestream/?pid={{ appointment.patient.demographics.hospital_number }}">
+          PACS
+          <i class="fa fa-external-link" aria-hidden="true"></i>
+        </a>
+      </td>
     </tr>
   </table>
   {% endfor %}
