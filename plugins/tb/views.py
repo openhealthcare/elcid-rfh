@@ -127,8 +127,8 @@ class OtherMedicationModal(AbstractModalView):
     model = Treatment
 
 
-class AppointmentList(LoginRequiredMixin, ListView):
-    template_name = "tb/appointment_list.html"
+class ClinicList(LoginRequiredMixin, ListView):
+    template_name = "tb/clinic_list.html"
 
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
