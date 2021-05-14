@@ -5,7 +5,7 @@
       <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id + '/' + row.id ]]">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-sm-11">
+            <div class="col-md-10">
               <h3><i class="fa fa-user"></i>
                 [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
                 <small>
@@ -16,7 +16,7 @@
                 </small>
               </h3>
             </div>
-            <div class="col-md-1">
+            <div class="col-md-2 text-right">
               {% if not patient_list.is_read_only %}
               <button class="btn btn-primary" pathway-episode="row" open-pathway="remove" pathway-callback="removeFromList(row.id)">
                 {% icon 'fa-sign-out' %} Remove
