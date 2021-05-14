@@ -25,18 +25,22 @@
   <table class="table table-striped">
     <tr>
       <th>Time</th>
+      <th>Status</th>
       <th>Patient</th>
+      <th>Type</th>
     </tr>
     <tr>
       <td>
         {{ appointment.start_datetime.time }}
       </td>
+      <td>{{ appointment.status_code }}</td>
       <td>
         <a href="{{ episode.get_absolute_url }}" class="orange-link">
           {{ appointment.patient.demographics.name.upper }}
           ({{ appointment.patient.demographics.hospital_number }})
         </a>
       </td>
+      <td>{{ appointment.derived_appointment_type }}</td>
     </tr>
   </table>
   {% endfor %}
