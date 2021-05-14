@@ -3,6 +3,7 @@ from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.tb import episode_categories, constants
+from elcid import episode_categories as infection_episode_categories
 
 
 Q_TB_APPOINTMENTS = """
@@ -32,9 +33,8 @@ def create_tb_episodes():
             ).first()
             if not patient:
                 patient = create_rfh_patient_from_hospital_number(
-                    mrn, episode_categories.TbEpisode
+                    mrn, infection_episode_categories.InfectionService
                 )
-            else:
-                patient.episode_set.create(
-                    category_name=episode_categories.TbEpisode.display_name
-                )
+            patient.create_episode(
+                category_name=episode_categories.TbEpisode.display_name
+            )
