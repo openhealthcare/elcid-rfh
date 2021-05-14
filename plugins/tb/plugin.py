@@ -55,7 +55,7 @@ class TbPlugin(plugins.OpalPlugin):
             menus.MenuItem(
                 href='/#/tb/clinic-list',
                 display='TB',
-                icon='fa fa-dashboard',
+                icon='fa fa-columns',
                 activepattern='/#/tb/clinic-list'
             )
         ]
