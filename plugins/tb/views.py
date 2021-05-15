@@ -145,7 +145,7 @@ class ClinicList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx["admission_and_episode"] = []
+        ctx["rows"] = []
         for admission in ctx["object_list"]:
             episode = admission.patient.episode_set.filter(
                 category_name=episode_categories.TbEpisode.display_name
@@ -183,9 +183,9 @@ class ClinicList(LoginRequiredMixin, ListView):
 
             if observation:
                 if observation.observation_name == "TB: Culture Result":
-                    obs_values["test_type"] = "Culture"
+                    obs_values["test_type"] = "AFB Culture"
                 else:
-                    obs_values["test_type"] = "PCR"
+                    obs_values["test_type"] = "TB PCR"
                 obs_values["value"] = observation.observation_value.replace(
                     "~", ""
                 ).strip()
@@ -195,7 +195,7 @@ class ClinicList(LoginRequiredMixin, ListView):
             if episode:
                 consultations = episode.patientconsultation_set.order_by('-when')
                 recent_consultation = consultations.first()
-                ctx["admission_and_episode"].append(
+                ctx["rows"].append(
                     (
                         admission,
                         episode,
