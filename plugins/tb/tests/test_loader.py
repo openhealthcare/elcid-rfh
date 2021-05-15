@@ -1,6 +1,7 @@
 from unittest import mock
 from opal.core.test import OpalTestCase
 from opal.models import Episode, Patient
+from elcid.episode_categories import InfectionService
 from plugins.tb import loader
 from plugins.tb import episode_categories
 
@@ -17,9 +18,27 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
         ProdAPI.return_value.execute_hospital_query.return_value = [
             {"vPatient_Number": "111"}
         ]
+
+        def create_episode(*args):
+            patient, episode = self.new_patient_and_episode_please()
+            episode.category_name = InfectionService.display_name
+            episode.save()
+            patient.demographics_set.update(
+                hospital_number="111"
+            )
+            return patient
+
+        create_rfh_patient_from_hospital_number.side_effect = create_episode
         loader.create_tb_episodes()
         create_rfh_patient_from_hospital_number.assert_called_once_with(
-            "111", episode_categories.TbEpisode
+            "111", InfectionService
+        )
+        self.assertTrue(
+            Episode.objects.filter(
+                category_name=episode_categories.TbEpisode.display_name
+            ).filter(
+                patient__demographics__hospital_number="111"
+            ).exists()
         )
 
     def test_create_episode_which_does_not_exist(
