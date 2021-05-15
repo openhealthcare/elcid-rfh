@@ -1,0 +1,72 @@
+<div class="left-menu">
+  <h3>
+    <a href="/#/tb/clinic-list/">TB</a>
+  </h3>
+  <li>
+    <a href="/#/tb/clinic-list/">Clinic List</a>
+  </li>
+  </ul>
+</div>
+
+<div class="content-offset right-viewport">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h1>
+        TB Clinic List
+      </h1>
+    </div>
+  </div>
+  {% for appointment, episode, consultation, obs_values in rows %}
+  {% ifchanged appointment.start_datetime.date %}
+  <h3 class="content-offset left-offset-10">
+    {{ appointment.start_datetime.date }}
+  </h3>
+  {% endifchanged %}
+  <table class="table table-striped">
+    <tr>
+      <th>Time</th>
+      <th>Status</th>
+      <th>Patient</th>
+      <th>Type</th>
+      <th>Imaging</th>
+      <th>Recent TB culture or PCR</th>
+      <th>Recent consultation</th>
+    </tr>
+    <tr>
+      <td>
+        {{ appointment.start_datetime.time }}
+      </td>
+      <td>{{ appointment.status_code }}</td>
+      <td>
+        <a href="{{ episode.get_absolute_url }}" class="orange-link">
+          {{ appointment.patient.demographics.name.upper }}
+          ({{ appointment.patient.demographics.hospital_number }})
+        </a>
+      </td>
+      <td>{{ appointment.derived_appointment_type }}</td>
+      <td>
+        <a class="orange-link" target="_blank" href="http://freenet/carestream/?pid={{ appointment.patient.demographics.hospital_number }}">
+          PACS
+          <i class="fa fa-external-link" aria-hidden="true"></i>
+        </a>
+      </td>
+      <td>
+        {% if obs_values %}
+          {{ obs_values.datetime }}
+          {{ obs_values.test_type }}:
+          {{ obs_values.value }}
+        {% endif %}
+      </td>
+      <td>
+        {% if consultation %}
+        {{ consultation.when }}
+        {{ consultation.reason_for_interaction }}
+        {{ consultation.initials }}
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+  {% endfor %}
+</div>
+
+

@@ -39,8 +39,8 @@ urlpatterns = [
         name="other_medication_modal"
     ),
     url(
-        r'^templates/tb/appointment_list.html$',
-        views.AppointmentList.as_view(),
-        name="tb_appointment_list"
+        r'^templates/tb/clinic_list.html$',
+        views.ClinicList.as_view(),
+        name="tb_clinic_list"
     )
 ]

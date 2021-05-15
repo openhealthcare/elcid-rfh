@@ -12,6 +12,7 @@ from opal import views
 
 from elcid.models import Diagnosis
 from plugins.appointments.models import Appointment
+from plugins.labtests.models import Observation
 
 from plugins.tb import episode_categories, constants
 from plugins.tb.models import PatientConsultation
@@ -127,8 +128,8 @@ class OtherMedicationModal(AbstractModalView):
     model = Treatment
 
 
-class AppointmentList(LoginRequiredMixin, ListView):
-    template_name = "tb/appointment_list.html"
+class ClinicList(LoginRequiredMixin, ListView):
+    template_name = "tb/clinic_list.html"
 
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
@@ -140,21 +141,67 @@ class AppointmentList(LoginRequiredMixin, ListView):
            #          start_datetime__gte=today-datetime.timedelta(days=90)
        ).filter(
            start_datetime__gte=today
-
         ).order_by("-start_datetime")
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx["admission_and_episode"] = []
+        ctx["rows"] = []
         for admission in ctx["object_list"]:
             episode = admission.patient.episode_set.filter(
                 category_name=episode_categories.TbEpisode.display_name
             ).first()
 
+            pcr = Observation.objects.filter(
+                observation_name="TB PCR"
+            ).filter(
+                test__test_name="TB PCR TEST"
+            ).filter(
+                test__patient_id=admission.patient_id
+            ).order_by(
+                "-observation_datetime"
+            ).first()
+
+            culture = Observation.objects.filter(
+                observation_name="TB: Culture Result"
+            ).filter(
+                test__test_name="AFB : CULTURE"
+            ).filter(
+                test__patient_id=admission.patient_id
+            ).order_by(
+                "-observation_datetime"
+            ).first()
+
+            if culture and pcr:
+                if culture.observation_datetime > pcr.observation_datetime:
+                    observation = culture
+                else:
+                    observation = pcr
+            else:
+                observation = culture or pcr
+
+            obs_values = {}
+
+            if observation:
+                if observation.observation_name == "TB: Culture Result":
+                    obs_values["test_type"] = "AFB Culture"
+                else:
+                    obs_values["test_type"] = "TB PCR"
+                obs_values["value"] = observation.observation_value.replace(
+                    "~", ""
+                ).strip()
+                obs_values["datetime"] = observation.observation_datetime
+
             # There should always be an episode but if there is not, skip it.
             if episode:
-                ctx["admission_and_episode"].append(
-                    (admission, episode,)
+                consultations = episode.patientconsultation_set.order_by('-when')
+                recent_consultation = consultations.first()
+                ctx["rows"].append(
+                    (
+                        admission,
+                        episode,
+                        recent_consultation,
+                        obs_values
+                    )
                 )
 
         return ctx
