@@ -12,6 +12,7 @@ from opal import views
 
 from elcid.models import Diagnosis
 from plugins.appointments.models import Appointment
+from plugins.labtests.models import Observation
 
 from plugins.tb import episode_categories, constants
 from plugins.tb.models import PatientConsultation
@@ -140,7 +141,6 @@ class ClinicList(LoginRequiredMixin, ListView):
            #          start_datetime__gte=today-datetime.timedelta(days=90)
        ).filter(
            start_datetime__gte=today
-
         ).order_by("-start_datetime")
 
     def get_context_data(self, *args, **kwargs):
@@ -151,6 +151,46 @@ class ClinicList(LoginRequiredMixin, ListView):
                 category_name=episode_categories.TbEpisode.display_name
             ).first()
 
+            pcr = Observation.objects.filter(
+                observation_name="TB PCR"
+            ).filter(
+                test__test_name="TB PCR TEST"
+            ).filter(
+                test__patient_id=admission.patient_id
+            ).order_by(
+                "-observation_datetime"
+            ).first()
+
+            culture = Observation.objects.filter(
+                observation_name="TB: Culture Result"
+            ).filter(
+                test__test_name="AFB : CULTURE"
+            ).filter(
+                test__patient_id=admission.patient_id
+            ).order_by(
+                "-observation_datetime"
+            ).first()
+
+            if culture and pcr:
+                if culture.observation_datetime > pcr.observation_datetime:
+                    observation = culture
+                else:
+                    observation = pcr
+            else:
+                observation = culture or pcr
+
+            obs_values = {}
+
+            if observation:
+                if observation.observation_name == "TB: Culture Result":
+                    obs_values["test_type"] = "Culture"
+                else:
+                    obs_values["test_type"] = "PCR"
+                obs_values["value"] = observation.observation_value.replace(
+                    "~", ""
+                ).strip()
+                obs_values["datetime"] = observation.observation_datetime
+
             # There should always be an episode but if there is not, skip it.
             if episode:
                 consultations = episode.patientconsultation_set.order_by('-when')
@@ -159,7 +199,8 @@ class ClinicList(LoginRequiredMixin, ListView):
                     (
                         admission,
                         episode,
-                        recent_consultation
+                        recent_consultation,
+                        obs_values
                     )
                 )
 
