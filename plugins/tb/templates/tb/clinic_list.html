@@ -16,7 +16,7 @@
       </h1>
     </div>
   </div>
-  {% for appointment, episode, consultation in admission_and_episode %}
+  {% for appointment, episode, consultation, obs_values in admission_and_episode %}
   {% ifchanged appointment.start_datetime.date %}
   <h3 class="content-offset left-offset-10">
     {{ appointment.start_datetime.date }}
@@ -29,6 +29,7 @@
       <th>Patient</th>
       <th>Type</th>
       <th>Imaging</th>
+      <th>Recent TB culture or PCR</th>
       <th>Recent consultation</th>
     </tr>
     <tr>
@@ -48,6 +49,13 @@
           PACS
           <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
+      </td>
+      <td>
+        {% if obs_values %}
+          {{ obs_values.datetime }}
+          {{ obs_values.test_type }}:
+          {{ obs_values.value }}
+        {% endif %}
       </td>
       <td>
         {% if consultation %}
