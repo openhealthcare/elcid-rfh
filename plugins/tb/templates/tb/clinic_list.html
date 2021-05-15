@@ -16,7 +16,7 @@
       </h1>
     </div>
   </div>
-  {% for appointment, episode, consultation, obs_values in admission_and_episode %}
+  {% for appointment, episode, consultation, obs_values in rows %}
   {% ifchanged appointment.start_datetime.date %}
   <h3 class="content-offset left-offset-10">
     {{ appointment.start_datetime.date }}
