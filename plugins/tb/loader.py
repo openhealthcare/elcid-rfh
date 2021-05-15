@@ -1,4 +1,5 @@
 import datetime
+from django.db import transaction
 from plugins.appointments.models import PatientAppointmentStatus
 from opal.models import Patient
 from elcid.models import Demographics
@@ -21,6 +22,7 @@ and Appointment_Start_Datetime > @since
 """
 
 
+@transaction.atomic
 def create_tb_episodes():
     api = ProdAPI()
     results = set()
@@ -49,6 +51,7 @@ def create_tb_episodes():
             )
 
 
+@transaction.atomic
 def refresh_future_tb_appointments():
     api = ProdAPI()
     since = datetime.datetime.combine(
