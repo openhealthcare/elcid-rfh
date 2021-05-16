@@ -64,9 +64,12 @@ class AppointmentListTestCase(OpalTestCase):
             row[1], demographics
         )
         self.assertEqual(
-            row[2], consultation
+            row[2], episode
         )
-        obs_values = row[3]
+        self.assertEqual(
+            row[3], consultation
+        )
+        obs_values = row[4]
         self.assertEqual(
             obs_values["test_type"], "AFB Culture"
         )
@@ -88,6 +91,4 @@ class AppointmentListTestCase(OpalTestCase):
         )
         ctx = self.client.get(self.url).context
         ctx["rows"] = []
-
-
 

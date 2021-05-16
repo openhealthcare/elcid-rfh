@@ -30,14 +30,14 @@
       <th class="col-xs-3">Recent TB culture or PCR</th>
       <th class="col-xs-3">Recent consultation</th>
     </tr>
-    {% for appointment, demographics, consultation, obs_values in rows %}
+    {% for appointment, demographics, episode, consultation, obs_values in rows %}
     <tr>
       <td>
         {{ appointment.start_datetime.time }}
       </td>
       <td>{{ appointment.status_code }}</td>
       <td>
-        <a href="{{ consultation.episode.get_absolute_url }}" class="orange-link">
+        <a href="{{ episode.get_absolute_url }}" class="orange-link">
           {{ demographics.name.upper }}
           ({{ demographics.hospital_number }})
         </a>
