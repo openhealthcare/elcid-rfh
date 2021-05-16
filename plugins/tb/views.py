@@ -6,6 +6,7 @@ from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
+from django.db.models import Q
 from opal.core.serialization import deserialize_datetime
 from opal import views
 
@@ -141,44 +142,41 @@ class ClinicList(LoginRequiredMixin, ListView):
            "start_datetime"
         )
 
+    def patient_id_to_recent_observation(self, patient_ids):
+        obs = Observation.objects.filter(
+            test__patient_id__in=patient_ids
+        ).filter(
+            Q(observation_name="TB PCR", test__test_name="TB PCR TEST") |
+            Q(observation_name="TB: Culture Result", test__test_name="AFB : CULTURE")
+        ).select_related(
+            "test"
+        ).order_by(
+            "-observation_datetime"
+        )
+        patient_id_to_obs = {}
+        for ob in obs:
+            patient_id = ob.test.patient_id
+            if patient_id not in patient_id_to_obs:
+                patient_id_to_obs[patient_id] = ob
+            if len(patient_id_to_obs.keys()) == len(patient_ids):
+                break
+        return patient_id_to_obs
+
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["rows_by_date"] = defaultdict(list)
+        patient_ids = [i.patient_id for i in ctx["object_list"]]
+        patient_id_to_obs = self.patient_id_to_recent_observation(
+            patient_ids
+        )
         for admission in ctx["object_list"]:
             episode = admission.patient.episode_set.filter(
                 category_name=episode_categories.TbEpisode.display_name
             ).first()
 
-            pcr = Observation.objects.filter(
-                observation_name="TB PCR"
-            ).filter(
-                test__test_name="TB PCR TEST"
-            ).filter(
-                test__patient_id=admission.patient_id
-            ).order_by(
-                "-observation_datetime"
-            ).first()
-
-            culture = Observation.objects.filter(
-                observation_name="TB: Culture Result"
-            ).filter(
-                test__test_name="AFB : CULTURE"
-            ).filter(
-                test__patient_id=admission.patient_id
-            ).order_by(
-                "-observation_datetime"
-            ).first()
-
-            if culture and pcr:
-                if culture.observation_datetime > pcr.observation_datetime:
-                    observation = culture
-                else:
-                    observation = pcr
-            else:
-                observation = culture or pcr
+            observation = patient_id_to_obs.get(admission.patient_id)
 
             obs_values = {}
-
             if observation:
                 if observation.observation_name == "TB: Culture Result":
                     obs_values["test_type"] = "AFB Culture"
