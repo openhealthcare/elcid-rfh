@@ -22,13 +22,13 @@
   </h3>
   <table class="table table-striped">
     <tr>
-      <th>Time</th>
-      <th>Status</th>
-      <th>Patient</th>
-      <th>Type</th>
-      <th>Imaging</th>
-      <th>Recent TB culture or PCR</th>
-      <th>Recent consultation</th>
+      <th class="col-xs-1">Time</th>
+      <th class="col-xs-1">Status</th>
+      <th class="col-xs-3">Patient</th>
+      <th class="col-xs-1">Type</th>
+      <th class="col-xs-1">Imaging</th>
+      <th class="col-xs-3">Recent TB culture or PCR</th>
+      <th class="col-xs-3">Recent consultation</th>
     </tr>
     {% for appointment, episode, consultation, obs_values in rows %}
     <tr>
