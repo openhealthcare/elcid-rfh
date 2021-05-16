@@ -52,13 +52,13 @@
       <td>
         {% if obs_values %}
           {{ obs_values.datetime }}
-          {{ obs_values.test_type }}:
+          {{ obs_values.test_type }}<br/>
           {{ obs_values.value }}
         {% endif %}
       </td>
       <td>
         {% if consultation %}
-        {{ consultation.when }}
+        {{ consultation.when }}<br/>
         {{ consultation.reason_for_interaction }}
         {{ consultation.initials }}
         {% endif %}
