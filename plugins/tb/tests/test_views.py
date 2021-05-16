@@ -122,7 +122,7 @@ class AppointmentListTestCase(OpalTestCase):
             observation_datetime=yesterday
         )
         view = views.ClinicList()
-        patient_id_to_observation = view.patient_id_to_recent_observation(
+        patient_id_to_observation = view.get_patient_id_to_recent_observation(
             [patient.id]
         )
         self.assertEqual(
