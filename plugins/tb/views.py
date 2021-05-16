@@ -135,12 +135,11 @@ class ClinicList(LoginRequiredMixin, ListView):
         appointment_types = constants.TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
-
-           # ).filter(start_datetime__lte=today,
-           #          start_datetime__gte=today-datetime.timedelta(days=90)
-       ).filter(
+        ).filter(
            start_datetime__gte=today
-        ).order_by("-start_datetime")
+        ).order_by(
+           "start_datetime"
+        )
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
@@ -197,6 +196,5 @@ class ClinicList(LoginRequiredMixin, ListView):
                 ctx["rows_by_date"][admission.start_datetime.date()].append(
                     (admission, episode, recent_consultation, obs_values,)
                 )
-        # cast it out of a default dict so we can use items in the template
         ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx
