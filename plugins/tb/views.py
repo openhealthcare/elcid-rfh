@@ -10,7 +10,7 @@ from django.db.models import Q
 from opal.core.serialization import deserialize_datetime
 from opal import views
 
-from elcid.models import Diagnosis
+from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from plugins.labtests.models import Observation
 
@@ -143,6 +143,9 @@ class ClinicList(LoginRequiredMixin, ListView):
         )
 
     def patient_id_to_recent_observation(self, patient_ids):
+        """
+        return patient id to the most recent PCR or Culture result
+        """
         obs = Observation.objects.filter(
             test__patient_id__in=patient_ids
         ).filter(
@@ -151,22 +154,51 @@ class ClinicList(LoginRequiredMixin, ListView):
         ).select_related(
             "test"
         ).order_by(
-            "-observation_datetime"
+            "observation_datetime"
         )
         patient_id_to_obs = {}
         for ob in obs:
             patient_id = ob.test.patient_id
-            if patient_id not in patient_id_to_obs:
-                patient_id_to_obs[patient_id] = ob
-            if len(patient_id_to_obs.keys()) == len(patient_ids):
-                break
+            patient_id_to_obs[patient_id] = ob
         return patient_id_to_obs
+
+    def get_patient_id_to_recent_consultation(self, patient_ids):
+        """
+        return patient id to the most patient consultation
+        """
+        patient_id_to_consultation = {}
+        consultations = PatientConsultation.objects.filter(episode__patient_id__in=patient_ids)
+        consultations = consultations.filter(
+            episode__category_name=episode_categories.TbEpisode.display_name
+        ).order_by(
+            "when"
+        ).select_related(
+            "episode"
+        )
+        for consultation in consultations:
+            patient_id_to_consultation[consultation.episode.patient_id] = consultation
+
+        return patient_id_to_consultation
+
+    def get_patient_id_to_demographics(self, patient_ids):
+        demographics = Demographics.objects.filter(
+            patient_id__in=patient_ids
+        )
+        return {
+            demographic.patient_id: demographic for demographic in demographics
+        }
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["rows_by_date"] = defaultdict(list)
         patient_ids = [i.patient_id for i in ctx["object_list"]]
         patient_id_to_obs = self.patient_id_to_recent_observation(
+            patient_ids
+        )
+        patient_id_to_demographics = self.get_patient_id_to_demographics(
+            patient_ids
+        )
+        patient_id_to_consultation = self.get_patient_id_to_recent_consultation(
             patient_ids
         )
         for admission in ctx["object_list"]:
@@ -187,12 +219,10 @@ class ClinicList(LoginRequiredMixin, ListView):
                 ).strip()
                 obs_values["datetime"] = observation.observation_datetime
 
-            # There should always be an episode but if there is not, skip it.
-            if episode:
-                consultations = episode.patientconsultation_set.order_by('-when')
-                recent_consultation = consultations.first()
-                ctx["rows_by_date"][admission.start_datetime.date()].append(
-                    (admission, episode, recent_consultation, obs_values,)
-                )
+            demographics = patient_id_to_demographics.get(admission.patient_id)
+            recent_consultation = patient_id_to_consultation.get(admission.patient_id)
+            ctx["rows_by_date"][admission.start_datetime.date()].append(
+                (admission, demographics, recent_consultation, obs_values,)
+            )
         ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx

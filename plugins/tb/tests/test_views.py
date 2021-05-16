@@ -19,6 +19,7 @@ class AppointmentListTestCase(OpalTestCase):
 
     def test_context_data_today(self):
         patient, episode = self.new_patient_and_episode_please()
+        demographics = patient.demographics()
         now = timezone.now()
         pcr = patient.lab_tests.create(
             test_name="TB PCR TEST"
@@ -60,7 +61,7 @@ class AppointmentListTestCase(OpalTestCase):
             row[0], appointment
         )
         self.assertEqual(
-            row[1], episode
+            row[1], demographics
         )
         self.assertEqual(
             row[2], consultation
