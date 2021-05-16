@@ -1,8 +1,7 @@
 """
 Views for the TB Opal Plugin
 """
-import datetime
-
+from collections import defaultdict
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
@@ -145,7 +144,7 @@ class ClinicList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx["rows"] = []
+        ctx["rows_by_date"] = defaultdict(list)
         for admission in ctx["object_list"]:
             episode = admission.patient.episode_set.filter(
                 category_name=episode_categories.TbEpisode.display_name
@@ -195,13 +194,9 @@ class ClinicList(LoginRequiredMixin, ListView):
             if episode:
                 consultations = episode.patientconsultation_set.order_by('-when')
                 recent_consultation = consultations.first()
-                ctx["rows"].append(
-                    (
-                        admission,
-                        episode,
-                        recent_consultation,
-                        obs_values
-                    )
+                ctx["rows_by_date"][admission.start_datetime.date()].append(
+                    (admission, episode, recent_consultation, obs_values,)
                 )
-
+        # cast it out of a default dict so we can use items in the template
+        ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx

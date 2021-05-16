@@ -16,22 +16,21 @@
       </h1>
     </div>
   </div>
-  {% for appointment, episode, consultation, obs_values in rows %}
-  {% ifchanged appointment.start_datetime.date %}
+  {% for date, rows in rows_by_date.items %}
   <h3 class="content-offset left-offset-10">
-    {{ appointment.start_datetime.date }}
+    {{ date }}
   </h3>
-  {% endifchanged %}
   <table class="table table-striped">
     <tr>
-      <th>Time</th>
-      <th>Status</th>
-      <th>Patient</th>
-      <th>Type</th>
-      <th>Imaging</th>
-      <th>Recent TB culture or PCR</th>
-      <th>Recent consultation</th>
+      <th class="col-xs-1">Time</th>
+      <th class="col-xs-1">Status</th>
+      <th class="col-xs-3">Patient</th>
+      <th class="col-xs-1">Type</th>
+      <th class="col-xs-1">Imaging</th>
+      <th class="col-xs-3">Recent TB culture or PCR</th>
+      <th class="col-xs-3">Recent consultation</th>
     </tr>
+    {% for appointment, episode, consultation, obs_values in rows %}
     <tr>
       <td>
         {{ appointment.start_datetime.time }}
@@ -65,6 +64,7 @@
         {% endif %}
       </td>
     </tr>
+    {% endfor %}
   </table>
   {% endfor %}
 </div>
