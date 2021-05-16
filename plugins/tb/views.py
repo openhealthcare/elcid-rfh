@@ -156,7 +156,8 @@ class ClinicList(LoginRequiredMixin, ListView):
         ).select_related(
             "test"
         ).order_by(
-            "observation_datetime"
+            # If there are 2 results at the same time choose the culture result
+            "observation_datetime", "observation_name"
         )
         patient_id_to_obs = {}
         for ob in obs:
