@@ -30,21 +30,21 @@
       <th class="col-xs-3">Recent TB culture or PCR</th>
       <th class="col-xs-3">Recent consultation</th>
     </tr>
-    {% for appointment, episode, consultation, obs_values in rows %}
+    {% for appointment, demographics, consultation, obs_values in rows %}
     <tr>
       <td>
         {{ appointment.start_datetime.time }}
       </td>
       <td>{{ appointment.status_code }}</td>
       <td>
-        <a href="{{ episode.get_absolute_url }}" class="orange-link">
-          {{ appointment.patient.demographics.name.upper }}
-          ({{ appointment.patient.demographics.hospital_number }})
+        <a href="{{ consultation.episode.get_absolute_url }}" class="orange-link">
+          {{ demographics.name.upper }}
+          ({{ demographics.hospital_number }})
         </a>
       </td>
       <td>{{ appointment.derived_appointment_type }}</td>
       <td>
-        <a class="orange-link" target="_blank" href="http://freenet/carestream/?pid={{ appointment.patient.demographics.hospital_number }}">
+        <a class="orange-link" target="_blank" href="http://freenet/carestream/?pid={{ demographics.hospital_number }}">
           PACS
           <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
