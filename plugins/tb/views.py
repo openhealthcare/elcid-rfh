@@ -146,22 +146,33 @@ class ClinicList(LoginRequiredMixin, ListView):
 
     def patient_id_to_recent_observation(self, patient_ids):
         """
-        return patient id to the most recent PCR or Culture result
+        Return patient id to the most recent PCR or Culture result.
+
+        If there are 2 results for the same time, return the
+        Culture result.
         """
         obs = Observation.objects.filter(
             test__patient_id__in=patient_ids
         ).filter(
             Q(observation_name="TB PCR", test__test_name="TB PCR TEST") |
             Q(observation_name="TB: Culture Result", test__test_name="AFB : CULTURE")
-        ).select_related(
-            "test"
         ).order_by(
             "observation_datetime"
+        ).select_related(
+            "test"
         )
         patient_id_to_obs = {}
         for ob in obs:
             patient_id = ob.test.patient_id
-            patient_id_to_obs[patient_id] = ob
+            existing_ob = patient_id_to_obs.get(patient_id)
+            if not existing_ob:
+                patient_id_to_obs[patient_id] = ob
+                continue
+            if existing_ob.observation_datetime < ob.observation_datetime:
+                patient_id_to_obs[patient_id] = ob
+                continue
+            if ob.observation_name == "TB: Culture Result":
+                patient_id_to_obs[patient_id] = ob
         return patient_id_to_obs
 
     def get_patient_id_to_recent_consultation(self, patient_ids):
