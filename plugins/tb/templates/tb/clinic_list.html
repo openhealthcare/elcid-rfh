@@ -58,7 +58,10 @@
       </td>
       <td>
         {% if consultation %}
-        {{ consultation.when }}<br/>
+        {% if consultation.when %}
+        {{ consultation.when.date }}
+        {% endif %}
+        <br/>
         {{ consultation.reason_for_interaction }}
         {{ consultation.initials }}
         {% endif %}
