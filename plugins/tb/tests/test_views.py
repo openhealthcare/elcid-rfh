@@ -99,6 +99,14 @@ class AppointmentListTestCase(OpalTestCase):
         """
         patient, _ = self.new_patient_and_episode_please()
         yesterday = timezone.now() - datetime.timedelta(1)
+        before = timezone.now() - datetime.timedelta(2)
+        old_pcr = patient.lab_tests.create(
+            test_name="TB PCR TEST"
+        )
+        old_pcr.observation_set.create(
+            observation_name="TB PCR",
+            observation_datetime=before
+        )
         pcr = patient.lab_tests.create(
             test_name="TB PCR TEST"
         )
