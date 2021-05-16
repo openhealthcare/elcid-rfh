@@ -51,7 +51,9 @@ class AppointmentListTestCase(OpalTestCase):
             patient=patient
         )
         ctx = self.client.get(self.url).context
-        rows = ctx["rows"]
+        self.assertEqual(len(ctx["rows_by_date"]), 1)
+        dt, rows = list(ctx["rows_by_date"].items())[0]
+        self.assertEqual(dt, now.date())
         self.assertEqual(len(rows), 1)
         row = rows[0]
         self.assertEqual(
