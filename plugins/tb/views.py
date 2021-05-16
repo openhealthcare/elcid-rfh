@@ -140,6 +140,8 @@ class ClinicList(LoginRequiredMixin, ListView):
            start_datetime__gte=today
         ).order_by(
            "start_datetime"
+        ).prefetch_related(
+            'patient__episode_set'
         )
 
     def patient_id_to_recent_observation(self, patient_ids):
@@ -191,7 +193,7 @@ class ClinicList(LoginRequiredMixin, ListView):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["rows_by_date"] = defaultdict(list)
-        patient_ids = [i.patient_id for i in ctx["object_list"]]
+        patient_ids = set([i.patient_id for i in ctx["object_list"]])
         patient_id_to_obs = self.patient_id_to_recent_observation(
             patient_ids
         )
@@ -202,12 +204,15 @@ class ClinicList(LoginRequiredMixin, ListView):
             patient_ids
         )
         for admission in ctx["object_list"]:
-            episode = admission.patient.episode_set.filter(
-                category_name=episode_categories.TbEpisode.display_name
-            ).first()
-
             observation = patient_id_to_obs.get(admission.patient_id)
+            tb_episode = None
+            for ep in admission.patient.episode_set.all():
+                if ep.category_name == episode_categories.TbEpisode.display_name:
+                    tb_episode = ep
 
+            # there should always be a TB episode but if there isn't skip it
+            if not tb_episode:
+                continue
             obs_values = {}
             if observation:
                 if observation.observation_name == "TB: Culture Result":
@@ -222,7 +227,7 @@ class ClinicList(LoginRequiredMixin, ListView):
             demographics = patient_id_to_demographics.get(admission.patient_id)
             recent_consultation = patient_id_to_consultation.get(admission.patient_id)
             ctx["rows_by_date"][admission.start_datetime.date()].append(
-                (admission, demographics, recent_consultation, obs_values,)
+                (admission, demographics, tb_episode, recent_consultation, obs_values,)
             )
         ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx
