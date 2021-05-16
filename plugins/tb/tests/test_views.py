@@ -92,3 +92,39 @@ class AppointmentListTestCase(OpalTestCase):
         ctx = self.client.get(self.url).context
         ctx["rows"] = []
 
+    def test_get_correct_lab_test_on_the_same_day(self):
+        """
+        If we have 2 results that come back at the
+        same time show the culture
+        """
+        patient, _ = self.new_patient_and_episode_please()
+        yesterday = timezone.now() - datetime.timedelta(1)
+        before = timezone.now() - datetime.timedelta(2)
+        old_pcr = patient.lab_tests.create(
+            test_name="TB PCR TEST"
+        )
+        old_pcr.observation_set.create(
+            observation_name="TB PCR",
+            observation_datetime=before
+        )
+        pcr = patient.lab_tests.create(
+            test_name="TB PCR TEST"
+        )
+        pcr.observation_set.create(
+            observation_name="TB PCR",
+            observation_datetime=yesterday
+        )
+        afb = patient.lab_tests.create(
+            test_name="AFB : CULTURE"
+        )
+        culture_result = afb.observation_set.create(
+            observation_name="TB: Culture Result",
+            observation_datetime=yesterday
+        )
+        view = views.ClinicList()
+        patient_id_to_observation = view.patient_id_to_recent_observation(
+            [patient.id]
+        )
+        self.assertEqual(
+            patient_id_to_observation[patient.id], culture_result
+        )
