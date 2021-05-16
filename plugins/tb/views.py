@@ -144,7 +144,7 @@ class ClinicList(LoginRequiredMixin, ListView):
             'patient__episode_set'
         )
 
-    def patient_id_to_recent_observation(self, patient_ids):
+    def get_patient_id_to_recent_observation(self, patient_ids):
         """
         Return patient id to the most recent PCR or Culture result.
 
@@ -205,7 +205,7 @@ class ClinicList(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["rows_by_date"] = defaultdict(list)
         patient_ids = set([i.patient_id for i in ctx["object_list"]])
-        patient_id_to_obs = self.patient_id_to_recent_observation(
+        patient_id_to_obs = self.get_patient_id_to_recent_observation(
             patient_ids
         )
         patient_id_to_demographics = self.get_patient_id_to_demographics(
