@@ -24,8 +24,9 @@
     <tr>
       <th class="col-xs-1">Time</th>
       <th class="col-xs-1">Status</th>
-      <th class="col-xs-2">Patient</th>
+      <th class="col-xs-3">Patient</th>
       <th class="col-xs-2">Type</th>
+      <th class="col-xs-2">Resource</th>
       <th class="col-xs-1">Imaging</th>
       <th class="col-xs-2">Recent consultation</th>
     </tr>
@@ -42,6 +43,7 @@
         </a>
       </td>
       <td>{{ appointment.derived_appointment_type }}</td>
+      <td>{{ appointment.derived_clinic_resource }}</td>
       <td>
         <a class="orange-link" target="_blank" href="http://freenet/carestream/?pid={{ demographics.hospital_number }}">
           PACS
