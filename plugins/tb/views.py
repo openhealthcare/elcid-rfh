@@ -1,24 +1,20 @@
 """
 Views for the TB Opal Plugin
 """
+import datetime
 from collections import defaultdict
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
-from django.db.models import Q
 from opal.core.serialization import deserialize_datetime
-from opal import views
-
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
-from plugins.labtests.models import Observation
 
 from plugins.tb import episode_categories, constants
 from plugins.tb.models import PatientConsultation
 from plugins.tb.models import Treatment
 from plugins.tb.utils import get_tb_summary_information
-
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
@@ -133,11 +129,13 @@ class ClinicList(LoginRequiredMixin, ListView):
 
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
+        until = today + datetime.timedelta(30)
         appointment_types = constants.TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
-           start_datetime__gte=today
+           start_datetime__gte=today,
+           start_datetime__lte=until
         ).order_by(
            "start_datetime"
         ).prefetch_related(
