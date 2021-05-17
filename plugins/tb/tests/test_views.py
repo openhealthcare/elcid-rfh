@@ -90,7 +90,7 @@ class AppointmentListTestCase(OpalTestCase):
             patient=patient
         )
         ctx = self.client.get(self.url).context
-        ctx["rows"] = []
+        self.assertEqual(ctx["rows_by_date"], {})
 
     def test_get_correct_lab_test_on_the_same_day(self):
         """
