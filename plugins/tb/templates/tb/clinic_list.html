@@ -1,0 +1,69 @@
+<div class="left-menu">
+  <h3>
+    <a href="/#/tb/clinic-list/">TB</a>
+  </h3>
+  <li>
+    <a href="/#/tb/clinic-list/">Clinic List</a>
+  </li>
+  </ul>
+</div>
+
+<div class="content-offset right-viewport">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h1>
+        TB Clinic List
+      </h1>
+    </div>
+  </div>
+  {% for date, rows in rows_by_date.items %}
+  <h3 class="content-offset left-offset-10">
+    {{ date }}
+  </h3>
+  <table class="table table-striped">
+    <tr>
+      <th class="col-xs-1">Time</th>
+      <th class="col-xs-1">Status</th>
+      <th class="col-xs-3">Patient</th>
+      <th class="col-xs-2">Type</th>
+      <th class="col-xs-2">Resource</th>
+      <th class="col-xs-1">Imaging</th>
+      <th class="col-xs-2">Recent consultation</th>
+    </tr>
+    {% for appointment, demographics, episode, consultation in rows %}
+    <tr>
+      <td>
+        {{ appointment.start_datetime.time }}
+      </td>
+      <td>{{ appointment.status_code }}</td>
+      <td>
+        <a href="{{ episode.get_absolute_url }}" class="orange-link">
+          {{ demographics.name.upper }}
+          ({{ demographics.hospital_number }})
+        </a>
+      </td>
+      <td>{{ appointment.derived_appointment_type }}</td>
+      <td>{{ appointment.derived_clinic_resource }}</td>
+      <td>
+        <a class="orange-link" target="_blank" href="http://freenet/carestream/?pid={{ demographics.hospital_number }}">
+          PACS
+          <i class="fa fa-external-link" aria-hidden="true"></i>
+        </a>
+      </td>
+      <td>
+        {% if consultation %}
+        {% if consultation.when %}
+        {{ consultation.when.date }}
+        <br/>
+        {% endif %}
+        {{ consultation.reason_for_interaction }}
+        {{ consultation.initials }}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endfor %}
+</div>
+
+

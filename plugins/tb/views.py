@@ -2,22 +2,19 @@
 Views for the TB Opal Plugin
 """
 import datetime
-
+from collections import defaultdict
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
-from opal import views
-
-from elcid.models import Diagnosis
+from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 
 from plugins.tb import episode_categories, constants
 from plugins.tb.models import PatientConsultation
 from plugins.tb.models import Treatment
 from plugins.tb.utils import get_tb_summary_information
-
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
@@ -127,34 +124,74 @@ class OtherMedicationModal(AbstractModalView):
     model = Treatment
 
 
-class AppointmentList(LoginRequiredMixin, ListView):
-    template_name = "tb/appointment_list.html"
+class ClinicList(LoginRequiredMixin, ListView):
+    template_name = "tb/clinic_list.html"
 
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
+        until = today + datetime.timedelta(30)
         appointment_types = constants.TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
+        ).filter(
+           start_datetime__gte=today,
+           start_datetime__lte=until
+        ).order_by(
+           "start_datetime"
+        ).prefetch_related(
+            'patient__episode_set'
+        )
 
-           # ).filter(start_datetime__lte=today,
-           #          start_datetime__gte=today-datetime.timedelta(days=90)
-       ).filter(
-           start_datetime__gte=today
+    def get_patient_id_to_recent_consultation(self, patient_ids):
+        """
+        return patient id to the most patient consultation
+        """
+        patient_id_to_consultation = {}
+        consultations = PatientConsultation.objects.filter(episode__patient_id__in=patient_ids)
+        consultations = consultations.filter(
+            episode__category_name=episode_categories.TbEpisode.display_name
+        ).order_by(
+            "when"
+        ).select_related(
+            "episode"
+        )
+        for consultation in consultations:
+            patient_id_to_consultation[consultation.episode.patient_id] = consultation
 
-        ).order_by("-start_datetime")
+        return patient_id_to_consultation
+
+    def get_patient_id_to_demographics(self, patient_ids):
+        demographics = Demographics.objects.filter(
+            patient_id__in=patient_ids
+        )
+        return {
+            demographic.patient_id: demographic for demographic in demographics
+        }
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx["admission_and_episode"] = []
+        ctx["rows_by_date"] = defaultdict(list)
+        patient_ids = set([i.patient_id for i in ctx["object_list"]])
+        patient_id_to_demographics = self.get_patient_id_to_demographics(
+            patient_ids
+        )
+        patient_id_to_consultation = self.get_patient_id_to_recent_consultation(
+            patient_ids
+        )
         for admission in ctx["object_list"]:
-            episode = admission.patient.episode_set.filter(
-                category_name=episode_categories.TbEpisode.display_name
-            ).first()
+            tb_episode = None
+            for ep in admission.patient.episode_set.all():
+                if ep.category_name == episode_categories.TbEpisode.display_name:
+                    tb_episode = ep
 
-            # There should always be an episode but if there is not, skip it.
-            if episode:
-                ctx["admission_and_episode"].append(
-                    (admission, episode,)
-                )
+            # there should always be a TB episode but if there isn't skip it
+            if not tb_episode:
+                continue
 
+            demographics = patient_id_to_demographics.get(admission.patient_id)
+            recent_consultation = patient_id_to_consultation.get(admission.patient_id)
+            ctx["rows_by_date"][admission.start_datetime.date()].append(
+                (admission, demographics, tb_episode, recent_consultation,)
+            )
+        ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx

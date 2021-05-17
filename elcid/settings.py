@@ -317,8 +317,12 @@ LOGGING = {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
+        },
+        'tb': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
         }
-
     }
 }
 
