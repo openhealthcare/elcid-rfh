@@ -9,4 +9,4 @@ TB_APPOINTMENT_CODES = [
     "Thoracic TB Nurse New"
 ]
 
-TB_APPOINTMENT_REFRESH_TIME_FACT = "TB appointment refresh time fact"
+TB_APPOINTMENT_REFRESH_TIME_FACT = "TB Appointment Refresh Seconds"
