@@ -27,10 +27,9 @@
       <th class="col-xs-2">Patient</th>
       <th class="col-xs-2">Type</th>
       <th class="col-xs-1">Imaging</th>
-      <th class="col-xs-3">Recent TB culture or PCR</th>
       <th class="col-xs-2">Recent consultation</th>
     </tr>
-    {% for appointment, demographics, episode, consultation, obs_values in rows %}
+    {% for appointment, demographics, episode, consultation in rows %}
     <tr>
       <td>
         {{ appointment.start_datetime.time }}
@@ -48,13 +47,6 @@
           PACS
           <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
-      </td>
-      <td>
-        {% if obs_values %}
-          {{ obs_values.datetime }}
-          {{ obs_values.test_type }}<br/>
-          {{ obs_values.value }}
-        {% endif %}
       </td>
       <td>
         {% if consultation %}

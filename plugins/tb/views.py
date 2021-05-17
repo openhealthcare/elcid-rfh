@@ -144,37 +144,6 @@ class ClinicList(LoginRequiredMixin, ListView):
             'patient__episode_set'
         )
 
-    def get_patient_id_to_recent_observation(self, patient_ids):
-        """
-        Return patient id to the most recent PCR or Culture result.
-
-        If there are 2 results for the same time, return the
-        Culture result.
-        """
-        obs = Observation.objects.filter(
-            test__patient_id__in=patient_ids
-        ).filter(
-            Q(observation_name="TB PCR", test__test_name="TB PCR TEST") |
-            Q(observation_name="TB: Culture Result", test__test_name="AFB : CULTURE")
-        ).order_by(
-            "observation_datetime"
-        ).select_related(
-            "test"
-        )
-        patient_id_to_obs = {}
-        for ob in obs:
-            patient_id = ob.test.patient_id
-            existing_ob = patient_id_to_obs.get(patient_id)
-            if not existing_ob:
-                patient_id_to_obs[patient_id] = ob
-                continue
-            if existing_ob.observation_datetime < ob.observation_datetime:
-                patient_id_to_obs[patient_id] = ob
-                continue
-            if ob.observation_name == "TB: Culture Result":
-                patient_id_to_obs[patient_id] = ob
-        return patient_id_to_obs
-
     def get_patient_id_to_recent_consultation(self, patient_ids):
         """
         return patient id to the most patient consultation
@@ -205,9 +174,6 @@ class ClinicList(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["rows_by_date"] = defaultdict(list)
         patient_ids = set([i.patient_id for i in ctx["object_list"]])
-        patient_id_to_obs = self.get_patient_id_to_recent_observation(
-            patient_ids
-        )
         patient_id_to_demographics = self.get_patient_id_to_demographics(
             patient_ids
         )
@@ -215,7 +181,6 @@ class ClinicList(LoginRequiredMixin, ListView):
             patient_ids
         )
         for admission in ctx["object_list"]:
-            observation = patient_id_to_obs.get(admission.patient_id)
             tb_episode = None
             for ep in admission.patient.episode_set.all():
                 if ep.category_name == episode_categories.TbEpisode.display_name:
@@ -224,21 +189,11 @@ class ClinicList(LoginRequiredMixin, ListView):
             # there should always be a TB episode but if there isn't skip it
             if not tb_episode:
                 continue
-            obs_values = {}
-            if observation:
-                if observation.observation_name == "TB: Culture Result":
-                    obs_values["test_type"] = "AFB Culture"
-                else:
-                    obs_values["test_type"] = "TB PCR"
-                obs_values["value"] = observation.observation_value.replace(
-                    "~", ""
-                ).strip()
-                obs_values["datetime"] = observation.observation_datetime
 
             demographics = patient_id_to_demographics.get(admission.patient_id)
             recent_consultation = patient_id_to_consultation.get(admission.patient_id)
             ctx["rows_by_date"][admission.start_datetime.date()].append(
-                (admission, demographics, tb_episode, recent_consultation, obs_values,)
+                (admission, demographics, tb_episode, recent_consultation,)
             )
         ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx
