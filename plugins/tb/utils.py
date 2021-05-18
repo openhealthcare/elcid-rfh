@@ -40,16 +40,16 @@ def clean_observation_value(value):
     if value:
         return value.replace("~", " ")
 
-
 def get_tb_summary_information(patient):
     """
     Returns an ordered dict of observations in the order declared above.
     """
     tests = patient.lab_tests.filter(
         test_name__in=RELEVANT_TESTS.keys()
-    ).order_by("-datetime_ordered")
+    ).order_by("-datetime_ordered").prefetch_related(
+        "observation_set"
+    )
     by_observation = defaultdict(dict)
-
     for t in tests:
         tn = t.test_name
         for obs in t.observation_set.all():
