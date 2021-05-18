@@ -2,7 +2,6 @@
 Utilities for the TB module
 """
 from collections import OrderedDict, defaultdict
-from django.conf import settings
 
 
 RELEVANT_TESTS = OrderedDict((
@@ -40,6 +39,7 @@ def clean_observation_value(value):
     if value:
         return value.replace("~", " ")
 
+
 def get_tb_summary_information(patient):
     """
     Returns an ordered dict of observations in the order declared above.
@@ -61,7 +61,13 @@ def get_tb_summary_information(patient):
                     by_observation[obs_name][
                         "observation_datetime"
                     ] = obs.observation_datetime
-                    obs_value = clean_observation_value(obs.observation_value)
+                    obs_value = obs.observation_value
+                    if obs_name == "AST":
+                        obs_value = obs_value.replace(
+                            "~Note method change and as a result a change in~reference range.",
+                            ""
+                        ).strip()
+                    obs_value = clean_observation_value(obs_value)
                     by_observation[obs_name]["observation_value"] = obs_value
 
     results_order = []
