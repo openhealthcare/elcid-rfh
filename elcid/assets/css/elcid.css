@@ -492,13 +492,18 @@ div.add-isolate:hover {
   background-color: #2d5391;
 }
 
-.clinic-list-date-header {
+.tb-clinic-list {
+  background-color: #FFF;
+}
+
+.tb-clinic-list .date-header {
   padding-left: 10px;
   border-bottom: 3px solid #D36C08;
   margin-bottom: 0;
 }
 
-.bg-white {
-  background-color: #FFF;
+.tb-clinic-list .table > tbody > tr.table-gap > td {
+  padding: 2px;
+  background-color: white;
 }
 /*# sourceMappingURL=elcid.css.map */
