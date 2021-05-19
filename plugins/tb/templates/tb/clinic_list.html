@@ -33,7 +33,7 @@
     {% for appointment, demographics, episode, consultation in rows %}
     <tr>
       <td>
-        {{ appointment.start_datetime.time }}
+        {{ appointment.start_datetime.time|date:"G:i" }}
       </td>
       <td>{{ appointment.status_code }}</td>
       <td>
