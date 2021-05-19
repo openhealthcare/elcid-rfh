@@ -136,6 +136,8 @@ class ClinicList(LoginRequiredMixin, ListView):
         ).filter(
            start_datetime__gte=today,
            start_datetime__lte=until
+        ).exclude(
+           status_code="Cancelled"
         ).order_by(
            "start_datetime"
         ).prefetch_related(
