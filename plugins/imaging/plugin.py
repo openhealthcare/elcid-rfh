@@ -14,5 +14,5 @@ class ImagingPlugin(plugins.OpalPlugin):
     }
 
     apis = [
-        ('imaging', api.ImagingViewSet)
+        ('upstream_imaging', api.ImagingViewSet)
     ]
