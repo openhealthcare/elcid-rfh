@@ -50,6 +50,8 @@ def get_tb_summary_information(patient):
         "observation_set"
     )
     by_observation = defaultdict(dict)
+    not_detected_vals = ["not detected~", "not detected ~", "not detected.~"]
+    reference_range_str =  "~Note method change and as a result a change in~reference range."
     for t in tests:
         tn = t.test_name
         for obs in t.observation_set.all():
@@ -63,10 +65,11 @@ def get_tb_summary_information(patient):
                     ] = obs.observation_datetime
                     obs_value = obs.observation_value
                     if obs_name == "AST":
-                        obs_value = obs_value.replace(
-                            "~Note method change and as a result a change in~reference range.",
-                            ""
-                        ).strip()
+                        obs_value = obs_value.replace(reference_range_str, "").strip()
+                    lower_obs = obs_value.lower()
+                    for not_detected_val in not_detected_vals:
+                        if lower_obs.startswith(not_detected_val):
+                            obs_value = "Not detected"
                     obs_value = clean_observation_value(obs_value)
                     by_observation[obs_name]["observation_value"] = obs_value
 
