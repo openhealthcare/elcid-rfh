@@ -15,11 +15,6 @@ def clean_lab_test_dicts(lab_test_dicts):
     for lab_test_dict in lab_test_dicts:
         if not lab_test_dict["test_name"] and not lab_test_dict["external_identifier"]:
             continue
-        obs = []
-        for observation in lab_test_dict["observations"]:
-            if any(v for i, v in observation.items() if not i == "last_updated"):
-                obs.append(observation)
-        lab_test_dict["observations"] = obs
         result.append(lab_test_dict)
     return result
 
