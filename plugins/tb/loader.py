@@ -1,12 +1,14 @@
 import datetime
 from django.db import transaction
-from plugins.appointments.models import PatientAppointmentStatus
+from plugins.appointments.models import (
+    PatientAppointmentStatus, Appointment
+)
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid import episode_categories as infection_episode_categories
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
-from plugins.tb import episode_categories, constants, logger
+from plugins.tb import episode_categories, constants, logger, models, lab
 from plugins.appointments.loader import save_or_discard_appointment_data
 
 
@@ -114,3 +116,32 @@ def refresh_future_tb_appointments():
     logger.info(f"Created {created_patients} patients")
     logger.info(f"Created {created_episodes} episodes")
     logger.info(f"Updated {len(updated_hns)} patients appointments")
+
+
+def refresh_future_appointment_key_investigations():
+    appointments = Appointment.objects.filter(
+        start_datetime__gte=datetime.date.today()
+    ).filter(
+        derived_appointment_type__in=constants.TB_APPOINTMENT_CODES
+    ).select_related("patient")
+    patients = [i.patient for i in appointments]
+    models.TBPatient.objects.exclude(
+        patient__in=patients
+    ).delete()
+    for patient in patients:
+        refresh_patients_key_investigations(patient)
+
+
+@transaction.atomic
+def refresh_patients_key_investigations(patient):
+    tb_patient, _ = patient.tb_patient.get_or_create(
+        patient=patient
+    )
+    tb_tests_for_patient = lab.tb_tests_for_patient(patient)
+    for model_field_name, model_value in tb_tests_for_patient.items():
+        setattr(tb_patient, model_field_name, model_value)
+    tb_patient.save()
+
+
+
+

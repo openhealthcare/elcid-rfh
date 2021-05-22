@@ -33,19 +33,6 @@ class TBTest(object):
         raise NotImplementedError()
 
     @classmethod
-    def get_observation_values(cls):
-        from django.db.models import Count
-        return list(Observation.objects.filter(
-            test__test_name=cls.TEST_NAME,
-            test__test_code=cls.TEST_CODE,
-            observation_name__in=cls.OBSERVATION_NAMES
-        ).values(
-            'observation_value',
-        ).annotate(
-            cnt=Count('observation_value')
-        ).order_by("-cnt"))
-
-    @classmethod
     def get_tb_tests(cls):
         return TB_TESTS
 
@@ -58,7 +45,7 @@ class TBTest(object):
     @classmethod
     def get_ntm_tests_for_patient(cls, patient):
         return cls.get_tests_for_patient(
-            cls, patient, [TBCulture]
+           patient, [TBCulture]
         )
 
     @classmethod
@@ -108,7 +95,6 @@ class TBCulture(TBTest):
             "1) Mycobacterium sp.",
             "1) Mycobacterium abscessus",
             "1) Mycobacterium kansasii",
-            "1) Mycobacterium sp."
         ]
         for ob in self.observations:
             for positive_start in positive_values:
@@ -170,13 +156,13 @@ class QuantiferonTBGold(TBTest):
 TB_TESTS = sorted([TBCulture, TBPCR, QuantiferonTBGold], key=lambda x: x.PRIORITY)
 
 
-def first_positive_tb(patient):
+def get_first_positive_tb(patient):
     qs = TBTest.get_tb_tests_for_patient(patient)
     qs = qs.order_by("datetime_ordered")
     first_positive = None
     for lab_test in qs:
         tb_test = TBTest.cast_to_tb_test(lab_test)
-        if not tb_test.resulted_obs():
+        if not tb_test.positive_tb_obs():
             continue
         if not first_positive:
             first_positive = tb_test
@@ -188,8 +174,8 @@ def first_positive_tb(patient):
     return first_positive
 
 
-def first_positive_ntm(patient):
-    qs = TBCulture.get_tests_for_patient(patient)
+def get_first_positive_ntm(patient):
+    qs = TBCulture.get_ntm_tests_for_patient(patient)
     qs = qs.order_by(
         "datetime_ordered"
     )
@@ -199,8 +185,8 @@ def first_positive_ntm(patient):
             return cast_test
 
 
-def most_recent_resulted_tb_test(patient):
-    qs = patient.get_tb_tests_for_patient(patient)
+def get_most_recent_resulted_tb_test(patient):
+    qs = TBTest.get_tb_tests_for_patient(patient)
     qs = qs.order_by("-datetime_ordered")
     resulted_for_day = None
     for lab_test in qs:
@@ -217,8 +203,8 @@ def most_recent_resulted_tb_test(patient):
     return resulted_for_day
 
 
-def most_recent_resulted_ntm_test(patient):
-    qs = TBCulture.get_tests_for_patient(patient)
+def get_most_recent_resulted_ntm_test(patient):
+    qs = TBCulture.get_ntm_tests_for_patient(patient)
     qs = qs.order_by(
         "-datetime_ordered"
     )
@@ -231,49 +217,42 @@ def most_recent_resulted_ntm_test(patient):
 
 @timing
 def tb_tests_for_patient(patient):
-    result = {
-        "first_positive_tb": first_positive_tb(patient),
-        "first_positive_ntm": first_positive_ntm(patient),
-        "most_recent_tb_test": None,
-        "most_recent_ntm_test": None,
-    }
-    if result["first_positive_tb"]:
-        recent = most_recent_resulted_tb_test(patient)
-        if not recent.test.id == result["first_positive_tb"].test.id:
-            result["most_recent_tb_test"] = recent
-    if result["first_positive_ntm"]:
-        recent = first_positive_ntm(patient)
-        if not recent.test.id == result["first_positive_ntm"].test.id:
-            result["most_recent_ntm_test"] = recent
-    return result
+    most_recent_tb_test = get_most_recent_resulted_tb_test(patient)
+    first_positive_tb = None
+    # most recent tb test looks for a superset that includes
+    # first positive tb, ie if there is no recent resulted tb test
+    # there will not be a first positive tb test
+    if most_recent_tb_test:
+        first_positive_tb = get_first_positive_tb(patient)
 
+    most_recent_ntm_test = get_most_recent_resulted_ntm_test(patient)
+    first_positive_ntm = None
+    if most_recent_ntm_test:
+        first_positive_ntm = get_first_positive_ntm(patient)
+    result = {}
 
-def get_tb_tests_for_patient_id(pid):
-    from opal.models import Patient
-    patient = Patient.objects.get(id=pid)
-    return tb_tests_for_patient(patient)
+    if first_positive_tb:
+        obs_value = first_positive_tb.positive_tb_obs().observation_value
+        result["first_tb_positive_date"] = first_positive_tb.date
+        result["first_tb_positive_test_type"] = first_positive_tb.TEST_NAME
+        result["first_tb_positive_obs_value"] = obs_value
 
+    if most_recent_tb_test:
+        obs_value = most_recent_tb_test.resulted_obs().observation_value
+        result["recent_resulted_tb_date"] = most_recent_tb_test.date
+        result["recent_resulted_tb_test_type"] = most_recent_tb_test.TEST_NAME
+        result["recent_resulted_tb_obs_value"] = obs_value
 
-def get_upcoming_patients():
-    import datetime
-    from plugins.tb.constants import TB_APPOINTMENT_CODES
-    from plugins.appointments.models import Appointment
-    appointments = Appointment.objects.filter(
-        start_datetime__gte=datetime.date.today()
-    ).filter(
-        derived_appointment_type__in=TB_APPOINTMENT_CODES
-    ).select_related("patient")
-    return list(set([i.patient for i in appointments]))
+    if first_positive_ntm:
+        obs_value = first_positive_ntm.positive_ntm_obs().observation_value
+        result["first_ntm_positive_date"] = first_positive_ntm.date
+        result["first_ntm_positive_test_type"] = first_positive_ntm.TEST_NAME
+        result["first_ntm_positive_obs_value"] = obs_value
 
+    if most_recent_ntm_test:
+        obs_value = most_recent_ntm_test.resulted_obs().observation_value
+        result["recent_resulted_ntm_date"] = most_recent_ntm_test.date
+        result["recent_resulted_ntm_test_type"] = most_recent_ntm_test.TEST_NAME
+        result["recent_resulted_ntm_obs_value"] = obs_value
 
-@timing
-def get_tb_tests():
-    patients = get_upcoming_patients()
-    print(f"looking at {len(patients)} patients")
-    result = []
-    for idx, patient in enumerate(patients):
-        print(f'looking at {patient.id} {idx}/{len(patients)}')
-        r = first_positive_tb(patient)
-        print(r)
-        result.append(r)
     return result
