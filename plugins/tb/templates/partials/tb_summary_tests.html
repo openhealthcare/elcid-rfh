@@ -15,6 +15,21 @@
           <h2 class="text-center no-results">Failed To load lab tests for this patient</h2>
         </div>
         <div ng-show="patientLoadStatus.isLoaded()">
+          <div ng-show="data.first_positives.first_tb_positive_date">
+            [[ data.first_positives.first_tb_positive_date | displayDate ]]
+            [[ data.first_positives.first_tb_positive_test_type ]]
+            <br />
+            [[ data.first_positives.first_tb_positive_obs_value ]]
+          </div>
+          <div ng-show="data.first_positives.first_ntm_positive_date">
+            [[ data.first_positives.first_ntm_positive_date | displayDate ]]
+            [[ data.first_positives.first_ntm_positive_test_type ]]
+            <br>
+            [[ data.first_positives.first_ntm_positive_obs_value ]]
+          </div>
+          <div class="content-offset-10" ng-show="data.recent_results.length">
+            <b>Recent results</b>
+          </div>
           <div ng-repeat="result in data.recent_results" class="row">
             <div class="col-xs-12">
               <div class="row">

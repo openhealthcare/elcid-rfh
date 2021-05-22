@@ -621,3 +621,14 @@ class TBPatient(fields.Model):
     first_ntm_positive_obs_value = fields.CharField(
         max_length=256, blank=True, default=""
     )
+
+    def to_dict(self):
+        keys = [
+            'first_tb_positive_date',
+            'first_tb_positive_test_type',
+            'first_tb_positive_obs_value',
+            'first_ntm_positive_date',
+            'first_ntm_positive_test_type',
+            'first_ntm_positive_obs_value',
+        ]
+        return {key: getattr(self, key) for key in keys}
