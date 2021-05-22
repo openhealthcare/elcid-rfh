@@ -5,14 +5,11 @@ from collections import OrderedDict, defaultdict
 
 
 RELEVANT_TESTS = OrderedDict((
-    ("AFB : CULTURE", ["TB: Culture Result"]),
-    ("TB PCR TEST", ["TB PCR"]),
     ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
     ("LIVER PROFILE", ["ALT", "AST", "Total Bilirubin"]),
     ("QUANTIFERON TB GOLD IT", [
         "QFT IFN gamma result (TB1)",
         "QFT IFN gamme result (TB2)",
-        "QFT TB interpretation"
     ]),
     ('HEPATITIS B SURFACE AG', ["Hepatitis B 's'Antigen........"]),
     ('HEPATITIS C ANTIBODY', ["Hepatitis C IgG Antibody......"]),
@@ -40,6 +37,7 @@ def clean_observation_value(value):
         return value.replace("~", " ")
 
 
+
 def get_tb_summary_information(patient):
     """
     Returns an ordered dict of observations in the order declared above.
@@ -51,7 +49,7 @@ def get_tb_summary_information(patient):
     )
     by_observation = defaultdict(dict)
     not_detected_vals = ["not detected~", "not detected ~", "not detected.~"]
-    reference_range_str =  "~Note method change and as a result a change in~reference range."
+    reference_range_str = "~Note method change and as a result a change in~reference range."
     for t in tests:
         tn = t.test_name
         for obs in t.observation_set.all():
