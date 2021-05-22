@@ -29,9 +29,6 @@ class TBTest(object):
     def positive_tb_obs(self):
         raise NotImplementedError()
 
-    def resulted_obs(self):
-        raise NotImplementedError()
-
     @classmethod
     def get_tb_tests(cls):
         return TB_TESTS
@@ -83,13 +80,6 @@ class TBCulture(TBTest):
             ):
                 return ob
 
-    def resulted_obs(self):
-        for obs in self.observations:
-            if not obs.observation_value:
-                continue
-            if not obs.observation_value == "AFB culture to follow.":
-                return obs
-
     def positive_ntm_obs(self):
         positive_values = [
             "1) Mycobacterium sp.",
@@ -120,17 +110,6 @@ class TBPCR(TBTest):
                 if ob.observation_value.startswith(positive_start):
                     return ob
 
-    def resulted_obs(self):
-        for obs in self.observations:
-            obs_value = obs.observation_value.lower()
-            if not obs_value:
-                continue
-            if obs_value.startswith("not tested"):
-                continue
-            if obs_value in {".", ":", "pending"}:
-                continue
-            return obs
-
 
 class QuantiferonTBGold(TBTest):
     TEST_NAME         = 'QUANTIFERON TB GOLD IT'
@@ -142,15 +121,6 @@ class QuantiferonTBGold(TBTest):
         for ob in self.observations:
             if ob.observation_value.lower() == 'positive':
                 return ob
-
-    def resulted_obs(self):
-        for obs in self.observations:
-            obs_value = obs.observation_value.lower()
-            if not obs_value:
-                continue
-            if obs_value.lower().strip() == 'pending':
-                continue
-            return obs
 
 
 TB_TESTS = sorted([TBCulture, TBPCR, QuantiferonTBGold], key=lambda x: x.PRIORITY)
@@ -185,50 +155,10 @@ def get_first_positive_ntm(patient):
             return cast_test
 
 
-def get_most_recent_resulted_tb_test(patient):
-    qs = TBTest.get_tb_tests_for_patient(patient)
-    qs = qs.order_by("-datetime_ordered")
-    resulted_for_day = None
-    for lab_test in qs:
-        tb_test = TBTest.cast_to_tb_test(lab_test)
-        if not tb_test.resulted_obs():
-            continue
-        if not resulted_for_day:
-            resulted_for_day = tb_test
-            continue
-        if resulted_for_day.date > tb_test.date:
-            break
-        if resulted_for_day.PRIORITY < tb_test.PRIORITY:
-            resulted_for_day = tb_test
-    return resulted_for_day
-
-
-def get_most_recent_resulted_ntm_test(patient):
-    qs = TBCulture.get_ntm_tests_for_patient(patient)
-    qs = qs.order_by(
-        "-datetime_ordered"
-    )
-    for lab_test in qs:
-        ntm_test = TBCulture(lab_test)
-        if not ntm_test.resulted_obs():
-            continue
-        return ntm_test
-
-
 @timing
 def tb_tests_for_patient(patient):
-    most_recent_tb_test = get_most_recent_resulted_tb_test(patient)
-    first_positive_tb = None
-    # most recent tb test looks for a superset that includes
-    # first positive tb, ie if there is no recent resulted tb test
-    # there will not be a first positive tb test
-    if most_recent_tb_test:
-        first_positive_tb = get_first_positive_tb(patient)
-
-    most_recent_ntm_test = get_most_recent_resulted_ntm_test(patient)
-    first_positive_ntm = None
-    if most_recent_ntm_test:
-        first_positive_ntm = get_first_positive_ntm(patient)
+    first_positive_tb = get_first_positive_tb(patient)
+    first_positive_ntm = get_first_positive_ntm(patient)
     result = {}
 
     if first_positive_tb:
@@ -237,22 +167,10 @@ def tb_tests_for_patient(patient):
         result["first_tb_positive_test_type"] = first_positive_tb.TEST_NAME
         result["first_tb_positive_obs_value"] = obs_value
 
-    if most_recent_tb_test:
-        obs_value = most_recent_tb_test.resulted_obs().observation_value
-        result["recent_resulted_tb_date"] = most_recent_tb_test.date
-        result["recent_resulted_tb_test_type"] = most_recent_tb_test.TEST_NAME
-        result["recent_resulted_tb_obs_value"] = obs_value
-
     if first_positive_ntm:
         obs_value = first_positive_ntm.positive_ntm_obs().observation_value
         result["first_ntm_positive_date"] = first_positive_ntm.date
         result["first_ntm_positive_test_type"] = first_positive_ntm.TEST_NAME
         result["first_ntm_positive_obs_value"] = obs_value
-
-    if most_recent_ntm_test:
-        obs_value = most_recent_ntm_test.resulted_obs().observation_value
-        result["recent_resulted_ntm_date"] = most_recent_ntm_test.date
-        result["recent_resulted_ntm_test_type"] = most_recent_ntm_test.TEST_NAME
-        result["recent_resulted_ntm_obs_value"] = obs_value
 
     return result

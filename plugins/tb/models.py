@@ -612,13 +612,6 @@ class TBPatient(fields.Model):
     first_tb_positive_obs_value = fields.CharField(
         max_length=256, blank=True, default=""
     )
-    recent_resulted_tb_date =  fields.DateField(blank=True, null=True)
-    recent_resulted_tb_test_type = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    recent_resulted_tb_obs_value = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
 
     # NTM
     first_ntm_positive_date = fields.DateField(blank=True, null=True)
@@ -626,12 +619,5 @@ class TBPatient(fields.Model):
         max_length=256, blank=True, default=""
     )
     first_ntm_positive_obs_value = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    recent_resulted_ntm_date = fields.DateField(blank=True, null=True)
-    recent_resulted_ntm_test_type = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    recent_resulted_ntm_obs_value = fields.CharField(
         max_length=256, blank=True, default=""
     )

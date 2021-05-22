@@ -125,7 +125,7 @@ class RefreshFuturePatientKeyInvestigationsTestCase(OpalTestCase):
         )
         lab_test.observation_set.create(
             observation_name=lab.TBPCR.OBSERVATION_NAMES[0],
-            observation_value="NOT detected"
+            observation_value="TB PCR (GeneXpert) Positive"
         )
         loader.refresh_patients_key_investigations(self.patient)
         tb_status = self.patient.tb_patient.get()
@@ -140,18 +140,6 @@ class RefreshFuturePatientKeyInvestigationsTestCase(OpalTestCase):
         self.assertEqual(
             tb_status.first_tb_positive_obs_value,
             "POSITIVE"
-        )
-        self.assertEqual(
-            tb_status.recent_resulted_tb_date,
-            self.yesterday.date(),
-        )
-        self.assertEqual(
-            tb_status.recent_resulted_tb_test_type,
-            lab.TBPCR.TEST_NAME
-        )
-        self.assertEqual(
-            tb_status.recent_resulted_tb_obs_value,
-            "NOT detected"
         )
 
     def test_ntm(self):
@@ -173,7 +161,7 @@ class RefreshFuturePatientKeyInvestigationsTestCase(OpalTestCase):
         )
         lab_test.observation_set.create(
             observation_name=lab.TBCulture.OBSERVATION_NAMES[0],
-            observation_value="No growth after 42 days of incubation"
+            observation_value="1) Mycobacterium abscessus"
         )
         loader.refresh_patients_key_investigations(self.patient)
         tb_status = self.patient.tb_patient.get()
@@ -189,15 +177,4 @@ class RefreshFuturePatientKeyInvestigationsTestCase(OpalTestCase):
             tb_status.first_ntm_positive_obs_value,
             "1) Mycobacterium sp."
         )
-        self.assertEqual(
-            tb_status.recent_resulted_ntm_date,
-            self.yesterday.date(),
-        )
-        self.assertEqual(
-            tb_status.recent_resulted_ntm_test_type,
-            lab.TBCulture.TEST_NAME
-        )
-        self.assertEqual(
-            tb_status.recent_resulted_ntm_obs_value,
-            "No growth after 42 days of incubation"
-        )
+
