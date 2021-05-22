@@ -29,12 +29,12 @@ class TbTestSummary(LoginRequiredViewset):
     @patient_from_pk
     def retrieve(self, request, patient):
         tb_summary_information = get_tb_summary_information(patient)
-        result = []
+        recent_results = []
         for obs_name, summary in tb_summary_information.items():
-            result.append({
+            recent_results.append({
                 "name": obs_name,
                 "date": summary["observation_datetime"],
                 "result": summary["observation_value"]
             })
 
-        return json_response(dict(results=result))
+        return json_response(dict(recent_results=recent_results))
