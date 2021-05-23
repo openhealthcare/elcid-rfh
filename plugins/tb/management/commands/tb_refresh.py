@@ -30,4 +30,3 @@ class Command(BaseCommand):
         except Exception:
             msg = 'Exception in refreshing TB appointments \n {}'
             logger.error(msg.format(traceback.format_exc()))
-
