@@ -564,14 +564,14 @@ def write_cron_icu_load(new_env):
         output, cron_file
     ))
 
-def write_cron_tb_patient_load(new_env):
+def write_cron_tb(new_env):
     """
     Creates a cron job that creates tb patients/episodes
     if they have tb appointments
     """
     print("Writing cron {}_tb_load".format(PROJECT_NAME))
     template = jinja_env.get_template(
-        'etc/conf_templates/cron_tb_patient_load.jinja2'
+        'etc/conf_templates/cron_tb.jinja2'
     )
     fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
     output = template.render(
@@ -1014,7 +1014,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
 
     write_cron_icu_load(new_env)
     write_cron_icu_refresh(new_env)
-    write_cron_tb_patient_load(new_env)
+    write_cron_tb(new_env)
 
     # write_cron_appointment_load(new_env)
     # write_cron_imaging_load(new_env)

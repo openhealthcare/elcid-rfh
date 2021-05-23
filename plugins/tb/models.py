@@ -593,3 +593,42 @@ class OtherInvestigation(models.EpisodeSubrecord):
     name    = fields.CharField(max_length=256, blank=True, default="")
     date    = fields.DateField(blank=True, null=True)
     details = fields.TextField(blank=True, default='')
+
+
+class TBPatient(fields.Model):
+    """
+    The TB/NTM status of a patient who has a TB Appointment
+    on the TB patient list
+    """
+    patient = fields.ForeignKey(
+        models.Patient, on_delete=fields.CASCADE, related_name='tb_patient'
+    )
+
+    # TB
+    first_tb_positive_date = fields.DateField(blank=True, null=True)
+    first_tb_positive_test_type = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    first_tb_positive_obs_value = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    # NTM
+    first_ntm_positive_date = fields.DateField(blank=True, null=True)
+    first_ntm_positive_test_type = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    first_ntm_positive_obs_value = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    def to_dict(self):
+        keys = [
+            'first_tb_positive_date',
+            'first_tb_positive_test_type',
+            'first_tb_positive_obs_value',
+            'first_ntm_positive_date',
+            'first_ntm_positive_test_type',
+            'first_ntm_positive_obs_value',
+        ]
+        return {key: getattr(self, key) for key in keys}

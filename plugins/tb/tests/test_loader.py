@@ -1,8 +1,10 @@
+import datetime
 from unittest import mock
+from django.utils import timezone
 from opal.core.test import OpalTestCase
 from opal.models import Episode, Patient
 from elcid.episode_categories import InfectionService
-from plugins.tb import loader
+from plugins.tb import constants, lab, loader, models
 from plugins.tb import episode_categories
 
 
@@ -95,3 +97,100 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
             Patient.objects.count(), 1
         )
         self.assertFalse(create_rfh_patient_from_hospital_number.called)
+
+
+class refreshFutureAppointmentKeyInvestigationsTestCase(OpalTestCase):
+    def test_run(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.appointments.create(
+            start_datetime=timezone.now(),
+            derived_appointment_type=constants.TB_APPOINTMENT_CODES[0]
+        )
+        other_patient, _ = self.new_patient_and_episode_please()
+        other_patient.tb_patient.create()
+        loader.refresh_future_appointment_key_investigations()
+        tb_patient = models.TBPatient.objects.get()
+        self.assertEqual(
+            tb_patient.patient_id, patient.id
+        )
+
+
+class RefreshFuturePatientKeyInvestigationsTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.now = timezone.now()
+        self.before = self.now - datetime.timedelta(10)
+        self.yesterday = self.now - datetime.timedelta(1)
+
+    def test_tb(self):
+        # A Patient who tests quantifiron positive
+        # then PCR negative
+        lab_test = self.patient.lab_tests.create(
+            test_name=lab.QuantiferonTBGold.TEST_NAME,
+            test_code=lab.QuantiferonTBGold.TEST_CODE,
+            datetime_ordered=self.before
+        )
+        lab_test.observation_set.create(
+            observation_name=lab.QuantiferonTBGold.OBSERVATION_NAMES[0],
+            observation_value="POSITIVE"
+        )
+        lab_test = self.patient.lab_tests.create(
+            test_name=lab.TBPCR.TEST_NAME,
+            test_code=lab.TBPCR.TEST_CODE,
+            datetime_ordered=self.yesterday
+        )
+        lab_test.observation_set.create(
+            observation_name=lab.TBPCR.OBSERVATION_NAMES[0],
+            observation_value="TB PCR (GeneXpert) Positive"
+        )
+        loader.refresh_patients_key_investigations(self.patient)
+        tb_status = self.patient.tb_patient.get()
+        self.assertEqual(
+            tb_status.first_tb_positive_date,
+            self.before.date(),
+        )
+        self.assertEqual(
+            tb_status.first_tb_positive_test_type,
+            lab.QuantiferonTBGold.TEST_NAME
+        )
+        self.assertEqual(
+            tb_status.first_tb_positive_obs_value,
+            "POSITIVE"
+        )
+
+    def test_ntm(self):
+        # A Patient who tests quantifiron positive
+        # then PCR negative
+        lab_test = self.patient.lab_tests.create(
+            test_name=lab.TBCulture.TEST_NAME,
+            test_code=lab.TBCulture.TEST_CODE,
+            datetime_ordered=self.before
+        )
+        lab_test.observation_set.create(
+            observation_name=lab.TBCulture.OBSERVATION_NAMES[0],
+            observation_value="1) Mycobacterium sp."
+        )
+        lab_test = self.patient.lab_tests.create(
+            test_name=lab.TBCulture.TEST_NAME,
+            test_code=lab.TBCulture.TEST_CODE,
+            datetime_ordered=self.yesterday
+        )
+        lab_test.observation_set.create(
+            observation_name=lab.TBCulture.OBSERVATION_NAMES[0],
+            observation_value="1) Mycobacterium abscessus"
+        )
+        loader.refresh_patients_key_investigations(self.patient)
+        tb_status = self.patient.tb_patient.get()
+        self.assertEqual(
+            tb_status.first_ntm_positive_date,
+            self.before.date(),
+        )
+        self.assertEqual(
+            tb_status.first_ntm_positive_test_type,
+            lab.TBCulture.TEST_NAME
+        )
+        self.assertEqual(
+            tb_status.first_ntm_positive_obs_value,
+            "1) Mycobacterium sp."
+        )
+
