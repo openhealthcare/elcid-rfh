@@ -1,8 +1,6 @@
 import datetime
 from django.db import transaction
-from plugins.appointments.models import (
-    PatientAppointmentStatus, Appointment
-)
+from plugins.appointments.models import PatientAppointmentStatus
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid import episode_categories as infection_episode_categories
@@ -67,6 +65,11 @@ def refresh_tb_patients():
 
 @transaction.atomic
 def refresh_future_tb_appointments():
+    """
+    Make sure we have appointments with TB patients
+    in our system for all patients with TB appointments
+    in the upstream system.
+    """
     api = ProdAPI()
     since = datetime.datetime.combine(
         datetime.date.today(), datetime.datetime.min.time()
@@ -124,6 +127,11 @@ def refresh_future_tb_appointments():
 
 
 def refresh_future_appointment_key_investigations():
+    """
+    For each appointment on the TB clinic list make sure there
+    is a TBPatient instance in the database that tells us when
+    they first became TB positive.
+    """
     appointments = views.ClinicList().get_queryset().prefetch_related(
         'patient'
     )
