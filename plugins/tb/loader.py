@@ -60,6 +60,11 @@ def create_tb_episodes():
     logger.info(f"Created {created_episodes} episodes")
 
 
+def refresh_tb_patients():
+    refresh_future_tb_appointments()
+    refresh_future_appointment_key_investigations()
+
+
 @transaction.atomic
 def refresh_future_tb_appointments():
     api = ProdAPI()
