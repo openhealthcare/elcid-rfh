@@ -8,7 +8,7 @@ from elcid.models import Demographics
 from elcid import episode_categories as infection_episode_categories
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
-from plugins.tb import episode_categories, constants, logger, models, lab
+from plugins.tb import episode_categories, constants, logger, models, lab, views
 from plugins.appointments.loader import save_or_discard_appointment_data
 
 
@@ -119,11 +119,9 @@ def refresh_future_tb_appointments():
 
 
 def refresh_future_appointment_key_investigations():
-    appointments = Appointment.objects.filter(
-        start_datetime__gte=datetime.date.today()
-    ).filter(
-        derived_appointment_type__in=constants.TB_APPOINTMENT_CODES
-    ).select_related("patient")
+    appointments = views.ClinicList().get_queryset().prefetch_related(
+        'patient'
+    )
     patients = [i.patient for i in appointments]
     models.TBPatient.objects.exclude(
         patient__in=patients
