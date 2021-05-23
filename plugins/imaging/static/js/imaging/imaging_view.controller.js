@@ -6,7 +6,7 @@ angular.module('opal.controllers').controller('ImagingView', function(
 
     vm.imaging = []
 
-    var url_base = '/api/v0.1/imaging/';
+    var url_base = '/api/v0.1/upstream_imaging/';
 
     vm.load = function(patient_id){
         var url = url_base + '' + patient_id + '/';
