@@ -62,13 +62,16 @@ class TestMultipleResults(OpalTestCase):
 
     def test_get_lab_tests_none(self):
         result = self.client.get(self.url)
-        self.assertEqual(result.json(), {"results": []})
+        self.assertEqual(result.json(), {
+            "recent_results": [], "first_positives": {}
+        })
 
     def test_get_lab_tests(self):
         self.create_lab_tests()
         result = self.client.get(self.url)
         expected = {
-            'results': [
+            "first_positives": {},
+            'recent_results': [
                 {
                     'date': '05/01/2019 00:00:00',
                     'name': 'C Reactive Protein',
@@ -98,11 +101,6 @@ class TestMultipleResults(OpalTestCase):
                     'date': '05/01/2019 00:00:00',
                     'name': 'QFT IFN gamme result (TB2)',
                     'result': '0.0'
-                },
-                {
-                    'date': '05/01/2019 00:00:00',
-                    'name': 'QFT TB interpretation',
-                    'result': 'INDETERMINATE'
                 }
             ]
         }
