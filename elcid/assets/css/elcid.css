@@ -491,4 +491,19 @@ div.add-isolate:hover {
 .patientlist-list:hover::-webkit-scrollbar-thumb, .touchevents .patientlist-list::-webkit-scrollbar-thumb {
   background-color: #2d5391;
 }
+
+.tb-clinic-list {
+  background-color: #FFF;
+}
+
+.tb-clinic-list .date-header {
+  padding-left: 10px;
+  border-bottom: 3px solid #D36C08;
+  margin-bottom: 0;
+}
+
+.tb-clinic-list .table > tbody > tr.table-gap > td {
+  padding: 2px;
+  background-color: white;
+}
 /*# sourceMappingURL=elcid.css.map */
