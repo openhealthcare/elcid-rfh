@@ -44,13 +44,15 @@ class TbTestSummary(LoginRequiredViewset):
         else:
             first_positives = lab.tb_tests_for_patient(patient)
 
-        first_tb_obs = first_positives["first_tb_positive_obs_value"] or ""
+        first_tb_obs = first_positives.get("first_tb_positive_obs_value", "")
         first_tb_obs = first_tb_obs.replace("~", "")
-        first_positives["first_tb_positive_obs_value"] = first_tb_obs
+        if first_tb_obs:
+            first_positives["first_tb_positive_obs_value"] = first_tb_obs
 
-        first_nlm_obs = first_positives["first_ntm_positive_obs_value"] or ""
+        first_nlm_obs = first_positives.get("first_ntm_positive_obs_value", "")
         first_nlm_obs = first_tb_obs.replace("~", "")
-        first_positives["first_ntm_positive_obs_value"] = first_nlm_obs
+        if first_nlm_obs:
+            first_positives["first_ntm_positive_obs_value"] = first_nlm_obs
 
         return json_response(dict(
             recent_results=recent_results,
