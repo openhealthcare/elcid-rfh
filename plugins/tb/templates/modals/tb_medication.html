@@ -23,15 +23,14 @@ TB Medication
       <div class="input-group">
         <input type="text" class="form-control"
                uib-datepicker-popup="dd/MM/yyyy"
+               max-date="maxDate"
                ng-model="editing.treatment.planned_end_date"
                is-open="form.planned_end_date_open"
-               min-date="{{ mindate}}"
-               max-date="maxDate"
                show-button-bar="false"
                show-weeks="false"
                name="planned_end_date"
                datepicker-options="{startingDay: 1}"
-               ng-focus="editing.treatment.planned_end_date_open=true"
+               ng-focus="form.planned_end_date_open=true"
                close-text="Close"
                />
          <span ng-controller="TBDateHelper as tb_date_helper" class="input-group-btn">
@@ -42,8 +41,7 @@ TB Medication
   </div>
 </div>
 
-
-{% datepicker field="Treatment.end_date" user_options=True %}
+{% datepicker field="Treatment.end_date" element_name="'treatment_end'" user_options=True %}
 {% endblock form %}
 
 {% block modal_save %}
@@ -55,4 +53,7 @@ TB Medication
     {% endblock %}
   </button>
 </span>
+<div ng-class="{'content-offset': form.treatment_end_open}" class="row">
+  <div class="col-md-12"></div>
+</div>
 {% endblock %}
