@@ -16,6 +16,10 @@ class LabTestTestCase(OpalTestCase):
             "status": "Sucess",
             "test_code": "AN12",
             "test_name": "Anti-CV2 (CRMP-5) antibodies",
+            "accession_number": "123456",
+            "encounter_consultant_name": "DR. M. SMITH",
+            "encounter_location_name": "RAL 6 NORTH",
+            "encounter_location_code": "6N",
             "observations": [{
                 "last_updated": "18/07/2015 04:15:10",
                 "observation_datetime": "19/07/2015 04:15:10",

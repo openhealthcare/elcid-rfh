@@ -279,6 +279,10 @@ class PathologyRow(object):
         'status',
         'test_code',
         'test_name',
+        'encounter_consultant_name',
+        'encounter_location_code',
+        'encounter_location_name',
+        'accession_number',
     ]
 
     OBSERVATION_FIELDS = [
@@ -373,6 +377,18 @@ class PathologyRow(object):
 
     def get_test_name(self):
         return self.db_row.get("OBR_exam_code_Text")
+
+    def get_encounter_consultant_name(self):
+        return self.db_row.get("Encounter_Consultant_Name")
+
+    def get_encounter_location_code(self):
+        return self.db_row.get("Encounter_Location_Code")
+
+    def get_encounter_location_name(self):
+        return self.db_row.get("Encounter_Location_Name")
+
+    def get_accession_number(self):
+        return self.db_row.get("Accession_number")
 
     def get_external_identifier(self):
         return self.db_row.get("Result_ID")
