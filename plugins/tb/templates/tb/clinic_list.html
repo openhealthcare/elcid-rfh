@@ -48,7 +48,7 @@
     {% endif %}
     <tr>
       <td>
-        {{ appointment.start_datetime.time|date:"G:i" }}
+        {{ appointment.start_datetime|date:"G:i" }}
       </td>
       <td>{{ appointment.status_code }}</td>
       <td>

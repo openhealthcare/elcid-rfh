@@ -10,4 +10,4 @@ TB_APPOINTMENT_CODES = [
     "Thoracic TB Telephone F/Up",
 ]
 
-TB_APPOINTMENT_REFRESH_TIME_FACT = "TB Refresh Seconds"
+TB_REFRESH_TIME_FACT = "TB Refresh Seconds"

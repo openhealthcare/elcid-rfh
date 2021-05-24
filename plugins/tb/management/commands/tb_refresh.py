@@ -28,5 +28,5 @@ class Command(BaseCommand):
             )
             logger.info("tb refresh completed in %2.4f" % time_taken)
         except Exception:
-            msg = 'Exception in refreshing TB appointments \n {}'
+            msg = 'Exception in refreshing TB\n {}'
             logger.error(msg.format(traceback.format_exc()))
