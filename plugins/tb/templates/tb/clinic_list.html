@@ -31,21 +31,6 @@
       <th class="col-xs-2">Recent consultation</th>
     </tr>
     {% for appointment, demographics, episode, consultation in rows %}
-    {% if forloop.counter0 %}
-      {% ifchanged appointment.derived_clinic_resource %}
-        {% if appointment.derived_clinic_resource == 'RAL Lipman, Dr Marc TB' %}
-          <tr class="table-gap">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-        {% endif %}
-      {% endifchanged %}
-    {% endif %}
     <tr>
       <td>
         {{ appointment.start_datetime|date:"G:i" }}
