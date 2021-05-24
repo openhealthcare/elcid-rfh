@@ -19,7 +19,7 @@
       </li>
     </ul>
     <div ng-show="upstream_imaging.length" class="panel-footer">
-      <strong>Recent X-ray details</strong>
+      <strong>Recent CXR Reports</strong>
       <div class="row content-offset-10" ng-repeat="imaging in upstream_imaging | limitTo:2">
         <div class="col-md-3">
           [[ imaging.date_of_result | displayDate ]]
