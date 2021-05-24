@@ -96,6 +96,11 @@
                       </div>
                     </div>
                     <div class="row content-offset-10">
+                      <div class="col-md-12">
+                        <i class="fa fa-print edit pull-right pointer" print-page="'/tb/patient_consultation_print/' + item.id"></i>
+                      </div>
+                    </div>
+                    <div class="row content-offset-10">
                       <div ng-show="item.reason_for_interaction.indexOf('initial assessment') != -1" class="col-md-12">
                         <a target="_blank" href="/letters/#/tb/initial_assessment/[[ item.id ]]/">
                           <i class="fa fa-envelope edit pull-right pointer"></i>

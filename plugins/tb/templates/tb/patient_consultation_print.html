@@ -1,0 +1,36 @@
+{% extends 'static_page.html' %}
+{% block content %}
+<div class="row">
+  <div class="col-sm-8 col-sm-offset-2 content-offset">
+    {% if object.initials and object.initials.strip %}
+    <p>
+      <b>By: </b> {{ object.initials }}
+    </p>
+    {% endif %}
+    {% if object.reason_for_interaction %}
+    <p>
+      <b>Reason For Interaction: </b>{{ object.reason_for_interaction }}
+    </p>
+    {% endif %}
+    {% if object.examination_findings %}
+    <b>Examination Findings: </b>
+    <div>
+      {{ object.examination_findings|linebreaks }}
+    </div>
+    {% endif %}
+    {% if object.discussion %}
+      <b>Discussion: </b>
+      <div>
+      {{ object.discussion|linebreaks }}
+      </div>
+    {% endif %}
+    {% if object.plan %}
+    <span ng-show="object.plan">
+      <b>Plan: </b>
+      <div>
+        {{ object.plan|linebreaks }}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
