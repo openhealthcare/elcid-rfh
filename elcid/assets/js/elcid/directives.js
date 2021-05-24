@@ -149,7 +149,7 @@ directives.directive('printPage', function () {
   return {
     link: function (scope, element, attrs) {
       element.bind("click", function(){
-        printPage(attrs.printPage)
+        printPage(scope.$eval(attrs.printPage))
       });
     }
   }

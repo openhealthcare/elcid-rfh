@@ -12,6 +12,7 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 
 from plugins.tb import episode_categories, constants
+from plugins.tb import models
 from plugins.tb.models import PatientConsultation
 from plugins.tb.models import Treatment
 from plugins.tb.utils import get_tb_summary_information
@@ -195,3 +196,8 @@ class ClinicList(LoginRequiredMixin, ListView):
             )
         ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx
+
+
+class PrintConsultation(LoginRequiredMixin, DetailView):
+    model = models.PatientConsultation
+    template_name = "tb/patient_consultation_print.html"
