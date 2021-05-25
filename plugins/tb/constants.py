@@ -7,6 +7,7 @@ TB_APPOINTMENT_CODES = [
     "Thoracic TB New",
     "Thoracic TB Nurse F/Up",
     "Thoracic TB Nurse New",
+    "Thoracic TB Telephone F/Up",
     "Thoracic TB Show F/Up"
 ]
 
