@@ -42,5 +42,9 @@ urlpatterns = [
         r'^templates/tb/clinic_list.html$',
         views.ClinicList.as_view(),
         name="tb_clinic_list"
+    ),
+    url(
+        r'^tb/patient_consultation_print/(?P<pk>\d+)/?$',
+        views.PrintConsultation.as_view()
     )
 ]

@@ -523,3 +523,12 @@ div.add-isolate:hover{
     background-color: darken($indigo, 15%);
 }
 
+.tb-clinic-list{
+    background-color: $white;
+    .date-header{
+        padding-left: 10px;
+        border-bottom: 3px solid #D36C08;
+        margin-bottom: 0;
+    }
+}
+

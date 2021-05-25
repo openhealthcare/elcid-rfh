@@ -20,7 +20,7 @@
     {% record_panel models.Allergies %}
     {% record_panel models.SocialHistory %}
     {% include 'tb/obs_panel.html' %}
-    {% record_panel models.Imaging %}
+    {% include 'panels/tb/imaging.html' %}
     {% record_panel models.OtherInvestigation title="Other Investigations"%}
     {% record_panel models.MantouxTest %}
     {% record_panel models.ContactDetails %}
@@ -93,6 +93,11 @@
                     <div class="row content-offset-10">
                       <div class="col-md-12">
                         <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".consultation-timeline-data-[[ $index ]]"></i>
+                      </div>
+                    </div>
+                    <div class="row content-offset-10">
+                      <div class="col-md-12">
+                        <i class="fa fa-print edit pull-right pointer" print-page="'/tb/patient_consultation_print/' + item.id"></i>
                       </div>
                     </div>
                     <div class="row content-offset-10">

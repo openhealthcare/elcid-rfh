@@ -1,0 +1,51 @@
+{% extends 'static_page.html' %}
+{% load forms %}
+{% block content %}
+{% with demographics=object.episode.patient.demographics_set.get %}
+<div class="container-fluid" >
+  <h2>
+    {% icon 'fa-user' %} {{ demographics.name }}
+    <small>
+      {% if demographics.sex or demographics.date_of_birth %}
+      ({{ demographics.sex }} {{ demographics.date_of_birth }})
+      {% endif %}
+      {{ demographics.hospital_number }}
+    </small>
+  </h2>
+  <hr>
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-2 content-offset-25">
+      {% if object.initials and object.initials.strip %}
+      <p>
+        <b>By: </b> {{ object.initials }}
+      </p>
+      {% endif %}
+      {% if object.reason_for_interaction %}
+      <p>
+        <b>Reason For Interaction: </b>{{ object.reason_for_interaction }}
+      </p>
+      {% endif %}
+      {% if object.examination_findings %}
+      <b>Examination Findings: </b>
+      <div>
+        {{ object.examination_findings|linebreaks }}
+      </div>
+      {% endif %}
+      {% if object.discussion %}
+        <b>Discussion: </b>
+        <div>
+        {{ object.discussion|linebreaks }}
+        </div>
+      {% endif %}
+      {% if object.plan %}
+      <span ng-show="object.plan">
+        <b>Plan: </b>
+        <div>
+          {{ object.plan|linebreaks }}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endwith %}
+{% endblock %}
