@@ -66,6 +66,7 @@ app.config(
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
 
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list.html'))
+             .when('/tb/mdt-list/',  static_template_route('/templates/tb/mdt_list.html'))
 
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))

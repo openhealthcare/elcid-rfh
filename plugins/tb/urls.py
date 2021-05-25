@@ -42,5 +42,10 @@ urlpatterns = [
         r'^templates/tb/clinic_list.html$',
         views.ClinicList.as_view(),
         name="tb_clinic_list"
+    ),
+    url(
+        r'^templates/tb/mdt_list.html$',
+        views.MDTList.as_view(),
+        name="mdt_list"
     )
 ]
