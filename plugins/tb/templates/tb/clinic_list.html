@@ -1,20 +1,10 @@
-<div class="left-menu">
-  <h3>
-    <a href="/#/tb/clinic-list/">TB</a>
-  </h3>
-  <li>
-    <a href="/#/tb/clinic-list/">Clinic List</a>
-  </li>
-  </ul>
-</div>
-
-<div class="content-offset right-viewport tb-clinic-list">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h1>
-        TB Clinic List
-      </h1>
-    </div>
+{% extends "tb/base.html" %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <h1>
+      TB Clinic List
+    </h1>
   </div>
   {% for date, rows in rows_by_date.items %}
   <h3 class="date-header">
@@ -65,5 +55,6 @@
   </table>
   {% endfor %}
 </div>
+{% endblock %}
 
 
