@@ -219,10 +219,11 @@ class MDTList(LoginRequiredMixin, ListView):
 
     def get_queryset(self, *args, **kwargs):
         qs = super().get_queryset()
+        a_year_ago = datetime.date.today() - datetime.timedelta(365)
         return qs.filter(
             test_name=self.test_type
-        ).exclude(
-            datetime_ordered=None
+        ).filter(
+            datetime_ordered__gt=a_year_ago
         ).order_by(
             "-datetime_ordered"
         ).prefetch_related(
