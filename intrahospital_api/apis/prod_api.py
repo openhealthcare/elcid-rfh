@@ -602,8 +602,24 @@ class ProdApi(base_api.BaseApi):
             params=dict(hospital_number=hospital_number)
         ))
         if not len(rows):
-            return
+            # If the hn begins with leading 0(s)
+            # the data is sometimes empty in the CRS_* fields.
+            # So if we cannot find rows with 0 prefixes
+            # remove the prefix.
+            if not hospital_number.startswith("0"):
+                return
+            hospital_number = hospital_number.lstrip('0')
 
+            # some hns are just 0s, if we've stripped the hn
+            # away don't query again.
+            if not hospital_number:
+                return
+            rows = list(self.execute_trust_query(
+                self.pathology_demographics_query,
+                params=dict(hospital_number=hospital_number)
+            ))
+            if not len(rows):
+                return
         return PathologyRow(rows[0]).get_demographics_dict()
 
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
