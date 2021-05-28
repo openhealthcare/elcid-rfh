@@ -2,9 +2,15 @@
   <h3>
     <a href="/#/tb/clinic-list/">TB</a>
   </h3>
-  <li>
-    <a href="/#/tb/clinic-list/">Clinic List</a>
-  </li>
+  <ul>
+    <li>
+      <a href="/#/tb/clinic-list/">Clinic List</a>
+    </li>
+    {% if request.user.is_superuser %}
+    <li>
+      <a href="/#/tb/mdt-list/">MDT List</a>
+    </li>
+    {% endif %}
   </ul>
 </div>
 
