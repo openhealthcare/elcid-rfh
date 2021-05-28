@@ -1,0 +1,61 @@
+<html>
+<body>
+  <div class="left-menu">
+    <h3>
+      <a href="/#/tb/clinic-list/">TB</a>
+    </h3>
+    <li>
+      <a href="/#/tb/clinic-list/">Clinic List</a>
+    </li>
+    </ul>
+  </div>
+  <div class="content-offset right-viewport">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h1>
+          TB Clinic List
+        </h1>
+      </div>
+    <table class="table table-striped">
+      <tr>
+        <td>Hosp #</td>
+        <td>Patient</td>
+        <td>NHS number</td>
+        <td>Sex</td>
+        <td>Results</td>
+      </tr>
+      {% for demographics, lab_test_dicts in rows %}
+        <tr>
+          <td>{{ demographics.hospital_number }}</td>
+          <td>{{ demographics.name }} ({{ demographics.date_of_birth }})</td>
+          <td>{{ demographics.nhs_number }}</td>
+          <td>{{ demographics.sex }}</td>
+          <td>
+            {% for lab_test_dict in lab_test_dicts %}
+            <div class="row">
+              <div class="col-md-6">
+                {{ lab_test_dict.ordered }}
+                {{ lab_test_dict.lab_number }}
+                {{ lab_test_dict.site }}
+                <br>
+                {{ lab_test_dict.location }}
+              </div>
+              <div class="col-md-6">
+                {% for test_type, result in lab_test_dict.results.items %}
+                {{ test_type }}: {{ result }}<br />
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+            <br />
+          </td>
+        {% for val in row.values %}
+        <td>{{ val }}</td>
+        {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+    </div>
+  </div>
+</body>
+</html>
