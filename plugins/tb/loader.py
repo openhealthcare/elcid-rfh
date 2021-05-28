@@ -8,6 +8,7 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.tb import episode_categories, constants, logger
 from plugins.appointments.loader import save_or_discard_appointment_data
+from plugins.imaging.loader import load_imaging
 
 
 Q_TB_APPOINTMENTS = """
@@ -82,6 +83,7 @@ def update_tb_patient(appointment_dict):
         patient.create_episode(
             category_name=episode_categories.TbEpisode.display_name
         )
+    load_imaging(patient)
     save_or_discard_appointment_data(appointment_dict, patient)
 
 
