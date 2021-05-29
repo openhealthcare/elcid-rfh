@@ -135,8 +135,18 @@ def update_patient_information(patient):
     """
     Updates a patient with the upstream demographics, if they have changed.
     """
+    demographics = patient.demographics_set.all()[0]
+
+    if not demographics.hospital_number:
+        msg = " ".join([
+            f"Patient {patient.id} has not hospital number",
+            "skipping update information"
+        ])
+        logger.info(msg)
+        return
+
     upstream_patient_information = api.patient_masterfile(
-        patient.demographics_set.first().hospital_number
+        demographics.hospital_number
     )
 
     # this should never really happen but has..
@@ -154,7 +164,6 @@ def update_patient_information(patient):
     upstream_demographics_dict = upstream_patient_information[
         models.Demographics.get_api_name()
     ]
-    demographics = patient.demographics_set.all()[0]
 
     upstream_gp_details = upstream_patient_information[
         models.GPDetails.get_api_name()
