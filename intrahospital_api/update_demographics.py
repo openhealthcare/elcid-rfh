@@ -225,14 +225,14 @@ def update_patient_information(patient):
         )
 
 
-
 def update_all_patient_information():
     """
     Runs update_patient_information for all_patients.
 
     Called by the management command sync_demographics which runs periodically
     """
-    for patient in Patient.objects.all():
+    patient_qs = Patient.objects.all().prefetch_related('demographics_set')
+    for patient in patient_qs:
         try:
             update_patient_information(patient)
         except Exception:
