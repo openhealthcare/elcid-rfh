@@ -235,6 +235,6 @@ def update_all_patient_information():
     for patient in Patient.objects.all():
         try:
             update_patient_information(patient)
-        except:
+        except Exception:
             msg = 'Exception syncing upstream demographics \n {}'
             logger.error(msg.format(traceback.format_exc()))
