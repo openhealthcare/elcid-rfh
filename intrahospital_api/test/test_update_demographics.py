@@ -166,6 +166,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         demographics = self.patient.demographics_set.first()
         demographics.first_name = "Jane"
         demographics.surname = "Bloggs"
+        demographics.hospital_number = "111"
         demographics.updated = None
         demographics.save()
 
@@ -173,7 +174,10 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         updated = timezone.make_aware(datetime.datetime(2020, 1, 1))
         upstream = timezone.make_aware(datetime.datetime(2020, 1, 2))
         patient_masterfile.return_value = dict(
-            demographics=dict(first_name="Janey"),
+            demographics=dict(
+                first_name="Janey",
+                hospital_number="111"
+            ),
             gp_details={},
             master_file_meta={"last_updated": upstream},
             next_of_kin_details={},
