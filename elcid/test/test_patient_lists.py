@@ -9,7 +9,7 @@ from rest_framework.reverse import reverse as drf_reverse
 
 from opal.core.patient_lists import PatientList
 from opal.core.test import OpalTestCase
-from opal.models import Patient
+from opal.models import Clinical_advice_reason_for_interaction, Patient
 
 from elcid import models
 from elcid import episode_categories
@@ -48,6 +48,10 @@ class TestPatientList(AbstractPatientListTestCase):
         self.factory = RequestFactory()
 
     def test_get_all_patient_lists(self):
+        # required for the upstream patient lists
+        Clinical_advice_reason_for_interaction.objects.create(
+            name=models.MicrobiologyInput.ICU_REASON_FOR_INTERACTION
+        )
         # this should not be taken as a reason not to do more indepth unit tests!
         # its just a nice sanity check
         pls = PatientList.list()
