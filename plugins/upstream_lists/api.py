@@ -3,11 +3,11 @@ API endpoint for upstream lists
 """
 from opal.core.api import LoginRequiredViewset
 from opal.core.views import json_response
-from opal.models import Episode, Patient
-
+from opal.models import Episode
 from elcid.episode_categories import InfectionService
 from elcid.episode_serialization import serialize
 from elcid.patient_lists import PATIENT_LIST_SUBRECORDS
+from plugins.icu.models import current_icu_patients
 
 
 class UpstreamPatientListViewSet(LoginRequiredViewset):
@@ -19,7 +19,8 @@ class UpstreamPatientListViewSet(LoginRequiredViewset):
     base_name = 'patientlist/upstream'
 
     def retrieve(self, request, pk=None):
-        patients = Patient.objects.filter(icuhandoverlocation__ward__iexact=pk)
+        patients = current_icu_patients()
+        patients = patients.filter(icuhandoverlocation__ward__iexact=pk)
         episodes = Episode.objects.filter(
             patient__in=patients,
             category_name=InfectionService.display_name

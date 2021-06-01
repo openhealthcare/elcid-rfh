@@ -4,6 +4,7 @@ Views for the ICU plugin
 import collections
 import datetime
 
+from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from opal.models import Episode, Clinical_advice_reason_for_interaction
@@ -13,7 +14,7 @@ from elcid.models import MicrobiologyInput
 from plugins.covid.models import CovidPatient
 
 from plugins.icu import constants
-from plugins.icu.models import ICUWard, ICUHandoverLocation
+from plugins.icu.models import ICUWard, ICUHandoverLocation, current_icu_patients
 
 
 class ICUDashboardView(LoginRequiredMixin, TemplateView):
@@ -94,15 +95,21 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
         return info
 
+    def get_querset(self):
+        return ICUHandoverLocation.objects.filter(
+            patient_id__in=current_icu_patients()
+        )
+
     def get_context_data(self, *a, **k):
         context = super(ICUDashboardView, self).get_context_data(*a, **k)
         wards = []
-        for ward_name in sorted(ICUHandoverLocation.objects.all().values_list(
+        qs = self.get_querset()
+        for ward_name in sorted(qs.values_list(
                 'ward', flat=True).distinct()):
             wards.append(self.get_ward_info(ward_name))
 
         context['wards'] = wards
-        context['icu_patients'] = ICUHandoverLocation.objects.all().count()
+        context['icu_patients'] = qs.count()
         context['today'] = datetime.date.today()
 
         return context
