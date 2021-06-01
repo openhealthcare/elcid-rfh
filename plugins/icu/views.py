@@ -30,7 +30,10 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             beds     = ICUWard.objects.get(name=ward_name).beds
         except ICUWard.DoesNotExist:
             beds = None
-        handover_patients = ICUHandoverLocation.objects.filter(ward=ward_name)
+        handover_patients = ICUHandoverLocation.objects.filter(
+            ward=ward_name,
+            patient__in=current_icu_patients()
+        )
 
         handover_patient_count = handover_patients.count()
         covid_patients = CovidPatient.objects.filter(
@@ -77,6 +80,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         )
         episodes = Episode.objects.filter(
             patient__icuhandoverlocation__ward=ward_name,
+            patient__in=current_icu_patients(),
             category_name=InfectionService.display_name
         ).order_by('patient__icuhandoverlocation__bed')
 
@@ -95,15 +99,12 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
         return info
 
-    def get_querset(self):
-        return ICUHandoverLocation.objects.filter(
-            patient_id__in=current_icu_patients()
-        )
-
     def get_context_data(self, *a, **k):
         context = super(ICUDashboardView, self).get_context_data(*a, **k)
         wards = []
-        qs = self.get_querset()
+        qs = ICUHandoverLocation.objects.filter(
+            patient__in=current_icu_patients()
+        )
         for ward_name in sorted(qs.values_list(
                 'ward', flat=True).distinct()):
             wards.append(self.get_ward_info(ward_name))
