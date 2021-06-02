@@ -10,7 +10,7 @@ class Command(BaseCommand):
         ts = time()
         loader.refresh_future_tb_appointments()
         te = time()
-        time_taken = ts-te
+        time_taken = te-ts
         Fact.objects.create(
             when=timezone.now(),
             label=constants.TB_APPOINTMENT_REFRESH_TIME_FACT,
