@@ -178,12 +178,14 @@ class ICUHandover(PatientSubrecord):
 
 def current_icu_patients():
     """
-    ICU Handover is not always correct in recording the
-    actual patients who are actually on ICU.
+    The upstream Freenet ICU Handover view sometimes leaves patients permanently in
+    an undischarged state when they are on 'ghost' wards - temporary wards that 
+    existed during an ICU surge, and were then removed from the Freenet application 
+    before all patients had been removed on their database.
 
-    We can be sure a patient is on ICU if they were either...
-    Admitted to ICU within the last 4 days
-    Received ICU clinical advice within the last 4 days
+    We believe a patient is _actually_ on ICU if they either:
+    - Have an ICU admission date within the last 4 days
+    - Received ICU clinical advice within the last 4 days
     """
     four_days_ago = timezone.now() - datetime.timedelta(4)
     patient_ids_within_four_days = set(ICUHandoverLocation.objects.filter(
