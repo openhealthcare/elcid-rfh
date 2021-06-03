@@ -174,6 +174,9 @@ def update_patient_information(patient):
     upstream_demographics_dict = upstream_patient_information[
         models.Demographics.get_api_name()
     ]
+    # If we have stripped off the 0 make sure we don't
+    # overwrite the demographics.hospital number
+    upstream_demographics_dict["hospital_number"] = hospital_number
 
     upstream_gp_details = upstream_patient_information[
         models.GPDetails.get_api_name()
