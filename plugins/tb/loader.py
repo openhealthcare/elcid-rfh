@@ -1,6 +1,9 @@
 import datetime
 from django.db import transaction
-from plugins.appointments.models import PatientAppointmentStatus
+from django.utils import timezone
+from plugins.appointments.models import (
+    PatientAppointmentStatus, Appointment
+)
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid import episode_categories as infection_episode_categories
@@ -83,7 +86,6 @@ def update_tb_patient(appointment_dict):
         patient.create_episode(
             category_name=episode_categories.TbEpisode.display_name
         )
-    load_imaging(patient)
     save_or_discard_appointment_data(appointment_dict, patient)
 
 
@@ -120,3 +122,21 @@ def refresh_future_tb_appointments():
     logger.info(f"Updated {len(updated_hns)} patients appointments")
     if failed:
         logger.error(f"Failed to update {failed} appointments")
+
+
+def load_todays_imaging():
+    """
+    for every patient who has a tb appointment today,
+    refresh their imaging
+    """
+    today = timezone.now().date()
+    tomorrow = today + datetime.timedelta(1)
+    appointment_types = constants.TB_APPOINTMENT_CODES
+    appointments = Appointment.objects.filter(
+        derived_appointment_type__in=appointment_types
+    ).filter(
+        start_datetime__gte=today,
+        start_datetime__lte=tomorrow
+    ).select_related('patient')
+    for appointment in appointments:
+        load_imaging(appointment.patient)
