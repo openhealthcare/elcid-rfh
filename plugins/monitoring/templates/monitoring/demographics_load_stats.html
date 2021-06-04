@@ -1,0 +1,35 @@
+<style>
+  .c3-line {
+    stroke-width: 2px;
+  }
+</style>
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>Demographics Load Stats Dashboard</h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Load times</h2>
+              <div id="demographics_sync_time"></div>
+            </div>
+          </div> <!-- row -->
+          <script>render_graph('demographics_sync_time', {{ demographics_sync_time | safe }}, 'line');</script>
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Updated patients</h2>
+              <div id="demographics_updated"></div>
+            </div>
+          </div> <!-- row -->
+          <script>render_graph('demographics_updated', {{ demographics_updated | safe }}, 'line');</script>
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+    </div>
+  </div>
+</div>

@@ -4,6 +4,7 @@ Views for the monitoring plugin
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+from elcid.constants import DEMOGRAPHICS_SYNC_TIME, DEMOGRAPHICS_UPDATED_COUNT
 
 from plugins.monitoring.models import Fact
 
@@ -38,6 +39,20 @@ class LabTimings(LoginRequiredMixin, TemplateView):
         context['patient_cohort_data']  = graph_data_for_label('Total Patients')
         context['total_obs_data']       = graph_data_for_label('Total Observations')
 
+        return context
+
+
+class DemographicsTimings(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/demographics_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['demographics_sync_time'] = graph_data_for_label(
+            DEMOGRAPHICS_SYNC_TIME
+        )
+        context['demographics_updated'] = graph_data_for_label(
+            DEMOGRAPHICS_UPDATED_COUNT
+        )
         return context
 
 
