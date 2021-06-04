@@ -16,7 +16,7 @@ class ReconcileDemographics(patient_lists.PatientList):
 
     @property
     def queryset(self):
-        patients = Patient.objects.filter(demographics__external_system=None)
+        patients = Patient.objects.filter(masterfilemeta=None)
         episodes_id = []
         for patient in patients:
             episode = patient.episode_set.last()
