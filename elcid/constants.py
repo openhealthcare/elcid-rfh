@@ -1751,3 +1751,6 @@ def invert_lookups(tag_list):
 
 
 LAB_TEST_TAGS = invert_lookups(_LAB_TEST_TAGS)
+
+DEMOGRAPHICS_SYNC_TIME = "Demographics sync time"
+DEMOGRAPHICS_UPDATED_COUNT = "Demographics updated count"
