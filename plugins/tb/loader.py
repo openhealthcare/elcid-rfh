@@ -138,5 +138,14 @@ def load_todays_imaging():
         start_datetime__gte=today,
         start_datetime__lte=tomorrow
     ).select_related('patient')
+    failed = 0
     for appointment in appointments:
-        load_imaging(appointment.patient)
+        try:
+            load_imaging(appointment.patient)
+        except Exception:
+            logger.info(
+                f"Failed to load imaging for tb patient {appointment.patient.id}"
+            )
+            failed += 1
+    if failed:
+        logger.error(f"Failed to load {failed} tb patients imaging")
