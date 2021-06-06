@@ -17,19 +17,19 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         start = time.time()
         before_patient_id_to_insert_date = dict(
-            MasterFileMeta.objects.values_list("patient_id", "insert_date", flat=True)
+            MasterFileMeta.objects.values_list("patient_id", "insert_date")
         )
         before_patient_id_to_last_updated = dict(
-            MasterFileMeta.objects.values_list("patient_id", "last_updated", flat=True)
+            MasterFileMeta.objects.values_list("patient_id", "last_updated")
         )
         update_all_patient_information()
         end = time.time()
 
         after_patient_id_to_insert_date = dict(
-            MasterFileMeta.objects.values_list("patient_id", "insert_date", flat=True)
+            MasterFileMeta.objects.values_list("patient_id", "insert_date")
         )
         after_patient_id_to_last_updated = dict(
-            MasterFileMeta.objects.values_list("patient_id", "last_updated", flat=True)
+            MasterFileMeta.objects.values_list("patient_id", "last_updated")
         )
         updated_cnt = 0
         for patient_id, after_insert_date in after_patient_id_to_insert_date.items():
