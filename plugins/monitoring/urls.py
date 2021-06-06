@@ -15,5 +15,10 @@ urlpatterns = [
         'templates/monitoring/system_stats.html',
         views.SystemStats.as_view(),
         name='system_stats_dashboard'
+    ),
+    url(
+        'templates/monitoring/demographics_load_stats.html',
+        views.DemographicsLoadStats.as_view(),
+        name='demographics_load_stats'
     )
 ]
