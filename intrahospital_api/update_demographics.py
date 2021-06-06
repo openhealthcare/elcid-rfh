@@ -131,6 +131,7 @@ def has_information_changed(
     return False
 
 
+@transaction.atomic
 def update_patient_information(patient):
     """
     Updates a patient with the upstream demographics, if they have changed.
