@@ -6,7 +6,7 @@ import time
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from intrahospital_api.update_demographics import update_all_patient_information
-from elcid.constants import DEMOGRAPHICS_SYNC_TIME,
+from elcid.constants import DEMOGRAPHICS_SYNC_TIME
 from elcid.models import MasterFileMeta
 from plugins.monitoring.models import Fact
 
