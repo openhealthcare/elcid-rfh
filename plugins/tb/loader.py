@@ -1,6 +1,9 @@
 import datetime
 from django.db import transaction
-from plugins.appointments.models import PatientAppointmentStatus
+from django.utils import timezone
+from plugins.appointments.models import (
+    PatientAppointmentStatus, Appointment
+)
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid import episode_categories as infection_episode_categories
@@ -8,6 +11,7 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.tb import episode_categories, constants, logger
 from plugins.appointments.loader import save_or_discard_appointment_data
+from plugins.imaging.loader import load_imaging
 
 
 Q_TB_APPOINTMENTS = """
@@ -59,6 +63,32 @@ def create_tb_episodes():
 
 
 @transaction.atomic
+def update_tb_patient(appointment_dict):
+    mrn = appointment_dict["vPatient_Number"]
+    if not mrn:
+        return
+    patient = Patient.objects.filter(
+        demographics__hospital_number=mrn
+    ).first()
+    if not patient:
+        patient = create_rfh_patient_from_hospital_number(
+            mrn, infection_episode_categories.InfectionService
+        )
+        patient.create_episode(
+            category_name=episode_categories.TbEpisode.display_name
+        )
+        # new patients load in all appointments so we don't need
+        # to check them again here
+        return
+    if not patient.episode_set.filter(
+        category_name=episode_categories.TbEpisode.display_name
+    ):
+        patient.create_episode(
+            category_name=episode_categories.TbEpisode.display_name
+        )
+    save_or_discard_appointment_data(appointment_dict, patient)
+
+
 def refresh_future_tb_appointments():
     api = ProdAPI()
     since = datetime.datetime.combine(
@@ -75,42 +105,47 @@ def refresh_future_tb_appointments():
         upstream_appointments.extend(result)
 
     updated_hns = []
-    created_patients = 0
-    created_episodes = 0
+    failed = 0
 
     for appointment in upstream_appointments:
-        mrn = appointment["vPatient_Number"]
-        if not mrn:
-            continue
-        patient = Patient.objects.filter(
-            demographics__hospital_number=mrn
-        ).first()
-        if not patient:
-            patient = create_rfh_patient_from_hospital_number(
-                mrn, infection_episode_categories.InfectionService
-            )
-            patient.create_episode(
-                category_name=episode_categories.TbEpisode.display_name
-            )
-            created_patients += 1
-            # new patients load in all appointments so we don't need
-            # to check them again here
-            continue
-        if not patient.episode_set.filter(
-            category_name=episode_categories.TbEpisode.display_name
-        ):
-            created_episodes += 1
-            patient.create_episode(
-                category_name=episode_categories.TbEpisode.display_name
-            )
-        save_or_discard_appointment_data(appointment, patient)
-        updated_hns.append(mrn)
+        try:
+            update_tb_patient(appointment)
+        except Exception:
+            failed += 1
+        updated_hns.append(appointment["vPatient_Number"])
+
     PatientAppointmentStatus.objects.filter(
         patient__demographics__hospital_number__in=updated_hns
     ).update(
         has_appointments=True
     )
-
-    logger.info(f"Created {created_patients} patients")
-    logger.info(f"Created {created_episodes} episodes")
     logger.info(f"Updated {len(updated_hns)} patients appointments")
+    if failed:
+        logger.error(f"Failed to update {failed} appointments")
+
+
+def load_todays_imaging():
+    """
+    for every patient who has a tb appointment today,
+    refresh their imaging
+    """
+    today = timezone.now().date()
+    tomorrow = today + datetime.timedelta(1)
+    appointment_types = constants.TB_APPOINTMENT_CODES
+    appointments = Appointment.objects.filter(
+        derived_appointment_type__in=appointment_types
+    ).filter(
+        start_datetime__gte=today,
+        start_datetime__lte=tomorrow
+    ).select_related('patient')
+    failed = 0
+    for appointment in appointments:
+        try:
+            load_imaging(appointment.patient)
+        except Exception:
+            logger.info(
+                f"Failed to load imaging for tb patient {appointment.patient.id}"
+            )
+            failed += 1
+    if failed:
+        logger.error(f"Failed to load {failed} tb patients imaging")
