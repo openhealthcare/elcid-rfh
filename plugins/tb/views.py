@@ -227,12 +227,12 @@ class Last30Days(AbstractTBPatientList):
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
-           start_datetime__gte=today,
-           start_datetime__lte=until
+           start_datetime__lte=today,
+           start_datetime__gte=until
         ).exclude(
            status_code="Canceled"
         ).order_by(
-           "start_datetime"
+           "-start_datetime"
         ).prefetch_related(
             'patient__episode_set'
         )
