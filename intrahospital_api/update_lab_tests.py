@@ -3,6 +3,20 @@ from intrahospital_api import get_api
 
 api = get_api()
 
+def clean_lab_test_dicts(lab_test_dicts):
+    """
+    If there is no test number or lab number (aka external_identifier)
+    skip it.
+
+    Exclude observations that only have an last_updated time stamp
+    """
+    result = []
+
+    for lab_test_dict in lab_test_dicts:
+        if not lab_test_dict["test_name"] and not lab_test_dict["external_identifier"]:
+            continue
+        result.append(lab_test_dict)
+    return result
 
 def update_tests(patient, lab_tests):
     """
@@ -10,6 +24,7 @@ def update_tests(patient, lab_tests):
     that need saving updates those that need
     updating.
     """
+    lab_tests = clean_lab_test_dicts(lab_tests)
     for lab_test in lab_tests:
         delete_and_create_lab_test(patient, lab_test)
 
@@ -27,6 +42,6 @@ def delete_and_create_lab_test(patient, lab_test):
         patient=patient
     ).delete()
     test = lab_test_models.LabTest()
-    test.update_from_api_dict(patient, lab_test)
+    test.create_from_api_dict(patient, lab_test)
     return test
 

@@ -3,7 +3,7 @@ A management command that is run by a cron job
 """
 import datetime
 import time
-
+from django.db import transaction
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
@@ -21,7 +21,6 @@ from plugins.monitoring.models import Fact
 def send_email(title, template_name, context):
     html_message = render_to_string(template_name, context)
     plain_message = strip_tags(html_message)
-    admin_emails = ", ".join([i[1] for i in settings.ADMINS])
     send_mail(
         title,
         plain_message,
@@ -32,9 +31,13 @@ def send_email(title, template_name, context):
 
 def create_email(**kwargs):
     template_name = "email/table_email.html"
-    title = "elCID RFH Live new results sync"
-
+    title = f"{settings.OPAL_BRAND_NAME} results sync"
     send_email(title, template_name, {"table_context": kwargs, "title": title})
+
+
+@transaction.atomic
+def update_patient(patient, lab_tests):
+    update_lab_tests.update_tests(patient, lab_tests)
 
 
 class Command(BaseCommand):
@@ -63,13 +66,14 @@ class Command(BaseCommand):
                 hospital_number=item['demographics']["hospital_number"]
             )
 
+            if not item['demographics']["hospital_number"]:
+                continue
+
             if not patient_demographics_set.exists():
                 continue # Not in our cohort
 
-            update_lab_tests.update_tests(
-                patient_demographics_set.first().patient,
-                item["lab_tests"],
-            )
+            update_patient(patient_demographics_set.first().patient,  item["lab_tests"])
+
 
         t2 = time.time()
 
@@ -111,3 +115,5 @@ class Command(BaseCommand):
             label='48hr Observations',
             value_int=kw['48hr_obs']
         ).save()
+
+

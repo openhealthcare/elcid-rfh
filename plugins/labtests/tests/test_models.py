@@ -50,9 +50,9 @@ class LabTestTestCase(OpalTestCase):
         )
         return lt
 
-    def test_update_from_api_dict_simple(self):
+    def test_create_from_api_dict_simple(self):
         lt = models.LabTest()
-        lt.update_from_api_dict(self.patient, self.api_dict)
+        lt.create_from_api_dict(self.patient, self.api_dict)
         self.assertEqual(
             lt.patient, self.patient
         )
@@ -116,71 +116,23 @@ class LabTestTestCase(OpalTestCase):
             "123"
         )
 
-    def test_update_from_api_dict_datetime_ordered_is_none(self):
+    def test_create_from_api_dict_datetime_ordered_is_none(self):
         lt = models.LabTest()
         api_dict = copy.deepcopy(self.api_dict)
         api_dict["datetime_ordered"] = None
-        lt.update_from_api_dict(self.patient, api_dict)
+        lt.create_from_api_dict(self.patient, api_dict)
         self.assertIsNone(lt.datetime_ordered)
         self.assertEqual(lt.test_name, "Anti-CV2 (CRMP-5) antibodies")
 
-    def test_update_from_api_dict_observation_datetime_is_none(self):
+    def test_create_from_api_dict_observation_datetime_is_none(self):
         lt = models.LabTest()
         api_dict = copy.deepcopy(self.api_dict)
         api_dict["observations"][0]["observation_datetime"] = None
-        lt.update_from_api_dict(self.patient, api_dict)
+        lt.create_from_api_dict(self.patient, api_dict)
         obs = lt.observation_set.get()
         self.assertIsNone(obs.observation_datetime)
         self.assertEqual(
             obs.observation_name, "Aerobic bottle culture"
-        )
-
-    def test_update_from_api_dict_replaces_observation(self):
-        lt = self.patient.lab_tests.create(**{
-            "clinical_info":  'testing',
-            "datetime_ordered": timezone.make_aware(datetime.datetime(2015, 6, 17, 4, 15, 10)),
-            "lab_number": "11111",
-            "site": u'^&        ^',
-            "status": "Sucess",
-            "test_code": "AN12",
-            "test_name": "Anti-CV2 (CRMP-5) antibodies",
-        })
-
-        lt.observation_set.create(
-            last_updated=timezone.make_aware(datetime.datetime(2015, 6, 18, 4, 15, 10)),
-            observation_datetime=timezone.make_aware(datetime.datetime(2015, 4, 15, 4, 15, 10)),
-            observation_number="12312",
-            reference_range="3.5 - 11",
-            units="g",
-            observation_value="234"
-        )
-
-        lt.update_from_api_dict(self.patient, self.api_dict)
-
-        obs = lt.observation_set.get()
-
-        # this should have changed
-        self.assertEqual(
-            obs.observation_value,
-            "123"
-        )
-
-        # the below stay the same
-        self.assertEqual(
-            obs.observation_name,
-            "Aerobic bottle culture"
-        )
-        self.assertEqual(
-            obs.observation_number,
-            "12312"
-        )
-        self.assertEqual(
-            obs.reference_range,
-            "3.5 - 11"
-        )
-        self.assertEqual(
-            obs.units,
-            "g"
         )
 
     def test_patient_deletion_behaviour(self):
