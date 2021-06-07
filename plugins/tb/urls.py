@@ -49,6 +49,11 @@ urlpatterns = [
         name="tb_clinic_list"
     ),
     url(
+        r'^templates/tb/last_30_days.html$',
+        views.Last30Days.as_view(),
+        name="last_30_days"
+    ),
+    url(
         r'^tb/patient_consultation_print/(?P<pk>\d+)/?$',
         views.PrintConsultation.as_view()
     ),

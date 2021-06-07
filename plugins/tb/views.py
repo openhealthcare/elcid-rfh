@@ -269,25 +269,17 @@ class OtherMedicationModal(AbstractModalView):
     model = Treatment
 
 
-class ClinicList(LoginRequiredMixin, ListView):
-    template_name = "tb/clinic_list.html"
+class AbstractTBPatientList(LoginRequiredMixin, ListView):
+    """
+    An abstract class that will display a bunch of TB appointments in
+    a list.
 
+    Expects:
+      name to be defined, on the view, ie the name of the list
+      get_queryset to return a bunch of appointments
+    """
     def get_queryset(self, *args, **kwargs):
-        today = timezone.now().date()
-        until = today + datetime.timedelta(30)
-        appointment_types = constants.TB_APPOINTMENT_CODES
-        return Appointment.objects.filter(
-            derived_appointment_type__in=appointment_types
-        ).filter(
-           start_datetime__gte=today,
-           start_datetime__lte=until
-        ).exclude(
-           status_code="Canceled"
-        ).order_by(
-           "start_datetime"
-        ).prefetch_related(
-            'patient__episode_set'
-        )
+        raise NotImplementedError()
 
     def get_patient_id_to_recent_consultation(self, patient_ids):
         """
@@ -343,6 +335,50 @@ class ClinicList(LoginRequiredMixin, ListView):
             )
         ctx["rows_by_date"] = dict(ctx["rows_by_date"])
         return ctx
+
+
+class ClinicList(AbstractTBPatientList):
+    template_name = "tb/tb_patient_list.html"
+    name = "TB Clinic List"
+
+    def get_queryset(self, *args, **kwargs):
+        today = timezone.now().date()
+        until = today + datetime.timedelta(30)
+        appointment_types = constants.TB_APPOINTMENT_CODES
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+        ).filter(
+           start_datetime__gte=today,
+           start_datetime__lte=until
+        ).exclude(
+           status_code="Canceled"
+        ).order_by(
+           "start_datetime"
+        ).prefetch_related(
+            'patient__episode_set'
+        )
+
+
+class Last30Days(AbstractTBPatientList):
+    template_name = "tb/tb_patient_list.html"
+    name = "Last 30 days"
+
+    def get_queryset(self, *args, **kwargs):
+        today = timezone.now().date()
+        until = today - datetime.timedelta(30)
+        appointment_types = constants.TB_APPOINTMENT_CODES
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+        ).filter(
+           start_datetime__lte=today,
+           start_datetime__gte=until
+        ).exclude(
+           status_code="Canceled"
+        ).order_by(
+           "-start_datetime"
+        ).prefetch_related(
+            'patient__episode_set'
+        )
 
 
 class PrintConsultation(LoginRequiredMixin, DetailView):
