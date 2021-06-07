@@ -42,7 +42,7 @@ class LabTimings(LoginRequiredMixin, TemplateView):
         return context
 
 
-class DemographicsTimings(LoginRequiredMixin, TemplateView):
+class DemographicsLoadStats(LoginRequiredMixin, TemplateView):
     template_name = 'monitoring/demographics_load_stats.html'
 
     def get_context_data(self, *a, **k):
