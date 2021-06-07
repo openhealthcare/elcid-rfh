@@ -8,13 +8,12 @@ from time import time
 class Command(BaseCommand):
     def handle(self, *args, **options):
         ts = time()
-        loader.refresh_future_tb_appointments()
+        loader.load_todays_imaging()
         te = time()
         time_taken = te-ts
         Fact.objects.create(
             when=timezone.now(),
-            label=constants.TB_APPOINTMENT_REFRESH_TIME_FACT,
+            label=constants.TB_IMAGING_REFRESH_TIME_FACT,
             value_float=time_taken
         )
-        logger.info("tb appointment refresh completed in %2.4f" % time_taken)
-
+        logger.info("tb imaging refresh completed in %2.4f" % time_taken)
