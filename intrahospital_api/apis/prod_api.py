@@ -596,7 +596,8 @@ class ProdApi(base_api.BaseApi):
 
     @timing
     @db_retry
-    def pathology_demographics(self, hospital_number):
+    def pathology_demographics(self, hn):
+        hospital_number = hn
         rows = list(self.execute_trust_query(
             self.pathology_demographics_query,
             params=dict(hospital_number=hospital_number)
@@ -620,6 +621,10 @@ class ProdApi(base_api.BaseApi):
             ))
             if not len(rows):
                 return
+            # If we've stripped off the leading 0, restore it.
+            if not hn == hospital_number:
+                for row in rows:
+                    row["Patient_Number"] = hn
         return PathologyRow(rows[0]).get_demographics_dict()
 
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
