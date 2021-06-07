@@ -136,8 +136,9 @@ def update_patient_information(patient):
     Updates a patient with the upstream demographics, if they have changed.
     """
     demographics = patient.demographics_set.all()[0]
+    hospital_number = demographics.hospital_number
 
-    if not demographics.hospital_number:
+    if not hospital_number:
         msg = " ".join([
             f"Patient {patient.id} has not hospital number",
             "skipping update information"
@@ -146,8 +147,17 @@ def update_patient_information(patient):
         return
 
     upstream_patient_information = api.patient_masterfile(
-        demographics.hospital_number
+        hospital_number
     )
+
+    if upstream_patient_information is None:
+        # If the hn begins with leading 0(s)
+        # the data is sometimes empty in the CRS_* fields.
+        # So if we cannot find rows with 0 prefixes
+        # remove the prefix
+        upstream_patient_information = api.patient_masterfile(
+            hospital_number.lstrip("0")
+        )
 
     # this should never really happen but has..
     # It happens in the case of a patient who has previously
@@ -164,6 +174,9 @@ def update_patient_information(patient):
     upstream_demographics_dict = upstream_patient_information[
         models.Demographics.get_api_name()
     ]
+    # If we have stripped off the 0 make sure we don't
+    # overwrite the demographics.hospital number
+    upstream_demographics_dict["hospital_number"] = hospital_number
 
     upstream_gp_details = upstream_patient_information[
         models.GPDetails.get_api_name()
