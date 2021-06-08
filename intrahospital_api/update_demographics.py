@@ -130,6 +130,19 @@ def has_information_changed(
     return False
 
 
+def update_if_changed(instance, update_dict):
+    changed = False
+    for field, val in update_dict.items():
+        old_val = getattr(instance, field)
+        if not old_val == val:
+            changed = True
+            setattr(instance, field, val)
+    if changed:
+        instance.updated_by = api.user
+        instance.updated = timezone.now()
+        instance.save()
+
+
 def update_patient_from_upstream_dict(patient, upstream_patient_information):
     demographics = patient.demographics_set.all()[0]
     upstream_demographics_dict = upstream_patient_information[
@@ -172,24 +185,10 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
         demographics.update_from_dict(
             upstream_demographics_dict, api.user, force=True
         )
-        for field, value in upstream_gp_details.items():
-            setattr(gp_details, field, value)
-            gp_details.updated_by = api.user
-            gp_details.save()
-
-        for field, value in upstream_contact_information.items():
-            setattr(contact_information, field, value)
-            contact_information.updated_by = api.user
-            contact_information.save()
-
-        for field, value in upstream_next_of_kin_details.items():
-            setattr(next_of_kin_details, field, value)
-            next_of_kin_details.updated_by = api.user
-            next_of_kin_details.save()
-
-        for field, value in upstream_master_file.items():
-            setattr(master_file_meta, field, value)
-            master_file_meta.save()
+        update_if_changed(gp_details, upstream_gp_details)
+        update_if_changed(contact_information, upstream_contact_information)
+        update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
+        update_if_changed(master_file_meta, upstream_master_file)
         logger.info(
             "Patient info for {} is updated".format(
                 patient.id
