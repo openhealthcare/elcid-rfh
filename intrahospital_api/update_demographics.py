@@ -2,7 +2,7 @@
 Handles updating demographics pulled in by the loader
 """
 import traceback
-
+from collections import defaultdict
 from django.db import transaction
 from django.utils import timezone
 from opal.models import Patient
@@ -144,6 +144,7 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
     upstream_contact_information = upstream_patient_information[
         models.ContactInformation.get_api_name()
     ]
+
     contact_information = patient.contactinformation_set.all()[0]
 
     upstream_next_of_kin_details = upstream_patient_information[
@@ -154,9 +155,13 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
     upstream_master_file = upstream_patient_information[
         models.MasterFileMeta.get_api_name()
     ]
-    master_file_meta, _ = models.MasterFileMeta.objects.get_or_create(
-        patient=patient
-    )
+
+    master_file_metas = models.MasterFileMeta.objects.all()
+
+    if master_file_metas:
+        master_file_meta = master_file_metas[0]
+    else:
+        master_file_meta = models.MasterFileMeta(patient=patient)
 
     if has_information_changed(
         upstream_patient_information[models.MasterFileMeta.get_api_name()],
@@ -226,7 +231,7 @@ def update_patient_information(patient):
         # If we have stripped off the 0 make sure we don't
         # overwrite the demographics.hospital number
         upstream_demographics_dict = upstream_patient_information[
-            "upstream_demographics_dict"
+            models.Demographics.get_api_name()
         ]
         upstream_demographics_dict["hospital_number"] = hospital_number
 
@@ -260,6 +265,40 @@ def update_all_patient_information():
             logger.error(msg.format(traceback.format_exc()))
 
 
+def get_patients_from_master_file_rows(rows):
+    hns = []
+    for row in rows:
+        hn = row["demographics"]["hospital_number"]
+        if hn:
+            hns.append(hn)
+
+    patients = Patient.objects.filter(
+        demographics__hospital_number__in=hn
+    ).prefetch_related(
+        'demographics_set',
+        'gpdetails_set',
+        'contactinformation_set',
+        'nextofkindetails_set',
+        'masterfilemeta_set'
+    )
+    hn_to_patients = defaultdict(list)
+    for patient in patients:
+        hn_to_patients[patient.demographics_set.all()[0].hospital_number].append(
+            patient
+        )
+
+    for hn in hns:
+        hn = row["demographics"]["hospital_number"]
+        if len(hn) < 7:
+            for i in range(1, 3):
+                new_hn = hn.zfill(i)
+                patients = Patient.objects.filter(
+                    demographics__hospital_number=new_hn
+                )
+                hn_to_patients[hn].extend(list(patients))
+    return hn_to_patients
+
+
 @transaction.atomic
 def update_patient_information_since(last_updated):
     # before update instrumentation
@@ -278,23 +317,10 @@ def update_patient_information_since(last_updated):
     number_of_rows = len(rows)
     number_of_patients_found = 0
     # update
+    hn_to_patients = get_patients_from_master_file_rows(rows)
     for row in rows:
-        hn = row["upstream_demographics_dict"]["hospital_number"]
-        patients = Patient.objects.filter(demographics__hospital_number=hn)
-        if not patients:
-            # short hospital numbers can be a sign that prefixed 0
-            # have been removed by an upstream system, in these cases
-            #
-            if len(hn) < 7:
-                for i in range(1, 3):
-                    new_hn = hn.zfill(i)
-                    patients = Patient.objects.filter(
-                        demographics__hospital_number=new_hn
-                    )
-                    if patients:
-                        break
-        if not patients:
-            continue
+        hn = row[models.Demographics.get_api_name()]["hospital_number"]
+        patients = hn_to_patients.get(hn, [])
         number_of_patients_found += 1
         for patient in patients:
             update_patient_from_upstream_dict(patient, row)
