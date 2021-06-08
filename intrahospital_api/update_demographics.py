@@ -131,52 +131,11 @@ def has_information_changed(
     return False
 
 
-def update_patient_information(patient):
-    """
-    Updates a patient with the upstream demographics, if they have changed.
-    """
+def update_patient_from_upstream_dict(patient, upstream_patient_information):
     demographics = patient.demographics_set.all()[0]
-    hospital_number = demographics.hospital_number
-
-    if not hospital_number:
-        msg = " ".join([
-            f"Patient {patient.id} has not hospital number",
-            "skipping update information"
-        ])
-        logger.info(msg)
-        return
-
-    upstream_patient_information = api.patient_masterfile(
-        hospital_number
-    )
-
-    if upstream_patient_information is None:
-        # If the hn begins with leading 0(s)
-        # the data is sometimes empty in the CRS_* fields.
-        # So if we cannot find rows with 0 prefixes
-        # remove the prefix
-        upstream_patient_information = api.patient_masterfile(
-            hospital_number.lstrip("0")
-        )
-
-    # this should never really happen but has..
-    # It happens in the case of a patient who has previously
-    # matched with WinPath but who's hospital_number has
-    # then been changed by the admin.
-    if upstream_patient_information is None:
-        logger.info(
-            "No patient info found for {} skipping update information".format(
-                patient.id
-            )
-        )
-        return
-
     upstream_demographics_dict = upstream_patient_information[
         models.Demographics.get_api_name()
     ]
-    # If we have stripped off the 0 make sure we don't
-    # overwrite the demographics.hospital number
-    upstream_demographics_dict["hospital_number"] = hospital_number
 
     upstream_gp_details = upstream_patient_information[
         models.GPDetails.get_api_name()
@@ -237,6 +196,54 @@ def update_patient_information(patient):
             )
         )
 
+
+def update_patient_information(patient):
+    """
+    Updates a patient with the upstream demographics, if they have changed.
+    """
+    demographics = patient.demographics_set.all()[0]
+    hospital_number = demographics.hospital_number
+
+    if not hospital_number:
+        msg = " ".join([
+            f"Patient {patient.id} has not hospital number",
+            "skipping update information"
+        ])
+        logger.info(msg)
+        return
+
+    upstream_patient_information = api.patient_masterfile(
+        hospital_number
+    )
+
+    if upstream_patient_information is None:
+        # If the hn begins with leading 0(s)
+        # the data is sometimes empty in the CRS_* fields.
+        # So if we cannot find rows with 0 prefixes
+        # remove the prefix
+        upstream_patient_information = api.patient_masterfile(
+            hospital_number.lstrip("0")
+        )
+        # If we have stripped off the 0 make sure we don't
+        # overwrite the demographics.hospital number
+        upstream_demographics_dict = upstream_patient_information[
+            "upstream_demographics_dict"
+        ]
+        upstream_demographics_dict["hospital_number"] = hospital_number
+
+    # this should never really happen but has..
+    # It happens in the case of a patient who has previously
+    # matched with WinPath but who's hospital_number has
+    # then been changed by the admin.
+    if upstream_patient_information is None:
+        logger.info(
+            "No patient info found for {} skipping update information".format(
+                patient.id
+            )
+        )
+        return
+
+    update_patient_from_upstream_dict(patient, upstream_patient_information)
 
 def update_all_patient_information():
     """
