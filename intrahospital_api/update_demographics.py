@@ -2,6 +2,7 @@
 Handles updating demographics pulled in by the loader
 """
 import traceback
+from time import time
 from collections import defaultdict
 from django.db import transaction
 from django.utils import timezone
@@ -131,6 +132,7 @@ def has_information_changed(
 
 
 def update_if_changed(instance, update_dict):
+    time_start = time()
     changed = False
     for field, val in update_dict.items():
         old_val = getattr(instance, field)
@@ -138,6 +140,8 @@ def update_if_changed(instance, update_dict):
             changed = True
             setattr(instance, field, val)
     if changed:
+        time_end = time()
+        logger.info(f"updated {instance.__class__.__name__} in {time_end-time_start}")
         instance.updated_by = api.user
         instance.updated = timezone.now()
         instance.save()
@@ -182,9 +186,7 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
     ):
         # we should never update the hospital_number
         upstream_demographics_dict["hospital_number"] = demographics.hospital_number
-        demographics.update_from_dict(
-            upstream_demographics_dict, api.user, force=True
-        )
+        update_if_changed(demographics, upstream_demographics_dict)
         update_if_changed(gp_details, upstream_gp_details)
         update_if_changed(contact_information, upstream_contact_information)
         update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
@@ -306,7 +308,7 @@ def get_patients_from_master_file_rows(rows):
 def update_patient_information_since(last_updated):
     # before update instrumentation
     from elcid.models import MasterFileMeta
-    from time import time
+
     before_patient_id_to_insert_date = dict(
         MasterFileMeta.objects.values_list("patient_id", "insert_date")
     )
