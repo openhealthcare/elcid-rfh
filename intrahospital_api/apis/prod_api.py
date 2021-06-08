@@ -134,9 +134,7 @@ class MainDemographicsRow(object):
         self.db_row = db_row
 
     def get_date_of_birth(self):
-        dob = self.db_row.get("DOB")
-        if dob:
-            return to_date_str(dob.date())
+        return self.db_row.get("DOB")
 
     def get_sex(self):
         sex_abbreviation = self.db_row.get("SEX")
