@@ -33,6 +33,12 @@ PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number
 PATIENT_MASTERFILE_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
 
+PATIENT_MASTER_FILE_SINCE_QUERY = """
+SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE
+last_updated > @last_updated OR
+insert_date > @last_update
+"""
+
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY date_inserted DESC;"
 
@@ -575,6 +581,40 @@ class ProdApi(base_api.BaseApi):
         if demographics_result:
             demographics_result["external_system"] = EXTERNAL_SYSTEM
             return demographics_result
+
+    @timing
+    def patient_masterfile_since(self, last_updated):
+        """
+        Returns the results in VIEW_CRS_Patient_Masterfile
+        since a certain datetime.
+
+        This
+        """
+        rows = list(self.execute_hospital_query(
+            PATIENT_MASTER_FILE_SINCE_QUERY, params={
+                "last_updated": last_updated
+            }
+        ))
+
+        def get_sort_order(row):
+            last_updated = row["LAST_UPDATED"]
+            insert_date = row["INSERT_DATE"]
+
+            if last_updated and insert_date:
+                return max(last_updated, insert_date)
+            return last_updated or insert_date
+        rows = sorted(rows, key=get_sort_order)
+        result = []
+        for row in rows:
+            demographics = MainDemographicsRow(row).get_demographics_dict()
+            result.append({
+                Demographics.get_api_name(): demographics,
+                ContactInformation.get_api_name(): get_contact_information(row),
+                NextOfKinDetails.get_api_name(): get_next_of_kin_details(row),
+                GPDetails.get_api_name(): get_gp_details(row),
+                MasterFileMeta.get_api_name(): get_master_file_meta(row),
+            })
+        return result
 
     @timing
     @db_retry
