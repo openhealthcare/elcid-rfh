@@ -167,6 +167,8 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
         upstream_patient_information[models.MasterFileMeta.get_api_name()],
         master_file_meta
     ):
+        # we should never update the hospital_number
+        upstream_demographics_dict["hospital_number"] = demographics.hospital_number
         demographics.update_from_dict(
             upstream_demographics_dict, api.user, force=True
         )
@@ -273,7 +275,7 @@ def get_patients_from_master_file_rows(rows):
             hns.append(hn)
 
     patients = Patient.objects.filter(
-        demographics__hospital_number__in=hn
+        demographics__hospital_number__in=hns
     ).prefetch_related(
         'demographics_set',
         'gpdetails_set',
