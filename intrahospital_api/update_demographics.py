@@ -268,6 +268,7 @@ def update_all_patient_information():
 
 
 def get_patients_from_master_file_rows(rows):
+    print('starting patient query')
     hns = []
     for row in rows:
         hn = row["demographics"]["hospital_number"]
@@ -298,6 +299,7 @@ def get_patients_from_master_file_rows(rows):
                     demographics__hospital_number=new_hn
                 )
                 hn_to_patients[hn].extend(list(patients))
+    print('ending patient query')
     return hn_to_patients
 
 
