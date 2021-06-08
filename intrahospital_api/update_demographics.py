@@ -65,7 +65,6 @@ def reconcile_all_demographics():
         reconcile_patient_demographics(patient)
 
 
-@transaction.atomic
 def reconcile_patient_demographics(patient):
     """ for a patient,
     """
@@ -245,6 +244,7 @@ def update_patient_information(patient):
 
     update_patient_from_upstream_dict(patient, upstream_patient_information)
 
+
 def update_all_patient_information():
     """
     Runs update_patient_information for all_patients.
@@ -258,3 +258,67 @@ def update_all_patient_information():
         except Exception:
             msg = 'Exception syncing upstream demographics \n {}'
             logger.error(msg.format(traceback.format_exc()))
+
+
+@transaction.atomic
+def update_patient_information_since(last_updated):
+    # before update instrumentation
+    from elcid.models import MasterFileMeta
+    from time import time
+    before_patient_id_to_insert_date = dict(
+        MasterFileMeta.objects.values_list("patient_id", "insert_date")
+    )
+    before_patient_id_to_last_updated = dict(
+        MasterFileMeta.objects.values_list("patient_id", "last_updated")
+    )
+    before_query = time()
+    # db query
+    rows = api.patient_masterfile_since(last_updated)
+    after_query = time()
+    number_of_rows = len(rows)
+    number_of_patients_found = 0
+    # update
+    for row in rows:
+        hn = row["upstream_demographics_dict"]["hospital_number"]
+        patients = Patient.objects.filter(demographics__hospital_number=hn)
+        if not patients:
+            # short hospital numbers can be a sign that prefixed 0
+            # have been removed by an upstream system, in these cases
+            #
+            if len(hn) < 7:
+                for i in range(1, 3):
+                    new_hn = hn.zfill(i)
+                    patients = Patient.objects.filter(
+                        demographics__hospital_number=new_hn
+                    )
+                    if patients:
+                        break
+        if not patients:
+            continue
+        number_of_patients_found += 1
+        for patient in patients:
+            update_patient_from_upstream_dict(patient, row)
+        # After update instrumentation
+        after_update = time()
+        after_patient_id_to_insert_date = dict(
+            MasterFileMeta.objects.values_list("patient_id", "insert_date")
+        )
+        after_patient_id_to_last_updated = dict(
+            MasterFileMeta.objects.values_list("patient_id", "last_updated")
+        )
+        updated_cnt = 0
+        for patient_id, after_insert_date in after_patient_id_to_insert_date.items():
+            after_last_updated = after_patient_id_to_last_updated[patient_id]
+            before_insert_date = before_patient_id_to_insert_date.get(patient_id)
+            before_last_updated = before_patient_id_to_last_updated.get(patient_id)
+
+            if not after_insert_date == before_insert_date:
+                updated_cnt += 1
+            elif not after_last_updated == before_last_updated:
+                updated_cnt += 1
+    print(f"query time {(after_query-before_query)/60}")
+    print(f"update time {(after_update-after_query)/60}")
+    print(f"row count {number_of_rows}")
+    print(f"patients found {number_of_patients_found}")
+    print(f"patients updated {updated_cnt}")
+    raise ValueError('roll back the transaction')
