@@ -36,7 +36,7 @@ PATIENT_MASTERFILE_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 PATIENT_MASTER_FILE_SINCE_QUERY = """
 SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE
 last_updated > @last_updated OR
-insert_date > @last_update
+insert_date > @last_updated
 """
 
 ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
