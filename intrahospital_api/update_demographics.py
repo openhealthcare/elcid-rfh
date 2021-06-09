@@ -186,7 +186,9 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
     ):
         # we should never update the hospital_number
         upstream_demographics_dict["hospital_number"] = demographics.hospital_number
-        update_if_changed(demographics, upstream_demographics_dict)
+        demographics.update_from_dict(
+            upstream_demographics_dict, api.user, force=True
+        )
         update_if_changed(gp_details, upstream_gp_details)
         update_if_changed(contact_information, upstream_contact_information)
         update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
