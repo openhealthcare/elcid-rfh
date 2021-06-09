@@ -240,8 +240,14 @@ class MDTList(LoginRequiredMixin, ListView):
                 if obs.observation_name == "TB: Culture Result":
                     if not obs.observation_value:
                         continue
+                    # Only include positive TB culture results
+                    if obs.observation_value.startswith(
+                        "TB: Culture Result: No growth"
+                    ):
+                        continue
                     if obs.observation_value == "AFB culture to follow.":
                         continue
+
                 result[obs.observation_name] = obs.observation_value
         return result
 
