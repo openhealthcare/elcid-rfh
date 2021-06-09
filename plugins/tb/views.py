@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
+from opal.models import Episode
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from plugins.labtests import models as labtest_models
@@ -384,6 +385,8 @@ class MDTList(LoginRequiredMixin, ListView):
     ]
     model = labtest_models.LabTest
     template_name = "tb/mdt_list.html"
+    BARNET = "Barnet"
+    RFH = "RFH"
 
     def get_queryset(self, *args, **kwargs):
         qs = super().get_queryset()
@@ -431,14 +434,8 @@ class MDTList(LoginRequiredMixin, ListView):
             results = self.get_observation_result(lab_test)
             if not results:
                 continue
-            location = ""
-            if "L" in lab_test.lab_number:
-                location = "RFH"
-            elif "K" in lab_test.lab_number:
-                location = "Barnet"
             patient_ids_to_lab_test_dict[lab_test.patient_id].append({
                 "site": self.get_site(lab_test),
-                "location": location,
                 "lab_number": lab_test.lab_number,
                 "ordered": lab_test.datetime_ordered.date(),
                 "results": results
@@ -450,11 +447,24 @@ class MDTList(LoginRequiredMixin, ListView):
             )
         return result
 
+    def get_patient_id_to_tb_episode(self, lab_tests):
+        patient_ids = set([i.patient_id for i in lab_tests])
+        episodes = Episode.objects.filter(
+            patient_id__in=patient_ids
+        ).filter(
+            category_name=episode_categories.TbEpisode.display_name
+        )
+        result = {}
+        for episode in episodes:
+            result[episode.patient_id] = episode
+        return result
+
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data()
         lab_tests = ctx["object_list"]
         patient_id_to_demographics = self.get_patient_id_to_demographics(lab_tests)
         patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(lab_tests)
+        patient_id_to_episode = self.get_patient_id_to_tb_episode(lab_tests)
 
         patient_id_lab_test_dicts = sorted(
             patient_id_to_lab_test_dicts.items(),
@@ -463,7 +473,17 @@ class MDTList(LoginRequiredMixin, ListView):
         )
         rows = []
         for patient_id, lab_test_dicts in patient_id_lab_test_dicts:
+            episode = patient_id_to_episode.get(patient_id)
+            # there should always be an episode but if there
+            # isn't let's just skip it for the time being
+            if not episode:
+                continue
             demographics = patient_id_to_demographics[patient_id]
-            rows.append((demographics, lab_test_dicts,))
-        ctx["rows"] = rows
+            rows.append((episode, demographics, lab_test_dicts,))
+        barnet_rows = [i for i in rows if "K" in i[2][0]["lab_number"]]
+        rfh_rows = [i for i in rows if "L" in i[2][0]["lab_number"]]
+        ctx["location_to_rows"] = {
+            "RFH": rfh_rows,
+            "Barnet": barnet_rows
+        }
         return ctx
