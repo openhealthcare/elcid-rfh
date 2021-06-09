@@ -117,8 +117,6 @@ def has_information_changed(
     if not upstream_last_updated:
         upstream_last_updated = upstream_meta["insert_date"]
 
-    upstream_last_updated = upstream_last_updated
-
     our_last_updated = our_meta.last_updated
     if not our_last_updated:
         our_last_updated = our_meta.insert_date
