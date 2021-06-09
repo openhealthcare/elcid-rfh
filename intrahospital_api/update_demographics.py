@@ -173,7 +173,7 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
         models.MasterFileMeta.get_api_name()
     ]
 
-    master_file_metas = models.MasterFileMeta.objects.all()
+    master_file_metas = patient.masterfilemeta_set.all()
 
     if master_file_metas:
         master_file_meta = master_file_metas[0]
