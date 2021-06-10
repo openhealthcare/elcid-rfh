@@ -15,12 +15,17 @@ class Command(BaseCommand):
         two_days_ago = timezone.now() - datetime.timedelta(2)
         time_start = time.time()
         try:
-            loader.load_imaging_since(two_days_ago)
+            created = loader.load_imaging_since(two_days_ago)
             time_end = time.time()
             Fact.objects.create(
                 when=timezone.now(),
                 label=constants.IMAGING_LOAD_TIME_FACT,
                 value_int=(time_end-time_start)/60
+            )
+            Fact.objects.create(
+                when=timezone.now(),
+                label=constants.IMAGING_LOAD_COUNT_FACT,
+                value_int=len(created)
             )
         except Exception:
             msg = "Failed to load imaging"
