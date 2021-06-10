@@ -1,19 +1,16 @@
 """
 Load imaging data from upstream
 """
-import datetime
-from sys import hash_info
 import time
-
 from django.db import transaction
 from elcid.models import Demographics
 from django.db.models import DateTimeField
 from django.utils import timezone
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-
+from plugins.monitoring.models import Fact
 from plugins.imaging.models import Imaging, PatientImagingStatus
-from plugins.imaging import logger
+from plugins.imaging import logger, constants
 
 
 Q_GET_IMAGING = """
@@ -113,6 +110,11 @@ def load_imaging_since(last_updated):
     Imaging.objects.bulk_create(new_imaging)
     load_end = time.time()
     logger.info(f'created {len(new_imaging)} in {load_end - query_end}')
+    Fact.objects.create(
+        when=timezone.now(),
+        label=constants.IMAGING_LOAD_COUNT_FACT,
+        value_int=len(new_imaging)
+    )
     PatientImagingStatus.objects.filter(
         patient_id__in=[i.patient_id for i in demographics]
     ).update(
