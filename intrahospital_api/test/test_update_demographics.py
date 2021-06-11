@@ -1,9 +1,105 @@
 from unittest import mock
 import datetime
+from opal.core.test import OpalTestCase
 from django.utils import timezone
+from elcid.models import Demographics
 from intrahospital_api.test.test_loader import ApiTestCase
 from intrahospital_api import update_demographics
 from intrahospital_api.constants import EXTERNAL_SYSTEM
+
+
+class UpdateIfChangedTestCase(OpalTestCase):
+    def setUp(self):
+        patient, _ = self.new_patient_and_episode_please()
+        self.demographics = patient.demographics()
+        self.update_dict = {}
+
+    def test_update_date(self):
+        self.update_dict["date_of_birth"] = datetime.date(
+            2001, 1, 1
+        )
+        self.demographics.date_of_birth = datetime.date(
+            2001, 1, 2
+        )
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.date_of_birth, self.update_dict["date_of_birth"]
+        )
+        self.assertTrue(
+            bool(demo.updated)
+        )
+
+    def test_not_update_date(self):
+        self.update_dict["date_of_birth"] = datetime.date(
+            2001, 1, 1
+        )
+        self.demographics.date_of_birth = datetime.date(
+            2001, 1, 1
+        )
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.date_of_birth, self.update_dict["date_of_birth"]
+        )
+        self.assertFalse(
+            bool(demo.updated)
+        )
+
+    def test_update_fk_or_ft(self):
+        self.update_dict["title"] = "M"
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.title, "M"
+        )
+
+    def test_update_string(self):
+        self.update_dict["first_name"] = "sandra"
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.first_name, "sandra"
+        )
+
+    def test_not_update_string_on_case_difference(self):
+        self.update_dict["first_name"] = "Sandra"
+        self.demographics.first_name = "sandra"
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.first_name, "sandra"
+        )
+        self.assertFalse(
+            bool(demo.updated)
+        )
+
+    def test_not_update_none_empty_string(self):
+        self.update_dict["nhs_number"] = ""
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertIsNone(demo.nhs_number)
 
 
 class HaveInformationChangedTestCase(ApiTestCase):
