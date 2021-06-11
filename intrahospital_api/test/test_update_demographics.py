@@ -8,34 +8,39 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 class HaveInformationChangedTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
-        patient, _ = self.new_patient_and_episode_please()
-        self.meta = patient.masterfilemeta_set.create()
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.meta = self.patient.masterfilemeta_set.create()
         self.upstream_meta = {}
+        self.upstream_patient_information = {
+            self.meta.__class__.get_api_name(): self.upstream_meta
+        }
         super().setUp(*args, **kwargs)
 
     def test_true(self):
-        self.meta.insert_date = datetime.datetime(
+        self.meta.insert_date = timezone.make_aware(datetime.datetime(
             2019, 1, 1
-        )
-        self.upstream_meta["last_updated"] = datetime.datetime(
+        ))
+        self.meta.save()
+        self.upstream_meta["last_updated"] = timezone.make_aware(datetime.datetime(
             2019, 1, 2
-        )
+        ))
         self.assertTrue(
             update_demographics.has_information_changed(
-                self.upstream_meta, self.meta
+                self.patient, self.upstream_patient_information
             )
         )
 
     def test_false(self):
-        self.meta.insert_date = datetime.datetime(
+        self.meta.insert_date = timezone.make_aware(datetime.datetime(
             2019, 1, 3
-        )
-        self.upstream_meta["last_updated"] = datetime.datetime(
+        ))
+        self.meta.save()
+        self.upstream_meta["last_updated"] = timezone.make_aware(datetime.datetime(
             2019, 1, 2
-        )
+        ))
         self.assertFalse(
             update_demographics.has_information_changed(
-                self.upstream_meta, self.meta
+                self.patient, self.upstream_patient_information
             )
         )
 

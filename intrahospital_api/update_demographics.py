@@ -109,7 +109,7 @@ def is_reconcilable(patient, external_demographics_dict):
 
 
 def has_information_changed(
-    upstream_meta, our_meta
+    patient, upstream_patient_information
 ):
     """
     Checks the inserted/last updated timestamp to see whether
@@ -117,6 +117,13 @@ def has_information_changed(
     """
     # this may not be necessary the fields may always be
     # populated, but lets be safe
+    master_file_metas = patient.masterfilemeta_set.all()
+
+    if not master_file_metas:
+        return True
+    our_meta = master_file_metas[0]
+    upstream_meta = upstream_patient_information[models.MasterFileMeta.get_api_name()]
+
     upstream_last_updated = upstream_meta["last_updated"]
     if not upstream_last_updated:
         upstream_last_updated = upstream_meta["insert_date"]
@@ -177,7 +184,14 @@ def update_if_changed(instance, update_dict):
     return False
 
 
-def update_patient_from_upstream_dict(patient, upstream_patient_information):
+def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
+    """
+    Updates a patient's:
+     * demographics,
+     * gp details
+     * contact details
+     * next of kind details
+    """
     demographics = patient.demographics_set.all()[0]
     upstream_demographics_dict = upstream_patient_information[
         models.Demographics.get_api_name()
@@ -198,37 +212,13 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
         models.NextOfKinDetails.get_api_name()
     ]
     next_of_kin_details = patient.nextofkindetails_set.all()[0]
-
-    master_file_metas = patient.masterfilemeta_set.all()
-
-    if master_file_metas:
-        master_file_meta = master_file_metas[0]
-    else:
-        master_file_meta = models.MasterFileMeta(patient=patient)
-
-    if has_information_changed(
-        upstream_patient_information[models.MasterFileMeta.get_api_name()],
-        master_file_meta
-    ):
-        # we should never update the hospital_number
-        upstream_demographics_dict["hospital_number"] = demographics.hospital_number
-        update_if_changed(demographics, upstream_demographics_dict)
-        update_if_changed(gp_details, upstream_gp_details)
-        update_if_changed(contact_information, upstream_contact_information)
-        update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
-        logger.info(
-            "Patient info for {} is updated".format(
-                patient.id
-            )
-        )
-        return True
-    else:
-        logger.info(
-            "Patient info for {} is unchanged".format(
-                patient.id
-            )
-        )
-        return False
+    # we should never update the hospital_number
+    upstream_demographics_dict["hospital_number"] = demographics.hospital_number
+    update_if_changed(demographics, upstream_demographics_dict)
+    update_if_changed(gp_details, upstream_gp_details)
+    update_if_changed(contact_information, upstream_contact_information)
+    update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
+    return False
 
 
 def update_patient_information(patient):
@@ -258,12 +248,13 @@ def update_patient_information(patient):
         upstream_patient_information = api.patient_masterfile(
             hospital_number.lstrip("0")
         )
-        # If we have stripped off the 0 make sure we don't
-        # overwrite the demographics.hospital number
-        upstream_demographics_dict = upstream_patient_information[
-            models.Demographics.get_api_name()
-        ]
-        upstream_demographics_dict["hospital_number"] = hospital_number
+        if upstream_patient_information:
+            # If we have stripped off the 0 make sure we don't
+            # overwrite the demographics.hospital number
+            upstream_demographics_dict = upstream_patient_information[
+                models.Demographics.get_api_name()
+            ]
+            upstream_demographics_dict["hospital_number"] = hospital_number
 
     # this should never really happen but has..
     # It happens in the case of a patient who has previously
@@ -276,8 +267,18 @@ def update_patient_information(patient):
             )
         )
         return
-
-    update_patient_from_upstream_dict(patient, upstream_patient_information)
+    if not has_information_changed(patient, upstream_patient_information):
+        return
+    update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information)
+    master_file_dict = upstream_patient_information[models.MasterFileMeta.get_api_name()]
+    master_file_metas = patient.masterfilemeta_set.all()
+    if master_file_metas:
+        master_file_meta = master_file_metas[0]
+    else:
+        master_file_meta = models.MasterFileMeta(patient=patient)
+    for key, value in master_file_dict.items():
+        setattr(master_file_meta, key, value)
+    master_file_meta.save()
 
 
 def update_all_patient_information():
@@ -296,6 +297,16 @@ def update_all_patient_information():
 
 
 def get_patients_from_master_file_rows(rows):
+    """
+    Returns all patients declared by the
+    list of upstream dicts.
+
+    This prefetches the things that we will then need.
+
+    It also queries multiple times for small hns
+    to handle the fact that on some occastion
+    0 prefixes on hns are stripped off.
+    """
     logger.info('starting patient query')
     hns = []
     for row in rows:
@@ -333,6 +344,10 @@ def get_patients_from_master_file_rows(rows):
 
 @transaction.atomic
 def update_patient_information_since(last_updated):
+    """
+    Updates all patient data that has changed since
+    the datetime last_updated.
+    """
     new_master_files = []
     before_query = time()
     # db query
@@ -347,8 +362,8 @@ def update_patient_information_since(last_updated):
         patients = hn_to_patients.get(hn, [])
         number_of_patients_found += 1
         for patient in patients:
-            changed = update_patient_from_upstream_dict(patient, row)
-            if changed:
+            if has_information_changed(patient, row):
+                update_patient_subrecords_from_upstream_dict(patient, row)
                 master_file = models.MasterFileMeta(patient=patient)
                 for k, v in row[models.MasterFileMeta.get_api_name()].items():
                     setattr(master_file, k, v)
