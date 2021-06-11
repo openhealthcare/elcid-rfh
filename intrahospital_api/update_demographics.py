@@ -296,7 +296,7 @@ def update_all_patient_information():
 
 
 def get_patients_from_master_file_rows(rows):
-    print('starting patient query')
+    logger.info('starting patient query')
     hns = []
     for row in rows:
         hn = row["demographics"]["hospital_number"]
@@ -327,7 +327,7 @@ def get_patients_from_master_file_rows(rows):
                     demographics__hospital_number=new_hn
                 )
                 hn_to_patients[hn].extend(list(patients))
-    print('ending patient query')
+    logger.info('ending patient query')
     return hn_to_patients
 
 
@@ -361,9 +361,8 @@ def update_patient_information_since(last_updated):
     ).delete()
     models.MasterFileMeta.objects.bulk_create(new_master_files)
     after_update = time()
-    print(f"query time {(after_query-before_query)/60}")
-    print(f"update time {(after_update-after_query)/60}")
-    print(f"row count {number_of_rows}")
-    print(f"patients found {number_of_patients_found}")
-    print(f"patients updated {len(new_master_files)}")
-    raise ValueError('roll back the transaction')
+    logger.info(f"query time {(after_query-before_query)/60}")
+    logger.info(f"update time {(after_update-after_query)/60}")
+    logger.info(f"row count {number_of_rows}")
+    logger.info(f"patients found {number_of_patients_found}")
+    logger.info(f"patients updated {len(new_master_files)}")
