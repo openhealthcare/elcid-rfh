@@ -141,6 +141,16 @@ def has_information_changed(
 
 
 def update_if_changed(instance, update_dict):
+    """
+    Takes in an instanct and an update dict.
+
+    Handle date/datetime conversion.
+
+    Check to see if any of the fields have changed
+    ignoring case.
+
+    If a field has changed update it and save the instance.
+    """
     time_start = time()
     changed = False
     for field, new_val in update_dict.items():
