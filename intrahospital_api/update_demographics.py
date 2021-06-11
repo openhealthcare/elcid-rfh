@@ -173,6 +173,8 @@ def update_if_changed(instance, update_dict):
         instance.updated_by = api.user
         instance.updated = timezone.now()
         instance.save()
+        return True
+    return False
 
 
 def update_patient_from_upstream_dict(patient, upstream_patient_information):
@@ -197,10 +199,6 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
     ]
     next_of_kin_details = patient.nextofkindetails_set.all()[0]
 
-    upstream_master_file = upstream_patient_information[
-        models.MasterFileMeta.get_api_name()
-    ]
-
     master_file_metas = patient.masterfilemeta_set.all()
 
     if master_file_metas:
@@ -218,18 +216,19 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
         update_if_changed(gp_details, upstream_gp_details)
         update_if_changed(contact_information, upstream_contact_information)
         update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
-        update_if_changed(master_file_meta, upstream_master_file)
         logger.info(
             "Patient info for {} is updated".format(
                 patient.id
             )
         )
+        return True
     else:
         logger.info(
             "Patient info for {} is unchanged".format(
                 patient.id
             )
         )
+        return False
 
 
 def update_patient_information(patient):
@@ -334,15 +333,7 @@ def get_patients_from_master_file_rows(rows):
 
 @transaction.atomic
 def update_patient_information_since(last_updated):
-    # before update instrumentation
-    from elcid.models import MasterFileMeta
-
-    before_patient_id_to_insert_date = dict(
-        MasterFileMeta.objects.values_list("patient_id", "insert_date")
-    )
-    before_patient_id_to_last_updated = dict(
-        MasterFileMeta.objects.values_list("patient_id", "last_updated")
-    )
+    new_master_files = []
     before_query = time()
     # db query
     rows = api.patient_masterfile_since(last_updated)
@@ -356,28 +347,23 @@ def update_patient_information_since(last_updated):
         patients = hn_to_patients.get(hn, [])
         number_of_patients_found += 1
         for patient in patients:
-            update_patient_from_upstream_dict(patient, row)
-        # After update instrumentation
-        after_update = time()
-        after_patient_id_to_insert_date = dict(
-            MasterFileMeta.objects.values_list("patient_id", "insert_date")
-        )
-        after_patient_id_to_last_updated = dict(
-            MasterFileMeta.objects.values_list("patient_id", "last_updated")
-        )
-        updated_cnt = 0
-        for patient_id, after_insert_date in after_patient_id_to_insert_date.items():
-            after_last_updated = after_patient_id_to_last_updated[patient_id]
-            before_insert_date = before_patient_id_to_insert_date.get(patient_id)
-            before_last_updated = before_patient_id_to_last_updated.get(patient_id)
-
-            if not after_insert_date == before_insert_date:
-                updated_cnt += 1
-            elif not after_last_updated == before_last_updated:
-                updated_cnt += 1
+            changed = update_patient_from_upstream_dict(patient, row)
+            if changed:
+                master_file = models.MasterFileMeta(patient=patient)
+                for k, v in row[models.MasterFileMeta.get_api_name()].items():
+                    setattr(master_file, k, v)
+                new_master_files.append(master_file)
+    # By definition if the information has changed the master file needs
+    # to be updated, as this happens thousands of times, the
+    # fastest way is to delete the existing master file and bulk create
+    models.MasterFileMeta.objects.filter(
+        patient__in=[i.patient for i in new_master_files]
+    ).delete()
+    models.MasterFileMeta.objects.bulk_create(new_master_files)
+    after_update = time()
     print(f"query time {(after_query-before_query)/60}")
     print(f"update time {(after_update-after_query)/60}")
     print(f"row count {number_of_rows}")
     print(f"patients found {number_of_patients_found}")
-    print(f"patients updated {updated_cnt}")
+    print(f"patients updated {len(new_master_files)}")
     raise ValueError('roll back the transaction')
