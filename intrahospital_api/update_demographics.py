@@ -4,10 +4,14 @@ Handles updating demographics pulled in by the loader
 import traceback
 from time import time
 from collections import defaultdict
+from opal.core.fields import ForeignKeyOrFreeText
 from django.db import transaction
+from django.db.models import DateTimeField, DateField
 from django.utils import timezone
 from opal.models import Patient
-from opal.core.serialization import deserialize_date
+from opal.core.serialization import (
+    deserialize_date, deserialize_datetime
+)
 
 from intrahospital_api import logger
 from intrahospital_api import get_api
@@ -132,11 +136,37 @@ def has_information_changed(
 def update_if_changed(instance, update_dict):
     time_start = time()
     changed = False
-    for field, val in update_dict.items():
+    for field, new_val in update_dict.items():
         old_val = getattr(instance, field)
-        if not old_val == val:
+        if old_val == new_val:
+            continue
+        if old_val == "" and new_val is None:
+            continue
+        if new_val == "" and old_val is None:
+            continue
+
+        cls = instance.__class__
+        if not isinstance(getattr(cls, field), ForeignKeyOrFreeText):
+            field_type = cls._meta.get_field(field)
+            # note Datetime fields are inherited from DateField
+            # so its important that this is this way around
+            if isinstance(field_type, DateTimeField):
+                new_val = deserialize_datetime(new_val)
+                if new_val and not timezone.is_aware(new_val):
+                    new_val = timezone.make_aware(new_val)
+            elif isinstance(field_type, DateField):
+                new_val = deserialize_date(new_val)
+        if isinstance(old_val, str) and isinstance(new_val, str):
+            if not old_val.upper() == new_val.upper():
+                changed = True
+        elif not old_val == new_val:
             changed = True
-            setattr(instance, field, val)
+
+        if changed:
+            logger.info(
+                f"for {instance} {field} has changed was {old_val} now {new_val}"
+            )
+            setattr(instance, field, new_val)
     if changed:
         time_end = time()
         logger.info(f"updated {instance.__class__.__name__} in {time_end-time_start}")
@@ -184,9 +214,7 @@ def update_patient_from_upstream_dict(patient, upstream_patient_information):
     ):
         # we should never update the hospital_number
         upstream_demographics_dict["hospital_number"] = demographics.hospital_number
-        demographics.update_from_dict(
-            upstream_demographics_dict, api.user, force=True
-        )
+        update_if_changed(demographics, upstream_demographics_dict)
         update_if_changed(gp_details, upstream_gp_details)
         update_if_changed(contact_information, upstream_contact_information)
         update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
