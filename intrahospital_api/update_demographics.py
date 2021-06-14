@@ -259,13 +259,6 @@ def update_patient_information(patient):
         upstream_patient_information = api.patient_masterfile(
             hospital_number.lstrip("0")
         )
-        if upstream_patient_information:
-            # If we have stripped off the 0 make sure we don't
-            # overwrite the demographics.hospital number
-            upstream_demographics_dict = upstream_patient_information[
-                models.Demographics.get_api_name()
-            ]
-            upstream_demographics_dict["hospital_number"] = hospital_number
 
     # this should never really happen but has..
     # It happens in the case of a patient who has previously
