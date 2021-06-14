@@ -587,23 +587,12 @@ class ProdApi(base_api.BaseApi):
         """
         Returns the results in VIEW_CRS_Patient_Masterfile
         since a certain datetime.
-
-        This
         """
         rows = list(self.execute_hospital_query(
             PATIENT_MASTER_FILE_SINCE_QUERY, params={
                 "last_updated": last_updated
             }
         ))
-
-        def get_sort_order(row):
-            last_updated = row["LAST_UPDATED"]
-            insert_date = row["INSERT_DATE"]
-
-            if last_updated and insert_date:
-                return max(last_updated, insert_date)
-            return last_updated or insert_date
-        rows = sorted(rows, key=get_sort_order)
         result = []
         for row in rows:
             demographics = MainDemographicsRow(row).get_demographics_dict()
