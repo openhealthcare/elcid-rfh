@@ -99,6 +99,11 @@ class FollowUp(AbstractLetterView):
         return ctx
 
 
+class NurseLetter(AbstractLetterView):
+    template_name = "tb/letters/nurse_letter.html"
+    model = PatientConsultation
+
+
 class AbstractModalView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
@@ -299,4 +304,3 @@ class MDTList(LoginRequiredMixin, ListView):
             rows.append((demographics, lab_test_dicts,))
         ctx["rows"] = rows
         return ctx
-

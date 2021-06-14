@@ -107,10 +107,15 @@
                         </a>
                       </div>
                       <div ng-show="item.reason_for_interaction.indexOf('follow up') != -1" class="col-md-12">
-                          <a target="_blank" href="/letters/#/tb/followup_assessment/[[ item.id ]]/">
-                            <i class="fa fa-envelope edit pull-right pointer"></i>
-                          </a>
-                        </div>
+                        <a target="_blank" href="/letters/#/tb/followup_assessment/[[ item.id ]]/">
+                          <i class="fa fa-envelope edit pull-right pointer"></i>
+                        </a>
+                      </div>
+                      <div ng-show="item.reason_for_interaction.indexOf('Nurse') != -1" class="col-md-12">
+                        <a target="_blank" href="/letters/#/tb/nurse_letter/[[ item.id ]]/">
+                          <i class="fa fa-envelope edit pull-right pointer"></i>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>

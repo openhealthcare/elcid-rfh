@@ -19,6 +19,10 @@ urlpatterns = [
         views.FollowUp.as_view()
     ),
     url(
+        r'^tb/nurse_letter/(?P<pk>\d+)/?$',
+        views.NurseLetter.as_view()
+    ),
+    url(
         r'^tb/primary_diagnosis/$',
         views.PrimaryDiagnosisModal.as_view(),
         name="primary_diagnosis_modal"
