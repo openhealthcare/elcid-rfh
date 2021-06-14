@@ -108,7 +108,7 @@ def is_reconcilable(patient, external_demographics_dict):
     ).exists()
 
 
-def has_information_changed(
+def has_master_file_timestamp_changed(
     patient, upstream_patient_information
 ):
     """
@@ -277,7 +277,7 @@ def update_patient_information(patient):
             )
         )
         return
-    if not has_information_changed(patient, upstream_patient_information):
+    if not has_master_file_timestamp_changed(patient, upstream_patient_information):
         return
     update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information)
     master_file_dict = upstream_patient_information[models.MasterFileMeta.get_api_name()]
@@ -372,7 +372,7 @@ def update_patient_information_since(last_updated):
         patients = hn_to_patients.get(hn, [])
         number_of_patients_found += 1
         for patient in patients:
-            if has_information_changed(patient, row):
+            if has_master_file_timestamp_changed(patient, row):
                 update_patient_subrecords_from_upstream_dict(patient, row)
                 master_file = models.MasterFileMeta(patient=patient)
                 for k, v in row[models.MasterFileMeta.get_api_name()].items():
