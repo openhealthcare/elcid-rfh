@@ -15,14 +15,40 @@
     </div>
   </div>
 </div>
+
+{# We don't use <br> tags as they copy and paste strangely #}
 <div class="row content-offset">
   <div class="text-right col-md-12">
-    TB Nursing Service <br>
-    The Grove Centre <br>
-    Ground Floor <br>
+    TB Nursing Service
+  </div>
+</div>
+<div class="row ">
+  <div class="text-right col-md-12">
+    The Grove Centre
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    Ground Floor
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
     Royal Free Hospital <br>
-    Pond Street <br>
-    London <br>
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    Pond Street
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    London
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
     NW3 2QG
   </div>
 </div>
@@ -33,28 +59,22 @@
 </div>
 <div class="row content-offset-20">
   <div class="col-md-12 text-right">
-    Tel 020 7472 6816<br>
-    Fax 020 7317 7808<br>
+    Tel 020 7472 6816
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 text-right">
+    Fax 020 7317 7808
   </div>
 </div>
 <div class="row content-offset">
-  <div class="col-md-3 col-md-offset-9">
-    <div class="row">
-      <div class="col-md-4">
-        Date:
-      </div>
-      <div class="col-md-8 text-right">
-        {% now "SHORT_DATE_FORMAT" %}
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-4">
-        MRN:
-      </div>
-      <div class="col-md-8 text-right">
-        {{ object.episode.patient.demographics.hospital_number }}
-      </div>
-    </div>
+  <div class="col-md-12 text-right">
+    Date: &nbsp; {% now "j M Y" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 text-right">
+    MRN: &nbsp; {{ object.episode.patient.demographics.hospital_number }}
   </div>
 </div>
 <div class="row content-offset-20">
@@ -82,61 +102,81 @@
 <table class="content-offset-20 table table-bordered">
   <tr>
     <td>
-      <strong>Diagnosis: &nbsp; </strong>
+      <div>
+        <strong>Diagnosis:</strong>
+      </div>
       {{ diagnosis.condition }}
     </td>
     <td>
-      <strong>Treatment commenced: &nbsp; </strong>
+      <div>
+        <strong>Treatment commenced:</strong>
+      </div>
         {{ treatment_commenced }}
     </td>
   </tr>
   <tr>
     <td>
-      <strong>Current medication: &nbsp; </strong>
+      <div>
+        <strong>Current medication:</strong>
+      </div>
       {{ current_treatments }}
     </td>
     <td>
-      <strong>Allergies/Adverse reactions: &nbsp;</strong>
+      <div>
+        <strong>Allergies/Adverse reactions:</strong>
+      </div>
         {{ adverse_reaction|linebreaks }}
     </td>
   </tr>
   <tr>
     <td>
-      <strong>Sensitivities:  </strong>&nbsp;
+      <div>
+        <strong>Sensitivities:</strong>;
+      </div>
     </td>
     <td>
-      <strong> Latest bloods: </strong>  &nbsp;
+      <div>
+        <strong>Latest bloods:</strong>
+      </div>
       {{ culture_result }}
     </td>
   </tr>
   <tr>
     <td>
-      <strong>
-        Recent sputum sample results:  &nbsp;
-        {{ smear_test }}
-      </strong>
+      <div>
+        <strong>Recent sputum sample results:</strong>
+      </div>
+        {{ smear_result }}
     </td>
     <td>
-      <strong>Medication supply: </strong>  &nbsp;
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <strong>Follow-up appointment:<strong>  &nbsp;
-    </td>
-    <td>
-      <strong>Clinic Observation:</strong> &nbsp;
+      <div>
+        <strong>Medication supply:</strong>
+      </div>
     </td>
   </tr>
   <tr>
     <td>
-      <strong>Compliance:</strong> &nbsp;
+      <div>
+        <strong>Follow-up appointment:</strong>
+      </div>
+    </td>
+    <td>
+      <div>
+        <strong>Clinic Observation:</strong>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div>
+        <strong>Compliance:</strong> &nbsp;
+      </div>
     </td>
     <td>
     </td>
   </tr>
 </table>
-<div class="row content-offset-below-20">
+<div class="row content-offset-below-20 content-offset-20">
   <div class="col-md-12">
     <strong>Progress</strong>
   </div>
@@ -144,7 +184,7 @@
 <div class="row content-offset-below">
   <div class="col-md-12">
     Yours sincerely <br>
-    [[ initials ]]
+    {{ object.initials }}
   </div>
 </div>
 {% endblock %}

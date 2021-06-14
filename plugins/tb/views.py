@@ -13,7 +13,7 @@ from plugins.appointments.models import Appointment
 from plugins.labtests import models as labtest_models
 
 from plugins.tb import episode_categories, constants
-from plugins.tb import models
+from plugins.tb import models, lab
 from plugins.tb.models import PatientConsultation
 from plugins.tb.models import Treatment
 from plugins.tb.utils import get_tb_summary_information
@@ -108,7 +108,7 @@ class NurseLetter(AbstractLetterView):
         episode = ctx["object"].episode
         ctx["diagnosis"] = episode.diagnosis_set.filter(
             category=Diagnosis.PRIMARY
-        )
+        ).first()
         tb_treatments = episode.treatment_set.filter(
             category=Treatment.TB
         )
@@ -125,27 +125,20 @@ class NurseLetter(AbstractLetterView):
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
 
-        observation_qs = labtest_models.Observation.objects.filter(
-            test__patient=episode.patient
+        smear_result = lab.AFBSmear.get_last_resulted_observation(
+            episode.patient
         )
-
-        smear_test = observation_qs.filter(
-            observation_name="AFB Smear"
-        ).filter(
-            test__test_name="AFB : CULTURE"
-        ).order_by('-test__datetime_ordered').first()
-        if smear_test:
-            ctx["smear_test"] = smear_test.observation_value
-
-        culture_result = observation_qs.filter(
-            observation_name="TB: Culture Result"
-        ).filter(
-            test__test_name="AFB : CULTURE"
-        ).order_by('-test__datetime_ordered').first()
+        if smear_result:
+            ctx["smear_result"] = lab.AFBSmear.display_observation_value(
+                smear_result
+            )
+        culture_result = lab.AFBCulture.get_last_resulted_observation(
+            episode.patient
+        )
         if culture_result:
-            culture_result = culture_result.observation_value
-            culture_result = culture_result.split("~")[0].lstrip("1)").strip()
-            ctx["culture_result"] = culture_result
+            ctx["culture_result"] = lab.AFBCulture.display_observation_value(
+                culture_result
+            )
         return ctx
 
 
