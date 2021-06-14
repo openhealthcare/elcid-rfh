@@ -115,8 +115,6 @@ def has_master_file_timestamp_changed(
     Checks the inserted/last updated timestamp to see whether
     we need to update
     """
-    # this may not be necessary the fields may always be
-    # populated, but lets be safe
     master_file_metas = patient.masterfilemeta_set.all()
 
     if not master_file_metas:
@@ -223,7 +221,9 @@ def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_infor
         models.NextOfKinDetails.get_api_name()
     ]
     next_of_kin_details = patient.nextofkindetails_set.all()[0]
-    # we should never update the hospital_number
+    # sometimes the CRS patient file includes hospital numbers
+    # that have had leading 0s stripped.
+    # we should never update the hospital_number, so restore it here
     upstream_demographics_dict["hospital_number"] = demographics.hospital_number
     update_if_changed(demographics, upstream_demographics_dict)
     update_if_changed(gp_details, upstream_gp_details)
@@ -372,8 +372,8 @@ def update_patient_information_since(last_updated):
                 for k, v in row[models.MasterFileMeta.get_api_name()].items():
                     setattr(master_file, k, v)
                 new_master_files.append(master_file)
-    # By definition if the information has changed the master file needs
-    # to be updated, as this happens thousands of times, the
+    # By definition if the master file timestampo has changed the master file needs
+    # to be updated. As this can happen thousands of times, the
     # fastest way is to delete the existing master file and bulk create
     models.MasterFileMeta.objects.filter(
         patient__in=[i.patient for i in new_master_files]
