@@ -142,14 +142,15 @@ def has_master_file_timestamp_changed(
 
 def update_if_changed(instance, update_dict):
     """
-    Takes in an instanct and an update dict.
+    Takes in an instance and dictionary of
+    to update it with.
 
     Handle date/datetime conversion.
 
     Check to see if any of the fields have changed
     ignoring case.
 
-    If a field has changed update it and save the instance.
+    If a field has changed, update it and save the instance.
     """
     time_start = time()
     changed = False
@@ -233,7 +234,7 @@ def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_infor
 
 def update_patient_information(patient):
     """
-    Updates a patient with the upstream demographics, if they have changed.
+    Updates a patient with the upstream demographics if they have changed.
     """
     demographics = patient.demographics_set.all()[0]
     hospital_number = demographics.hospital_number
