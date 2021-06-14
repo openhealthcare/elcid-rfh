@@ -1,3 +1,150 @@
 {% extends 'letters/base.html' %}
 {% block letter_content %}
+<div class="row">
+  <div style="font-size: 24px;" class="text-right col-md-12">
+    Royal Free London
+    <div style="display: inline-block; padding-left: 5px; padding-right: 10px; font-size: 30px; background-color: #1362b0; color: white; font-weight: 600; font-style: italic">
+      NHS
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    <div style="display: inline-block; padding-right: 30px; font-size: 12px; color: #1362b0;">
+      NHS Foundation Trust
+    </div>
+  </div>
+</div>
+<div class="row content-offset">
+  <div class="text-right col-md-12">
+    TB Nursing Service <br>
+    The Grove Centre <br>
+    Ground Floor <br>
+    Royal Free Hospital <br>
+    Pond Street <br>
+    London <br>
+    NW3 2QG
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    Dr
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12 text-right">
+    Tel 020 7472 6816<br>
+    Fax 020 7317 7808<br>
+  </div>
+</div>
+<div class="row content-offset">
+  <div class="col-md-3 col-md-offset-9">
+    <div class="row">
+      <div class="col-md-4">
+        Date:
+      </div>
+      <div class="col-md-8 text-right">
+        {% now "SHORT_DATE_FORMAT" %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        MRN:
+      </div>
+      <div class="col-md-8 text-right">
+        {{ object.episode.patient.demographics.hospital_number }}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    Dear Dr
+  </div>
+</div>
+<div class="row content-offset">
+  <div class="col-md-12">
+    <strong>
+    Re: {{ object.episode.patient.demographics.name }}
+    &nbsp; DOB: {{ object.episode.patient.demographics.date_of_birth }}</strong>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <strong>Address:</strong>
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    Your patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when|date }}
+  </div>
+</div>
+<table class="content-offset-20 table table-bordered">
+  <tr>
+    <td>
+      <strong>Diagnosis: &nbsp; </strong>
+      {{ diagnosis.condition }}
+    </td>
+    <td>
+      <strong>Treatment commenced: &nbsp; </strong>
+        {{ treatment_commenced }}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Current medication: &nbsp; </strong>
+      {{ current_treatments }}
+    </td>
+    <td>
+      <strong>Allergies/Adverse reactions: &nbsp;</strong>
+        {{ adverse_reaction|linebreaks }}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Sensitivities:  </strong>&nbsp;
+    </td>
+    <td>
+      <strong> Latest bloods: </strong>  &nbsp;
+      {{ culture_result }}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>
+        Recent sputum sample results:  &nbsp;
+        {{ smear_test }}
+      </strong>
+    </td>
+    <td>
+      <strong>Medication supply: </strong>  &nbsp;
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Follow-up appointment:<strong>  &nbsp;
+    </td>
+    <td>
+      <strong>Clinic Observation:</strong> &nbsp;
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Compliance:</strong> &nbsp;
+    </td>
+    <td>
+    </td>
+  </tr>
+</table>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    <strong>Progress</strong>
+  </div>
+</div>
+<div class="row content-offset-below">
+  <div class="col-md-12">
+    Yours sincerely <br>
+    [[ initials ]]
+  </div>
+</div>
 {% endblock %}

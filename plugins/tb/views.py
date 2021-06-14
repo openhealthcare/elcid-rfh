@@ -103,6 +103,51 @@ class NurseLetter(AbstractLetterView):
     template_name = "tb/letters/nurse_letter.html"
     model = PatientConsultation
 
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        episode = ctx["object"].episode
+        ctx["diagnosis"] = episode.diagnosis_set.filter(
+            category=Diagnosis.PRIMARY
+        )
+        tb_treatments = episode.treatment_set.filter(
+            category=Treatment.TB
+        )
+        tb_treatments = sorted(
+            [i for i in tb_treatments if i.start_date],
+            key=lambda x: x.start_date
+        )
+        if tb_treatments:
+            ctx["treatment_commenced"] = tb_treatments[0].start_date
+
+        current_treatments = [i for i in tb_treatments if not i.end_date]
+        ctx["current_treatments"] = ", ".join([i.drug for i in current_treatments])
+        adverse_reaction = episode.adversereaction_set.first()
+        if adverse_reaction:
+            ctx["adverse_reaction"] = adverse_reaction.details
+
+        observation_qs = labtest_models.Observation.objects.filter(
+            test__patient=episode.patient
+        )
+
+        smear_test = observation_qs.filter(
+            observation_name="AFB Smear"
+        ).filter(
+            test__test_name="AFB : CULTURE"
+        ).order_by('-test__datetime_ordered').first()
+        if smear_test:
+            ctx["smear_test"] = smear_test.observation_value
+
+        culture_result = observation_qs.filter(
+            observation_name="TB: Culture Result"
+        ).filter(
+            test__test_name="AFB : CULTURE"
+        ).order_by('-test__datetime_ordered').first()
+        if culture_result:
+            culture_result = culture_result.observation_value
+            culture_result = culture_result.split("~")[0].lstrip("1)").strip()
+            ctx["culture_result"] = culture_result
+        return ctx
+
 
 class AbstractModalView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
