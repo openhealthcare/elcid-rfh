@@ -188,7 +188,20 @@
       <div>
         <strong>Latest bloods:</strong>
       </div>
-      {{ culture_result }}
+      {% if bloods.items %}
+        {% for obs_name, obs_val in bloods.items %}
+        <div class="row">
+          <div class="col-md-6">
+            {{ obs_name }}
+          </div>
+          <div class="col-md-6 text-left">
+            {{ obs_val }}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        {{ bloods }}
+      {% endif %}
     </td>
   </tr>
   <tr>

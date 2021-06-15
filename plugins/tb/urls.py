@@ -20,7 +20,8 @@ urlpatterns = [
     ),
     url(
         r'^tb/nurse_letter/(?P<pk>\d+)/?$',
-        views.NurseLetter.as_view()
+        views.NurseLetter.as_view(),
+        name="nurse_letter"
     ),
     url(
         r'^tb/primary_diagnosis/$',
