@@ -94,7 +94,7 @@
 </div>
 <div class="row content-offset">
   <div class="col-md-12 text-right">
-    Date: &nbsp; {% now "j M Y" %}
+    Date: &nbsp; {{ object.when|date:"j M Y" }}
   </div>
 </div>
 <div class="row">
@@ -226,6 +226,30 @@
     </td>
   </tr>
 </table>
+{% if object.examination_findings %}
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Examination findings</strong>
+  </div>
+</div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.examination_findings|linebreaks }}
+  </div>
+</div>
+{% endif %}
+{% if object.discussion %}
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Discussion</strong>
+  </div>
+</div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.discussion|linebreaks }}
+  </div>
+</div>
+{% endif %}
 {% if object.progress %}
 <div class="row content-offset-20">
   <div class="col-md-12">
@@ -234,7 +258,19 @@
 </div>
 <div class="row content-offset-below-20">
   <div class="col-md-12">
-    {{ object.progress }}
+    {{ object.progress|linebreaks }}
+  </div>
+</div>
+{% endif %}
+{% if object.plan %}
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Plan</strong>
+  </div>
+</div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.plan|linebreaks }}
   </div>
 </div>
 {% endif %}
