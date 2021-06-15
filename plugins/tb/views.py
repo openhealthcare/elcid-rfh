@@ -99,7 +99,7 @@ class FollowUp(AbstractLetterView):
         return ctx
 
 
-class NurseLetter(AbstractLetterView):
+class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"
     model = PatientConsultation
 
@@ -125,12 +125,12 @@ class NurseLetter(AbstractLetterView):
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
 
-        smear_result = lab.AFBSmear.get_last_resulted_observation(
+        sputum_result = lab.Sputum.get_last_resulted_observation(
             episode.patient
         )
-        if smear_result:
-            ctx["smear_result"] = lab.AFBSmear.display_observation_value(
-                smear_result
+        if sputum_result:
+            ctx["sputum_result"] = lab.Sputum.display_observation_value(
+                sputum_result
             )
         culture_result = lab.AFBCulture.get_last_resulted_observation(
             episode.patient

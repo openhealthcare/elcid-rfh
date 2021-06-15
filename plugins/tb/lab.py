@@ -92,26 +92,25 @@ class AFBCulture(TBTest):
         return observation.observation_value.split("~")[0].lstrip("1)").strip()
 
 
-class AFBSmear(TBTest):
-    TEST_NAME = 'AFB : CULTURE'
-    TEST_CODE = 'AFB'
-    OBSERVATION_NAME = 'AFB Smear'
+class Sputum(TBTest):
+    TEST_NAME = "SPUTUM CULTURE"
+    TEST_CODE = "SPC"
+    OBSERVATION_NAME = "Culture Result"
 
     @classmethod
     def get_positive_observations(cls):
         return cls.get_observations().filter(
-            Q(observation_value__startswith="AAFB + Seen") |
-            Q(observation_value__startswith="AAFB 2+ Seen") |
-            Q(observation_value__startswith="AAFB 3+ Seen") |
-            Q(observation_value__startswith="AAFB 4+ Seen")
+            observation_value__startswith="1)"
         )
 
     @classmethod
     def get_negative_observations(cls):
         return cls.get_observations().filter(
-            observation_value__startswith="AAFB not seen"
+            Q(observation_value__istartswith="Normal Respiratory tract flora"),
+            Q(observation_value__istartswith="No growth after"),
+            Q(observation_value__istartswith="No Bacterial growth"),
         )
 
     @classmethod
     def display_observation_value(cls, observation):
-        return observation.observation_value.split("~")[0].strip()
+        return observation.observation_value.split("~")[0].lstrip("1)").strip()
