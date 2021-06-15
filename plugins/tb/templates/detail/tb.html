@@ -111,11 +111,13 @@
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
+                      {% if request.user.is_superuser %}
                       <div ng-show="item.reason_for_interaction.indexOf('Nurse') != -1" class="col-md-12">
-                        <a target="_blank" href="/letters/#/tb/nurse_letter/[[ item.id ]]/">
+                        <a target="_blank" href="/letters/#/tb//[[ item.id ]]/">
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
