@@ -54,7 +54,32 @@
 </div>
 <div class="row content-offset-20">
   <div class="col-md-12">
-    Dr
+    Dr {{ patient.gpdetails_set.get.initials }} {{ patient.gpdetails_set.get.surname.title }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_1 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_2 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_3 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_4 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.postcode }}
   </div>
 </div>
 <div class="row content-offset-20">
@@ -74,24 +99,49 @@
 </div>
 <div class="row">
   <div class="col-md-12 text-right">
-    MRN: &nbsp; {{ object.episode.patient.demographics.hospital_number }}
+    MRN: &nbsp; {{ patient.demographics.hospital_number }}
   </div>
 </div>
 <div class="row content-offset-20">
   <div class="col-md-12">
-    Dear Dr
+    Dear Dr {{ patient.gpdetails_set.get.surname.title }}
   </div>
 </div>
 <div class="row content-offset">
   <div class="col-md-12">
     <strong>
-    Re: {{ object.episode.patient.demographics.name }}
-    &nbsp; DOB: {{ object.episode.patient.demographics.date_of_birth }}</strong>
+    Re: {{ patient.demographics.name }}
+    &nbsp; DOB: {{ patient.demographics.date_of_birth }}</strong>
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Address:</strong>
   </div>
 </div>
 <div class="row">
   <div class="col-md-12">
-    <strong>Address:</strong>
+    {{ patient.contactinformation_set.get.address_line_1 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.address_line_2 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.address_line_3 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.address_line_4 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.postcode }}
   </div>
 </div>
 <div class="row content-offset-20">
@@ -176,11 +226,18 @@
     </td>
   </tr>
 </table>
-<div class="row content-offset-below-20 content-offset-20">
+{% if object.progress %}
+<div class="row content-offset-20">
   <div class="col-md-12">
     <strong>Progress</strong>
   </div>
 </div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.progress }}
+  </div>
+</div>
+{% endif %}
 <div class="row content-offset-below">
   <div class="col-md-12">
     Yours sincerely <br>

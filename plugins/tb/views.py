@@ -106,6 +106,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         episode = ctx["object"].episode
+        ctx["patient"] = episode.patient
         ctx["diagnosis"] = episode.diagnosis_set.filter(
             category=Diagnosis.PRIMARY
         ).first()
