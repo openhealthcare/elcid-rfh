@@ -172,6 +172,10 @@ def update_if_changed(instance, update_dict):
                     new_val = timezone.make_aware(new_val)
             elif isinstance(field_type, DateField):
                 new_val = deserialize_date(new_val)
+
+        # We get quite a few, title is Ms and title is MS changes
+        # we don't care about tense so don't consider these
+        # different.
         if isinstance(old_val, str) and isinstance(new_val, str):
             if not old_val.upper() == new_val.upper():
                 changed = True
@@ -189,8 +193,6 @@ def update_if_changed(instance, update_dict):
         instance.updated_by = api.user
         instance.updated = timezone.now()
         instance.save()
-        return True
-    return False
 
 
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
@@ -229,12 +231,12 @@ def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_infor
     update_if_changed(gp_details, upstream_gp_details)
     update_if_changed(contact_information, upstream_contact_information)
     update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
-    return False
 
 
 def update_patient_information(patient):
     """
-    Updates a patient with the upstream demographics if they have changed.
+    Updates a patient with the upstream demographics
+    only their demographics they have changed.
     """
     demographics = patient.demographics_set.all()[0]
     hospital_number = demographics.hospital_number
