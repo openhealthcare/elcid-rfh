@@ -19,9 +19,13 @@
     {% for episode, demographics, lab_test_dicts in rows %}
       <tr>
         <td>
+          {% if episode %}
           <a href="/#/patient/{{ episode.patient_id }}/{{ episode.id }}/" class="orange-link">
             {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.date_of_birth }})
           </a>
+          {% else %}
+            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.date_of_birth }})
+          {% endif %}
         </td>
         <td>{{ demographics.nhs_number }}</td>
         <td>{{ demographics.sex }}</td>
@@ -29,15 +33,13 @@
           {% for lab_test_dict in lab_test_dicts %}
           <div class="row">
             <div class="col-md-6">
-              {{ lab_test_dict.ordered }} {{ lab_test_dict.lab_number }}
+              {{ lab_test_dict.ordered }} {{ lab_test_dict.lab_numbers }}
               {{ lab_test_dict.site }}
               <br />
               {{ lab_test_dict.location }}
             </div>
             <div class="col-md-6">
-              {% for test_type, result in lab_test_dict.results.items %}
-              {{ test_type }}: {{ result }}<br />
-              {% endfor %}
+              {{ lab_test_dict.observation_name}}: {{ lab_test_dict.observation_value }}
             </div>
           </div>
           {% endfor %}
