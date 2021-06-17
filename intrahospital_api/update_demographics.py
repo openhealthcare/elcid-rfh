@@ -178,7 +178,9 @@ def update_if_changed(instance, update_dict):
         # we don't care about tense so don't consider these
         # different.
         if isinstance(old_val, str) and isinstance(new_val, str):
-            if not old_val.upper() == new_val.upper():
+            old_val_to_check = old_val.upper().strip()
+            new_val_to_check = new_val.upper().strip()
+            if not old_val_to_check == new_val_to_check:
                 changed = True
         elif not old_val == new_val:
             changed = True
@@ -348,10 +350,12 @@ def sync_recent_patient_information():
     )
     end = time()
     Fact.objects.create(
+        when=timezone.now(),
         label=constants.PATIENT_INFORMATION_SYNC_TIME,
         value_int=(end-start)
     )
     Fact.objects.create(
+        when=timezone.now(),
         label=constants.PATIENT_INFORMATION_UPDATE_COUNT,
         value_int=changed_count
     )

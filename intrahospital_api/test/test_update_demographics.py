@@ -93,6 +93,22 @@ class UpdateIfChangedTestCase(OpalTestCase):
             bool(demo.updated)
         )
 
+    def test_not_update_string_on_white_space(self):
+        self.update_dict["first_name"] = "Sandra "
+        self.demographics.first_name = "sandra"
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.first_name, "sandra"
+        )
+        self.assertFalse(
+            bool(demo.updated)
+        )
+
     def test_not_update_none_empty_string(self):
         self.update_dict["nhs_number"] = ""
         update_demographics.update_if_changed(
