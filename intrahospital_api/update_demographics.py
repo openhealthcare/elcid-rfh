@@ -1,7 +1,8 @@
 """
 Handles updating demographics pulled in by the loader
 """
-import traceback
+import datetime
+from plugins.monitoring.models import Fact
 from time import time
 from collections import defaultdict
 from opal.core.fields import ForeignKeyOrFreeText
@@ -17,7 +18,7 @@ from intrahospital_api import logger
 from intrahospital_api import get_api
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
-from elcid import models
+from elcid import constants, models
 
 api = get_api()
 
@@ -333,12 +334,40 @@ def get_patients_from_master_file_rows(rows):
     return hn_to_patients
 
 
+def sync_recent_patient_information():
+    """
+    Syncs the patient information for
+    the last four hours.
+    """
+    start = time.time()
+    four_hours_ago = timezone.now() - datetime.timedelta(
+        hours=4
+    )
+    changed_count = update_patient_information_since(
+        four_hours_ago
+    )
+    end = time.time()
+    Fact.objects.create(
+        label=constants.PATIENT_INFORMATION_SYNC_TIME,
+        value_int=(end-start)/60
+    )
+    Fact.objects.create(
+        label=constants.PATIENT_INFORMATION_UPDATE_COUNT,
+        value_int=changed_count
+    )
+
+
 @transaction.atomic
 def update_patient_information_since(last_updated):
     """
     Updates all patient data that has changed since
     the datetime last_updated.
+
+    Returns the number of patients updated
     """
+    logger.info(
+        f"patient information: loading patient information since {last_updated}"
+    )
     new_master_files = []
     before_query = time()
     # db query
@@ -367,8 +396,9 @@ def update_patient_information_since(last_updated):
     ).delete()
     models.MasterFileMeta.objects.bulk_create(new_master_files)
     after_update = time()
-    logger.info(f"query time {(after_query-before_query)/60}")
-    logger.info(f"update time {(after_update-after_query)/60}")
-    logger.info(f"row count {number_of_rows}")
-    logger.info(f"patients found {number_of_patients_found}")
-    logger.info(f"patients updated {len(new_master_files)}")
+    logger.info(f"patient information: query time {(after_query-before_query)/60}")
+    logger.info(f"patient information: update time {(after_update-after_query)/60}")
+    logger.info(f"patient information: row count {number_of_rows}")
+    logger.info(f"patient information: patients found {number_of_patients_found}")
+    logger.info(f"patient information: patients updated {len(new_master_files)}")
+    return len(new_master_files)

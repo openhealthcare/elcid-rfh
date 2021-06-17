@@ -1,4 +1,5 @@
 from collections import defaultdict
+from freds_scripts.db_queries import DEMOGRAPHICS_COUNT_QUERY
 from itertools import chain
 
 """
@@ -1751,3 +1752,6 @@ def invert_lookups(tag_list):
 
 
 LAB_TEST_TAGS = invert_lookups(_LAB_TEST_TAGS)
+
+PATIENT_INFORMATION_SYNC_TIME = "PATIENT_INFORMATION_SYNC_TIME"
+PATIENT_INFORMATION_UPDATE_COUNT = "PATIENT_INFORMATION_UPDATE_COUNT"
