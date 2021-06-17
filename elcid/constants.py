@@ -1,5 +1,4 @@
 from collections import defaultdict
-from freds_scripts.db_queries import DEMOGRAPHICS_COUNT_QUERY
 from itertools import chain
 
 """
