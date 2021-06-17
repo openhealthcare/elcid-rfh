@@ -349,7 +349,7 @@ def sync_recent_patient_information():
     end = time.time()
     Fact.objects.create(
         label=constants.PATIENT_INFORMATION_SYNC_TIME,
-        value_int=(end-start)/60
+        value_int=(end-start)
     )
     Fact.objects.create(
         label=constants.PATIENT_INFORMATION_UPDATE_COUNT,
