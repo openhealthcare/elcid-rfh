@@ -4,6 +4,9 @@ Views for the monitoring plugin
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+from elcid.constants import (
+    PATIENT_INFORMATION_SYNC_TIME, PATIENT_INFORMATION_UPDATE_COUNT
+)
 
 from plugins.monitoring.models import Fact
 
@@ -38,6 +41,20 @@ class LabTimings(LoginRequiredMixin, TemplateView):
         context['patient_cohort_data']  = graph_data_for_label('Total Patients')
         context['total_obs_data']       = graph_data_for_label('Total Observations')
 
+        return context
+
+
+class PatientInformationLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/patient_information_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['patient_information_sync_time'] = graph_data_for_label(
+            PATIENT_INFORMATION_SYNC_TIME
+        )
+        context['patient_information_updated'] = graph_data_for_label(
+            PATIENT_INFORMATION_UPDATE_COUNT
+        )
         return context
 
 
