@@ -13,7 +13,7 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from plugins.labtests import models as labtest_models
 
-from plugins.tb import episode_categories, constants
+from plugins.tb import episode_categories, constants, lab
 from plugins.tb import models
 from plugins.tb.models import PatientConsultation
 from plugins.tb.models import Treatment
@@ -208,48 +208,22 @@ class PrintConsultation(LoginRequiredMixin, DetailView):
     template_name = "tb/patient_consultation_print.html"
 
 
-class MDTList(LoginRequiredMixin, ListView):
-    start_datetime = datetime.datetime(2021, 4, 17)
-    end_datetime = datetime.datetime(2021, 5, 5)
-    test_type = "AFB : CULTURE"
-    observation_names = [
-        "TB: Culture Result", "TB PCR", "AFB Smear"
-    ]
-    model = labtest_models.LabTest
+class MDTList(LoginRequiredMixin, TemplateView):
     template_name = "tb/mdt_list.html"
     BARNET = "Barnet"
     RFH = "RFH"
 
-    def get_queryset(self, *args, **kwargs):
-        qs = super().get_queryset()
-        a_year_ago = datetime.date.today() - datetime.timedelta(365)
-        return qs.filter(
-            test_name=self.test_type
-        ).filter(
-            datetime_ordered__gt=a_year_ago
-        ).order_by(
-            "-datetime_ordered"
-        ).prefetch_related(
-            'observation_set'
-        )
-
-    def get_observation_result(self, lt):
-        result = {}
-        for obs in lt.observation_set.all():
-            if obs.observation_name in self.observation_names:
-                if obs.observation_name == "TB: Culture Result":
-                    if not obs.observation_value:
-                        continue
-                    # Only include positive TB culture results
-                    if obs.observation_value.startswith(
-                        "TB: Culture Result: No growth"
-                    ):
-                        continue
-                    if obs.observation_value == "AFB culture to follow.":
-                        continue
-
-                result[obs.observation_name] = obs.observation_value
-        return result
+    def get_observations(self, *args, **kwargs):
+        culture_obs = list(lab.AFBCulture.get_positive_observations().filter(
+            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(365)
+        ).select_related('test'))
+        smear_obs = list(lab.AFBSmear.get_positive_observations().filter(
+            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(30)
+        ).select_related('test'))
+        pcr_tests = list(lab.TBPCR.get_positive_observations().filter(
+            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(30)
+        ).select_related('test'))
+        return culture_obs + smear_obs + pcr_tests
 
     def get_site(self, lt):
         site = lt.site
@@ -258,25 +232,40 @@ class MDTList(LoginRequiredMixin, ListView):
             return site
         return splitted[1].split("&")[0]
 
-    def get_patient_id_to_demographics(self, lab_tests):
-        patient_ids = set([i.patient_id for i in lab_tests])
-        demographics = Demographics.objects.filter(patient_id__in=patient_ids)
+    def get_patient_id_to_demographics(self, observations):
+        patient_ids = set([i.test.patient_id for i in observations])
+        demographics = Demographics.objects.filter(
+            patient_id__in=patient_ids)
         result = {}
         for demo in demographics:
             result[demo.patient_id] = demo
         return result
 
-    def get_patient_id_to_lab_dicts(self, lab_tests):
+    def get_patient_id_to_lab_dicts(self, observations):
         patient_ids_to_lab_test_dict = defaultdict(list)
-        for lab_test in lab_tests:
-            results = self.get_observation_result(lab_test)
-            if not results:
-                continue
-            patient_ids_to_lab_test_dict[lab_test.patient_id].append({
-                "site": self.get_site(lab_test),
-                "lab_number": lab_test.lab_number,
-                "ordered": lab_test.datetime_ordered.date(),
-                "results": results
+
+        group_tests = defaultdict(list)
+
+        def get_key(observation):
+            lab_test = observation.test
+            return (
+                lab_test.patient_id,
+                self.get_site(lab_test),
+                observation.observation_datetime.date(),
+                observation.observation_name,
+                observation.observation_value
+            )
+        for observation in observations:
+            group_tests[get_key(observation)].append(observation.test.lab_number)
+
+        for key, lab_numbers in group_tests.items():
+            patient_id, site, ordered, obs_name, obs_value = key
+            patient_ids_to_lab_test_dict[patient_id].append({
+                "site": site,
+                "lab_numbers": ", ".join(lab_numbers),
+                "ordered": ordered,
+                "observation_name": obs_name,
+                "observation_value": obs_value,
             })
         result = {}
         for patient_id, lab_test_dicts in patient_ids_to_lab_test_dict.items():
@@ -285,8 +274,8 @@ class MDTList(LoginRequiredMixin, ListView):
             )
         return result
 
-    def get_patient_id_to_tb_episode(self, lab_tests):
-        patient_ids = set([i.patient_id for i in lab_tests])
+    def get_patient_id_to_tb_episode(self, observations):
+        patient_ids = set([i.test.patient_id for i in observations])
         episodes = Episode.objects.filter(
             patient_id__in=patient_ids
         ).filter(
@@ -298,11 +287,11 @@ class MDTList(LoginRequiredMixin, ListView):
         return result
 
     def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data()
-        lab_tests = ctx["object_list"]
-        patient_id_to_demographics = self.get_patient_id_to_demographics(lab_tests)
-        patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(lab_tests)
-        patient_id_to_episode = self.get_patient_id_to_tb_episode(lab_tests)
+        ctx = super().get_context_data(*args, **kwargs)
+        observations = self.get_observations()
+        patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
+        patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(observations)
+        patient_id_to_episode = self.get_patient_id_to_tb_episode(observations)
 
         patient_id_lab_test_dicts = sorted(
             patient_id_to_lab_test_dicts.items(),
@@ -312,14 +301,25 @@ class MDTList(LoginRequiredMixin, ListView):
         rows = []
         for patient_id, lab_test_dicts in patient_id_lab_test_dicts:
             episode = patient_id_to_episode.get(patient_id)
-            # there should always be an episode but if there
-            # isn't let's just skip it for the time being
-            if not episode:
-                continue
             demographics = patient_id_to_demographics[patient_id]
-            rows.append((episode, demographics, lab_test_dicts,))
-        barnet_rows = [i for i in rows if "K" in i[2][0]["lab_number"]]
-        rfh_rows = [i for i in rows if "L" in i[2][0]["lab_number"]]
+            # exclude patients with no hospital numbers
+            if demographics.hospital_number:
+                rows.append((episode, demographics, lab_test_dicts,))
+        rfh_rows = []
+        barnet_rows = []
+        for row in rows:
+            barnet = False
+            rfh = False
+            for test_set in row[2]:
+                for lab_number in test_set["lab_numbers"]:
+                    if "K" in lab_number:
+                        barnet = True
+                    if "L" in lab_number:
+                        rfh = True
+            if barnet:
+                barnet_rows.append(row)
+            if rfh:
+                rfh_rows.append(row)
         ctx["location_to_rows"] = {
             "RFH": rfh_rows,
             "Barnet": barnet_rows
