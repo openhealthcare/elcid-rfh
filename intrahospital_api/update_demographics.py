@@ -339,14 +339,14 @@ def sync_recent_patient_information():
     Syncs the patient information for
     the last four hours.
     """
-    start = time.time()
+    start = time()
     four_hours_ago = timezone.now() - datetime.timedelta(
         hours=4
     )
     changed_count = update_patient_information_since(
         four_hours_ago
     )
-    end = time.time()
+    end = time()
     Fact.objects.create(
         label=constants.PATIENT_INFORMATION_SYNC_TIME,
         value_int=(end-start)
