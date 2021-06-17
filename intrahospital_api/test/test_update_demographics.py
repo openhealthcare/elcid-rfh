@@ -102,7 +102,7 @@ class UpdateIfChangedTestCase(OpalTestCase):
         self.assertIsNone(demo.nhs_number)
 
 
-class HaveInformationChangedTestCase(ApiTestCase):
+class HasMasterFileTimestampChangedTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         self.patient, _ = self.new_patient_and_episode_please()
         self.meta = self.patient.masterfilemeta_set.create()
@@ -121,7 +121,7 @@ class HaveInformationChangedTestCase(ApiTestCase):
             2019, 1, 2
         ))
         self.assertTrue(
-            update_demographics.has_information_changed(
+            update_demographics.has_master_file_timestamp_changed(
                 self.patient, self.upstream_patient_information
             )
         )
@@ -135,7 +135,7 @@ class HaveInformationChangedTestCase(ApiTestCase):
             2019, 1, 2
         ))
         self.assertFalse(
-            update_demographics.has_information_changed(
+            update_demographics.has_master_file_timestamp_changed(
                 self.patient, self.upstream_patient_information
             )
         )
