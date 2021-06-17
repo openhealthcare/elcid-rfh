@@ -287,21 +287,6 @@ def update_patient_information(patient):
     master_file_meta.save()
 
 
-def update_all_patient_information():
-    """
-    Runs update_patient_information for all_patients.
-
-    Called by the management command sync_demographics which runs periodically
-    """
-    patient_qs = Patient.objects.all().prefetch_related('demographics_set')
-    for patient in patient_qs:
-        try:
-            update_patient_information(patient)
-        except Exception:
-            msg = 'Exception syncing upstream demographics \n {}'
-            logger.error(msg.format(traceback.format_exc()))
-
-
 def get_patients_from_master_file_rows(rows):
     """
     Returns all patients declared by the
