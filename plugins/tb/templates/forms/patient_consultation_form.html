@@ -3,6 +3,13 @@
 {% select field="PatientConsultation.reason_for_interaction" %}
 {% datetimepicker field="PatientConsultation.when" %}
 {% textarea field="PatientConsultation.examination_findings" %}
-{% textarea field="PatientConsultation.progress" %}
+<div ng-show="editing.patient_consultation.reason_for_interaction">
+  <div ng-if="editing.patient_consultation.reason_for_interaction.toLowerCase().indexOf('follow up') != -1">
+    {% textarea field="PatientConsultation.progress" %}
+  </div>
+  <div ng-if="editing.patient_consultation.reason_for_interaction.toLowerCase().indexOf('nurse') != -1">
+    {% textarea field="PatientConsultation.progress" %}
+  </div>
+</div>
 {% textarea field="PatientConsultation.discussion" %}
 {% textarea field="PatientConsultation.plan" %}
