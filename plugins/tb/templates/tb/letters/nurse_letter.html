@@ -209,7 +209,6 @@
       <div>
         <strong>Recent sputum sample results:</strong>
       </div>
-        {{ sputum_result }}
     </td>
     <td>
       <div>
@@ -226,6 +225,16 @@
     <td>
       <div>
         <strong>Clinic Observation:</strong>
+        {% for obs_name, obs_val in observations %}
+        <div class="row">
+          <div class="col-md-6">
+            {{ obs_name }}
+          </div>
+          <div class="col-md-6">
+            {{ obs_val }}
+          </div>
+        </div>
+        {% endfor %}
       </div>
     </td>
   </tr>

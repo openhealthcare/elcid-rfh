@@ -115,7 +115,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
             if obs_value > max_rr or obs_value < min_rr:
                 return True
 
-    def display_observation(self, observation):
+    def display_lab_observation(self, observation):
         obs_value = observation.value_numeric
         obs_value = str(obs_value).rsplit('.0', 1)[0]
         reference_range = observation.cleaned_reference_range
@@ -161,7 +161,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
                 obs_value = observation.value_numeric
                 if obs_value:
                     if self.is_outside_rr(observation):
-                        liver_profile_result[obs_name] = self.display_observation(
+                        liver_profile_result[obs_name] = self.display_lab_observation(
                             observation
                         )
                     else:
@@ -188,7 +188,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
                 obs_value = observation.value_numeric
                 if obs_value:
                     if self.is_outside_rr(observation):
-                        urea_result[obs_name] = self.display_observation(
+                        urea_result[obs_name] = self.display_lab_observation(
                             observation
                         )
                     else:
@@ -205,6 +205,37 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         if not len(out_of_reference_range):
             return 'Normal'
         return out_of_reference_range
+
+    def get_observations(self, episode):
+        """
+        These are observations
+        as in obs.models, ie weight and temperature
+        rather than labtests.models.Observation.
+
+        Return the most recent populated observation
+        of todays date.
+        """
+        obs_fields = [
+            "bp_systolic",
+            "bp_diastolic",
+            "pulse",
+            "resp_rate",
+            "sp02",
+            "temperature",
+            "height",
+            "weight",
+        ]
+        todays_obs = episode.observation_set.filter(
+            datetime__date=datetime.date.today()
+        ).order_by("datetime")
+        result = {}
+        for obs_field in obs_fields:
+            observation_values = [
+                i for i in todays_obs if getattr(i, obs_field) is not None
+            ]
+            if observation_values:
+                result[obs_field] = observation_values[0]
+        return result
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
@@ -229,14 +260,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         adverse_reaction = episode.adversereaction_set.first()
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
-
-        sputum_result = lab.Sputum.get_last_resulted_observation(
-            episode.patient
-        )
-        if sputum_result:
-            ctx["sputum_result"] = lab.Sputum.display_observation_value(
-                sputum_result
-            )
+        ctx["observations"] = self.get_bloods(episode)
         return ctx
 
 
