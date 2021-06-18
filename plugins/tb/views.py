@@ -13,7 +13,7 @@ from plugins.appointments.models import Appointment
 from plugins.labtests import models as labtest_models
 
 from plugins.tb import episode_categories, constants
-from plugins.tb import models
+from plugins.tb import models, lab
 from plugins.tb.models import PatientConsultation
 from plugins.tb.models import Treatment
 from plugins.tb.utils import get_tb_summary_information
@@ -96,6 +96,171 @@ class FollowUp(AbstractLetterView):
         episode = self.object.episode
         patient = self.object.episode.patient
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
+        return ctx
+
+
+class NurseLetter(LoginRequiredMixin, DetailView):
+    template_name = "tb/letters/nurse_letter.html"
+    model = PatientConsultation
+
+    def is_outside_rr(self, observation):
+        """
+        If the observation value is outside the reference range, return True
+        """
+        obs_value = observation.value_numeric
+        if obs_value:
+            reference_range = observation.cleaned_reference_range
+            min_rr = reference_range["min"]
+            max_rr = reference_range['max']
+            if obs_value > max_rr or obs_value < min_rr:
+                return True
+
+    def display_lab_observation(self, observation):
+        obs_value = observation.value_numeric
+        obs_value = str(obs_value).rsplit('.0', 1)[0]
+        reference_range = observation.cleaned_reference_range
+        min_rr = reference_range["min"]
+        max_rr = reference_range['max']
+        min_rr = str(min_rr).rsplit('.0', 1)[0]
+        max_rr = str(max_rr).rsplit('.0', 1)[0]
+        dt = observation.observation_datetime.strftime(
+            "%d/%m/%Y"
+        )
+        return f"{dt} {obs_value} ({min_rr} - {max_rr})"
+
+    def get_bloods(self, patient):
+        """
+        For the context of this the nurses letter, bloods
+        refers to Liver (ie Liver profile) and Kidney
+        function (ie Urea and Electrolytes).
+
+        The result should either be a dictionary of
+        observation_name: observation_value
+        if an observation is out of a reference range
+        otherwise it should be "N/A" if there
+        are no tests of any sort
+        or "Normal" if all tests are within reference range
+        """
+        liver_profile_result = {}
+        last_liver_profiles = patient.lab_tests.filter(
+            test_name="LIVER PROFILE"
+        ).prefetch_related(
+            'observation_set'
+        ).order_by("datetime_ordered").reverse()
+
+        liver_profile_obs_names = [
+            "ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"
+        ]
+        for liver_profile in last_liver_profiles:
+            for observation in liver_profile.observation_set.all():
+                obs_name = observation.observation_name
+                if obs_name not in liver_profile_obs_names:
+                    continue
+                if obs_name in liver_profile_result:
+                    continue
+                obs_value = observation.value_numeric
+                if obs_value:
+                    if self.is_outside_rr(observation):
+                        liver_profile_result[obs_name] = self.display_lab_observation(
+                            observation
+                        )
+                    else:
+                        liver_profile_result[obs_name] = "normal"
+                    if len(liver_profile_result.keys()) == len(liver_profile_obs_names):
+                        break
+
+        urea_result = {}
+        urea_obs_names = [
+            "Creatinine", "Potassium", "Sodium", "Urea"
+        ]
+        last_urea_and_electrolytes = patient.lab_tests.filter(
+            test_name="UREA AND ELECTROLYTES"
+        ).prefetch_related(
+            'observation_set'
+        ).order_by("datetime_ordered").reverse()
+        for urea_and_electrolytes in last_urea_and_electrolytes:
+            for observation in urea_and_electrolytes.observation_set.all():
+                obs_name = observation.observation_name
+                if obs_name not in urea_obs_names:
+                    continue
+                if obs_name in urea_result:
+                    continue
+                obs_value = observation.value_numeric
+                if obs_value:
+                    if self.is_outside_rr(observation):
+                        urea_result[obs_name] = self.display_lab_observation(
+                            observation
+                        )
+                    else:
+                        urea_result[obs_name] = "normal"
+                    if len(urea_result.keys()) == len(liver_profile_obs_names):
+                        break
+        obs_results = liver_profile_result
+        obs_results.update(urea_result)
+        if not obs_results:
+            return "N/A"
+        out_of_reference_range = {
+            k: v for k, v in obs_results.items() if not v == "normal"
+        }
+        if not len(out_of_reference_range):
+            return 'Normal'
+        return out_of_reference_range
+
+    def get_observations(self, episode):
+        """
+        These are observations
+        as in obs.models, ie weight and temperature
+        rather than labtests.models.Observation.
+
+        Return the most recent populated observation
+        of todays date.
+        """
+        obs_fields = [
+            "bp_systolic",
+            "bp_diastolic",
+            "pulse",
+            "resp_rate",
+            "sp02",
+            "temperature",
+            "height",
+            "weight",
+        ]
+        todays_obs = episode.observation_set.filter(
+            datetime__date=datetime.date.today()
+        ).order_by("datetime")
+        result = {}
+        for obs_field in obs_fields:
+            observation_values = [
+                i for i in todays_obs if getattr(i, obs_field) is not None
+            ]
+            if observation_values:
+                result[obs_field] = observation_values[0]
+        return result
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        episode = ctx["object"].episode
+        ctx["patient"] = episode.patient
+        ctx["bloods"] = self.get_bloods(episode.patient)
+        ctx["diagnosis"] = episode.diagnosis_set.filter(
+            category=Diagnosis.PRIMARY
+        ).first()
+        tb_treatments = episode.treatment_set.filter(
+            category=Treatment.TB
+        )
+        tb_treatments = sorted(
+            [i for i in tb_treatments if i.start_date],
+            key=lambda x: x.start_date
+        )
+        if tb_treatments:
+            ctx["treatment_commenced"] = tb_treatments[0].start_date
+
+        current_treatments = [i for i in tb_treatments if not i.end_date]
+        ctx["current_treatments"] = ", ".join([i.drug for i in current_treatments])
+        adverse_reaction = episode.adversereaction_set.first()
+        if adverse_reaction:
+            ctx["adverse_reaction"] = adverse_reaction.details
+        ctx["observations"] = self.get_bloods(episode)
         return ctx
 
 
@@ -299,4 +464,3 @@ class MDTList(LoginRequiredMixin, ListView):
             rows.append((demographics, lab_test_dicts,))
         ctx["rows"] = rows
         return ctx
-
