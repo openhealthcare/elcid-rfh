@@ -1,41 +1,205 @@
 from unittest import mock
 import datetime
+from opal.core.test import OpalTestCase
 from django.utils import timezone
+from elcid.models import Demographics, GPDetails
 from intrahospital_api.test.test_loader import ApiTestCase
 from intrahospital_api import update_demographics
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 
 
-class HaveInformationChangedTestCase(ApiTestCase):
-    def setUp(self, *args, **kwargs):
+class UpdateIfChangedTestCase(OpalTestCase):
+    def setUp(self):
         patient, _ = self.new_patient_and_episode_please()
-        self.meta = patient.masterfilemeta_set.create()
+        self.demographics = patient.demographics()
+        self.gp_details = patient.gpdetails_set.get()
+        self.update_dict = {}
+
+    def test_update_date(self):
+        self.update_dict["date_of_birth"] = datetime.date(
+            2001, 1, 1
+        )
+        self.demographics.date_of_birth = datetime.date(
+            2001, 1, 2
+        )
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.date_of_birth, self.update_dict["date_of_birth"]
+        )
+        self.assertTrue(
+            bool(demo.updated)
+        )
+
+    def test_not_update_date(self):
+        self.update_dict["date_of_birth"] = datetime.date(
+            2001, 1, 1
+        )
+        self.demographics.date_of_birth = datetime.date(
+            2001, 1, 1
+        )
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.date_of_birth, self.update_dict["date_of_birth"]
+        )
+        self.assertFalse(
+            bool(demo.updated)
+        )
+
+    def test_update_fk_or_ft(self):
+        self.update_dict["title"] = "M"
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.title, "M"
+        )
+
+    def test_update_string(self):
+        self.update_dict["first_name"] = "sandra"
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.first_name, "sandra"
+        )
+
+    def test_not_update_string_on_case_difference(self):
+        self.update_dict["first_name"] = "Sandra"
+        self.demographics.first_name = "sandra"
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.first_name, "sandra"
+        )
+        self.assertFalse(
+            bool(demo.updated)
+        )
+
+    def test_not_update_string_on_white_space(self):
+        self.update_dict["first_name"] = "Sandra "
+        self.demographics.first_name = "sandra"
+        self.demographics.save()
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertEqual(
+            demo.first_name, "sandra"
+        )
+        self.assertFalse(
+            bool(demo.updated)
+        )
+
+    def test_not_update_none_empty_string(self):
+        self.update_dict["nhs_number"] = ""
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertIsNone(demo.nhs_number)
+
+    def test_boolean_changed(self):
+        self.demographics.death_indicator = False
+        self.update_dict["death_indicator"] = True
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertTrue(demo.death_indicator)
+        self.assertTrue(bool(demo.updated))
+
+    def test_boolean_not_changed(self):
+        self.demographics.death_indicator = False
+        self.update_dict["death_indicator"] = False
+        update_demographics.update_if_changed(
+            self.demographics,
+            self.update_dict
+        )
+        demo = Demographics.objects.get()
+        self.assertFalse(demo.death_indicator)
+        self.assertFalse(bool(demo.updated))
+
+    def test_integer_changed(self):
+        self.gp_details.crs_gp_masterfile_id = 111
+        self.gp_details.save()
+        self.update_dict["crs_gp_masterfile_id"] = 222
+        update_demographics.update_if_changed(
+            self.gp_details,
+            self.update_dict
+        )
+        gp_details = GPDetails.objects.get()
+        self.assertEquals(gp_details.crs_gp_masterfile_id, 222)
+        self.assertTrue(bool(gp_details.updated))
+
+    def test_integer_not_changed(self):
+        self.gp_details.crs_gp_masterfile_id = 111
+        self.gp_details.save()
+        self.update_dict["crs_gp_masterfile_id"] = 111
+        update_demographics.update_if_changed(
+            self.gp_details,
+            self.update_dict
+        )
+        gp_details = GPDetails.objects.get()
+        self.assertEquals(gp_details.crs_gp_masterfile_id, 111)
+        self.assertFalse(bool(gp_details.updated))
+
+
+class HasMasterFileTimestampChangedTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.meta = self.patient.masterfilemeta_set.create()
         self.upstream_meta = {}
+        self.upstream_patient_information = {
+            self.meta.__class__.get_api_name(): self.upstream_meta
+        }
         super().setUp(*args, **kwargs)
 
     def test_true(self):
-        self.meta.insert_date = datetime.datetime(
+        self.meta.insert_date = timezone.make_aware(datetime.datetime(
             2019, 1, 1
-        )
-        self.upstream_meta["last_updated"] = datetime.datetime(
+        ))
+        self.meta.save()
+        self.upstream_meta["last_updated"] = timezone.make_aware(datetime.datetime(
             2019, 1, 2
-        )
+        ))
         self.assertTrue(
-            update_demographics.has_information_changed(
-                self.upstream_meta, self.meta
+            update_demographics.has_master_file_timestamp_changed(
+                self.patient, self.upstream_patient_information
             )
         )
 
     def test_false(self):
-        self.meta.insert_date = datetime.datetime(
+        self.meta.insert_date = timezone.make_aware(datetime.datetime(
             2019, 1, 3
-        )
-        self.upstream_meta["last_updated"] = datetime.datetime(
+        ))
+        self.meta.save()
+        self.upstream_meta["last_updated"] = timezone.make_aware(datetime.datetime(
             2019, 1, 2
-        )
+        ))
         self.assertFalse(
-            update_demographics.has_information_changed(
-                self.upstream_meta, self.meta
+            update_demographics.has_master_file_timestamp_changed(
+                self.patient, self.upstream_patient_information
             )
         )
 
