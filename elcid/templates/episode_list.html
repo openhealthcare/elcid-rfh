@@ -4,13 +4,7 @@
     <a href="/#/list/">Patient Lists</a>
   </h3>
   <ul class="patientlist-list">
-    {% for path, name in upstream_lists %}
-    <li>
-      <a href="{{ path }}">{{ name }}</a>
-    </li>
-    {% endfor %}
-
-    {% for list in lists %}
+    {% for list in lists|dictsort:'display_name' %}
     {% if list.get_slug != list_slug %}
     <li>
       <a href="#/list/{{ list.get_slug }}">
