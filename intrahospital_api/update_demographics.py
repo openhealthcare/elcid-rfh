@@ -229,7 +229,11 @@ def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_infor
     # sometimes the CRS patient file includes hospital numbers
     # that have had leading 0s stripped.
     # we should never update the hospital_number, so restore it here
-    upstream_demographics_dict["hospital_number"] = demographics.hospital_number
+    hn = demographics.hospital_number
+    upstream_demographics_dict["hospital_number"] = hn
+    logger.info(
+        f"patient information: checking {patient.id}, hn: {hn}"
+    )
     update_if_changed(demographics, upstream_demographics_dict)
     update_if_changed(gp_details, upstream_gp_details)
     update_if_changed(contact_information, upstream_contact_information)
