@@ -123,10 +123,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         max_rr = reference_range['max']
         min_rr = str(min_rr).rsplit('.0', 1)[0]
         max_rr = str(max_rr).rsplit('.0', 1)[0]
-        dt = observation.observation_datetime.strftime(
-            "%d/%m/%Y"
-        )
-        return f"{dt} {obs_value} ({min_rr} - {max_rr})"
+        return f"{obs_value} ({min_rr} - {max_rr})"
 
     def get_bloods(self, patient):
         """
@@ -206,7 +203,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
             return 'Normal'
         return out_of_reference_range
 
-    def get_observations(self, episode):
+    def get_observations(self, patient_consultation):
         """
         These are observations
         as in obs.models, ie weight and temperature
@@ -215,7 +212,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         Return the most recent populated observation
         of todays date.
         """
-        obs_fields = [
+        # field to units
+        obs_fields = {
             "bp_systolic",
             "bp_diastolic",
             "pulse",
@@ -224,17 +222,22 @@ class NurseLetter(LoginRequiredMixin, DetailView):
             "temperature",
             "height",
             "weight",
-        ]
-        todays_obs = episode.observation_set.filter(
-            datetime__date=datetime.date.today()
-        ).order_by("datetime")
+        }
         result = {}
+        if not patient_consultation.when:
+            return result
+        todays_obs = patient_consultation.episode.observation_set.filter(
+            datetime__date=patient_consultation.when.date()
+        ).order_by("datetime")
+        if not todays_obs:
+            return result
         for obs_field in obs_fields:
-            observation_values = [
-                i for i in todays_obs if getattr(i, obs_field) is not None
-            ]
-            if observation_values:
-                result[obs_field] = observation_values[0]
+            for observation in todays_obs:
+                obs_val = getattr(observation, obs_field)
+                if obs_val is not None:
+                    break
+            if obs_val:
+                result[obs_field] = str(obs_val).rsplit('.0', 1)[0]
         return result
 
     def get_context_data(self, *args, **kwargs):
@@ -260,7 +263,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         adverse_reaction = episode.adversereaction_set.first()
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
-        ctx["observations"] = self.get_bloods(episode)
+        ctx["observations"] = self.get_observations(ctx["object"])
         return ctx
 
 

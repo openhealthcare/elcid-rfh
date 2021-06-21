@@ -192,7 +192,7 @@
         {% for obs_name, obs_val in bloods.items %}
         <div class="row">
           <div class="col-md-6">
-            {{ obs_name }}
+            {{ obs_name }}:
           </div>
           <div class="col-md-6 text-left">
             {{ obs_val }}
@@ -225,16 +225,76 @@
     <td>
       <div>
         <strong>Clinic Observation:</strong>
-        {% for obs_name, obs_val in observations %}
+        {% if observations.bp_systolic and observations.bp_diastolic %}
         <div class="row">
           <div class="col-md-6">
-            {{ obs_name }}
+          BP:
           </div>
           <div class="col-md-6">
-            {{ obs_val }}
+          {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}<br />
           </div>
         </div>
-        {% endfor %}
+        {% endif %}
+        {% if observations.pulse %}
+        <div class="row">
+          <div class="col-md-6">
+            Pulse:
+          </div>
+          <div class="col-md-6">
+            {{ observations.pulse}} beats/min
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.resp_rate %}
+        <div class="row">
+          <div class="col-md-6">
+            RR:
+          </div>
+          <div class="col-md-6">
+            {{ observations.resp_rate }} breaths/min
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.sp02 %}
+        <div class="row">
+          <div class="col-md-6">
+            Sp02:
+          </div>
+          <div class="col-md-6">
+            {{ observations.sp02 }} %
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.temperature %}
+        <div class="row">
+          <div class="col-md-6">
+            Temperature:
+          </div>
+          <div class="col-md-6">
+            {{ observations.temperature }} ºC
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.height %}
+        <div class="row">
+          <div class="col-md-6">
+            Height:
+          </div>
+          <div class="col-md-6">
+            {{ observations.height }} m
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.weight %}
+        <div class="row">
+          <div class="col-md-6">
+            Weight:
+          </div>
+          <div class="col-md-6">
+            {{ observations.weight }} kg
+          </div>
+        </div>
+        {% endif %}
       </div>
     </td>
   </tr>
