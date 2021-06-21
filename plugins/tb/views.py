@@ -13,7 +13,7 @@ from plugins.appointments.models import Appointment
 from plugins.labtests import models as labtest_models
 
 from plugins.tb import episode_categories, constants
-from plugins.tb import models, lab
+from plugins.tb import models
 from plugins.tb.models import PatientConsultation
 from plugins.tb.models import Treatment
 from plugins.tb.utils import get_tb_summary_information

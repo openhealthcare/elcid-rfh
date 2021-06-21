@@ -102,7 +102,6 @@ class NurseLetterTestCase(OpalTestCase):
 
     def test_get_bloods_with_breaks(self):
         when = timezone.now() - datetime.timedelta(1)
-        as_dt = when.strftime("%d/%m/%Y")
         lab_test = self.patient.lab_tests.create(
             test_name="LIVER PROFILE",
             datetime_ordered=when
@@ -116,7 +115,7 @@ class NurseLetterTestCase(OpalTestCase):
         response = self.client.get(self.url)
         self.assertEqual(
             response.context["bloods"],
-            {"ALT": f"{as_dt} 9 (10 - 50)"}
+            {"ALT": "9 (10 - 50)"}
         )
 
     def test_get_bloods_without_breaks(self):
