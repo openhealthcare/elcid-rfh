@@ -393,13 +393,6 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ).select_related('test'))
         return culture_obs + smear_obs + pcr_tests
 
-    def get_site(self, lt):
-        site = lt.site
-        splitted = site.split("^")
-        if len(splitted) == 1:
-            return site
-        return splitted[1].split("&")[0]
-
     def get_patient_id_to_demographics(self, observations):
         patient_ids = set([i.test.patient_id for i in observations])
         demographics = Demographics.objects.filter(
@@ -409,7 +402,17 @@ class MDTList(LoginRequiredMixin, TemplateView):
             result[demo.patient_id] = demo
         return result
 
+    def format_obs_value(self, observation):
+        splitted = observation.observation_value.split("~")
+        joined = "\n".join(i for i in splitted if i)
+        return f"{observation.observation_name}: {joined}"
+
     def get_patient_id_to_lab_dicts(self, observations):
+        """
+        We group the lab tests so if its
+        for the same patient, site, observation date, obs name and
+        obs value, show them on the same line
+        """
         patient_ids_to_lab_test_dict = defaultdict(list)
 
         group_tests = defaultdict(list)
@@ -418,21 +421,19 @@ class MDTList(LoginRequiredMixin, TemplateView):
             lab_test = observation.test
             return (
                 lab_test.patient_id,
-                self.get_site(lab_test),
+                lab_test.cleaned_site,
                 observation.observation_datetime.date(),
-                observation.observation_name,
-                observation.observation_value
+                self.format_obs_value(observation)
             )
         for observation in observations:
             group_tests[get_key(observation)].append(observation.test.lab_number)
 
         for key, lab_numbers in group_tests.items():
-            patient_id, site, ordered, obs_name, obs_value = key
+            patient_id, site, ordered, obs_value = key
             patient_ids_to_lab_test_dict[patient_id].append({
                 "site": site,
                 "lab_numbers": ", ".join(lab_numbers),
                 "ordered": ordered,
-                "observation_name": obs_name,
                 "observation_value": obs_value,
             })
         result = {}
