@@ -149,6 +149,7 @@
     Your patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when|date }}
   </div>
 </div>
+<br>
 <table class="table table-bordered content-offset-20">
   <tr>
     <td>
@@ -218,19 +219,19 @@
       {% else %}
       {% for observation in bloods %}
       <div class="row {% if observation.is_outside_reference_range %}text-danger{% endif %}">
-        <div class="col-md-3 text-right">
+        <span class="col-md-3 text-right">
           {{ observation.observation_datetime.date }}
-        </div>
-        <div class="col-md-3">
+        </span>
+        <span class="col-md-3">
           {{ observation.observation_name }}
-        </div>
-        <div class="col-md-3">
+        </span>
+        <span class="col-md-3">
           {{ observation.value_numeric|floatformat  }}
           {% if observation.cleaned_reference_range %}
           ({{ observation.cleaned_reference_range.min|floatformat }} -
             {{ observation.cleaned_reference_range.max|floatformat }})
           {% endif %}
-        </div>
+        </span>
       </div>
       {% endfor %}
       {% endif %}
@@ -320,7 +321,7 @@
     </td>
   </tr>
 </table>
-
+<br>
 {% if object.examination_findings %}
 <div class="row content-offset-20">
   <div class="col-md-12">
