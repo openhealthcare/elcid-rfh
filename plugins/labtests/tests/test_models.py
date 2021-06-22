@@ -192,6 +192,7 @@ class LabTestTestCase(OpalTestCase):
             'Blood'
         )
 
+
 class ObservationTestCase(OpalTestCase):
     def test_value_numeric(self):
         observation = models.Observation()
@@ -242,3 +243,33 @@ class ObservationTestCase(OpalTestCase):
         observation = models.Observation()
         observation.observation_value = 'Not pending'
         self.assertFalse(observation.is_pending)
+
+    def test_is_outside_reference_range_is_no_reference_range(self):
+        observation = models.Observation()
+        observation.reference_range = "-"
+        observation.observation_value = "1"
+        self.assertIsNone(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_is_no_value(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "asdf"
+        self.assertIsNone(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_max(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "5"
+        self.assertTrue(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_min(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "0.5"
+        self.assertTrue(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_false(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "3"
+        self.assertFalse(observation.is_outside_reference_range())

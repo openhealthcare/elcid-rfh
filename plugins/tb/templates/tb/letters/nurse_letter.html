@@ -149,7 +149,7 @@
     Your patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when|date }}
   </div>
 </div>
-<table class="content-offset-20 table table-bordered">
+<table class="table table-bordered content-offset-20">
   <tr>
     <td>
       <div>
@@ -161,7 +161,7 @@
       <div>
         <strong>Treatment commenced:</strong>
       </div>
-        {{ treatment_commenced }}
+      {{ treatment_commenced }}
     </td>
   </tr>
   <tr>
@@ -181,138 +181,146 @@
   <tr>
     <td>
       <div>
-        <strong>Sensitivities:</strong>;
-      </div>
-      <span class="text-muted">Please fill in</span>
-    </td>
-    <td>
-      <div>
-        <strong>Latest bloods:</strong>
-      </div>
-      {% if bloods.items %}
-        {% for obs_name, obs_val in bloods.items %}
-        <div class="row">
-          <div class="col-md-6">
-            {{ obs_name }}:
-          </div>
-          <div class="col-md-6 text-left">
-            {{ obs_val }}
-          </div>
-        </div>
-        {% endfor %}
-      {% else %}
-        {{ bloods }}
-      {% endif %}
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <div>
-        <strong>Recent sputum sample results:</strong>
-      </div>
-        <span class="text-muted">Please fill in</span>
-    </td>
-    <td>
-      <div>
         <strong>Medication supply:</strong>
       </div>
       <span class="text-muted">Please fill in</span>
     </td>
-  </tr>
-  <tr>
-    <td>
-      <div>
-        <strong>Follow-up appointment:</strong>
-      </div>
-      <span class="text-muted">Please fill in</span>
-    </td>
-    <td>
-      <div>
-        <strong>Clinic Observation:</strong>
-        {% if observations.bp_systolic and observations.bp_diastolic %}
-        <div class="row">
-          <div class="col-md-6">
-          BP:
-          </div>
-          <div class="col-md-6">
-          {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}<br />
-          </div>
-        </div>
-        {% endif %}
-        {% if observations.pulse %}
-        <div class="row">
-          <div class="col-md-6">
-            Pulse:
-          </div>
-          <div class="col-md-6">
-            {{ observations.pulse}} beats/min
-          </div>
-        </div>
-        {% endif %}
-        {% if observations.resp_rate %}
-        <div class="row">
-          <div class="col-md-6">
-            RR:
-          </div>
-          <div class="col-md-6">
-            {{ observations.resp_rate }} breaths/min
-          </div>
-        </div>
-        {% endif %}
-        {% if observations.sp02 %}
-        <div class="row">
-          <div class="col-md-6">
-            Sp02:
-          </div>
-          <div class="col-md-6">
-            {{ observations.sp02 }} %
-          </div>
-        </div>
-        {% endif %}
-        {% if observations.temperature %}
-        <div class="row">
-          <div class="col-md-6">
-            Temperature:
-          </div>
-          <div class="col-md-6">
-            {{ observations.temperature }} ºC
-          </div>
-        </div>
-        {% endif %}
-        {% if observations.height %}
-        <div class="row">
-          <div class="col-md-6">
-            Height:
-          </div>
-          <div class="col-md-6">
-            {{ observations.height }} m
-          </div>
-        </div>
-        {% endif %}
-        {% if observations.weight %}
-        <div class="row">
-          <div class="col-md-6">
-            Weight:
-          </div>
-          <div class="col-md-6">
-            {{ observations.weight }} kg
-          </div>
-        </div>
-        {% endif %}
-      </div>
-    </td>
-  </tr>
-  <tr>
     <td>
       <div>
         <strong>Compliance:</strong>
       </div>
       <span class="text-muted">Please fill in</span>
     </td>
+  </tr>
+  <tr>
     <td>
+      <div>
+        <strong>Sensitivities:</strong>;
+      </div>
+      <span class="text-muted">Please fill in</span>
+    </td>
+    <td>
+      <div>
+        <strong>Recent sputum sample results:</strong>
+      </div>
+      <span class="text-muted">Please fill in</span>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <div>
+        <strong>Latest bloods:</strong>
+      </div>
+      {% if bloods_normal %}
+      Normal
+      {% elif not bloods %}
+      N/A
+      {% else %}
+      {% for observation in bloods %}
+      <div class="row {% if observation.is_outside_reference_range %}text-danger{% endif %}">
+        <div class="col-md-3 text-right">
+          {{ observation.observation_datetime.date }}
+        </div>
+        <div class="col-md-3">
+          {{ observation.observation_name }}
+        </div>
+        <div class="col-md-3">
+          {{ observation.value_numeric|floatformat  }}
+          {% if observation.cleaned_reference_range %}
+          ({{ observation.cleaned_reference_range.min|floatformat }} -
+            {{ observation.cleaned_reference_range.max|floatformat }})
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div>
+        <strong>Clinic Observation:</strong>
+      </div>
+      {% if observations.bp_systolic and observations.bp_diastolic %}
+      <div class="row">
+        <div class="col-md-6">
+        BP:
+        </div>
+        <div class="col-md-6">
+        {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}<br />
+        </div>
+      </div>
+      {% endif %}
+      {% if observations.pulse %}
+      <div class="row">
+        <div class="col-md-6">
+          Pulse:
+        </div>
+        <div class="col-md-6">
+          {{ observations.pulse}} beats/min
+        </div>
+      </div>
+      {% endif %}
+      {% if observations.resp_rate %}
+      <div class="row">
+        <div class="col-md-6">
+          RR:
+        </div>
+        <div class="col-md-6">
+          {{ observations.resp_rate }} breaths/min
+        </div>
+      </div>
+      {% endif %}
+      {% if observations.sp02 %}
+      <div class="row">
+        <div class="col-md-6">
+          Sp02:
+        </div>
+        <div class="col-md-6">
+          {{ observations.sp02 }} %
+        </div>
+      </div>
+      {% endif %}
+      {% if observations.temperature %}
+      <div class="row">
+        <div class="col-md-6">
+          Temperature:
+        </div>
+        <div class="col-md-6">
+          {{ observations.temperature }} ºC
+        </div>
+      </div>
+      {% endif %}
+      {% if observations.height %}
+      <div class="row">
+        <div class="col-md-6">
+          Height:
+        </div>
+        <div class="col-md-6">
+          {{ observations.height }} m
+        </div>
+      </div>
+      {% endif %}
+      {% if observations.weight %}
+      <div class="row">
+        <div class="col-md-6">
+          Weight:
+        </div>
+        <div class="col-md-6">
+          {{ observations.weight }} kg
+        </div>
+      </div>
+      {% endif %}
+    </td>
+    <td>
+      <div>
+        <strong>Follow-up appointment:</strong>
+      </div>
+      <span class="text-muted">Please fill in</span>
     </td>
   </tr>
 </table>
+
 {% if object.examination_findings %}
 <div class="row content-offset-20">
   <div class="col-md-12">

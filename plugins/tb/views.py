@@ -125,83 +125,72 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         max_rr = str(max_rr).rsplit('.0', 1)[0]
         return f"{obs_value} ({min_rr} - {max_rr})"
 
-    def get_bloods(self, patient):
+    def get_lab_test_observations(self, patient, clinical_advice, test_name, observation_names):
         """
-        For the context of this the nurses letter, bloods
-        refers to Liver (ie Liver profile) and Kidney
-        function (ie Urea and Electrolytes).
-
-        The result should either be a dictionary of
-        observation_name: observation_value
-        if an observation is out of a reference range
-        otherwise it should be "N/A" if there
-        are no tests of any sort
-        or "Normal" if all tests are within reference range
+        Return a lab test where at least one of the observations for
+        that day are numeric
         """
-        liver_profile_result = {}
-        last_liver_profiles = patient.lab_tests.filter(
-            test_name="LIVER PROFILE"
+        if not clinical_advice.when:
+            return []
+        last_lab_tests = patient.lab_tests.filter(
+            test_name=test_name
+        ).filter(
+            datetime_ordered__lt=clinical_advice.when
         ).prefetch_related(
             'observation_set'
-        ).order_by("datetime_ordered").reverse()
-
-        liver_profile_obs_names = [
-            "ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"
+        ).order_by("-datetime_ordered").reverse()
+        test = None
+        for last_lab_test in last_lab_tests:
+            for observation in last_lab_test.observation_set.all():
+                if observation.observation_name in observation_names:
+                    test = last_lab_test
+                    break
+        if not test:
+            return []
+        observations = last_lab_test.observation_set.all()
+        return [
+            i for i in observations if i.observation_name in observation_names
         ]
-        for liver_profile in last_liver_profiles:
-            for observation in liver_profile.observation_set.all():
-                obs_name = observation.observation_name
-                if obs_name not in liver_profile_obs_names:
-                    continue
-                if obs_name in liver_profile_result:
-                    continue
-                obs_value = observation.value_numeric
-                if obs_value:
-                    if self.is_outside_rr(observation):
-                        liver_profile_result[obs_name] = self.display_lab_observation(
-                            observation
-                        )
-                    else:
-                        liver_profile_result[obs_name] = "normal"
-                    if len(liver_profile_result.keys()) == len(liver_profile_obs_names):
-                        break
 
-        urea_result = {}
-        urea_obs_names = [
-            "Creatinine", "Potassium", "Sodium", "Urea"
-        ]
-        last_urea_and_electrolytes = patient.lab_tests.filter(
-            test_name="UREA AND ELECTROLYTES"
-        ).prefetch_related(
-            'observation_set'
-        ).order_by("datetime_ordered").reverse()
-        for urea_and_electrolytes in last_urea_and_electrolytes:
-            for observation in urea_and_electrolytes.observation_set.all():
-                obs_name = observation.observation_name
-                if obs_name not in urea_obs_names:
-                    continue
-                if obs_name in urea_result:
-                    continue
-                obs_value = observation.value_numeric
-                if obs_value:
-                    if self.is_outside_rr(observation):
-                        urea_result[obs_name] = self.display_lab_observation(
-                            observation
-                        )
-                    else:
-                        urea_result[obs_name] = "normal"
-                    if len(urea_result.keys()) == len(liver_profile_obs_names):
-                        break
-        obs_results = liver_profile_result
-        obs_results.update(urea_result)
-        if not obs_results:
-            return "N/A"
-        out_of_reference_range = {
-            k: v for k, v in obs_results.items() if not v == "normal"
-        }
-        if not len(out_of_reference_range):
-            return 'Normal'
-        return out_of_reference_range
+    def get_bloods(self, patient, clinical_advice):
+        """
+        Returns the most reason observations before the clincial
+        advice for liver, urea, CRP, and full count observations.
+        """
+        result = []
+
+        # Liver observations
+        result.extend(self.get_lab_test_observations(
+            patient,
+            clinical_advice,
+            "LIVER PROFILE",
+            ["ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"]
+        ))
+
+        # Urea observations
+        result.extend(self.get_lab_test_observations(
+            patient,
+            clinical_advice,
+            "UREA AND ELECTROLYTES",
+            ["Creatinine", "Potassium", "Sodium", "Urea"]
+        ))
+
+        # CRP
+        result.extend(self.get_lab_test_observations(
+            patient,
+            clinical_advice,
+            "C REACTIVE PROTEIN",
+            ["C Reactive Protein"]
+        ))
+
+        # Full blood count
+        result.extend(self.get_lab_test_observations(
+            patient,
+            clinical_advice,
+            "C FULL BLOOD COUNT",
+            ["Hb", "WBC", "Platelets"]
+        ))
+        return result
 
     def get_observations(self, patient_consultation):
         """
@@ -244,7 +233,14 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ctx = super().get_context_data(*args, **kwargs)
         episode = ctx["object"].episode
         ctx["patient"] = episode.patient
-        ctx["bloods"] = self.get_bloods(episode.patient)
+        ctx["bloods"] = self.get_bloods(episode.patient, ctx["object"])
+        if not ctx["bloods"]:
+            ctx["bloods_normal"] = False
+        else:
+            # are all the bloods within reference range
+            ctx["bloods_normal"] = not any([
+                i for i in ctx["bloods"] if i.is_outside_reference_range()
+            ])
         ctx["diagnosis"] = episode.diagnosis_set.filter(
             category=Diagnosis.PRIMARY
         ).first()
