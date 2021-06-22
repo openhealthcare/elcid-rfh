@@ -94,7 +94,9 @@ class NurseLetterTestCase(OpalTestCase):
             )
         )
         self.patient, self.episode = self.new_patient_and_episode_please()
-        self.patient_consultation = self.episode.patientconsultation_set.create()
+        self.patient_consultation = self.episode.patientconsultation_set.create(
+            when=timezone.now()
+        )
         self.url = reverse(
             "nurse_letter",
             kwargs={"pk": self.patient_consultation.id}
@@ -106,7 +108,7 @@ class NurseLetterTestCase(OpalTestCase):
             test_name="LIVER PROFILE",
             datetime_ordered=when
         )
-        lab_test.observation_set.create(
+        obs = lab_test.observation_set.create(
             observation_name="ALT",
             observation_value="9",
             reference_range="10 - 50",
@@ -115,7 +117,7 @@ class NurseLetterTestCase(OpalTestCase):
         response = self.client.get(self.url)
         self.assertEqual(
             response.context["bloods"],
-            {"ALT": "9 (10 - 50)"}
+            [obs]
         )
 
     def test_get_bloods_without_breaks(self):
@@ -124,7 +126,7 @@ class NurseLetterTestCase(OpalTestCase):
             test_name="LIVER PROFILE",
             datetime_ordered=when
         )
-        lab_test.observation_set.create(
+        obs = lab_test.observation_set.create(
             observation_name="ALT",
             observation_value="11",
             reference_range="10 - 50",
@@ -133,12 +135,12 @@ class NurseLetterTestCase(OpalTestCase):
         response = self.client.get(self.url)
         self.assertEqual(
             response.context["bloods"],
-            "Normal"
+            [obs]
         )
 
     def test_get_bloods_no_bloods(self):
         response = self.client.get(self.url)
         self.assertEqual(
             response.context["bloods"],
-            "N/A"
+            []
         )
