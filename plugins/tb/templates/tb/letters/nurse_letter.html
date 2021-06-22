@@ -189,19 +189,26 @@
       <div>
         <strong>Latest bloods:</strong>
       </div>
-      {% if bloods.items %}
-        {% for obs_name, obs_val in bloods.items %}
-        <div class="row">
-          <div class="col-md-6">
-            {{ obs_name }}:
-          </div>
-          <div class="col-md-6 text-left">
-            {{ obs_val }}
-          </div>
-        </div>
-        {% endfor %}
+      {% if not bloods %}
+      N/A
       {% else %}
-        {{ bloods }}
+      {% for observation in bloods %}
+      <div class="row">
+        <div class="col-md-3">
+          {{ observation.observation_datetime.date }}
+        </div>
+        <div class="col-md-5">
+          {{ observation.observation_name }}
+        </div>
+        <div class="col-md-4">
+          {{ observation.value_numeric|floatformat  }}
+          {% if observation.cleaned_reference_range %}
+          ({{ observation.cleaned_reference_range.min|floatformat }} -
+            {{ observation.cleaned_reference_range.max|floatformat }})
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
       {% endif %}
     </td>
   </tr>
