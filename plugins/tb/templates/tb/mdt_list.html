@@ -39,7 +39,7 @@
               {{ lab_test_dict.location }}
             </div>
             <div class="col-md-6">
-              {{ lab_test_dict.observation_name}}: {{ lab_test_dict.observation_value }}
+              {{ lab_test_dict.observation_value | linebreaks }}
             </div>
           </div>
           {% endfor %}
