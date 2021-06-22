@@ -193,7 +193,7 @@
       N/A
       {% else %}
       {% for observation in bloods %}
-      <div class="row">
+      <div class="row {% if observation.is_outside_reference_range %}text-danger{% endif %}">
         <div class="col-md-3">
           {{ observation.observation_datetime.date }}
         </div>
