@@ -190,7 +190,6 @@ class NurseLetter(LoginRequiredMixin, DetailView):
             "C FULL BLOOD COUNT",
             ["Hb", "WBC", "Platelets"]
         ))
-
         return result
 
     def get_observations(self, patient_consultation):
@@ -235,6 +234,13 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         episode = ctx["object"].episode
         ctx["patient"] = episode.patient
         ctx["bloods"] = self.get_bloods(episode.patient, ctx["object"])
+        if not ctx["bloods"]:
+            ctx["bloods_normal"] = False
+        else:
+            # are all the bloods within reference range
+            ctx["bloods_normal"] = not any([
+                i for i in ctx["bloods"] if i.is_outside_reference_range()
+            ])
         ctx["diagnosis"] = episode.diagnosis_set.filter(
             category=Diagnosis.PRIMARY
         ).first()

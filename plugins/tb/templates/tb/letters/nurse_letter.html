@@ -189,7 +189,9 @@
       <div>
         <strong>Latest bloods:</strong>
       </div>
-      {% if not bloods %}
+      {% if bloods_normal %}
+      Normal
+      {% elif not bloods %}
       N/A
       {% else %}
       {% for observation in bloods %}
