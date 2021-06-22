@@ -125,6 +125,25 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         max_rr = str(max_rr).rsplit('.0', 1)[0]
         return f"{obs_value} ({min_rr} - {max_rr})"
 
+    def get_lab_test_observations(self, patient, test_name, observation_names):
+        """
+        Return a lab test where at least one of the observations for
+        that day are numeric
+        """
+        last_lab_tests = patient.lab_tests.filter(
+            test_name=test_name
+        ).prefetch_related(
+            'observation_set'
+        ).order_by("datetime_ordered").reverse()
+        for last_lab_test in last_lab_tests:
+            for observation in last_lab_test.observation_set.all():
+                if observation.observation_name in observation_names:
+                    break
+        observations = last_lab_test.observation_set.all()
+        return [
+            i for i in observations if i.observation_name in observation_names
+        ]
+
     def get_bloods(self, patient):
         """
         For the context of this the nurses letter, bloods
@@ -138,66 +157,29 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         are no tests of any sort
         or "Normal" if all tests are within reference range
         """
-        liver_profile_result = {}
-        last_liver_profiles = patient.lab_tests.filter(
-            test_name="LIVER PROFILE"
-        ).prefetch_related(
-            'observation_set'
-        ).order_by("datetime_ordered").reverse()
+        result = {}
+        liver_profile_observations = self.get_lab_test_observations(
+            patient,
+            "LIVER PROFILE",
+            ["ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"]
+        )
+        if liver_profile_observations:
+            for obs in liver_profile_observations:
+                result[obs.observation_name] = obs
 
-        liver_profile_obs_names = [
-            "ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"
-        ]
-        for liver_profile in last_liver_profiles:
-            for observation in liver_profile.observation_set.all():
-                obs_name = observation.observation_name
-                if obs_name not in liver_profile_obs_names:
-                    continue
-                if obs_name in liver_profile_result:
-                    continue
-                obs_value = observation.value_numeric
-                if obs_value:
-                    if self.is_outside_rr(observation):
-                        liver_profile_result[obs_name] = self.display_lab_observation(
-                            observation
-                        )
-                    else:
-                        liver_profile_result[obs_name] = "normal"
-                    if len(liver_profile_result.keys()) == len(liver_profile_obs_names):
-                        break
-
-        urea_result = {}
-        urea_obs_names = [
-            "Creatinine", "Potassium", "Sodium", "Urea"
-        ]
-        last_urea_and_electrolytes = patient.lab_tests.filter(
-            test_name="UREA AND ELECTROLYTES"
-        ).prefetch_related(
-            'observation_set'
-        ).order_by("datetime_ordered").reverse()
-        for urea_and_electrolytes in last_urea_and_electrolytes:
-            for observation in urea_and_electrolytes.observation_set.all():
-                obs_name = observation.observation_name
-                if obs_name not in urea_obs_names:
-                    continue
-                if obs_name in urea_result:
-                    continue
-                obs_value = observation.value_numeric
-                if obs_value:
-                    if self.is_outside_rr(observation):
-                        urea_result[obs_name] = self.display_lab_observation(
-                            observation
-                        )
-                    else:
-                        urea_result[obs_name] = "normal"
-                    if len(urea_result.keys()) == len(liver_profile_obs_names):
-                        break
-        obs_results = liver_profile_result
-        obs_results.update(urea_result)
-        if not obs_results:
+        urea_observations = self.get_lab_test_observations(
+            patient,
+            "UREA AND ELECTROLYTES",
+            ["Creatinine", "Potassium", "Sodium", "Urea"]
+        )
+        if urea_observations:
+            for obs in urea_observations:
+                result[obs.observation_name] = obs
+        if not result:
             return "N/A"
         out_of_reference_range = {
-            k: v for k, v in obs_results.items() if not v == "normal"
+            k: self.display_lab_observation(v) for k, v in result.items()
+            if self.is_outside_rr(v)
         }
         if not len(out_of_reference_range):
             return 'Normal'
