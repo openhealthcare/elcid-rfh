@@ -124,7 +124,7 @@ class AFBSmear(TBTest):
 class TBPCR(TBTest):
     TEST_NAME = 'TB PCR TEST'
     TEST_CODE = "TBGX"
-    OBSERVATION_NAME = ''
+    OBSERVATION_NAME = 'TB PCR'
 
     @classmethod
     def get_negative_observations(cls):
@@ -133,7 +133,7 @@ class TBPCR(TBTest):
         return cls.get_observations().filter(
             Q(observation_value__contains=neg1) |
             Q(observation_value="TB PCR (GeneXpert) Negative") |
-            Q(observation_value__contains=neg2)
+            Q(observation_value__contains=neg2),
         )
 
     @classmethod
