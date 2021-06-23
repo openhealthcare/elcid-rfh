@@ -152,7 +152,8 @@ def update_imaging_from_query_result(imaging_rows):
                 # If its an existing image record and it's newer then
                 # our current image record, delete the existing
                 # and create a new one, logging the difference between them.
-                if row["date_of_result"] > existing_imaging.date_of_result:
+                date_of_result = timezone.make_aware(row["date_of_result"])
+                if date_of_result > existing_imaging.date_of_result:
                     patient_id = existing_imaging.patient_id
                     log_prefix = f"Imaging: Updating {sql_id}"
                     logger.info(
