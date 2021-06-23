@@ -12,8 +12,6 @@
     <tbody>
       <tr>
         <th>Patient</th>
-        <th>NHS number</th>
-        <th>Sex</th>
         <th>Results</th>
       </tr>
     {% for episode, demographics, lab_test_dicts in rows %}
@@ -21,14 +19,12 @@
         <td>
           {% if episode %}
           <a href="/#/patient/{{ episode.patient_id }}/{{ episode.id }}/" class="orange-link">
-            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.date_of_birth }})
+            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
           </a>
           {% else %}
-            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.date_of_birth }})
+            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
           {% endif %}
         </td>
-        <td>{{ demographics.nhs_number }}</td>
-        <td>{{ demographics.sex }}</td>
         <td>
           {% for lab_test_dict in lab_test_dicts %}
           <div class="row">
