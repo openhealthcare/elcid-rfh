@@ -43,7 +43,7 @@
               <br />
               {{ lab_test_dict.location }}
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 {% if lab_test_dict.is_positive %}text-danger{% endif %}">
               {{ lab_test_dict.observation_value | linebreaks }}
             </div>
           </div>
