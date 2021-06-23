@@ -145,3 +145,25 @@ class TBPCR(TBTest):
             Q(observation_name='TB PCR (GeneXpert) Positive') |
             Q(observation_value__contains=pos2)
         )
+
+    @classmethod
+    def display_observation_value(cls, observation):
+        # to_remove = "This does not exclude a diagnosis of tuberculosis."
+        obs_value = observation.observation_value
+        # if obs_value.endswith(to_remove):
+        #     obs_value = obs_value[:obs_value.index(to_remove)].strip()
+        return obs_value.split("~")[0].strip()
+
+
+TBTests = [
+    AFBCulture, AFBSmear, TBPCR
+]
+
+
+def get_tb_test(observation):
+    for tb_test in TBTests:
+        obs_test = observation.test
+        if obs_test.test_name == tb_test.TEST_NAME:
+            if obs_test.test_code == tb_test.TEST_CODE:
+                if observation.observation_name == tb_test.OBSERVATION_NAME:
+                    return tb_test
