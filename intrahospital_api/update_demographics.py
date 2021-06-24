@@ -195,6 +195,7 @@ def update_if_changed(instance, update_dict):
         logger.info(f"updated {instance.__class__.__name__} in {time_end-time_start}")
         instance.updated_by = api.user
         instance.updated = timezone.now()
+        instance.external_system = EXTERNAL_SYSTEM
         instance.save()
 
 
