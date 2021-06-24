@@ -7,6 +7,9 @@ from django.views.generic import TemplateView
 from elcid.constants import (
     PATIENT_INFORMATION_SYNC_TIME, PATIENT_INFORMATION_UPDATE_COUNT
 )
+from plugins.imaging.constants import (
+    IMAGING_LOAD_TIME_FACT, IMAGING_LOAD_COUNT_FACT
+)
 
 from plugins.monitoring.models import Fact
 
@@ -54,6 +57,20 @@ class PatientInformationLoadStats(LoginRequiredMixin, TemplateView):
         )
         context['patient_information_updated'] = graph_data_for_label(
             PATIENT_INFORMATION_UPDATE_COUNT
+        )
+        return context
+
+
+class ImagingLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/imaging_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['imaging_load_time_fact'] = graph_data_for_label(
+            IMAGING_LOAD_TIME_FACT
+        )
+        context['imaging_load_count_fact'] = graph_data_for_label(
+            IMAGING_LOAD_COUNT_FACT
         )
         return context
 

@@ -20,7 +20,7 @@ class Command(BaseCommand):
             Fact.objects.create(
                 when=timezone.now(),
                 label=constants.IMAGING_LOAD_TIME_FACT,
-                value_int=(time_end-time_start)/60
+                value_int=(time_end-time_start)
             )
             Fact.objects.create(
                 when=timezone.now(),
