@@ -38,7 +38,9 @@ def load_imaging(patient):
         params={'mrn': patient.demographics().hospital_number}
     )
     created = update_imaging_from_query_result(imaging_rows)
-    logger.info(f'Saved {len(created)} for Patient {patient.id}')
+    logger.info(
+        f'Imaging patient load:Saved {len(created)} for Patient {patient.id}'
+    )
 
 
 def cast_to_instance(patient, imaging_dict):
@@ -95,10 +97,10 @@ def load_imaging_since(last_updated):
         params={'last_updated': last_updated}
     )
     query_end = time.time()
-    logger.info(f"queries {len(imaging_rows)} rows in {query_end - query_start}s")
+    logger.info(f"Imaging: queries {len(imaging_rows)} rows in {query_end - query_start}s")
     created = update_imaging_from_query_result(imaging_rows)
     load_end = time.time()
-    logger.info(f'created {len(created)} in {load_end - query_end}')
+    logger.info(f'Imaging: created {len(created)} in {load_end - query_end}')
     return created
 
 
@@ -108,7 +110,8 @@ def update_imaging_from_query_result(imaging_rows):
     Takes in the result from a db query.
     Ignores the rows where we don't need to update.
     Deletes old rows where we do need to update.
-    Creates new rows.
+
+    Creates new rows, including rows with updates.
 
     Returns the created new rows.
     """
