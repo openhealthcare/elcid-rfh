@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.functional import cached_property
 from django.contrib.auth.models import User
 
 
@@ -36,6 +37,6 @@ class BaseApi(object):
             "Please a method that gets the data that has changed for a patient"
         )
 
-    @property
+    @cached_property
     def user(self):
         return User.objects.get(username=settings.API_USER)

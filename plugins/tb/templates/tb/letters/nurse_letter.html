@@ -1,0 +1,370 @@
+{% extends 'letters/base.html' %}
+{% block letter_content %}
+<div class="row">
+  <div style="font-size: 24px;" class="text-right col-md-12">
+    Royal Free London
+    <span style="padding-left: 5px; padding-right: 10px; font-size: 30px; background-color: #1362b0; color: white; font-weight: 600; font-style: italic">
+      NHS
+    </span>
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    <div style="display: inline-block; padding-right: 30px; font-size: 12px; color: #1362b0;">
+      NHS Foundation Trust
+    </div>
+  </div>
+</div>
+
+{# We don't use <br> tags as they copy and paste strangely #}
+<div class="row content-offset">
+  <div class="text-right col-md-12">
+    TB Nursing Service
+  </div>
+</div>
+<div class="row ">
+  <div class="text-right col-md-12">
+    The Grove Centre
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    Ground Floor
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    Royal Free Hospital <br>
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    Pond Street
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    London
+  </div>
+</div>
+<div class="row">
+  <div class="text-right col-md-12">
+    NW3 2QG
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    Dr {{ patient.gpdetails_set.get.initials }} {{ patient.gpdetails_set.get.surname.title }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_1 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_2 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_3 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.address_4 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.gpdetails_set.get.postcode }}
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12 text-right">
+    Tel 020 7472 6816
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 text-right">
+    Fax 020 7317 7808
+  </div>
+</div>
+<div class="row content-offset">
+  <div class="col-md-12 text-right">
+    Date: &nbsp; {{ object.when|date:"j M Y" }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 text-right">
+    MRN: &nbsp; {{ patient.demographics.hospital_number }}
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    Dear Dr {{ patient.gpdetails_set.get.surname.title }}
+  </div>
+</div>
+<div class="row content-offset">
+  <div class="col-md-12">
+    <strong>
+    Re: {{ patient.demographics.name }}
+    &nbsp; DOB: {{ patient.demographics.date_of_birth }}</strong>
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Address:</strong>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.address_line_1 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.address_line_2 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.address_line_3 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.address_line_4 }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {{ patient.contactinformation_set.get.postcode }}
+  </div>
+</div>
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    Your patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when|date }}
+  </div>
+</div>
+<table class="content-offset-20 table table-bordered">
+  <tr>
+    <td>
+      <div>
+        <strong>Diagnosis:</strong>
+      </div>
+      {{ diagnosis.condition }}
+    </td>
+    <td>
+      <div>
+        <strong>Treatment commenced:</strong>
+      </div>
+        {{ treatment_commenced }}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div>
+        <strong>Current medication:</strong>
+      </div>
+      {{ current_treatments }}
+    </td>
+    <td>
+      <div>
+        <strong>Allergies/Adverse reactions:</strong>
+      </div>
+        {{ adverse_reaction|linebreaks }}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div>
+        <strong>Sensitivities:</strong>;
+      </div>
+      <span class="text-muted">Please fill in</span>
+    </td>
+    <td>
+      <div>
+        <strong>Latest bloods:</strong>
+      </div>
+      {% if bloods.items %}
+        {% for obs_name, obs_val in bloods.items %}
+        <div class="row">
+          <div class="col-md-6">
+            {{ obs_name }}:
+          </div>
+          <div class="col-md-6 text-left">
+            {{ obs_val }}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        {{ bloods }}
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div>
+        <strong>Recent sputum sample results:</strong>
+      </div>
+        <span class="text-muted">Please fill in</span>
+    </td>
+    <td>
+      <div>
+        <strong>Medication supply:</strong>
+      </div>
+      <span class="text-muted">Please fill in</span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div>
+        <strong>Follow-up appointment:</strong>
+      </div>
+      <span class="text-muted">Please fill in</span>
+    </td>
+    <td>
+      <div>
+        <strong>Clinic Observation:</strong>
+        {% if observations.bp_systolic and observations.bp_diastolic %}
+        <div class="row">
+          <div class="col-md-6">
+          BP:
+          </div>
+          <div class="col-md-6">
+          {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}<br />
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.pulse %}
+        <div class="row">
+          <div class="col-md-6">
+            Pulse:
+          </div>
+          <div class="col-md-6">
+            {{ observations.pulse}} beats/min
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.resp_rate %}
+        <div class="row">
+          <div class="col-md-6">
+            RR:
+          </div>
+          <div class="col-md-6">
+            {{ observations.resp_rate }} breaths/min
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.sp02 %}
+        <div class="row">
+          <div class="col-md-6">
+            Sp02:
+          </div>
+          <div class="col-md-6">
+            {{ observations.sp02 }} %
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.temperature %}
+        <div class="row">
+          <div class="col-md-6">
+            Temperature:
+          </div>
+          <div class="col-md-6">
+            {{ observations.temperature }} ºC
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.height %}
+        <div class="row">
+          <div class="col-md-6">
+            Height:
+          </div>
+          <div class="col-md-6">
+            {{ observations.height }} m
+          </div>
+        </div>
+        {% endif %}
+        {% if observations.weight %}
+        <div class="row">
+          <div class="col-md-6">
+            Weight:
+          </div>
+          <div class="col-md-6">
+            {{ observations.weight }} kg
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div>
+        <strong>Compliance:</strong>
+      </div>
+      <span class="text-muted">Please fill in</span>
+    </td>
+    <td>
+    </td>
+  </tr>
+</table>
+{% if object.examination_findings %}
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Examination findings</strong>
+  </div>
+</div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.examination_findings|linebreaks }}
+  </div>
+</div>
+{% endif %}
+{% if object.discussion %}
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Discussion</strong>
+  </div>
+</div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.discussion|linebreaks }}
+  </div>
+</div>
+{% endif %}
+{% if object.progress %}
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Progress</strong>
+  </div>
+</div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.progress|linebreaks }}
+  </div>
+</div>
+{% endif %}
+{% if object.plan %}
+<div class="row content-offset-20">
+  <div class="col-md-12">
+    <strong>Plan</strong>
+  </div>
+</div>
+<div class="row content-offset-below-20">
+  <div class="col-md-12">
+    {{ object.plan|linebreaks }}
+  </div>
+</div>
+{% endif %}
+<div class="row content-offset-below">
+  <div class="col-md-12">
+    Yours sincerely <br>
+    {{ object.initials }}
+  </div>
+</div>
+{% endblock %}
