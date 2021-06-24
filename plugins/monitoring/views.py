@@ -8,7 +8,10 @@ from elcid.constants import (
     PATIENT_INFORMATION_SYNC_TIME, PATIENT_INFORMATION_UPDATE_COUNT
 )
 from plugins.imaging.constants import (
-    IMAGING_LOAD_TIME_FACT, IMAGING_LOAD_COUNT_FACT
+    IMAGING_LOAD_TIME_FACT,
+    IMAGING_LOAD_CREATED_COUNT_FACT,
+    IMAGING_LOAD_PATIENT_COUNT_FACT,
+    IMAGING_COUNT_FACT
 )
 
 from plugins.monitoring.models import Fact
@@ -69,8 +72,14 @@ class ImagingLoadStats(LoginRequiredMixin, TemplateView):
         context['imaging_load_time_fact'] = graph_data_for_label(
             IMAGING_LOAD_TIME_FACT
         )
-        context['imaging_load_count_fact'] = graph_data_for_label(
-            IMAGING_LOAD_COUNT_FACT
+        context['imaging_load_created_count_fact'] = graph_data_for_label(
+            IMAGING_LOAD_CREATED_COUNT_FACT
+        )
+        context['imaging_load_patient_count_fact'] = graph_data_for_label(
+            IMAGING_LOAD_PATIENT_COUNT_FACT
+        )
+        context['imaging_count_fact'] = graph_data_for_label(
+            IMAGING_COUNT_FACT
         )
         return context
 
