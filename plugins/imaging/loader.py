@@ -57,7 +57,7 @@ def cast_to_instance(patient, imaging_dict):
 
 
 def is_instance_different(old_instance, imaging_dict):
-    changed = []
+    changed = {}
     for their_label, our_field in old_instance.UPSTREAM_FIELDS_TO_MODEL_FIELDS.items():
         new_val = imaging_dict[their_label]
         old_val = getattr(old_instance, our_field)
@@ -73,12 +73,10 @@ def is_instance_different(old_instance, imaging_dict):
             if old_val is None and new_val == "":
                 continue
 
-            changed.append({
-                f"{our_field}": {
-                    "old_val": serialization._temporal_thing_to_string(old_val),
-                    "new_val": serialization._temporal_thing_to_string(new_val),
-                }
-            })
+            changed[our_field] = {
+                "old_val": serialization._temporal_thing_to_string(old_val),
+                "new_val": serialization._temporal_thing_to_string(new_val),
+            }
     return changed
 
 

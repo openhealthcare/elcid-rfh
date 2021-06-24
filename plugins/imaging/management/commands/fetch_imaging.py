@@ -7,7 +7,7 @@ import time
 from django.utils import timezone
 from django.core.management import BaseCommand
 from plugins.monitoring.models import Fact
-from plugins.imaging import loader, logger, constants
+from plugins.imaging import loader, logger, constants, models
 
 
 class Command(BaseCommand):
@@ -24,8 +24,18 @@ class Command(BaseCommand):
             )
             Fact.objects.create(
                 when=timezone.now(),
-                label=constants.IMAGING_LOAD_COUNT_FACT,
+                label=constants.IMAGING_LOAD_CREATED_COUNT_FACT,
                 value_int=len(created)
+            )
+            Fact.objects.create(
+                when=timezone.now(),
+                label=constants.IMAGING_LOAD_PATIENT_COUNT_FACT,
+                value_int=models.PatientImagingStatus.objects.all().count()
+            )
+            Fact.objects.create(
+                when=timezone.now(),
+                label=constants.IMAGING_COUNT_FACT,
+                value_int=models.Imaging.objects.all().count()
             )
         except Exception:
             msg = "Failed to load imaging"
