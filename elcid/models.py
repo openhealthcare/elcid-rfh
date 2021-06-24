@@ -40,10 +40,6 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
     main_language = models.CharField(blank=True, null=True, max_length=100)
     nationality = models.CharField(blank=True, null=True, max_length=100)
 
-    @classmethod
-    def get_modal_footer_template(cls):
-        return "partials/demographics_footer.html"
-
     class Meta:
         verbose_name_plural = "Demographics"
 
