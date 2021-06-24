@@ -12,4 +12,3 @@ TB_APPOINTMENT_CODES = [
 ]
 
 TB_APPOINTMENT_REFRESH_TIME_FACT = "TB Appointment Refresh Seconds"
-TB_IMAGING_REFRESH_TIME_FACT = "TB Imaging Refresh Seconds"
