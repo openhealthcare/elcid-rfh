@@ -11,7 +11,6 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.tb import episode_categories, constants, logger
 from plugins.appointments.loader import save_or_discard_appointment_data
-from plugins.imaging.loader import load_imaging
 
 
 Q_TB_APPOINTMENTS = """
@@ -122,30 +121,3 @@ def refresh_future_tb_appointments():
     logger.info(f"Updated {len(updated_hns)} patients appointments")
     if failed:
         logger.error(f"Failed to update {failed} appointments")
-
-
-def load_todays_imaging():
-    """
-    for every patient who has a tb appointment today,
-    refresh their imaging
-    """
-    today = timezone.now().date()
-    tomorrow = today + datetime.timedelta(1)
-    appointment_types = constants.TB_APPOINTMENT_CODES
-    appointments = Appointment.objects.filter(
-        derived_appointment_type__in=appointment_types
-    ).filter(
-        start_datetime__gte=today,
-        start_datetime__lte=tomorrow
-    ).select_related('patient')
-    failed = 0
-    for appointment in appointments:
-        try:
-            load_imaging(appointment.patient)
-        except Exception:
-            logger.info(
-                f"Failed to load imaging for tb patient {appointment.patient.id}"
-            )
-            failed += 1
-    if failed:
-        logger.error(f"Failed to load {failed} tb patients imaging")
