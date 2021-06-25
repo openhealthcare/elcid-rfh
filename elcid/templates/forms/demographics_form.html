@@ -117,25 +117,25 @@
   <h4 class="left-offset-15">Contact Information</h4>
   <div ng-repeat="contact_information in the_episode.contact_information" class="row content-offset-20">
     <div class="col-md-6">
-      <div ng-show="contact_information.home_telephone" class="form-group">
+      <div ng-show="contact_information.home_telephone" class="form-group clearfix">
         <label class="control-label col-sm-4">Home phone</label>
         <div class="col-sm-6 form-control-static">
           [[ contact_information.home_telephone ]]
         </div>
       </div>
-      <div ng-show="contact_information.mobile_telephone" class="form-group">
+      <div ng-show="contact_information.mobile_telephone" class="form-group clearfix">
         <label class="control-label col-sm-4">Mobile</label>
         <div class="col-sm-6 form-control-static">
           [[ contact_information.mobile_telephone ]]
         </div>
       </div>
-      <div ng-show="contact_information.work_telephone" class="form-group">
+      <div ng-show="contact_information.work_telephone" class="form-group clearfix">
         <label class="control-label col-sm-4">Work</label>
         <div class="col-sm-6 form-control-static">
           [[ contact_information.work_telephone ]]
         </div>
       </div>
-      <div ng-show="contact_information.email" class="form-group">
+      <div ng-show="contact_information.email" class="form-group clearfix">
         <label class="control-label col-sm-4">Email</label>
         <div class="col-sm-6 form-control-static">
           [[ contact_information.email ]]
@@ -201,13 +201,13 @@
     </div>
     <div class="row">
       <div class="col-md-6">
-        <div ng-show="next_of_kin_details.work_telephone" class="form-group">
+        <div ng-show="next_of_kin_details.work_telephone" class="form-group clearfix">
           <label class="control-label col-sm-4">Work Telephone</label>
           <div class="col-sm-6 form-control-static">
             [[ next_of_kin_details.work_telephone ]]
           </div>
         </div>
-        <div ng-show="next_of_kin_details.home_telephone" class="form-group">
+        <div ng-show="next_of_kin_details.home_telephone" class="form-group clearfx">
           <label class="control-label col-sm-4">Home Telephone</label>
           <div class="col-sm-6 form-control-static">
             [[ next_of_kin_details.home_telephone ]]
