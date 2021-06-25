@@ -2,7 +2,10 @@
   <div class="panel-heading">
     <h3>
       <i class="fa fa-user"></i> Demographics
-      <i class="fa fa-pencil edit pull-right"
+
+      <i ng-show="!patient.demographics[0].external_system" class="fa fa-pencil edit pull-right"
+         ng-click="patient.recordEditor.editItem('demographics', patient.demographics[0])"></i>
+      <i ng-show="patient.demographics[0].external_system" class="fa fa-search edit pull-right"
          ng-click="patient.recordEditor.editItem('demographics', patient.demographics[0])"></i>
     </h3>
   </div>

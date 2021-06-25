@@ -241,7 +241,7 @@
 
 
 
-<div ng-hide="editing.demographics.external_system">
+<form name="form" ng-hide="editing.demographics.external_system" ng-submit="" class="form-horizontal" novalidate>
   {% input "autofocus" field="Demographics.hospital_number" %}
   {% input field="Demographics.nhs_number" label="NHS Number" %}
   {% select field="Demographics.title" %}
@@ -252,4 +252,4 @@
   {% select field="Demographics.marital_status" %}
   {% select field="Demographics.ethnicity" %}
   {% input field="Demographics.birth_place" %}
-</div>
+</form>
