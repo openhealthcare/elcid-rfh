@@ -1,5 +1,6 @@
 {% load forms %}
 <div ng-show="editing.demographics.external_system">
+  <h4 class="left-offset-15">Patient Information</h4>
   <div class="row">
     <div class="col-md-6">
       <div class="form-group">
@@ -113,7 +114,8 @@
   <hr>
 
   {# Contact info #}
-  <div ng-repeat="contact_information in the_episode.contact_information" class="row">
+  <h4 class="left-offset-15">Contact Information</h4>
+  <div ng-repeat="contact_information in the_episode.contact_information" class="row content-offset-20">
     <div class="col-md-6">
       <div ng-show="contact_information.home_telephone" class="form-group">
         <label class="control-label col-sm-4">Home phone</label>
@@ -167,8 +169,8 @@
   {# Next of kin #}
   <div ng-show="next_of_kin_details.forename_1 || next_of_kin_details.surname" ng-repeat="next_of_kin_details in the_episode.next_of_kin_details">
     <hr>
-    <h4 class="text-center">Next of kin</h4>
-    <div class="row">
+    <h4 class="left-offset-15">Next of kin</h4>
+    <div class="row content-offset-20">
       <div class="col-md-6">
         <label class="control-label col-sm-4">Name</label>
         <div class="col-sm-6 form-control-static">
