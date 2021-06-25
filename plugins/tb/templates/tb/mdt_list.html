@@ -1,46 +1,62 @@
 {% extends "tb/base.html" %}
 {% block tb_content %}
-<div class="panel panel-default">
+<div class="panel panel-default tb-clinic-list">
   <div class="panel-heading">
-    <h1>TB Clinic List</h1>
+    <h1>MDT List</h1>
   </div>
+  {% for location, rows in location_to_rows.items %}
+  <h3 class="date-header">
+    {{ location }}
+  </h3>
   <table class="table table-striped">
-    <tr>
-      <td>Hosp #</td>
-      <td>Patient</td>
-      <td>NHS number</td>
-      <td>Sex</td>
-      <td>Results</td>
-    </tr>
-    {% for demographics, lab_test_dicts in rows %}
-    <tr>
-      <td>{{ demographics.hospital_number }}</td>
-      <td>{{ demographics.name }} ({{ demographics.date_of_birth }})</td>
-      <td>{{ demographics.nhs_number }}</td>
-      <td>{{ demographics.sex }}</td>
-      <td>
-        {% for lab_test_dict in lab_test_dicts %}
-        <div class="row">
-          <div class="col-md-6">
-            {{ lab_test_dict.ordered }} {{ lab_test_dict.lab_number }}
-            {{ lab_test_dict.site }}
-            <br />
-            {{ lab_test_dict.location }}
+    <tbody>
+      <tr>
+        <th>Patient</th>
+        <th>Imaging</th>
+        <th>Results</th>
+      </tr>
+    {% for episode, demographics, lab_test_dicts in rows %}
+      <tr>
+        <td>
+          {% if episode %}
+          <a href="/#/patient/{{ episode.patient_id }}/{{ episode.id }}/" class="orange-link">
+            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
+          </a>
+          {% else %}
+            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
+          {% endif %}
+        </td>
+        <td>
+          <span style="white-space: nowrap;">
+          <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ demographics.hospital_number }}">
+            PACS
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+          </span>
+        </td>
+        <td>
+          {% for lab_test_dict in lab_test_dicts %}
+          <div class="row">
+            <div class="col-md-6">
+              {{ lab_test_dict.ordered }} {{ lab_test_dict.lab_numbers }}
+              {{ lab_test_dict.site }}
+              <br />
+              {{ lab_test_dict.location }}
+            </div>
+            <div class="col-md-6 {% if lab_test_dict.is_positive %}text-danger{% endif %}">
+              {{ lab_test_dict.observation_value | linebreaks }}
+            </div>
           </div>
-          <div class="col-md-6">
-            {% for test_type, result in lab_test_dict.results.items %}
-            {{ test_type }}: {{ result }}<br />
-            {% endfor %}
-          </div>
-        </div>
+          {% endfor %}
+          <br />
+        </td>
+        {% for val in row.values %}
+        <td>{{ val }}</td>
         {% endfor %}
-        <br />
-      </td>
-      {% for val in row.values %}
-      <td>{{ val }}</td>
-      {% endfor %}
-    </tr>
+      </tr>
     {% endfor %}
+    </tbody>
   </table>
+  {% endfor %}
 </div>
 {% endblock %}
