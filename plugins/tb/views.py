@@ -361,7 +361,7 @@ class ClinicList(AbstractTBPatientList):
 
 class Last30Days(AbstractTBPatientList):
     template_name = "tb/tb_patient_list.html"
-    name = "Last 30 days"
+    name = "Clinic History: last 30 days"
 
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
