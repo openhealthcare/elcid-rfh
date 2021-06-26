@@ -335,6 +335,7 @@ class PathologyRowTestCase(OpalTestCase):
             'external_identifier': u'0013I245895',
             'last_updated': '18/07/2015 17:00:02',
             'observation_datetime': '18/07/2015 16:18:00',
+            'reported_datetime': '18/07/2015 16:26:00',
             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
             'observation_number': 20334311,
             'status': 'complete',
@@ -368,6 +369,7 @@ class PathologyRowTestCase(OpalTestCase):
             'datetime_ordered': '18/07/2015 16:18:00',
             'last_updated': '18/07/2015 17:00:02',
             'observation_datetime': '18/07/2015 16:18:00',
+            'reported_datetime': '18/07/2015 16:26:00',
             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
             'observation_number': 20334311,
             'observation_value': u'Negative',
@@ -702,6 +704,7 @@ class ProdApiTestcase(OpalTestCase):
                         'observation_number': 20334311,
                         'observation_value': u'Negative',
                         'observation_datetime': '18/07/2015 16:18:00',
+                        'reported_datetime': '18/07/2015 16:26:00',
                         'units': u'',
                         'last_updated': '18/07/2015 17:00:02',
                         'reference_range': u' -'
@@ -803,6 +806,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -828,6 +832,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -895,6 +900,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -920,6 +926,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -991,6 +998,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -1000,6 +1008,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334312,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -1035,7 +1044,6 @@ class ProdApiTestcase(OpalTestCase):
         """
         Multiple patients with lab tests
         """
-        self.maxDiff = None
         expected = [
             self.get_row(Patient_Number="123", Result_ID="124"),
             self.get_row(Patient_Number="125", Result_ID="126"),
@@ -1068,6 +1076,7 @@ class ProdApiTestcase(OpalTestCase):
                                 'observation_number': 20334311,
                                 'observation_value': u'Negative',
                                 'observation_datetime': '18/07/2015 16:18:00',
+                                'reported_datetime': '18/07/2015 16:26:00',
                                 'units': u'',
                                 'last_updated': '18/07/2015 17:00:02',
                                 'reference_range': u' -'
@@ -1108,6 +1117,7 @@ class ProdApiTestcase(OpalTestCase):
                                 'observation_number': 20334311,
                                 'observation_value': u'Negative',
                                 'observation_datetime': '18/07/2015 16:18:00',
+                                'reported_datetime': '18/07/2015 16:26:00',
                                 'units': u'',
                                 'last_updated': '18/07/2015 17:00:02',
                                 'reference_range': u' -'
