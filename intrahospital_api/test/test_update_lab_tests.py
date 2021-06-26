@@ -9,7 +9,11 @@ class TestGetOrCreateLabTest(OpalTestCase):
     def setUp(self):
         self.api_dict = {
             "clinical_info":  'testing',
+            "accession_number": "123456",
             "datetime_ordered": "17/07/2015 04:15:10",
+            "encounter_consultant_name": "DR. M. SMITH",
+            "encounter_location_name": "RAL 6 NORTH",
+            "encounter_location_code": "6N",
             "external_identifier": "11111",
             "site": u'some site',
             "status": "Success",
@@ -60,7 +64,18 @@ class TestGetOrCreateLabTest(OpalTestCase):
         self.assertEqual(
             lt.site, 'some site'
         )
-
+        self.assertEqual(
+            lt.accession_number, "123456"
+        )
+        self.assertEqual(
+            lt.encounter_consultant_name, "DR. M. SMITH"
+        )
+        self.assertEqual(
+            lt.encounter_location_name, "RAL 6 NORTH"
+        )
+        self.assertEqual(
+            lt.encounter_location_code, "6N"
+        )
         obs = lt.observation_set.get()
         self.assertEqual(
             obs.last_updated,
