@@ -291,6 +291,7 @@ class PathologyRow(object):
         'observation_name',
         'observation_number',
         'observation_value',
+        'reported_datetime',
         'reference_range',
         'units',
     ]
@@ -412,6 +413,9 @@ class PathologyRow(object):
 
     def get_units(self):
         return self.db_row.get("Result_Units")
+
+    def get_reported_datetime(self):
+        return to_datetime_str(self.db_row.get('Reported_date'))
 
     def get_observation_datetime(self):
         dt = self.db_row.get("Observation_date")
