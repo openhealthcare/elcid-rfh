@@ -127,6 +127,7 @@ class Observation(models.Model):
     # as created in the upstream db
     last_updated = models.DateTimeField(blank=True, null=True)
     observation_datetime = models.DateTimeField(blank=True, null=True)
+    reported_datetime = models.DateTimeField(blank=True, null=True)
     observation_name = models.CharField(max_length=256, blank=True, null=True)
     observation_number = models.CharField(max_length=256, blank=True, null=True)
     observation_value = models.TextField(null=True, blank=True)
