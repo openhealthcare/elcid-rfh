@@ -178,6 +178,27 @@ class Observation(models.Model):
             "max": self.to_float(max_val)
         }
 
+    def is_outside_reference_range(self):
+        """
+        Returns True if the value is outside of the
+        reference range.
+
+        Returns False if the value is within the reference
+        range.
+
+        Returns None if we can't calculate the reference
+        range or convert the value to a float.
+        """
+        rr = self.cleaned_reference_range
+        value = self.value_numeric
+        if rr is None or value is None:
+            return
+        if value < rr["min"]:
+            return True
+        if value > rr["max"]:
+            return True
+        return False
+
     @classmethod
     def translate_to_object(cls, observation_dict):
         """

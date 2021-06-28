@@ -1,0 +1,40 @@
+<style>
+  .c3-line {
+    stroke-width: 2px;
+  }
+</style>
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>Patient Information Load Stats Dashboard</h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Load times in seconds</h2>
+              <div id="patient_information_sync_time"></div>
+            </div>
+          </div> <!-- row -->
+          <script>render_graph('patient_information_sync_time', {{ patient_information_sync_time | safe }}, 'line');</script>
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Updated patients</h2>
+                Note this is the number of individual patients updated.
+                <br>
+                Per patient, multiple models can be updated but only if the information specific to that model has been updated.
+                <br>
+                IE per patient it can take a different amount of time to update them depending on the amount of models that need to be updated.
+              <div class="content-offset-20" id="patient_information_updated"></div>
+            </div>
+          </div> <!-- row -->
+          <script>render_graph('patient_information_updated', {{ patient_information_updated | safe }}, 'line');</script>
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+    </div>
+  </div>
+</div>

@@ -81,3 +81,66 @@ class AppointmentListTestCase(OpalTestCase):
         )
         ctx = self.client.get(self.url).context
         self.assertEqual(ctx["rows_by_date"], {})
+
+
+class NurseLetterTestCase(OpalTestCase):
+    def setUp(self):
+        # create the property
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+        self.patient, self.episode = self.new_patient_and_episode_please()
+        self.patient_consultation = self.episode.patientconsultation_set.create(
+            when=timezone.now()
+        )
+        self.url = reverse(
+            "nurse_letter",
+            kwargs={"pk": self.patient_consultation.id}
+        )
+
+    def test_get_bloods_with_breaks(self):
+        when = timezone.now() - datetime.timedelta(1)
+        lab_test = self.patient.lab_tests.create(
+            test_name="LIVER PROFILE",
+            datetime_ordered=when
+        )
+        obs = lab_test.observation_set.create(
+            observation_name="ALT",
+            observation_value="9",
+            reference_range="10 - 50",
+            observation_datetime=when
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.context["bloods"],
+            [obs]
+        )
+
+    def test_get_bloods_without_breaks(self):
+        when = timezone.now() - datetime.timedelta(1)
+        lab_test = self.patient.lab_tests.create(
+            test_name="LIVER PROFILE",
+            datetime_ordered=when
+        )
+        obs = lab_test.observation_set.create(
+            observation_name="ALT",
+            observation_value="11",
+            reference_range="10 - 50",
+            observation_datetime=when
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.context["bloods"],
+            [obs]
+        )
+
+    def test_get_bloods_no_bloods(self):
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.context["bloods"],
+            []
+        )

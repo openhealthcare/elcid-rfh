@@ -4,6 +4,15 @@ Views for the monitoring plugin
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+from elcid.constants import (
+    PATIENT_INFORMATION_SYNC_TIME, PATIENT_INFORMATION_UPDATE_COUNT
+)
+from plugins.imaging.constants import (
+    IMAGING_LOAD_TIME_FACT,
+    IMAGING_LOAD_CREATED_COUNT_FACT,
+    IMAGING_LOAD_PATIENT_COUNT_FACT,
+    IMAGING_COUNT_FACT
+)
 
 from plugins.monitoring.models import Fact
 
@@ -38,6 +47,40 @@ class LabTimings(LoginRequiredMixin, TemplateView):
         context['patient_cohort_data']  = graph_data_for_label('Total Patients')
         context['total_obs_data']       = graph_data_for_label('Total Observations')
 
+        return context
+
+
+class PatientInformationLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/patient_information_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['patient_information_sync_time'] = graph_data_for_label(
+            PATIENT_INFORMATION_SYNC_TIME
+        )
+        context['patient_information_updated'] = graph_data_for_label(
+            PATIENT_INFORMATION_UPDATE_COUNT
+        )
+        return context
+
+
+class ImagingLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/imaging_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['imaging_load_time_fact'] = graph_data_for_label(
+            IMAGING_LOAD_TIME_FACT
+        )
+        context['imaging_load_created_count_fact'] = graph_data_for_label(
+            IMAGING_LOAD_CREATED_COUNT_FACT
+        )
+        context['imaging_load_patient_count_fact'] = graph_data_for_label(
+            IMAGING_LOAD_PATIENT_COUNT_FACT
+        )
+        context['imaging_count_fact'] = graph_data_for_label(
+            IMAGING_COUNT_FACT
+        )
         return context
 
 

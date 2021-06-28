@@ -21,6 +21,8 @@ class Imaging(models.Model):
     patient = models.ForeignKey(
         Patient, on_delete=models.CASCADE, related_name='imaging')
 
+    created = models.DateTimeField(auto_now_add=True)
+
     sql_id               = models.IntegerField(blank=True, null=True) # Internal SQL record ID
     patient_number       = models.CharField(blank=True, null=True, max_length=255)
     patient_surname      = models.CharField(blank=True, null=True, max_length=255)

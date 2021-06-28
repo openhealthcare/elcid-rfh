@@ -2,7 +2,11 @@
     "patientconsultationreasonforinteraction": [
         {
             "synonyms": [],
-            "name": "MDT Meeting"
+            "name": "MDT meeting"
+        },
+        {
+            "synonyms": [],
+            "name": "Migrant screening"
         },
         {
             "synonyms": [],
@@ -19,6 +23,18 @@
         {
             "synonyms": [],
             "name": "TB initial assessment"
+        },
+        {
+            "synonyms": [],
+            "name": "Nurse led clinic"
+        },
+        {
+            "synonyms": [],
+            "name": "Nurse telephone consultation"
+        },
+        {
+            "synonyms": [],
+            "name": "Contact screening"
         }
     ]
 }
