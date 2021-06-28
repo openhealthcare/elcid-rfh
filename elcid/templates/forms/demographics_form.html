@@ -185,7 +185,7 @@
   {# Next of kin #}
   <div ng-show="next_of_kin_details.forename_1 || next_of_kin_details.surname" ng-repeat="next_of_kin_details in the_episode.next_of_kin_details">
     <hr>
-    <h4>Next of kin</h4>
+    <h4>Next Of Kin</h4>
     <div class="row content-offset-20">
       <div class="col-md-6">
         <div class="row">
@@ -274,7 +274,68 @@
       </div>
     </div>
   </div>
-  {# End fo next of kin #}
+  {# End of next of kin #}
+  {# GP details #}
+  <div ng-show="the_episode.gp_details[0].surname || the_episode.gp_details[0].post_code || the_episode.gp_details[0].telephone || the_episode.gp_details[0].practice_code" ng-repeat="next_of_kin_details in the_episode.next_of_kin_details">
+    <hr>
+    <h4>GP Details</h4>
+    <div ng-repeat="gp_details in the_episode.gp_details" class="row content-offset-20">
+      <div class="col-md-6">
+        <div ng-show="gp_details.surname" class="row">
+          <div class="col-sm-4">
+            <strong>
+            Name
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ gp_details.title ]]
+            [[ gp_details.initials ]]
+            [[ gp_details.surname ]]
+          </div>
+        </div>
+        <div ng-show="gp_details.telephone" class="row">
+          <div class="col-sm-4">
+            <strong>
+            Phone
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ gp_details.telephone ]]
+          </div>
+        </div>
+        <div ng-show="gp_details.practice_code" class="row">
+          <div class="col-sm-4">
+            <strong>
+            Practice code
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ gp_details.practice_code ]]
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div ng-show="gp_details.address_1 || gp_details.postcode" class="row">
+          <div class="col-sm-4">
+            <strong>
+              Address
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            <span ng-show="gp_details.address_1">[[ gp_details.address_1 ]] <br></span>
+            <span ng-show="gp_details.address_2">[[ gp_details.address_2 ]] <br></span>
+            <span ng-show="gp_details.address_3">[[ gp_details.address_3 ]] <br></span>
+            <span ng-show="gp_details.address_4">[[ gp_details.address_4 ]] <br></span>
+            <span ng-show="gp_details.postcode">[[ gp_details.postcode ]]</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# End of GP details #}
+
 </div>
 
 
