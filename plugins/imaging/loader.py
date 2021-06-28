@@ -58,7 +58,7 @@ def cast_to_instance(patient, imaging_dict):
     return our_imaging
 
 
-def is_instance_different(old_instance, imaging_dict):
+def get_changed_imaging_fields(old_instance, imaging_dict):
     changed = {}
     for their_label, our_field in old_instance.UPSTREAM_FIELDS_TO_MODEL_FIELDS.items():
         new_val = imaging_dict[their_label]
@@ -155,14 +155,13 @@ def update_imaging_from_query_result(imaging_rows):
                 date_reported = timezone.make_aware(row["date_reported"])
                 if date_reported > existing_imaging.date_reported:
                     patient_id = existing_imaging.patient_id
-                    log_prefix = f"Imaging: Updating {sql_id}"
                     logger.info(
-                        f"{log_prefix} for patient id {patient_id}"
+                        f"Imaging: checking for patient id {patient_id} sql id {sql_id}"
                     )
-                    changed = is_instance_different(existing_imaging, row)
+                    changed = get_changed_imaging_fields(existing_imaging, row)
                     for k, v in changed.items():
                         logger.info(
-                            f'{log_prefix} {k} was {v["old_val"]} now {v["new_val"]}'
+                            f'Imaging: updating {k} was {v["old_val"]} now {v["new_val"]}'
                         )
                     to_delete.append(existing_imaging)
                     new_instance = cast_to_instance(patient, row)
