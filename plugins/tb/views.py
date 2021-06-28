@@ -103,16 +103,6 @@ class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"
     model = PatientConsultation
 
-    def display_lab_observation(self, observation):
-        obs_value = observation.value_numeric
-        obs_value = str(obs_value).rsplit('.0', 1)[0]
-        reference_range = observation.cleaned_reference_range
-        min_rr = reference_range["min"]
-        max_rr = reference_range['max']
-        min_rr = str(min_rr).rsplit('.0', 1)[0]
-        max_rr = str(max_rr).rsplit('.0', 1)[0]
-        return f"{obs_value} ({min_rr} - {max_rr})"
-
     def get_lab_test_observations(self, patient, clinical_advice, test_name, observation_names):
         """
         Return a lab test where at least one of the observations for
@@ -142,8 +132,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
 
     def get_bloods(self, patient, clinical_advice):
         """
-        Returns the most reason observations before the clincial
-        advice for liver, urea, CRP, and full count observations.
+        Returns the most recent observations before the clincial
+        advice for liver, urea, CRP, and full blood count observations.
         """
         result = []
 
