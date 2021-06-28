@@ -82,7 +82,6 @@ def is_instance_different(old_instance, imaging_dict):
     return changed
 
 
-@transaction.atomic
 def load_imaging_since(last_updated):
     """
     Loads imaging from the upstream table that have
