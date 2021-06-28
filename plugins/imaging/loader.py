@@ -149,7 +149,7 @@ def update_imaging_from_query_result(imaging_rows):
                 to_create.append(new_instance)
             else:
                 existing_imaging = sql_id_to_existing_imaging[sql_id]
-                # If its an existing image record and it's newer then
+                # If its an existing image record and its newer then
                 # our current image record, delete the existing
                 # and create a new one, logging the difference between them.
                 date_reported = timezone.make_aware(row["date_reported"])
