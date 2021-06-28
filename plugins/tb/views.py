@@ -104,18 +104,6 @@ class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"
     model = PatientConsultation
 
-    def is_outside_rr(self, observation):
-        """
-        If the observation value is outside the reference range, return True
-        """
-        obs_value = observation.value_numeric
-        if obs_value:
-            reference_range = observation.cleaned_reference_range
-            min_rr = reference_range["min"]
-            max_rr = reference_range['max']
-            if obs_value > max_rr or obs_value < min_rr:
-                return True
-
     def display_lab_observation(self, observation):
         obs_value = observation.value_numeric
         obs_value = str(obs_value).rsplit('.0', 1)[0]
