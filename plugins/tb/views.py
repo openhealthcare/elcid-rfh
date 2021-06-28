@@ -269,7 +269,7 @@ class OtherMedicationModal(AbstractModalView):
     model = Treatment
 
 
-class AbstractTBPatientList(LoginRequiredMixin, ListView):
+class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
     """
     An abstract class that will display a bunch of TB appointments in
     a list.
@@ -337,7 +337,7 @@ class AbstractTBPatientList(LoginRequiredMixin, ListView):
         return ctx
 
 
-class ClinicList(AbstractTBPatientList):
+class ClinicList(AbstractTBAppointmentList):
     template_name = "tb/tb_patient_list.html"
     name = "TB Clinic List"
 
@@ -359,7 +359,7 @@ class ClinicList(AbstractTBPatientList):
         )
 
 
-class Last30Days(AbstractTBPatientList):
+class Last30Days(AbstractTBAppointmentList):
     template_name = "tb/tb_patient_list.html"
     name = "Clinic History: last 30 days"
 
