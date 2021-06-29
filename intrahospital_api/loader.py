@@ -417,3 +417,22 @@ def _load_patient(patient, patient_load):
         patient_load.failed()
     else:
         patient_load.complete()
+
+from elcid.models import Demographics
+from plugins.labtests.models import Observation
+def load_lab_tests(hn):
+    demos = Demographics.objects.filter(hospital_number=hn)
+    for demo in demos:
+        patient = demo.patient
+        if Observation.objects.filter(
+            test__patient=patient,
+            reported_datetime=None
+        ).exists():
+            results = api.results_for_hospital_number(hn)
+            logger.info(
+                f"Loaded results for patient id {patient.id}"
+            )
+            update_lab_tests.update_tests(patient, results)
+            logger.info(
+                f"Tests updated for patient id {patient.id}"
+            )
