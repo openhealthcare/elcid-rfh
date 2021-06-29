@@ -12,10 +12,10 @@ from plugins.appointments import loader, logger, constants, models
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        two_days_ago = timezone.now() - datetime.timedelta(2)
+        two_hours_ago = timezone.now() - datetime.timedelta(hours=2)
         time_start = time.time()
         try:
-            created = loader.load_appointments_since(two_days_ago)
+            created = loader.load_appointments_since(two_hours_ago)
             time_end = time.time()
             Fact.objects.create(
                 when=timezone.now(),
