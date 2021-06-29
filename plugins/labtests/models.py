@@ -225,7 +225,7 @@ class Observation(models.Model):
                 observation_dict["observation_datetime"]
             )
         if observation_dict["reported_datetime"]:
-            self.reported_datetime = serialization.deserialize_datetime(
+            obs.reported_datetime = serialization.deserialize_datetime(
                 observation_dict["reported_datetime"]
             )
         fields = [
