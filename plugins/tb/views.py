@@ -225,6 +225,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ).first()
         tb_treatments = episode.treatment_set.filter(
             category=Treatment.TB
+        ).filter(
+            start_date__lte=ctx["object"].when
         )
         tb_treatments = sorted(
             [i for i in tb_treatments if i.start_date],
@@ -233,8 +235,18 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         if tb_treatments:
             ctx["treatment_commenced"] = tb_treatments[0].start_date
 
-        current_treatments = [i for i in tb_treatments if not i.end_date]
-        ctx["current_treatments"] = ", ".join([i.drug for i in current_treatments])
+        current_treatments = []
+        for treatment in tb_treatments:
+            if treatment.end_date and treatment.end_date < ctx["object"].when.date():
+                continue
+            display = f"{treatment.drug}"
+            parenthesis = None
+            if treatment.route or treatment.dose:
+                parenthesis = f"{treatment.dose} {treatment.route}".strip()
+            if parenthesis:
+                display = f"{display} ({parenthesis})"
+            current_treatments.append(display)
+        ctx["current_treatments"] = ", ".join(current_treatments)
         adverse_reaction = episode.adversereaction_set.first()
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
@@ -324,6 +336,11 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
                 continue
 
             demographics = patient_id_to_demographics.get(admission.patient_id)
+            import random
+            first_name = random.choice(["Muhammed", "George", "Ashley", "Tariq", "Fatma", "Mary", "Ana"])
+            surname = random.choice(["Lloyd", "Booth", "Duong", "Tariq", "Than", "Alievi", "Bairamovi"])
+            demographics.name1 = f"{first_name} {surname}"
+            demographics.hospital_number = f"FAKE {random.randint(0, 10000000)}"
             recent_consultation = patient_id_to_consultation.get(admission.patient_id)
             ctx["rows_by_date"][admission.start_datetime.date()].append(
                 (
