@@ -224,6 +224,10 @@ class Observation(models.Model):
             obs.observation_datetime = serialization.deserialize_datetime(
                 observation_dict["observation_datetime"]
             )
+        if observation_dict["reported_datetime"]:
+            self.reported_datetime = serialization.deserialize_datetime(
+                observation_dict["reported_datetime"]
+            )
         fields = [
             "observation_number",
             "observation_name",

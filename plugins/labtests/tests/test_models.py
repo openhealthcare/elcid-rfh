@@ -23,6 +23,7 @@ class LabTestTestCase(OpalTestCase):
             "observations": [{
                 "last_updated": "18/07/2015 04:15:10",
                 "observation_datetime": "19/07/2015 04:15:10",
+                "reported_datetime": "20/07/2015 04:15:10",
                 "observation_name": "Aerobic bottle culture",
                 "observation_number": "12312",
                 "observation_value": "123",
