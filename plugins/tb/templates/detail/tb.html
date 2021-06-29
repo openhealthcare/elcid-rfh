@@ -20,7 +20,7 @@
     {% record_panel models.Allergies %}
     {% record_panel models.SocialHistory %}
     {% include 'tb/obs_panel.html' %}
-    {% record_panel models.Imaging %}
+    {% include 'panels/tb/imaging.html' %}
     {% record_panel models.OtherInvestigation title="Other Investigations"%}
     {% record_panel models.MantouxTest %}
     {% record_panel models.ContactDetails %}
@@ -79,6 +79,10 @@
                       <b>Discussion: </b>
                       <div markdown="discussion"></div>
                     </span>
+                    <span ng-show="item.progress">
+                      <b>Progress: </b>
+                      <div markdown="progress"></div>
+                    </span>
                     <span ng-show="item.plan">
                       <b>Plan: </b>
                       <div markdown="plan"></div>
@@ -96,16 +100,26 @@
                       </div>
                     </div>
                     <div class="row content-offset-10">
+                      <div class="col-md-12">
+                        <i class="fa fa-print edit pull-right pointer" print-page="'/tb/patient_consultation_print/' + item.id"></i>
+                      </div>
+                    </div>
+                    <div class="row content-offset-10">
                       <div ng-show="item.reason_for_interaction.indexOf('initial assessment') != -1" class="col-md-12">
                         <a target="_blank" href="/letters/#/tb/initial_assessment/[[ item.id ]]/">
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
                       <div ng-show="item.reason_for_interaction.indexOf('follow up') != -1" class="col-md-12">
-                          <a target="_blank" href="/letters/#/tb/followup_assessment/[[ item.id ]]/">
-                            <i class="fa fa-envelope edit pull-right pointer"></i>
-                          </a>
-                        </div>
+                        <a target="_blank" href="/letters/#/tb/followup_assessment/[[ item.id ]]/">
+                          <i class="fa fa-envelope edit pull-right pointer"></i>
+                        </a>
+                      </div>
+                      <div ng-show="item.reason_for_interaction.indexOf('Nurse') != -1 || item.reason_for_interaction == 'Contact screening'" class="col-md-12">
+                        <a target="_blank" href="/letters/#/tb/nurse_letter/[[ item.id ]]/">
+                          <i class="fa fa-envelope edit pull-right pointer"></i>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>

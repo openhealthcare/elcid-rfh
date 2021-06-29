@@ -109,7 +109,7 @@ class Appointment(models.Model):
 
     # These fields are 'derived' - by which we interpret that the middleman database has
     # done some processing on the raw HL7 text
-    derived_appointment_type          = models.CharField(max_length=100, blank=True, null=True,
+    derived_appointment_type          = models.CharField(max_length=100, blank=True, null=True, db_index=True,
                                                          help_text="Cleaned up Appointment type (Taken from Full Appointment type)")
     derived_appointment_location      = models.CharField(max_length=255, blank=True, null=True,
                                                          help_text="Cleaned up Appointment location (taken from AIL)")

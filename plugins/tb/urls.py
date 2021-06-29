@@ -19,6 +19,11 @@ urlpatterns = [
         views.FollowUp.as_view()
     ),
     url(
+        r'^tb/nurse_letter/(?P<pk>\d+)/?$',
+        views.NurseLetter.as_view(),
+        name="nurse_letter"
+    ),
+    url(
         r'^tb/primary_diagnosis/$',
         views.PrimaryDiagnosisModal.as_view(),
         name="primary_diagnosis_modal"
@@ -42,5 +47,19 @@ urlpatterns = [
         r'^templates/tb/clinic_list.html$',
         views.ClinicList.as_view(),
         name="tb_clinic_list"
+    ),
+    url(
+        r'^templates/tb/last_30_days.html$',
+        views.Last30Days.as_view(),
+        name="last_30_days"
+    ),
+    url(
+        r'^tb/patient_consultation_print/(?P<pk>\d+)/?$',
+        views.PrintConsultation.as_view()
+    ),
+    url(
+        r'^templates/tb/mdt_list.html$',
+        views.MDTList.as_view(),
+        name="mdt_list"
     )
 ]

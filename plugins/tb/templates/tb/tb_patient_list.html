@@ -1,23 +1,13 @@
-<div class="left-menu">
-  <h3>
-    <a href="/#/tb/clinic-list/">TB</a>
-  </h3>
-  <li>
-    <a href="/#/tb/clinic-list/">Clinic List</a>
-  </li>
-  </ul>
-</div>
-
-<div class="content-offset right-viewport">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h1>
-        TB Clinic List
-      </h1>
-    </div>
+{% extends "tb/base.html" %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <h1>
+      {{ view.name }}
+    </h1>
   </div>
   {% for date, rows in rows_by_date.items %}
-  <h3 class="content-offset left-offset-10">
+  <h3 class="date-header">
     {{ date }}
   </h3>
   <table class="table table-striped">
@@ -33,7 +23,7 @@
     {% for appointment, demographics, episode, consultation in rows %}
     <tr>
       <td>
-        {{ appointment.start_datetime.time }}
+        {{ appointment.start_datetime|date:"G:i" }}
       </td>
       <td>{{ appointment.status_code }}</td>
       <td>
@@ -45,7 +35,7 @@
       <td>{{ appointment.derived_appointment_type }}</td>
       <td>{{ appointment.derived_clinic_resource }}</td>
       <td>
-        <a class="orange-link" target="_blank" href="http://freenet/carestream/?pid={{ demographics.hospital_number }}">
+        <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ demographics.hospital_number }}">
           PACS
           <i class="fa fa-external-link" aria-hidden="true"></i>
         </a>
@@ -65,5 +55,4 @@
   </table>
   {% endfor %}
 </div>
-
-
+{% endblock %}

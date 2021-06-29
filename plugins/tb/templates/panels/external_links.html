@@ -9,11 +9,18 @@
           </h3>
         </div>
         </div>
-        <div class="panel-footer">
+        <div patient-api target="upstream_imaging" endpoint="upstream_imaging" get-params="{result_code: 'XCHES'}" class="panel-footer">
+          <div ng-show="upstream_imaging.length && upstream_imaging[0].date_of_result" class="row">
+
+          </div>
           <div class="row">
             <div class="col-md-12">
-              <a target="_blank" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">PACS <i
-              class="fa fa-external-link" aria-hidden="true"></i></a>
+              Last CXR:
+              [[ upstream_imaging[0].date_of_result | displayDate ]]
+              <a target="upstream_imaging" class="orange-link pull-right" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">
+                PACS
+              <i class="fa fa-external-link" aria-hidden="true"></i>
+              </a>
             </div>
         </div>
     </div>
@@ -32,11 +39,10 @@
     <div class="panel-footer">
         <div class="row">
           <div class="col-md-12">
-                <a target="_blank" href="http://rfh-edrm-live:18080/horus/api/visual/record/[[ episode.demographics[0].hospital_number ]]"></i>EDRM <i class="fa fa-external-link" aria-hidden="true"></i></a>
+                <a target="upstream_documents" class="orange-link pull-right" href="http://rfh-edrm-live:18080/horus/api/visual/record/[[ episode.demographics[0].hospital_number ]]"></i>EDRM <i class="fa fa-external-link" aria-hidden="true"></i></a>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-

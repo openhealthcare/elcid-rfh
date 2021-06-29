@@ -41,7 +41,7 @@ class LabTest(models.Model):
     class Meta:
         ordering = ['-datetime_ordered']
 
-    def update_from_api_dict(self, patient, data):
+    def create_from_api_dict(self, patient, data):
         """
             This is the updateFromDict of the the UpstreamLabTest
 
@@ -81,15 +81,12 @@ class LabTest(models.Model):
         self.encounter_location_name = data["encounter_location_name"]
         self.encounter_location_code = data["encounter_location_code"]
         self.save()
+        observations = []
         for obs_dict in data["observations"]:
-            obs = self.observation_set.filter(
-                observation_number=obs_dict["observation_number"]
-            )
-            if obs.exists():
-                obs.delete()
-
-            obs = self.observation_set.create()
-            obs.create(obs_dict)
+            observation =  Observation.translate_to_object(obs_dict)
+            observation.test = self
+            observations.append(observation)
+        Observation.objects.bulk_create(observations)
 
     @classmethod
     def get_relevant_tests(self, patient):
@@ -192,12 +189,39 @@ class Observation(models.Model):
             "max": self.to_float(max_val)
         }
 
-    def create(self, observation_dict):
-        self.last_updated = serialization.deserialize_datetime(
+    def is_outside_reference_range(self):
+        """
+        Returns True if the value is outside of the
+        reference range.
+
+        Returns False if the value is within the reference
+        range.
+
+        Returns None if we can't calculate the reference
+        range or convert the value to a float.
+        """
+        rr = self.cleaned_reference_range
+        value = self.value_numeric
+        if rr is None or value is None:
+            return
+        if value < rr["min"]:
+            return True
+        if value > rr["max"]:
+            return True
+        return False
+
+    @classmethod
+    def translate_to_object(cls, observation_dict):
+        """
+        Returns a new unsaved instance of an Observation with the values
+        from observation_dict (datetimes translated from strings into dates).
+        """
+        obs = cls()
+        obs.last_updated = serialization.deserialize_datetime(
             observation_dict["last_updated"]
         )
         if observation_dict["observation_datetime"]:
-            self.observation_datetime = serialization.deserialize_datetime(
+            obs.observation_datetime = serialization.deserialize_datetime(
                 observation_dict["observation_datetime"]
             )
         if observation_dict["reported_datetime"]:
@@ -212,6 +236,5 @@ class Observation(models.Model):
             "units"
         ]
         for f in fields:
-            setattr(self, f, observation_dict.get(f))
-        self.save()
-        return self
+            setattr(obs, f, observation_dict.get(f))
+        return obs
