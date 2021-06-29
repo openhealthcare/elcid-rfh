@@ -31,7 +31,7 @@ WHERE last_updated > @last_updated
 
 
 def cast_to_instance(patient, upstream_dict):
-    our_imaging = Appointment(patient=patient)
+    our_appointment = Appointment(patient=patient)
     for k, v in upstream_dict.items():
         if v:  # Ignore empty values
             fieldtype = type(
@@ -40,9 +40,9 @@ def cast_to_instance(patient, upstream_dict):
             if fieldtype == DateTimeField:
                 v = timezone.make_aware(v)
             setattr(
-                our_imaging, Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v
+                our_appointment, Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v
             )
-    return our_imaging
+    return our_appointment
 
 
 def load_appointments_since(last_updated):
@@ -50,7 +50,7 @@ def load_appointments_since(last_updated):
     Loads appointments from the upstream table that have
     been reported since last_updated.
 
-    Returns the created imaging models
+    Returns the created appointment models
     """
     api = ProdAPI()
     query_start = time.time()
@@ -126,7 +126,7 @@ def update_appointments_from_query_result(upstream_rows):
             continue
         for patient in hospital_number_to_patients[hn]:
             sql_id = row["id"]
-            # If its a new imaging record, add it to the to_create list
+            # If its a new appointment record, add it to the to_create list
             if sql_id not in sql_id_to_existing_appointments:
                 new_instance = cast_to_instance(patient, row)
                 to_create.append(new_instance)

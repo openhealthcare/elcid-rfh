@@ -393,13 +393,13 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     def get_observations(self):
         culture_obs = list(lab.AFBCulture.get_positive_observations().filter(
-            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(365)
+            reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
         ).select_related('test'))
         smear_obs = list(lab.AFBSmear.get_resulted_observations().filter(
-            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(30)
+            reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).select_related('test'))
         pcr_tests = list(lab.TBPCR.get_resulted_observations().filter(
-            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(30)
+            reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).select_related('test'))
         return culture_obs + smear_obs + pcr_tests
 
