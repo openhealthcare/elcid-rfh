@@ -100,11 +100,11 @@ def update_appointments_from_query_result(upstream_rows):
 
     Returns the created new rows.
     """
-    existing_appointments = Appointment.objects.filter(
+    existing_appointment = Appointment.objects.filter(
         sqlserver_id__in=[i["id"] for i in upstream_rows],
     )
     sql_id_to_existing_appointments = {
-        ea.sqlserver_id: ea for ea in existing_appointments
+        ea.sqlserver_id: ea for ea in existing_appointment
     }
     to_create = []
     to_delete = []
@@ -131,14 +131,14 @@ def update_appointments_from_query_result(upstream_rows):
                 new_instance = cast_to_instance(patient, row)
                 to_create.append(new_instance)
             else:
-                existing_appointments = sql_id_to_existing_appointments[sql_id]
+                existing_appointment = sql_id_to_existing_appointments[sql_id]
                 # If its an existing image record and its newer then
                 # our current image record, delete the existing
                 # and create a new one, logging the difference between them.
                 last_updated = timezone.make_aware(row["last_updated"])
                 insert_date = timezone.make_aware(row["insert_date"])
-                existing_updated = existing_appointments.last_updated
-                existing_insert_date = existing_updated.insert_date
+                existing_updated = existing_appointment.last_updated
+                existing_insert_date = existing_appointment.insert_date
 
                 changed = False
 
@@ -157,16 +157,16 @@ def update_appointments_from_query_result(upstream_rows):
                 if last_updated > existing_updated:
                     changed = True
                 if changed:
-                    patient_id = existing_appointments.patient_id
+                    patient_id = existing_appointment.patient_id
                     logger.info(
                         f"Appointments: checking for patient id {patient_id} sql id {sql_id}"
                     )
-                    changed = get_changed_appointment_fields(existing_appointments, row)
+                    changed = get_changed_appointment_fields(existing_appointment, row)
                     for k, v in changed.items():
                         logger.info(
                             f'Appointments: updating {k} was {v["old_val"]} now {v["new_val"]}'
                         )
-                    to_delete.append(existing_appointments)
+                    to_delete.append(existing_appointment)
                     new_instance = cast_to_instance(patient, row)
                     to_create.append(new_instance)
     Appointment.objects.filter(
