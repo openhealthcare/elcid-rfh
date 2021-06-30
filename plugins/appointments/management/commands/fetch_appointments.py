@@ -30,12 +30,12 @@ class Command(BaseCommand):
             Fact.objects.create(
                 when=timezone.now(),
                 label=constants.APPOINTMENTS_LOAD_PATIENT_COUNT_FACT,
-                value_int=models.PatientImagingStatus.objects.all().count()
+                value_int=models.PatientAppointmentStatus.objects.all().count()
             )
             Fact.objects.create(
                 when=timezone.now(),
                 label=constants.APPOINTMENTS_COUNT_FACT,
-                value_int=models.Imaging.objects.all().count()
+                value_int=models.Appointment.objects.all().count()
             )
         except Exception:
             msg = "Failed to load appointments"
