@@ -45,6 +45,9 @@ ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER = "SELECT * FROM {view} WHERE Patient_Number 
 ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number and Result_ID = @lab_number ORDER BY date_inserted DESC;"
 
+
+ALL_DATA_QUERY_WITH_LAB_NUMBER = "SELECT * FROM VIEW_ElCid_Radiology_Results WHERE Result_ID = @lab_number ORDER BY date_inserted DESC;"
+
 ALL_DATA_QUERY_WITH_LAB_TEST_TYPE = "SELECT * FROM {view} WHERE Patient_Number = \
 @hospital_number AND OBR_exam_code_Text = @test_type ORDER BY date_inserted DESC;"
 
