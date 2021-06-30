@@ -436,3 +436,10 @@ def load_lab_tests(hn):
             logger.info(
                 f"Tests updated for patient id {patient.id}"
             )
+from plugins.tb import lab
+hns = list(lab.AFBSmear.get_resulted_observations().values_list('test__patient__demographics__hospital_number', flat=True).distinct())
+hns.extend(lab.TBPCR.get_resulted_observations().values_list('test__patient__demographics__hospital_number', flat=True).distinct())
+hns.extend(lab.AFBCulture.get_resulted_observations().values_list('test__patient__demographics__hospital_number', flat=True).distinct())
+hns = list(set(hns))
+for hn in hns:
+    load_lab_tests(hn)
