@@ -135,8 +135,12 @@ def update_appointments_from_query_result(upstream_rows):
                 # If its an existing image record and its newer then
                 # our current image record, delete the existing
                 # and create a new one, logging the difference between them.
-                last_updated = timezone.make_aware(row["last_updated"])
-                insert_date = timezone.make_aware(row["insert_date"])
+                last_updated = None
+                if row["last_updated"]:
+                    last_updated = timezone.make_aware(row["last_updated"])
+                insert_date = None
+                if row["insert_date"]:
+                    insert_date = timezone.make_aware(row["insert_date"])
                 existing_updated = existing_appointment.last_updated
                 existing_insert_date = existing_appointment.insert_date
 
