@@ -153,9 +153,9 @@ def update_appointments_from_query_result(upstream_rows):
                     )
                 if last_updated and not existing_updated:
                     changed = True
-
-                if last_updated > existing_updated:
+                elif last_updated > existing_updated:
                     changed = True
+
                 if changed:
                     patient_id = existing_appointment.patient_id
                     logger.info(
