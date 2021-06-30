@@ -157,6 +157,8 @@ def update_appointments_from_query_result(upstream_rows):
                     )
                 if last_updated and not existing_updated:
                     changed = True
+                elif not last_updated and not existing_updated:
+                    changed = False
                 elif last_updated > existing_updated:
                     changed = True
 
