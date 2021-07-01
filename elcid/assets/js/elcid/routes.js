@@ -6,9 +6,10 @@ var static_template_route = function(url){
       // template in the application viewport
       controller: 'WelcomeCtrl',
       controllerAs: 'welcome',
-      templateUrl: function(x){
+      templateUrl: function(params){
           // silly cache busting technique. The param is never read
-          return url + '?when=' + Date.now()
+          params["cacheBust"] = Date.now();
+          return url + '?' + $.param(params);
       },
       resolve: {
           referencedata: function(Referencedata) { return Referencedata; },
@@ -21,7 +22,9 @@ var param_template_route = function(base, param_name){
         controller: 'WelcomeCtrl',
         controllerAs: 'welcome',
         templateUrl: function(params){
-            return base + params[param_name] + '/?when=' + Date.now()
+          // silly cache busting technique. The param is never read
+          params["cacheBust"] = Date.now();
+          return base + params[param_name] + '/?' + $.param(_.omit(params, param_name));
         },
         resolve: {
             referencedata: function(Referencedata) { return Referencedata; },
