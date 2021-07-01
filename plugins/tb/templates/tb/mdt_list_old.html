@@ -2,8 +2,12 @@
 {% block tb_content %}
 <div class="panel panel-default tb-clinic-list">
   <div class="panel-heading">
-    <h1>{{ site }} MDT List</h1>
+    <h1>MDT List</h1>
   </div>
+  {% for location, rows in location_to_rows.items %}
+  <h3 class="date-header">
+    {{ location }}
+  </h3>
   <table class="table table-striped">
     <tbody>
       <tr>
@@ -53,5 +57,6 @@
     {% endfor %}
     </tbody>
   </table>
+  {% endfor %}
 </div>
 {% endblock %}

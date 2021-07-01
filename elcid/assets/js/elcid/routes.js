@@ -70,8 +70,8 @@ app.config(
 
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list.html'))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
+             .when('/tb/mdt-list/:site/',  param_template_route('/templates/tb/mdt_list/', 'site'))
              .when('/tb/mdt-list/',  static_template_route('/templates/tb/mdt_list.html'))
-
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))
