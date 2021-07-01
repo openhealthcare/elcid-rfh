@@ -458,7 +458,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
             return (
                 lab_test.patient_id,
                 lab_test.cleaned_site,
-                observation.observation_datetime.date(),
+                observation.reported_datetime.date(),
                 observation.id in positive_obs_ids,
                 self.format_obs_value(observation)
             )
@@ -466,18 +466,18 @@ class MDTList(LoginRequiredMixin, TemplateView):
             group_tests[get_key(observation)].append(observation.test.lab_number)
 
         for key, lab_numbers in group_tests.items():
-            patient_id, site, ordered, is_positive, obs_value = key
+            patient_id, site, reported, is_positive, obs_value = key
             patient_ids_to_lab_test_dict[patient_id].append({
                 "site": site,
                 "lab_numbers": ", ".join(lab_numbers),
-                "ordered": ordered,
+                "reported": reported,
                 "is_positive": is_positive,
                 "observation_value": obs_value,
             })
         result = {}
         for patient_id, lab_test_dicts in patient_ids_to_lab_test_dict.items():
             result[patient_id] = sorted(
-                lab_test_dicts, key=lambda x: x["ordered"], reverse=True
+                lab_test_dicts, key=lambda x: x["reported"], reverse=True
             )
         return result
 
@@ -503,7 +503,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
         patient_id_lab_test_dicts = sorted(
             patient_id_to_lab_test_dicts.items(),
-            key=lambda lab_test_dicts: lab_test_dicts[1][0]["ordered"],
+            key=lambda lab_test_dicts: lab_test_dicts[1][0]["reported"],
             reverse=True
         )
         rows = []
