@@ -5,6 +5,7 @@ from django.db import models as fields
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
 from opal import models
+from plugins.labtests import models as lab
 
 
 class RecreationalDrug(lookuplists.LookupList):
@@ -593,3 +594,72 @@ class OtherInvestigation(models.EpisodeSubrecord):
     name    = fields.CharField(max_length=256, blank=True, default="")
     date    = fields.DateField(blank=True, null=True)
     details = fields.TextField(blank=True, default='')
+
+
+class TBPatient(fields.Model):
+    patient = fields.ForeignKey(
+        models.Patient, on_delete=models.CASCADE, related_name='covid_patient'
+    )
+
+    # Lab test info
+    first_positive_date = fields.DateField(blank=True, null=True)
+    first_positive_lab_number = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    first_positive_observation_name = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    first_positive_observation_value = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    first_observation = fields.ForeignKey(
+        lab.Observation,
+        on_delete=fields.CASCADE,
+        related_name="first_positive_tb_patient"
+    )
+
+    most_recent_positive_date = fields.DateField(blank=True, null=True)
+    most_recent_positive_lab_number = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    most_recent_positive_observation_name = fields.CharField(max_length=256, blank=True, default="")
+    most_recent_positive_observation_value = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    most_recent_observation = fields.ForeignKey(
+        lab.Observation,
+        on_delete=fields.CASCADE,
+        related_name="most_recent_positive_tb_patient"
+    )
+
+    most_recent_negative_date = fields.DateField(blank=True, null=True)
+    most_recent_negative_lab_number = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    most_recent_negative_observation_name = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    most_recent_negative_observation_value = fields.CharField(
+        max_length=256, blank=True, default=""
+        )
+    most_recent_negative_observation = fields.ForeignKey(
+        lab.Observation,
+        on_delete=fields.CASCADE,
+        related_name="most_recent_negative_tb_patient"
+    )
+
+    # appointment info
+    first_tb_appointment_date = fields.DateField(blank=True, null=True)
+    first_tb_appointment_type = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+
+    most_recent_appointment_attended_date = fields.DateField(blank=True, null=True)
+    most_recent_appointment_attended_type = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    most_recent_dna = fields.DateField(blank=True, null=True)
+    dna_count = fields.IntegerField(blank=True, default=True)
+    appointment_count = fields.IntegerField(blank=True, default=True)
+
+    current_location = fields.CharField(blank=True, null=True)
