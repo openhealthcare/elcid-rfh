@@ -531,7 +531,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     @cached_property
     def positive_observations(self):
-        if self.kwargs["site"].upper() == self.BARNET:
+        if self.request.GET["site"].upper() == self.BARNET:
             filter_letter = "K"
         else:
             filter_letter = "L"
@@ -555,7 +555,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         return culture_obs + smear_obs + pcr_tests
 
     def get_observations(self):
-        if self.kwargs["site"].upper() == self.BARNET:
+        if self.request.GET["site"].upper() == self.BARNET:
             filter_letter = "K"
         else:
             filter_letter = "L"
@@ -637,7 +637,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        if self.kwargs["site"].upper() not in self.SITES:
+        if self.request.GET["site"].upper() not in self.SITES:
             raise HttpResponseBadRequest()
         observations = self.get_observations()
         patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
@@ -658,7 +658,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
             if demographics.hospital_number:
                 rows.append((episode, demographics, lab_test_dicts,))
         ctx["rows"] = rows
-        if self.kwargs["site"] == "RFH":
+        if self.request.GET["site"] == "RFH":
             ctx["site"] = "RFH"
         else:
             ctx["site"] = "Barnet"
