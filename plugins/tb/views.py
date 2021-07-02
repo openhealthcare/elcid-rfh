@@ -531,6 +531,11 @@ class MDTList(LoginRequiredMixin, TemplateView):
     POSITIVE = "POSITIVE"
     RESULTED = "RESULTED"
     STATUSES = [POSITIVE, RESULTED]
+    ALL_TESTS = "ALL_TESTS"
+    CULTURE = "CULTURE"
+    SMEAR = "SMEAR"
+    PCR = "PCR"
+    TESTS = [ALL_TESTS, CULTURE, SMEAR, PCR]
 
     @property
     def end_date(self):
@@ -559,6 +564,19 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     @cached_property
     def positive_observations(self):
+        tests = self.request.GET.get("tests")
+        if tests == self.CULTURE:
+            return self.filter_observations(
+                lab.AFBCulture.get_positive_observations()
+            )
+        elif tests == self.SMEAR:
+            return self.filter_observations(
+                lab.AFBSmear.get_positive_observations()
+            )
+        elif tests == self.PCR:
+            return self.filter_observations(
+                lab.TBPCR.get_positive_observations()
+            )
         culture_obs = list(self.filter_observations(
             lab.AFBCulture.get_positive_observations()
         ))
@@ -572,6 +590,19 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     @cached_property
     def negative_observations(self):
+        tests = self.request.GET.get("tests")
+        if tests == self.CULTURE:
+            return self.filter_observations(
+                lab.AFBCulture.get_negative_observations()
+            )
+        elif tests == self.SMEAR:
+            return self.filter_observations(
+                lab.AFBSmear.get_negative_observations()
+            )
+        elif tests == self.PCR:
+            return self.filter_observations(
+                lab.TBPCR.get_negative_observations()
+            )
         culture_obs = list(self.filter_observations(
             lab.AFBCulture.get_negative_observations()
         ))
@@ -662,6 +693,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
             raise HttpResponseBadRequest(f"Unknown site {self.request.GET['site']}")
         if self.request.GET.get("status").upper() not in self.STATUSES:
             raise HttpResponseBadRequest(f"Unknown status {self.request.GET['status']}")
+        if self.request.GET.get("tests").upper() not in self.TESTS:
+            raise HttpResponseBadRequest(f"Unknown status {self.request.GET['tests']}")
         observations = self.get_observations()
         patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
         positive_obs_ids = self.get_positive_observation_ids()
