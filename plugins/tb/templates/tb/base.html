@@ -1,3 +1,4 @@
+{% load elcid_panels %}
 <div class="left-menu">
   <h3>
     <a href="/#/tb/clinic-list/">TB</a>
@@ -11,7 +12,12 @@
     </li>
     {% if request.user.is_superuser %}
     <li>
-      <a href="/#/tb/mdt-list/">MDT List</a>
+      <a href="/#/tb/mdt-list-old/">Old MDT List</a>
+    </li>
+    <li>
+      <a href="/#/tb/mdt-list/?{% query_string site='RFH' status='POSITIVE' tests='ALL_TESTS' %}">
+        MDT List
+      </a>
     </li>
     {% endif %}
   </ul>

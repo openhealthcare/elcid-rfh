@@ -3,8 +3,10 @@ Views for the TB Opal Plugin
 """
 import datetime
 from collections import defaultdict
+from django.http.response import HttpResponseBadRequest
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.functional import cached_property
 from django.utils import timezone
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
@@ -386,48 +388,34 @@ class PrintConsultation(LoginRequiredMixin, DetailView):
     template_name = "tb/patient_consultation_print.html"
 
 
-class MDTList(LoginRequiredMixin, TemplateView):
-    template_name = "tb/mdt_list.html"
+class MDTListOld(LoginRequiredMixin, TemplateView):
+    template_name = "tb/mdt_list_old.html"
     BARNET = "Barnet"
     RFH = "RFH"
 
-    def get_observations(self):
+    @cached_property
+    def positive_observations(self):
         culture_obs = list(lab.AFBCulture.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
         ).select_related('test'))
-        smear_obs = list(lab.AFBSmear.get_resulted_observations().filter(
+        smear_obs = list(lab.AFBSmear.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).select_related('test'))
-        pcr_tests = list(lab.TBPCR.get_resulted_observations().filter(
+        pcr_tests = list(lab.TBPCR.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).select_related('test'))
         return culture_obs + smear_obs + pcr_tests
 
-    def get_positive_observation_ids(self, observations):
-        observations_ids = [i.id for i in observations]
-        positive_observation_ids = set()
-        positive_observation_ids.update(
-            lab.AFBCulture.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
+    def get_observations(self):
+        positive_obs = self.positive_observations
+        return positive_obs + list(
+            lab.AFBCulture.get_negative_observations().filter(
+                reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
             )
         )
-        positive_observation_ids.update(
-            lab.AFBSmear.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        positive_observation_ids.update(
-            lab.TBPCR.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        return positive_observation_ids
+
+    def get_positive_observation_ids(self):
+        return set([i.id for i in self.positive_observations])
 
     def get_patient_id_to_demographics(self, observations):
         patient_ids = set([i.test.patient_id for i in observations])
@@ -497,7 +485,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         observations = self.get_observations()
         patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
-        positive_obs_ids = self.get_positive_observation_ids(observations)
+        positive_obs_ids = self.get_positive_observation_ids()
         patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(observations, positive_obs_ids)
         patient_id_to_episode = self.get_patient_id_to_tb_episode(observations)
 
@@ -532,4 +520,202 @@ class MDTList(LoginRequiredMixin, TemplateView):
             "RFH": rfh_rows,
             "Barnet": barnet_rows
         }
+        return ctx
+
+
+class MDTList(LoginRequiredMixin, TemplateView):
+    template_name = "tb/mdt_list.html"
+    BARNET = "BARNET"
+    RFH = "RFH"
+    SITES = [RFH, BARNET]
+    POSITIVE = "POSITIVE"
+    RESULTED = "RESULTED"
+    STATUSES = [POSITIVE, RESULTED]
+    ALL_TESTS = "ALL_TESTS"
+    CULTURE = "CULTURE"
+    SMEAR = "SMEAR"
+    PCR = "PCR"
+    TESTS = [ALL_TESTS, CULTURE, SMEAR, PCR]
+
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 2:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(21)
+
+    def filter_observations(self, qs):
+        """
+        Filters the observations based on query params
+        """
+        if self.request.GET["site"].upper() == self.BARNET:
+            filter_letter = "K"
+        else:
+            filter_letter = "L"
+        qs = qs.filter(test__lab_number__contains=filter_letter)
+        qs = qs.filter(reported_datetime__gte=self.start_date)
+        qs = qs.filter(reported_datetime__lte=self.end_date)
+        return qs.select_related('test')
+
+    @cached_property
+    def positive_observations(self):
+        tests = self.request.GET.get("tests")
+        if tests == self.CULTURE:
+            return self.filter_observations(
+                lab.AFBCulture.get_positive_observations()
+            )
+        elif tests == self.SMEAR:
+            return self.filter_observations(
+                lab.AFBSmear.get_positive_observations()
+            )
+        elif tests == self.PCR:
+            return self.filter_observations(
+                lab.TBPCR.get_positive_observations()
+            )
+        culture_obs = list(self.filter_observations(
+            lab.AFBCulture.get_positive_observations()
+        ))
+        smear_obs = list(self.filter_observations(
+            lab.AFBSmear.get_positive_observations()
+        ))
+        pcr_tests = list(self.filter_observations(
+            lab.TBPCR.get_positive_observations()
+        ))
+        return culture_obs + smear_obs + pcr_tests
+
+    @cached_property
+    def negative_observations(self):
+        tests = self.request.GET.get("tests")
+        if tests == self.CULTURE:
+            return self.filter_observations(
+                lab.AFBCulture.get_negative_observations()
+            )
+        elif tests == self.SMEAR:
+            return self.filter_observations(
+                lab.AFBSmear.get_negative_observations()
+            )
+        elif tests == self.PCR:
+            return self.filter_observations(
+                lab.TBPCR.get_negative_observations()
+            )
+        culture_obs = list(self.filter_observations(
+            lab.AFBCulture.get_negative_observations()
+        ))
+        smear_obs = list(self.filter_observations(
+            lab.AFBSmear.get_negative_observations()
+        ))
+        pcr_tests = list(self.filter_observations(
+            lab.TBPCR.get_negative_observations()
+        ))
+        return culture_obs + smear_obs + pcr_tests
+
+    def get_observations(self):
+        positive_obs = self.positive_observations
+        if self.request.GET.get("status") == self.RESULTED:
+            return positive_obs + self.negative_observations
+        return positive_obs
+
+    def get_positive_observation_ids(self):
+        return set([i.id for i in self.positive_observations])
+
+    def get_patient_id_to_demographics(self, observations):
+        patient_ids = set([i.test.patient_id for i in observations])
+        demographics = Demographics.objects.filter(
+            patient_id__in=patient_ids)
+        result = {}
+        for demo in demographics:
+            result[demo.patient_id] = demo
+        return result
+
+    def format_obs_value(self, observation):
+        tb_test = lab.get_tb_test(observation)
+        obs_value_display = tb_test.display_observation_value(observation)
+        return f"{observation.observation_name}: {obs_value_display}"
+
+    def get_patient_id_to_lab_dicts(self, observations, positive_obs_ids):
+        """
+        We group the lab tests so if its
+        for the same patient, site, observation date, is_positive, obs name and
+        obs value, show them on the same line
+        """
+        patient_ids_to_lab_test_dict = defaultdict(list)
+
+        group_tests = defaultdict(list)
+
+        def get_key(observation):
+            lab_test = observation.test
+            return (
+                lab_test.patient_id,
+                lab_test.cleaned_site,
+                observation.reported_datetime.date(),
+                observation.id in positive_obs_ids,
+                self.format_obs_value(observation)
+            )
+        for observation in observations:
+            group_tests[get_key(observation)].append(observation.test.lab_number)
+
+        for key, lab_numbers in group_tests.items():
+            patient_id, site, reported, is_positive, obs_value = key
+            patient_ids_to_lab_test_dict[patient_id].append({
+                "site": site,
+                "lab_numbers": ", ".join(lab_numbers),
+                "reported": reported,
+                "is_positive": is_positive,
+                "observation_value": obs_value,
+            })
+        result = {}
+        for patient_id, lab_test_dicts in patient_ids_to_lab_test_dict.items():
+            result[patient_id] = sorted(
+                lab_test_dicts, key=lambda x: x["reported"], reverse=True
+            )
+        return result
+
+    def get_patient_id_to_tb_episode(self, observations):
+        patient_ids = set([i.test.patient_id for i in observations])
+        episodes = Episode.objects.filter(
+            patient_id__in=patient_ids
+        ).filter(
+            category_name=episode_categories.TbEpisode.display_name
+        )
+        result = {}
+        for episode in episodes:
+            result[episode.patient_id] = episode
+        return result
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        if self.request.GET["site"].upper() not in self.SITES:
+            raise HttpResponseBadRequest(f"Unknown site {self.request.GET['site']}")
+        if self.request.GET.get("status").upper() not in self.STATUSES:
+            raise HttpResponseBadRequest(f"Unknown status {self.request.GET['status']}")
+        if self.request.GET.get("tests").upper() not in self.TESTS:
+            raise HttpResponseBadRequest(f"Unknown status {self.request.GET['tests']}")
+        observations = self.get_observations()
+        patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
+        positive_obs_ids = self.get_positive_observation_ids()
+        patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(observations, positive_obs_ids)
+        patient_id_to_episode = self.get_patient_id_to_tb_episode(observations)
+
+        patient_id_lab_test_dicts = sorted(
+            patient_id_to_lab_test_dicts.items(),
+            key=lambda lab_test_dicts: lab_test_dicts[1][0]["reported"],
+            reverse=True
+        )
+        rows = []
+        for patient_id, lab_test_dicts in patient_id_lab_test_dicts:
+            episode = patient_id_to_episode.get(patient_id)
+            demographics = patient_id_to_demographics[patient_id]
+            # exclude patients with no hospital numbers
+            if demographics.hospital_number:
+                rows.append((episode, demographics, lab_test_dicts,))
+        ctx["rows"] = rows
+        if self.request.GET["site"] == "RFH":
+            ctx["site"] = "RFH"
+        else:
+            ctx["site"] = "Barnet"
         return ctx

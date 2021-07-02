@@ -59,6 +59,11 @@ urlpatterns = [
     ),
     url(
         r'^templates/tb/mdt_list.html$',
+        views.MDTListOld.as_view(),
+        name="mdt_list"
+    ),
+    url(
+        r'^templates/tb/mdt_list/$',
         views.MDTList.as_view(),
         name="mdt_list"
     )

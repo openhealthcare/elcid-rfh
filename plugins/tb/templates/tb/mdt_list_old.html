@@ -1,32 +1,13 @@
 {% extends "tb/base.html" %}
-{% load elcid_panels %}
 {% block tb_content %}
 <div class="panel panel-default tb-clinic-list">
   <div class="panel-heading">
-    <div class="row">
-      <div class="col-md-4">
-        <h1>{{ request.GET.site }} MDT List</h1>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12 content-offset-10 content-offset-below-10">
-        <div class="btn-group" role="group">
-          <a href="/#/tb/mdt-list/?{% query_string site=view.RFH %}" class="btn btn-primary {% if request.GET.site.upper == view.RFH %}active{% endif %}">RFH</a>
-          <a href="/#/tb/mdt-list/?{% query_string site=view.BARNET %}" class="btn btn-primary {% if request.GET.site.upper == view.BARNET %}active{% endif %}">Barnet</a>
-        </div>
-        <div class="btn-group left-offset-15" role="group">
-          <a href="/#/tb/mdt-list/?{% query_string status=view.POSITIVE %}" class="btn btn-primary {% if request.GET.status.upper == view.POSITIVE %}active{% endif %}">Positive</a>
-          <a href="/#/tb/mdt-list/?{% query_string status=view.RESULTED %}" class="btn btn-primary {% if request.GET.status.upper == view.RESULTED %}active{% endif %}">Resulted</a>
-        </div>
-        <div class="btn-group left-offset-15" role="group">
-          <a href="/#/tb/mdt-list/?{% query_string tests=view.ALL_TESTS %}" class="btn btn-primary {% if request.GET.tests.upper == view.ALL_TESTS %}active{% endif %}">All tests</a>
-          <a href="/#/tb/mdt-list/?{% query_string tests=view.CULTURE %}" class="btn btn-primary {% if request.GET.tests.upper == view.CULTURE %}active{% endif %}">Culture</a>
-          <a href="/#/tb/mdt-list/?{% query_string tests=view.SMEAR %}" class="btn btn-primary {% if request.GET.tests.upper == view.SMEAR %}active{% endif %}">Smear</a>
-          <a href="/#/tb/mdt-list/?{% query_string tests=view.PCR %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">PCR</a>
-        </div>
-      </div>
-    </div>
+    <h1>MDT List</h1>
   </div>
+  {% for location, rows in location_to_rows.items %}
+  <h3 class="date-header">
+    {{ location }}
+  </h3>
   <table class="table table-striped">
     <tbody>
       <tr>
@@ -76,5 +57,6 @@
     {% endfor %}
     </tbody>
   </table>
+  {% endfor %}
 </div>
 {% endblock %}
