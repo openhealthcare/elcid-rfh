@@ -39,10 +39,12 @@
         <td>
           {% if episode %}
           <a href="/#/patient/{{ episode.patient_id }}/{{ episode.id }}/" class="orange-link">
-            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
+            {{ demographics.hospital_number }} {{ demographics.name }} <br />
+            {{ demographics.sex }} {{ demographics.get_age }}
           </a>
           {% else %}
-            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
+            {{ demographics.hospital_number }} {{ demographics.name }} <br />
+            {{ demographics.sex }} {{ demographics.get_age }}
           {% endif %}
         </td>
         <td>
