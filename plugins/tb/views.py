@@ -528,45 +528,66 @@ class MDTList(LoginRequiredMixin, TemplateView):
     BARNET = "BARNET"
     RFH = "RFH"
     SITES = [RFH, BARNET]
+    POSITIVE = "POSITIVE"
+    RESULTED = "RESULTED"
+    STATUSES = [POSITIVE, RESULTED]
+
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 2:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(21)
+
+    def filter_observations(self, qs):
+        """
+        Filters the observations based on query params
+        """
+        if self.request.GET["site"].upper() == self.BARNET:
+            filter_letter = "K"
+        else:
+            filter_letter = "L"
+        qs = qs.filter(test__lab_number__contains=filter_letter)
+        qs = qs.filter(reported_datetime__gte=self.start_date)
+        qs = qs.filter(reported_datetime__lte=self.end_date)
+        return qs.select_related('test')
 
     @cached_property
     def positive_observations(self):
-        if self.request.GET["site"].upper() == self.BARNET:
-            filter_letter = "K"
-        else:
-            filter_letter = "L"
-        culture_obs = list(lab.AFBCulture.get_positive_observations().filter(
-            reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
-        ).filter(
-            test__lab_number__contains=filter_letter
-        ).select_related('test'))
+        culture_obs = list(self.filter_observations(
+            lab.AFBCulture.get_positive_observations()
+        ))
+        smear_obs = list(self.filter_observations(
+            lab.AFBSmear.get_positive_observations()
+        ))
+        pcr_tests = list(self.filter_observations(
+            lab.TBPCR.get_positive_observations()
+        ))
+        return culture_obs + smear_obs + pcr_tests
 
-        smear_obs = list(lab.AFBSmear.get_positive_observations().filter(
-            reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
-        ).filter(
-            test__lab_number__contains=filter_letter
-        ).select_related('test'))
-
-        pcr_tests = list(lab.TBPCR.get_positive_observations().filter(
-            reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
-        ).filter(
-            test__lab_number__contains=filter_letter
-        ).select_related('test'))
+    @cached_property
+    def negative_observations(self):
+        culture_obs = list(self.filter_observations(
+            lab.AFBCulture.get_negative_observations()
+        ))
+        smear_obs = list(self.filter_observations(
+            lab.AFBSmear.get_negative_observations()
+        ))
+        pcr_tests = list(self.filter_observations(
+            lab.TBPCR.get_negative_observations()
+        ))
         return culture_obs + smear_obs + pcr_tests
 
     def get_observations(self):
-        if self.request.GET["site"].upper() == self.BARNET:
-            filter_letter = "K"
-        else:
-            filter_letter = "L"
         positive_obs = self.positive_observations
-        return positive_obs + list(
-            lab.AFBCulture.get_negative_observations().filter(
-                reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
-            ).filter(
-                test__lab_number__contains=filter_letter
-            ).select_related('test')
-        )
+        if self.request.GET.get("status") == self.RESULTED:
+            return positive_obs + self.negative_observations
+        return positive_obs
 
     def get_positive_observation_ids(self):
         return set([i.id for i in self.positive_observations])
@@ -638,7 +659,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         if self.request.GET["site"].upper() not in self.SITES:
-            raise HttpResponseBadRequest()
+            raise HttpResponseBadRequest(f"Unknown site {self.request.GET['site']}")
+        if self.request.GET.get("status").upper() not in self.STATUSES:
+            raise HttpResponseBadRequest(f"Unknown status {self.request.GET['status']}")
         observations = self.get_observations()
         patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
         positive_obs_ids = self.get_positive_observation_ids()
