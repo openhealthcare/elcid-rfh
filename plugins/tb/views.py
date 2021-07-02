@@ -3,8 +3,10 @@ Views for the TB Opal Plugin
 """
 import datetime
 from collections import defaultdict
+from django.http.response import HttpResponseBadRequest
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.functional import cached_property
 from django.utils import timezone
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
@@ -391,43 +393,29 @@ class MDTListOld(LoginRequiredMixin, TemplateView):
     BARNET = "Barnet"
     RFH = "RFH"
 
-    def get_observations(self):
+    @cached_property
+    def positive_observations(self):
         culture_obs = list(lab.AFBCulture.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
         ).select_related('test'))
-        smear_obs = list(lab.AFBSmear.get_resulted_observations().filter(
+        smear_obs = list(lab.AFBSmear.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).select_related('test'))
-        pcr_tests = list(lab.TBPCR.get_resulted_observations().filter(
+        pcr_tests = list(lab.TBPCR.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).select_related('test'))
         return culture_obs + smear_obs + pcr_tests
 
-    def get_positive_observation_ids(self, observations):
-        observations_ids = [i.id for i in observations]
-        positive_observation_ids = set()
-        positive_observation_ids.update(
-            lab.AFBCulture.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
+    def get_observations(self):
+        positive_obs = self.positive_observations
+        return positive_obs + list(
+            lab.AFBCulture.get_negative_observations().filter(
+                reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
             )
         )
-        positive_observation_ids.update(
-            lab.AFBSmear.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        positive_observation_ids.update(
-            lab.TBPCR.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        return positive_observation_ids
+
+    def get_positive_observation_ids(self):
+        return set([i.id for i in self.positive_observations])
 
     def get_patient_id_to_demographics(self, observations):
         patient_ids = set([i.test.patient_id for i in observations])
@@ -497,7 +485,7 @@ class MDTListOld(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         observations = self.get_observations()
         patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
-        positive_obs_ids = self.get_positive_observation_ids(observations)
+        positive_obs_ids = self.get_positive_observation_ids()
         patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(observations, positive_obs_ids)
         patient_id_to_episode = self.get_patient_id_to_tb_episode(observations)
 
@@ -541,8 +529,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
     RFH = "RFH"
     SITES = [RFH, BARNET]
 
-    def get_observations(self, site):
-        if site.upper() == self.BARNET:
+    @cached_property
+    def positive_observations(self):
+        if self.kwargs["site"].upper() == self.BARNET:
             filter_letter = "K"
         else:
             filter_letter = "L"
@@ -550,50 +539,37 @@ class MDTList(LoginRequiredMixin, TemplateView):
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
         ).filter(
             test__lab_number__contains=filter_letter
-        ).select_related(
-            'test'
-        ))
-        smear_obs = list(lab.AFBSmear.get_resulted_observations().filter(
+        ).select_related('test'))
+
+        smear_obs = list(lab.AFBSmear.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).filter(
             test__lab_number__contains=filter_letter
-        ).select_related(
-            'test'
-        ))
-        pcr_tests = list(lab.TBPCR.get_resulted_observations().filter(
+        ).select_related('test'))
+
+        pcr_tests = list(lab.TBPCR.get_positive_observations().filter(
             reported_datetime__gte=datetime.date.today() - datetime.timedelta(30)
         ).filter(
             test__lab_number__contains=filter_letter
-        ).select_related(
-            'test'
-        ))
+        ).select_related('test'))
         return culture_obs + smear_obs + pcr_tests
 
-    def get_positive_observation_ids(self, observations):
-        observations_ids = [i.id for i in observations]
-        positive_observation_ids = set()
-        positive_observation_ids.update(
-            lab.AFBCulture.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
+    def get_observations(self):
+        if self.kwargs["site"].upper() == self.BARNET:
+            filter_letter = "K"
+        else:
+            filter_letter = "L"
+        positive_obs = self.positive_observations
+        return positive_obs + list(
+            lab.AFBCulture.get_negative_observations().filter(
+                reported_datetime__gte=datetime.date.today() - datetime.timedelta(365)
+            ).filter(
+                test__lab_number__contains=filter_letter
+            ).select_related('test')
         )
-        positive_observation_ids.update(
-            lab.AFBSmear.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        positive_observation_ids.update(
-            lab.TBPCR.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        return positive_observation_ids
+
+    def get_positive_observation_ids(self):
+        return set([i.id for i in self.positive_observations])
 
     def get_patient_id_to_demographics(self, observations):
         patient_ids = set([i.test.patient_id for i in observations])
@@ -661,12 +637,11 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        site = self.kwargs["site"]
-        if site.upper() not in self.SITES:
+        if self.kwargs["site"].upper() not in self.SITES:
             raise HttpResponseBadRequest()
-        observations = self.get_observations(site)
+        observations = self.get_observations()
         patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
-        positive_obs_ids = self.get_positive_observation_ids(observations)
+        positive_obs_ids = self.get_positive_observation_ids()
         patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(observations, positive_obs_ids)
         patient_id_to_episode = self.get_patient_id_to_tb_episode(observations)
 
