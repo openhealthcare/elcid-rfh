@@ -4,23 +4,21 @@
 <div class="panel panel-default tb-clinic-list">
   <div class="panel-heading">
     <div class="row">
-      <div class="col-md-3">
+      <div class="col-md-4">
         <h1>{{ request.GET.site }} MDT List</h1>
       </div>
-      <div class="col-md-3">
-        <div class="btn-group content-offset-25" role="group">
+    </div>
+    <div class="row">
+      <div class="col-md-12 content-offset-10 content-offset-below-10">
+        <div class="btn-group" role="group">
           <a href="/#/tb/mdt-list/?{% query_string site=view.RFH %}" class="btn btn-primary {% if request.GET.site.upper == view.RFH %}active{% endif %}">RFH</a>
           <a href="/#/tb/mdt-list/?{% query_string site=view.BARNET %}" class="btn btn-primary {% if request.GET.site.upper == view.BARNET %}active{% endif %}">Barnet</a>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="btn-group content-offset-25" role="group">
+        <div class="btn-group left-offset-15" role="group">
           <a href="/#/tb/mdt-list/?{% query_string status=view.POSITIVE %}" class="btn btn-primary {% if request.GET.status.upper == view.POSITIVE %}active{% endif %}">Positive</a>
           <a href="/#/tb/mdt-list/?{% query_string status=view.RESULTED %}" class="btn btn-primary {% if request.GET.status.upper == view.RESULTED %}active{% endif %}">Resulted</a>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="btn-group content-offset-25" role="group">
+        <div class="btn-group left-offset-15" role="group">
           <a href="/#/tb/mdt-list/?{% query_string tests=view.ALL_TESTS %}" class="btn btn-primary {% if request.GET.tests.upper == view.ALL_TESTS %}active{% endif %}">All tests</a>
           <a href="/#/tb/mdt-list/?{% query_string tests=view.CULTURE %}" class="btn btn-primary {% if request.GET.tests.upper == view.CULTURE %}active{% endif %}">Culture</a>
           <a href="/#/tb/mdt-list/?{% query_string tests=view.SMEAR %}" class="btn btn-primary {% if request.GET.tests.upper == view.SMEAR %}active{% endif %}">Smear</a>
