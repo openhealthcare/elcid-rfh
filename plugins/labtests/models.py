@@ -119,6 +119,20 @@ class LabTest(models.Model):
                 values.append(code_or_desc[-1])
         return ' '.join([i.strip() for i in values if i.strip()])
 
+    @property
+    def site_code(self):
+        """
+        The site code that appears in capitals in the cleaned site.
+        Note it can be "Sputa sample SPU" or "SPU Sputa sample"
+        """
+        cleaned_site = self.cleaned_site
+        if not cleaned_site:
+            return
+        site_parts = cleaned_site.split(" ")
+        for site_part in site_parts:
+            if site_part.isupper():
+                return site_part
+
 
 class Observation(models.Model):
     # as created in the upstream db
