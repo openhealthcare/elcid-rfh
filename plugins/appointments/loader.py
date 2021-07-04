@@ -193,14 +193,8 @@ def load_appointments(patient):
     """
     api = ProdAPI()
     demographic = patient.demographics()
-    last_updated = None
-    if patient.appointments.count() > 0:
-        last_updated = patient.appointments.all().order_by('last_updated').last().last_updated
-    if not last_updated:
-        # Arbitrary, but the data suggests this is well before the actual lower bound
-        last_updated = datetime.datetime.min
     appointments = api.execute_hospital_query(
         Q_GET_ALL_PATIENT_APPOINTMENTS,
-        params={'mrn': demographic.hospital_number, 'last_updated': last_updated}
+        params={'mrn': demographic.hospital_number}
     )
     update_appointments_from_query_result(appointments)
