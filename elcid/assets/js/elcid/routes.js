@@ -105,9 +105,6 @@ app.config(
              .when('/imaging-load-stats/',             static_template_route(
                  '/templates/monitoring/imaging_load_stats.html'))
 
-             >>>>>>> view-transferhistory
-
-
              .when('/nursing-handover/:ward_code/',      {
                  controller: 'WelcomeCtrl',
                  controllerAs: 'welcome',
