@@ -154,6 +154,7 @@ class Encounter(models.Model):
         'pv1_44_admit_date_time'    : 'admit_datetime',
         'pv1_45_discharge_date_time': 'discharge_datetime',
         'pv1_3_ambulatory_indicator': 'ambulatory_indicator',
+        'pid_18_account_number'     : 'spell_number',
     }
 
     def to_dict(self):
@@ -234,6 +235,10 @@ class TransferHistory(models.Model):
     trf_inp_th_encntr_slice_updt_dt_tm     = models.DateTimeField(blank=True, null=True)
     trf_inp_th_encntr_alias_updt_dt_tm     = models.DateTimeField(blank=True, null=True)
     trf_inp_th_encntr_slice_act_updt_dt_tm = models.DateTimeField(blank=True, null=True)
+
+
+    class Meta:
+        ordering = ['transfer_sequence_number']
 
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
