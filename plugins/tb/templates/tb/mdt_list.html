@@ -39,10 +39,12 @@
         <td>
           {% if episode %}
           <a href="/#/patient/{{ episode.patient_id }}/{{ episode.id }}/" class="orange-link">
-            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
+            {{ demographics.hospital_number }} {{ demographics.name }} <br />
+            {{ demographics.sex }} {{ demographics.get_age }}
           </a>
           {% else %}
-            {{ demographics.hospital_number }} {{ demographics.name }} ({{ demographics.sex }} {{ demographics.date_of_birth }})
+            {{ demographics.hospital_number }} {{ demographics.name }} <br />
+            {{ demographics.sex }} {{ demographics.get_age }}
           {% endif %}
         </td>
         <td>
@@ -56,14 +58,13 @@
         <td>
           {% for lab_test_dict in lab_test_dicts %}
           <div class="row">
-            <div class="col-md-6">
-              {{ lab_test_dict.reported }} {{ lab_test_dict.lab_numbers }}
+            <div class="col-md-12 {% if lab_test_dict.is_positive %}text-danger{% endif %}">
+              {{ lab_test_dict.reported }}
+              {{ lab_test_dict.observation_value }}
+              {% if lab_test_dict.site %}
               {{ lab_test_dict.site }}
-              <br />
-              {{ lab_test_dict.location }}
-            </div>
-            <div class="col-md-6 {% if lab_test_dict.is_positive %}text-danger{% endif %}">
-              {{ lab_test_dict.observation_value | linebreaks }}
+              {% endif %}
+              {{ lab_test_dict.lab_numbers }}
             </div>
           </div>
           {% endfor %}

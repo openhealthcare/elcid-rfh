@@ -651,7 +651,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
             lab_test = observation.test
             return (
                 lab_test.patient_id,
-                lab_test.cleaned_site,
+                lab_test.site_code,
                 observation.reported_datetime.date(),
                 observation.id in positive_obs_ids,
                 self.format_obs_value(observation)

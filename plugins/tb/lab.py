@@ -139,7 +139,7 @@ class TBPCR(TBTest):
     @classmethod
     def get_positive_observations(cls):
         pos1 = "The PCR to detect M.tuberculosis complex was~POSITIVE"
-        pos2 = "'The PCR to detect M.tuberculosis complex was ~ POSITIVE"
+        pos2 = "The PCR to detect M.tuberculosis complex was ~ POSITIVE"
         return cls.get_observations().filter(
             Q(observation_value__contains=pos1) |
             Q(observation_name='TB PCR (GeneXpert) Positive') |
@@ -150,8 +150,10 @@ class TBPCR(TBTest):
     def display_observation_value(cls, observation):
         # to_remove = "This does not exclude a diagnosis of tuberculosis."
         obs_value = observation.observation_value
-        # if obs_value.endswith(to_remove):
-        #     obs_value = obs_value[:obs_value.index(to_remove)].strip()
+        if "The PCR to detect M.tuberculosis complex was~POSITIVE" in obs_value:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+        if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in obs_value:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
         return obs_value.split("~")[0].strip()
 
 
