@@ -96,6 +96,36 @@ class AFBCulture(TBTest):
         return observation.observation_value.split("~")[0].lstrip("1)").strip()
 
 
+class AFBRefLib(TBTest):
+    """
+    Positive cultues get sent off to the ref lib for
+    additional analysis
+    """
+    TEST_NAME = 'AFB : CULTURE'
+    TEST_CODE = 'AFB'
+    OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
+
+    @classmethod
+    def get_positive_observations(cls):
+        return cls.get_observations().filter(
+            observation_value__startswith="1"
+        )
+
+    @classmethod
+    def get_negative_observations(cls):
+        """
+        Ref lab reports are only done after the culture has
+        been resolved to be positive.
+
+        IE they are only pending or positive.
+        """
+        return Observation.objects.none()
+
+    @classmethod
+    def display_observation_value(cls, observation):
+        return observation.observation_value.split("~")[0].lstrip("1)").strip()
+
+
 class AFBSmear(TBTest):
     TEST_NAME = 'AFB : CULTURE'
     TEST_CODE = 'AFB'
@@ -158,7 +188,7 @@ class TBPCR(TBTest):
 
 
 TBTests = [
-    AFBCulture, AFBSmear, TBPCR
+    AFBCulture, AFBRefLib, AFBSmear, TBPCR
 ]
 
 

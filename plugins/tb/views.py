@@ -535,7 +535,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
     CULTURE = "CULTURE"
     SMEAR = "SMEAR"
     PCR = "PCR"
-    TESTS = [ALL_TESTS, CULTURE, SMEAR, PCR]
+    REF_LAB = "REF_LAB"
+    TESTS = [
+        ALL_TESTS, CULTURE, SMEAR, PCR, REF_LAB
+    ]
 
     @property
     def end_date(self):
@@ -577,6 +580,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
             return self.filter_observations(
                 lab.TBPCR.get_positive_observations()
             )
+        elif tests == self.REF_LAB:
+            return self.filter_observations(
+                lab.AFBRefLib.get_positive_observations()
+            )
         culture_obs = list(self.filter_observations(
             lab.AFBCulture.get_positive_observations()
         ))
@@ -586,7 +593,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
         pcr_tests = list(self.filter_observations(
             lab.TBPCR.get_positive_observations()
         ))
-        return culture_obs + smear_obs + pcr_tests
+        ref_lab_tests = list(self.filter_observations(
+            lab.TBPCR.get_positive_observations()
+        ))
+        return culture_obs + smear_obs + pcr_tests + ref_lab_tests
 
     @cached_property
     def negative_observations(self):
