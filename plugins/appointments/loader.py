@@ -148,12 +148,12 @@ def update_appointments_from_query_result(upstream_rows):
 
                 if insert_date > existing_insert_date:
                     raise ValueError(
-                        f"Imaging: for {sql_id} upstream insert_date > local insert_date"
+                        f"Appointments: for {sql_id} upstream insert_date > local insert_date"
                     )
 
                 if not last_updated and existing_updated:
                     raise ValueError(
-                        f"Imaging: for {sql_id} locally we have an updated time stamp but not for upstream"
+                        f"Appointments: for {sql_id} locally we have an updated time stamp but not for upstream"
                     )
                 if last_updated and not existing_updated:
                     changed = True
