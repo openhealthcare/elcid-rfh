@@ -167,8 +167,8 @@ def update_appointments_from_query_result(upstream_rows):
                     logger.info(
                         f"Appointments: checking for patient id {patient_id} sql id {sql_id}"
                     )
-                    changed = get_changed_appointment_fields(existing_appointment, row)
-                    for k, v in changed.items():
+                    changed_fields = get_changed_appointment_fields(existing_appointment, row)
+                    for k, v in changed_fields.items():
                         logger.info(
                             f'Appointments: updating {k} was {v["old_val"]} now {v["new_val"]}'
                         )
