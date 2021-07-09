@@ -23,6 +23,7 @@
           <a href="/#/tb/mdt-list/?{% query_string tests=view.CULTURE %}" class="btn btn-primary {% if request.GET.tests.upper == view.CULTURE %}active{% endif %}">Culture</a>
           <a href="/#/tb/mdt-list/?{% query_string tests=view.SMEAR %}" class="btn btn-primary {% if request.GET.tests.upper == view.SMEAR %}active{% endif %}">Smear</a>
           <a href="/#/tb/mdt-list/?{% query_string tests=view.PCR %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">PCR</a>
+          <a href="/#/tb/mdt-list/?{% query_string tests=view.REF_LAB %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">Ref lab report</a>
         </div>
       </div>
     </div>
