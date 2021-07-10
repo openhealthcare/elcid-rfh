@@ -1,6 +1,7 @@
 """
-A management command that creates/updates the TBPatient model
-for anyone who's information has changed in last 48 hours
+A management command that looks at TB Appointments
+and TB lab tests in the last 48 hours and creates a TB Patient
+object.
 """
 import datetime
 import time
@@ -8,7 +9,7 @@ from plugins.tb.models import TBPatient
 from django.utils import timezone
 from django.db.models import Q
 from django.core.management.base import BaseCommand
-from plugins.tb import lab, constants, logger
+from plugins.tb import lab, constants, logger, episode_categories
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 
@@ -38,7 +39,7 @@ def get_patients(from_dt):
             .distinct()
         )
     return Patient.objects.filter(id__in=patient_ids).prefetch_related(
-        "tbpatient_set", "appointments"
+        "tbpatient_set", "appointments", "episode_set"
     )
 
 
@@ -169,12 +170,25 @@ class Command(BaseCommand):
         start = time.time()
         patients = get_patients(two_days_ago)
         got_patients = time.time()
+        tb_category = episode_categories.TbEpisode.display_name
         logger.info(
             f"Creating TB patients: found {len(patients)} patients we need to update in {got_patients - start}s"
         )
         for patient in patients:
             create_or_update_tb_patient(patient)
-        end = time.time()
+        tb_patients_end = time.time()
         logger.info(
-            f"Creating TB patients: created or updated {len(patients)} patients in {end-got_patients}s"
+            f"Creating TB patients: created or updated {len(patients)} patients in {end-tb_patients_end}s"
         )
+        positive_patients = TBPatient.objects.exclude(
+            first_positive_datetime=None
+        )
+        patients_that_need_tb_episodes = Patient.objects.filter(
+            tbpatient__in=positive_patients
+        ).exclude(
+            episode__category_name=tb_category
+        )
+        for patient in patients_that_need_tb_episodes:
+            patient.episode_set.create(
+                category_name=tb_category
+            )
