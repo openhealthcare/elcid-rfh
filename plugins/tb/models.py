@@ -1,6 +1,7 @@
 """
 Models for tb
 """
+import datetime
 from django.db import models as fields
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
@@ -596,97 +597,227 @@ class OtherInvestigation(models.EpisodeSubrecord):
     details = fields.TextField(blank=True, default='')
 
 
-class TBPatient(fields.Model):
+class AbstractTBTest(fields.Model):
     patient = fields.ForeignKey(
         models.Patient,
         on_delete=fields.CASCADE,
     )
-
-    # Lab test info
-
-    # First positive
-    first_positive_datetime = fields.DateTimeField(blank=True, null=True)
-    first_positive_lab_number = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_site = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_observation_name = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_observation_value = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_observation = fields.ForeignKey(
+    value = fields.TextField(blank=True, default="")
+    site = fields.CharField(max_length=256, blank=True, default="")
+    lab_number = fields.CharField(max_length=256, blank=True, default="")
+    observation_date = fields.DateField(blank=True, null=True)
+    significant_date = fields.DateField()
+    pending = fields.BooleanField()
+    positive = fields.BooleanField()
+    observation = fields.ForeignKey(
         lab.Observation,
         on_delete=fields.CASCADE,
         blank=True,
         null=True,
-        related_name="tb_patient_first_positive"
     )
 
-    # First positive culture
-    first_positive_culture_datetime = fields.DateTimeField(blank=True, null=True)
-    first_positive_culture_lab_number = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_culture_site = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_culture_observation_value = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_culture_observation = fields.ForeignKey(
-        lab.Observation,
-        on_delete=fields.CASCADE,
-        blank=True,
-        null=True,
-        related_name="tb_patient_first_positive_culture"
-    )
-    first_positive_ref_lab_datetime = fields.DateTimeField(blank=True, null=True)
-    first_positive_ref_lab_lab_number = fields.CharField(
-        max_length=256, blank=True, default="",
-    )
-    first_positive_ref_lab_site = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_ref_lab_observation_name = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_ref_lab_observation_value = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    first_positive_ref_lab_observation = fields.ForeignKey(
-        lab.Observation,
-        on_delete=fields.CASCADE,
-        blank=True,
-        null=True,
-        related_name="tb_patient_first_positive_ref_lab"
-    )
+    class Meta:
+        abstract = True
 
-    most_recent_datetime = fields.DateTimeField(blank=True, null=True)
-    most_recent_site = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    most_recent_lab_number = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    most_recent_observation_name = fields.CharField(max_length=256, blank=True, default="")
-    most_recent_observation_value = fields.CharField(
-        max_length=256, blank=True, default=""
-    )
-    most_recent_positive = fields.NullBooleanField()
-    most_recent_observation = fields.ForeignKey(
-        lab.Observation,
-        on_delete=fields.CASCADE,
-        blank=True,
-        null=True,
-        related_name="most_recent_positive_tb_patient"
-    )
+    @classmethod
+    def is_positive(cls, obs):
+        raise NotImplementedError("Please implement is positive")
 
-    # appointment info
-    first_tb_appointment_date = fields.DateField(blank=True, null=True)
-    first_tb_appointment_type = fields.CharField(
+    @classmethod
+    def is_negative(cls, obs):
+        raise NotImplementedError("Please implement is negative")
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = cls()
+        new_model.patient = obs.test.patient
+        new_model.value = obs.observation_value
+        if obs.test.site_code:
+            new_model.site = obs.test.site_code
+        new_model.lab_number = obs.test.lab_number
+        new_model.observation_date = obs.observation_datetime.date()
+        new_model.significant_date = obs.observation_datetime.date()
+        is_positive = cls.is_positive(obs)
+        is_negative = cls.is_negative(obs)
+        if is_positive or is_negative:
+            new_model.pending = False
+        else:
+            new_model.pending = True
+        if is_positive:
+            new_model.positive = True
+        else:
+            new_model.positive = False
+        return new_model
+
+
+def parse_date(some_val):
+    date_formats = ["%d/%m/%y", "%d/%m/%Y"]
+    result = None
+    for date_format in date_formats:
+        try:
+            dt = datetime.datetime.strptime(some_val, date_format)
+            result = dt.date()
+        except ValueError:
+            pass
+    return result
+
+
+class AFBSmear(AbstractTBTest):
+    OBSERVATION_NAME = 'AFB Smear'
+    date_of_microscopy = fields.DateField(blank=True, null=True)
+
+    @classmethod
+    def is_positive(cls, obs):
+        obs_value = obs.observation_value
+        positive_starts_with = [
+            "AAFB + Seen",
+            "AAFB 2+ Seen",
+            "AAFB 3+ Seen",
+            "AAFB 4+ Seen"
+        ]
+        for psw in positive_starts_with:
+            if obs_value.startswith(psw):
+                return True
+
+        return False
+
+    @classmethod
+    def is_negative(cls, obs):
+        obs_value = obs.observation_value
+        return obs_value.startswith("AAFB not seen")
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = super().populate_from_observation(obs)
+        microscopy_date_obs = obs.test.observation_set.filter(
+            observation_name="Date of AFB Microscopy"
+        ).first()
+        if microscopy_date_obs:
+            microscopy_date = microscopy_date_obs.observation_value
+            microscopy_date = parse_date(microscopy_date)
+            if microscopy_date:
+                new_model.date_of_microscopy = microscopy_date
+                new_model.significant_date = microscopy_date
+        return new_model
+
+
+class AFBCulture(AbstractTBTest):
+    OBSERVATION_NAME = 'TB: Culture Result'
+    date_of_culture_result = fields.DateField(blank=True, null=True)
+
+    @classmethod
+    def is_positive(cls, obs):
+        return obs.observation_value.startswith("1")
+
+    @classmethod
+    def is_negative(cls, obs):
+        return obs.observation_value.startswith("No")
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = super().populate_from_observation(obs)
+        microscopy_date_obs = obs.test.observation_set.filter(
+            observation_name="Date of AFB Culture Result"
+        ).first()
+        if microscopy_date_obs:
+            microscopy_date = microscopy_date_obs.observation_value
+            microscopy_date = parse_date(microscopy_date)
+            if microscopy_date:
+                new_model.date_of_microscopy = microscopy_date
+                new_model.significant_date = microscopy_date
+        return new_model
+
+
+class AFBRefLib(AbstractTBTest):
+    OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
+
+    date_of_ref_lib_string = fields.CharField(
         max_length=256, blank=True, default=""
     )
+    date_of_ref_lib_report = fields.DateField(blank=True, null=True)
+
+    @classmethod
+    def is_positive(cls, obs):
+        return obs.observation_value.startswith("1")
+
+    @classmethod
+    def is_negative(cls, obs):
+        """
+        Ref lab reports are only done after the culture has
+        been resolved to be positive.
+
+        IE they are only pending or positive.
+        """
+        return False
+
+    @classmethod
+    def get_ref_lib_date_observation_string(cls, obs):
+        ref_lib_date_obs = obs.test.observation_set.filter(
+            observation_name="Date of Ref. Lab. report"
+        ).first()
+        if ref_lib_date_obs:
+            return ref_lib_date_obs.observation_value
+
+    @classmethod
+    def get_ref_lib_date(cls, ref_lib_date_string):
+        """
+        The date is stored in Date of Ref. Lab. report.
+        It is not actually a date its a string e.g.
+
+        ```
+        06/05/2019  17/06/19~Intermediate report 13/05/2019~Final report 24/06/2019
+        ```
+
+        Its not always of this format though. We care about the
+        most recent date whether receipt, intermediate or final.
+        So we split it into words and return the highest date
+        """
+        mentioned_dates = []
+        obs_lines = ref_lib_date_string.split("~")
+        obs_vals = []
+        for obs_line in obs_lines:
+            obs_vals.extend(obs_line.split(" "))
+
+        for obs_val in obs_vals:
+            obs_val = obs_val.strip()
+            if obs_val:
+                obs_date = parse_date(obs_val)
+                if obs_date:
+                    mentioned_dates.append(obs_date)
+        if mentioned_dates:
+            return max(mentioned_dates)
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = super().populate_from_observation(obs)
+        ref_lib_date_str = cls.get_ref_lib_date_observation_string(obs)
+        if ref_lib_date_str:
+            cls.date_of_ref_lib_string = ref_lib_date_str
+
+            ref_lib_date = cls.get_ref_lib_date(ref_lib_date_str)
+            if ref_lib_date:
+                new_model.date_of_ref_lib_report = ref_lib_date
+                new_model.significant_date = ref_lib_date
+        return new_model
+
+
+class PCR(AbstractTBTest):
+    OBSERVATION_NAME = 'TB PCR'
+
+    @classmethod
+    def is_negative(cls, obs):
+        obs_val = obs.observation_value
+        if "PCR to detect M.tuberculosis complex was~NEGATIVE" in obs_val:
+            return True
+        if "PCR to detect M.tuberculosis complex was ~ NEGATIVE" in obs_val:
+            return True
+        return obs_val == "TB PCR (GeneXpert) Negative"
+
+    @classmethod
+    def is_positive(cls, obs):
+        obs_val = obs.observation_value
+        if "The PCR to detect M.tuberculosis complex was~POSITIVE" in obs_val:
+            return True
+        if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in obs_val:
+            return True
+        return obs_val == "TB PCR (GeneXpert) Positive"

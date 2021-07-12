@@ -66,5 +66,10 @@ urlpatterns = [
         r'^templates/tb/mdt_list/$',
         views.MDTList.as_view(),
         name="mdt_list"
+    ),
+    url(
+        r'^templates/tb/experimental_mdt_list/$',
+        views.MDTListExperimental.as_view(),
+        name="mdt_list"
     )
 ]

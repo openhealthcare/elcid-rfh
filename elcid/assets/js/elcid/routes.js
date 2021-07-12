@@ -70,6 +70,7 @@ app.config(
 
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list.html'))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
+             .when('/tb/mdt-experimental/',  static_template_route('/templates/tb/experimental_mdt_list/'))
              .when('/tb/mdt-list/',  static_template_route('/templates/tb/mdt_list/'))
              .when('/tb/mdt-list-old/',  static_template_route('/templates/tb/mdt_list.html'))
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))

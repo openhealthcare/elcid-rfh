@@ -13,8 +13,7 @@ from opal.core.serialization import deserialize_datetime
 from opal.models import Episode
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
-from plugins.labtests import models as labtest_models
-
+from opal.models import Patient
 from plugins.tb import episode_categories, constants, lab
 from plugins.tb import models
 from plugins.tb.models import PatientConsultation
@@ -728,4 +727,198 @@ class MDTList(LoginRequiredMixin, TemplateView):
             ctx["site"] = "RFH"
         else:
             ctx["site"] = "Barnet"
+        return ctx
+
+
+class MDTListExperimental(LoginRequiredMixin, TemplateView):
+    template_name = "tb/mdt_list_experimental.html"
+    BARNET = "BARNET"
+    RFH = "RFH"
+    SITES = [RFH, BARNET]
+    POSITIVE = "POSITIVE"
+    RESULTED = "RESULTED"
+    STATUSES = [POSITIVE, RESULTED]
+    ALL_TESTS = "ALL_TESTS"
+    CULTURE = "CULTURE"
+    SMEAR = "SMEAR"
+    PCR = "PCR"
+    REF_LAB = "REF_LAB"
+    PCR_MODEL = models.PCR
+    AFB_SMEAR_MODEL = models.AFBSmear
+    AFB_CULTURE = models.AFBCulture
+    AFB_REF_LIB = models.AFBRefLib
+    TESTS = {
+        ALL_TESTS: [
+            models.PCR,
+            models.AFBSmear,
+            models.AFBCulture,
+            models.AFBRefLib,
+        ],
+        CULTURE: [models.AFBCulture],
+        SMEAR: [models.AFBSmear],
+        REF_LAB: [models.AFBRefLib],
+        PCR: [models.PCR],
+    }
+
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 2:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(21)
+
+    def get_first(self, some_tests):
+        if some_tests:
+            return some_tests[0]
+
+    def patient_to_row(self, patient):
+        demographics = patient.demographics_set.all()[0]
+
+        pcrs = sorted(
+            [i for i in patient.pcr_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+        first_positive_pcr = self.get_first([i for i in pcrs if i.positive])
+        pcrs.reverse()
+        latest_pcr = self.get_first(pcrs)
+
+        smears = sorted(
+            [i for i in patient.afbsmear_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+        first_positive_smear = self.get_first([i for i in smears if i.positive])
+        smears.reverse()
+        latest_smear = self.get_first(smears)
+
+        cultures = sorted(
+            [i for i in patient.afbculture_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+        first_positive_culture = self.get_first([i for i in cultures if i.positive])
+        cultures.reverse()
+        latest_culture = self.get_first(cultures)
+
+        ref_libs = sorted(
+            [i for i in patient.afbreflib_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+        first_positive_ref_lib = self.get_first([i for i in ref_libs if i.positive])
+        ref_libs.reverse()
+        latest_ref_lib = self.get_first(ref_libs)
+
+        all_sorted = sorted(
+            pcrs+smears+cultures+ref_libs, key=lambda x: x.significant_date
+        )
+        significant_date = datetime.datetime.min.date()
+        if all_sorted:
+            significant_date = all_sorted[-1].significant_date
+        tb_category = episode_categories.TbEpisode.display_name
+        episode = self.get_first([
+            i for i in patient.episode_set.all()
+            if i.category_name == tb_category
+        ])
+
+        first_tests = [
+            first_positive_pcr,
+            first_positive_smear,
+        ]
+
+        first_tests = sorted(
+            [i for i in first_tests if i], key=lambda x: x.significant_date
+        )
+
+        first_test = None
+        if first_tests:
+            first_test = first_tests[0]
+            if first_positive_culture:
+                if first_positive_culture.significant_date < first_test.significant_date:
+                    first_test = None
+
+        last_tests = [
+            latest_pcr, latest_smear
+        ]
+
+        last_tests = sorted(
+            [i for i in last_tests if i],
+            key=lambda x: x.significant_date,
+            reverse=True
+        )
+        last_test = None
+        if last_tests:
+            last_test = last_tests[0]
+            if latest_culture:
+                if latest_culture.significant_date > last_test.significant_date:
+                    last_test = None
+            if last_test and latest_ref_lib:
+                if latest_ref_lib.significant_date > last_test.significant_date:
+                    last_test = None
+
+        if first_positive_culture and latest_culture:
+            if first_positive_culture == latest_culture:
+                first_positive_culture = None
+
+        if first_positive_ref_lib and latest_ref_lib:
+            if first_positive_ref_lib == latest_ref_lib:
+                first_positive_ref_lib = None
+
+        tests = [
+            ("Most recent resulted", last_test),
+            ("Most recent ref lab report", latest_ref_lib),
+            ("Most recent culture", latest_culture),
+            ("First ref lib report", first_positive_ref_lib),
+            ("First pos culture", first_positive_culture),
+            ("First positive", first_test),
+        ]
+
+        tests = sorted(
+            [(i, v) for i, v in tests if v],
+            key=lambda x: x[1].significant_date,
+            reverse=True
+        )
+
+        return {
+            "episode": episode,
+            "demographics": demographics,
+            "tests": tests,
+            "significant_date": significant_date
+        }
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        filter_args = {
+            "significant_date__gte": self.start_date,
+            "pending": False
+        }
+
+        if self.request.GET.get("status") == self.POSITIVE:
+            filter_args["positive"] = True
+        if self.request.GET["site"].upper() == self.BARNET:
+            filter_args["lab_number__contains"] = "K"
+        else:
+            filter_args["lab_number__contains"] = "L"
+        tests = self.TESTS[self.request.GET.get("tests")]
+        patient_ids = set()
+        for test in tests:
+            patient_ids = patient_ids.union(test.objects.filter(
+                **filter_args
+            ).values_list('patient_id', flat=True))
+        patients = Patient.objects.filter(
+            id__in=patient_ids
+        ).distinct().prefetch_related(
+            'demographics_set',
+            'pcr_set',
+            'afbsmear_set',
+            'afbculture_set',
+            'afbreflib_set',
+            'episode_set'
+        )
+        rows = [
+            self.patient_to_row(patient) for patient in patients
+        ]
+        ctx["rows"] = sorted(rows, key=lambda x: x["significant_date"], reverse=True)
         return ctx

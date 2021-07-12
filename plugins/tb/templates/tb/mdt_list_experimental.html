@@ -1,0 +1,69 @@
+{% extends "tb/base.html" %}
+{% load elcid_panels %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-4">
+        <h1>Experimental {{ request.GET.site }} MDT List</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 content-offset-10 content-offset-below-10">
+        <div class="btn-group" role="group">
+          <a href="/#/tb/mdt-experimental/?{% query_string site=view.RFH %}" class="btn btn-primary {% if request.GET.site.upper == view.RFH %}active{% endif %}">RFH</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string site=view.BARNET %}" class="btn btn-primary {% if request.GET.site.upper == view.BARNET %}active{% endif %}">Barnet</a>
+        </div>
+        <div class="btn-group left-offset-15" role="group">
+          <a href="/#/tb/mdt-experimental/?{% query_string status=view.POSITIVE %}" class="btn btn-primary {% if request.GET.status.upper == view.POSITIVE %}active{% endif %}">Positive</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string status=view.RESULTED %}" class="btn btn-primary {% if request.GET.status.upper == view.RESULTED %}active{% endif %}">Resulted</a>
+        </div>
+        <div class="btn-group left-offset-15" role="group">
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.ALL_TESTS %}" class="btn btn-primary {% if request.GET.tests.upper == view.ALL_TESTS %}active{% endif %}">All tests</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.CULTURE %}" class="btn btn-primary {% if request.GET.tests.upper == view.CULTURE %}active{% endif %}">Culture</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.SMEAR %}" class="btn btn-primary {% if request.GET.tests.upper == view.SMEAR %}active{% endif %}">Smear</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.PCR %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">PCR</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.REF_LAB %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">Ref lab report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th>Patient</th>
+        <th>Imaging</th>
+        <th>Results</th>
+      </tr>
+    {% for row in rows %}
+      <tr>
+        <td>
+          {% if row.episode %}
+          <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+            {{ row.demographics.sex }} {{ demographics.get_age }}
+          </a>
+          {% else %}
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% endif %}
+        </td>
+        <td>
+          <span style="white-space: nowrap;">
+          <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
+            PACS
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+          </span>
+        </td>
+        <td>
+          {% for title, test in row.tests %}
+            {% include "tb/partials/tb_test.html" with lab_test=test title=title %}
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
