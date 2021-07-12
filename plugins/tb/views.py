@@ -823,6 +823,13 @@ class MDTListExperimental(LoginRequiredMixin, TemplateView):
             if i.category_name == tb_category
         ])
 
+        patient_consultations = []
+
+        if episode:
+            patient_consultations = episode.patientconsultation_set.all().order_by(
+                "-when"
+            )
+
         first_tests = [
             first_positive_pcr,
             first_positive_smear,
@@ -883,6 +890,7 @@ class MDTListExperimental(LoginRequiredMixin, TemplateView):
 
         return {
             "episode": episode,
+            "patient_consultations": patient_consultations,
             "demographics": demographics,
             "tests": tests,
             "significant_date": significant_date

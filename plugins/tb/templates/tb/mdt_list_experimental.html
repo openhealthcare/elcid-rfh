@@ -34,6 +34,7 @@
         <th>Patient</th>
         <th>Imaging</th>
         <th>Results</th>
+        <th>Clinical interaction</th>
       </tr>
     {% for row in rows %}
       <tr>
@@ -60,6 +61,20 @@
           {% for title, test in row.tests %}
             {% include "tb/partials/tb_test.html" with lab_test=test title=title %}
           {% endfor %}
+        </td>
+        <td>
+          {% if row.episode %}
+          <div episode-on-scope episode-id="{{ row.episode.id }}">
+            <div ng-repeat="patientConsultation in episode.patient_consultation" class="row">
+              <a ng-click="episode.recordEditor.editItem('patient_consultation', patientConsultation)">
+                [[ patientConsultation.when | displayDate ]] [[ patientConsultation.initials ]] [[ patientConsultation.reason_for_interaction ]]
+              </a>
+            </div>
+            <a ng-click="episode.recordEditor.newItem('patient_consultation')">
+              Add a new note
+            </a>
+          </div>
+          {% endif %}
         </td>
       </tr>
     {% endfor %}
