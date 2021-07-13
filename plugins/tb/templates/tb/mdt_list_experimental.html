@@ -33,8 +33,7 @@
       <tr>
         <th>Patient</th>
         <th>Imaging</th>
-        <th>Results</th>
-        <th>Clinical interaction</th>
+        <th>Timeline</th>
       </tr>
     {% for row in rows %}
       <tr>
@@ -58,28 +57,15 @@
           </span>
         </td>
         <td>
-          {% for title, test in row.tests %}
-            {% include "tb/partials/tb_test.html" with lab_test=test title=title %}
+          {% for ts, timeline_type, instance in row.timeline %}
+            {% if timeline_type == "test" %}
+              {% include "tb/partials/tb_test.html" with lab_test=instance title=instance.title %}
+            {% elif timeline_type == 'note' %}
+              {% include "tb/partials/note.html" with note=instance %}
+            {% else %}
+              {% include "tb/partials/appointment.html" with appointment=instance %}
+            {% endif %}
           {% endfor %}
-        </td>
-        <td>
-          {% if row.episode %}
-          <div episode-on-scope episode-id="{{ row.episode.id }}">
-            <div ng-repeat="item in episode.patient_consultation" class="row content-offset-below-10">
-              <div class="col-md-12">
-                <a ng-click="episode.recordEditor.editItem('patient_consultation', item)">
-                  [[ item.when | displayDate ]] [[ item.initials ]] [[ item.reason_for_interaction ]]
-                  <span ng-show="item.reason_for_interaction === 'MDT meeting'">
-                    <div class="content-offset-below-10" ng-class="{'line-through': item.actioned}" markdown='plan'></div>
-                  </span>
-                </a>
-              </div>
-            </div>
-            <a class="orange-link pointer" ng-click="episode.recordEditor.newItem('patient_consultation')">
-              Add a new note
-            </a>
-          </div>
-          {% endif %}
         </td>
       </tr>
     {% endfor %}

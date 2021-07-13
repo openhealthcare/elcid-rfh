@@ -731,10 +731,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
 class AbstractMDTList(LoginRequiredMixin, TemplateView):
     """
-    Implement
-    get_patients and return a qs of patients
-    patient_to_row and return a row to appear in the table
-    sort_rows to then sort the rows
+    Get_patients and return a qs of patients for an mdt list
     """
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
@@ -744,10 +741,15 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             'afbsmear_set',
             'afbculture_set',
             'afbreflib_set',
-            'episode_set'
+            'episode_set',
+            'appointments'
+        )
+        patient_to_patient_consultations = self.patient_to_patient_consultations(
+            patients
         )
         rows = [
-            self.patient_to_row(patient) for patient in patients
+            self.patient_to_row(patient, patient_to_patient_consultations[patient.id])
+            for patient in patients
         ]
         ctx["rows"] = self.sort_rows(rows)
         return ctx
@@ -762,7 +764,16 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
         if some_tests:
             return some_tests[0]
 
-    def patient_to_row(self, patient):
+    def patient_to_patient_consultations(self, patients):
+        result = defaultdict(list)
+        qs = PatientConsultation.objects.filter(
+            episode__patient__in=patients
+        ).select_related('episode')
+        for consultation in qs:
+            result[consultation.episode.patient_id].append(consultation)
+        return result
+
+    def patient_to_row(self, patient, patient_consultations):
         demographics = patient.demographics_set.all()[0]
 
         pcrs = sorted(
@@ -809,13 +820,6 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             if i.category_name == tb_category
         ])
 
-        patient_consultations = []
-
-        if episode:
-            patient_consultations = episode.patientconsultation_set.all().order_by(
-                "-when"
-            )
-
         first_tests = [
             first_positive_pcr,
             first_positive_smear,
@@ -859,26 +863,46 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             if first_positive_ref_lib == latest_ref_lib:
                 first_positive_ref_lib = None
 
+        if last_test:
+            last_test.title = "Most recent resulted"
+        if latest_ref_lib:
+            latest_ref_lib.title = "Most recent ref lab report"
+        if latest_culture:
+            latest_culture.title = "Most recent culture"
+        if first_positive_ref_lib:
+            first_positive_ref_lib.title = "First ref lab report"
+        if first_positive_culture:
+            first_positive_culture.title = "First pos culture"
+        if first_test:
+            first_test.title = "First positive"
         tests = [
-            ("Most recent resulted", last_test),
-            ("Most recent ref lab report", latest_ref_lib),
-            ("Most recent culture", latest_culture),
-            ("First ref lab report", first_positive_ref_lib),
-            ("First pos culture", first_positive_culture),
-            ("First positive", first_test),
+            last_test,
+            latest_ref_lib,
+            latest_culture,
+            first_positive_ref_lib,
+            first_positive_culture,
+            first_test
         ]
 
-        tests = sorted(
-            [(i, v) for i, v in tests if v],
-            key=lambda x: x[1].significant_date,
-            reverse=True
-        )
+        tests = [
+            (test.reported_datetime, "test", test) for test in tests if test and test.reported_datetime
+        ]
+
+        appointments = [
+            (i.start_datetime, "appointment", i,) for i in patient.appointments.all()
+            if i.derived_appointment_type in constants.TB_APPOINTMENT_CODES and i.start_datetime
+        ]
+
+        notes = [
+            (i.when, "note",  i) for i in patient_consultations if i.when
+        ]
+
+        timeline = sorted(tests + notes + appointments, key=lambda x: x[0], reverse=True)
 
         return {
             "episode": episode,
-            "patient_consultations": patient_consultations,
             "demographics": demographics,
-            "tests": tests,
+            "timeline": timeline,
             "significant_date": significant_date
         }
 
@@ -923,11 +947,11 @@ class MDTListExperimental(AbstractMDTList):
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(211)
+        return self.end_date - datetime.timedelta(21)
 
     def get_patients(self):
         filter_args = {
-            "significant_datetime__gte": self.start_date,
+            "significant_date__gte": self.start_date,
             "pending": False
         }
         if self.request.GET.get("status") == self.POSITIVE:
@@ -947,7 +971,7 @@ class MDTListExperimental(AbstractMDTList):
         ).distinct()
 
     def sort_rows(self, rows):
-        return sorted(rows, key=lambda x: x["significant_datetime"], reverse=True)
+        return sorted(rows, key=lambda x: x["significant_date"], reverse=True)
 
 
 class OutstandingActionsMDT(AbstractMDTList):

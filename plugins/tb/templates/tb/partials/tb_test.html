@@ -1,7 +1,7 @@
 <div class="row content-offset-below-10">
-  <div class="col-md-12 {% if lab_test_dict.positive %}text-danger{% endif %}">
+  <div class="col-md-12 {% if lab_test.positive %}text-danger{% endif %}">
     <strong>
-    {{ lab_test.reported_datetime.date }}
+    {{ lab_test.reported_datetime |date:"j D Y G:i" }}
     {% if title %}
       {{ title }}
     {% endif %}
@@ -25,8 +25,8 @@
       {{ lab_test.date_of_ref_lib_string }}
       {% endif %}
     {% endif %}
-    <br>
     {% if lab_test.organisms %}
+    <br>
     {% for organism_name, organism_meta in lab_test.organisms.items %}
     {{ organism_name }} {% if organism_meta.comments %}({{ organism_meta.comments }}){% endif %}
     {% if organism_meta.sensitivities %}

@@ -1,0 +1,10 @@
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <strong>
+      {{ appointment.start_datetime|date:"j D Y G:i" }}
+      Appt
+    </strong>
+    {{ appointment.derived_appointment_type }}
+    {{ appointment.status_code }}
+  </div>
+</div>
