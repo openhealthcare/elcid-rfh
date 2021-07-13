@@ -15,10 +15,8 @@ from opal.models import Episode, PatientConsultationReasonForInteraction
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
-from plugins.tb import episode_categories, constants, lab
-from plugins.tb import models
-from plugins.tb.models import PatientConsultation
-from plugins.tb.models import Treatment
+from plugins.tb import episode_categories, constants, lab, models
+from plugins.tb.models import PatientConsultation, Treatment
 from plugins.tb.utils import get_tb_summary_information
 
 

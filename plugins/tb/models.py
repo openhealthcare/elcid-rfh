@@ -7,6 +7,7 @@ from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
 from opal import models
 from plugins.labtests import models as lab
+from plugins.labtests import parse_lab_text
 
 
 class RecreationalDrug(lookuplists.LookupList):
@@ -651,6 +652,9 @@ class AbstractTBTest(fields.Model):
             new_model.positive = False
         return new_model
 
+    def display_value(self):
+        return self.value
+
 
 def parse_date(some_val):
     date_formats = ["%d/%m/%y", "%d/%m/%Y"]
@@ -707,6 +711,9 @@ class AFBCulture(AbstractTBTest):
     OBSERVATION_NAME = 'TB: Culture Result'
     date_of_culture_result = fields.DateField(blank=True, null=True)
 
+    def organisms(self):
+        return parse_lab_text.get_organisms(self.value)
+
     @classmethod
     def is_positive(cls, obs):
         return obs.observation_value.startswith("1")
@@ -729,6 +736,15 @@ class AFBCulture(AbstractTBTest):
                 new_model.significant_date = microscopy_date
         return new_model
 
+    def display_value(self):
+        to_remove = " ".join([
+            "Key: Susceptibility interpretation (Note: update to "
+            "I) ~S = susceptible using standard dosing~I= susceptible at increased dosing,",
+            "high dose regimen must be used (please see your local antibiotic policy",
+            "or Microguide for dosing guidance)~R = resistant"
+        ])
+        return self.value.replace(to_remove, "")
+
 
 class AFBRefLib(AbstractTBTest):
     OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
@@ -737,6 +753,9 @@ class AFBRefLib(AbstractTBTest):
         max_length=256, blank=True, default=""
     )
     date_of_ref_lib_report = fields.DateField(blank=True, null=True)
+
+    def organisms(self):
+        return parse_lab_text.get_organisms(self.value)
 
     @classmethod
     def is_positive(cls, obs):
@@ -823,3 +842,12 @@ class PCR(AbstractTBTest):
         if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in obs_val:
             return True
         return obs_val == "TB PCR (GeneXpert) Positive"
+
+    def display_value(self):
+        # to_remove = "This does not exclude a diagnosis of tuberculosis."
+        obs_value = self.value
+        if "The PCR to detect M.tuberculosis complex was~POSITIVE" in obs_value:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+        if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in obs_value:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+        return obs_value.split("~")[0].strip()
