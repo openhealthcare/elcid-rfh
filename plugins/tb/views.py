@@ -949,6 +949,22 @@ class MDTListExperimental(AbstractMDTList):
     def start_date(self):
         return self.end_date - datetime.timedelta(21)
 
+    def title(self):
+        test_type = self.request.GET.get("tests")
+        if test_type == self.ALL_TESTS:
+            test_type = "tests"
+        elif test_type == self.REF_LAB:
+            test_type = "ref lab reports"
+        elif test_type == self.PCR:
+            test_type = "PCR tests"
+        else:
+            test_type = f"{test_type.lower()} tests"
+
+        status = self.request.GET.get("status").lower()
+        from_dt = self.start_date.strftime("%-d %b %Y")
+        title = f"Patients with {status} {test_type} reported after {from_dt}"
+        return title.replace("  ", " ")
+
     def get_patients(self):
         filter_args = {
             "significant_date__gte": self.start_date,

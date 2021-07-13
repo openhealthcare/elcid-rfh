@@ -6,10 +6,11 @@
     <div class="row">
       <div class="col-md-12">
         <h1>TB {{ request.GET.site }} MDT</h1>
+        <p class="content-offset-below-10">{{ view.title }}</p>
       </div>
     </div>
     <div class="row">
-      <div class="col-md-12 content-offset-10 content-offset-below-10">
+      <div class="col-md-12 content-offset-10 content-offset-below-20">
         <div class="btn-group" role="group">
           <a href="/#/tb/mdt-experimental/?{% query_string site=view.RFH %}" class="btn btn-primary {% if request.GET.site.upper == view.RFH %}active{% endif %}">RFH</a>
           <a href="/#/tb/mdt-experimental/?{% query_string site=view.BARNET %}" class="btn btn-primary {% if request.GET.site.upper == view.BARNET %}active{% endif %}">Barnet</a>
