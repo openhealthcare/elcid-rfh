@@ -73,7 +73,7 @@ class Command(BaseCommand):
         models.AFBCulture.objects.all().delete()
         models.AFBRefLib.objects.all().delete()
         models.AFBSmear.objects.all().delete()
-        models.PCR.objects.all().delete()
+        models.AFBCulture.objects.all().delete()
         logger.info("Creating TB tests")
         start = time.time()
         populate_tests(two_days_ago)
@@ -84,8 +84,10 @@ class Command(BaseCommand):
         tb_tests = [models.PCR, models.AFBSmear, models.AFBCulture, models.AFBRefLib]
         patient_ids = set()
         for tb_test in tb_tests:
-            patient_ids.union(
-                tb_test.objects.filter(positive=True).values_list("patient_id").distinct()
+            patient_ids = patient_ids.union(
+                tb_test.objects.filter(positive=True)
+                .values_list("patient_id", flat=True)
+                .distinct()
             )
         need_tb_episodes = Patient.objects.exclude(
             episode__category_name=episode_categories.TbEpisode.display_name
