@@ -608,7 +608,8 @@ class AbstractTBTest(fields.Model):
     value = fields.TextField(blank=True, default="")
     site = fields.CharField(max_length=256, blank=True, default="")
     lab_number = fields.CharField(max_length=256, blank=True, default="")
-    observation_date = fields.DateField(blank=True, null=True)
+    observation_datetime = fields.DateTimeField(blank=True, null=True)
+    reported_datetime = fields.DateTimeField(blank=True, null=True)
     significant_date = fields.DateField()
     pending = fields.BooleanField()
     positive = fields.BooleanField()
@@ -638,9 +639,13 @@ class AbstractTBTest(fields.Model):
         if obs.test.site_code:
             new_model.site = obs.test.site_code
         new_model.lab_number = obs.test.lab_number
-        new_model.observation_date = obs.observation_datetime.date()
+        new_model.observation_datetime = obs.observation_datetime
+        new_model.reported_datetime = obs.reported_datetime
         new_model.observation = obs
-        new_model.significant_date = obs.observation_datetime.date()
+        if obs.reported_datetime:
+            new_model.significant_date = obs.reported_datetime.date()
+        else:
+            new_model.significant_date = new_model.observation_datetime.date()
         is_positive = cls.is_positive(obs)
         is_negative = cls.is_negative(obs)
         if is_positive or is_negative:
@@ -704,13 +709,16 @@ class AFBSmear(AbstractTBTest):
             microscopy_date = parse_date(microscopy_date)
             if microscopy_date:
                 new_model.date_of_microscopy = microscopy_date
-                new_model.significant_date = microscopy_date
         return new_model
 
 
 class AFBCulture(AbstractTBTest):
     OBSERVATION_NAME = 'TB: Culture Result'
     date_of_culture_result = fields.DateField(blank=True, null=True)
+    # what is stored in obs name TB: Comment
+    tb_comment = fields.TextField(blank=True, default="")
+    # what is stored in obs name TB: Clinical Comment
+    clinical_comment = fields.TextField(blank=True, default="")
 
     def organisms(self):
         return parse_lab_text.get_organisms(self.value)
@@ -734,7 +742,19 @@ class AFBCulture(AbstractTBTest):
             microscopy_date = parse_date(microscopy_date)
             if microscopy_date:
                 new_model.date_of_culture_result = microscopy_date
-                new_model.significant_date = microscopy_date
+
+        tb_comment = obs.test.observation_set.filter(
+            observation_name="TB: Comment"
+        ).first()
+        if tb_comment:
+            new_model.tb_comment = tb_comment
+
+        clinical_comment = obs.test.observation_set.filter(
+            observation_name="TB: Clinical Comment"
+        ).first()
+        if clinical_comment:
+            new_model.clinical_comment = clinical_comment
+
         return new_model
 
     def display_value(self):
@@ -754,6 +774,7 @@ class AFBRefLib(AbstractTBTest):
         max_length=256, blank=True, default=""
     )
     date_of_ref_lib_report = fields.DateField(blank=True, null=True)
+    comment = fields.TextField(blank=True, default="")
 
     def organisms(self):
         return parse_lab_text.get_organisms(self.value)
@@ -815,11 +836,14 @@ class AFBRefLib(AbstractTBTest):
         ref_lib_date_str = cls.get_ref_lib_date_observation_string(obs)
         if ref_lib_date_str:
             cls.date_of_ref_lib_string = ref_lib_date_str
-
             ref_lib_date = cls.get_ref_lib_date(ref_lib_date_str)
             if ref_lib_date:
                 new_model.date_of_ref_lib_report = ref_lib_date
-                new_model.significant_date = ref_lib_date
+        comment = obs.test.observation_set.filter(
+            observation_name="TB Ref. Lab. Comment"
+        ).first()
+        if comment:
+            new_model.comment = comment
         return new_model
 
 

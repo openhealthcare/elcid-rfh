@@ -1,30 +1,28 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12 {% if lab_test_dict.positive %}text-danger{% endif %}">
+    <strong>
+    {{ lab_test.reported_datetime.date }}
     {% if title %}
-    <strong>{{ title }}</strong>
+      {{ title }}
     {% endif %}
+    </strong>
     {{ lab_test.OBSERVATION_NAME }}
     {{ lab_test.lab_number }}
     {{ lab_test.site }}
-    {% if lab_test.OBSERVATION_NAME == view.PCR_MODEL.OBSERVATION_NAME %}
-    {{ lab_test.observation_date }}
-    {% elif lab_test.OBSERVATION_NAME == view.AFB_SMEAR_MODEL.OBSERVATION_NAME %}
+    {% if lab_test.OBSERVATION_NAME == view.AFB_SMEAR_MODEL.OBSERVATION_NAME %}
       {% if lab_test.date_of_microscopy %}
+      <br>
       Date of microscopy: {{ lab_test.date_of_microscopy }}
-      {% else %}
-      {{ lab_test.observation_date }}
       {% endif %}
     {% elif lab_test.OBSERVATION_NAME == view.AFB_CULTURE.OBSERVATION_NAME %}
       {% if lab_test.date_of_culture_result %}
+      <br>
       Date of culture result: {{ lab_test.date_of_culture_result }}
-      {% else %}
-      {{ lab_test.observation_date }}
       {% endif %}
     {% elif lab_test.OBSERVATION_NAME == view.AFB_REF_LIB.OBSERVATION_NAME %}
       {% if lab_test.date_of_ref_lib_string %}
+      <br>
       {{ lab_test.date_of_ref_lib_string }}
-      {% else %}
-      {{ lab_test.observation_date }}
       {% endif %}
     {% endif %}
     <br>

@@ -927,7 +927,7 @@ class MDTListExperimental(AbstractMDTList):
 
     def get_patients(self):
         filter_args = {
-            "significant_date__gte": self.start_date,
+            "significant_datetime__gte": self.start_date,
             "pending": False
         }
         if self.request.GET.get("status") == self.POSITIVE:
@@ -947,7 +947,7 @@ class MDTListExperimental(AbstractMDTList):
         ).distinct()
 
     def sort_rows(self, rows):
-        return sorted(rows, key=lambda x: x["significant_date"], reverse=True)
+        return sorted(rows, key=lambda x: x["significant_datetime"], reverse=True)
 
 
 class OutstandingActionsMDT(AbstractMDTList):

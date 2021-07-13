@@ -69,7 +69,11 @@ def populate_tests(since):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        two_days_ago = timezone.now() - datetime.timedelta(1)
+        two_days_ago = timezone.now() - datetime.timedelta(1000)
+        models.AFBCulture.objects.all().delete()
+        models.AFBRefLib.objects.all().delete()
+        models.AFBSmear.objects.all().delete()
+        models.PCR.objects.all().delete()
         logger.info("Creating TB tests")
         start = time.time()
         populate_tests(two_days_ago)
