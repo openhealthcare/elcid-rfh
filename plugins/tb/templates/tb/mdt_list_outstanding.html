@@ -1,0 +1,70 @@
+{% extends "tb/base.html" %}
+{% load elcid_panels %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-4">
+        <h1>Outstanding MDT List</h1>
+      </div>
+    </div>
+  </div>
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th>Patient</th>
+        <th>Imaging</th>
+        <th>Results</th>
+        <th>Clinical interaction</th>
+      </tr>
+    {% for row in rows %}
+      <tr>
+        <td>
+          {% if row.episode %}
+          <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+            {{ row.demographics.sex }} {{ demographics.get_age }}
+          </a>
+          {% else %}
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% endif %}
+        </td>
+        <td>
+          <span style="white-space: nowrap;">
+          <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
+            PACS
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+          </span>
+        </td>
+        <td>
+          {% for title, test in row.tests %}
+            {% include "tb/partials/tb_test.html" with lab_test=test title=title %}
+          {% endfor %}
+        </td>
+        <td>
+          {% if row.episode %}
+          <div episode-on-scope episode-id="{{ row.episode.id }}">
+            <div ng-repeat="item in episode.patient_consultation" class="row content-offset-below-10">
+              <div class="col-md-12">
+                <a ng-click="episode.recordEditor.editItem('patient_consultation', item)">
+                  [[ item.when | displayDate ]] [[ item.initials ]] [[ item.reason_for_interaction ]]
+                  <span ng-show="item.reason_for_interaction === 'MDT meeting'">
+                    <div class="content-offset-below-10" ng-class="{'line-through': item.actioned}" markdown='plan'></div>
+                  </span>
+                </a>
+              </div>
+            </div>
+            <a ng-click="episode.recordEditor.newItem('patient_consultation')">
+              Add a new note
+            </a>
+          </div>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
