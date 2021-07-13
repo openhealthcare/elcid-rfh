@@ -45,8 +45,10 @@
             {{ row.demographics.sex }} {{ row.demographics.get_age }}
           </a>
           {% else %}
+          <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
             {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          </a>
           {% endif %}
         </td>
         <td>
