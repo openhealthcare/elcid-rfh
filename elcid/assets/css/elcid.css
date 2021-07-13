@@ -515,4 +515,8 @@ div.add-isolate:hover {
 .modal-footer.externally-sourced {
   margin-top: 0;
 }
+
+.line-through {
+  text-decoration: line-through;
+}
 /*# sourceMappingURL=elcid.css.map */

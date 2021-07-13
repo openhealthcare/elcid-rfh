@@ -102,6 +102,16 @@ directives.directive("episodeOnScope", function(episodeLoader){
   }
 });
 
+directives.directive("addDate", function(){
+  "use strict";
+  return {
+    restrict: 'A',
+    scope: false,
+    link: function(scope){
+      scope.now = new Date()
+    }
+  }
+})
 
 directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader){
   "use strict";

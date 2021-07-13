@@ -85,7 +85,7 @@
                     </span>
                     <span ng-show="item.plan">
                       <b>Plan: </b>
-                      <div markdown="plan"></div>
+                      <div markdown="plan" ng-class="{'line-through': item.actioned}"></div>
                     </span>
                   </div>
                   <div class="col-sm-2">

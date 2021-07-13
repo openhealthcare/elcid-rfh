@@ -240,6 +240,8 @@ class AccessConsiderations(models.PatientSubrecord):
 
 class PatientConsultation(models.PatientConsultation):
     plan = fields.TextField(blank=True, default="")
+    # the date that the plan was actioned
+    actioned = fields.DateField(blank=True, null=True)
     examination_findings = fields.TextField(
         blank=True, default=""
     )
