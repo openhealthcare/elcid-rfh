@@ -42,13 +42,13 @@
           {% if row.episode %}
           <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
-            {{ row.demographics.sex }} {{ row.demographics.get_age }}
           </a>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% else %}
           <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
-            {{ row.demographics.sex }} {{ row.demographics.get_age }}
           </a>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% endif %}
         </td>
         <td>
