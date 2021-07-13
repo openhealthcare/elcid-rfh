@@ -654,7 +654,7 @@ class AbstractTBTest(fields.Model):
         return new_model
 
     def display_value(self):
-        return self.value
+        return "\n".join(self.value.split("~"))
 
 
 def parse_date(some_val):
@@ -851,4 +851,6 @@ class PCR(AbstractTBTest):
             return "The PCR to detect M.tuberculosis complex was POSITIVE"
         if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in obs_value:
             return "The PCR to detect M.tuberculosis complex was POSITIVE"
-        return obs_value.split("~")[0].strip()
+        if obs_value.startswith("NOT detected."):
+            return "NOT detected."
+        return super().display_value()
