@@ -63,13 +63,13 @@ def populate_tests(since):
     ref_libs_objs = []
     for ref_lib in ref_libs:
         ref_libs_objs.append(models.AFBRefLib.populate_from_observation(ref_lib))
-    logger.info(f"Creating TB tests: created {len(ref_libs_objs)} cultures")
+    logger.info(f"Creating TB tests: created {len(ref_libs_objs)} ref libs")
     models.AFBRefLib.objects.bulk_create(ref_libs_objs)
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        two_days_ago = timezone.now() - datetime.timedelta(100000)
+        two_days_ago = timezone.now() - datetime.timedelta(1)
         logger.info("Creating TB tests")
         start = time.time()
         populate_tests(two_days_ago)

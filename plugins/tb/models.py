@@ -639,6 +639,7 @@ class AbstractTBTest(fields.Model):
             new_model.site = obs.test.site_code
         new_model.lab_number = obs.test.lab_number
         new_model.observation_date = obs.observation_datetime.date()
+        new_model.observation = obs
         new_model.significant_date = obs.observation_datetime.date()
         is_positive = cls.is_positive(obs)
         is_negative = cls.is_negative(obs)
@@ -732,7 +733,7 @@ class AFBCulture(AbstractTBTest):
             microscopy_date = microscopy_date_obs.observation_value
             microscopy_date = parse_date(microscopy_date)
             if microscopy_date:
-                new_model.date_of_microscopy = microscopy_date
+                new_model.date_of_culture_result = microscopy_date
                 new_model.significant_date = microscopy_date
         return new_model
 

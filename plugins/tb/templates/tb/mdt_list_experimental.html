@@ -42,7 +42,7 @@
           {% if row.episode %}
           <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
-            {{ row.demographics.sex }} {{ demographics.get_age }}
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
           </a>
           {% else %}
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
@@ -75,7 +75,7 @@
                 </a>
               </div>
             </div>
-            <a ng-click="episode.recordEditor.newItem('patient_consultation')">
+            <a class="orange-link pointer" ng-click="episode.recordEditor.newItem('patient_consultation')">
               Add a new note
             </a>
           </div>

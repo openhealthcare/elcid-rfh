@@ -863,7 +863,7 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             ("Most recent resulted", last_test),
             ("Most recent ref lab report", latest_ref_lib),
             ("Most recent culture", latest_culture),
-            ("First ref lib report", first_positive_ref_lib),
+            ("First ref lab report", first_positive_ref_lib),
             ("First pos culture", first_positive_culture),
             ("First positive", first_test),
         ]
@@ -923,7 +923,7 @@ class MDTListExperimental(AbstractMDTList):
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(21)
+        return self.end_date - datetime.timedelta(211)
 
     def get_patients(self):
         filter_args = {
