@@ -16,7 +16,7 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, lab, models
-from plugins.tb.models import PatientConsultation, Treatment
+from plugins.tb.models import PCR, PatientConsultation, Treatment
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -780,33 +780,21 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             [i for i in patient.pcr_set.all() if not i.pending],
             key=lambda x: x.significant_date
         )
-        first_positive_pcr = self.get_first([i for i in pcrs if i.positive])
-        pcrs.reverse()
-        latest_pcr = self.get_first(pcrs)
 
         smears = sorted(
             [i for i in patient.afbsmear_set.all() if not i.pending],
             key=lambda x: x.significant_date
         )
-        first_positive_smear = self.get_first([i for i in smears if i.positive])
-        smears.reverse()
-        latest_smear = self.get_first(smears)
 
         cultures = sorted(
             [i for i in patient.afbculture_set.all() if not i.pending],
             key=lambda x: x.significant_date
         )
-        first_positive_culture = self.get_first([i for i in cultures if i.positive])
-        cultures.reverse()
-        latest_culture = self.get_first(cultures)
 
         ref_libs = sorted(
             [i for i in patient.afbreflib_set.all() if not i.pending],
             key=lambda x: x.significant_date
         )
-        first_positive_ref_lib = self.get_first([i for i in ref_libs if i.positive])
-        ref_libs.reverse()
-        latest_ref_lib = self.get_first(ref_libs)
 
         all_sorted = sorted(
             pcrs+smears+cultures+ref_libs, key=lambda x: x.significant_date
@@ -820,73 +808,31 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             if i.category_name == tb_category
         ])
 
-        first_tests = [
-            first_positive_pcr,
-            first_positive_smear,
-        ]
+        # For a given day return the priority test, prioritising
+        # positive over negative
+        test_priority = [models.AFBSmear, models.PCR, models.AFBCulture, lab.AFBRefLib]
+        test_priority = [i.OBSERVATION_NAME for i in test_priority]
 
-        first_tests = sorted(
-            [i for i in first_tests if i], key=lambda x: x.significant_date
-        )
-
-        first_test = None
-        if first_tests:
-            first_test = first_tests[0]
-            if first_positive_culture:
-                if first_positive_culture.significant_date < first_test.significant_date:
-                    first_test = None
-
-        last_tests = [
-            latest_pcr, latest_smear
-        ]
-
-        last_tests = sorted(
-            [i for i in last_tests if i],
-            key=lambda x: x.significant_date,
-            reverse=True
-        )
-        last_test = None
-        if last_tests:
-            last_test = last_tests[0]
-            if latest_culture:
-                if latest_culture.significant_date > last_test.significant_date:
-                    last_test = None
-            if last_test and latest_ref_lib:
-                if latest_ref_lib.significant_date > last_test.significant_date:
-                    last_test = None
-
-        if first_positive_culture and latest_culture:
-            if first_positive_culture == latest_culture:
-                first_positive_culture = None
-
-        if first_positive_ref_lib and latest_ref_lib:
-            if first_positive_ref_lib == latest_ref_lib:
-                first_positive_ref_lib = None
-
-        if last_test:
-            last_test.title = "Most recent resulted"
-        if latest_ref_lib:
-            latest_ref_lib.title = "Most recent ref lab report"
-        if latest_culture:
-            latest_culture.title = "Most recent culture"
-        if first_positive_ref_lib:
-            first_positive_ref_lib.title = "First ref lab report"
-        if first_positive_culture:
-            first_positive_culture.title = "First pos culture"
-        if first_test:
-            first_test.title = "First positive"
-        tests = [
-            last_test,
-            latest_ref_lib,
-            latest_culture,
-            first_positive_ref_lib,
-            first_positive_culture,
-            first_test
-        ]
-
-        tests = [
-            (test.reported_datetime, "test", test) for test in tests if test and test.reported_datetime
-        ]
+        def is_more_important(old, new):
+            old_priority = test_priority.index(old.OBSERVATION_NAME)
+            new_priority = test_priority.index(new.OBSERVATION_NAME)
+            if new_priority > old_priority:
+                return True
+            elif new_priority == old_priority:
+                if new.positive:
+                    return True
+        tests_by_datetime = {}
+        tests = pcrs + cultures + ref_libs + smears
+        for test in tests:
+            if test.reported_datetime.date() not in tests_by_datetime:
+                tests_by_datetime[test.reported_datetime.date()] = test
+            else:
+                old = tests_by_datetime[test.reported_datetime.date()]
+                if is_more_important(old, test):
+                    tests_by_datetime[test.reported_datetime.date()] = test
+        tests = ([
+            (i.reported_datetime, 'test', i) for i in tests_by_datetime.values()
+        ])
 
         appointments = [
             (i.start_datetime, "appointment", i,) for i in patient.appointments.all()
