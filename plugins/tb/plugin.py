@@ -57,6 +57,6 @@ class TbPlugin(plugins.OpalPlugin):
                 href='/#/tb/clinic-list',
                 display='TB',
                 icon='fa fa-columns',
-                activepattern='/#/tb/clinic-list'
+                activepattern='/#/tb/'
             )
         ]

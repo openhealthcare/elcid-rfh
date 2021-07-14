@@ -823,6 +823,13 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
                     return True
         tests_by_datetime = {}
         tests = pcrs + cultures + ref_libs + smears
+        if hasattr(self, "POSITIVE"):
+            if self.request.GET.get("status") == self.POSITIVE:
+                tests = [i for i in tests if i.positive]
+        if hasattr(self, "TESTS"):
+            test_types = self.request.GET.get("tests")
+            obs_names = set([i.OBSERVATION_NAME for i in self.TESTS[test_types]])
+            tests = [i for i in tests if i.OBSERVATION_NAME in obs_names]
         for test in tests:
             if test.reported_datetime.date() not in tests_by_datetime:
                 tests_by_datetime[test.reported_datetime.date()] = test
@@ -835,9 +842,14 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
         ])
 
         appointments = [
-            (i.start_datetime, "appointment", i,) for i in patient.appointments.all()
+            i for i in patient.appointments.all() if i.derived_appointment_type == "Thoracic TB New" or i.start_datetime > timezone.now()
+        ]
+
+        appointments = [
+            (i.start_datetime, "appointment", i,) for i in appointments
             if i.derived_appointment_type in constants.TB_APPOINTMENT_CODES and i.start_datetime
         ]
+
 
         notes = [
             (i.when, "note",  i) for i in patient_consultations if i.when

@@ -11,6 +11,7 @@
       <a href="/#/tb/last-30-days/">Clinic History</a>
     </li>
     {% if request.user.is_superuser %}
+    {% comment %}
     <li>
       <a href="/#/tb/mdt-list-old/">Old MDT List</a>
     </li>
@@ -19,6 +20,7 @@
         MDT List
       </a>
     </li>
+    {% endcomment %}
     <li>
       <a href="/#/tb/mdt-experimental/?{% query_string site='RFH' status='POSITIVE' tests='ALL_TESTS' %}">
         MDT
@@ -26,7 +28,7 @@
     </li>
     <li>
       <a href="/#/tb/mdt-outstanding/">
-        Outstanding MDT
+        MDT History
       </a>
     </li>
     {% endif %}

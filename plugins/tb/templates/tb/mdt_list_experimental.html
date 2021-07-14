@@ -5,8 +5,8 @@
   <div class="panel-heading">
     <div class="row">
       <div class="col-md-12">
-        <h1>TB {{ request.GET.site }} MDT</h1>
-        <p class="content-offset-below-10">{{ view.title }}</p>
+        <h1>{{ request.GET.site }} TB MDT</h1>
+        <p class="content-offset-below-10">{{ rows | length }} {{ view.title }}</p>
       </div>
     </div>
     <div class="row">
@@ -24,7 +24,7 @@
           <a href="/#/tb/mdt-experimental/?{% query_string tests=view.CULTURE %}" class="btn btn-primary {% if request.GET.tests.upper == view.CULTURE %}active{% endif %}">Culture</a>
           <a href="/#/tb/mdt-experimental/?{% query_string tests=view.SMEAR %}" class="btn btn-primary {% if request.GET.tests.upper == view.SMEAR %}active{% endif %}">Smear</a>
           <a href="/#/tb/mdt-experimental/?{% query_string tests=view.PCR %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">PCR</a>
-          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.REF_LAB %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">Ref lab report</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.REF_LAB %}" class="btn btn-primary {% if request.GET.tests.upper == view.REF_LAB %}active{% endif %}">Ref lab report</a>
         </div>
       </div>
     </div>
@@ -43,6 +43,8 @@
           <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
           </a>
+          {{ row.demographics.date_of_birth }}
+          <br>
             {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% else %}
           <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">

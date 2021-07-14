@@ -5,8 +5,10 @@
   <div class="panel-heading">
     <div class="row">
       <div class="col-md-12">
-        <h1>Outstanding MDT</h1>
-        <p class="content-offset-below-10">Patients with unactioned MDT plans</p>
+        <h1>MDT History</h1>
+        <p class="content-offset-below-10">
+          {{ rows | length }}
+          Patients recently discussed at MDT</p>
       </div>
     </div>
   </div>
@@ -15,7 +17,7 @@
       <tr>
         <th class="col-md-3">Patient</th>
         <th class="col-md-1">Imaging</th>
-        <th class="col-md-8">Timeline</th>
+        <th class="col-md-8">Clinical interaction</th>
       </tr>
       {% for row in rows %}
       <tr>
@@ -28,6 +30,8 @@
           <a href="/#/patient/{{ row.episode.patient_id }}/" class="orange-link">
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
           </a>
+          {{ row.demographics.date_of_birth }}
+          <br>
           {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% endif %}
         </td>
@@ -41,12 +45,10 @@
         </td>
         <td>
           {% for ts, timeline_type, instance in row.timeline %}
-            {% if timeline_type == "test" %}
-              {% include "tb/partials/tb_test.html" with lab_test=instance title=instance.title %}
-            {% elif timeline_type == 'note' %}
+            {% if timeline_type == 'note' %}
+              {% if instance.reason_for_interaction == "MDT meeting" %}
               {% include "tb/partials/note.html" with note=instance %}
-            {% else %}
-              {% include "tb/partials/appointment.html" with appointment=instance %}
+              {% endif %}
             {% endif %}
           {% endfor %}
         </td>
