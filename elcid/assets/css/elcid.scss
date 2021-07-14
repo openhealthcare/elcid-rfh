@@ -536,6 +536,14 @@ div.add-isolate:hover{
         border-bottom: 3px solid #D36C08;
         margin-bottom: 0;
     }
+
+    p{
+      margin-bottom: 0;
+    }
+
+    .content-offset-below-10{
+      margin-bottom: 10px;
+    }
 }
 
 
@@ -546,4 +554,8 @@ div.add-isolate:hover{
 
 .modal-footer.externally-sourced{
   margin-top: 0;
+}
+
+.line-through{
+  text-decoration: line-through;
 }

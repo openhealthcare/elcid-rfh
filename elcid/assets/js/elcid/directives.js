@@ -91,6 +91,27 @@ directives.directive("sparkLine", function () {
   };
 });
 
+directives.directive("episodeOnScope", function(episodeLoader){
+  return {
+    scope: true,
+    link: function(scope, element, attrs){
+      episodeLoader(attrs.episodeId).then(function(episode){
+        scope.episode = episode
+      })
+    }
+  }
+});
+
+directives.directive("addDate", function(){
+  "use strict";
+  return {
+    restrict: 'A',
+    scope: false,
+    link: function(scope){
+      scope.now = new Date()
+    }
+  }
+})
 
 directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader){
   "use strict";

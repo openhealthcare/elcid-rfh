@@ -1,0 +1,80 @@
+{% extends "tb/base.html" %}
+{% load elcid_panels %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>{{ request.GET.site }} TB MDT</h1>
+        <p class="content-offset-below-10">{{ rows | length }} {{ view.title }}</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 content-offset-10 content-offset-below-20">
+        <div class="btn-group" role="group">
+          <a href="/#/tb/mdt-experimental/?{% query_string site=view.RFH %}" class="btn btn-primary {% if request.GET.site.upper == view.RFH %}active{% endif %}">RFH</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string site=view.BARNET %}" class="btn btn-primary {% if request.GET.site.upper == view.BARNET %}active{% endif %}">Barnet</a>
+        </div>
+        <div class="btn-group left-offset-15" role="group">
+          <a href="/#/tb/mdt-experimental/?{% query_string status=view.POSITIVE %}" class="btn btn-primary {% if request.GET.status.upper == view.POSITIVE %}active{% endif %}">Positive</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string status=view.RESULTED %}" class="btn btn-primary {% if request.GET.status.upper == view.RESULTED %}active{% endif %}">Resulted</a>
+        </div>
+        <div class="btn-group left-offset-15" role="group">
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.ALL_TESTS %}" class="btn btn-primary {% if request.GET.tests.upper == view.ALL_TESTS %}active{% endif %}">All tests</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.CULTURE %}" class="btn btn-primary {% if request.GET.tests.upper == view.CULTURE %}active{% endif %}">Culture</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.SMEAR %}" class="btn btn-primary {% if request.GET.tests.upper == view.SMEAR %}active{% endif %}">Smear</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.PCR %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">PCR</a>
+          <a href="/#/tb/mdt-experimental/?{% query_string tests=view.REF_LAB %}" class="btn btn-primary {% if request.GET.tests.upper == view.REF_LAB %}active{% endif %}">Ref lab report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th class="col-md-3">Patient</th>
+        <th class="col-md-1">Imaging</th>
+        <th class="col-md-8">Timeline</th>
+      </tr>
+    {% for row in rows %}
+      <tr>
+        <td>
+          {% if row.episode %}
+          <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+          {{ row.demographics.date_of_birth }}
+          <br>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% else %}
+          <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% endif %}
+        </td>
+        <td>
+          <span style="white-space: nowrap;">
+          <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
+            PACS
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+          </span>
+        </td>
+        <td>
+          {% for ts, timeline_type, instance in row.timeline %}
+            {% if timeline_type == "test" %}
+              {% include "tb/partials/tb_test.html" with lab_test=instance title=instance.title %}
+            {% elif timeline_type == 'note' %}
+              {% include "tb/partials/note.html" with note=instance %}
+            {% else %}
+              {% include "tb/partials/appointment.html" with appointment=instance %}
+            {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

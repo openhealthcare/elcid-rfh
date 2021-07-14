@@ -11,12 +11,24 @@
       <a href="/#/tb/last-30-days/">Clinic History</a>
     </li>
     {% if request.user.is_superuser %}
+    {% comment %}
     <li>
       <a href="/#/tb/mdt-list-old/">Old MDT List</a>
     </li>
     <li>
       <a href="/#/tb/mdt-list/?{% query_string site='RFH' status='POSITIVE' tests='ALL_TESTS' %}">
         MDT List
+      </a>
+    </li>
+    {% endcomment %}
+    <li>
+      <a href="/#/tb/mdt-experimental/?{% query_string site='RFH' status='POSITIVE' tests='ALL_TESTS' %}">
+        MDT
+      </a>
+    </li>
+    <li>
+      <a href="/#/tb/mdt-outstanding/">
+        MDT History
       </a>
     </li>
     {% endif %}

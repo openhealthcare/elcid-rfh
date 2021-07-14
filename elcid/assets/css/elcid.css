@@ -507,6 +507,14 @@ div.add-isolate:hover {
   margin-bottom: 0;
 }
 
+.tb-clinic-list p {
+  margin-bottom: 0;
+}
+
+.tb-clinic-list .content-offset-below-10 {
+  margin-bottom: 10px;
+}
+
 .modal-body.externally-sourced {
   background-color: #f5f5f5;
   padding-bottom: 35px;
@@ -514,5 +522,9 @@ div.add-isolate:hover {
 
 .modal-footer.externally-sourced {
   margin-top: 0;
+}
+
+.line-through {
+  text-decoration: line-through;
 }
 /*# sourceMappingURL=elcid.css.map */

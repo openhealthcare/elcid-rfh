@@ -3,6 +3,7 @@ Views for the TB Opal Plugin
 """
 import datetime
 from collections import defaultdict
+from django.db.models import Q
 from django.http.response import HttpResponseBadRequest
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,15 +11,12 @@ from django.utils.functional import cached_property
 from django.utils import timezone
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
-from opal.models import Episode
+from opal.models import Episode, PatientConsultationReasonForInteraction
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
-from plugins.labtests import models as labtest_models
-
-from plugins.tb import episode_categories, constants, lab
-from plugins.tb import models
-from plugins.tb.models import PatientConsultation
-from plugins.tb.models import Treatment
+from opal.models import Patient
+from plugins.tb import episode_categories, constants, lab, models
+from plugins.tb.models import PCR, PatientConsultation, Treatment
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -535,7 +533,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
     CULTURE = "CULTURE"
     SMEAR = "SMEAR"
     PCR = "PCR"
-    TESTS = [ALL_TESTS, CULTURE, SMEAR, PCR]
+    REF_LAB = "REF_LAB"
+    TESTS = [
+        ALL_TESTS, CULTURE, SMEAR, PCR, REF_LAB
+    ]
 
     @property
     def end_date(self):
@@ -577,6 +578,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
             return self.filter_observations(
                 lab.TBPCR.get_positive_observations()
             )
+        elif tests == self.REF_LAB:
+            return self.filter_observations(
+                lab.AFBRefLib.get_positive_observations()
+            )
         culture_obs = list(self.filter_observations(
             lab.AFBCulture.get_positive_observations()
         ))
@@ -586,7 +591,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
         pcr_tests = list(self.filter_observations(
             lab.TBPCR.get_positive_observations()
         ))
-        return culture_obs + smear_obs + pcr_tests
+        ref_lab_tests = list(self.filter_observations(
+            lab.TBPCR.get_positive_observations()
+        ))
+        return culture_obs + smear_obs + pcr_tests + ref_lab_tests
 
     @cached_property
     def negative_observations(self):
@@ -719,3 +727,253 @@ class MDTList(LoginRequiredMixin, TemplateView):
         else:
             ctx["site"] = "Barnet"
         return ctx
+
+
+class AbstractMDTList(LoginRequiredMixin, TemplateView):
+    """
+    Get_patients and return a qs of patients for an mdt list
+    """
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        patients = self.get_patients().prefetch_related(
+            'demographics_set',
+            'pcr_set',
+            'afbsmear_set',
+            'afbculture_set',
+            'afbreflib_set',
+            'episode_set',
+            'appointments'
+        )
+        patient_to_patient_consultations = self.patient_to_patient_consultations(
+            patients
+        )
+        rows = [
+            self.patient_to_row(patient, patient_to_patient_consultations[patient.id])
+            for patient in patients
+        ]
+        ctx["rows"] = self.sort_rows(rows)
+        return ctx
+
+    def get_patients(self):
+        pass
+
+    def sort_rows(self, rows):
+        return rows
+
+    def get_first(self, some_tests):
+        if some_tests:
+            return some_tests[0]
+
+    def patient_to_patient_consultations(self, patients):
+        result = defaultdict(list)
+        qs = PatientConsultation.objects.filter(
+            episode__patient__in=patients
+        ).select_related('episode')
+        for consultation in qs:
+            result[consultation.episode.patient_id].append(consultation)
+        return result
+
+    def patient_to_row(self, patient, patient_consultations):
+        demographics = patient.demographics_set.all()[0]
+
+        pcrs = sorted(
+            [i for i in patient.pcr_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+
+        smears = sorted(
+            [i for i in patient.afbsmear_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+
+        cultures = sorted(
+            [i for i in patient.afbculture_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+
+        ref_libs = sorted(
+            [i for i in patient.afbreflib_set.all() if not i.pending],
+            key=lambda x: x.significant_date
+        )
+
+        all_sorted = sorted(
+            pcrs+smears+cultures+ref_libs, key=lambda x: x.significant_date
+        )
+        significant_date = datetime.datetime.min.date()
+        if all_sorted:
+            significant_date = all_sorted[-1].significant_date
+        tb_category = episode_categories.TbEpisode.display_name
+        episode = self.get_first([
+            i for i in patient.episode_set.all()
+            if i.category_name == tb_category
+        ])
+
+        # For a given day return the priority test, prioritising
+        # positive over negative
+        test_priority = [models.AFBSmear, models.PCR, models.AFBCulture, lab.AFBRefLib]
+        test_priority = [i.OBSERVATION_NAME for i in test_priority]
+
+        def is_more_important(old, new):
+            old_priority = test_priority.index(old.OBSERVATION_NAME)
+            new_priority = test_priority.index(new.OBSERVATION_NAME)
+            if new_priority > old_priority:
+                return True
+            elif new_priority == old_priority:
+                if new.positive:
+                    return True
+        tests_by_datetime = {}
+        tests = pcrs + cultures + ref_libs + smears
+        if hasattr(self, "POSITIVE"):
+            if self.request.GET.get("status") == self.POSITIVE:
+                tests = [i for i in tests if i.positive]
+        if hasattr(self, "TESTS"):
+            test_types = self.request.GET.get("tests")
+            obs_names = set([i.OBSERVATION_NAME for i in self.TESTS[test_types]])
+            tests = [i for i in tests if i.OBSERVATION_NAME in obs_names]
+        for test in tests:
+            if test.reported_datetime.date() not in tests_by_datetime:
+                tests_by_datetime[test.reported_datetime.date()] = test
+            else:
+                old = tests_by_datetime[test.reported_datetime.date()]
+                if is_more_important(old, test):
+                    tests_by_datetime[test.reported_datetime.date()] = test
+        tests = ([
+            (i.reported_datetime, 'test', i) for i in tests_by_datetime.values()
+        ])
+
+        appointments = [
+            i for i in patient.appointments.all() if i.derived_appointment_type == "Thoracic TB New" or i.start_datetime > timezone.now()
+        ]
+
+        appointments = [
+            (i.start_datetime, "appointment", i,) for i in appointments
+            if i.derived_appointment_type in constants.TB_APPOINTMENT_CODES and i.start_datetime
+        ]
+
+
+        notes = [
+            (i.when, "note",  i) for i in patient_consultations if i.when
+        ]
+
+        timeline = sorted(tests + notes + appointments, key=lambda x: x[0], reverse=True)
+
+        return {
+            "episode": episode,
+            "demographics": demographics,
+            "timeline": timeline,
+            "significant_date": significant_date
+        }
+
+
+class MDTListExperimental(AbstractMDTList):
+    template_name = "tb/mdt_list_experimental.html"
+    BARNET = "BARNET"
+    RFH = "RFH"
+    SITES = [RFH, BARNET]
+    POSITIVE = "POSITIVE"
+    RESULTED = "RESULTED"
+    STATUSES = [POSITIVE, RESULTED]
+    ALL_TESTS = "ALL_TESTS"
+    CULTURE = "CULTURE"
+    SMEAR = "SMEAR"
+    PCR = "PCR"
+    REF_LAB = "REF_LAB"
+    PCR_MODEL = models.PCR
+    AFB_SMEAR_MODEL = models.AFBSmear
+    AFB_CULTURE = models.AFBCulture
+    AFB_REF_LIB = models.AFBRefLib
+    TESTS = {
+        ALL_TESTS: [
+            models.PCR,
+            models.AFBSmear,
+            models.AFBCulture,
+            models.AFBRefLib,
+        ],
+        CULTURE: [models.AFBCulture],
+        SMEAR: [models.AFBSmear],
+        REF_LAB: [models.AFBRefLib],
+        PCR: [models.PCR],
+    }
+
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 2:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(21)
+
+    def title(self):
+        test_type = self.request.GET.get("tests")
+        if test_type == self.ALL_TESTS:
+            test_type = "tests"
+        elif test_type == self.REF_LAB:
+            test_type = "ref lab reports"
+        elif test_type == self.PCR:
+            test_type = "PCR tests"
+        else:
+            test_type = f"{test_type.lower()} tests"
+
+        status = self.request.GET.get("status").lower()
+        from_dt = self.start_date.strftime("%-d %b %Y")
+        title = f"Patients with {status} {test_type} reported after {from_dt}"
+        return title.replace("  ", " ")
+
+    def get_patients(self):
+        filter_args = {
+            "significant_date__gte": self.start_date,
+            "pending": False
+        }
+        if self.request.GET.get("status") == self.POSITIVE:
+            filter_args["positive"] = True
+        if self.request.GET["site"].upper() == self.BARNET:
+            filter_args["lab_number__contains"] = "K"
+        else:
+            filter_args["lab_number__contains"] = "L"
+        tests = self.TESTS[self.request.GET.get("tests")]
+        patient_ids = set()
+        for test in tests:
+            patient_ids = patient_ids.union(test.objects.filter(
+                **filter_args
+            ).values_list('patient_id', flat=True))
+        return Patient.objects.filter(
+            id__in=patient_ids
+        ).distinct()
+
+    def sort_rows(self, rows):
+        return sorted(rows, key=lambda x: x["significant_date"], reverse=True)
+
+
+class OutstandingActionsMDT(AbstractMDTList):
+    template_name = "tb/mdt_list_outstanding.html"
+
+    def get_patient_consultations(self):
+        mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
+            name="MDT meeting"
+        )
+        return PatientConsultation.objects.exclude(
+            plan=""
+        ).filter(
+            reason_for_interaction_fk_id=mdt_meeting.id
+        ).filter(
+            Q(actioned=None) | Q(actioned=datetime.date.today())
+        )
+
+    def get_patients(self):
+        episode_ids = self.get_patient_consultations().values_list(
+            'episode_id', flat=True
+        )
+
+        return Patient.objects.filter(
+            episode__id__in=episode_ids
+        )
+
+    def sort_rows(self, rows):
+        episode_ids_by_when = list(self.get_patient_consultations().order_by(
+            "-when"
+        ).values_list('episode_id', flat=True))
+        return sorted(rows, key=lambda x: episode_ids_by_when.index(x["episode"].id))
