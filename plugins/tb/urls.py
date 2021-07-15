@@ -44,9 +44,14 @@ urlpatterns = [
         name="other_medication_modal"
     ),
     url(
-        r'^templates/tb/clinic_list.html$',
+        r'^templates/tb/clinic_list/$',
         views.ClinicList.as_view(),
         name="tb_clinic_list"
+    ),
+    url(
+        r'^templates/tb/clinic_list/(?P<date_stamp>[0-9A-Za-z]+)/$',
+        views.ClinicListForDate.as_view(),
+        name="tb_clinic_list_for_date"
     ),
     url(
         r'^templates/tb/last_30_days.html$',

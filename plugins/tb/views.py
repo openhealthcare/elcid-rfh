@@ -360,6 +360,29 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
         return ctx
 
 
+class ClinicListForDate(AbstractTBAppointmentList):
+    template_name = "tb/tb_patient_list.html"
+
+    @property
+    def name(self):
+        return f"Clinic list for {self.date_stamp.strftime('%-d %b %Y')}"
+
+    @property
+    def date_stamp(self):
+        date_stamp = self.kwargs["date_stamp"]
+        return datetime.datetime.strptime(date_stamp, "%d%b%Y").date()
+
+    def get_queryset(self, *args, **kwargs):
+        appointment_types = constants.TB_APPOINTMENT_CODES
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+        ).filter(
+            start_datetime__date=self.date_stamp,
+        ).prefetch_related(
+            'patient__episode_set'
+        )
+
+
 class ClinicList(AbstractTBAppointmentList):
     template_name = "tb/tb_patient_list.html"
     name = "TB Clinic List"
@@ -371,8 +394,8 @@ class ClinicList(AbstractTBAppointmentList):
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
-           start_datetime__gte=today,
-           start_datetime__lte=until
+            start_datetime__date__gte=today,
+            start_datetime__date__lte=until
         ).order_by(
            "start_datetime"
         ).prefetch_related(

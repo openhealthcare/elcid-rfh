@@ -7,9 +7,14 @@
     </h1>
   </div>
   {% for date, rows_by_state in rows_by_date.items %}
+  {# don't show the date a second time in the clinic list for a date #}
+  {% if not view.date_stamp %}
   <h3 class="date-header">
-    {{ date }} <small>({{ rows_by_state.not_canceled | length }} appointments{% if request.user.is_superuser %}, {{ rows_by_state.stats.on_elcid }} recorded on elcid {% endif %})</small>
+    {{ date }} <small>({{ rows_by_state.not_canceled | length }} appointments{% if request.user.is_superuser %}, {{ rows_by_state.stats.on_elcid }} recorded on elcid {% endif %})
+    <a href="/#/tb/clinic-list/{{ date|date:'jbY' }}/" class="date-header-link">¶</a>
+    </small>
   </h3>
+  {% endif %}
   <table class="table table-striped">
     <tr>
       <th class="col-xs-1">Time</th>

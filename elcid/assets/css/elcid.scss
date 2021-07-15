@@ -539,7 +539,21 @@ div.add-isolate:hover{
         padding-bottom: 3px;
         border-bottom: 3px solid #D36C08;
         margin-bottom: 0;
+
+       .date-header-link{
+         display: none;
+         color: #999;
+
+         &:hover{
+           text-decoration: none;
+         }
+       }
+
+       &:hover .date-header-link{
+        display: inline;
+       }
     }
+
 }
 
 

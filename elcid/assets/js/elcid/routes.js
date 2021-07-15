@@ -65,7 +65,8 @@ app.config(
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
 
-             .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list.html'))
+             .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list/'))
+             .when('/tb/clinic-list/:date_stamp',  param_template_route('/templates/tb/clinic_list/', 'date_stamp'))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
              .when('/tb/mdt-list/',  static_template_route('/templates/tb/mdt_list.html'))
 
