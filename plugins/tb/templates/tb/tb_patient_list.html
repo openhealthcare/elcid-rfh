@@ -6,7 +6,7 @@
       {{ view.name }}
     </h1>
   </div>
-  {% for date, rows in rows_by_date.items %}
+  {% for date, rows_by_state in rows_by_date.items %}
   <h3 class="date-header">
     {{ date }}
   </h3>
@@ -20,8 +20,20 @@
       <th class="col-xs-1">Imaging</th>
       <th class="col-xs-2">Recent consultation</th>
     </tr>
-    {% for appointment, demographics, episode, consultation in rows %}
+    {% for state, rows in rows_by_state.items %}
+    {% if state == 'canceled' %}
     <tr>
+      <td colspan="7">
+        <h5 class="content-offset-20 content-offset-below-0">Canceled</h5>
+      </td>
+    </tr>
+    {% endif %}
+    {% for appointment, demographics, episode, consultation in rows %}
+    {% if appointment.status_code == 'No Show' %}
+    <tr class="text-muted">
+    {% else %}
+    <tr>
+    {% endif %}
       <td>
         {{ appointment.start_datetime|date:"G:i" }}
       </td>
@@ -51,6 +63,7 @@
         {% endif %}
       </td>
     </tr>
+    {% endfor %}
     {% endfor %}
   </table>
   {% endfor %}
