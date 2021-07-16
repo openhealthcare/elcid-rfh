@@ -93,6 +93,10 @@ def get_changed_appointment_fields(old_instance, appointment_dict):
 def update_appointments_from_query_result(upstream_rows):
     """
     Takes in the result from a db query.
+
+    If there are duplicate appointment ids in the result
+    of the db query we use the most recent one.
+
     Ignores the rows where we don't need to update.
     Deletes old rows where we do need to update.
 
@@ -100,12 +104,33 @@ def update_appointments_from_query_result(upstream_rows):
 
     Returns the created new rows.
     """
+
+    appointment_id_to_upstream_rows = defaultdict(list)
+    for upstream_row in upstream_rows:
+        appointment_id_to_upstream_rows[upstream_row["Appointment_ID"]].append(
+            upstream_row
+        )
+    appointment_id_to_upstream_row = {}
+    # get the appointment id with the most recent update date
+    # failing that use the insert date
+    for appointent_id, rows in appointment_id_to_upstream_rows:
+        rows = sorted(
+            rows,
+            key=lambda x: x.last_updated or x.date_inserted,
+            reverse=True
+        )
+        appointment_id_to_upstream_row[appointent_id] = rows[0]
+
     existing_appointment = Appointment.objects.filter(
-        sqlserver_id__in=[i["id"] for i in upstream_rows],
+        appointment_id__in=appointment_id_to_upstream_rows.keys()
     )
-    sql_id_to_existing_appointments = {
-        ea.sqlserver_id: ea for ea in existing_appointment
+    appointment_id_to_existing_appointments = {
+        ea.appointment_id: ea for ea in existing_appointment
     }
+
+    appointment_id_to_upstream_rows = defaultdict(list)
+    for appointment_id, upstream_row in appointment_id_to_upstream_row.items():
+        appointment_id_to_upstream_rows[appointment_id]
     to_create = []
     to_delete = []
     hospital_numbers = {row["vPatient_Number"].strip() for row in upstream_rows}
@@ -125,16 +150,18 @@ def update_appointments_from_query_result(upstream_rows):
         if hn not in hospital_number_to_patients:
             continue
         for patient in hospital_number_to_patients[hn]:
-            sql_id = row["id"]
-            # If its a new appointment record, add it to the to_create list
-            if sql_id not in sql_id_to_existing_appointments:
+            appointment_id = row["appointment_id"]
+            # If it's a new appointment, add it to the to_create list
+            if appointment_id not in appointment_id_to_existing_appointments:
                 new_instance = cast_to_instance(patient, row)
                 to_create.append(new_instance)
             else:
-                existing_appointment = sql_id_to_existing_appointments[sql_id]
-                # If its an existing image record and its newer then
-                # our current image record, delete the existing
-                # and create a new one, logging the difference between them.
+                # If it's an existing appointment and it needs updating
+                # delete the existing and create a new one,
+                # logging the difference between them
+                existing_appointment = appointment_id_to_existing_appointments[
+                    appointment_id
+                ]
                 last_updated = None
                 if row["last_updated"]:
                     last_updated = timezone.make_aware(row["last_updated"])
@@ -144,6 +171,7 @@ def update_appointments_from_query_result(upstream_rows):
                 existing_updated = existing_appointment.last_updated
                 existing_insert_date = existing_appointment.insert_date
 
+<<<<<<< HEAD
                 changed = False
 
                 if insert_date > existing_insert_date:
@@ -172,6 +200,27 @@ def update_appointments_from_query_result(upstream_rows):
                         logger.info(
                             f'Appointments: updating {k} was {v["old_val"]} now {v["new_val"]}'
                         )
+=======
+                # get the appointment id with the most recent update date
+                # failing that use the insert date
+                existing_date = existing_updated or existing_insert_date
+                upstream_date = last_updated or insert_date
+
+                if upstream_date > existing_date:
+                    patient_id = existing_appointment.patient_id
+                    logger.info(" ".join([
+                        f"Appointments: checking for patient id {patient_id}"
+                        f"appointment id {appointment_id}"
+                    ]))
+                    changed_fields = get_changed_appointment_fields(
+                        existing_appointment, row
+                    )
+                    for k, v in changed_fields.items():
+                        logger.info(" ".join([
+                            f'Appointments: updating {k} was {v["old_val"]}',
+                            f'now {v["new_val"]}'
+                        ]))
+>>>>>>> @{-1}
                     to_delete.append(existing_appointment)
                     new_instance = cast_to_instance(patient, row)
                     to_create.append(new_instance)

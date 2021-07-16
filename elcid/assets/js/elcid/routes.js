@@ -95,15 +95,10 @@ app.config(
              .when('/ipc/ward/:ward_code/',         param_template_route('/templates/ipc/ward/', 'ward_code'))
              .when('/ipc/siderooms/',               static_template_route('/templates/ipc/siderooms.html'))
              .when('/ipc/recent-tests/:test_code/', param_template_route('/templates/ipc/recent-tests/', 'test_code'))
-             .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
-
-             .when('/appointment-load-stats/', static_template_route(
-                 '/templates/monitoring/appointment_load_stats.html'))
-             .when('/patient-information-load-stats/', static_template_route(
-                 '/templates/monitoring/patient_information_load_stats.html'))
-             .when('/imaging-load-stats/',             static_template_route(
-                 '/templates/monitoring/imaging_load_stats.html'))
-
+             .when('/ipc/alert/:alert_code/', param_template_route('/templates/ipc/alert/', 'alert_code'))
+             .when('/patient-information-load-stats/', static_template_route('/templates/monitoring/patient_information_load_stats.html'))
+             .when('/imaging-load-stats/', static_template_route('/templates/monitoring/imaging_load_stats.html'))
+             .when('/appointment-load-stats/', static_template_route('/templates/monitoring/appointment_load_stats.html'))
              .when('/nursing-handover/:ward_code/',      {
                  controller: 'WelcomeCtrl',
                  controllerAs: 'welcome',
