@@ -1,7 +1,6 @@
 """
 Load Appointments from upstream
 """
-import datetime
 import time
 from django.db import transaction
 from collections import defaultdict
