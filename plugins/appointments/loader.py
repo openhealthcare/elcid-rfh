@@ -126,13 +126,13 @@ def update_appointments_from_query_result(upstream_rows):
             continue
         for patient in hospital_number_to_patients[hn]:
             sql_id = row["id"]
-            # If its a new imaging record, add it to the to_create list
+            # If it's a new imaging record, add it to the to_create list
             if sql_id not in sql_id_to_existing_appointments:
                 new_instance = cast_to_instance(patient, row)
                 to_create.append(new_instance)
             else:
                 existing_appointment = sql_id_to_existing_appointments[sql_id]
-                # If its an existing image record and its newer then
+                # If it's an existing image record and its newer then
                 # our current image record, delete the existing
                 # and create a new one, logging the difference between them.
                 last_updated = None
@@ -146,28 +146,32 @@ def update_appointments_from_query_result(upstream_rows):
 
                 changed = False
 
-                if insert_date > existing_insert_date:
-                    raise ValueError(
-                        f"Appointments: for {sql_id} upstream insert_date > local insert_date"
-                    )
+                # We update if...
+                # 1. Our insert_date is after the existing insert_date and neither has been updated
+                #    (Should never happen but does in the case of duplicate appointment ids)
+                #    If there is also an update date we use that though
+                # 2. Upstream has a last_updated timestamp and we don't
+                # 3. Upstream has a higher last updated timestamp than us
 
-                if not last_updated and existing_updated:
-                    raise ValueError(
-                        f"Appointments: for {sql_id} locally we have an updated time stamp but not for upstream"
-                    )
+                if not last_updated and not existing_updated:
+                    if insert_date > existing_insert_date:
+                        changed = True
+
                 if last_updated and not existing_updated:
                     changed = True
-                elif not last_updated and not existing_updated:
-                    changed = False
-                elif last_updated > existing_updated:
-                    changed = True
+
+                if last_updated and existing_updated:
+                    if last_updated > existing_updated:
+                        changed = True
 
                 if changed:
                     patient_id = existing_appointment.patient_id
                     logger.info(
                         f"Appointments: checking for patient id {patient_id} sql id {sql_id}"
                     )
-                    changed_fields = get_changed_appointment_fields(existing_appointment, row)
+                    changed_fields = get_changed_appointment_fields(
+                        existing_appointment, row
+                    )
                     for k, v in changed_fields.items():
                         logger.info(
                             f'Appointments: updating {k} was {v["old_val"]} now {v["new_val"]}'
