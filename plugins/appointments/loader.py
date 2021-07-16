@@ -115,7 +115,7 @@ def update_appointments_from_query_result(upstream_rows):
     for appointent_id, rows in appointment_id_to_upstream_rows.items():
         rows = sorted(
             rows,
-            key=lambda x: x["last_updated"] or x["date_inserted"],
+            key=lambda x: x["last_updated"] or x["insert_date"],
             reverse=True
         )
         if len(rows) > 1:
