@@ -1,7 +1,6 @@
 """
 Load Appointments from upstream
 """
-import datetime
 import time
 from django.db import transaction
 from collections import defaultdict
@@ -121,9 +120,11 @@ def update_appointments_from_query_result(upstream_rows):
         )
         if len(rows) > 1:
             for row in rows[1:]:
-                logger.info(
-                    f'Ignoring sql id {row["id"]} as {rows[0]["id"]} is more recent'
-                )
+                logger.info(" ".join([
+                    f'Appointments: for patient mrn {row["vPatient_Number"]},',
+                    f'ignoring sql id {row["id"]} for patient',
+                    f'as sql id {rows[0]["id"]} is more recent'
+                ]))
         appointment_id_to_upstream_row[appointent_id] = rows[0]
 
     existing_appointment = Appointment.objects.filter(
@@ -183,15 +184,16 @@ def update_appointments_from_query_result(upstream_rows):
 
                 if upstream_date > existing_date:
                     patient_id = existing_appointment.patient_id
-                    logger.info(" ".join([
-                        f"Appointments: checking for patient id {patient_id}"
-                        f"appointment id {appointment_id}"
+                    logger.debug(" ".join([
+                        "Appointments: checking to see if we need to update",
+                        f"appointment id {appointment_id} for patient id",
+                        f"{patient_id}",
                     ]))
                     changed_fields = get_changed_appointment_fields(
                         existing_appointment, row
                     )
                     for k, v in changed_fields.items():
-                        logger.info(" ".join([
+                        logger.debug(" ".join([
                             f'Appointments: updating {k} was {v["old_val"]}',
                             f'now {v["new_val"]}'
                         ]))
