@@ -119,6 +119,11 @@ def update_appointments_from_query_result(upstream_rows):
             key=lambda x: x.last_updated or x.date_inserted,
             reverse=True
         )
+        if len(rows) > 1:
+            for row in rows[1:]:
+                logger.info(
+                    f'Ignoring sql id {row["id"]} as {rows[0]["id"]} is more recent'
+                )
         appointment_id_to_upstream_row[appointent_id] = rows[0]
 
     existing_appointment = Appointment.objects.filter(
