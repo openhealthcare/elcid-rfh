@@ -176,36 +176,6 @@ def update_appointments_from_query_result(upstream_rows):
                 existing_updated = existing_appointment.last_updated
                 existing_insert_date = existing_appointment.insert_date
 
-<<<<<<< HEAD
-                changed = False
-
-                if insert_date > existing_insert_date:
-                    raise ValueError(
-                        f"Imaging: for {sql_id} upstream insert_date > local insert_date"
-                    )
-
-                if not last_updated and existing_updated:
-                    raise ValueError(
-                        f"Imaging: for {sql_id} locally we have an updated time stamp but not for upstream"
-                    )
-                if last_updated and not existing_updated:
-                    changed = True
-                elif not last_updated and not existing_updated:
-                    changed = False
-                elif last_updated > existing_updated:
-                    changed = True
-
-                if changed:
-                    patient_id = existing_appointment.patient_id
-                    logger.info(
-                        f"Appointments: checking for patient id {patient_id} sql id {sql_id}"
-                    )
-                    changed = get_changed_appointment_fields(existing_appointment, row)
-                    for k, v in changed.items():
-                        logger.info(
-                            f'Appointments: updating {k} was {v["old_val"]} now {v["new_val"]}'
-                        )
-=======
                 # get the appointment id with the most recent update date
                 # failing that use the insert date
                 existing_date = existing_updated or existing_insert_date
@@ -225,7 +195,6 @@ def update_appointments_from_query_result(upstream_rows):
                             f'Appointments: updating {k} was {v["old_val"]}',
                             f'now {v["new_val"]}'
                         ]))
->>>>>>> @{-1}
                     to_delete.append(existing_appointment)
                     new_instance = cast_to_instance(patient, row)
                     to_create.append(new_instance)
