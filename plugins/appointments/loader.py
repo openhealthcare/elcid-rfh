@@ -112,10 +112,10 @@ def update_appointments_from_query_result(upstream_rows):
     appointment_id_to_upstream_row = {}
     # get the appointment id with the most recent update date
     # failing that use the insert date
-    for appointent_id, rows in appointment_id_to_upstream_rows:
+    for appointent_id, rows in appointment_id_to_upstream_rows.items():
         rows = sorted(
             rows,
-            key=lambda x: x.last_updated or x.date_inserted,
+            key=lambda x: x["last_updated"] or x["insert_date"],
             reverse=True
         )
         if len(rows) > 1:
@@ -156,7 +156,7 @@ def update_appointments_from_query_result(upstream_rows):
         if hn not in hospital_number_to_patients:
             continue
         for patient in hospital_number_to_patients[hn]:
-            appointment_id = row["appointment_id"]
+            appointment_id = row["Appointment_ID"]
             # If it's a new appointment, add it to the to_create list
             if appointment_id not in appointment_id_to_existing_appointments:
                 new_instance = cast_to_instance(patient, row)
