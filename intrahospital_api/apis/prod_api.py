@@ -285,6 +285,10 @@ class PathologyRow(object):
         'status',
         'test_code',
         'test_name',
+        'encounter_consultant_name',
+        'encounter_location_code',
+        'encounter_location_name',
+        'accession_number',
     ]
 
     OBSERVATION_FIELDS = [
@@ -293,6 +297,7 @@ class PathologyRow(object):
         'observation_name',
         'observation_number',
         'observation_value',
+        'reported_datetime',
         'reference_range',
         'units',
     ]
@@ -380,6 +385,18 @@ class PathologyRow(object):
     def get_test_name(self):
         return self.db_row.get("OBR_exam_code_Text")
 
+    def get_encounter_consultant_name(self):
+        return self.db_row.get("Encounter_Consultant_Name")
+
+    def get_encounter_location_code(self):
+        return self.db_row.get("Encounter_Location_Code")
+
+    def get_encounter_location_name(self):
+        return self.db_row.get("Encounter_Location_Name")
+
+    def get_accession_number(self):
+        return self.db_row.get("Accession_number")
+
     def get_external_identifier(self):
         return self.db_row.get("Result_ID")
 
@@ -402,6 +419,9 @@ class PathologyRow(object):
 
     def get_units(self):
         return self.db_row.get("Result_Units")
+
+    def get_reported_datetime(self):
+        return to_datetime_str(self.db_row.get('Reported_date'))
 
     def get_observation_datetime(self):
         dt = self.db_row.get("Observation_date")

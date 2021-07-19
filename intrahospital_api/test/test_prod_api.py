@@ -54,7 +54,7 @@ FAKE_PATHOLOGY_DATA = {
     u'Date_of_the_Observation': datetime(2015, 7, 18, 16, 26),
     u'Department': u'9',
     u'Encounter_Consultant_Code': u'C2754019',
-    u'Encounter_Consultant_Name': u'DR. M. BERELOWITZ',
+    u'Encounter_Consultant_Name': u'DR. M. SMITH',
     u'Encounter_Consultant_Type': u'',
     u'Encounter_Location_Code': u'6N',
     u'Encounter_Location_Name': u'RAL 6 NORTH',
@@ -335,6 +335,7 @@ class PathologyRowTestCase(OpalTestCase):
             'external_identifier': u'0013I245895',
             'last_updated': '18/07/2015 17:00:02',
             'observation_datetime': '18/07/2015 16:18:00',
+            'reported_datetime': '18/07/2015 16:26:00',
             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
             'observation_number': 20334311,
             'status': 'complete',
@@ -344,6 +345,10 @@ class PathologyRowTestCase(OpalTestCase):
             'units': u'',
             'reference_range': u' -',
             'site': u'^&                              ^',
+            'encounter_consultant_name': 'DR. M. SMITH',
+            'encounter_location_name': 'RAL 6 NORTH',
+            'encounter_location_code': '6N',
+            'accession_number': '73151060487',
         }
         self.assertEqual(result, expected)
 
@@ -364,6 +369,7 @@ class PathologyRowTestCase(OpalTestCase):
             'datetime_ordered': '18/07/2015 16:18:00',
             'last_updated': '18/07/2015 17:00:02',
             'observation_datetime': '18/07/2015 16:18:00',
+            'reported_datetime': '18/07/2015 16:26:00',
             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
             'observation_number': 20334311,
             'observation_value': u'Negative',
@@ -372,7 +378,11 @@ class PathologyRowTestCase(OpalTestCase):
             'status': 'complete',
             'test_code': u'ANNR',
             'test_name': u'ANTI NEURONAL AB REFERRAL',
-            'units': u''
+            'units': u'',
+            'encounter_consultant_name': 'DR. M. SMITH',
+            'encounter_location_name': 'RAL 6 NORTH',
+            'encounter_location_code': '6N',
+            'accession_number': '73151060487',
         }
         self.assertEqual(result, expected)
 
@@ -432,6 +442,10 @@ RAW_MASTER_FILE_DATA = {
     "GP_ADDRESS4": "",
     "GP_POSTCODE": "",
     "GP_TELEPHONE": "",
+    'Encounter_Consultant_Name': u'DR. M. SMITH',
+    'Encounter_Location_Code': u'6N',
+    'Encounter_Location_Name': u'RAL 6 NORTH',
+    'Encounter_Location_Type': u'IP',
 }
 
 
@@ -690,6 +704,7 @@ class ProdApiTestcase(OpalTestCase):
                         'observation_number': 20334311,
                         'observation_value': u'Negative',
                         'observation_datetime': '18/07/2015 16:18:00',
+                        'reported_datetime': '18/07/2015 16:26:00',
                         'units': u'',
                         'last_updated': '18/07/2015 17:00:02',
                         'reference_range': u' -'
@@ -698,7 +713,11 @@ class ProdApiTestcase(OpalTestCase):
                 'test_name': u'ANTI NEURONAL AB REFERRAL',
                 'clinical_info': u'testing',
                 'external_system': 'RFH Database',
-                'datetime_ordered': '18/07/2015 16:18:00'
+                'datetime_ordered': '18/07/2015 16:18:00',
+                'accession_number': '73151060487',
+                'encounter_consultant_name': 'DR. M. SMITH',
+                'encounter_location_name': 'RAL 6 NORTH',
+                'encounter_location_code': '6N'
             }]
         }]
         with mock.patch.object(api, "data_delta_query") as execute_query:
@@ -787,6 +806,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -795,7 +815,11 @@ class ProdApiTestcase(OpalTestCase):
                     'test_name': u'ANTI NEURONAL AB REFERRAL',
                     'clinical_info': u'testing',
                     'external_system': 'RFH Database',
-                    'datetime_ordered': '18/07/2015 16:18:00'
+                    'datetime_ordered': '18/07/2015 16:18:00',
+                    'accession_number': '73151060487',
+                    'encounter_consultant_name': 'DR. M. SMITH',
+                    'encounter_location_name': 'RAL 6 NORTH',
+                    'encounter_location_code': '6N',
                 },
                 {
                     'status': 'complete',
@@ -808,6 +832,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -816,7 +841,11 @@ class ProdApiTestcase(OpalTestCase):
                     'test_name': u'ANTI NEURONAL AB REFERRAL',
                     'clinical_info': u'testing',
                     'external_system': 'RFH Database',
-                    'datetime_ordered': '18/07/2015 16:18:00'
+                    'datetime_ordered': '18/07/2015 16:18:00',
+                    'accession_number': '73151060487',
+                    'encounter_consultant_name': 'DR. M. SMITH',
+                    'encounter_location_name': 'RAL 6 NORTH',
+                    'encounter_location_code': '6N'
                 },
             ]
         }]
@@ -871,6 +900,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -879,7 +909,11 @@ class ProdApiTestcase(OpalTestCase):
                     'test_name': u'Commentry',
                     'clinical_info': u'testing',
                     'external_system': 'RFH Database',
-                    'datetime_ordered': '18/07/2015 16:18:00'
+                    'datetime_ordered': '18/07/2015 16:18:00',
+                    'accession_number': '73151060487',
+                    'encounter_consultant_name': 'DR. M. SMITH',
+                    'encounter_location_name': 'RAL 6 NORTH',
+                    'encounter_location_code': '6N',
                 },
                 {
                     'status': 'complete',
@@ -892,6 +926,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -900,7 +935,11 @@ class ProdApiTestcase(OpalTestCase):
                     'test_name': u'Blood',
                     'clinical_info': u'testing',
                     'external_system': 'RFH Database',
-                    'datetime_ordered': '18/07/2015 16:18:00'
+                    'datetime_ordered': '18/07/2015 16:18:00',
+                    'accession_number': '73151060487',
+                    'encounter_consultant_name': 'DR. M. SMITH',
+                    'encounter_location_name': 'RAL 6 NORTH',
+                    'encounter_location_code': '6N',
                 },
             ]
         }]
@@ -923,7 +962,6 @@ class ProdApiTestcase(OpalTestCase):
         expected_result[0]["lab_tests"] = sorted(
             expected_result[0]["lab_tests"], key=lambda x: x["test_name"]
         )
-
         self.assertEqual(
             result, expected_result
         )
@@ -960,6 +998,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334311,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -969,6 +1008,7 @@ class ProdApiTestcase(OpalTestCase):
                             'observation_number': 20334312,
                             'observation_value': u'Negative',
                             'observation_datetime': '18/07/2015 16:18:00',
+                            'reported_datetime': '18/07/2015 16:26:00',
                             'units': u'',
                             'last_updated': '18/07/2015 17:00:02',
                             'reference_range': u' -'
@@ -977,7 +1017,11 @@ class ProdApiTestcase(OpalTestCase):
                     'test_name': u'ANTI NEURONAL AB REFERRAL',
                     'clinical_info': u'testing',
                     'external_system': 'RFH Database',
-                    'datetime_ordered': '18/07/2015 16:18:00'
+                    'datetime_ordered': '18/07/2015 16:18:00',
+                    'accession_number': '73151060487',
+                    'encounter_consultant_name': 'DR. M. SMITH',
+                    'encounter_location_name': 'RAL 6 NORTH',
+                    'encounter_location_code': '6N',
                 },
             ]
         }]
@@ -1000,7 +1044,6 @@ class ProdApiTestcase(OpalTestCase):
         """
         Multiple patients with lab tests
         """
-        self.maxDiff = None
         expected = [
             self.get_row(Patient_Number="123", Result_ID="124"),
             self.get_row(Patient_Number="125", Result_ID="126"),
@@ -1021,6 +1064,10 @@ class ProdApiTestcase(OpalTestCase):
                     {
                         'status': 'complete',
                         'external_identifier': u'124',
+                        'accession_number': '73151060487',
+                        'encounter_consultant_name': 'DR. M. SMITH',
+                        'encounter_location_name': 'RAL 6 NORTH',
+                        'encounter_location_code': '6N',
                         'site': u'^&                              ^',
                         'test_code': u'ANNR',
                         'observations': [
@@ -1029,6 +1076,7 @@ class ProdApiTestcase(OpalTestCase):
                                 'observation_number': 20334311,
                                 'observation_value': u'Negative',
                                 'observation_datetime': '18/07/2015 16:18:00',
+                                'reported_datetime': '18/07/2015 16:26:00',
                                 'units': u'',
                                 'last_updated': '18/07/2015 17:00:02',
                                 'reference_range': u' -'
@@ -1037,7 +1085,7 @@ class ProdApiTestcase(OpalTestCase):
                         'test_name': u'ANTI NEURONAL AB REFERRAL',
                         'clinical_info': u'testing',
                         'external_system': 'RFH Database',
-                        'datetime_ordered': '18/07/2015 16:18:00'
+                        'datetime_ordered': '18/07/2015 16:18:00',
                     },
 
                 ]
@@ -1057,6 +1105,10 @@ class ProdApiTestcase(OpalTestCase):
                     {
                         'status': 'complete',
                         'external_identifier': u'126',
+                        'accession_number': '73151060487',
+                        'encounter_consultant_name': 'DR. M. SMITH',
+                        'encounter_location_name': 'RAL 6 NORTH',
+                        'encounter_location_code': '6N',
                         'site': u'^&                              ^',
                         'test_code': u'ANNR',
                         'observations': [
@@ -1065,6 +1117,7 @@ class ProdApiTestcase(OpalTestCase):
                                 'observation_number': 20334311,
                                 'observation_value': u'Negative',
                                 'observation_datetime': '18/07/2015 16:18:00',
+                                'reported_datetime': '18/07/2015 16:26:00',
                                 'units': u'',
                                 'last_updated': '18/07/2015 17:00:02',
                                 'reference_range': u' -'
@@ -1073,7 +1126,7 @@ class ProdApiTestcase(OpalTestCase):
                         'test_name': u'ANTI NEURONAL AB REFERRAL',
                         'clinical_info': u'testing',
                         'external_system': 'RFH Database',
-                        'datetime_ordered': '18/07/2015 16:18:00'
+                        'datetime_ordered': '18/07/2015 16:18:00',
                     },
 
                 ]
