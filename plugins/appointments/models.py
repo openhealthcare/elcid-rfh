@@ -28,6 +28,8 @@ class Appointment(models.Model):
     # Patient object. In practice we take the MRN fields and match them
     # with patient.demographics().hospital_number
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='appointments')
+    # Our created time stamp
+    created = models.DateTimeField(auto_now_add=True)
 
     # The upstream demographics in this view are denormalised here to aid
     # debugging by mirroring the upstream View. We do not intend to use
