@@ -1,0 +1,47 @@
+<div class="row content-offset-below-10">
+  <div class="col-md-12 {% if lab_test.positive %}text-danger{% endif %}">
+    <strong>
+    <i class="fa fa-crosshairs"></i>
+    &nbsp;
+    {{ lab_test.reported_datetime |date:"d M Y G:i" }}
+    {% if title %}
+      {{ title }}
+    {% endif %}
+    </strong>
+    {{ lab_test.lab_number }}
+    {{ lab_test.OBSERVATION_NAME }}
+    {{ lab_test.site }}
+    {% if lab_test.OBSERVATION_NAME == view.AFB_SMEAR_MODEL.OBSERVATION_NAME %}
+      {% if lab_test.date_of_microscopy %}
+      Date of microscopy: {{ lab_test.date_of_microscopy }}
+      {% endif %}
+    {% elif lab_test.OBSERVATION_NAME == view.AFB_CULTURE.OBSERVATION_NAME %}
+      {% if lab_test.date_of_culture_result %}
+      Date of culture result: {{ lab_test.date_of_culture_result }}
+      {% endif %}
+    {% elif lab_test.OBSERVATION_NAME == view.AFB_REF_LIB.OBSERVATION_NAME %}
+      {% if lab_test.date_of_ref_lib_string %}
+      {{ lab_test.date_of_ref_lib_string }}
+      {% endif %}
+    {% endif %}
+    {% if lab_test.organisms %}
+    {% for organism_name, organism_meta in lab_test.organisms.items %}
+    {{ organism_name }} {% if organism_meta.comments %}({{ organism_meta.comments }}){% endif %}
+    {% if organism_meta.sensitivities %}
+    <br>
+    Sensitivities: {{ organism_meta.sensitivities|join:", " }}
+    {% endif %}
+    {% if organism_meta.resistances %}
+    <br>
+    Resistances: {{ organism_meta.resistances|join:", " }}
+    {% endif %}
+    {% if organism_meta.resistances %}
+    <br>
+    Intermediate: {{ organism_meta.intermediate|join:", " }}
+    {% endif %}
+    {% endfor %}
+    {% else %}
+    {{ lab_test.display_value }}
+    {% endif %}
+  </div>
+</div>
