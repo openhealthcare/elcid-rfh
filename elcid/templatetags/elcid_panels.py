@@ -27,8 +27,8 @@ def query_string(context, replace=True, **kwargs):
     /?hello=there&good_bye=viajo_amigo
     """
     query_dict = context["request"].GET.copy()
-    if "cacheBust" in query_dict:
-        query_dict.pop("cacheBust")
+    if "cache_bust" in query_dict:
+        query_dict.pop("cache_bust")
     if replace:
         for k in kwargs.keys():
             if k in query_dict:
