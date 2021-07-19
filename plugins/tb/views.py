@@ -364,7 +364,7 @@ class Last30Days(AbstractTBAppointmentList):
         today = timezone.now().date()
         until = today - datetime.timedelta(30)
         appointment_types = constants.TB_APPOINTMENT_CODES
-        appointments = Appointment.objects.filter(
+        return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
            start_datetime__lte=today,
@@ -372,11 +372,10 @@ class Last30Days(AbstractTBAppointmentList):
         ).exclude(
            status_code="Canceled"
         ).order_by(
-           "start_datetime"
+           "-start_datetime"
         ).prefetch_related(
             'patient__episode_set'
         )
-        return sorted(appointments, key=lambda x: x.start_datetime.date())
 
 
 class PrintConsultation(LoginRequiredMixin, DetailView):
