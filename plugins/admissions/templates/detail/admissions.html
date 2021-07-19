@@ -23,6 +23,7 @@
           <!-- <th>Last Update Type</th> -->
           <th>Location</th>
           <th>Class</th>
+          {% if permissions.ipc_user %}<th></th>{% endif %}
         </tr>
         <tr ng-repeat="admission in admissionView.admissions">
           <td>[[ admission.admit_datetime | displayDateTime ]]</td>
@@ -39,6 +40,12 @@
             [[ admission.room ]] [[ admission.bed ]]
           </td>
           <td>[[ admission.patient_class ]]</td>
+          {% if permissions.ipc_user %}<td>
+            <a href="/#/admissions/transfer-history/[[ admission.spell_number ]]/" class="orange-link">
+              Location History
+            </a>
+          </td>
+          {% endif %}
         </tr>
       </table>
 
