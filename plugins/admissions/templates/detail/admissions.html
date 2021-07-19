@@ -23,7 +23,6 @@
           <!-- <th>Last Update Type</th> -->
           <th>Location</th>
           <th>Class</th>
-          {% if permissions.ipc_user %}{% endif %}
           {% if permissions.ipc_user %}<th></th>{% endif %}
         </tr>
         <tr ng-repeat="admission in admissionView.admissions">
