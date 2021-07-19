@@ -4,6 +4,11 @@ import re
 
 def get_organisms(observation_value):
     """
+    Note: Checked with all TB Cultures. Appears to work with
+    all cultures. Please check individual tests before you apply
+    it in case there are differences in the tests you are applying it
+    to.
+
     Organisms/resistances/sensitivities/intermediate come in a structure like
     '1) Mycobacterium abscessus
     This is the final reference lab. report
