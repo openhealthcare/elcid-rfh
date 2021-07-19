@@ -508,6 +508,28 @@ class MDTList(LoginRequiredMixin, TemplateView):
             'appointments'
         ).distinct()
 
+    def filter_obs(self, obs):
+        # For a given date only show the most important test on that date
+        # Ref libs are most important, then cultures, then smears then pcrs.
+        importance = {
+            models.TBPCR.OBSERVATION_NAME: 0,
+            models.AFBSmear.OBSERVATION_NAME: 1,
+            models.AFBCulture.OBSERVATION_NAME: 2,
+            models.AFBRefLib.OBSERVATION_NAME: 3,
+        }
+        by_date = {}
+        for ob in obs:
+            reported_date = ob.reported_datetime.date()
+            if reported_date not in by_date:
+                by_date[reported_date] = ob
+            else:
+                existing_ob = by_date[reported_date]
+                existing_importance = importance[existing_ob.OBSERVATION_NAME]
+                ob_importance = importance[ob.OBSERVATION_NAME]
+                if existing_importance < ob_importance:
+                    by_date[reported_date] = ob
+        return by_date.values()
+
     def patient_to_row(self, patient, obs, patient_consultations):
         demographics = patient.demographics_set.all()[0]
         tb_category = episode_categories.TbEpisode.display_name
@@ -515,8 +537,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
         if tb_episodes:
             episode = tb_episodes[0]
 
-        tests = [
-            (i.reported_datetime, 'obs', i) for i in obs
+        obs = [
+            (i.reported_datetime, 'obs', i) for i in self.filter_obs(obs)
         ]
 
         # Only include TB appointmments
@@ -538,7 +560,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
             (i.when, "note",  i) for i in patient_consultations if i.when
         ]
 
-        timeline = sorted(tests + notes + appointments, key=lambda x: x[0], reverse=True)
+        timeline = sorted(obs + notes + appointments, key=lambda x: x[0], reverse=True)
 
         return {
             "episode": episode,
