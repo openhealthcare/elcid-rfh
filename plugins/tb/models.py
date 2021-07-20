@@ -870,3 +870,6 @@ class TBPCR(AbstractTBObservation):
         if obs_value.startswith("NOT detected."):
             return "NOT detected."
         return super().display_value()
+
+
+TB_OBS = (TBPCR, AFBRefLab, AFBCulture, AFBSmear)
