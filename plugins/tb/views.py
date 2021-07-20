@@ -8,15 +8,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
-from opal.models import Episode
+from opal.models import PatientConsultationReasonForInteraction
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
-from plugins.labtests import models as labtest_models
-
-from plugins.tb import episode_categories, constants, lab
-from plugins.tb import models
-from plugins.tb.models import PatientConsultation
-from plugins.tb.models import Treatment
+from opal.models import Patient
+from plugins.tb import episode_categories, constants, models
+from plugins.tb.models import PatientConsultation, TBPCR, Treatment
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -388,148 +385,301 @@ class PrintConsultation(LoginRequiredMixin, DetailView):
 
 class MDTList(LoginRequiredMixin, TemplateView):
     template_name = "tb/mdt_list.html"
-    BARNET = "Barnet"
-    RFH = "RFH"
+    BARNET = "barnet"
+    RFH = "rfh"
+    SITES = [RFH, BARNET]
+    POSITIVE = "positive"
+    RESULTED = "resulted"
+    STATUSES = [POSITIVE, RESULTED]
 
-    def get_observations(self):
-        culture_obs = list(lab.AFBCulture.get_positive_observations().filter(
-            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(365)
-        ).select_related('test'))
-        smear_obs = list(lab.AFBSmear.get_resulted_observations().filter(
-            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(30)
-        ).select_related('test'))
-        pcr_tests = list(lab.TBPCR.get_resulted_observations().filter(
-            test__datetime_ordered__gte=datetime.date.today() - datetime.timedelta(30)
-        ).select_related('test'))
-        return culture_obs + smear_obs + pcr_tests
+    ALL_OBS = "all_obs"
+    CULTURE = "culture"
+    SMEAR = "smear"
+    PCR = "pcr"
+    REF_LAB = "ref_lab"
 
-    def get_positive_observation_ids(self, observations):
-        observations_ids = [i.id for i in observations]
-        positive_observation_ids = set()
-        positive_observation_ids.update(
-            lab.AFBCulture.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
+    TB_OBSERVATIONS = {
+        ALL_OBS: [
+            models.TBPCR,
+            models.AFBSmear,
+            models.AFBCulture,
+            models.AFBRefLab,
+        ],
+        CULTURE: [models.AFBCulture],
+        SMEAR: [models.AFBSmear],
+        REF_LAB: [models.AFBRefLab],
+        PCR: [models.TBPCR],
+    }
+
+    def patients_to_rows(self, patients):
+        obs_models = self.TB_OBSERVATIONS[self.kwargs["obs_type"]]
+        obs_status = self.kwargs['obs_status']
+        filter_kwargs = {
+            'patient__in': patients,
+            'reported_datetime__isnull': False,
+        }
+        if obs_status == self.POSITIVE:
+            filter_kwargs['positive'] = True
+        else:
+            filter_kwargs['pending'] = False
+
+        patient_id_to_obs = defaultdict(list)
+        for obs_model in obs_models:
+            qs = obs_model.objects.filter(**filter_kwargs)
+            for obs in qs:
+                patient_id_to_obs[obs.patient_id].append(obs)
+
+        patient_id_to_obs = {
+            patient_id: sorted(obs, key=lambda x: x.reported_datetime, reverse=True)
+            for patient_id, obs in patient_id_to_obs.items()
+        }
+
+        patient_consultations = models.PatientConsultation.objects.filter(
+            episode__patient__in=patients
+        ).select_related('episode')
+        patient_id_to_consultations = defaultdict(list)
+        for pc in patient_consultations:
+            patient_id_to_consultations[pc.episode.patient_id].append(pc)
+
+        # Make sure the list is sorted by the most recent observation
+        patients = sorted(
+            patients, key=lambda x: patient_id_to_obs[x.id][0].reported_datetime
         )
-        positive_observation_ids.update(
-            lab.AFBSmear.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        positive_observation_ids.update(
-            lab.TBPCR.get_positive_observations().filter(
-                id__in=observations_ids
-            ).values_list(
-                'id', flat=True
-            )
-        )
-        return positive_observation_ids
 
-    def get_patient_id_to_demographics(self, observations):
-        patient_ids = set([i.test.patient_id for i in observations])
-        demographics = Demographics.objects.filter(
-            patient_id__in=patient_ids)
-        result = {}
-        for demo in demographics:
-            result[demo.patient_id] = demo
-        return result
-
-    def format_obs_value(self, observation):
-        tb_test = lab.get_tb_test(observation)
-        obs_value_display = tb_test.display_observation_value(observation)
-        return f"{observation.observation_name}: {obs_value_display}"
-
-    def get_patient_id_to_lab_dicts(self, observations, positive_obs_ids):
-        """
-        We group the lab tests so if its
-        for the same patient, site, observation date, is_positive, obs name and
-        obs value, show them on the same line
-        """
-        patient_ids_to_lab_test_dict = defaultdict(list)
-
-        group_tests = defaultdict(list)
-
-        def get_key(observation):
-            lab_test = observation.test
-            return (
-                lab_test.patient_id,
-                lab_test.cleaned_site,
-                observation.observation_datetime.date(),
-                observation.id in positive_obs_ids,
-                self.format_obs_value(observation)
-            )
-        for observation in observations:
-            group_tests[get_key(observation)].append(observation.test.lab_number)
-
-        for key, lab_numbers in group_tests.items():
-            patient_id, site, ordered, is_positive, obs_value = key
-            patient_ids_to_lab_test_dict[patient_id].append({
-                "site": site,
-                "lab_numbers": ", ".join(lab_numbers),
-                "ordered": ordered,
-                "is_positive": is_positive,
-                "observation_value": obs_value,
-            })
-        result = {}
-        for patient_id, lab_test_dicts in patient_ids_to_lab_test_dict.items():
-            result[patient_id] = sorted(
-                lab_test_dicts, key=lambda x: x["ordered"], reverse=True
+        result = []
+        for patient in patients:
+            result.append(
+                self.patient_to_row(
+                    patient,
+                    patient_id_to_obs[patient.id],
+                    patient_id_to_consultations[patient.id]
+                )
             )
         return result
 
-    def get_patient_id_to_tb_episode(self, observations):
-        patient_ids = set([i.test.patient_id for i in observations])
-        episodes = Episode.objects.filter(
-            patient_id__in=patient_ids
-        ).filter(
-            category_name=episode_categories.TbEpisode.display_name
-        )
-        result = {}
-        for episode in episodes:
-            result[episode.patient_id] = episode
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 2:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(21)
+
+    def title(self):
+        obs_type = self.kwargs["obs_type"]
+        if obs_type == self.ALL_OBS:
+            obs_type = "tests"
+        elif obs_type == self.REF_LAB:
+            obs_type = "ref lab reports"
+        elif obs_type == self.PCR:
+            obs_type = "PCR tests"
+        else:
+            obs_type = f"{obs_type.lower()} tests"
+
+        status = self.kwargs["obs_status"]
+        from_dt = self.start_date.strftime("%-d %b %Y")
+        title = f"Patients with {status} {obs_type} reported after {from_dt}"
+        return title.replace("  ", " ")
+
+    def get_patients(self):
+        filter_args = {
+            "reported_datetime__gte": self.start_date,
+            "pending": False
+        }
+        if self.kwargs["obs_status"] == self.POSITIVE:
+            filter_args["positive"] = True
+        if self.kwargs["site"] == self.BARNET:
+            filter_args["lab_number__contains"] = "K"
+        else:
+            filter_args["lab_number__contains"] = "L"
+        tb_obs_models = self.TB_OBSERVATIONS[self.kwargs["obs_type"]]
+        patient_ids = set()
+        for tb_obs_model in tb_obs_models:
+            patient_ids = patient_ids.union(tb_obs_model.objects.filter(
+                **filter_args
+            ).values_list('patient_id', flat=True))
+        return Patient.objects.filter(
+            id__in=patient_ids
+        ).prefetch_related(
+            'demographics_set',
+            'episode_set',
+            'appointments'
+        ).distinct()
+
+    def filter_obs(self, obs):
+        # The smear, culture and ref lab are all derrived from the same test
+        # and all have the same reported date.
+        # We only care about the culture if the ref lab is pending.
+        # We only care about the smear if the culture is pending.
+        #
+        # So we only show the most important result for a day that we
+        # can find.
+        #
+        #
+        # Multiple tests are often done on the same day, if they
+        # have the same value just show the first value
+
+        date_to_obs = defaultdict(list)
+        date_to_filtered_obs = {}
+
+        for ob in obs:
+            date_to_obs[ob.reported_datetime.date()].append(ob)
+
+        # If there is a ref lab, filter out culture and smear
+        # Else if there is a culture, filter out smears
+        for some_date, obs in date_to_obs.items():
+            if any([i for i in obs if isinstance(i, models.AFBRefLab)]):
+                obs = [
+                    i for i in obs if not isinstance(i, (
+                        models.AFBSmear, models.AFBCulture,
+                    ))
+                ]
+            elif any([i for i in obs if isinstance(i, models.AFBCulture)]):
+                obs = [
+                    i for i in obs if not isinstance(i, models.AFBSmear)
+                ]
+            date_to_filtered_obs[some_date] = obs
+
+        # create a dictionary of date to a unique list of observation values
+        date_to_values = {}
+        for some_date, obs in date_to_filtered_obs.items():
+            date_to_values[some_date] = set([i.value for i in obs])
+
+        date_to_unique_obs = defaultdict(list)
+        for some_date, values in date_to_values.items():
+            for value in list(values):
+                date_to_unique_obs[some_date].append(
+                    [i for i in date_to_filtered_obs[some_date] if i.value == value][0]
+                )
+        result = []
+        for obs in date_to_unique_obs.values():
+            result.extend(obs)
         return result
+
+    def patient_to_row(self, patient, obs, patient_consultations):
+        demographics = patient.demographics_set.all()[0]
+        tb_category = episode_categories.TbEpisode.display_name
+        tb_episodes = [i for i in patient.episode_set.all() if i.category_name == tb_category]
+        episode = None
+        if tb_episodes:
+            episode = tb_episodes[0]
+
+        obs = [
+            (i.reported_datetime, 'obs', i) for i in self.filter_obs(obs)
+        ]
+
+        # Only include TB appointmments
+        appointments = [
+            i for i in patient.appointments.all()
+            if i.derived_appointment_type in constants.TB_APPOINTMENT_CODES and i.start_datetime
+        ]
+
+        # Only show the first appointment or future appointments
+        appointments = [
+            i for i in appointments if i.derived_appointment_type == "Thoracic TB New" or i.start_datetime > timezone.now()
+        ]
+
+        appointments = [
+            (i.start_datetime, "appointment", i,) for i in appointments
+        ]
+
+        notes = [
+            (i.when, "note",  i) for i in patient_consultations if i.when
+        ]
+
+        timeline = sorted(obs + notes + appointments, key=lambda x: x[0], reverse=True)
+
+        return {
+            "episode": episode,
+            "demographics": demographics,
+            "timeline": timeline,
+        }
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        observations = self.get_observations()
-        patient_id_to_demographics = self.get_patient_id_to_demographics(observations)
-        positive_obs_ids = self.get_positive_observation_ids(observations)
-        patient_id_to_lab_test_dicts = self.get_patient_id_to_lab_dicts(observations, positive_obs_ids)
-        patient_id_to_episode = self.get_patient_id_to_tb_episode(observations)
+        patients = self.get_patients()
+        ctx["rows"] = self.patients_to_rows(patients)
+        return ctx
 
-        patient_id_lab_test_dicts = sorted(
-            patient_id_to_lab_test_dicts.items(),
-            key=lambda lab_test_dicts: lab_test_dicts[1][0]["ordered"],
+
+class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
+    template_name = "tb/mdt_list_outstanding.html"
+
+    def get_patient_consultations(self):
+        mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
+            name="MDT meeting"
+        )
+        return PatientConsultation.objects.exclude(
+            plan=""
+        ).exclude(
+            when=None
+        ).filter(
+            reason_for_interaction_fk_id=mdt_meeting.id
+        )
+
+    def get_patients(self):
+        episode_ids = self.get_patient_consultations().values_list(
+            'episode_id', flat=True
+        )
+
+        return Patient.objects.filter(
+            episode__id__in=episode_ids
+        ).prefetch_related(
+            'demographics_set',
+            'episode_set',
+        )
+
+    def patients_to_rows(self, patients):
+        result = []
+        consultations = self.get_patient_consultations().select_related(
+            'episode'
+        )
+        patient_id_to_consultations = defaultdict(list)
+        for pc in consultations:
+            patient_id_to_consultations[pc.episode.patient_id].append(pc)
+
+        patient_id_to_consultations = {
+            patient_id: sorted(consultations, key=lambda x: x.when, reverse=True)
+            for patient_id, consultations in patient_id_to_consultations.items()
+        }
+
+        patients = sorted(
+            patients,
+            key=lambda p: patient_id_to_consultations[p.id][0].when,
             reverse=True
         )
-        rows = []
-        for patient_id, lab_test_dicts in patient_id_lab_test_dicts:
-            episode = patient_id_to_episode.get(patient_id)
-            demographics = patient_id_to_demographics[patient_id]
-            # exclude patients with no hospital numbers
-            if demographics.hospital_number:
-                rows.append((episode, demographics, lab_test_dicts,))
-        rfh_rows = []
-        barnet_rows = []
-        for row in rows:
-            barnet = False
-            rfh = False
-            for test_set in row[2]:
-                for lab_number in test_set["lab_numbers"]:
-                    if "K" in lab_number:
-                        barnet = True
-                    if "L" in lab_number:
-                        rfh = True
-            if barnet:
-                barnet_rows.append(row)
-            if rfh:
-                rfh_rows.append(row)
-        ctx["location_to_rows"] = {
-            "RFH": rfh_rows,
-            "Barnet": barnet_rows
+
+        for patient in patients:
+            result.append(
+                self.patient_to_row(patient, patient_id_to_consultations[patient.id])
+            )
+
+        return result
+
+    def patient_to_row(self, patient, patient_consultations):
+        demographics = patient.demographics_set.all()[0]
+
+        tb_category = episode_categories.TbEpisode.display_name
+        tb_episodes = [i for i in patient.episode_set.all() if i.category_name == tb_category]
+        if tb_episodes:
+            episode = tb_episodes[0]
+
+        tb_episodes = [i for i in patient.episode_set.all() if i.category_name == tb_category]
+        if tb_episodes:
+            episode = tb_episodes[0]
+
+        return {
+            "episode": episode,
+            "demographics": demographics,
+            "mdt_notes": patient_consultations,
         }
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        patients = self.get_patients()
+        ctx["rows"] = self.patients_to_rows(patients)
         return ctx

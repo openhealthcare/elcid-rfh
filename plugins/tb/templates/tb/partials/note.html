@@ -1,0 +1,24 @@
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <strong>
+      <i class="fa fa-comments"></i>
+      &nbsp;
+      {{ note.when |date:"d M Y G:i" }}
+      Note:
+    </strong>
+      {{ note.reason_for_interaction }}
+    {{ note.initials }}
+    <br />
+    {% if note.reason_for_interaction == 'MDT meeting' and note.plan %}
+    {% if note.infection_control %}
+    <strong>Plan:</strong>
+    {{ note.plan | linebreaks }}
+    {% endif %}
+    {% if note.infection_control %}
+    <strong>Infection control:</strong>
+    {{ note.infection_control | linebreaks }}
+    {% endif %}
+    {% endif %}
+  </div>
+
+</div>

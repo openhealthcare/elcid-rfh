@@ -58,8 +58,13 @@ urlpatterns = [
         views.PrintConsultation.as_view()
     ),
     url(
-        r'^templates/tb/mdt_list.html$',
+        r'^tb/mdt/(?P<site>[a-z_\-]+)/(?P<obs_type>[a-z_\-]+)/(?P<obs_status>[0-9a-z_\-]+)/$',
         views.MDTList.as_view(),
-        name="mdt_list"
+        name="tb_mdt"
+    ),
+    url(
+        r'^templates/tb/outstanding_mdt_list/$',
+        views.OutstandingActionsMDT.as_view(),
+        name="outstanding_mdt_list"
     )
 ]

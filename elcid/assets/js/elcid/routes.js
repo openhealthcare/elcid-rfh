@@ -6,9 +6,10 @@ var static_template_route = function(url){
       // template in the application viewport
       controller: 'WelcomeCtrl',
       controllerAs: 'welcome',
-      templateUrl: function(x){
+      templateUrl: function(params){
           // silly cache busting technique. The param is never read
-          return url + '?when=' + Date.now()
+          params["cache_bust"] = Date.now();
+          return url + '?' + $.param(params);
       },
       resolve: {
           referencedata: function(Referencedata) { return Referencedata; },
@@ -21,7 +22,9 @@ var param_template_route = function(base, param_name){
         controller: 'WelcomeCtrl',
         controllerAs: 'welcome',
         templateUrl: function(params){
-            return base + params[param_name] + '/?when=' + Date.now()
+          // silly cache busting technique. The param is never read
+          params["cache_bust"] = Date.now();
+          return base + params[param_name] + '/?' + $.param(_.omit(params, param_name));
         },
         resolve: {
             referencedata: function(Referencedata) { return Referencedata; },
@@ -65,10 +68,18 @@ app.config(
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
 
-             .when('/tb/clinic-list/',       static_template_route('/templates/tb/clinic_list.html'))
-             .when('/tb/last-30-days/',      static_template_route('/templates/tb/last_30_days.html'))
-             .when('/tb/mdt-list/',          static_template_route('/templates/tb/mdt_list.html'))
-
+             .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list.html'))
+             .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
+             .when('/tb/mdt-outstanding/',  static_template_route('/templates/tb/outstanding_mdt_list/'))
+             .when('/tb/mdt/:site/:obs_type/:obs_status/', {
+                controller: 'WelcomeCtrl',
+                controllerAs: 'welcome',
+                templateUrl: function(params){
+                    var url = "/tb/mdt/" + params.site + "/" + params.obs_type + "/" + params.obs_status
+                    // add cache bust
+                    return url + '/?cache_bust=' + Date.now();
+                },
+             })
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))

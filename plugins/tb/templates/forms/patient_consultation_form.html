@@ -10,6 +10,9 @@
   <div ng-if="editing.patient_consultation.reason_for_interaction.toLowerCase().indexOf('nurse') != -1">
     {% textarea field="PatientConsultation.progress" %}
   </div>
+  <div ng-if="editing.patient_consultation.reason_for_interaction == 'MDT meeting'">
+    {% textarea field="PatientConsultation.infection_control" %}
+  </div>
 </div>
 {% textarea field="PatientConsultation.discussion" %}
 {% textarea field="PatientConsultation.plan" %}
