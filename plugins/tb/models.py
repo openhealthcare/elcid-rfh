@@ -801,7 +801,6 @@ class AFBRefLab(AbstractTBObservation):
     date_of_ref_lab_string = fields.CharField(
         max_length=256, blank=True, default=""
     )
-    date_of_ref_lab_report = fields.DateField(blank=True, null=True)
     comment = fields.TextField(blank=True, default="")
 
     @classmethod
@@ -826,41 +825,11 @@ class AFBRefLab(AbstractTBObservation):
             return ref_lab_date_obs.observation_value
 
     @classmethod
-    def get_ref_lab_date(cls, ref_lab_date_string):
-        """
-        The date is stored in Date of Ref. Lab. report.
-        It is not actually a date its a string e.g.
-        ```
-        06/05/2019  17/06/19~Intermediate report 13/05/2019~Final report 24/06/2019
-        ```
-        Its not always of this format though. We care about the
-        most recent date whether receipt, intermediate or final.
-        So we split it into words and return the highest date
-        """
-        mentioned_dates = []
-        obs_lines = ref_lab_date_string.split("~")
-        obs_vals = []
-        for obs_line in obs_lines:
-            obs_vals.extend(obs_line.split(" "))
-
-        for obs_val in obs_vals:
-            obs_val = obs_val.strip()
-            if obs_val:
-                obs_date = parse_date(obs_val)
-                if obs_date:
-                    mentioned_dates.append(obs_date)
-        if mentioned_dates:
-            return max(mentioned_dates)
-
-    @classmethod
     def populate_from_observation(cls, obs):
         new_model = super().populate_from_observation(obs)
         ref_lab_date_str = cls.get_ref_lab_date_observation_string(obs)
         if ref_lab_date_str:
             cls.date_of_ref_lab_string = ref_lab_date_str
-            ref_lab_date = cls.get_ref_lab_date(ref_lab_date_str)
-            if ref_lab_date:
-                new_model.date_of_ref_lab_report = ref_lab_date
         comment = obs.test.observation_set.filter(
             observation_name="TB Ref. Lab. Comment"
         ).first()
