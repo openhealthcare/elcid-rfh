@@ -13,7 +13,7 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import PatientConsultation, Treatment
+from plugins.tb.models import PatientConsultation, TBPCR, Treatment
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -508,26 +508,54 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ).distinct()
 
     def filter_obs(self, obs):
-        # For a given date only show the most important test on that date
-        # Ref libs are most important, then cultures, then smears then pcrs.
-        importance = {
-            models.TBPCR.OBSERVATION_NAME: 0,
-            models.AFBSmear.OBSERVATION_NAME: 1,
-            models.AFBCulture.OBSERVATION_NAME: 2,
-            models.AFBRefLib.OBSERVATION_NAME: 3,
-        }
-        by_date = {}
+        # The smear, culture and ref lib are all derrived from the same test
+        # and all have the same reported date.
+        # We only care about the culture if the ref lib is pending.
+        # We only care about the smear if the culture is pending.
+        #
+        # So we only show the most important result for a day that we
+        # can find.
+        #
+        #
+        # Multiple tests are often done on the same day, if they
+        # have the same value just show the first value
+
+        date_to_obs = defaultdict(list)
+        date_to_filtered_obs = {}
+
         for ob in obs:
-            reported_date = ob.reported_datetime.date()
-            if reported_date not in by_date:
-                by_date[reported_date] = ob
-            else:
-                existing_ob = by_date[reported_date]
-                existing_importance = importance[existing_ob.OBSERVATION_NAME]
-                ob_importance = importance[ob.OBSERVATION_NAME]
-                if existing_importance < ob_importance:
-                    by_date[reported_date] = ob
-        return by_date.values()
+            date_to_obs[ob.reported_datetime.date()].append(ob)
+
+        # If there is a ref lib, filter out culture and smear
+        # Else if there is a culture, filter out smears
+        for some_date, obs in date_to_obs.items():
+            if any([i for i in obs if isinstance(i, models.AFBRefLib)]):
+                obs = [
+                    i for i in obs if not isinstance(i, (
+                        models.AFBSmear, models.AFBCulture,
+                    ))
+                ]
+            elif any([i for i in obs if isinstance(i, models.AFBCulture)]):
+                obs = [
+                    i for i in obs if not isinstance(i, models.AFBSmear)
+                ]
+            date_to_filtered_obs[some_date] = obs
+
+        # create a dictionary of date to a unique list of observation values
+        date_to_values = {}
+        for some_date, obs in date_to_filtered_obs.items():
+            date_to_values[some_date] = set([i.value for i in obs])
+
+        date_to_unique_obs = defaultdict(list)
+        for some_date, values in date_to_values.items():
+            for value in list(values):
+                date_to_unique_obs[some_date].append(
+                    [i for i in date_to_filtered_obs[some_date] if i.value == value][0]
+                )
+        result = []
+        for obs in date_to_unique_obs.values():
+            result.extend(obs)
+        return result
 
     def patient_to_row(self, patient, obs, patient_consultations):
         demographics = patient.demographics_set.all()[0]
