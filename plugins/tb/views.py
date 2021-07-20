@@ -580,7 +580,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
         # Only show the first appointment or future appointments
         appointments = [
-            i for i in patient.appointments.all() if i.derived_appointment_type == "Thoracic TB New" or i.start_datetime > timezone.now()
+            i for i in appointments if i.derived_appointment_type == "Thoracic TB New" or i.start_datetime > timezone.now()
         ]
 
         appointments = [
