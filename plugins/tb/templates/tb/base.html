@@ -11,7 +11,7 @@
       <a href="/#/tb/last-30-days/">Clinic History</a>
     </li>
     <li>
-      <a href="/#/tb/mdt/?{% query_string site='RFH' status='POSITIVE' obs_type='ALL_OBS' %}">
+      <a href="/#{% url 'tb_mdt' site='rfh' obs_status='positive' obs_type='all_obs' %}">
         MDT
       </a>
     </li>

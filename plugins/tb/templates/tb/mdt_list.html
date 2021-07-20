@@ -12,19 +12,60 @@
     <div class="row">
       <div class="col-md-12 content-offset-10 content-offset-below-20">
         <div class="btn-group" role="group">
-          <a href="/#/tb/mdt/?{% query_string site=view.RFH %}" class="btn btn-primary {% if request.GET.site.upper == view.RFH %}active{% endif %}">RFH</a>
-          <a href="/#/tb/mdt/?{% query_string site=view.BARNET %}" class="btn btn-primary {% if request.GET.site.upper == view.BARNET %}active{% endif %}">Barnet</a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.RFH obs_type=view.kwargs.obs_type obs_status=view.kwargs.obs_status %}"
+            class="btn btn-primary {% if view.kwargs.site == view.RFH %}active{% endif %}"
+          >
+            RFH
+          </a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.BARNET obs_type=view.kwargs.obs_type obs_status=view.kwargs.obs_status %}"
+            class="btn btn-primary {% if view.kwargs.site == view.BARNET %}active{% endif %}"
+          >
+            Barnet
+          </a>
         </div>
         <div class="btn-group left-offset-15" role="group">
-          <a href="/#/tb/mdt/?{% query_string status=view.POSITIVE %}" class="btn btn-primary {% if request.GET.status.upper == view.POSITIVE %}active{% endif %}">Positive</a>
-          <a href="/#/tb/mdt/?{% query_string status=view.RESULTED %}" class="btn btn-primary {% if request.GET.status.upper == view.RESULTED %}active{% endif %}">Resulted</a>
+          {% for status in view.STATUSES %}
+          <a
+            href="/#{% url 'tb_mdt' site=view.kwargs.site obs_type=view.kwargs.obs_type obs_status=status %}"
+            class="btn btn-primary {% if view.kwargs.obs_status == status %}active{% endif %}"
+          >
+            {{ status.title }}
+          </a>
+          {% endfor %}
         </div>
         <div class="btn-group left-offset-15" role="group">
-          <a href="/#/tb/mdt/?{% query_string obs_type=view.ALL_OBS %}" class="btn btn-primary {% if request.GET.tests.upper == view.ALL_TESTS %}active{% endif %}">All tests</a>
-          <a href="/#/tb/mdt/?{% query_string obs_type=view.CULTURE %}" class="btn btn-primary {% if request.GET.tests.upper == view.CULTURE %}active{% endif %}">Culture</a>
-          <a href="/#/tb/mdt/?{% query_string obs_type=view.SMEAR %}" class="btn btn-primary {% if request.GET.tests.upper == view.SMEAR %}active{% endif %}">Smear</a>
-          <a href="/#/tb/mdt/?{% query_string obs_type=view.PCR %}" class="btn btn-primary {% if request.GET.tests.upper == view.PCR %}active{% endif %}">PCR</a>
-          <a href="/#/tb/mdt/?{% query_string obs_type=view.REF_LAB %}" class="btn btn-primary {% if request.GET.tests.upper == view.REF_LAB %}active{% endif %}">Ref lab report</a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.kwargs.site obs_type=view.ALL_OBS obs_status=view.kwargs.obs_status %}"
+            class="btn btn-primary {% if view.kwargs.obs_type == view.ALL_OBS %}active{% endif %}"
+          >
+            All tests
+          </a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.kwargs.site obs_type=view.REF_LAB obs_status=view.kwargs.obs_status %}"
+            class="btn btn-primary {% if view.kwargs.obs_type == view.REF_LAB %}active{% endif %}"
+          >
+            Ref lab report
+          </a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.kwargs.site obs_type=view.CULTURE obs_status=view.kwargs.obs_status %}"
+            class="btn btn-primary {% if view.kwargs.obs_type == view.CULTURE %}active{% endif %}"
+          >
+            Culture
+          </a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.kwargs.site obs_type=view.SMEAR obs_status=view.kwargs.obs_status %}"
+            class="btn btn-primary {% if view.kwargs.obs_type == view.SMEAR %}active{% endif %}"
+          >
+            Smear
+          </a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.kwargs.site obs_type=view.PCR obs_status=view.kwargs.obs_status %}"
+            class="btn btn-primary {% if view.kwargs.obs_type == view.PCR %}active{% endif %}"
+          >
+            PCR
+          </a>
         </div>
       </div>
     </div>

@@ -385,18 +385,18 @@ class PrintConsultation(LoginRequiredMixin, DetailView):
 
 class MDTList(LoginRequiredMixin, TemplateView):
     template_name = "tb/mdt_list.html"
-    BARNET = "BARNET"
-    RFH = "RFH"
+    BARNET = "barnet"
+    RFH = "rfh"
     SITES = [RFH, BARNET]
-    POSITIVE = "POSITIVE"
-    RESULTED = "RESULTED"
+    POSITIVE = "positive"
+    RESULTED = "resulted"
     STATUSES = [POSITIVE, RESULTED]
 
-    ALL_OBS = "ALL_OBS"
-    CULTURE = "CULTURE"
-    SMEAR = "SMEAR"
-    PCR = "PCR"
-    REF_LAB = "REF_LAB"
+    ALL_OBS = "all_obs"
+    CULTURE = "culture"
+    SMEAR = "smear"
+    PCR = "pcr"
+    REF_LAB = "ref_lab"
 
     TB_OBSERVATIONS = {
         ALL_OBS: [
@@ -412,9 +412,12 @@ class MDTList(LoginRequiredMixin, TemplateView):
     }
 
     def patients_to_rows(self, patients):
-        obs_models = self.TB_OBSERVATIONS[self.request.GET.get("obs_type")]
-        obs_status = self.request.GET['status']
-        filter_kwargs = {'patient__in': patients}
+        obs_models = self.TB_OBSERVATIONS[self.kwargs["obs_type"]]
+        obs_status = self.kwargs['obs_status']
+        filter_kwargs = {
+            'patient__in': patients,
+            'reported_datetime__isnull': False,
+        }
         if obs_status == self.POSITIVE:
             filter_kwargs['positive'] = True
         else:
@@ -467,7 +470,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         return self.end_date - datetime.timedelta(21)
 
     def title(self):
-        obs_type = self.request.GET.get("obs_type")
+        obs_type = self.kwargs["obs_type"]
         if obs_type == self.ALL_OBS:
             obs_type = "tests"
         elif obs_type == self.REF_LAB:
@@ -477,7 +480,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         else:
             obs_type = f"{obs_type.lower()} tests"
 
-        status = self.request.GET.get("status").lower()
+        status = self.kwargs["obs_status"]
         from_dt = self.start_date.strftime("%-d %b %Y")
         title = f"Patients with {status} {obs_type} reported after {from_dt}"
         return title.replace("  ", " ")
@@ -487,13 +490,13 @@ class MDTList(LoginRequiredMixin, TemplateView):
             "reported_datetime__gte": self.start_date,
             "pending": False
         }
-        if self.request.GET.get("status").upper() == self.POSITIVE:
+        if self.kwargs["obs_status"] == self.POSITIVE:
             filter_args["positive"] = True
-        if self.request.GET["site"].upper() == self.BARNET:
+        if self.kwargs["site"] == self.BARNET:
             filter_args["lab_number__contains"] = "K"
         else:
             filter_args["lab_number__contains"] = "L"
-        tb_obs_models = self.TB_OBSERVATIONS[self.request.GET.get("obs_type")]
+        tb_obs_models = self.TB_OBSERVATIONS[self.kwargs["obs_type"]]
         patient_ids = set()
         for tb_obs_model in tb_obs_models:
             patient_ids = patient_ids.union(tb_obs_model.objects.filter(
@@ -561,6 +564,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         demographics = patient.demographics_set.all()[0]
         tb_category = episode_categories.TbEpisode.display_name
         tb_episodes = [i for i in patient.episode_set.all() if i.category_name == tb_category]
+        episode = None
         if tb_episodes:
             episode = tb_episodes[0]
 
