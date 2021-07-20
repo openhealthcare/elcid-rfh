@@ -403,11 +403,11 @@ class MDTList(LoginRequiredMixin, TemplateView):
             models.TBPCR,
             models.AFBSmear,
             models.AFBCulture,
-            models.AFBRefLib,
+            models.AFBRefLab,
         ],
         CULTURE: [models.AFBCulture],
         SMEAR: [models.AFBSmear],
-        REF_LAB: [models.AFBRefLib],
+        REF_LAB: [models.AFBRefLab],
         PCR: [models.TBPCR],
     }
 
@@ -508,9 +508,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ).distinct()
 
     def filter_obs(self, obs):
-        # The smear, culture and ref lib are all derrived from the same test
+        # The smear, culture and ref lab are all derrived from the same test
         # and all have the same reported date.
-        # We only care about the culture if the ref lib is pending.
+        # We only care about the culture if the ref lab is pending.
         # We only care about the smear if the culture is pending.
         #
         # So we only show the most important result for a day that we
@@ -526,10 +526,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
         for ob in obs:
             date_to_obs[ob.reported_datetime.date()].append(ob)
 
-        # If there is a ref lib, filter out culture and smear
+        # If there is a ref lab, filter out culture and smear
         # Else if there is a culture, filter out smears
         for some_date, obs in date_to_obs.items():
-            if any([i for i in obs if isinstance(i, models.AFBRefLib)]):
+            if any([i for i in obs if isinstance(i, models.AFBRefLab)]):
                 obs = [
                     i for i in obs if not isinstance(i, (
                         models.AFBSmear, models.AFBCulture,

@@ -13,7 +13,7 @@ from plugins.tb import logger, episode_categories, models
 from opal.models import Patient
 
 
-TB_OBSERVATIONS = [models.TBPCR, models.AFBSmear, models.AFBCulture, models.AFBRefLib]
+TB_OBSERVATIONS = [models.TBPCR, models.AFBSmear, models.AFBCulture, models.AFBRefLab]
 
 
 @transaction.atomic

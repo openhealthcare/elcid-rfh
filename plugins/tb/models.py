@@ -790,7 +790,7 @@ class AFBCulture(AbstractTBObservation):
         return val.replace(to_remove, "")
 
 
-class AFBRefLib(AbstractTBObservation):
+class AFBRefLab(AbstractTBObservation):
     OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
     TEST_NAMES = [
         'AFB : CULTURE',
@@ -798,10 +798,10 @@ class AFBRefLib(AbstractTBObservation):
         'AFB BLOOD CULTURE'
     ]
 
-    date_of_ref_lib_string = fields.CharField(
+    date_of_ref_lab_string = fields.CharField(
         max_length=256, blank=True, default=""
     )
-    date_of_ref_lib_report = fields.DateField(blank=True, null=True)
+    date_of_ref_lab_report = fields.DateField(blank=True, null=True)
     comment = fields.TextField(blank=True, default="")
 
     @classmethod
@@ -818,15 +818,15 @@ class AFBRefLib(AbstractTBObservation):
         return False
 
     @classmethod
-    def get_ref_lib_date_observation_string(cls, obs):
-        ref_lib_date_obs = obs.test.observation_set.filter(
+    def get_ref_lab_date_observation_string(cls, obs):
+        ref_lab_date_obs = obs.test.observation_set.filter(
             observation_name="Date of Ref. Lab. report"
         ).first()
-        if ref_lib_date_obs:
-            return ref_lib_date_obs.observation_value
+        if ref_lab_date_obs:
+            return ref_lab_date_obs.observation_value
 
     @classmethod
-    def get_ref_lib_date(cls, ref_lib_date_string):
+    def get_ref_lab_date(cls, ref_lab_date_string):
         """
         The date is stored in Date of Ref. Lab. report.
         It is not actually a date its a string e.g.
@@ -838,7 +838,7 @@ class AFBRefLib(AbstractTBObservation):
         So we split it into words and return the highest date
         """
         mentioned_dates = []
-        obs_lines = ref_lib_date_string.split("~")
+        obs_lines = ref_lab_date_string.split("~")
         obs_vals = []
         for obs_line in obs_lines:
             obs_vals.extend(obs_line.split(" "))
@@ -855,12 +855,12 @@ class AFBRefLib(AbstractTBObservation):
     @classmethod
     def populate_from_observation(cls, obs):
         new_model = super().populate_from_observation(obs)
-        ref_lib_date_str = cls.get_ref_lib_date_observation_string(obs)
-        if ref_lib_date_str:
-            cls.date_of_ref_lib_string = ref_lib_date_str
-            ref_lib_date = cls.get_ref_lib_date(ref_lib_date_str)
-            if ref_lib_date:
-                new_model.date_of_ref_lib_report = ref_lib_date
+        ref_lab_date_str = cls.get_ref_lab_date_observation_string(obs)
+        if ref_lab_date_str:
+            cls.date_of_ref_lab_string = ref_lab_date_str
+            ref_lab_date = cls.get_ref_lab_date(ref_lab_date_str)
+            if ref_lab_date:
+                new_model.date_of_ref_lab_report = ref_lab_date
         comment = obs.test.observation_set.filter(
             observation_name="TB Ref. Lab. Comment"
         ).first()
