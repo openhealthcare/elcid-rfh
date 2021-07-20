@@ -780,12 +780,12 @@ class AFBCulture(AbstractTBObservation):
         return new_model
 
     def display_value(self):
-        val = super().display_value()
-        to_remove = " ".join([
-            "Key: Susceptibility interpretation (Note: update to "
-            "I) ~S = susceptible using standard dosing~I= susceptible at increased dosing,",
-            "high dose regimen must be used (please see your local antibiotic policy",
-            "or Microguide for dosing guidance)~R = resistant"
+        val = super().display_value().strip()
+        to_remove = "\n".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
         ])
         return val.replace(to_remove, "")
 
@@ -836,6 +836,16 @@ class AFBRefLab(AbstractTBObservation):
         if comment:
             new_model.comment = comment
         return new_model
+
+    def display_value(self):
+        val = super().display_value().strip()
+        to_remove = "\n".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
+        ])
+        return val.replace(to_remove, "")
 
 
 class TBPCR(AbstractTBObservation):
