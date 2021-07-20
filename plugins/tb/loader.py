@@ -1,14 +1,13 @@
 import datetime
-from django.db import transaction
 from django.utils import timezone
-from plugins.appointments.models import PatientAppointmentStatus
+from django.db import transaction
+from plugins.appointments import loader
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid import episode_categories as infection_episode_categories
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.tb import episode_categories, constants, logger, models
-from plugins.appointments.loader import save_or_discard_appointment_data
 
 
 Q_TB_APPOINTMENTS = """
@@ -132,7 +131,6 @@ def update_tb_patient(appointment_dict):
         patient.create_episode(
             category_name=episode_categories.TbEpisode.display_name
         )
-    save_or_discard_appointment_data(appointment_dict, patient)
 
 
 def refresh_future_tb_appointments():
@@ -140,7 +138,6 @@ def refresh_future_tb_appointments():
     since = datetime.datetime.combine(
         datetime.date.today(), datetime.datetime.min.time()
     )
-    upstream_appointments = []
     for appointment_type in constants.TB_APPOINTMENT_CODES:
         result = api.execute_hospital_query(
             Q_TB_APPOINTMENTS_SINCE, params={
@@ -148,23 +145,4 @@ def refresh_future_tb_appointments():
                 'since': since
             }
         )
-        upstream_appointments.extend(result)
-
-    updated_hns = []
-    failed = 0
-
-    for appointment in upstream_appointments:
-        try:
-            update_tb_patient(appointment)
-        except Exception:
-            failed += 1
-        updated_hns.append(appointment["vPatient_Number"])
-
-    PatientAppointmentStatus.objects.filter(
-        patient__demographics__hospital_number__in=updated_hns
-    ).update(
-        has_appointments=True
-    )
-    logger.info(f"Updated {len(updated_hns)} patients appointments")
-    if failed:
-        logger.error(f"Failed to update {failed} appointments")
+        loader.update_appointments_from_query_result(result)
