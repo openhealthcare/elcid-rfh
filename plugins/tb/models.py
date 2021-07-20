@@ -616,7 +616,7 @@ class AbstractTBObservation(fields.Model):
 
     Smears and PCRs are not 100% accurate.
 
-    Smears, AFB Cultures and the TB Ref lib are all observations
+    Smears, AFB Cultures and the TB Ref lab are all observations
     on the same test.
     """
 
