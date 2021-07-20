@@ -678,7 +678,8 @@ class AbstractTBObservation(fields.Model):
         return new_model
 
     def display_value(self):
-        return "\n".join(self.value.split("~"))
+        result = "\n".join(self.value.split("~"))
+        return result.strip()
 
     class Meta:
         abstract = True
@@ -779,13 +780,14 @@ class AFBCulture(AbstractTBObservation):
         return new_model
 
     def display_value(self):
+        val = super().display_value()
         to_remove = " ".join([
             "Key: Susceptibility interpretation (Note: update to "
             "I) ~S = susceptible using standard dosing~I= susceptible at increased dosing,",
             "high dose regimen must be used (please see your local antibiotic policy",
             "or Microguide for dosing guidance)~R = resistant"
         ])
-        return self.value.replace(to_remove, "")
+        return val.replace(to_remove, "")
 
 
 class AFBRefLib(AbstractTBObservation):
