@@ -1,7 +1,7 @@
 """
-A management command that looks at TB Appointments
-and TB lab tests in the last 72 hours and creates a TB Patient
-object.
+A management command that looks at TB observations
+from the plugins.labtests.models in the last 72 hours and creates TB
+observations on the back of them.
 """
 import datetime
 import time
