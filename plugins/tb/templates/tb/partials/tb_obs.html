@@ -24,24 +24,10 @@
       {{ lab_test.date_of_ref_lab_string }}
       {% endif %}
     {% endif %}
-    {% if lab_test.organisms %}
-    {% for organism_name, organism_meta in lab_test.organisms.items %}
-    {{ organism_name }} {% if organism_meta.comments %}({{ organism_meta.comments }}){% endif %}
-    {% if organism_meta.sensitivities %}
-    <br>
-    Sensitivities: {{ organism_meta.sensitivities|join:", " }}
-    {% endif %}
-    {% if organism_meta.resistances %}
-    <br>
-    Resistances: {{ organism_meta.resistances|join:", " }}
-    {% endif %}
-    {% if organism_meta.resistances %}
-    <br>
-    Intermediate: {{ organism_meta.intermediate|join:", " }}
-    {% endif %}
-    {% endfor %}
+    {% if lab_test.has_sensitivities %}
+      {{ lab_test.display_value | linebreaks }}
     {% else %}
-    {{ lab_test.display_value }}
+      {{ lab_test.display_value }}
     {% endif %}
   </div>
 </div>

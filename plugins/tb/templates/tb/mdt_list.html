@@ -102,7 +102,7 @@
           </a>
           </span>
         </td>
-        <td>
+        <td class="tb-mdt-row">
           {% for ts, timeline_type, instance in row.timeline %}
             {% if timeline_type == "obs" %}
               {% include "tb/partials/tb_obs.html" with lab_test=instance title=instance.title %}

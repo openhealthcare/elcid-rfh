@@ -779,6 +779,9 @@ class AFBCulture(AbstractTBObservation):
 
         return new_model
 
+    def has_sensitivities(self):
+        return self.value.count("1)") > 1
+
     def display_value(self):
         val = super().display_value().strip()
         to_remove = "\n".join([
@@ -787,7 +790,7 @@ class AFBCulture(AbstractTBObservation):
             'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
             'R = resistant',
         ])
-        return val.replace(to_remove, "")
+        return val.replace(to_remove, "").strip()
 
 
 class AFBRefLab(AbstractTBObservation):
@@ -837,6 +840,9 @@ class AFBRefLab(AbstractTBObservation):
             new_model.comment = comment
         return new_model
 
+    def has_sensitivities(self):
+        return self.value.count("1)") > 1
+
     def display_value(self):
         val = super().display_value().strip()
         to_remove = "\n".join([
@@ -845,7 +851,7 @@ class AFBRefLab(AbstractTBObservation):
             'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
             'R = resistant',
         ])
-        return val.replace(to_remove, "")
+        return val.replace(to_remove, "").strip()
 
 
 class TBPCR(AbstractTBObservation):
