@@ -246,6 +246,9 @@ class PatientConsultation(models.PatientConsultation):
     progress = fields.TextField(
         blank=True, default=""
     )
+    infection_control = fields.TextField(
+        blank=True, default=""
+    )
 
 
 class ContactDetails(models.PatientSubrecord):

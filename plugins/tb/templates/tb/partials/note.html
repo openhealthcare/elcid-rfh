@@ -8,14 +8,15 @@
     </strong>
       {{ note.reason_for_interaction }}
     {{ note.initials }}
-    {% if note.reason_for_interaction == 'MDT meeting' and note.plan %}
     <br />
-    {% if note.actioned %}
-    <span class="line-through">
-      {{ note.plan | linebreaks }}
-    </span>
-    {% else %}
-      {{ note.plan | linebreaks }}
+    {% if note.reason_for_interaction == 'MDT meeting' and note.plan %}
+    {% if note.infection_control %}
+    <strong>Plan:</strong>
+    {{ note.plan | linebreaks }}
+    {% endif %}
+    {% if note.infection_control %}
+    <strong>Infection control:</strong>
+    {{ note.infection_control | linebreaks }}
     {% endif %}
     {% endif %}
   </div>
