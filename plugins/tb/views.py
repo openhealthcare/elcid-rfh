@@ -443,7 +443,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
         # Make sure the list is sorted by the most recent observation
         patients = sorted(
-            patients, key=lambda x: patient_id_to_obs[x.id][0].reported_datetime
+            patients,
+            key=lambda x: patient_id_to_obs[x.id][0].reported_datetime,
+            reverse=True
         )
 
         result = []
