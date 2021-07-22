@@ -7,11 +7,15 @@
       <div class="col-md-12">
         <h1>MDT History</h1>
         <p class="content-offset-below-10">
-          {{ rows | length }}
+          {{ num_consultations }}
           Patients recently discussed at MDT</p>
       </div>
     </div>
   </div>
+  {% for date, rows in date_to_rows.items %}
+  <h3 class="date-header">
+    {{ date }}
+  </h3>
   <table class="table table-striped">
     <tbody>
       <tr>
@@ -52,5 +56,6 @@
     {% endfor %}
     </tbody>
   </table>
+  {% endfor %}
 </div>
 {% endblock %}

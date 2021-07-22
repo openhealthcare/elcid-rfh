@@ -578,77 +578,56 @@ class MDTList(LoginRequiredMixin, TemplateView):
 class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
     template_name = "tb/mdt_list_outstanding.html"
 
-    def get_patient_consultations(self):
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
         mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
             name="MDT meeting"
         )
-        return PatientConsultation.objects.exclude(
+        patient_consultations = PatientConsultation.objects.exclude(
             plan=""
         ).exclude(
             when=None
         ).filter(
             reason_for_interaction_fk_id=mdt_meeting.id
+        ).select_related('episode')
+        episodes = [i.episode for i in patient_consultations]
+        demographics = Demographics.objects.filter(
+            patient__episode__in=episodes
         )
-
-    def get_patients(self):
-        episode_ids = self.get_patient_consultations().values_list(
-            'episode_id', flat=True
-        )
-
-        return Patient.objects.filter(
-            episode__id__in=episode_ids
-        ).prefetch_related(
-            'demographics_set',
-            'episode_set',
-        )
-
-    def patients_to_rows(self, patients):
-        result = []
-        consultations = self.get_patient_consultations().select_related(
-            'episode'
-        )
-        patient_id_to_consultations = defaultdict(list)
-        for pc in consultations:
-            patient_id_to_consultations[pc.episode.patient_id].append(pc)
-
-        patient_id_to_consultations = {
-            patient_id: sorted(consultations, key=lambda x: x.when, reverse=True)
-            for patient_id, consultations in patient_id_to_consultations.items()
+        patient_id_to_demographics = {
+            i.patient_id: i for i in demographics
         }
-
-        patients = sorted(
-            patients,
-            key=lambda p: patient_id_to_consultations[p.id][0].when,
-            reverse=True
-        )
-
-        for patient in patients:
-            result.append(
-                self.patient_to_row(patient, patient_id_to_consultations[patient.id])
+        date_to_episode_to_mdt_notes = defaultdict(lambda: defaultdict(list))
+        for patient_consultation in patient_consultations:
+            episode = patient_consultation.episode
+            date_to_episode_to_mdt_notes[patient_consultation.when.date()][episode].append(
+                patient_consultation
             )
 
-        return result
+        date_to_rows = defaultdict(list)
 
-    def patient_to_row(self, patient, patient_consultations):
-        demographics = patient.demographics_set.all()[0]
+        for date, episode_to_mdt_notes in date_to_episode_to_mdt_notes.items():
+            for episode, mdt_notes in episode_to_mdt_notes.items():
+                date_to_rows[date].append({
+                    "episode": episode,
+                    "mdt_notes": sorted(mdt_notes, key=lambda x: x.when, reverse=True),
+                    "demographics": patient_id_to_demographics[episode.patient_id]
+                })
 
-        tb_category = episode_categories.TbEpisode.display_name
-        tb_episodes = [i for i in patient.episode_set.all() if i.category_name == tb_category]
-        if tb_episodes:
-            episode = tb_episodes[0]
-
-        tb_episodes = [i for i in patient.episode_set.all() if i.category_name == tb_category]
-        if tb_episodes:
-            episode = tb_episodes[0]
-
-        return {
-            "episode": episode,
-            "demographics": demographics,
-            "mdt_notes": patient_consultations,
+        # sort the date to rows by reverse date
+        date_to_rows = {
+            k: v for k, v in sorted(
+                date_to_rows.items(), key=lambda x: x[0], reverse=True
+            )
         }
+        # sort the rows in date to rows by the latest mdt note
+        for some_date in date_to_rows.keys():
+            date_to_rows[some_date] = sorted(
+                date_to_rows[some_date],
+                key=lambda x: x["mdt_notes"][0].when,
+                reverse=True
+            )
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        patients = self.get_patients()
-        ctx["rows"] = self.patients_to_rows(patients)
+        ctx["date_to_rows"] = date_to_rows
+        ctx["num_consultations"] = len(patient_consultations)
         return ctx
