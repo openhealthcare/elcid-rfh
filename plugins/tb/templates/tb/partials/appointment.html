@@ -8,7 +8,7 @@
     </strong>
     {{ appointment.derived_appointment_type }}
     {# almost all status codes are checked out, so lets just assume that's the case #}
-    {% if not appointment.status_code == 'Checked Out' %}
+    {% if not appointment.status_code == 'Checked Out' and not appointment.status_code == 'Confirmed' %}
     {{ appointment.status_code }}
     {% endif %}
   </div>
