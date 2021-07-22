@@ -58,7 +58,7 @@ urlpatterns = [
         views.PrintConsultation.as_view()
     ),
     url(
-        r'^tb/mdt/(?P<site>[a-z_\-]+)/(?P<obs_type>[a-z_\-]+)/(?P<obs_status>[0-9a-z_\-]+)/$',
+        r'^tb/mdt/(?P<site>[a-z_\-]+)/$',
         views.MDTList.as_view(),
         name="tb_mdt"
     ),

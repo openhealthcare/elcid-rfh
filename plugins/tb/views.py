@@ -388,43 +388,22 @@ class MDTList(LoginRequiredMixin, TemplateView):
     BARNET = "barnet"
     RFH = "rfh"
     SITES = [RFH, BARNET]
-    POSITIVE = "positive"
-    RESULTED = "resulted"
-    STATUSES = [POSITIVE, RESULTED]
-
-    ALL_OBS = "all_obs"
-    CULTURE = "culture"
-    SMEAR = "smear"
-    PCR = "pcr"
-    REF_LAB = "ref_lab"
-
-    TB_OBSERVATIONS = {
-        ALL_OBS: [
+    ALL_OBS = [
             models.TBPCR,
             models.AFBSmear,
             models.AFBCulture,
             models.AFBRefLab,
-        ],
-        CULTURE: [models.AFBCulture],
-        SMEAR: [models.AFBSmear],
-        REF_LAB: [models.AFBRefLab],
-        PCR: [models.TBPCR],
-    }
+    ]
 
     def patients_to_rows(self, patients):
-        obs_models = self.TB_OBSERVATIONS[self.kwargs["obs_type"]]
-        obs_status = self.kwargs['obs_status']
         filter_kwargs = {
             'patient__in': patients,
             'reported_datetime__isnull': False,
+            'positive': True
         }
-        if obs_status == self.POSITIVE:
-            filter_kwargs['positive'] = True
-        else:
-            filter_kwargs['pending'] = False
 
         patient_id_to_obs = defaultdict(list)
-        for obs_model in obs_models:
+        for obs_model in self.ALL_OBS:
             qs = obs_model.objects.filter(**filter_kwargs)
             for obs in qs:
                 patient_id_to_obs[obs.patient_id].append(obs)
@@ -472,35 +451,21 @@ class MDTList(LoginRequiredMixin, TemplateView):
         return self.end_date - datetime.timedelta(21)
 
     def title(self):
-        obs_type = self.kwargs["obs_type"]
-        if obs_type == self.ALL_OBS:
-            obs_type = "tests"
-        elif obs_type == self.REF_LAB:
-            obs_type = "ref lab reports"
-        elif obs_type == self.PCR:
-            obs_type = "PCR tests"
-        else:
-            obs_type = f"{obs_type.lower()} tests"
-
-        status = self.kwargs["obs_status"]
         from_dt = self.start_date.strftime("%-d %b %Y")
-        title = f"Patients with {status} {obs_type} reported after {from_dt}"
+        title = f"Patients with positive, pcrs, cultures and ref lab reports reported after {from_dt}"
         return title.replace("  ", " ")
 
     def get_patients(self):
         filter_args = {
             "reported_datetime__gte": self.start_date,
-            "pending": False
+            "positive": True
         }
-        if self.kwargs["obs_status"] == self.POSITIVE:
-            filter_args["positive"] = True
         if self.kwargs["site"] == self.BARNET:
             filter_args["lab_number__contains"] = "K"
         else:
             filter_args["lab_number__contains"] = "L"
-        tb_obs_models = self.TB_OBSERVATIONS[self.kwargs["obs_type"]]
         patient_ids = set()
-        for tb_obs_model in tb_obs_models:
+        for tb_obs_model in self.ALL_OBS:
             patient_ids = patient_ids.union(tb_obs_model.objects.filter(
                 **filter_args
             ).values_list('patient_id', flat=True))

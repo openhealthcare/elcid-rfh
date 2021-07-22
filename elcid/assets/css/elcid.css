@@ -21,6 +21,10 @@ body {
   margin-top: 5px;
 }
 
+.content-offset-25 {
+  margin-top: 25px;
+}
+
 .bg-primary {
   background-color: #0091C9;
 }
