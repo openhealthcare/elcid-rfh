@@ -558,7 +558,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
             (i.when, "note",  i) for i in patient_consultations if i.when
         ]
 
-        timeline = sorted(obs + notes + appointments, key=lambda x: x[0], reverse=True)
+        timeline = obs + notes + appointments
+        timeline = sorted(timeline, key=lambda x: x[0], reverse=True)
 
         return {
             "episode": episode,
@@ -570,6 +571,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         patients = self.get_patients()
         ctx["rows"] = self.patients_to_rows(patients)
+        ctx["now"] = timezone.now()
         return ctx
 
 
