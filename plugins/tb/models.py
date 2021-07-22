@@ -641,12 +641,6 @@ class AbstractTBObservation(fields.Model):
     reported_datetime = fields.DateTimeField(blank=True, null=True)
     pending = fields.BooleanField()
     positive = fields.BooleanField()
-    observation = fields.ForeignKey(
-        lab.Observation,
-        on_delete=fields.CASCADE,
-        blank=True,
-        null=True,
-    )
 
     @classmethod
     def is_positive(cls, obs):
@@ -667,7 +661,6 @@ class AbstractTBObservation(fields.Model):
         new_model.test_name = obs.test.test_name
         new_model.observation_datetime = obs.observation_datetime
         new_model.reported_datetime = obs.reported_datetime
-        new_model.observation = obs
         is_positive = cls.is_positive(obs)
         is_negative = cls.is_negative(obs)
         if is_positive or is_negative:

@@ -71,15 +71,7 @@ app.config(
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list.html'))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
              .when('/tb/mdt-outstanding/',  static_template_route('/templates/tb/outstanding_mdt_list/'))
-             .when('/tb/mdt/:site/:obs_type/:obs_status/', {
-                controller: 'WelcomeCtrl',
-                controllerAs: 'welcome',
-                templateUrl: function(params){
-                    var url = "/tb/mdt/" + params.site + "/" + params.obs_type + "/" + params.obs_status
-                    // add cache bust
-                    return url + '/?cache_bust=' + Date.now();
-                },
-             })
+             .when('/tb/mdt/:site/', param_template_route('/tb/mdt/', 'site'))
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))
