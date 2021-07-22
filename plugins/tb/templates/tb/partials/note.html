@@ -12,10 +12,10 @@
     {% if note.reason_for_interaction == 'MDT meeting' and note.plan %}
     <strong>Plan:</strong>
     {{ note.plan | linebreaks }}
+    {% endif %}
     {% if note.infection_control %}
     <strong>Infection control:</strong>
-    {{ note.infection_contol | linebreaks }}
-    {% endif %}
+    {{ note.infection_control | linebreaks }}
     {% endif %}
   </div>
 </div>
