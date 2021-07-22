@@ -47,7 +47,7 @@ def populate_tests(since):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        three_days_ago = timezone.now() - datetime.timedelta(3000   )
+        three_days_ago = timezone.now() - datetime.timedelta(3)
         start = time.time()
         populate_tests(three_days_ago)
         end_populate = time.time()
