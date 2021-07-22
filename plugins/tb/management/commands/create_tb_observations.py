@@ -23,10 +23,19 @@ def populate_tests(since):
     for tb_obs_model in TB_OBSERVATIONS:
         labtests_tb_obs_qs = labtests_obs_qs.filter(
             test__test_name__in=tb_obs_model.TEST_NAMES,
-        ).filter(observation_name=tb_obs_model.OBSERVATION_NAME)
-        # delete existing
-        tb_obs_model.objects.filter(observation__in=labtests_tb_obs_qs).delete()
+        ).filter(
+            observation_name=tb_obs_model.OBSERVATION_NAME
+        ).select_related(
+            'test'
+        )
 
+        # Delete existing obs for the same test name and lab number
+        for lab_test_obs in labtests_tb_obs_qs:
+            lab_test = lab_test_obs.test
+            tb_obs_model.objects.filter(
+                lab_number=lab_test.lab_number,
+                test_name=lab_test.test_name
+            ).delete()
         new_instances = []
         for obs in labtests_tb_obs_qs:
             new_instances.append(tb_obs_model.populate_from_observation(obs))
@@ -38,7 +47,7 @@ def populate_tests(since):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        three_days_ago = timezone.now() - datetime.timedelta(3)
+        three_days_ago = timezone.now() - datetime.timedelta(3000   )
         start = time.time()
         populate_tests(three_days_ago)
         end_populate = time.time()
