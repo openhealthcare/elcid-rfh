@@ -571,7 +571,6 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         patients = self.get_patients()
         ctx["rows"] = self.patients_to_rows(patients)
-        ctx["now"] = timezone.now()
         return ctx
 
 
