@@ -574,16 +574,16 @@ class MDTList(LoginRequiredMixin, TemplateView):
             (i.reported_datetime, 'obs', i) for i in self.filter_obs(obs)
         ]
 
-        # Only include TB appointmments
-        appointments = [
-            i for i in patient.appointments.all()
-            if i.derived_appointment_type in constants.TB_APPOINTMENT_CODES and i.start_datetime
-        ]
-
-        # Only show the first appointment or future appointments
-        appointments = [
-            i for i in appointments if i.derived_appointment_type == "Thoracic TB New" or i.start_datetime > timezone.now()
-        ]
+        # Only show the first TB released appointment and all
+        # future TB released appointments
+        appointments = []
+        for appointment in patient.appointments.all():
+            appt_type = appointment.derived_appointment_type
+            if appt_type in constants.MDT_NEW_APPOINTMENT_CODES:
+                appointments.append(appointment)
+            elif appt_type in constants.MDT_APPOINTMENT_CODES:
+                if appointment.start_datetime > timezone.now():
+                    appointments.append(appointment)
 
         appointments = [
             (i.start_datetime, "appointment", i,) for i in appointments
