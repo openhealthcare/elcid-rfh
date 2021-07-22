@@ -539,8 +539,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
             (i.reported_datetime, 'obs', i) for i in self.filter_obs(obs)
         ]
 
-        # Only show the first TB released appointment and all
-        # future TB released appointments
+        # Only show the first TB related appointment and all
+        # future TB related appointments
         appointments = []
         for appointment in patient.appointments.all():
             appt_type = appointment.derived_appointment_type
