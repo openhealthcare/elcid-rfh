@@ -13,6 +13,7 @@ from plugins.tb import episode_categories, constants, logger, models
 Q_TB_APPOINTMENTS = """
 SELECT DISTINCT vPatient_Number FROM VIEW_ElCid_CRS_OUTPATIENTS
 WHERE Derived_Appointment_Type = @appointment_type
+AND insert_date > @since
 """
 
 Q_TB_APPOINTMENTS_SINCE = """
@@ -75,9 +76,13 @@ def create_tb_episodes_for_appointments():
     """
     api = ProdAPI()
     results = set()
+    since = timezone.now() - datetime.timedelta(3)
     for appointment in constants.TB_APPOINTMENT_CODES:
         results_for_type = api.execute_hospital_query(
-            Q_TB_APPOINTMENTS, params={'appointment_type': appointment}
+            Q_TB_APPOINTMENTS, params={
+                'appointment_type': appointment,
+                'since': since
+            }
         )
         results.update(i["vPatient_Number"] for i in results_for_type)
 
