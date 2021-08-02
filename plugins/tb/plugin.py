@@ -40,23 +40,3 @@ class TbPlugin(plugins.OpalPlugin):
     apis = [
         ('tb_test_summary', api.TbTestSummary,),
     ]
-
-    @classmethod
-    def get_menu_items(self, user):
-        if not user or not user.is_authenticated:
-            return []
-
-        if not UserProfile.objects.filter(
-            user=user,
-            roles__name=tb_constants.TB_ROLE
-        ).exists:
-            return []
-
-        return [
-            menus.MenuItem(
-                href='/#/tb/clinic-list',
-                display='TB',
-                icon='fa fa-columns',
-                activepattern='/#/tb/clinic-list'
-            )
-        ]

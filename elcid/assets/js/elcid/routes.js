@@ -68,10 +68,11 @@ app.config(
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
 
-             .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list.html'))
-             .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
-             .when('/tb/mdt-outstanding/',  static_template_route('/templates/tb/outstanding_mdt_list/'))
-             .when('/tb/mdt/:site/', param_template_route('/tb/mdt/', 'site'))
+             .when('/tb/clinic-list/',       static_template_route('/templates/tb/clinic_list.html'))
+             .when('/tb/last-30-days/',      static_template_route('/templates/tb/last_30_days.html'))
+             .when('/tb/mdt-outstanding/',   static_template_route('/templates/tb/outstanding_mdt_list/'))
+             .when('/tb/mdt/:site/',         param_template_route('/tb/mdt/', 'site'))
+
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))
@@ -94,6 +95,8 @@ app.config(
              .when('/ipc/siderooms/',               static_template_route('/templates/ipc/siderooms.html'))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
 
+             .when('/rnoh/inpatients/',             static_template_route('/templates/rnoh/inpatients.html'))
+             .when('/rnoh/numbers/',                static_template_route('/templates/rnoh/numbers.html'))
 
              .when('/patient-information-load-stats/', static_template_route(
                  '/templates/monitoring/patient_information_load_stats.html'))

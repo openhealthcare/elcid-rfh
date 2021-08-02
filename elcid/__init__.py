@@ -3,13 +3,15 @@ elCID Royal Free Hospital implementation
 """
 
 from opal.core import application
-from opal.core import menus
+from opal.core.menus import MenuItem
+
 from plugins.tb import constants as tb_constants
-from plugins.ipc.constants import IPC_ROLE
+
 from elcid import episode_categories
+from elcid.menus import ServicesMenuItem
 
 
-class StandardAddPatientMenuItem(menus.MenuItem):
+class StandardAddPatientMenuItem(MenuItem):
     def for_user(self, user):
         if not user:
             return False
@@ -97,7 +99,7 @@ class Application(application.OpalApplication):
 
         if user.is_superuser:
             menu_items.append(
-                menus.MenuItem(
+                MenuItem(
                     href='/#/beta/',
                     display='Beta',
                     icon='fa fa-bath',
@@ -108,14 +110,8 @@ class Application(application.OpalApplication):
         from opal.models import UserProfile
         profile = UserProfile.objects.get(user=user)
 
-        if profile.roles.filter(name=IPC_ROLE).exists():
-            menu_items.append(
-                menus.MenuItem(
-                    href='/#/ipc/',
-                    display='IPC',
-                    icon='fa fa-warning',
-                    activepattern='ipc'
-                )
-            )
+
+        menu_items.append(ServicesMenuItem(user=user))
+
 
         return menu_items
