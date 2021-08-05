@@ -1,0 +1,16 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3><i class="fa fa-crosshairs"></i> TB Tests</h3>
+  </div>
+  <div patient-api target='tb_tests' endpoint='tb_tests' class="panel-body">
+    <div class="content-offset-below-10" ng-if="tb_tests.cultures.length">
+      <strong>Cultures</strong>
+    </div>
+    <div ng-repeat="culture in tb_tests.cultures">
+      <div ng-repeat="culture_line in culture">
+        [[ culture_line ]]
+      </div>
+      <hr class="content-offset-10 content-offset-below-10" ng-show="!$last">
+    </div>
+  </div>
+</div>
