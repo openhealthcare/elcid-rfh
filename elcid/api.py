@@ -355,7 +355,6 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
             ticker_test_counts = defaultdict(int)
 
             for test_name in self.ANTIFUNGAL_TESTS:
-                data = []
                 tests = lab_test_models.LabTest.objects.filter(
                     test_name=test_name, patient=patient
                 ).order_by('-datetime_ordered')
