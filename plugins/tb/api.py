@@ -181,6 +181,14 @@ class TbTests(LoginRequiredViewset):
 
 
 class TBAppointments(LoginRequiredViewset):
+    """
+    Returns the next planned appointment.
+    Returns all appointments for the same day (
+    usually only 1, but multiple has happened
+    )
+    Returns the last appointment that they atteneded and
+    all appointments between then and now that were cancelled or No shows
+    """
     base_name = "tb_appointments"
 
     @patient_from_pk
