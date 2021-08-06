@@ -341,7 +341,7 @@ class ClinicList(AbstractTBAppointmentList):
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
         until = today + datetime.timedelta(30)
-        appointment_types = constants.TB_APPOINTMENT_CODES
+        appointment_types = constants.RFH_TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
@@ -363,7 +363,7 @@ class Last30Days(AbstractTBAppointmentList):
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
         until = today - datetime.timedelta(30)
-        appointment_types = constants.TB_APPOINTMENT_CODES
+        appointment_types = constants.RFH_TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
@@ -544,9 +544,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
         appointments = []
         for appointment in patient.appointments.all():
             appt_type = appointment.derived_appointment_type
-            if appt_type in constants.MDT_NEW_APPOINTMENT_CODES:
+            if appt_type in constants.TB_NEW_APPOINTMENT_CODES:
                 appointments.append(appointment)
-            elif appt_type in constants.MDT_APPOINTMENT_CODES:
+            elif appt_type in constants.TB_APPOINTMENT_CODES:
                 if appointment.start_datetime > timezone.now():
                     appointments.append(appointment)
 

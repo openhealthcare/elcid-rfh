@@ -1,12 +1,14 @@
 """
 Specific API endpoints for the TB module
 """
+import datetime
 from collections import defaultdict
 from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from plugins.tb.utils import get_tb_summary_information
 from plugins.tb import models
-from plugins.labtests import models as lab_models
+from plugins.tb import constants
+from plugins.appointments import models as appointment_models
 
 
 class TbTestSummary(LoginRequiredViewset):
@@ -121,3 +123,42 @@ class TbTests(LoginRequiredViewset):
             })
 
         return json_response({'cultures': cultures_result[:5], 'pcrs': pcr_result[:5]})
+
+
+class TBAppointments(LoginRequiredViewset):
+    base_name = "tb_appointments"
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        appointment_fields = [
+            "start_datetime",
+            "status_code",
+            "derived_appointment_type",
+            "derived_clinic_resource"
+        ]
+        appointments = appointment_models.Appointment.objects.filter(
+            patient=patient
+        ).filter(
+            derived_appointment_type__in=constants.TB_APPOINTMENT_CODES
+        )
+        todays_appointments = list(appointments.filter(
+            start_datetime__date=datetime.date.today()
+        ).values(*appointment_fields))
+        next_appointment = appointments.filter(
+            start_datetime__date__gt=datetime.date.today(),
+        ).exclude(
+            status_code__in=["Rescheduled", "Canceled"]
+        ).values(*appointment_fields).order_by('start_datetime').first()
+        last_appointments_qs = appointments.filter(
+            start_datetime__date__lt=datetime.date.today()
+        ).values(*appointment_fields).order_by('-start_datetime')
+        last_appointments = []
+        for appointment in last_appointments_qs:
+            last_appointments.append(appointment)
+            if appointment["status_code"] in ['Checked In', 'Checked Out']:
+                break
+        return json_response({
+            "todays_appointments": todays_appointments,
+            "next_appointment": next_appointment,
+            "last_appointments": last_appointments,
+        })

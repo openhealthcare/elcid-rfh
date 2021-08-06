@@ -524,4 +524,9 @@ div.add-isolate:hover {
 .modal-footer.externally-sourced {
   margin-top: 0;
 }
+
+.tb-appointment-date {
+  display: inline-block;
+  width: 80px;
+}
 /*# sourceMappingURL=elcid.css.map */
