@@ -126,9 +126,12 @@ directives.directive('fixedHeader', function(){
   return {
     restrict: 'A',
     link: function(scope, $elm, attrs) {
+      var panelHeader = $(".panel-heading.patient-detail-heading");
       var adjustHeights = function(){
-        var panelHeader = $(".panel-heading.patient-detail-heading");
+        // adjust when the panel body starts
         var panelHeaderHeight = panelHeader.height();
+
+        // the nav bar collapses at small sizes, accomdate for this.
         var navBar = $("#main-navbar:visible");
         var navBarHeight = 0;
         if(navBar.length){
@@ -139,10 +142,29 @@ directives.directive('fixedHeader', function(){
           navBarHeight = $($(".navbar-header")[0]).height();
           panelHeader.css('top', navBarHeight);
         }
-        var modifier = panelHeaderHeight + navBarHeight;
-        $elm.css('margin-top', modifier );
+        var modifier = panelHeaderHeight + navBarHeight - 30;
+        $elm.css('margin-top', modifier);
+
+        // when we're not at the top of the scoll bar
+        if(document.documentElement.scrollTop){
+          panelHeader.addClass('shrunken');
+        }
+        else{
+          panelHeader.removeClass('shrunken');
+        }
       }
+      var shrinkHeader = function(){
+        // when we're not at the top of the scoll bar
+        if(document.documentElement.scrollTop){
+          panelHeader.addClass('shrunken');
+        }
+        else{
+          panelHeader.removeClass('shrunken');
+        }
+      }
+
       setTimeout(adjustHeights, 0);
+      $(window).scroll(shrinkHeader);
       $(window).resize(adjustHeights);
     }
   }
