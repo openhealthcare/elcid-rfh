@@ -6,6 +6,7 @@ from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from plugins.tb.utils import get_tb_summary_information
 from plugins.tb import models
+from plugins.labtests import models as lab_models
 
 
 class TbTestSummary(LoginRequiredViewset):
@@ -45,9 +46,15 @@ class TbTests(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
-        smears = list(models.AFBSmear.objects.filter(patient=patient))
-        cultures = list(models.AFBCulture.objects.filter(patient=patient))
-        ref_labs = list(models.AFBRefLab.objects.filter(patient=patient))
+        smears = list(models.AFBSmear.objects.filter(
+            patient=patient, pending=False
+        ))
+        cultures = list(models.AFBCulture.objects.filter(
+            patient=patient, pending=False
+        ))
+        ref_labs = list(models.AFBRefLab.objects.filter(
+            patient=patient, pending=False
+        ))
         culture_tests = smears + cultures + ref_labs
         cultures_by_lab_number = defaultdict(list)
         for culture_test in culture_tests:
@@ -70,8 +77,30 @@ class TbTests(LoginRequiredViewset):
                 f"{lab_number} {obs_dt} {site}"
             )
             for culture in cultures:
+                # Don't show pending cultures/ref lab reports
+                if not isinstance(culture, models.AFBSmear):
+                    if culture.pending:
+                        continue
                 culture_lines.append(
                     f"{culture.OBSERVATION_NAME} {culture.display_value()}"
                 )
             cultures_result.append(culture_lines)
-        return json_response({'cultures': cultures_result})
+
+        pcrs = models.TBPCR.objects.filter(patient=patient)
+        pcrs = pcrs.order_by('-observation_datetime')
+
+        pcr_result = []
+        for pcr in pcrs:
+            pcr_lines = []
+            lab_number = pcr.lab_number
+            obs_dt = pcr.observation_datetime.strftime('%d/%m/%Y %H:%M')
+            site = pcr.site
+            pcr_lines.append(
+                f"{lab_number} {obs_dt} {site}"
+            )
+            pcr_lines.append(
+                pcr.display_value()
+            )
+            pcr_result.append(pcr_lines)
+
+        return json_response({'cultures': cultures_result[:5], 'pcrs': pcr_result[:5]})
