@@ -76,17 +76,31 @@ class TbTests(LoginRequiredViewset):
             culture_lines.append(
                 f"{lab_number} {obs_dt} {site}"
             )
+            positive = False
             for culture in cultures:
                 # Don't show pending cultures/ref lab reports
                 if not isinstance(culture, models.AFBSmear):
                     if culture.pending:
                         continue
+                if culture.positive:
+                    positive = True
+                display_value = culture.display_value()
+                if isinstance(culture, models.AFBCulture):
+                    if any([i for i in ref_labs if i.lab_number == culture.lab_number]):
+                        # cultures when sent to the ref lab have this as a suffix
+                        # if we already have the ref lab report, strip it.
+                        display_value = display_value.rstrip(
+                            "Sent to Ref Lab for confirmation."
+                        )
                 culture_lines.append(
-                    f"{culture.OBSERVATION_NAME} {culture.display_value()}"
+                    f"{culture.OBSERVATION_NAME} {display_value}"
                 )
-            cultures_result.append(culture_lines)
+            cultures_result.append({
+                "text": culture_lines,
+                "positive": positive
+            })
 
-        pcrs = models.TBPCR.objects.filter(patient=patient)
+        pcrs = models.TBPCR.objects.filter(patient=patient, pending=False)
         pcrs = pcrs.order_by('-observation_datetime')
 
         pcr_result = []
@@ -101,6 +115,9 @@ class TbTests(LoginRequiredViewset):
             pcr_lines.append(
                 pcr.display_value()
             )
-            pcr_result.append(pcr_lines)
+            pcr_result.append({
+                "text": pcr_lines,
+                "positive": pcr.positive
+            })
 
         return json_response({'cultures': cultures_result[:5], 'pcrs': pcr_result[:5]})
