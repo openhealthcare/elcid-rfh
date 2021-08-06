@@ -122,6 +122,32 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
   };
 });
 
+directives.directive('fixedHeader', function(){
+  return {
+    restrict: 'A',
+    link: function(scope, $elm, attrs) {
+      var adjustHeights = function(){
+        var panelHeader = $(".panel-heading.patient-detail-heading");
+        var panelHeaderHeight = panelHeader.height();
+        var navBar = $("#main-navbar:visible");
+        var navBarHeight = 0;
+        if(navBar.length){
+          navBarHeight = navBar.height();
+          panelHeader.css('top', navBarHeight);
+        }
+        else{
+          navBarHeight = $($(".navbar-header")[0]).height();
+          panelHeader.css('top', navBarHeight);
+        }
+        var modifier = panelHeaderHeight + navBarHeight;
+        $elm.css('margin-top', modifier );
+      }
+      setTimeout(adjustHeights, 0);
+      $(window).resize(adjustHeights);
+    }
+  }
+});
+
 
 
 directives.directive('printPage', function () {

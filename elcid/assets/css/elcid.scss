@@ -558,3 +558,10 @@ div.add-isolate:hover{
 .modal-footer.externally-sourced{
   margin-top: 0;
 }
+
+
+.panel-heading.patient-detail-heading{
+   position: fixed;
+   width: 100%;
+   z-index: 10;
+}
