@@ -9,6 +9,7 @@ from plugins.tb.utils import get_tb_summary_information
 from plugins.tb import models
 from plugins.tb import constants
 from plugins.appointments import models as appointment_models
+from plugins.labtests import models as lab_models
 
 
 class TbTestSummary(LoginRequiredViewset):
@@ -122,7 +123,61 @@ class TbTests(LoginRequiredViewset):
                 "positive": pcr.positive
             })
 
-        return json_response({'cultures': cultures_result[:5], 'pcrs': pcr_result[:5]})
+        igra_obs = lab_models.Observation.objects.filter(
+            test__patient=patient,
+            test__test_name='QUANTIFERON TB GOLD IT',
+            observation_name='QFT TB interpretation'
+        ).exclude(
+            observation_value__iexact='pending'
+        )
+        igra_lts = lab_models.LabTest.objects.filter(
+            observation__in=igra_obs
+        ).prefetch_related('observation_set')
+        igra = []
+        for igra_lt in igra_lts:
+            igra_lines = []
+            obs = igra_lt.observation_set.all()
+            interpretation = [
+                o for o in obs if o.observation_name == 'QFT TB interpretation'
+            ]
+            if not interpretation:
+                # there is always an interpretation unless the sample is messed up
+                continue
+
+            interpretation = interpretation[0]
+            lab_number = igra_lt.lab_number
+            obs_dt = interpretation.observation_datetime.strftime('%d/%m/%Y %H:%M')
+            site = igra_lt.site_code
+            igra_lines.append(
+                f"{lab_number} {obs_dt} {site}"
+            )
+            igra_lines.append(
+                f"Interpretation {interpretation.observation_value}"
+            )
+            for obs_name in ["QFT IFN gamma result (TB1)", "QFT IFN gamme result (TB2)"]:
+                gamma_result = [
+                    o for o in obs if o.observation_name == obs_name
+                ]
+                if gamma_result:
+                    igra_lines.append(
+                        f"{obs_name} {gamma_result[0].observation_value.replace('~', '')}"
+                    )
+            positive = False
+            if 'positive' in interpretation.observation_value.lower():
+                positive = True
+
+            igra.append({
+                "text": igra_lines,
+                "positive": positive,
+                "obs_dt": interpretation.observation_datetime
+            })
+        igra = sorted(igra, key=lambda x: x["obs_dt"], reverse=True)
+
+        return json_response({
+            'cultures': cultures_result[:5],
+            'pcrs': pcr_result[:5],
+            'igra': igra[:5]
+        })
 
 
 class TBAppointments(LoginRequiredViewset):

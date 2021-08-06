@@ -1,7 +1,7 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3><i class="fa fa-crosshairs"></i>
-      Cultures & PCRs
+      Cultures, PCRs & IGRA
       <small>(last 5 resulted)</small>
     </h3>
   </div>
@@ -21,6 +21,15 @@
     <div ng-repeat="pcr in tb_tests.pcrs">
       <div ng-class="{'text-muted': !pcr.positive}" ng-repeat="pcr_line in pcr.text">
         [[ pcr_line ]]
+      </div>
+      <hr class="content-offset-10 content-offset-below-10" ng-show="!$last">
+    </div>
+    <div class="content-offset-below-10 content-offset-20" ng-if="tb_tests.igra.length">
+      <strong>IGRA</strong>
+    </div>
+    <div ng-repeat="igra in tb_tests.igra">
+      <div ng-class="{'text-muted': !igra.positive}" ng-repeat="igra_line in igra.text">
+        [[ igra_line ]]
       </div>
       <hr class="content-offset-10 content-offset-below-10" ng-show="!$last">
     </div>
