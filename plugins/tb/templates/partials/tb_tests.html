@@ -1,10 +1,13 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3><i class="fa fa-crosshairs"></i> TB Tests</h3>
+    <h3><i class="fa fa-crosshairs"></i>
+      Cultures & PCRs
+      <small>(last 5 resulted)</small>
+    </h3>
   </div>
   <div patient-api target='tb_tests' endpoint='tb_tests' class="panel-footer">
     <div class="content-offset-below-10" ng-if="tb_tests.cultures.length">
-      <strong>Cultures  (last 5 resulted samples)</strong>
+      <strong>Cultures</strong>
     </div>
     <div  ng-repeat="culture in tb_tests.cultures">
       <div ng-class="{'text-muted': !culture.positive}" ng-repeat="culture_line in culture.text">
@@ -13,7 +16,7 @@
       <hr class="content-offset-10 content-offset-below-10" ng-show="!$last">
     </div>
     <div class="content-offset-below-10 content-offset-20" ng-if="tb_tests.pcrs.length">
-      <strong>PCRs (last 5 resulted samples)</strong>
+      <strong>PCRs</strong>
     </div>
     <div ng-repeat="pcr in tb_tests.pcrs">
       <div ng-class="{'text-muted': !pcr.positive}" ng-repeat="pcr_line in pcr.text">
