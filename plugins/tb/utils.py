@@ -5,8 +5,6 @@ from collections import OrderedDict, defaultdict
 
 
 RELEVANT_TESTS = OrderedDict((
-    ("AFB : CULTURE", ["TB: Culture Result"]),
-    ("TB PCR TEST", ["TB PCR"]),
     ("C REACTIVE PROTEIN", ["C Reactive Protein"]),
     ("LIVER PROFILE", ["ALT", "AST", "Total Bilirubin"]),
     ("QUANTIFERON TB GOLD IT", [
