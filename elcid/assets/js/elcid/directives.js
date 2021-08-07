@@ -154,8 +154,8 @@ directives.directive('fixedHeader', function(){
         }
       }
       var shrinkHeader = function(){
-        // when we're not at the top of the scoll bar
-        if(document.documentElement.scrollTop){
+        // when we're slightly down the page add the class
+        if(document.documentElement.scrollTop> 100){
           panelHeader.addClass('shrunken');
         }
         else{
