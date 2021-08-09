@@ -448,7 +448,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(21)
+        return self.end_date - datetime.timedelta(7)
 
     def title(self):
         from_dt = self.start_date.strftime("%-d %b %Y")
