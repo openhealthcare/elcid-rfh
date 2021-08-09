@@ -76,9 +76,6 @@ class TbTests(LoginRequiredViewset):
             lab_number = cultures[0].lab_number
             obs_dt = cultures[0].observation_datetime.strftime('%d/%m/%Y %H:%M')
             site = cultures[0].site
-            culture_lines.append(
-                f"{lab_number} {obs_dt} {site}"
-            )
             positive = False
             for culture in cultures:
                 # Don't show pending cultures/ref lab reports
@@ -98,6 +95,7 @@ class TbTests(LoginRequiredViewset):
                 culture_lines.append(
                     f"{culture.OBSERVATION_NAME} {display_value}"
                 )
+            culture_lines[0] = " ".join([f"{lab_number} {obs_dt} {site}", culture_lines[0]])
             cultures_result.append({
                 "text": culture_lines,
                 "positive": positive
@@ -154,14 +152,17 @@ class TbTests(LoginRequiredViewset):
             igra_lines.append(
                 f"Interpretation {interpretation.observation_value}"
             )
+            gammas = []
             for obs_name in ["QFT IFN gamma result (TB1)", "QFT IFN gamme result (TB2)"]:
                 gamma_result = [
                     o for o in obs if o.observation_name == obs_name
                 ]
                 if gamma_result:
-                    igra_lines.append(
+                    gammas.append(
                         f"{obs_name} {gamma_result[0].observation_value.replace('~', '')}"
                     )
+            if gammas:
+                igra_lines.append(" ".join(gammas))
             positive = False
             if 'positive' in interpretation.observation_value.lower():
                 positive = True

@@ -1,11 +1,44 @@
 {% load panels %}
 {% load forms %}
+
 <div class="row">
   <div class="col-md-6">
-    {% include "panels/external_links.html" %}
-    {% include "partials/tb_appointments.html" %}
+    <div class="panel panel-default ">
+      <div class="panel-heading">
+      <h3>
+        <i class="fa fa-file-image-o"></i> Imaging
+        <a target="upstream_imaging" class="orange-link pull-right" href="http://freenet/carestream/?pid=[[ episode.demographics[0].hospital_number ]]">
+        PACS
+        <i class="fa fa-external-link" aria-hidden="true"></i>
+        </a>
+      </h3>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          {% icon "fa-book" %} Documents
+          <a target="upstream_documents" class="orange-link pull-right" href="http://rfh-edrm-live:18080/horus/api/visual/record/[[ episode.demographics[0].hospital_number ]]">
+          EDRM <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+        </h3>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
     {% include "partials/tb_tests.html" %}
+  </div>
+  <div class="col-md-6">
+    {% include "partials/tb_appointments.html" %}
     {% include "partials/tb_summary_tests.html" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
     {% include "panels/symptoms.html" %}
 
     {% include 'panels/primary_diagnosis.html' %}
