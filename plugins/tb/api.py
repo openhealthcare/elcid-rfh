@@ -184,9 +184,9 @@ class TbTests(LoginRequiredViewset):
             interpretation = interpretation[0]
             lab_number = igra_lt.lab_number
             obs_dt = interpretation.observation_datetime.strftime('%d/%m/%Y %H:%M')
-            site = igra_lt.site_code
+            site = igra_lt.site_code or ""
             igra_lines.append(
-                f"{lab_number} {obs_dt} {site}"
+                f"{lab_number} {obs_dt} {site}".strip()
             )
             igra_lines.append(
                 f"Interpretation {interpretation.observation_value}"
