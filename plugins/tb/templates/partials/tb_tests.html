@@ -4,7 +4,7 @@
       Cultures, PCRs & IGRA
     </h3>
   </div>
-  <div patient-api target='tb_tests' endpoint='tb_tests' class="panel-footer">
+  <div ng-show="tb_tests.culture_count || tb_tests.pcr_count || tb_tests.igra_count" patient-api target='tb_tests' endpoint='tb_tests' class="panel-footer">
     <div ng-class="{'content-offset-below-20': tb_tests.igra.length || tb_tests.pcrs.length}" ng-if="tb_tests.cultures.length">
       <div class="row">
         <div class="col-md-6">
