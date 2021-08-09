@@ -1,7 +1,12 @@
 angular.module('opal.controllers').controller('ResultView', function(
-    $scope, LabTestResults, ngProgressLite
+    $scope, LabTestResults, ngProgressLite, $routeParams
 ){
     "use strict";
+    /*
+    * This view is the patient detail lab tests result view.
+    * It allows filtering of test names via a filter string
+    * This is taken from the url 'test_name' GET param if it exists.
+    */
     var vm = this;
 
     this.labTests = [];
@@ -9,6 +14,9 @@ angular.module('opal.controllers').controller('ResultView', function(
 
     this.parseFloat = parseFloat;
     this.Math = window.Math;
+    if($routeParams.test_name){
+        this.filterString = $routeParams.test_name;
+    }
 
     this.splitObservation = function(observation){
         if(observation){
