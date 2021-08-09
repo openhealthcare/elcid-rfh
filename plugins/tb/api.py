@@ -1,6 +1,7 @@
 """
 Specific API endpoints for the TB module
 """
+import re
 import datetime
 from collections import defaultdict
 from opal.core.views import json_response
@@ -77,25 +78,56 @@ class TbTests(LoginRequiredViewset):
             obs_dt = cultures[0].observation_datetime.strftime('%d/%m/%Y %H:%M')
             site = cultures[0].site
             positive = False
-            for culture in cultures:
-                # Don't show pending cultures/ref lab reports
-                if not isinstance(culture, models.AFBSmear):
-                    if culture.pending:
-                        continue
-                if culture.positive:
-                    positive = True
-                display_value = culture.display_value()
-                if isinstance(culture, models.AFBCulture):
-                    if any([i for i in ref_labs if i.lab_number == culture.lab_number]):
-                        # cultures when sent to the ref lab have this as a suffix
-                        # if we already have the ref lab report, strip it.
-                        display_value = display_value.rstrip(
-                            "Sent to Ref Lab for confirmation."
+
+            if len(cultures) == 1 and not cultures[0].display_value().startswith("1)"):
+                display_value = cultures[0].display_value()
+                culture_lines = [f"{lab_number} {obs_dt} {site} {display_value}"]
+                positive = cultures[0].positive
+            else:
+                for culture in cultures:
+                    # Don't show pending cultures/ref lab reports
+                    if not isinstance(culture, models.AFBSmear):
+                        if culture.pending:
+                            continue
+                    if culture.positive:
+                        positive = True
+                    display_value = culture.display_value()
+                    if isinstance(culture, models.AFBCulture):
+                        if any([i for i in ref_labs if i.lab_number == culture.lab_number]):
+                            # If there is a reference lab report, strip of the bit of
+                            # the culture result that says we are sending to the ref lab
+                            # as this is a given.
+                            to_strip = [
+                                "Sent to Ref Lab for confirmation.$",
+                                "Isolate sent to Reference laboratory$"
+                            ]
+                            for some_str in to_strip:
+                                display_value = re.sub(
+                                    some_str,
+                                    "",
+                                    display_value,
+                                    flags=re.IGNORECASE
+                                )
+                    if display_value.startswith("1)"):
+                        display = [culture.OBSERVATION_NAME]
+                        for row in display_value.split("\n"):
+                            if not len(row.strip()):
+                                continue
+                            if len(row) > 2 and row[0].isnumeric() and row[1] == ")":
+                                display.append(row)
+                            elif row.endswith(" S") or row.endswith(" I") or row.endswith(" R"):
+                                display.append(row)
+                            elif len(row) > 3 and row[-2].isnumeric() and row[-1] == ")":
+                                display[-1] = f"{display[-1]} {row[:-2]}"
+                                display.append(row[-2:])
+                            else:
+                                display[-1] = f"{display[-1]} {row}"
+                        culture_lines.extend(display)
+                    else:
+                        culture_lines.append(
+                            f"{culture.OBSERVATION_NAME} {display_value}"
                         )
-                culture_lines.append(
-                    f"{culture.OBSERVATION_NAME} {display_value}"
-                )
-            culture_lines[0] = " ".join([f"{lab_number} {obs_dt} {site}", culture_lines[0]])
+                culture_lines.insert(0, f"{lab_number} {obs_dt} {site}")
             cultures_result.append({
                 "text": culture_lines,
                 "positive": positive
@@ -110,12 +142,18 @@ class TbTests(LoginRequiredViewset):
             lab_number = pcr.lab_number
             obs_dt = pcr.observation_datetime.strftime('%d/%m/%Y %H:%M')
             site = pcr.site
-            pcr_lines.append(
-                f"{lab_number} {obs_dt} {site}"
-            )
-            pcr_lines.append(
-                pcr.display_value()
-            )
+            display_value = pcr.display_value()
+            if display_value == "NOT detected.":
+                pcr_lines.append(
+                    f"{lab_number} {obs_dt} {site} {display_value}"
+                )
+            else:
+                pcr_lines.append(
+                    f"{lab_number} {obs_dt} {site}"
+                )
+                pcr_lines.append(
+                    pcr.display_value()
+                )
             pcr_result.append({
                 "text": pcr_lines,
                 "positive": pcr.positive
