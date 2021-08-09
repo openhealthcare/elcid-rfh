@@ -99,7 +99,8 @@ class TbTests(LoginRequiredViewset):
                             # as this is a given.
                             to_strip = [
                                 "Sent to Ref Lab for confirmation.$",
-                                "Isolate sent to Reference laboratory$"
+                                "Isolate sent to Reference laboratory$",
+                                "Isolate sent to Reference  laboratory$"
                             ]
                             for some_str in to_strip:
                                 display_value = re.sub(
