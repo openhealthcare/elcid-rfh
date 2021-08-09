@@ -443,7 +443,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         today = datetime.date.today()
         for i in range(7):
             some_date = today + datetime.timedelta(i)
-            if some_date.isoweekday() == 2:
+            if some_date.isoweekday() == 3:
                 return some_date
 
     @property
