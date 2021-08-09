@@ -13,7 +13,8 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import PatientConsultation, TBPCR, Treatment
+from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -49,6 +50,69 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
             result["observation_datetime"] = deserialize_datetime(
                 result["observation_datetime"]
             )
+        last_qf_obs = lab_models.Observation.objects.filter(
+            test__patient=patient,
+            test__test_name='QUANTIFERON TB GOLD IT',
+            observation_name='QFT TB interpretation'
+        ).exclude(
+            observation_value__iexact='pending'
+        ).order_by('-observation_datetime').first()
+        ctx["igra"] = []
+        if last_qf_obs:
+            last_qf_test = last_qf_obs.test
+            ctx["igra"] = [
+                last_qf_test.observation_set.filter(
+                    observation_name='QFT TB interpretation'
+                ).first(),
+                last_qf_test.observation_set.filter(
+                    observation_name='QFT IFN gamma result (TB1)'
+                ).first(),
+                last_qf_test.observation_set.filter(
+                    observation_name='QFT IFN gamma result (TB2)'
+                ).first()
+            ]
+            ctx["igra"] = [i for i in ctx["igra"] if i]
+
+        # Show the last positive culture and PCR and the last recent resulted if later
+        # than the last positive
+        pcr_qs = TBPCR.objects.filter(patient=self.object.episode.patient)
+        last_positive_pcr = pcr_qs.filter(
+            positive=True
+        ).filter(
+            patient=self.object.episode.patient
+        ).order_by(
+            '-observation_datetime'
+        ).first()
+        if last_positive_pcr:
+            last_resulted = pcr_qs.filter(pending=False).filter(
+                observation_datetime__date__gt=last_positive_pcr.observation_datetime.date()
+            ).order_by(
+                '-observation_datetime'
+            ).first()
+        else:
+            last_resulted = pcr_qs.filter(pending=False).order_by(
+                '-observation_datetime'
+            ).first()
+        ctx["pcrs"] = [i for i in [last_positive_pcr, last_resulted] if i]
+        ctx["pcrs"].reverse()
+
+        afb_qs = AFBRefLab.objects.filter(patient=self.object.episode.patient)
+        last_positive_culture = afb_qs.filter(positive=True).order_by(
+            '-observation_datetime'
+        ).first()
+        if last_positive_culture:
+            last_resulted = afb_qs.filter(pending=False).filter(
+                observation_datetime__date__gt=last_positive_culture.observation_datetime.date()
+            ).order_by(
+                '-observation_datetime'
+            ).first()
+        else:
+            last_resulted = afb_qs.filter(pending=False).order_by(
+                '-observation_datetime'
+            ).first()
+        ctx["cultures"] = [i for i in [last_positive_culture, last_resulted] if i]
+        ctx["cultures"].reverse()
+
         ctx["travel_list"] = episode.travel_set.all()
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()

@@ -1,6 +1,24 @@
 {% if results or other_investigation_list %}
 <p>
   <b>Key investigations: </b><br />
+  {% for obs in cultures %}
+    {{ obs.observation_datetime | date:'d M Y' }}
+    {{ obs.OBSERVATION_NAME }}:&nbsp;
+    {{ obs.display_value }}
+    <br>
+  {% endfor %}
+  {% for obs in pcrs %}
+    {{ obs.observation_datetime | date:'d M Y' }}
+    {{ obs.OBSERVATION_NAME }}:&nbsp;
+    {{ obs.display_value }}
+    <br>
+  {% endfor %}
+  {% for obs in igra %}
+    {{ obs.observation_datetime | date:'d M Y' }}
+    {{ obs.observation_name }}:&nbsp;
+    {{ obs.observation_value }}
+    <br>
+  {% endfor %}
   {% for obs_name, summary in results.items %}
     {{ summary.observation_datetime.date | date:'d M Y' }}
     &nbsp;
@@ -14,5 +32,6 @@
     {{ other_investigation.details }}
     <br />
   {% endfor %}
+
 </p>
 {% endif %}
