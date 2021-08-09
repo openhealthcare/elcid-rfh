@@ -6,7 +6,17 @@
   </div>
   <div patient-api target='tb_tests' endpoint='tb_tests' class="panel-footer">
     <div ng-class="{'content-offset-below-20': tb_tests.igra.length || tb_tests.pcrs.length}" ng-if="tb_tests.cultures.length">
-      <strong>Cultures</strong><br>
+      <div class="row">
+        <div class="col-md-6">
+          <strong>Cultures</strong>
+        </div>
+        <div class="col-md-6 text-right">
+          <span ng-show="tb_tests.culture_count > 5">5</span>
+          <span ng-hide="tb_tests.culture_count > 5">[[ tb_tests.culture_count ]]</span>
+          of [[ tb_tests.culture_count ]]
+          <a class="orange-link" href="/#/patient/[[ tb_tests.patient_id ]]/test_results?test_name=AFB">See all information</a>
+        </div>
+      </div>
       <div ng-class="{'content-offset-below-10': !$last}" ng-repeat="culture in tb_tests.cultures">
         <div ng-class="{'text-muted': !culture.positive}" ng-repeat="culture_line in culture.text">
           [[ culture_line ]]
@@ -14,7 +24,17 @@
       </div>
     </div>
     <div ng-class="{'content-offset-below-20': tb_tests.igra.length}" ng-if="tb_tests.pcrs.length">
-      <strong>PCRs</strong><br>
+      <div class="row">
+        <div class="col-md-6">
+          <strong>PCRs</strong>
+        </div>
+        <div class="col-md-6 text-right">
+          <span ng-show="tb_tests.pcr_count > 5">5</span>
+          <span ng-hide="tb_tests.pcr_count > 5">[[ tb_tests.pcr_count ]]</span>
+          of [[ tb_tests.pcr_count ]]
+          <a class="orange-link" href="/#/patient/[[ tb_tests.patient_id ]]/test_results?test_name=TB PCR">See all information</a>
+        </div>
+      </div>
       <div ng-class="{'content-offset-below-10': !$last}" ng-repeat="pcr in tb_tests.pcrs">
         <div ng-class="{'text-muted': !pcr.positive}" ng-repeat="pcr_line in pcr.text">
           [[ pcr_line ]]
@@ -22,7 +42,17 @@
       </div>
     </div>
     <div ng-if="tb_tests.igra.length">
-      <strong>IGRA</strong>
+      <div class="row">
+        <div class="col-md-6">
+          <strong>IGRA</strong>
+        </div>
+        <div class="col-md-6 text-right">
+          <span ng-show="tb_tests.igra_count > 5">5</span>
+          <span ng-hide="tb_tests.igra_count > 5">[[ tb_tests.igra_count ]]</span>
+          of [[ tb_tests.igra_count ]]
+          <a class="orange-link" href="/#/patient/[[ tb_tests.patient_id ]]/test_results?test_name=QUANTIFERON TB GOLD IT">See all information</a>
+        </div>
+      </div>
       <div ng-class="{'content-offset-below-10': !$last}" ng-repeat="igra in tb_tests.igra">
         <div ng-class="{'text-muted': !igra.positive}" ng-repeat="igra_line in igra.text">
           [[ igra_line ]]

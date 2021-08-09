@@ -3,14 +3,6 @@
 <div class="row">
   <div class="col-md-6">
     {% include "partials/tb_tests.html" %}
-  </div>
-  <div class="col-md-6">
-    {% include "partials/tb_appointments.html" %}
-    {% include "partials/tb_summary_tests.html" %}
-  </div>
-</div>
-<div class="row">
-  <div class="col-md-6">
     {% include "panels/symptoms.html" %}
 
     {% include 'panels/primary_diagnosis.html' %}
@@ -35,7 +27,8 @@
   </div>
 
   <div class="col-md-6">
-
+    {% include "partials/tb_appointments.html" %}
+    {% include "partials/tb_summary_tests.html" %}
     <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
       <div class="panel-body">
         <div class="patient-timeline-container">
