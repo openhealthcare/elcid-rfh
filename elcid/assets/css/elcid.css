@@ -237,7 +237,8 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 }
 
 .death-banner {
-  margin-top: -15px;
+  margin-top: -95px;
+  padding-top: 80px;
   background-color: #864200;
   color: white;
   margin-bottom: 12px;
@@ -527,5 +528,22 @@ div.add-isolate:hover {
 
 .modal-footer.externally-sourced {
   margin-top: 0;
+}
+
+.panel-heading.patient-detail-heading {
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+}
+
+.patient-detail-heading h1 {
+  -webkit-transition: all 0.4s ease;
+  transition: all 0.4s ease;
+}
+
+.patient-detail-heading.shrunken h1 {
+  font-size: 24px;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 /*# sourceMappingURL=elcid.css.map */

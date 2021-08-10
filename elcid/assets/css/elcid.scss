@@ -251,7 +251,8 @@ a.list-group-item {
 }
 
 .death-banner {
-    margin-top: -15px;
+    margin-top: -95px;
+    padding-top: 80px;
     background-color: #864200;
     color: white;
     margin-bottom: 12px;
@@ -561,4 +562,24 @@ div.add-isolate:hover{
 
 .modal-footer.externally-sourced{
   margin-top: 0;
+}
+
+
+.panel-heading.patient-detail-heading{
+   position: fixed;
+   width: 100%;
+   z-index: 10;
+}
+
+.patient-detail-heading{
+ h1{
+  transition: all 0.4s ease;
+ }
+ &.shrunken  {
+  h1{
+    font-size: 24px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+  }
 }
