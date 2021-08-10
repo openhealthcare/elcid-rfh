@@ -40,6 +40,10 @@ body{
     margin-top: 5px;
 }
 
+.content-offset-below-5{
+  margin-bottom: 5px;
+}
+
 .content-offset-25{
     margin-top: 25px;
 }
@@ -582,4 +586,7 @@ div.add-isolate:hover{
     margin-bottom: 5px;
   }
   }
+.tb-appointment-date{
+  display: inline-block;
+  width: 90px;
 }

@@ -2,7 +2,7 @@ TB_ROLE = "tb_professional"
 TB_TAG = "tb_tag"
 
 
-TB_APPOINTMENT_CODES = [
+RFH_TB_APPOINTMENT_CODES = [
     "Thoracic TB F/Up",
     "Thoracic TB New",
     "Thoracic TB Nurse F/Up",
@@ -24,11 +24,11 @@ THORACIC_APPOINTMENT_TYPES = ["Thoracic F/Up", "Thoracic New"]
 BRONCHIECTASIS = ["Resp Bronchiectasis New", "Resp Bronchiectasis F/Up"]
 
 
-MDT_APPOINTMENT_CODES = (
-    TB_APPOINTMENT_CODES
+TB_APPOINTMENT_CODES = (
+    RFH_TB_APPOINTMENT_CODES
     + RESP_APPOINTMENT_CODES
     + THORACIC_APPOINTMENT_TYPES
     + BRONCHIECTASIS
 )
-MDT_NEW_APPOINTMENT_CODES = [i for i in MDT_APPOINTMENT_CODES if i.endswith("New")]
+TB_NEW_APPOINTMENT_CODES = [i for i in TB_APPOINTMENT_CODES if i.endswith("New")]
 TB_APPOINTMENT_REFRESH_TIME_FACT = "TB Appointment Refresh Seconds"
