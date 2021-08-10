@@ -19,7 +19,9 @@
       </div>
       <div ng-repeat="culture in tb_tests.cultures">
         <div ng-class="{'text-muted': !culture.positive, 'left-offset-10': !$first}" ng-repeat="culture_line in culture.text">
+          <div ng-class="{'left-offset-20': !$first && culture_line.indexOf('AFB Smear') !== 0 && culture_line.indexOf('TB: Culture Result') !== 0 && culture_line.indexOf('TB Ref. Lab. Culture result') !== 0}">
           [[ culture_line ]]
+          </div>
         </div>
       </div>
     </div>

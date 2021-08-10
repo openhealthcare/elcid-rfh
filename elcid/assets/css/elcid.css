@@ -369,6 +369,10 @@ div.add-isolate:hover {
   margin-left: 15px;
 }
 
+.left-offset-20 {
+  margin-left: 20px;
+}
+
 .form-hint {
   padding-top: 4px;
   font-size: 18px;
