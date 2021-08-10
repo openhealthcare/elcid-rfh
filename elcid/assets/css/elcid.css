@@ -21,6 +21,10 @@ body {
   margin-top: 5px;
 }
 
+.content-offset-below-5 {
+  margin-bottom: 5px;
+}
+
 .content-offset-25 {
   margin-top: 25px;
 }
@@ -369,6 +373,10 @@ div.add-isolate:hover {
   margin-left: 15px;
 }
 
+.left-offset-20 {
+  margin-left: 20px;
+}
+
 .form-hint {
   padding-top: 4px;
   font-size: 18px;
@@ -527,5 +535,9 @@ div.add-isolate:hover {
 
 .modal-footer.externally-sourced {
   margin-top: 0;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
 /*# sourceMappingURL=elcid.css.map */
