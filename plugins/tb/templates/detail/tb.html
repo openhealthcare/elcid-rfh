@@ -4,7 +4,6 @@
   <div class="col-md-6">
     {% include "panels/external_links.html" %}
     {% include "partials/tb_summary_tests.html" %}
-    {% include "panels/contact_information.html" %}
     {% include "panels/symptoms.html" %}
 
     {% include 'panels/primary_diagnosis.html' %}
@@ -24,7 +23,7 @@
     {% include 'panels/tb/imaging.html' %}
     {% record_panel models.OtherInvestigation title="Other Investigations"%}
     {% record_panel models.MantouxTest %}
-    {% record_panel models.ContactDetails %}
+    {% include "panels/tb/contact_details.html" %}
     {% record_panel models.NextOfKin %}
   </div>
 
