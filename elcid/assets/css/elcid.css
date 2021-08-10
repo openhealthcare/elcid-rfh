@@ -534,7 +534,6 @@ div.add-isolate:hover {
   margin-top: 0;
 }
 
-<<<<<<< HEAD
 .panel-heading.patient-detail-heading {
   position: fixed;
   width: 100%;
@@ -550,10 +549,10 @@ div.add-isolate:hover {
   font-size: 24px;
   margin-top: 5px;
   margin-bottom: 5px;
-=======
+}
+
 .tb-appointment-date {
   display: inline-block;
   width: 90px;
->>>>>>> tb-tests-and-appointments
 }
 /*# sourceMappingURL=elcid.css.map */
