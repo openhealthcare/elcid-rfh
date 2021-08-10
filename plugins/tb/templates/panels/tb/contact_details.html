@@ -1,0 +1,35 @@
+<div class="panel panel-default record-panel">
+  <div class="panel-heading">
+    <h3>
+      <i class="{{ models.ContactDetails.get_icon }}"></i> {{ models.ContactDetails.get_display_name }}
+      <i class="fa fa-pencil edit pull-right pointer" ng-click="patient.recordEditor.editItem('{{ models.ContactDetails.get_api_name }}', patient['{{ models.ContactDetails.get_api_name }}'][0])"></i>
+    </h3>
+  </div>
+  <ul class="list-group">
+    <li class="list-group-item" ng-repeat="item in patient.{{  models.ContactDetails.get_api_name }}">
+      <div class="row">
+        <div class="col-md-9">
+        {% include models.ContactDetails.get_detail_template %}
+        </div>
+      </div>
+    </li>
+  </ul>
+  <div class="panel-footer" ng-repeat="item in patient.contact_information">
+    <div class="row">
+      <div class="col-md-9">
+        <div ng-show="item.home_telephone" class="row">
+          <div class="col-sm-4"><strong>Home:</strong></div>
+          <div class="col-sm-8">[[ item.home_telephone ]]</div>
+        </div>
+        <div ng-show="item.mobile_telephone" class="row">
+          <div class="col-sm-4"><strong>Mobile:</strong></div>
+          <div class="col-sm-8">[[ item.mobile_telephone ]]</div>
+        </div>
+        <div ng-show="item.work_telephone" class="row">
+          <div class="col-sm-4"><strong>Work:</strong></div>
+          <div class="col-sm-8">[[ item.work_telephone ]]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

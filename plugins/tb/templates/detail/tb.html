@@ -22,7 +22,7 @@
     {% include 'panels/tb/imaging.html' %}
     {% record_panel models.OtherInvestigation title="Other Investigations"%}
     {% record_panel models.MantouxTest %}
-    {% record_panel models.ContactDetails %}
+    {% include "panels/tb/contact_details.html" %}
     {% record_panel models.NextOfKin %}
   </div>
 
