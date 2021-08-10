@@ -1,7 +1,7 @@
 <div class="row content-offset-below-10">
   <div class="col-md-12">
     <strong>
-    <i class="fa fa-crosshairs"></i>
+    <i class="fa fa-crosshairs {% if lab_test.reported_datetime.date >= last_week %}primary-text{% endif %}"></i>
     &nbsp;
     {{ lab_test.reported_datetime |date:"d M Y G:i" }}
     {% if title %}

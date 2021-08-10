@@ -443,12 +443,12 @@ class MDTList(LoginRequiredMixin, TemplateView):
         today = datetime.date.today()
         for i in range(7):
             some_date = today + datetime.timedelta(i)
-            if some_date.isoweekday() == 2:
+            if some_date.isoweekday() == 3:
                 return some_date
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(21)
+        return self.end_date - datetime.timedelta(7)
 
     def title(self):
         from_dt = self.start_date.strftime("%-d %b %Y")
@@ -571,6 +571,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         patients = self.get_patients()
         ctx["rows"] = self.patients_to_rows(patients)
+        ctx["last_week"] = self.start_date
         return ctx
 
 
