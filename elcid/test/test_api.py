@@ -11,6 +11,7 @@ from django.test import override_settings
 from rest_framework.reverse import reverse
 
 from elcid import models as emodels
+from elcid import patient_lists
 from elcid.api import (
     UpstreamBloodCultureApi, LabTestResultsView,
     InfectionServiceTestSummaryApi
@@ -1107,7 +1108,37 @@ class LabTestSummaryTestCase(OpalTestCase):
         result = self.client.get(self.url)
         self.assertEqual(result.data, expected)
 
-
+    def test_antifungal(self):
+        patient = self.patient
+        episode = patient.episode_set.create()
+        episode.tagging_set.create(archived=False, value=patient_lists.Antifungal.tag)
+        dt_1 = datetime.datetime(2021, 6, 4, 10, 10)
+        lab_test = patient.lab_tests.create(
+            datetime_ordered=dt_1,
+            test_name="BETA D GLUCAN TEST",
+            lab_number=self.get_lab_number(),
+            site="SERO  ^Serology / PCR Specimen  &BLO  ^"
+        )
+        lab_test.observation_set.create(
+            observation_datetime=dt_1,
+            observation_name="Beta Glucan conc. (pg/mL)",
+            observation_value="< 30",
+        )
+        result = self.client.get(self.url)
+        ticker = result.data['ticker']
+        self.assertEqual(len(ticker), 1)
+        self.assertEqual(
+            ticker[0]['date_str'],
+            '04/06/2021 10:10'
+        )
+        self.assertEqual(
+            ticker[0]['name'],
+            'Beta D Glucan SERO'
+        )
+        self.assertEqual(
+            ticker[0]['value'],
+            'Concentration (pg/mL) < 30'
+        )
 
     def test_ignores_strings(self):
         self.create_clotting_screen({

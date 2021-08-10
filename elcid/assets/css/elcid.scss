@@ -51,6 +51,10 @@ body{
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
 
+.primary-text{
+  color: $primary;
+}
+
 .panel.panel-primary { border-color: $primary; }
 .panel.panel-primary > .panel-heading {
     background-color: $primary;

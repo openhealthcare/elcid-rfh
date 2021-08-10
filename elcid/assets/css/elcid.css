@@ -37,6 +37,10 @@ body {
   background-color: #D36C08;
 }
 
+.primary-text {
+  color: #0091C9;
+}
+
 .panel.panel-primary {
   border-color: #0091C9;
 }
