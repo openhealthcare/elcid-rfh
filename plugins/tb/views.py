@@ -471,13 +471,8 @@ class Last30Days(AbstractTBAppointmentList):
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
         until = today - datetime.timedelta(30)
-<<<<<<< HEAD
-        appointment_types = constants.TB_APPOINTMENT_CODES
-        appointments = Appointment.objects.filter(
-=======
         appointment_types = constants.RFH_TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
->>>>>>> @{-1}
             derived_appointment_type__in=appointment_types
         ).filter(
            start_datetime__lte=today,
