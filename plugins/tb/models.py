@@ -1,7 +1,9 @@
 """
 Models for tb
 """
+import datetime
 from django.db import models as fields
+from plugins.labtests import models as lab
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
 from opal import models
@@ -242,6 +244,9 @@ class PatientConsultation(models.PatientConsultation):
         blank=True, default=""
     )
     progress = fields.TextField(
+        blank=True, default=""
+    )
+    infection_control = fields.TextField(
         blank=True, default=""
     )
 
@@ -593,3 +598,290 @@ class OtherInvestigation(models.EpisodeSubrecord):
     name    = fields.CharField(max_length=256, blank=True, default="")
     date    = fields.DateField(blank=True, null=True)
     details = fields.TextField(blank=True, default='')
+
+
+def parse_date(some_val):
+    date_formats = ["%d/%m/%y", "%d/%m/%Y"]
+    result = None
+    for date_format in date_formats:
+        try:
+            dt = datetime.datetime.strptime(some_val, date_format)
+            result = dt.date()
+        except ValueError:
+            pass
+    return result
+
+
+class AbstractTBObservation(fields.Model):
+    """
+    A TB Observation is an observation of a test that we do to see
+    if a patient has TB.
+
+    Smears and PCRs are not 100% accurate.
+
+    Smears, AFB Cultures and the TB Ref lab are all observations
+    on the same test.
+    """
+
+    # the value of Observation.observation_name
+    # used by this observation
+    OBSERVATION_NAME = None
+    # the lab test names that have this
+    TEST_NAMES = []
+
+    patient = fields.ForeignKey(
+        models.Patient,
+        on_delete=fields.CASCADE,
+    )
+    value = fields.TextField(blank=True, default="")
+    site = fields.CharField(max_length=256, blank=True, default="")
+    lab_number = fields.CharField(max_length=256, blank=True, default="")
+    test_name = fields.CharField(max_length=256, blank=True, default="")
+    observation_datetime = fields.DateTimeField(blank=True, null=True)
+    reported_datetime = fields.DateTimeField(blank=True, null=True)
+    pending = fields.BooleanField()
+    positive = fields.BooleanField()
+
+    @classmethod
+    def is_positive(cls, obs):
+        raise NotImplementedError("Please implement is positive")
+
+    @classmethod
+    def is_negative(cls, obs):
+        raise NotImplementedError("Please implement is negative")
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = cls()
+        new_model.patient = obs.test.patient
+        new_model.value = obs.observation_value
+        if obs.test.site_code:
+            new_model.site = obs.test.site_code
+        new_model.lab_number = obs.test.lab_number
+        new_model.test_name = obs.test.test_name
+        new_model.observation_datetime = obs.observation_datetime
+        new_model.reported_datetime = obs.reported_datetime
+        is_positive = cls.is_positive(obs)
+        is_negative = cls.is_negative(obs)
+        if is_positive or is_negative:
+            new_model.pending = False
+        else:
+            new_model.pending = True
+        if is_positive:
+            new_model.positive = True
+        else:
+            new_model.positive = False
+        return new_model
+
+    def display_value(self):
+        result = "\n".join(self.value.split("~"))
+        return result.strip()
+
+    class Meta:
+        abstract = True
+
+
+class AFBSmear(AbstractTBObservation):
+    OBSERVATION_NAME = 'AFB Smear'
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
+
+    # stored in obs name 'Date of AFB Microscopy'
+    date_of_microscopy = fields.DateField(blank=True, null=True)
+
+    @classmethod
+    def is_positive(cls, obs):
+        obs_value = obs.observation_value
+        positive_starts_with = [
+            "AAFB + Seen",
+            "AAFB 2+ Seen",
+            "AAFB 3+ Seen",
+            "AAFB 4+ Seen"
+        ]
+        for psw in positive_starts_with:
+            if obs_value.startswith(psw):
+                return True
+
+        return False
+
+    @classmethod
+    def is_negative(cls, obs):
+        obs_value = obs.observation_value
+        return obs_value.startswith("AAFB not seen")
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = super().populate_from_observation(obs)
+        microscopy_date_obs = obs.test.observation_set.filter(
+            observation_name="Date of AFB Microscopy"
+        ).first()
+        if microscopy_date_obs:
+            microscopy_date = microscopy_date_obs.observation_value
+            microscopy_date = parse_date(microscopy_date)
+            if microscopy_date:
+                new_model.date_of_microscopy = microscopy_date
+        return new_model
+
+
+class AFBCulture(AbstractTBObservation):
+    OBSERVATION_NAME = 'TB: Culture Result'
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
+
+    # what is stored in 'Date of AFB Culture Result'
+    date_of_culture_result = fields.DateField(blank=True, null=True)
+    # what is stored in obs name TB: Comment
+    tb_comment = fields.TextField(blank=True, default="")
+    # what is stored in obs name TB: Clinical Comment
+    tb_clinical_comment = fields.TextField(blank=True, default="")
+
+    @classmethod
+    def is_positive(cls, obs):
+        return obs.observation_value.startswith("1")
+
+    @classmethod
+    def is_negative(cls, obs):
+        return obs.observation_value.startswith("No")
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = super().populate_from_observation(obs)
+        microscopy_date_obs = obs.test.observation_set.filter(
+            observation_name="Date of AFB Culture Result"
+        ).first()
+        if microscopy_date_obs:
+            microscopy_date = microscopy_date_obs.observation_value
+            microscopy_date = parse_date(microscopy_date)
+            if microscopy_date:
+                new_model.date_of_culture_result = microscopy_date
+
+        tb_comment = obs.test.observation_set.filter(
+            observation_name="TB: Comment"
+        ).first()
+        if tb_comment:
+            new_model.tb_comment = tb_comment
+
+        clinical_comment = obs.test.observation_set.filter(
+            observation_name="TB: Clinical Comment"
+        ).first()
+        if clinical_comment:
+            new_model.clinical_comment = clinical_comment
+
+        return new_model
+
+    def has_sensitivities(self):
+        return self.value.count("1)") > 1
+
+    def display_value(self):
+        val = super().display_value().strip()
+        to_remove = "\n".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
+        ])
+        return val.replace(to_remove, "").strip()
+
+
+class AFBRefLab(AbstractTBObservation):
+    OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
+
+    date_of_ref_lab_string = fields.CharField(
+        max_length=256, blank=True, default=""
+    )
+    comment = fields.TextField(blank=True, default="")
+
+    @classmethod
+    def is_positive(cls, obs):
+        return obs.observation_value.startswith("1")
+
+    @classmethod
+    def is_negative(cls, obs):
+        """
+        Ref lab reports are only done after the culture has
+        been resolved to be positive.
+        IE they are only pending or positive.
+        """
+        return False
+
+    @classmethod
+    def get_ref_lab_date_observation_string(cls, obs):
+        ref_lab_date_obs = obs.test.observation_set.filter(
+            observation_name="Date of Ref. Lab. report"
+        ).first()
+        if ref_lab_date_obs:
+            return ref_lab_date_obs.observation_value
+
+    @classmethod
+    def populate_from_observation(cls, obs):
+        new_model = super().populate_from_observation(obs)
+        ref_lab_date_str = cls.get_ref_lab_date_observation_string(obs)
+        if ref_lab_date_str:
+            cls.date_of_ref_lab_string = ref_lab_date_str
+        comment = obs.test.observation_set.filter(
+            observation_name="TB Ref. Lab. Comment"
+        ).first()
+        if comment:
+            new_model.comment = comment
+        return new_model
+
+    def has_sensitivities(self):
+        return self.value.count("1)") > 1
+
+    def display_value(self):
+        val = super().display_value().strip()
+        to_remove = "\n".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
+        ])
+        return val.replace(to_remove, "").strip()
+
+
+class TBPCR(AbstractTBObservation):
+    OBSERVATION_NAME = 'TB PCR'
+    TEST_NAMES = ['TB PCR TEST']
+
+    @classmethod
+    def is_negative(cls, obs):
+        obs_val = obs.observation_value
+        if "PCR to detect M.tuberculosis complex was~NEGATIVE" in obs_val:
+            return True
+        if "PCR to detect M.tuberculosis complex was ~ NEGATIVE" in obs_val:
+            return True
+        return obs_val == "TB PCR (GeneXpert) Negative"
+
+    @classmethod
+    def is_positive(cls, obs):
+        obs_val = obs.observation_value
+        if "The PCR to detect M.tuberculosis complex was~POSITIVE" in obs_val:
+            return True
+        if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in obs_val:
+            return True
+        return obs_val == "TB PCR (GeneXpert) Positive"
+
+    def display_value(self):
+        # to_remove = "This does not exclude a diagnosis of tuberculosis."
+        obs_value = self.value
+        if "The PCR to detect M.tuberculosis complex was~POSITIVE" in obs_value:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+        if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in obs_value:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+        if obs_value.startswith("NOT detected."):
+            return "NOT detected."
+        return super().display_value()
+
+
+TB_OBS = (TBPCR, AFBRefLab, AFBCulture, AFBSmear)

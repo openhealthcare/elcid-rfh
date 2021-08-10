@@ -1,0 +1,61 @@
+{% extends "tb/base.html" %}
+{% load elcid_panels %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>MDT History</h1>
+        <p class="content-offset-below-10">
+          {{ num_consultations }}
+          Patients recently discussed at MDT</p>
+      </div>
+    </div>
+  </div>
+  {% for date, rows in date_to_rows.items %}
+  <h3 class="date-header">
+    {{ date }}
+  </h3>
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th class="col-md-3">Patient</th>
+        <th class="col-md-1">Imaging</th>
+        <th class="col-md-8">MDT notes</th>
+      </tr>
+      {% for row in rows %}
+      <tr>
+        <td>
+          {% if row.episode %}
+          <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+          {% else %}
+          <a href="/#/patient/{{ row.episode.patient_id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+          {{ row.demographics.date_of_birth }}
+          <br>
+          {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% endif %}
+        </td>
+        <td>
+          <span style="white-space: nowrap;">
+          <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
+            PACS
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+          </span>
+        </td>
+        <td>
+          {% for mdt_note in row.mdt_notes %}
+            {% include "tb/partials/note.html" with note=mdt_note %}
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+</div>
+{% endblock %}

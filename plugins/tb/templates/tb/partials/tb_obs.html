@@ -1,0 +1,33 @@
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <strong>
+    <i class="fa fa-crosshairs {% if lab_test.reported_datetime.date >= last_week %}primary-text{% endif %}"></i>
+    &nbsp;
+    {{ lab_test.reported_datetime |date:"d M Y G:i" }}
+    {% if title %}
+      {{ title }}
+    {% endif %}
+    </strong>
+    {{ lab_test.lab_number }}
+    {{ lab_test.OBSERVATION_NAME }}
+    {{ lab_test.site }}
+    {% if lab_test.OBSERVATION_NAME == view.AFB_SMEAR_MODEL.OBSERVATION_NAME %}
+      {% if lab_test.date_of_microscopy %}
+      Date of microscopy: {{ lab_test.date_of_microscopy }}
+      {% endif %}
+    {% elif lab_test.OBSERVATION_NAME == view.AFB_CULTURE.OBSERVATION_NAME %}
+      {% if lab_test.date_of_culture_result %}
+      Date of culture result: {{ lab_test.date_of_culture_result }}
+      {% endif %}
+    {% elif lab_test.OBSERVATION_NAME == view.AFB_REF_LAB.OBSERVATION_NAME %}
+      {% if lab_test.date_of_ref_lab_string %}
+      {{ lab_test.date_of_ref_lab_string }}
+      {% endif %}
+    {% endif %}
+    {% if lab_test.has_sensitivities %}
+      {{ lab_test.display_value | linebreaks }}
+    {% else %}
+      {{ lab_test.display_value }}
+    {% endif %}
+  </div>
+</div>

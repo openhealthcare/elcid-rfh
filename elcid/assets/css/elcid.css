@@ -25,12 +25,20 @@ body {
   margin-bottom: 0;
 }
 
+.content-offset-25 {
+  margin-top: 25px;
+}
+
 .bg-primary {
   background-color: #0091C9;
 }
 
 .bg-secondary {
   background-color: #D36C08;
+}
+
+.primary-text {
+  color: #0091C9;
 }
 
 .panel.panel-primary {
@@ -522,6 +530,11 @@ div.add-isolate:hover {
 
 .tb-clinic-list .date-header:hover .date-header-link {
   display: inline;
+}
+
+.tb-mdt-row p {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .modal-body.externally-sourced {

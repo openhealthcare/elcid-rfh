@@ -44,8 +44,16 @@ body{
     margin-bottom: 0;
 }
 
+.content-offset-25{
+    margin-top: 25px;
+}
+
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
+
+.primary-text{
+  color: $primary;
+}
 
 .panel.panel-primary { border-color: $primary; }
 .panel.panel-primary > .panel-heading {
@@ -554,6 +562,13 @@ div.add-isolate:hover{
        }
     }
 
+}
+
+.tb-mdt-row{
+  p{
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 }
 
 

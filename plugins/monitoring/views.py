@@ -14,6 +14,13 @@ from plugins.imaging.constants import (
     IMAGING_COUNT_FACT
 )
 
+from plugins.appointments.constants import (
+    APPOINTMENTS_LOAD_TIME_FACT,
+    APPOINTMENTS_LOAD_CREATED_COUNT_FACT,
+    APPOINTMENTS_LOAD_PATIENT_COUNT_FACT,
+    APPOINTMENTS_COUNT_FACT
+)
+
 from plugins.monitoring.models import Fact
 
 
@@ -84,11 +91,31 @@ class ImagingLoadStats(LoginRequiredMixin, TemplateView):
         return context
 
 
+class AppointmentLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/appointment_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['appointments_load_time_fact'] = graph_data_for_label(
+            APPOINTMENTS_LOAD_TIME_FACT
+        )
+        context['appointments_load_created_count_fact'] = graph_data_for_label(
+            APPOINTMENTS_LOAD_CREATED_COUNT_FACT
+        )
+        context['appointments_load_patient_count_fact'] = graph_data_for_label(
+            APPOINTMENTS_LOAD_PATIENT_COUNT_FACT
+        )
+        context['appointments_count_fact'] = graph_data_for_label(
+            APPOINTMENTS_COUNT_FACT
+        )
+        return context
+
+
 class SystemStats(LoginRequiredMixin, TemplateView):
     template_name = 'monitoring/system_stats.html'
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
-        context['back_up_size'] = graph_data_for_label('Backup size (MB)')
+        context['back_up_size'] = graph_data_for_label('Backup size (GB)')
         context['disk_usage']   = graph_data_for_label('Disk Usage Percentage')
         return context

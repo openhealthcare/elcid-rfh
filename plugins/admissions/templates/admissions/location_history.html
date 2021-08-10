@@ -1,0 +1,59 @@
+    <div class="panel panel-default content-offset">
+      <div class="panel-heading">
+
+        <div class="row">
+          <div class="col-md-9">
+            <h3>
+              <i class="fa fa-hospital-o"></i>
+              Location History: {{ location }}
+
+            </h3>
+          </div>
+        </div>
+      </div>
+      <!-- End Panel Header -->
+
+      <table class="table table-bordered table-striped">
+        <tr>
+          <th>Patient</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Duration</th>
+          <th>Location Code</th>
+          <th>Site Code</th>
+          <th>Unit</th>
+          <th>Room</th>
+          <th>Bed</th>
+          <th>Transfer Reason</th>
+          <th></th>
+        </tr>
+        {% for transfer in history %}
+        <tr>
+          <td>
+            <a href="/#/patient/{{ transfer.patient.id }}" class="orange-link">
+              {{ transfer.demographics.name }}
+            </a>
+          </td>
+          <td>
+            {{ transfer.transfer_start_datetime }}
+          </td>
+          <td>{{ transfer.transfer_end_datetime }}</td>
+          <td>{{ transfer.transfer_start_datetime |timesince:transfer.transfer_end_datetime}} </td>
+          <td>{{ transfer.transfer_location_code }}</td>
+          <td>{{ transfer.site_code}}</td>
+          <td>{{ transfer.unit }}</td>
+          <td>{{ transfer.room }}</td>
+          <td>
+            {{ transfer.bed }}
+          </td>
+          <td>{{ transfer.transfer_reason }}</td>
+          <td>
+            <a href="/#/admissions/slice-contacts/{{ transfer.encounter_slice_id }}/" class="orange-link">
+              Contacts
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+
+    </div>

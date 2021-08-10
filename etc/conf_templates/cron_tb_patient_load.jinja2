@@ -4,4 +4,4 @@
 # Run every Tuesday every 15 mins in the clinic
 5,20,35,50 12,13,14,15,16,17,18 * * 2 {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py tb_refresh_future_appointments >> /usr/lib/ohc/log/cron_sync.log 2>&1
 
-12 4 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py tb_refresh_imaging >> /usr/lib/ohc/log/cron_sync.log 2>&1
+29 * * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py create_tb_observations >> /usr/lib/ohc/log/cron_sync.log 2>&1

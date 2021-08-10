@@ -29,6 +29,12 @@ class LabTest(models.Model):
     test_code = models.CharField(max_length=256, blank=True, null=True)
     test_name = models.CharField(max_length=256, blank=True, null=True)
     lab_number = models.CharField(max_length=256, blank=True, null=True)
+
+    accession_number = models.CharField(max_length=256, blank=True, null=True)
+    encounter_consultant_name = models.CharField(max_length=256, blank=True, null=True)
+    encounter_location_name = models.CharField(max_length=256, blank=True, null=True)
+    encounter_location_code = models.CharField(max_length=256, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -70,6 +76,10 @@ class LabTest(models.Model):
         self.test_code = data["test_code"]
         self.site = data["site"]
         self.test_name = data["test_name"]
+        self.accession_number = data["accession_number"]
+        self.encounter_consultant_name = data["encounter_consultant_name"]
+        self.encounter_location_name = data["encounter_location_name"]
+        self.encounter_location_code = data["encounter_location_code"]
         self.save()
         observations = []
         for obs_dict in data["observations"]:
@@ -109,11 +119,26 @@ class LabTest(models.Model):
                 values.append(code_or_desc[-1])
         return ' '.join([i.strip() for i in values if i.strip()])
 
+    @property
+    def site_code(self):
+        """
+        The site code that appears in capitals in the cleaned site.
+        Note it can be "Sputa sample SPU" or "SPU Sputa sample"
+        """
+        cleaned_site = self.cleaned_site
+        if not cleaned_site:
+            return
+        site_parts = cleaned_site.split(" ")
+        for site_part in site_parts:
+            if site_part.isupper():
+                return site_part
+
 
 class Observation(models.Model):
     # as created in the upstream db
     last_updated = models.DateTimeField(blank=True, null=True)
     observation_datetime = models.DateTimeField(blank=True, null=True)
+    reported_datetime = models.DateTimeField(blank=True, null=True)
     observation_name = models.CharField(max_length=256, blank=True, null=True)
     observation_number = models.CharField(max_length=256, blank=True, null=True)
     observation_value = models.TextField(null=True, blank=True)
@@ -212,6 +237,10 @@ class Observation(models.Model):
         if observation_dict["observation_datetime"]:
             obs.observation_datetime = serialization.deserialize_datetime(
                 observation_dict["observation_datetime"]
+            )
+        if observation_dict["reported_datetime"]:
+            obs.reported_datetime = serialization.deserialize_datetime(
+                observation_dict["reported_datetime"]
             )
         fields = [
             "observation_number",
