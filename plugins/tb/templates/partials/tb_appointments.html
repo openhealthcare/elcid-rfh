@@ -16,10 +16,12 @@
       <span ng-repeat="tb_appointment in tb_appointments.todays_appointments track by $index">
       <br>
       <div class="tb-appointment-date">
-      [[ tb_appointment.start_datetime | displayDate ]]
+      [[ tb_appointment.start_datetime | hhmm ]]
       </div>
       [[ tb_appointment.derived_appointment_type ]]
-      [[ tb_appointment.derived_clinic_resource ]]
+      <span ng-show="tb_appointment.derived_clinic_resource.indexOf('nurse') !== -1">
+        [[ tb_appointment.derived_clinic_resource ]]
+      </span>
       [[ tb_appointment.status_code ]]
       </span>
     </div>
