@@ -110,20 +110,21 @@ class TbTests(LoginRequiredViewset):
                                     flags=re.IGNORECASE
                                 )
                     if display_value.startswith("1)") and len([i for i in display_value.split("\n") if i.strip()]) > 2:
-                        display = [culture.OBSERVATION_NAME]
+                        display_lines = [culture.OBSERVATION_NAME]
                         for row in display_value.split("\n"):
-                            if not len(row.strip()):
+                            row = row.strip()
+                            if not row.strip():
                                 continue
                             if len(row) > 2 and row[0].isnumeric() and row[1] == ")":
-                                display.append(row)
-                            elif row.endswith(" S") or row.endswith(" I") or row.endswith(" R"):
-                                display.append(row)
-                            elif len(row) > 3 and row[-2].isnumeric() and row[-1] == ")":
-                                display[-1] = f"{display[-1]} {row[:-2]}"
-                                display.append(row[-2:])
+                                display_lines.append(row)
+                            elif row.endswith(" S") or row.endswith(" I") or row.endswith(" R") or row.endswith(" U"):
+                                display_lines.append(row)
+                            elif len(row) > 1 and row[-2].isnumeric() and row[-1] == ")":
+                                display_lines[-1] = f"{display_lines[-1]} {row[:-2]}".strip()
+                                display_lines.append(row[-2:])
                             else:
-                                display[-1] = f"{display[-1]} {row}"
-                        culture_lines.extend(display)
+                                display_lines[-1] = f"{display_lines[-1]} {row}"
+                        culture_lines.extend(display_lines)
                     else:
                         culture_lines.append(
                             f"{culture.OBSERVATION_NAME} {display_value}"
