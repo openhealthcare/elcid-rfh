@@ -17,8 +17,8 @@
           <a class="orange-link" href="/#/patient/[[ tb_tests.patient_id ]]/test_results?test_name=AFB">(All information)</a>
         </div>
       </div>
-      <div ng-class="{'content-offset-below-5': !$last}" ng-repeat="culture in tb_tests.cultures">
-        <div ng-class="{'text-muted': !culture.positive}" ng-repeat="culture_line in culture.text">
+      <div ng-repeat="culture in tb_tests.cultures">
+        <div ng-class="{'text-muted': !culture.positive, 'left-offset-10': !$first}" ng-repeat="culture_line in culture.text">
           [[ culture_line ]]
         </div>
       </div>
@@ -35,8 +35,8 @@
           <a class="orange-link" href="/#/patient/[[ tb_tests.patient_id ]]/test_results?test_name=TB PCR">(All information)</a>
         </div>
       </div>
-      <div ng-class="{'content-offset-below-5': !$last}" ng-repeat="pcr in tb_tests.pcrs">
-        <div ng-class="{'text-muted': !pcr.positive}" ng-repeat="pcr_line in pcr.text">
+      <div ng-repeat="pcr in tb_tests.pcrs">
+        <div ng-class="{'text-muted': !pcr.positive, 'left-offset-10': !$first}" ng-repeat="pcr_line in pcr.text">
           [[ pcr_line ]]
         </div>
       </div>
@@ -53,8 +53,8 @@
           <a class="orange-link" href="/#/patient/[[ tb_tests.patient_id ]]/test_results?test_name=QUANTIFERON TB GOLD IT">(All information)</a>
         </div>
       </div>
-      <div ng-class="{'content-offset-below-5': !$last}" ng-repeat="igra in tb_tests.igra">
-        <div ng-class="{'text-muted': !igra.positive}" ng-repeat="igra_line in igra.text">
+      <div ng-repeat="igra in tb_tests.igra">
+        <div ng-class="{'text-muted': !igra.positive, 'left-offset-10': !$first}" ng-repeat="igra_line in igra.text">
           [[ igra_line ]]
         </div>
       </div>
