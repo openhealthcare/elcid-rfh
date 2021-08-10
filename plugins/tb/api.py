@@ -109,7 +109,7 @@ class TbTests(LoginRequiredViewset):
                                     display_value,
                                     flags=re.IGNORECASE
                                 )
-                    if display_value.startswith("1)"):
+                    if display_value.startswith("1)") and len([i for i in display_value.split("\n") if i.strip()]) > 2:
                         display = [culture.OBSERVATION_NAME]
                         for row in display_value.split("\n"):
                             if not len(row.strip()):
