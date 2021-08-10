@@ -334,10 +334,6 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   padding-right: 50px;
 }
 
-.tb-summary-panel {
-  min-height: 160px;
-}
-
 .panel tr.table-edit td {
   vertical-align: middle;
 }
