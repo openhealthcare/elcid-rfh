@@ -25,7 +25,9 @@
         <div class="col-sm-9">
           [[ tb_appointment.derived_appointment_type ]]
           [[ tb_appointment.derived_clinic_resource ]]
-          [[ tb_appointment.status_code ]]
+          <span class="nowrap">
+            [[ tb_appointment.status_code ]]
+          </span>
         </div>
       </div>
       </span>
@@ -40,7 +42,7 @@
           <div class="col-sm-9">
             [[ tb_appointment.derived_appointment_type ]]
             [[ tb_appointment.derived_clinic_resource ]]
-            <span ng-show="tb_appointment.status_code !== 'Checked In' && tb_appointment.status_code !== 'Checked Out'">
+            <span class="nowrap" ng-show="tb_appointment.status_code !== 'Checked In' && tb_appointment.status_code !== 'Checked Out'">
               [[ tb_appointment.status_code ]]
             </span>
           </div>

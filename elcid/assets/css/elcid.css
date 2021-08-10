@@ -554,4 +554,8 @@ div.add-isolate:hover {
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+.nowrap {
+  white-space: nowrap;
+}
 /*# sourceMappingURL=elcid.css.map */
