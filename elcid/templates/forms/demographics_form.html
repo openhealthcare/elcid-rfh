@@ -1,27 +1,348 @@
 {% load forms %}
 <div ng-show="editing.demographics.external_system">
-  {% static "Demographics.hospital_number" %}
-  {% static "Demographics.nhs_number" %}
-  <div class="form-group">
-    <span ng-show="editing.demographics.external_system">
-      <label class="control-label col-sm-3">
-        Name
-      </label>
-      <p class="form-control-static col-sm-8">
-        [[ editing.demographics.title ]]
-        [[ editing.demographics.first_name ]]
-        [[ editing.demographics.surname ]]
-      </p>
-    </span>
+  <h4>Patient Information</h4>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-sm-4"><strong>Name</strong></div>
+        <div class="col-sm-6">
+          [[ editing.demographics.title ]]
+          [[ editing.demographics.first_name ]]
+          [[ editing.demographics.surname ]]
+        </div>
+      </div>
+      <div class="row" ng-show="editing.demographics.date_of_birth">
+        <div class="col-sm-4">
+          <strong>
+            DOB
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ editing.demographics.date_of_birth | displayDate ]]
+        </div>
+      </div>
+      <div ng-show="editing.demographics.sex" class="row">
+        <div class="col-sm-4"><strong>Sex</strong></div>
+        <div class="col-sm-6">
+          [[ editing.demographics.sex ]]
+        </div>
+      </div>
+      <div ng-show="editing.demographics.nationality" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Nationality
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ editing.demographics.nationality ]]
+        </div>
+      </div>
+      <div ng-show="editing.demographics.religion" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Religion
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ editing.demographics.religion ]]
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="row" ng-show="editing.demographics.hospital_number">
+        <div class="col-sm-4"><strong>Hosp #</strong></div>
+        <div class="col-sm-6">
+          [[ editing.demographics.hospital_number ]]
+        </div>
+      </div>
+      <div class="row" ng-show="editing.demographics.nhs_number">
+        <div class="col-sm-4">
+          <strong>
+            NHS #
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ editing.demographics.nhs_number ]]
+        </div>
+      </div>
+      <div ng-show="editing.demographics.ethnicity" class="row">
+        <div class="col-sm-4"><strong>Ethnicity</strong></div>
+        <div class="col-sm-6">
+          [[ editing.demographics.ethnicity ]]
+        </div>
+      </div>
+      <div ng-show="editing.demographics.marital_status" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Marital status
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          <span ng-show="editing.demographics.marital_status === 'D'">
+            Divorced
+          </span>
+          <span ng-show="editing.demographics.marital_status === 'W'">
+            Widowed
+          </span>
+          <span ng-show="editing.demographics.marital_status === 'M'">
+            Married
+          </span>
+          <span ng-show="editing.demographics.marital_status === 'S">
+            Single
+          </span>
+        </div>
+      </div>
+      <div ng-show="editing.demographics.date_of_death" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Date of death
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ editing.demographics.date_of_death | displayDate ]]
+        </div>
+      </div>
+    </div>
   </div>
-  {% static "Demographics.sex" %}
-  {% static "Demographics.marital_status" %}
-  {% static "Demographics.ethnicity" %}
-  {% static "Demographics.birth_place" %}
+  {# End demographics #}
+  <hr>
+
+  {# Contact info #}
+  <h4>Contact Information</h4>
+  <div ng-repeat="contact_information in the_episode.contact_information" class="row content-offset-20">
+    <div class="col-md-6">
+      <div ng-show="contact_information.home_telephone" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Home phone
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ contact_information.home_telephone ]]
+        </div>
+      </div>
+      <div ng-show="contact_information.mobile_telephone" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Mobile
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ contact_information.mobile_telephone ]]
+        </div>
+      </div>
+      <div ng-show="contact_information.work_telephone" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Work
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          [[ contact_information.work_telephone ]]
+        </div>
+      </div>
+      <div ng-show="contact_information.email" class="row">
+        <div class="col-sm-4">
+          <strong>
+            Email
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          <a href="mailto:[[ contact_information.email ]]">
+            [[ contact_information.email ]]
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-sm-4">
+          <strong>
+            Address
+          </strong>
+        </div>
+        <div class="col-sm-6">
+          <span ng-show="contact_information.address_line_1">
+            [[ contact_information.address_line_1 ]]<br>
+          </span>
+          <span ng-show="contact_information.address_line_2">
+            [[ contact_information.address_line_2 ]]<br>
+          </span>
+          <span ng-show="contact_information.address_line_3">
+            [[ contact_information.address_line_3 ]]<br>
+          </span>
+          <span ng-show="contact_information.address_line_4">
+            [[ contact_information.address_line_4 ]]<br>
+          </span>
+          <span ng-show="contact_information.postcode">
+            [[ contact_information.postcode ]]
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  {# End of contact info #}
+  {# Next of kin #}
+  <div ng-show="next_of_kin_details.forename_1 || next_of_kin_details.surname" ng-repeat="next_of_kin_details in the_episode.next_of_kin_details">
+    <hr>
+    <h4>Next Of Kin</h4>
+    <div class="row content-offset-20">
+      <div class="col-md-6">
+        <div class="row">
+          <div class="col-sm-4">
+            <strong>
+              Name
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ next_of_kin_details.forename_1 ]]
+            [[ next_of_kin_details.forename_2 ]]
+            [[ next_of_kin_details.surname ]]
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div ng-show="next_of_kin_details.nok_type || next_of_kin_details.relationship" class="row">
+          <div class="col-sm-4">
+            <strong>
+              Relationship
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ next_of_kin_details.nok_type ]]
+            <span ng-show="next_of_kin_details.nok_type && next_of_kin_details.relationship">-</span>
+            <span ng-repeat="relationship in [next_of_kin_details.relationship]">
+              <span ng-show="relationship.length === 1">
+                <span ng-show="relationship === 'F'">Father</span>
+                <span ng-show="relationship === 'M'">Mother</span>
+                <span ng-show="relationship === 'P'">Parent</span>
+                <span ng-show="relationship === 'B'">Brother</span>
+                <span ng-show="relationship === 'S'">Sister</span>
+              </span>
+              <span ng-hide="relationship.length === 1">
+                [[ next_of_kin_details.relationship ]]
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div ng-show="next_of_kin_details.work_telephone" class="row">
+          <div class="col-sm-4">Work Telephone</div>
+          <div class="col-sm-6">
+            [[ next_of_kin_details.work_telephone ]]
+          </div>
+        </div>
+        <div ng-show="next_of_kin_details.home_telephone" class="row">
+          <div class="col-sm-4">
+            <strong>
+            Home Telephone
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ next_of_kin_details.home_telephone ]]
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="row" ng-show="next_of_kin_details.address_1 || next_of_kin_details.address_2 || next_of_kin_details.address_3 || next_of_kin_details.address_4">
+          <div class="col-sm-4">
+            <strong>
+              Address
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            <span ng-show="next_of_kin_details.address_1">
+              [[ next_of_kin_details.address_1 ]]<br>
+            </span>
+            <span ng-show="next_of_kin_details.address_2">
+              [[ next_of_kin_details.address_2 ]]<br>
+            </span>
+            <span ng-show="next_of_kin_details.address_3">
+              [[ next_of_kin_details.address_3 ]]<br>
+            </span>
+            <span ng-show="next_of_kin_details.address_4">
+              [[ next_of_kin_details.address_4 ]]<br>
+            </span>
+            <span ng-show="next_of_kin_details.postcode">
+              [[ next_of_kin_details.postcode ]]
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {# End of next of kin #}
+  {# GP details #}
+  <div ng-show="the_episode.gp_details[0].surname || the_episode.gp_details[0].post_code || the_episode.gp_details[0].telephone || the_episode.gp_details[0].practice_code" ng-repeat="next_of_kin_details in the_episode.next_of_kin_details">
+    <hr>
+    <h4>GP Details</h4>
+    <div ng-repeat="gp_details in the_episode.gp_details" class="row content-offset-20">
+      <div class="col-md-6">
+        <div ng-show="gp_details.surname" class="row">
+          <div class="col-sm-4">
+            <strong>
+            Name
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ gp_details.title ]]
+            [[ gp_details.initials ]]
+            [[ gp_details.surname ]]
+          </div>
+        </div>
+        <div ng-show="gp_details.telephone" class="row">
+          <div class="col-sm-4">
+            <strong>
+            Phone
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ gp_details.telephone ]]
+          </div>
+        </div>
+        <div ng-show="gp_details.practice_code" class="row">
+          <div class="col-sm-4">
+            <strong>
+            Practice code
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            [[ gp_details.practice_code ]]
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div ng-show="gp_details.address_1 || gp_details.postcode" class="row">
+          <div class="col-sm-4">
+            <strong>
+              Address
+            </strong>
+          </div>
+          <div class="col-sm-6">
+            <span ng-show="gp_details.address_1">[[ gp_details.address_1 ]] <br></span>
+            <span ng-show="gp_details.address_2">[[ gp_details.address_2 ]] <br></span>
+            <span ng-show="gp_details.address_3">[[ gp_details.address_3 ]] <br></span>
+            <span ng-show="gp_details.address_4">[[ gp_details.address_4 ]] <br></span>
+            <span ng-show="gp_details.postcode">[[ gp_details.postcode ]]</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# End of GP details #}
+
 </div>
-<div ng-hide="editing.demographics.external_system">
+
+
+
+<form name="form" ng-hide="editing.demographics.external_system" ng-submit="" class="form-horizontal" novalidate>
   {% input "autofocus" field="Demographics.hospital_number" %}
-  {% input field="Demographics.nhs_number" label="NHS Number" %}
+  {% input field="Demographics.nhs_number" div="NHS Number" %}
   {% select field="Demographics.title" %}
   {% input field="Demographics.first_name" %}
   {% input field="Demographics.surname" %}
@@ -30,4 +351,4 @@
   {% select field="Demographics.marital_status" %}
   {% select field="Demographics.ethnicity" %}
   {% input field="Demographics.birth_place" %}
-</div>
+</form>

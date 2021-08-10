@@ -1,0 +1,15 @@
+<div class="row content-offset-below-10">
+  <div class="col-md-12">
+    <strong>
+      <i class="fa fa-calendar"></i>
+      &nbsp;
+      {{ appointment.start_datetime|date:"d M Y G:i" }}
+      Appt
+    </strong>
+    {{ appointment.derived_appointment_type }}
+    {# almost all status codes are checked out, so lets just assume that's the case #}
+    {% if not appointment.status_code == 'Checked Out' and not appointment.status_code == 'Confirmed' %}
+    {{ appointment.status_code }}
+    {% endif %}
+  </div>
+</div>

@@ -24,4 +24,4 @@ def location_alerts(location, **k):
     if ipc_episodes.exists():
         alerts = ipc_episodes.first().infectionalert_set.all()
 
-    return {'alerts': alerts}
+    return {'alerts': alerts[:8]}

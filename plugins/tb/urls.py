@@ -49,12 +49,22 @@ urlpatterns = [
         name="tb_clinic_list"
     ),
     url(
+        r'^templates/tb/last_30_days.html$',
+        views.Last30Days.as_view(),
+        name="last_30_days"
+    ),
+    url(
         r'^tb/patient_consultation_print/(?P<pk>\d+)/?$',
         views.PrintConsultation.as_view()
     ),
     url(
-        r'^templates/tb/mdt_list.html$',
+        r'^tb/mdt/(?P<site>[a-z_\-]+)/$',
         views.MDTList.as_view(),
-        name="mdt_list"
+        name="tb_mdt"
+    ),
+    url(
+        r'^templates/tb/outstanding_mdt_list/$',
+        views.OutstandingActionsMDT.as_view(),
+        name="outstanding_mdt_list"
     )
 ]

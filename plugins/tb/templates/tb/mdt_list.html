@@ -1,46 +1,77 @@
 {% extends "tb/base.html" %}
+{% load elcid_panels %}
 {% block tb_content %}
-<div class="panel panel-default">
+<div class="panel panel-default tb-clinic-list">
   <div class="panel-heading">
-    <h1>TB Clinic List</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <h1>{{ request.GET.site }} TB MDT</h1>
+        <p class="content-offset-below-10">{{ rows | length }} {{ view.title }}</p>
+      </div>
+      <div class="col-md-5 text-right content-offset-25">
+        <div class="btn-group" role="group">
+          <a
+            href="/#{% url 'tb_mdt' site=view.RFH %}"
+            class="btn btn-primary {% if view.kwargs.site == view.RFH %}active{% endif %}"
+          >
+            RFH
+          </a>
+          <a
+            href="/#{% url 'tb_mdt' site=view.BARNET %}"
+            class="btn btn-primary {% if view.kwargs.site == view.BARNET %}active{% endif %}"
+          >
+            Barnet
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
   <table class="table table-striped">
-    <tr>
-      <td>Hosp #</td>
-      <td>Patient</td>
-      <td>NHS number</td>
-      <td>Sex</td>
-      <td>Results</td>
-    </tr>
-    {% for demographics, lab_test_dicts in rows %}
-    <tr>
-      <td>{{ demographics.hospital_number }}</td>
-      <td>{{ demographics.name }} ({{ demographics.date_of_birth }})</td>
-      <td>{{ demographics.nhs_number }}</td>
-      <td>{{ demographics.sex }}</td>
-      <td>
-        {% for lab_test_dict in lab_test_dicts %}
-        <div class="row">
-          <div class="col-md-6">
-            {{ lab_test_dict.ordered }} {{ lab_test_dict.lab_number }}
-            {{ lab_test_dict.site }}
-            <br />
-            {{ lab_test_dict.location }}
-          </div>
-          <div class="col-md-6">
-            {% for test_type, result in lab_test_dict.results.items %}
-            {{ test_type }}: {{ result }}<br />
-            {% endfor %}
-          </div>
-        </div>
-        {% endfor %}
-        <br />
-      </td>
-      {% for val in row.values %}
-      <td>{{ val }}</td>
-      {% endfor %}
-    </tr>
+    <tbody>
+      <tr>
+        <th class="col-md-3">Patient</th>
+        <th class="col-md-1">Imaging</th>
+        <th class="col-md-8">Timeline</th>
+      </tr>
+    {% for row in rows %}
+      <tr>
+        <td>
+          {% if row.episode %}
+          <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+          {{ row.demographics.date_of_birth }}
+          <br>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% else %}
+          <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% endif %}
+        </td>
+        <td>
+          <span style="white-space: nowrap;">
+          <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
+            PACS
+            <i class="fa fa-external-link" aria-hidden="true"></i>
+          </a>
+          </span>
+        </td>
+        <td class="tb-mdt-row">
+          {% for ts, timeline_type, instance in row.timeline %}
+            {% if timeline_type == "obs" %}
+              {% include "tb/partials/tb_obs.html" with lab_test=instance title=instance.title %}
+            {% elif timeline_type == 'note' %}
+              {% include "tb/partials/note.html" with note=instance %}
+            {% else %}
+              {% include "tb/partials/appointment.html" with appointment=instance %}
+            {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
     {% endfor %}
+    </tbody>
   </table>
 </div>
 {% endblock %}

@@ -84,6 +84,10 @@
                       <b>Progress: </b>
                       <div markdown="progress"></div>
                     </span>
+                    <span ng-show="item.infection_control">
+                      <b>Infection Control: </b>
+                      <div markdown="infection_control"></div>
+                    </span>
                     <span ng-show="item.plan">
                       <b>Plan: </b>
                       <div markdown="plan"></div>
@@ -116,13 +120,11 @@
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
-                      {% if request.user.is_superuser %}
-                      <div ng-show="item.reason_for_interaction.indexOf('Nurse') != -1" class="col-md-12">
+                      <div ng-show="item.reason_for_interaction.indexOf('Nurse') != -1 || item.reason_for_interaction == 'Contact screening'" class="col-md-12">
                         <a target="_blank" href="/letters/#/tb/nurse_letter/[[ item.id ]]/">
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
-                      {% endif %}
                     </div>
                   </div>
                 </div>

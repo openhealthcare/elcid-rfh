@@ -1,17 +1,13 @@
 import datetime
-from django.db import transaction
 from django.utils import timezone
-from plugins.appointments.models import (
-    PatientAppointmentStatus, Appointment
-)
+from django.db import transaction
+from plugins.appointments import loader
 from opal.models import Patient
 from elcid.models import Demographics
 from elcid import episode_categories as infection_episode_categories
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
-from plugins.tb import episode_categories, constants, logger
-from plugins.appointments.loader import save_or_discard_appointment_data
-from plugins.imaging.loader import load_imaging
+from plugins.tb import episode_categories, constants, logger, models
 
 
 Q_TB_APPOINTMENTS = """
@@ -25,9 +21,58 @@ WHERE Derived_Appointment_Type = @appointment_type
 and Appointment_Start_Datetime > @since
 """
 
+Q_TB_OBS_SINCE = """
+SELECT distinct(Patient_Number) FROM tQuest.Pathology_Result_View
+WHERE OBX_exam_code_Text = @obs_name AND OBR_exam_code_Text=@test_name
+and date_inserted > @since
+"""
+
 
 @transaction.atomic
-def create_tb_episodes():
+def create_patients_from_tb_tests():
+    """
+    For everyone who has a Smear, culture, ref lab report
+    or TB PCR make sure we have a patient. We don't need to
+    create TB episodes. This will be done by
+    the TB observation cron job if they have
+    resulted positive for TB
+    """
+    api = ProdAPI()
+    three_days_ago = timezone.now() - datetime.timedelta(3)
+    hns = set()
+    for tb_obs_model in models.TB_OBS:
+        for test_name in tb_obs_model.TEST_NAMES:
+            query_result = api.execute_trust_query(
+                Q_TB_OBS_SINCE, params={
+                    "since": three_days_ago,
+                    "test_name": test_name,
+                    "obs_name": tb_obs_model.OBSERVATION_NAME
+                }
+            )
+            hns = hns.union([i["Patient_Number"] for i in query_result])
+
+    for hn in list(hns):
+        hn = hn.strip()
+        # don't process empty hospital numbers
+        if not hn:
+            continue
+        if not Demographics.objects.filter(
+            hospital_number=hn
+        ).exists():
+            create_rfh_patient_from_hospital_number(
+                    hn, infection_episode_categories.InfectionService
+            )
+
+
+@transaction.atomic
+def create_tb_episodes_for_appointments():
+    """
+    If a patient has a TB appointment coming up and they
+    are not on elcid create them.
+
+    If a patient has an upcoming TB appointment and no
+    TB episode, create that.
+    """
     api = ProdAPI()
     results = set()
     for appointment in constants.TB_APPOINTMENT_CODES:
@@ -86,7 +131,6 @@ def update_tb_patient(appointment_dict):
         patient.create_episode(
             category_name=episode_categories.TbEpisode.display_name
         )
-    save_or_discard_appointment_data(appointment_dict, patient)
 
 
 def refresh_future_tb_appointments():
@@ -94,7 +138,6 @@ def refresh_future_tb_appointments():
     since = datetime.datetime.combine(
         datetime.date.today(), datetime.datetime.min.time()
     )
-    upstream_appointments = []
     for appointment_type in constants.TB_APPOINTMENT_CODES:
         result = api.execute_hospital_query(
             Q_TB_APPOINTMENTS_SINCE, params={
@@ -102,50 +145,4 @@ def refresh_future_tb_appointments():
                 'since': since
             }
         )
-        upstream_appointments.extend(result)
-
-    updated_hns = []
-    failed = 0
-
-    for appointment in upstream_appointments:
-        try:
-            update_tb_patient(appointment)
-        except Exception:
-            failed += 1
-        updated_hns.append(appointment["vPatient_Number"])
-
-    PatientAppointmentStatus.objects.filter(
-        patient__demographics__hospital_number__in=updated_hns
-    ).update(
-        has_appointments=True
-    )
-    logger.info(f"Updated {len(updated_hns)} patients appointments")
-    if failed:
-        logger.error(f"Failed to update {failed} appointments")
-
-
-def load_todays_imaging():
-    """
-    for every patient who has a tb appointment today,
-    refresh their imaging
-    """
-    today = timezone.now().date()
-    tomorrow = today + datetime.timedelta(1)
-    appointment_types = constants.TB_APPOINTMENT_CODES
-    appointments = Appointment.objects.filter(
-        derived_appointment_type__in=appointment_types
-    ).filter(
-        start_datetime__gte=today,
-        start_datetime__lte=tomorrow
-    ).select_related('patient')
-    failed = 0
-    for appointment in appointments:
-        try:
-            load_imaging(appointment.patient)
-        except Exception:
-            logger.info(
-                f"Failed to load imaging for tb patient {appointment.patient.id}"
-            )
-            failed += 1
-    if failed:
-        logger.error(f"Failed to load {failed} tb patients imaging")
+        loader.update_appointments_from_query_result(result)

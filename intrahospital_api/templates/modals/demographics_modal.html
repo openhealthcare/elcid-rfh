@@ -1,7 +1,30 @@
-{% extends 'base_templates/form_modal_base.html' %}
-{% block modal_save %}
-{# we only show the save if its an editable modal #}
-<span ng-hide="editing.demographics.external_system">
-  {{ block.super }}
-</span>
-{% endblock %}
+<div class="modal-header">
+  <!-- <button type="button" class="close" ng-click="cancel()">×</button> -->
+  <h3>
+    {% block icon %}<i class="{% block icon_name %}{{ column.get_icon }}{% endblock %}"></i>{% endblock %}
+    {% block title %}
+    {{ column.get_display_name }}
+    <span ng-show="editingName">
+      ([[ editingName]])
+    </span>
+    {% endblock %}
+  </h3>
+</div>
+<div class="modal-body" ng-class="{'externally-sourced': editing.demographics.external_system}">
+  {% include models.Demographics.get_form_template %}
+</div>
+<div class="modal-footer" ng-class="{'externally-sourced': editing.demographics.external_system}">
+  <span ng-show="!editing.demographics.external_system">
+    <button class="btn btn-cancel" ng-click="cancel()">
+      Cancel
+    </button>
+    <button class="btn btn-primary btn-save" ng-click="form.$valid && save('save')">
+      <i class="fa fa-save"></i> Save
+    </button>
+  </span>
+  <span ng-show="editing.demographics.external_system">
+    <button class="btn btn-cancel" ng-click="cancel()">
+      Close
+    </button>
+  </span>
+</div>

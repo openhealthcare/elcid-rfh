@@ -20,5 +20,15 @@ urlpatterns = [
         'templates/monitoring/patient_information_load_stats.html',
         views.PatientInformationLoadStats.as_view(),
         name='patient_information_load_stats'
-    )
+    ),
+    url(
+        'templates/monitoring/imaging_load_stats.html',
+        views.ImagingLoadStats.as_view(),
+        name='imaging_load_stats'
+    ),
+    url(
+        'templates/monitoring/appointment_load_stats.html',
+        views.AppointmentLoadStats.as_view(),
+        name='appointment_load_stats'
+    ),
 ]

@@ -16,9 +16,14 @@ class LabTestTestCase(OpalTestCase):
             "status": "Sucess",
             "test_code": "AN12",
             "test_name": "Anti-CV2 (CRMP-5) antibodies",
+            "accession_number": "123456",
+            "encounter_consultant_name": "DR. M. SMITH",
+            "encounter_location_name": "RAL 6 NORTH",
+            "encounter_location_code": "6N",
             "observations": [{
                 "last_updated": "18/07/2015 04:15:10",
                 "observation_datetime": "19/07/2015 04:15:10",
+                "reported_datetime": "20/07/2015 04:15:10",
                 "observation_name": "Aerobic bottle culture",
                 "observation_number": "12312",
                 "observation_value": "123",
@@ -192,6 +197,7 @@ class LabTestTestCase(OpalTestCase):
             'Blood'
         )
 
+
 class ObservationTestCase(OpalTestCase):
     def test_value_numeric(self):
         observation = models.Observation()
@@ -242,3 +248,33 @@ class ObservationTestCase(OpalTestCase):
         observation = models.Observation()
         observation.observation_value = 'Not pending'
         self.assertFalse(observation.is_pending)
+
+    def test_is_outside_reference_range_is_no_reference_range(self):
+        observation = models.Observation()
+        observation.reference_range = "-"
+        observation.observation_value = "1"
+        self.assertIsNone(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_is_no_value(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "asdf"
+        self.assertIsNone(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_max(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "5"
+        self.assertTrue(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_min(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "0.5"
+        self.assertTrue(observation.is_outside_reference_range())
+
+    def test_is_outside_reference_range_false(self):
+        observation = models.Observation()
+        observation.reference_range = "1.5 - 4"
+        observation.observation_value = "3"
+        self.assertFalse(observation.is_outside_reference_range())

@@ -7,6 +7,19 @@ from django.views.generic import TemplateView
 from elcid.constants import (
     PATIENT_INFORMATION_SYNC_TIME, PATIENT_INFORMATION_UPDATE_COUNT
 )
+from plugins.imaging.constants import (
+    IMAGING_LOAD_TIME_FACT,
+    IMAGING_LOAD_CREATED_COUNT_FACT,
+    IMAGING_LOAD_PATIENT_COUNT_FACT,
+    IMAGING_COUNT_FACT
+)
+
+from plugins.appointments.constants import (
+    APPOINTMENTS_LOAD_TIME_FACT,
+    APPOINTMENTS_LOAD_CREATED_COUNT_FACT,
+    APPOINTMENTS_LOAD_PATIENT_COUNT_FACT,
+    APPOINTMENTS_COUNT_FACT
+)
 
 from plugins.monitoring.models import Fact
 
@@ -58,11 +71,51 @@ class PatientInformationLoadStats(LoginRequiredMixin, TemplateView):
         return context
 
 
+class ImagingLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/imaging_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['imaging_load_time_fact'] = graph_data_for_label(
+            IMAGING_LOAD_TIME_FACT
+        )
+        context['imaging_load_created_count_fact'] = graph_data_for_label(
+            IMAGING_LOAD_CREATED_COUNT_FACT
+        )
+        context['imaging_load_patient_count_fact'] = graph_data_for_label(
+            IMAGING_LOAD_PATIENT_COUNT_FACT
+        )
+        context['imaging_count_fact'] = graph_data_for_label(
+            IMAGING_COUNT_FACT
+        )
+        return context
+
+
+class AppointmentLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/appointment_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['appointments_load_time_fact'] = graph_data_for_label(
+            APPOINTMENTS_LOAD_TIME_FACT
+        )
+        context['appointments_load_created_count_fact'] = graph_data_for_label(
+            APPOINTMENTS_LOAD_CREATED_COUNT_FACT
+        )
+        context['appointments_load_patient_count_fact'] = graph_data_for_label(
+            APPOINTMENTS_LOAD_PATIENT_COUNT_FACT
+        )
+        context['appointments_count_fact'] = graph_data_for_label(
+            APPOINTMENTS_COUNT_FACT
+        )
+        return context
+
+
 class SystemStats(LoginRequiredMixin, TemplateView):
     template_name = 'monitoring/system_stats.html'
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
-        context['back_up_size'] = graph_data_for_label('Backup size (MB)')
+        context['back_up_size'] = graph_data_for_label('Backup size (GB)')
         context['disk_usage']   = graph_data_for_label('Disk Usage Percentage')
         return context
