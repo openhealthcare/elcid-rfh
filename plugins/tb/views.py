@@ -368,7 +368,7 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx["rows_by_date"] = defaultdict(list)
+        ctx["rows_by_date"] = defaultdict(lambda: defaultdict(list))
         patient_ids = set([i.patient_id for i in ctx["object_list"]])
         patient_id_to_demographics = self.get_patient_id_to_demographics(patient_ids)
         patient_id_to_consultation = self.get_patient_id_to_recent_consultation(
@@ -386,16 +386,62 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
 
             demographics = patient_id_to_demographics.get(admission.patient_id)
             recent_consultation = patient_id_to_consultation.get(admission.patient_id)
-            ctx["rows_by_date"][admission.start_datetime.date()].append(
-                (
-                    admission,
-                    demographics,
-                    tb_episode,
-                    recent_consultation,
+            start_date = admission.start_datetime.date()
+            if admission.status_code == 'Canceled':
+                ctx["rows_by_date"][start_date]['canceled'].append(
+                    (
+                        admission,
+                        demographics,
+                        tb_episode,
+                        recent_consultation,
+                    )
                 )
-            )
-        ctx["rows_by_date"] = dict(ctx["rows_by_date"])
+            else:
+                ctx["rows_by_date"][start_date]['not_canceled'].append(
+                    (
+                        admission,
+                        demographics,
+                        tb_episode,
+                        recent_consultation,
+                    )
+                )
+
+        # defualteddict doesn't let you use items in a template
+        # so lets just cast it to regular old dicts
+        ctx["rows_by_date"] = {k: dict(v) for k, v in ctx["rows_by_date"].items()}
+
+        for some_date, state_dict in ctx["rows_by_date"].items():
+            not_canceled = state_dict["not_canceled"]
+            recent_consultation = [
+                k[3] for k in not_canceled if k[3] and k[3].when.date() == some_date
+            ]
+            ctx["rows_by_date"][some_date]["stats"] = {
+                'on_elcid': len(recent_consultation)
+            }
         return ctx
+
+
+class ClinicListForDate(AbstractTBAppointmentList):
+    template_name = "tb/tb_patient_list.html"
+
+    @property
+    def name(self):
+        return f"Clinic list for {self.date_stamp.strftime('%-d %b %Y')}"
+
+    @property
+    def date_stamp(self):
+        date_stamp = self.kwargs["date_stamp"]
+        return datetime.datetime.strptime(date_stamp, "%d%b%Y").date()
+
+    def get_queryset(self, *args, **kwargs):
+        appointment_types = constants.TB_APPOINTMENT_CODES
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+        ).filter(
+            start_datetime__date=self.date_stamp,
+        ).prefetch_related(
+            'patient__episode_set'
+        )
 
 
 class ClinicList(AbstractTBAppointmentList):
@@ -409,10 +455,8 @@ class ClinicList(AbstractTBAppointmentList):
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
-           start_datetime__gte=today,
-           start_datetime__lte=until
-        ).exclude(
-           status_code="Canceled"
+            start_datetime__date__gte=today,
+            start_datetime__date__lte=until
         ).order_by(
            "start_datetime"
         ).prefetch_related(
@@ -427,8 +471,13 @@ class Last30Days(AbstractTBAppointmentList):
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
         until = today - datetime.timedelta(30)
+<<<<<<< HEAD
+        appointment_types = constants.TB_APPOINTMENT_CODES
+        appointments = Appointment.objects.filter(
+=======
         appointment_types = constants.RFH_TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
+>>>>>>> @{-1}
             derived_appointment_type__in=appointment_types
         ).filter(
            start_datetime__lte=today,
@@ -436,9 +485,12 @@ class Last30Days(AbstractTBAppointmentList):
         ).exclude(
            status_code="Canceled"
         ).order_by(
-           "-start_datetime"
+           "start_datetime"
         ).prefetch_related(
             'patient__episode_set'
+        )
+        return sorted(
+            appointments, key=lambda x: x.start_datetime.date(), reverse=True
         )
 
 
