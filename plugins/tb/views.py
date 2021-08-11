@@ -472,7 +472,7 @@ class Last30Days(AbstractTBAppointmentList):
         today = timezone.now().date()
         until = today - datetime.timedelta(30)
         appointment_types = constants.RFH_TB_APPOINTMENT_CODES
-        return Appointment.objects.filter(
+        appointments = Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
            start_datetime__lte=today,
