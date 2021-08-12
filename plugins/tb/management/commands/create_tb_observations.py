@@ -9,7 +9,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from plugins.labtests.models import Observation
-from plugins.tb import logger, episode_categories, models
+from plugins.tb import logger, episode_categories, models, lab
 from opal.models import Patient
 
 
@@ -45,16 +45,68 @@ def populate_tests(since):
         )
 
 
+@transaction.atomic
+def populate_tb_culture_summaries(since):
+    cultures = lab.AFBCulture.get_positive_observations().filter(
+        last_updated__gte=since
+    ).select_related('test')
+    lab_number_to_culture = {
+        i.test.lab_number: i for i in cultures
+    }
+    smears = lab.AFBSmear.get_positive_observations().filter(
+        last_updated__gte=since
+    ).select_related('test')
+    lab_number_to_smear = {
+        i.test.lab_number: i for i in smears
+    }
+    lab_numbers = list(lab_number_to_culture.keys()) + list(lab_number_to_smear.keys())
+    lab_numbers = list(set(lab_numbers))
+    populated = 0
+    for lab_number in lab_numbers:
+        updated = False
+        culture = lab_number_to_culture.get(lab_number)
+        smear = lab_number_to_smear.get(lab_number)
+        if smear:
+            patient_id = smear.test.patient_id
+        else:
+            patient_id = culture.test.patient_id
+        summary = models.AFBCultureSummary.objects.filter(
+            lab_number=lab_number, patient_id=patient_id
+        ).first()
+        if not summary:
+            summary = models.AFBCultureSummary(
+                lab_number=lab_number,
+                patient_id=patient_id
+            )
+        if smear and not summary.smear_positive:
+            summary.smear_positive = smear.reported_datetime
+            updated = True
+        if culture and not summary.culture_positive:
+            summary.culture_positive = culture.reported_datetime
+            updated = True
+        if updated:
+            summary.save()
+            populated += 1
+    logger.info(
+        f'populated {populated} tb culture summaries'
+    )
+
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
         three_days_ago = timezone.now() - datetime.timedelta(3)
         start = time.time()
         populate_tests(three_days_ago)
+        populate_tb_culture_summaries(three_days_ago)
         end_populate = time.time()
         logger.info(
             f"Creating TB observations: Finished creating TB tests in {end_populate-start}s"
         )
-        patient_ids = set()
+        patient_ids = set(
+            models.AFBCultureSummary.objects.values_list(
+                'patient_id', flat=True
+            ).distinct()
+        )
         for tb_obs_model in TB_OBSERVATIONS:
             patient_ids = patient_ids.union(
                 tb_obs_model.objects.filter(positive=True)
