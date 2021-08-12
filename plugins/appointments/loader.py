@@ -133,10 +133,6 @@ def update_appointments_from_query_result(upstream_rows):
     appointment_id_to_existing_appointments = {
         ea.appointment_id: ea for ea in existing_appointment
     }
-
-    appointment_id_to_upstream_rows = defaultdict(list)
-    for appointment_id, upstream_row in appointment_id_to_upstream_row.items():
-        appointment_id_to_upstream_rows[appointment_id]
     to_create = []
     to_delete = []
     hospital_numbers = {row["vPatient_Number"].strip() for row in upstream_rows}
@@ -148,7 +144,8 @@ def update_appointments_from_query_result(upstream_rows):
         hospital_number_to_patients[demo.hospital_number].append(
             demo.patient
         )
-    for row in upstream_rows:
+    cleaned_rows = list(appointment_id_to_upstream_row.values())
+    for row in cleaned_rows:
         hn = row["vPatient_Number"].strip()
         # if hn is empty, skip it
         if hn == "":
