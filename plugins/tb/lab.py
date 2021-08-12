@@ -34,45 +34,6 @@ class TBTest(object):
     def get_resulted_observations(cls):
         return cls.get_positive_observations() | cls.get_negative_observations()
 
-    @classmethod
-    def get_last_resulted_observation(cls, patient):
-        last_negative = cls.get_negative_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        last_positive = cls.get_positive_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        if last_negative and last_positive:
-            last_negative_date = last_negative.test.datetime_ordered.date()
-            last_positive_date = last_positive.test.datetime_ordered.date()
-            if last_negative_date > last_positive_date:
-                return last_negative
-            return last_positive
-        return last_positive or last_negative
-
-    @classmethod
-    def get_first_resulted_observation(cls, patient):
-        first_negative = cls.get_negative_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        first_positive = cls.get_positive_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        if first_negative and first_positive:
-            first_negative_date = first_negative.test.datetime_ordered.date()
-            first_positive_date = first_positive.test.datetime_ordered.date()
-            if first_negative_date > first_positive_date:
-                return first_negative
-            return first_positive
-
 
 class AFBCulture(TBTest):
     TEST_NAME = 'AFB : CULTURE'
@@ -153,17 +114,3 @@ class TBPCR(TBTest):
         # if obs_value.endswith(to_remove):
         #     obs_value = obs_value[:obs_value.index(to_remove)].strip()
         return obs_value.split("~")[0].strip()
-
-
-TBTests = [
-    AFBCulture, AFBSmear, TBPCR
-]
-
-
-def get_tb_test(observation):
-    for tb_test in TBTests:
-        obs_test = observation.test
-        if obs_test.test_name == tb_test.TEST_NAME:
-            if obs_test.test_code == tb_test.TEST_CODE:
-                if observation.observation_name == tb_test.OBSERVATION_NAME:
-                    return tb_test
