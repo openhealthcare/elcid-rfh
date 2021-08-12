@@ -7,17 +7,14 @@ from plugins.labtests.models import Observation
 from django.db.models import Q
 
 
-class TBTest(object):
-    TEST_NAME = None
-    TEST_CODE = None
+class TBObservation(object):
+    TEST_NAMES = None
     OBSERVATION_NAME = None
 
     @classmethod
     def get_observations(cls):
         return Observation.objects.filter(
-            test__test_name=cls.TEST_NAME
-        ).filter(
-            test__test_code=cls.TEST_CODE
+            test__test_name__in=cls.TEST_NAMES
         ).filter(
             observation_name=cls.OBSERVATION_NAME
         )
@@ -35,9 +32,12 @@ class TBTest(object):
         return cls.get_positive_observations() | cls.get_negative_observations()
 
 
-class AFBCulture(TBTest):
-    TEST_NAME = 'AFB : CULTURE'
-    TEST_CODE = 'AFB'
+class AFBCulture(TBObservation):
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
     OBSERVATION_NAME = 'TB: Culture Result'
 
     @classmethod
@@ -57,9 +57,12 @@ class AFBCulture(TBTest):
         return observation.observation_value.split("~")[0].lstrip("1)").strip()
 
 
-class AFBSmear(TBTest):
-    TEST_NAME = 'AFB : CULTURE'
-    TEST_CODE = 'AFB'
+class AFBSmear(TBObservation):
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
     OBSERVATION_NAME = 'AFB Smear'
 
     @classmethod
@@ -82,9 +85,30 @@ class AFBSmear(TBTest):
         return observation.observation_value.split("~")[0].strip()
 
 
-class TBPCR(TBTest):
-    TEST_NAME = 'TB PCR TEST'
-    TEST_CODE = "TBGX"
+class AFBRefLab(TBObservation):
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
+    OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
+
+    @classmethod
+    def get_positive_observations(cls):
+        return cls.get_observations().filter(
+            observation_value__startswith="1"
+        )
+
+    @classmethod
+    def get_negative_observations(cls):
+        """
+        Ref lab reports are always positive
+        """
+        return Observation.objects.none()
+
+
+class TBPCR(TBObservation):
+    TEST_NAMES = ['TB PCR TEST']
     OBSERVATION_NAME = 'TB PCR'
 
     @classmethod
