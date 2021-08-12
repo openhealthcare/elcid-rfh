@@ -885,3 +885,22 @@ class TBPCR(AbstractTBObservation):
 
 
 TB_OBS = (TBPCR, AFBRefLab, AFBCulture, AFBSmear)
+
+
+class AFBCultureSummary(fields.Model):
+    """
+    A model that stores date_reported timestamp
+    when a smear becomes positive and when a
+    culture becomes positive
+    """
+    lab_number = fields.CharField(
+        blank=True, null=True, max_length=256
+    )
+    patient = fields.ForeignKey(
+        models.Patient,
+        on_delete=fields.CASCADE,
+    )
+    smear_positive = fields.DateTimeField(
+        blank=True, null=True
+    )
+    culture_positive = fields.DateTimeField
