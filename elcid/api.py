@@ -280,7 +280,11 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
     ),)
 
     ANTIFUNGAL_TESTS = OrderedDict((
-        ("BETA D GLUCAN TEST", ["Beta Glucan test:", "Beta Glucan concentration"]),
+        ("BETA D GLUCAN TEST", [
+            "Beta Glucan test:",
+            "Beta Glucan concentration",
+            "Beta Glucan conc. (pg/mL)",
+        ]),
         ("GALACTOMANNAN AGN. ELISA", ["Galactomannan Agn. ELISA", "Galactomannan Agn. INDEX"])
     ))
 
@@ -288,6 +292,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         "BETA D GLUCAN TEST": "Beta D Glucan",
         "GALACTOMANNAN AGN. ELISA": "Galactomannan",
         "Beta Glucan test:": "",
+        "Beta Glucan conc. (pg/mL)": "Concentration (pg/mL)",
         "Beta Glucan concentration": "Concentration",
         "Galactomannan Agn. ELISA": "Agn. ELISA",
         "Galactomannan Agn. INDEX": "Agn. INDEX"

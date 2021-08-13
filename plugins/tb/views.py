@@ -13,7 +13,8 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import PatientConsultation, TBPCR, Treatment
+from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -49,6 +50,69 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
             result["observation_datetime"] = deserialize_datetime(
                 result["observation_datetime"]
             )
+        last_qf_obs = lab_models.Observation.objects.filter(
+            test__patient=patient,
+            test__test_name='QUANTIFERON TB GOLD IT',
+            observation_name='QFT TB interpretation'
+        ).exclude(
+            observation_value__iexact='pending'
+        ).order_by('-observation_datetime').first()
+        ctx["igra"] = []
+        if last_qf_obs:
+            last_qf_test = last_qf_obs.test
+            ctx["igra"] = [
+                last_qf_test.observation_set.filter(
+                    observation_name='QFT TB interpretation'
+                ).first(),
+                last_qf_test.observation_set.filter(
+                    observation_name='QFT IFN gamma result (TB1)'
+                ).first(),
+                last_qf_test.observation_set.filter(
+                    observation_name='QFT IFN gamma result (TB2)'
+                ).first()
+            ]
+            ctx["igra"] = [i for i in ctx["igra"] if i]
+
+        # Show the last positive culture and PCR and the last recent resulted if later
+        # than the last positive
+        pcr_qs = TBPCR.objects.filter(patient=self.object.episode.patient)
+        last_positive_pcr = pcr_qs.filter(
+            positive=True
+        ).filter(
+            patient=self.object.episode.patient
+        ).order_by(
+            '-observation_datetime'
+        ).first()
+        if last_positive_pcr:
+            last_resulted = pcr_qs.filter(pending=False).filter(
+                observation_datetime__date__gt=last_positive_pcr.observation_datetime.date()
+            ).order_by(
+                '-observation_datetime'
+            ).first()
+        else:
+            last_resulted = pcr_qs.filter(pending=False).order_by(
+                '-observation_datetime'
+            ).first()
+        ctx["pcrs"] = [i for i in [last_positive_pcr, last_resulted] if i]
+        ctx["pcrs"].reverse()
+
+        afb_qs = AFBRefLab.objects.filter(patient=self.object.episode.patient)
+        last_positive_culture = afb_qs.filter(positive=True).order_by(
+            '-observation_datetime'
+        ).first()
+        if last_positive_culture:
+            last_resulted = afb_qs.filter(pending=False).filter(
+                observation_datetime__date__gt=last_positive_culture.observation_datetime.date()
+            ).order_by(
+                '-observation_datetime'
+            ).first()
+        else:
+            last_resulted = afb_qs.filter(pending=False).order_by(
+                '-observation_datetime'
+            ).first()
+        ctx["cultures"] = [i for i in [last_positive_culture, last_resulted] if i]
+        ctx["cultures"].reverse()
+
         ctx["travel_list"] = episode.travel_set.all()
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
@@ -304,7 +368,7 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx["rows_by_date"] = defaultdict(list)
+        ctx["rows_by_date"] = defaultdict(lambda: defaultdict(list))
         patient_ids = set([i.patient_id for i in ctx["object_list"]])
         patient_id_to_demographics = self.get_patient_id_to_demographics(patient_ids)
         patient_id_to_consultation = self.get_patient_id_to_recent_consultation(
@@ -322,16 +386,62 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
 
             demographics = patient_id_to_demographics.get(admission.patient_id)
             recent_consultation = patient_id_to_consultation.get(admission.patient_id)
-            ctx["rows_by_date"][admission.start_datetime.date()].append(
-                (
-                    admission,
-                    demographics,
-                    tb_episode,
-                    recent_consultation,
+            start_date = admission.start_datetime.date()
+            if admission.status_code == 'Canceled':
+                ctx["rows_by_date"][start_date]['canceled'].append(
+                    (
+                        admission,
+                        demographics,
+                        tb_episode,
+                        recent_consultation,
+                    )
                 )
-            )
-        ctx["rows_by_date"] = dict(ctx["rows_by_date"])
+            else:
+                ctx["rows_by_date"][start_date]['not_canceled'].append(
+                    (
+                        admission,
+                        demographics,
+                        tb_episode,
+                        recent_consultation,
+                    )
+                )
+
+        # defualteddict doesn't let you use items in a template
+        # so lets just cast it to regular old dicts
+        ctx["rows_by_date"] = {k: dict(v) for k, v in ctx["rows_by_date"].items()}
+
+        for some_date, state_dict in ctx["rows_by_date"].items():
+            not_canceled = state_dict["not_canceled"]
+            recent_consultation = [
+                k[3] for k in not_canceled if k[3] and k[3].when.date() == some_date
+            ]
+            ctx["rows_by_date"][some_date]["stats"] = {
+                'on_elcid': len(recent_consultation)
+            }
         return ctx
+
+
+class ClinicListForDate(AbstractTBAppointmentList):
+    template_name = "tb/tb_patient_list.html"
+
+    @property
+    def name(self):
+        return f"Clinic list for {self.date_stamp.strftime('%-d %b %Y')}"
+
+    @property
+    def date_stamp(self):
+        date_stamp = self.kwargs["date_stamp"]
+        return datetime.datetime.strptime(date_stamp, "%d%b%Y").date()
+
+    def get_queryset(self, *args, **kwargs):
+        appointment_types = constants.TB_APPOINTMENT_CODES
+        return Appointment.objects.filter(
+            derived_appointment_type__in=appointment_types
+        ).filter(
+            start_datetime__date=self.date_stamp,
+        ).prefetch_related(
+            'patient__episode_set'
+        )
 
 
 class ClinicList(AbstractTBAppointmentList):
@@ -341,14 +451,12 @@ class ClinicList(AbstractTBAppointmentList):
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
         until = today + datetime.timedelta(30)
-        appointment_types = constants.TB_APPOINTMENT_CODES
+        appointment_types = constants.RFH_TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
-           start_datetime__gte=today,
-           start_datetime__lte=until
-        ).exclude(
-           status_code="Canceled"
+            start_datetime__date__gte=today,
+            start_datetime__date__lte=until
         ).order_by(
            "start_datetime"
         ).prefetch_related(
@@ -363,7 +471,7 @@ class Last30Days(AbstractTBAppointmentList):
     def get_queryset(self, *args, **kwargs):
         today = timezone.now().date()
         until = today - datetime.timedelta(30)
-        appointment_types = constants.TB_APPOINTMENT_CODES
+        appointment_types = constants.RFH_TB_APPOINTMENT_CODES
         return Appointment.objects.filter(
             derived_appointment_type__in=appointment_types
         ).filter(
@@ -372,9 +480,12 @@ class Last30Days(AbstractTBAppointmentList):
         ).exclude(
            status_code="Canceled"
         ).order_by(
-           "-start_datetime"
+           "start_datetime"
         ).prefetch_related(
             'patient__episode_set'
+        )
+        return sorted(
+            appointments, key=lambda x: x.start_datetime.date(), reverse=True
         )
 
 
@@ -443,12 +554,12 @@ class MDTList(LoginRequiredMixin, TemplateView):
         today = datetime.date.today()
         for i in range(7):
             some_date = today + datetime.timedelta(i)
-            if some_date.isoweekday() == 2:
+            if some_date.isoweekday() == 3:
                 return some_date
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(21)
+        return self.end_date - datetime.timedelta(7)
 
     def title(self):
         from_dt = self.start_date.strftime("%-d %b %Y")
@@ -544,9 +655,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
         appointments = []
         for appointment in patient.appointments.all():
             appt_type = appointment.derived_appointment_type
-            if appt_type in constants.MDT_NEW_APPOINTMENT_CODES:
+            if appt_type in constants.TB_NEW_APPOINTMENT_CODES:
                 appointments.append(appointment)
-            elif appt_type in constants.MDT_APPOINTMENT_CODES:
+            elif appt_type in constants.TB_APPOINTMENT_CODES:
                 if appointment.start_datetime > timezone.now():
                     appointments.append(appointment)
 
@@ -571,6 +682,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(*args, **kwargs)
         patients = self.get_patients()
         ctx["rows"] = self.patients_to_rows(patients)
+        ctx["last_week"] = self.start_date
         return ctx
 
 

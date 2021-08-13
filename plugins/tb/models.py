@@ -776,7 +776,7 @@ class AFBCulture(AbstractTBObservation):
         return new_model
 
     def has_sensitivities(self):
-        return self.value.count("1)") > 1
+        return self.value.count("1)") > 1 or self.value.count("2)") > 1
 
     def display_value(self):
         val = super().display_value().strip()

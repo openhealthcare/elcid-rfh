@@ -155,12 +155,12 @@ def update_imaging_from_query_result(imaging_rows):
                 date_reported = timezone.make_aware(row["date_reported"])
                 if date_reported > existing_imaging.date_reported:
                     patient_id = existing_imaging.patient_id
-                    logger.info(
+                    logger.debug(
                         f"Imaging: checking for patient id {patient_id} sql id {sql_id}"
                     )
                     changed = get_changed_imaging_fields(existing_imaging, row)
                     for k, v in changed.items():
-                        logger.info(
+                        logger.debug(
                             f'Imaging: updating {k} was {v["old_val"]} now {v["new_val"]}'
                         )
                     to_delete.append(existing_imaging)

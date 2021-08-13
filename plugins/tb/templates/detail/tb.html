@@ -2,8 +2,7 @@
 {% load forms %}
 <div class="row">
   <div class="col-md-6">
-    {% include "panels/external_links.html" %}
-    {% include "partials/tb_summary_tests.html" %}
+    {% include "partials/tb_tests.html" %}
     {% include "panels/symptoms.html" %}
 
     {% include 'panels/primary_diagnosis.html' %}
@@ -23,12 +22,13 @@
     {% include 'panels/tb/imaging.html' %}
     {% record_panel models.OtherInvestigation title="Other Investigations"%}
     {% record_panel models.MantouxTest %}
-    {% record_panel models.ContactDetails %}
+    {% include "panels/tb/contact_details.html" %}
     {% record_panel models.NextOfKin %}
   </div>
 
   <div class="col-md-6">
-
+    {% include "partials/tb_appointments.html" %}
+    {% include "partials/tb_summary_tests.html" %}
     <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
       <div class="panel-body">
         <div class="patient-timeline-container">
