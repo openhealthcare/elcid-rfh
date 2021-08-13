@@ -6,15 +6,18 @@ from collections import defaultdict
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
+from django.db.models import Q
+from django.utils.functional import cached_property
 from django.views.generic import TemplateView
 from opal.core.serialization import deserialize_datetime
-from opal.models import PatientConsultationReasonForInteraction
+from opal.models import Patient, PatientConsultationReasonForInteraction
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
-from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.tb import episode_categories, constants, models, lab
+from plugins.tb.models import AFBCultureSummary, AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
 from plugins.labtests import models as lab_models
+from plugins.appointments import models as appointment_models
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -499,12 +502,185 @@ class MDTList(LoginRequiredMixin, TemplateView):
     BARNET = "barnet"
     RFH = "rfh"
     SITES = [RFH, BARNET]
+
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 3:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(7)
+
+    @cached_property
+    def patient_id_to_culture_summaries(self):
+        summaries = AFBCultureSummary.objects.filter(
+            Q(smear_positive__gte=self.start_date) |
+            Q(culture_positive__gte=self.start_date)
+        )
+        if self.kwargs["site"] == self.BARNET:
+            summaries.filter(lab_number__contains="K")
+        else:
+            summaries.filter(lab_number__contains="L")
+        result = defaultdict(list)
+        for summary in summaries:
+            result[summary.patient_id].append(summary)
+        return result
+
+    @cached_property
+    def patient_id_to_pcr(self):
+        pcrs = lab.TBPCR.get_positive_observations().filter(
+            reported_datetime__gte=self.start_date
+        ).select_related('test')
+        result = defaultdict(list)
+        for pcr in pcrs:
+            result[pcr.test.patient_id].append(pcr)
+        return result
+
+    def get_patients(self):
+        pcr_patient_ids = list(self.patient_id_to_pcr.keys())
+        culture_patient_ids = list(self.patient_id_to_culture_summaries.keys())
+        return Patient.objects.filter(
+            id__in=set(pcr_patient_ids + culture_patient_ids)
+        ).prefetch_related(
+            'demographics_set'
+        ).prefetch_related(
+            'episode_set'
+        )
+
+    def patients_to_rows(self, patients):
+        patient_consultations = models.PatientConsultation.objects.filter(
+            episode__patient__in=patients
+        ).filter(
+            when__date=self.end_date
+        ).select_related('episode')
+        patient_id_to_consultations = defaultdict(list)
+        for pc in patient_consultations:
+            if pc.reason_for_interaction == "MDT meeting":
+                patient_id_to_consultations[pc.episode.patient_id].append(
+                    pc
+                )
+
+        resulted_smears = lab.AFBSmear.get_resulted_observations().filter(
+            test__patient__in=patients
+        ).select_related('test')
+
+        patient_id_and_lab_number_to_smear = {
+            (i.test.patient_id, i.test.lab_number): i for i in resulted_smears
+        }
+
+        resulted_cultures = lab.AFBCulture.get_resulted_observations().filter(
+            test__patient__in=patients
+        ).select_related('test')
+
+        patient_id_and_lab_number_to_culture = {
+            (i.test.patient_id, i.test.lab_number): i for i in resulted_cultures
+        }
+
+        resulted_ref_labs = lab.AFBRefLab.get_resulted_observations().filter(
+            test__patient__in=patients
+        )
+        patient_id_and_lab_number_to_ref_lab = {
+            (i.test.patient_id, i.test.lab_number): i for i in resulted_ref_labs
+        }
+
+        rows = []
+        for patient in patients:
+            timeline = []
+            notes = [
+                (i.when, "note",  i) for i in patient_id_to_consultations.get(patient.id, [])
+            ]
+            pcrs = []
+            for pcr in self.patient_id_to_pcr.get(patient.id, []):
+                pcrs.append((
+                    pcr.reported_datetime,
+                    "pcr",
+                    {
+                        'test': pcr.test,
+                        'pcr': lab.TBPCR.display_observation_value(pcr)
+                    },
+                ))
+            cultures = []
+            summaries = self.patient_id_to_culture_summaries.get(patient.id, [])
+            for summary in summaries:
+                when = summary.smear_positive
+                if summary.culture_positive:
+                    when = summary.culture_positive
+                key = (patient.id, summary.lab_number,)
+                test = None
+                smear = patient_id_and_lab_number_to_smear.get(key)
+                smear_display = None
+                if smear:
+                    test = smear.test
+                    smear_display = lab.AFBSmear.display_observation_value(smear)
+                culture = patient_id_and_lab_number_to_culture.get(key)
+                culture_display = None
+                if culture:
+                    test = culture.test
+                    culture_display = lab.AFBCulture.display_observation_value(culture)
+                ref_lab = patient_id_and_lab_number_to_ref_lab.get(key)
+                if ref_lab:
+                    test = ref_lab.test
+                    ref_lab_display = lab.AFBRefLab.display_observation_value(ref_lab)
+
+                cultures.append((
+                    when,
+                    "culture",
+                    {
+                        'test': test,
+                        'smear': smear_display,
+                        'culture': culture_display,
+                        'ref_lab': ref_lab_display
+                    },
+                ))
+            timeline = sorted(notes + pcrs + cultures, key=lambda x: x[0], reverse=True)
+            tb_category_name = episode_categories.TbEpisode.display_name
+            episode = None
+            tb_episodes = [
+                i for i in patient.episode_set.all() if i.category_name == tb_category_name
+            ]
+            if tb_episodes:
+                episode = tb_episodes[0]
+            rows.append({
+                "episode": episode,
+                "demographics": patient.demographics_set.all()[0],
+                "timeline": timeline
+            })
+        return rows
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        patients = self.get_patients()
+        ctx["rows"] = self.patients_to_rows(patients)
+        return ctx
+
+
+class MDTListOld(LoginRequiredMixin, TemplateView):
+    template_name = "tb/mdt_list_old.html"
+    BARNET = "barnet"
+    RFH = "rfh"
+    SITES = [RFH, BARNET]
     ALL_OBS = [
             models.TBPCR,
             models.AFBSmear,
             models.AFBCulture,
             models.AFBRefLab,
     ]
+
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 3:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(7)
 
     def patients_to_rows(self, patients):
         filter_kwargs = {
@@ -548,18 +724,6 @@ class MDTList(LoginRequiredMixin, TemplateView):
                 )
             )
         return result
-
-    @property
-    def end_date(self):
-        today = datetime.date.today()
-        for i in range(7):
-            some_date = today + datetime.timedelta(i)
-            if some_date.isoweekday() == 3:
-                return some_date
-
-    @property
-    def start_date(self):
-        return self.end_date - datetime.timedelta(7)
 
     def title(self):
         from_dt = self.start_date.strftime("%-d %b %Y")

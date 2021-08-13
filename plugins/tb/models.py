@@ -903,4 +903,6 @@ class AFBCultureSummary(fields.Model):
     smear_positive = fields.DateTimeField(
         blank=True, null=True
     )
-    culture_positive = fields.DateTimeField
+    culture_positive = fields.DateTimeField(
+        blank=True, null=True
+    )

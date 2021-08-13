@@ -6,9 +6,7 @@
     <div class="row">
       <div class="col-md-6">
         <h1>{{ request.GET.site }} TB MDT</h1>
-        <p class="content-offset-below-10">
-          {{ rows | length }}  Patients with positive, pcrs, cultures and ref lab reports reported after {{ view.end_date }}
-        </p>
+        <p class="content-offset-below-10">{{ rows | length }} {{ view.title }}</p>
       </div>
       <div class="col-md-5 text-right content-offset-25">
         <div class="btn-group" role="group">
@@ -61,32 +59,13 @@
           </span>
         </td>
         <td class="tb-mdt-row">
-          {% for when, timeline_type, values in row.timeline %}
-            {% if timeline_type == "pcr" %}
-            <strong>
-              <i class="fa fa-crosshairs {% if when >= view.start_date %}primary-text{% endif %}"></i>
-              &nbsp;
-              {{ when |date:"d M Y G:i" }}
-            </strong>
-            {{ values.test.lab_number }}
-            PCR
-            {{ values.test.site_code }}
-            {{ values.pcr }}
-            {% endif %}
-            {% if timeline_type == "culture" %}
-              <strong>
-                <i class="fa fa-crosshairs {% if when >= last_week %}primary-text{% endif %}"></i>
-                &nbsp;
-                {{ when |date:"d M Y G:i" }}
-              </strong>
-              {{ values.test.lab_number }}
-              {{ values.test.test_name }}
-              {{ values.test.site_code }}
-              {{ values.test.smear }}<br />
-              {{ values.test.culture }}<br />
-              {{ values.test.ref_lab }}
+          {% for ts, timeline_type, instance in row.timeline %}
+            {% if timeline_type == "obs" %}
+              {% include "tb/partials/tb_obs.html" with lab_test=instance title=instance.title %}
             {% elif timeline_type == 'note' %}
-              {% include "tb/partials/note.html" with note=values %}
+              {% include "tb/partials/note.html" with note=instance %}
+            {% else %}
+              {% include "tb/partials/appointment.html" with appointment=instance %}
             {% endif %}
           {% endfor %}
         </td>

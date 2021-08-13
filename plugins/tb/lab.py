@@ -106,6 +106,17 @@ class AFBRefLab(TBObservation):
         """
         return Observation.objects.none()
 
+    @classmethod
+    def display_observation_value(cls, observation):
+        val = observation.observation_value.strip()
+        to_remove = "\n".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
+        ])
+        return val.replace(to_remove, "").strip()
+
 
 class TBPCR(TBObservation):
     TEST_NAMES = ['TB PCR TEST']
@@ -127,14 +138,11 @@ class TBPCR(TBObservation):
         pos2 = "'The PCR to detect M.tuberculosis complex was ~ POSITIVE"
         return cls.get_observations().filter(
             Q(observation_value__contains=pos1) |
-            Q(observation_name='TB PCR (GeneXpert) Positive') |
+            Q(observation_value='TB PCR (GeneXpert) Positive') |
             Q(observation_value__contains=pos2)
         )
 
     @classmethod
     def display_observation_value(cls, observation):
-        # to_remove = "This does not exclude a diagnosis of tuberculosis."
         obs_value = observation.observation_value
-        # if obs_value.endswith(to_remove):
-        #     obs_value = obs_value[:obs_value.index(to_remove)].strip()
         return obs_value.split("~")[0].strip()
