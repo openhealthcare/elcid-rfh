@@ -46,6 +46,27 @@ def populate_tests(since):
 
 
 @transaction.atomic
+def populate_pcr_history(since):
+    positive_pcrs = lab.TBPCR.get_positive_observations().filter(
+        last_updated__gte=since
+    ).select_related('test')
+    created = 0
+    for pcr in positive_pcrs:
+        history = models.TBPCRPositiveHistory.objects.filter(
+            lab_number=pcr.test.lab_number,
+            patient_id=pcr.test.patient_id
+        ).first()
+        if not history:
+            models.TBPCRPositiveHistory.objects.create(
+                lab_number=pcr.test.lab_number,
+                patient_id=pcr.test.patient_id,
+                positive=pcr.reported_datetime
+            )
+            created += 1
+    logger.info(f"Created {created} PCR positive histories")
+
+
+@transaction.atomic
 def populate_tb_culture_history(since):
     """
     We use the datetime reported to save when an AFB test becomes
@@ -129,6 +150,7 @@ class Command(BaseCommand):
         start = time.time()
         populate_tests(three_days_ago)
         populate_tb_culture_history(three_days_ago)
+        populate_pcr_history(three_days_ago)
         end_populate = time.time()
         logger.info(
             f"Creating TB observations: Finished creating TB tests in {end_populate-start}s"

@@ -906,3 +906,20 @@ class AFBCulturePositiveHistory(fields.Model):
     culture_positive = fields.DateTimeField(
         blank=True, null=True
     )
+
+
+class TBPCRPositiveHistory(fields.Model):
+    """
+    A model that stores when a PCR becomes
+    positive
+    """
+    lab_number = fields.CharField(
+        blank=True, null=True, max_length=256
+    )
+    patient = fields.ForeignKey(
+        models.Patient,
+        on_delete=fields.CASCADE,
+    )
+    positive = fields.DateTimeField(
+        blank=True, null=True
+    )
