@@ -147,6 +147,25 @@ class AFBRefLab(TBObservation):
         return splitted
 
 
+def display_afb_culture(lab_test):
+    smear_lines = None
+    culture_lines = None
+    ref_lab_lines = None
+    for observation in lab_test.observation_set.all():
+        if observation.observation_name == AFBSmear.OBSERVATION_NAME:
+            smear_lines = AFBSmear.display_lines(observation)
+        if observation.observation_name == AFBCulture.OBSERVATION_NAME:
+            culture_lines = AFBCulture.display_lines(observation)
+        if observation.observation_name == AFBRefLab.OBSERVATION_NAME:
+            if not observation.observation_value.lower() == 'pending':
+                ref_lab_lines = AFBRefLab.display_lines(observation)
+    return {
+        "smear": smear_lines,
+        "culture": culture_lines,
+        "ref_lab": ref_lab_lines
+    }
+
+
 class TBPCR(TBObservation):
     TEST_NAMES = ['TB PCR TEST']
     OBSERVATION_NAME = 'TB PCR'

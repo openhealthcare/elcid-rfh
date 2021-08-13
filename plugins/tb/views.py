@@ -513,7 +513,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(7)
+        return self.end_date - datetime.timedelta(117)
 
     @cached_property
     def patient_id_to_culture_histories(self):
@@ -568,27 +568,17 @@ class MDTList(LoginRequiredMixin, TemplateView):
                     pc
                 )
 
-        resulted_smears = lab.AFBSmear.get_resulted_observations().filter(
-            test__patient__in=patients
-        ).select_related('test')
+        culture_lab_numbers = []
+        for culture_histories in self.patient_id_to_culture_histories.values():
+            culture_lab_numbers.extend([i.lab_number for i in culture_histories])
 
-        patient_id_and_lab_number_to_smear = {
-            (i.test.patient_id, i.test.lab_number): i for i in resulted_smears
-        }
-
-        resulted_cultures = lab.AFBCulture.get_resulted_observations().filter(
-            test__patient__in=patients
-        ).select_related('test')
-
-        patient_id_and_lab_number_to_culture = {
-            (i.test.patient_id, i.test.lab_number): i for i in resulted_cultures
-        }
-
-        resulted_ref_labs = lab.AFBRefLab.get_resulted_observations().filter(
-            test__patient__in=patients
-        )
-        patient_id_and_lab_number_to_ref_lab = {
-            (i.test.patient_id, i.test.lab_number): i for i in resulted_ref_labs
+        culture_tests = lab_models.LabTest.objects.filter(
+            patient_id__in=self.patient_id_to_culture_histories.keys()
+        ).filter(
+            lab_number__in=culture_lab_numbers
+        ).prefetch_related('observation_set')
+        patient_id_lab_number_to_culture = {
+            (i.patient_id, i.lab_number): i for i in culture_tests
         }
 
         rows = []
@@ -602,6 +592,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
                 test__patient_id__in=[i.patient_id for i in pcr_historys]
             ).filter(
                 test__lab_number__in=[i.lab_number for i in pcr_historys]
+            ).filter(
+                test__test_name__in=lab.AFBCulture.TEST_NAMES
             )
             pcrs = []
             for pcr in positive_pcrs:
@@ -620,31 +612,13 @@ class MDTList(LoginRequiredMixin, TemplateView):
                 if history.culture_positive:
                     when = history.culture_positive
                 key = (patient.id, history.lab_number,)
-                test = None
-                smear = patient_id_and_lab_number_to_smear.get(key)
-                smear_display = None
-                if smear:
-                    test = smear.test
-                    smear_display = lab.AFBSmear.display_lines(smear)
-                culture = patient_id_and_lab_number_to_culture.get(key)
-                culture_display = None
-                if culture:
-                    test = culture.test
-                    culture_display = lab.AFBCulture.display_lines(culture)
-                ref_lab = patient_id_and_lab_number_to_ref_lab.get(key)
-                ref_lab_display = None
-                if ref_lab:
-                    test = ref_lab.test
-                    ref_lab_display = lab.AFBRefLab.display_lines(ref_lab)
-
+                test = patient_id_lab_number_to_culture[key]
                 cultures.append((
                     when,
                     "culture",
                     {
                         'test': test,
-                        'smear': smear_display,
-                        'culture': culture_display,
-                        'ref_lab': ref_lab_display
+                        'culture': lab.display_afb_culture(test)
                     },
                 ))
             timeline = sorted(notes + pcrs + cultures, key=lambda x: x[0], reverse=True)
