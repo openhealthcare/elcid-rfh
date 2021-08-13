@@ -522,9 +522,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
             Q(culture_positive__gte=self.start_date)
         )
         if self.kwargs["site"] == self.BARNET:
-            histories.filter(lab_number__contains="K")
+            histories = histories.filter(lab_number__contains="K")
         else:
-            histories.filter(lab_number__contains="L")
+            histories = histories.filter(lab_number__contains="L")
         result = defaultdict(list)
         for history in histories:
             result[history.patient_id].append(history)
@@ -535,6 +535,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
         histories = TBPCRPositiveHistory.objects.filter(
             positive__gte=self.start_date
         )
+        if self.kwargs["site"] == self.BARNET:
+            histories = histories.filter(lab_number__contains="K")
+        else:
+            histories = histories.filter(lab_number__contains="L")
         result = defaultdict(list)
         for history in histories:
             result[history.patient_id].append(history)
