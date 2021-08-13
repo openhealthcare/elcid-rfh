@@ -911,7 +911,8 @@ class AFBCulturePositiveHistory(fields.Model):
 class TBPCRPositiveHistory(fields.Model):
     """
     A model that stores when a PCR becomes
-    positive
+    positive, this is used for a speed improvement
+    on the TB MDT list.
     """
     lab_number = fields.CharField(
         blank=True, null=True, max_length=256

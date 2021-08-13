@@ -15,7 +15,7 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models, lab
-from plugins.tb.models import AFBCulturePositiveHistory, AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.tb.models import AFBCulturePositiveHistory, AFBRefLab, PatientConsultation, AFBCulture, TBPCRPositiveHistory, Treatment, TBPCR
 from plugins.labtests import models as lab_models
 from plugins.appointments import models as appointment_models
 from plugins.tb.utils import get_tb_summary_information
@@ -531,17 +531,17 @@ class MDTList(LoginRequiredMixin, TemplateView):
         return result
 
     @cached_property
-    def patient_id_to_pcr(self):
-        pcrs = lab.TBPCR.get_positive_observations().filter(
-            reported_datetime__gte=self.start_date
-        ).select_related('test')
+    def patient_id_to_pcr_histories(self):
+        histories = TBPCRPositiveHistory.objects.filter(
+            positive__gte=self.start_date
+        )
         result = defaultdict(list)
-        for pcr in pcrs:
-            result[pcr.test.patient_id].append(pcr)
+        for history in histories:
+            result[history.patient_id].append(history)
         return result
 
     def get_patients(self):
-        pcr_patient_ids = list(self.patient_id_to_pcr.keys())
+        pcr_patient_ids = list(self.patient_id_to_pcr_histories.keys())
         culture_patient_ids = list(self.patient_id_to_culture_histories.keys())
         return Patient.objects.filter(
             id__in=set(pcr_patient_ids + culture_patient_ids)
@@ -593,8 +593,14 @@ class MDTList(LoginRequiredMixin, TemplateView):
             notes = [
                 (i.when, "note",  i) for i in patient_id_to_consultations.get(patient.id, [])
             ]
+            pcr_historys = self.patient_id_to_pcr_histories.get(patient.id, [])
+            positive_pcrs = lab.TBPCR.get_positive_observations().filter(
+                test__patient_id__in=[i.patient_id for i in pcr_historys]
+            ).filter(
+                test__lab_number__in=[i.lab_number for i in pcr_historys]
+            )
             pcrs = []
-            for pcr in self.patient_id_to_pcr.get(patient.id, []):
+            for pcr in positive_pcrs:
                 pcrs.append((
                     pcr.reported_datetime,
                     "pcr",
@@ -622,6 +628,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
                     test = culture.test
                     culture_display = lab.AFBCulture.display_observation_value(culture)
                 ref_lab = patient_id_and_lab_number_to_ref_lab.get(key)
+                ref_lab_display = None
                 if ref_lab:
                     test = ref_lab.test
                     ref_lab_display = lab.AFBRefLab.display_observation_value(ref_lab)
