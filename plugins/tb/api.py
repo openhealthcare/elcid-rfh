@@ -7,8 +7,7 @@ from collections import defaultdict
 from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
 from plugins.tb.utils import get_tb_summary_information
-from plugins.tb import models
-from plugins.tb import constants
+from plugins.tb import models, constants, lab
 from plugins.appointments import models as appointment_models
 from plugins.labtests import models as lab_models
 
@@ -50,117 +49,88 @@ class TbTests(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
-        smears = list(models.AFBSmear.objects.filter(
-            patient=patient, pending=False
-        ))
-        cultures = list(models.AFBCulture.objects.filter(
-            patient=patient, pending=False
-        ))
-        ref_labs = list(models.AFBRefLab.objects.filter(
-            patient=patient, pending=False
-        ))
-        culture_tests = smears + cultures + ref_labs
-        cultures_by_lab_number = defaultdict(list)
-        for culture_test in culture_tests:
-            cultures_by_lab_number[culture_test.lab_number].append(culture_test)
-
-        cultures_by_reported = sorted(
-            list(cultures_by_lab_number.values()),
-            key=lambda x: x[0].observation_datetime,
-            reverse=True
+        # We only need to look at smears as there should always be a smear
+        smears = list(lab.AFBSmear.get_resulted_observations().filter(
+            test__patient=patient
+        ).order_by(
+            "-observation_datetime"
+        ).select_related(
+            'test'
+        )[:5])
+        lab_numbers = [smear.test.lab_number for smear in smears]
+        positive_smears = list(
+            lab.AFBSmear.get_positive_observations().filter(
+                test__patient=patient
+            ).filter(
+                test__lab_number__in=lab_numbers
+            ).values_list(
+                'test__lab_number', flat=True
+            )
         )
-
+        positive_cultures = list(
+            lab.AFBCulture.get_positive_observations().filter(
+                test__patient=patient
+            ).filter(
+                test__lab_number__in=lab_numbers
+            ).values_list(
+                'test__lab_number', flat=True
+            )
+        )
+        positive_ref_labs = list(
+            lab.AFBCulture.get_positive_observations().filter(
+                test__patient=patient
+            ).filter(
+                test__lab_number__in=lab_numbers
+            ).values_list(
+                'test__lab_number', flat=True
+            )
+        )
+        positive_lab_numbers = set(
+            positive_smears + positive_cultures + positive_ref_labs
+        )
         cultures_result = []
-
-        for cultures in cultures_by_reported:
-            culture_lines = []
-            lab_number = cultures[0].lab_number
-            obs_dt = cultures[0].observation_datetime.strftime('%d/%m/%Y %H:%M')
-            site = cultures[0].site
-            positive = False
-
-            if len(cultures) == 1 and not cultures[0].display_value().startswith("1)"):
-                display_value = cultures[0].display_value()
-                culture_lines = [f"{lab_number} {obs_dt} {site} {display_value}"]
-                positive = cultures[0].positive
-            else:
-                for culture in cultures:
-                    # Don't show pending cultures/ref lab reports
-                    if not isinstance(culture, models.AFBSmear):
-                        if culture.pending:
-                            continue
-                    if culture.positive:
-                        positive = True
-                    display_value = culture.display_value()
-                    if isinstance(culture, models.AFBCulture):
-                        if any([i for i in ref_labs if i.lab_number == culture.lab_number]):
-                            # If there is a reference lab report, strip of the bit of
-                            # the culture result that says we are sending to the ref lab
-                            # as this is a given.
-                            to_strip = [
-                                "Sent to Ref Lab for confirmation.$",
-                                "Isolate sent to Reference laboratory$",
-                                "Isolate sent to Reference  laboratory$"
-                            ]
-                            for some_str in to_strip:
-                                display_value = re.sub(
-                                    some_str,
-                                    "",
-                                    display_value,
-                                    flags=re.IGNORECASE
-                                )
-                    if display_value.startswith("1)") and len([i for i in display_value.split("\n") if i.strip()]) > 2:
-                        display_lines = [culture.OBSERVATION_NAME]
-                        for row in display_value.split("\n"):
-                            row = row.strip()
-                            if not row.strip():
-                                continue
-                            if len(row) > 2 and row[0].isnumeric() and row[1] == ")":
-                                display_lines.append(row)
-                            elif row.endswith(" S") or row.endswith(" I") or row.endswith(" R") or row.endswith(" U"):
-                                display_lines.append(row)
-                            elif len(row) > 1 and row[-2].isnumeric() and row[-1] == ")":
-                                display_lines[-1] = f"{display_lines[-1]} {row[:-2]}".strip()
-                                display_lines.append(row[-2:])
-                            else:
-                                display_lines[-1] = f"{display_lines[-1]} {row}"
-                        culture_lines.extend(display_lines)
-                    else:
-                        culture_lines.append(
-                            f"{culture.OBSERVATION_NAME} {display_value}"
-                        )
-                culture_lines.insert(0, f"{lab_number} {obs_dt} {site}")
+        for smear in smears:
+            test = smear.test
+            lab_number = test.lab_number
+            site = test.site_code or ""
+            obs_dt = smear.observation_datetime.strftime('%d/%m/%Y %H:%M')
             cultures_result.append({
-                "text": culture_lines,
-                "positive": positive
+                "title": f"{lab_number} {obs_dt} {site}",
+                "by_obs_display": lab.display_afb_culture(test),
+                "positive": test.lab_number in positive_lab_numbers
             })
 
-        pcrs = models.TBPCR.objects.filter(patient=patient, pending=False)
-        pcrs = pcrs.order_by('-observation_datetime')
+        pcrs = list(lab.TBPCR.get_resulted_observations().filter(
+            test__patient=patient
+        ).order_by(
+            '-observation_datetime'
+        ).select_related('test'))[:5]
+
+        positive_pcr_ids = set(lab.TBPCR.get_positive_observations().filter(
+            id__in=[pcr.id for pcr in pcrs]
+        ).values_list(
+            'id', flat=True
+        ))
 
         pcr_result = []
         for pcr in pcrs:
             pcr_lines = []
-            lab_number = pcr.lab_number
+            lab_number = pcr.test.lab_number
             obs_dt = pcr.observation_datetime.strftime('%d/%m/%Y %H:%M')
-            site = pcr.site
-            display_value = pcr.display_value()
-            if display_value == "NOT detected.":
-                pcr_lines.append(
-                    f"{lab_number} {obs_dt} {site} {display_value}"
-                )
+            site = pcr.test.site_code or ""
+            pcr_lines = [f"{lab_number} {obs_dt} {site}"]
+            display_lines = lab.TBPCR.display_lines(pcr)
+            # If we can put the test on one line, do.
+            if len(display_lines) == 1 and len(display_lines[0]) < 30:
+                pcr_lines = [f"{pcr_lines[0]} {display_lines[0]}"]
             else:
-                pcr_lines.append(
-                    f"{lab_number} {obs_dt} {site}"
-                )
-                pcr_lines.append(
-                    pcr.display_value()
+                pcr_lines.extend(
+                    lab.TBPCR.display_lines(pcr)
                 )
             pcr_result.append({
                 "text": pcr_lines,
-                "positive": pcr.positive
+                "positive": pcr.id in positive_pcr_ids
             })
-
         igra_obs = lab_models.Observation.objects.filter(
             test__patient=patient,
             test__test_name='QUANTIFERON TB GOLD IT',

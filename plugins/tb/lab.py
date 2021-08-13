@@ -2,7 +2,7 @@
 Helpers for working with TB lab tests.
 """
 
-
+import re
 from plugins.labtests.models import Observation
 from django.db.models import Q
 
@@ -159,9 +159,31 @@ def display_afb_culture(lab_test):
         if observation.observation_name == AFBRefLab.OBSERVATION_NAME:
             if not observation.observation_value.lower() == 'pending':
                 ref_lab_lines = AFBRefLab.display_lines(observation)
+
+    # If we have a ref lab report already, lets strip out the
+    # bit from the culture that tells us its going to be sent
+    # sent to the ref lab
+    to_strip = [
+        "Sent to Ref Lab for confirmation.$",
+        "Isolate sent to Reference laboratory$",
+        "Isolate sent to Reference  laboratory$"
+    ]
+    cleaned_culture_lines = culture_lines
+    if culture_lines and ref_lab_lines:
+        cleaned_culture_lines = []
+        for line in culture_lines:
+            for some_str in to_strip:
+                line = re.sub(
+                    some_str,
+                    "",
+                    line,
+                    flags=re.IGNORECASE
+                )
+            if line:
+                cleaned_culture_lines.append(line)
     return {
         "smear": smear_lines,
-        "culture": culture_lines,
+        "culture": cleaned_culture_lines,
         "ref_lab": ref_lab_lines
     }
 
@@ -194,10 +216,10 @@ class TBPCR(TBObservation):
     def display_lines(cls, observation):
         val = observation.observation_value
         if "The PCR to detect M.tuberculosis complex was~POSITIVE" in val:
-            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+            return ["The PCR to detect M.tuberculosis complex was POSITIVE"]
         if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in val:
-            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+            return ["The PCR to detect M.tuberculosis complex was POSITIVE"]
         if val.startswith("NOT detected."):
-            return "NOT detected."
+            return ["NOT detected."]
         val = f"{cls.OBSERVATION_NAME} {val}"
         return [i.strip() for i in val.split("~") if i.strip()]
