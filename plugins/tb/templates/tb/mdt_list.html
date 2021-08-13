@@ -33,7 +33,7 @@
       <tr>
         <th class="col-md-3">Patient</th>
         <th class="col-md-1">Imaging</th>
-        <th class="col-md-8">Timeline</th>
+        <th class="col-md-8">Lab test</th>
       </tr>
     {% for row in rows %}
       <tr>
@@ -63,28 +63,76 @@
         <td class="tb-mdt-row">
           {% for when, timeline_type, values in row.timeline %}
             {% if timeline_type == "pcr" %}
-            <strong>
-              <i class="fa fa-crosshairs {% if when >= view.start_date %}primary-text{% endif %}"></i>
-              &nbsp;
-              {{ when |date:"d M Y G:i" }}
-            </strong>
-            {{ values.test.lab_number }}
-            PCR
-            {{ values.test.site_code }}
-            {{ values.pcr }}
+            <div class="row content-offset-below-10">
+              <div class="col-md-12">
+                <strong>
+                  <i class="fa fa-crosshairs {% if when >= view.start_date %}primary-text{% endif %}"></i>
+                  &nbsp;
+                  {{ when |date:"d M Y G:i" }}
+                </strong>
+                {{ values.test.lab_number }}
+                TB PCR
+                {{ values.test.site_code }}
+                {{ values.pcr }}
+              </div>
+            </div>
             {% endif %}
             {% if timeline_type == "culture" %}
-              <strong>
-                <i class="fa fa-crosshairs {% if when >= last_week %}primary-text{% endif %}"></i>
-                &nbsp;
-                {{ when |date:"d M Y G:i" }}
-              </strong>
-              {{ values.test.lab_number }}
-              {{ values.test.test_name }}
-              {{ values.test.site_code }}
-              {{ values.test.smear }}<br />
-              {{ values.test.culture }}<br />
-              {{ values.test.ref_lab }}
+            <div class="row content-offset-below-10">
+              <div class="col-md-12">
+                <strong>
+                  <i class="fa fa-crosshairs {% if when >= last_week %}primary-text{% endif %}"></i>
+                  &nbsp;
+                  {{ when |date:"d M Y G:i" }}
+                </strong>
+                {{ values.test.lab_number }}
+                {{ values.test.test_name }}
+                {{ values.test.site_code }}
+                {% if values.smear and not values.culture and not values.ref_lab %}
+                {{ values.smear }}
+                {% else %}
+                  {% if values.smear %}
+                    {% for row in values.smear %}
+                      {% if forloop.first %}
+                      <div class="left-offset-10">
+                        {{ row }}
+                      </div>
+                      {% else %}
+                      <div class="left-offset-20">
+                        {{ row }}
+                      </div>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                  {% if values.culture %}
+                    {% for row in values.culture %}
+                      {% if forloop.first %}
+                      <div class="left-offset-10">
+                        {{ row }}
+                      </div>
+                      {% else %}
+                      <div class="left-offset-20">
+                        {{ row }}
+                      </div>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                  {% if values.ref_lab %}
+                    {% for row in values.ref_lab %}
+                      {% if forloop.first %}
+                      <div class="left-offset-10">
+                        {{ row }}
+                      </div>
+                      {% else %}
+                      <div class="left-offset-20">
+                        {{ row }}
+                      </div>
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endif %}
+              </div>
+            </div>
             {% elif timeline_type == 'note' %}
               {% include "tb/partials/note.html" with note=values %}
             {% endif %}

@@ -53,8 +53,28 @@ class AFBCulture(TBObservation):
         )
 
     @classmethod
-    def display_observation_value(cls, observation):
-        return observation.observation_value.split("~")[0].lstrip("1)").strip()
+    def display_lines(cls, observation):
+        val = observation.observation_value.strip()
+        to_remove = "~".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
+        ])
+        val = val.replace(to_remove, "").strip()
+        to_remove = "~".join([
+            "Key: Susceptibility interpretation (Note: update to I)",
+            "S = susceptible using standard dosing",
+            "I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)",
+            "R = resistant",
+        ])
+        val = val.replace(to_remove, "").strip()
+        splitted = [i.strip() for i in val.split("~") if i.strip()]
+        if len(splitted) == 1:
+            val = " ".join(splitted)
+            return [f"{cls.OBSERVATION_NAME} {val}"]
+        splitted.insert(0, cls.OBSERVATION_NAME)
+        return splitted
 
 
 class AFBSmear(TBObservation):
@@ -81,8 +101,11 @@ class AFBSmear(TBObservation):
         )
 
     @classmethod
-    def display_observation_value(cls, observation):
-        return observation.observation_value.split("~")[0].strip()
+    def display_lines(cls, observation):
+        val = f"{cls.OBSERVATION_NAME} {observation.observation_value}"
+        return [
+            i.strip() for i in val.split("~") if i.strip()
+        ]
 
 
 class AFBRefLab(TBObservation):
@@ -107,15 +130,21 @@ class AFBRefLab(TBObservation):
         return Observation.objects.none()
 
     @classmethod
-    def display_observation_value(cls, observation):
+    def display_lines(cls, observation):
         val = observation.observation_value.strip()
-        to_remove = "\n".join([
+        to_remove = "~".join([
             'Key: Susceptibility interpretation (Note: update to I)',
             'S = susceptible using standard dosing',
             'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
             'R = resistant',
         ])
-        return val.replace(to_remove, "").strip()
+        val = val.replace(to_remove, "").strip()
+        splitted = [i.strip() for i in val.split("~") if i.strip()]
+        if len(splitted) == 1:
+            val = " ".join(splitted)
+            return [f"{cls.OBSERVATION_NAME} {val}"]
+        splitted.insert(0, cls.OBSERVATION_NAME)
+        return splitted
 
 
 class TBPCR(TBObservation):
@@ -143,6 +172,13 @@ class TBPCR(TBObservation):
         )
 
     @classmethod
-    def display_observation_value(cls, observation):
-        obs_value = observation.observation_value
-        return obs_value.split("~")[0].strip()
+    def display_lines(cls, observation):
+        val = observation.observation_value
+        if "The PCR to detect M.tuberculosis complex was~POSITIVE" in val:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+        if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in val:
+            return "The PCR to detect M.tuberculosis complex was POSITIVE"
+        if val.startswith("NOT detected."):
+            return "NOT detected."
+        val = f"{cls.OBSERVATION_NAME} {val}"
+        return [i.strip() for i in val.split("~") if i.strip()]

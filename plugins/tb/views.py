@@ -606,7 +606,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
                     "pcr",
                     {
                         'test': pcr.test,
-                        'pcr': lab.TBPCR.display_observation_value(pcr)
+                        'pcr': lab.TBPCR.display_lines(pcr)
                     },
                 ))
             cultures = []
@@ -621,17 +621,17 @@ class MDTList(LoginRequiredMixin, TemplateView):
                 smear_display = None
                 if smear:
                     test = smear.test
-                    smear_display = lab.AFBSmear.display_observation_value(smear)
+                    smear_display = lab.AFBSmear.display_lines(smear)
                 culture = patient_id_and_lab_number_to_culture.get(key)
                 culture_display = None
                 if culture:
                     test = culture.test
-                    culture_display = lab.AFBCulture.display_observation_value(culture)
+                    culture_display = lab.AFBCulture.display_lines(culture)
                 ref_lab = patient_id_and_lab_number_to_ref_lab.get(key)
                 ref_lab_display = None
                 if ref_lab:
                     test = ref_lab.test
-                    ref_lab_display = lab.AFBRefLab.display_observation_value(ref_lab)
+                    ref_lab_display = lab.AFBRefLab.display_lines(ref_lab)
 
                 cultures.append((
                     when,
