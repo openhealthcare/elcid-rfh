@@ -46,50 +46,81 @@ def populate_tests(since):
 
 
 @transaction.atomic
-def populate_tb_culture_summaries(since):
-    cultures = lab.AFBCulture.get_positive_observations().filter(
-        last_updated__gte=since
-    ).select_related('test')
-    lab_number_to_culture = {
-        i.test.lab_number: i for i in cultures
-    }
+def populate_tb_culture_history(since):
+    """
+    We use the datetime reported to save when an AFB test becomes
+    positive. The datetime reported is updated every time the test is
+    updated.
+
+    ie.
+    The time the smear is positive is lost when the
+    culture becomes positive.
+
+    The time the culture is positive is lost when the ref lab
+    report comes in.
+
+    Therefore.
+    Update the smear timestamp if its not populated and
+    there is no resulted culture.
+
+    Updadate the culture timestamp if its not populated and
+    there is no resulted ref lab.
+    """
     smears = lab.AFBSmear.get_positive_observations().filter(
         last_updated__gte=since
     ).select_related('test')
-    lab_number_to_smear = {
-        i.test.lab_number: i for i in smears
+    patient_id_lab_number_to_smear = {
+        (i.test.patient_id, i.test.lab_number,): i for i in smears
     }
-    lab_numbers = list(lab_number_to_culture.keys()) + list(lab_number_to_smear.keys())
-    lab_numbers = list(set(lab_numbers))
-    populated = 0
-    for lab_number in lab_numbers:
-        updated = False
-        culture = lab_number_to_culture.get(lab_number)
-        smear = lab_number_to_smear.get(lab_number)
-        if smear:
-            patient_id = smear.test.patient_id
-        else:
-            patient_id = culture.test.patient_id
-        summary = models.AFBCultureSummary.objects.filter(
+    resulted_cultures = set(lab.AFBCulture.get_resulted_observations().values_list(
+        'test__lab_number', flat=True
+    ))
+    resulted_ref_labs = set(lab.AFBRefLab.get_resulted_observations().values_list(
+        'test__lab_number', flat=True
+    ))
+    smears_updated = 0
+    for key, smear in patient_id_lab_number_to_smear.items():
+        patient_id, lab_number = key
+        if lab_number in resulted_cultures:
+            continue
+        afb_history = models.AFBCulturePositiveHistory.objects.filter(
             lab_number=lab_number, patient_id=patient_id
         ).first()
-        if not summary:
-            summary = models.AFBCultureSummary(
+        if not afb_history:
+            afb_history = models.AFBCulturePositiveHistory(
                 lab_number=lab_number,
                 patient_id=patient_id
             )
-        if smear and not summary.smear_positive:
-            summary.smear_positive = smear.reported_datetime
-            updated = True
-        if culture and not summary.culture_positive:
-            summary.culture_positive = culture.reported_datetime
-            updated = True
-        if updated:
-            summary.save()
-            populated += 1
-    logger.info(
-        f'populated {populated} tb culture summaries'
-    )
+        if not afb_history.smear_positive:
+            afb_history.smear_positive = smear.reported_datetime
+            smears_updated += 1
+            afb_history.save()
+
+    logger.info(f"Updated {smears_updated} smear positives")
+
+    cultures = lab.AFBCulture.get_positive_observations().filter(
+        last_updated__gte=since
+    ).select_related('test')
+    patient_id_lab_number_to_culture = {
+         (i.test.patient_id, i.test.lab_number,): i for i in cultures
+    }
+    cultures_updated = 0
+    for key, culture in patient_id_lab_number_to_culture.items():
+        patient_id, lab_number = key
+        if lab_number in resulted_ref_labs:
+            continue
+        afb_history = models.AFBCulturePositiveHistory.objects.filter(
+            lab_number=lab_number, patient_id=patient_id
+        ).first()
+        if not afb_history:
+            afb_history = models.AFBCulturePositiveHistory(
+                lab_number=lab_number,
+                patient_id=patient_id
+            )
+        if not afb_history.culture_positive:
+            afb_history.culture_positive = culture.reported_datetime
+            afb_history.save()
+    logger.info(f"Updated {cultures_updated} culture positives")
 
 
 class Command(BaseCommand):
@@ -97,13 +128,13 @@ class Command(BaseCommand):
         three_days_ago = timezone.now() - datetime.timedelta(3)
         start = time.time()
         populate_tests(three_days_ago)
-        populate_tb_culture_summaries(three_days_ago)
+        populate_tb_culture_history(three_days_ago)
         end_populate = time.time()
         logger.info(
             f"Creating TB observations: Finished creating TB tests in {end_populate-start}s"
         )
         patient_ids = set(
-            models.AFBCultureSummary.objects.values_list(
+            models.AFBCulturePositiveHistory.objects.values_list(
                 'patient_id', flat=True
             ).distinct()
         )

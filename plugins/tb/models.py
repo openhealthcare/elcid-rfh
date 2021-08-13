@@ -887,7 +887,7 @@ class TBPCR(AbstractTBObservation):
 TB_OBS = (TBPCR, AFBRefLab, AFBCulture, AFBSmear)
 
 
-class AFBCultureSummary(fields.Model):
+class AFBCulturePositiveHistory(fields.Model):
     """
     A model that stores date_reported timestamp
     when a smear becomes positive and when a

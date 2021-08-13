@@ -1,6 +1,7 @@
 """
 Root elCID urlconf
 """
+import debug_toolbar
 from django.conf.urls import url, include
 from django.contrib import admin
 
@@ -13,6 +14,7 @@ from elcid import views
 
 
 urlpatterns = [
+    url(r'__debug__/', include(debug_toolbar.urls)),
     url('^admin/bulk-create-users$', views.BulkCreateUserView.as_view(), name='bulk-create-users'),
     url(r'^test/500$', views.Error500View.as_view(), name='test-500'),
     url(r'^templates/elcid/modals/(?P<name>[a-z_]+.html)$', views.ElcidTemplateView.as_view()),

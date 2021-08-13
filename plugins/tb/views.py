@@ -15,7 +15,7 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models, lab
-from plugins.tb.models import AFBCultureSummary, AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.tb.models import AFBCulturePositiveHistory, AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
 from plugins.labtests import models as lab_models
 from plugins.appointments import models as appointment_models
 from plugins.tb.utils import get_tb_summary_information
@@ -516,18 +516,18 @@ class MDTList(LoginRequiredMixin, TemplateView):
         return self.end_date - datetime.timedelta(7)
 
     @cached_property
-    def patient_id_to_culture_summaries(self):
-        summaries = AFBCultureSummary.objects.filter(
+    def patient_id_to_culture_histories(self):
+        histories = AFBCulturePositiveHistory.objects.filter(
             Q(smear_positive__gte=self.start_date) |
             Q(culture_positive__gte=self.start_date)
         )
         if self.kwargs["site"] == self.BARNET:
-            summaries.filter(lab_number__contains="K")
+            histories.filter(lab_number__contains="K")
         else:
-            summaries.filter(lab_number__contains="L")
+            histories.filter(lab_number__contains="L")
         result = defaultdict(list)
-        for summary in summaries:
-            result[summary.patient_id].append(summary)
+        for history in histories:
+            result[history.patient_id].append(history)
         return result
 
     @cached_property
@@ -542,7 +542,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     def get_patients(self):
         pcr_patient_ids = list(self.patient_id_to_pcr.keys())
-        culture_patient_ids = list(self.patient_id_to_culture_summaries.keys())
+        culture_patient_ids = list(self.patient_id_to_culture_histories.keys())
         return Patient.objects.filter(
             id__in=set(pcr_patient_ids + culture_patient_ids)
         ).prefetch_related(
@@ -604,12 +604,12 @@ class MDTList(LoginRequiredMixin, TemplateView):
                     },
                 ))
             cultures = []
-            summaries = self.patient_id_to_culture_summaries.get(patient.id, [])
-            for summary in summaries:
-                when = summary.smear_positive
-                if summary.culture_positive:
-                    when = summary.culture_positive
-                key = (patient.id, summary.lab_number,)
+            culture_histories = self.patient_id_to_culture_histories.get(patient.id, [])
+            for history in culture_histories:
+                when = history.smear_positive
+                if history.culture_positive:
+                    when = history.culture_positive
+                key = (patient.id, history.lab_number,)
                 test = None
                 smear = patient_id_and_lab_number_to_smear.get(key)
                 smear_display = None
