@@ -32,7 +32,7 @@
     <tbody>
       <tr>
         <th class="col-md-2">Patient</th>
-        <th class="col-md-6">Lab test</th>
+        <th class="col-md-6"></th>
         <th class="col-md-2">Seen by</th>
         <th class="col-md-1 text-center">Reviewed</th>
       </tr>
@@ -54,43 +54,27 @@
           {% endif %}
         </td>
         <td class="tb-mdt-row">
-          {% for when, timeline_type, values in row.timeline %}
-            {% if timeline_type == "pcr" %}
+          {% for when, title, values in row.timeline %}
             <div class="row content-offset-below-10">
-              <div class="col-md-12">
+              <div class="col-md-3">
                 <strong>
                   <i class="fa fa-crosshairs {% if when >= view.start_date %}primary-text{% endif %}"></i>
                   &nbsp;
                   {{ when |date:"d M Y G:i" }}
                 </strong>
-                {{ values.test.lab_number }}
-                TB PCR
-                {{ values.test.site_code }}
-                {% for value in values.pcr %}
-                  {{ value }}
-                {% endfor %}
               </div>
-            </div>
-            {% endif %}
-            {% if timeline_type == "culture" %}
-            <div class="row content-offset-below-10">
-              <div class="col-md-12">
-                <strong>
-                  <i class="fa fa-crosshairs {% if when >= last_week %}primary-text{% endif %}"></i>
-                  &nbsp;
-                  {{ when |date:"d M Y G:i" }}
-                </strong>
-                {{ values.test.lab_number }}
-                {{ values.test.test_name }}
-                {{ values.test.site_code }}
-                {% for obs in values.culture.values %}
+              <div class="col-md-4">
+                {{ title }}
+              </div>
+              <div class="col-md-5">
+                {% for obs in values.values %}
                   {% for row in obs %}
                     {% if forloop.first %}
-                    <div class="left-offset-10">
+                    <div>
                       {{ row }}
                     </div>
                     {% else %}
-                    <div class="left-offset-20">
+                    <div class="left-offset-10">
                       {{ row }}
                     </div>
                     {% endif %}
@@ -98,7 +82,6 @@
                 {% endfor %}
               </div>
             </div>
-            {% endif %}
           {% endfor %}
         </td>
         <td>{{ row.seen_by }}</td>

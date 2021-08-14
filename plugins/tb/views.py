@@ -513,7 +513,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(117)
+        return self.end_date - datetime.timedelta(7)
 
     @cached_property
     def patient_id_to_culture_histories(self):
@@ -600,13 +600,14 @@ class MDTList(LoginRequiredMixin, TemplateView):
             )
             pcrs = []
             for pcr in positive_pcrs:
+                lab_number = pcr.test.lab_number
+                obs_dt = pcr.observation_datetime.strftime('%d/%m/%Y %H:%M')
+                site = pcr.test.site_code or ""
+                title = f"{lab_number} {obs_dt} {site}"
                 pcrs.append((
                     pcr.reported_datetime,
-                    "pcr",
-                    {
-                        'test': pcr.test,
-                        'pcr': lab.TBPCR.display_lines(pcr)
-                    },
+                    title,
+                    {"pcr": lab.TBPCR.display_lines(pcr)}
                 ))
             cultures = []
             culture_histories = self.patient_id_to_culture_histories.get(patient.id, [])
@@ -616,13 +617,14 @@ class MDTList(LoginRequiredMixin, TemplateView):
                     when = history.culture_positive
                 key = (patient.id, history.lab_number,)
                 test = patient_id_lab_number_to_culture[key]
+                lab_number = test.lab_number
+                obs_dt = test.observation_set.all()[0].observation_datetime.strftime('%d/%m/%Y %H:%M')
+                site = test.site_code or ""
+                title = f"{lab_number} {obs_dt} {site}"
                 cultures.append((
                     when,
-                    "culture",
-                    {
-                        'test': test,
-                        'culture': lab.display_afb_culture(test)
-                    },
+                    title,
+                    lab.display_afb_culture(test)
                 ))
             timeline = sorted(pcrs + cultures, key=lambda x: x[0], reverse=True)
             tb_category_name = episode_categories.TbEpisode.display_name
