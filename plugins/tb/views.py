@@ -576,6 +576,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
             patient_id__in=self.patient_id_to_culture_histories.keys()
         ).filter(
             lab_number__in=culture_lab_numbers
+        ).filter(
+            test_name__in=lab.AFBCulture.TEST_NAMES
         ).prefetch_related('observation_set')
         patient_id_lab_number_to_culture = {
             (i.patient_id, i.lab_number): i for i in culture_tests
@@ -592,8 +594,6 @@ class MDTList(LoginRequiredMixin, TemplateView):
                 test__patient_id__in=[i.patient_id for i in pcr_historys]
             ).filter(
                 test__lab_number__in=[i.lab_number for i in pcr_historys]
-            ).filter(
-                test__test_name__in=lab.AFBCulture.TEST_NAMES
             )
             pcrs = []
             for pcr in positive_pcrs:

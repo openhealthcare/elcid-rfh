@@ -73,7 +73,9 @@
                 {{ values.test.lab_number }}
                 TB PCR
                 {{ values.test.site_code }}
-                {{ values.pcr }}
+                {% for value in values.pcr %}
+                  {{ value }}
+                {% endfor %}
               </div>
             </div>
             {% endif %}
