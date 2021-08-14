@@ -559,14 +559,13 @@ class MDTList(LoginRequiredMixin, TemplateView):
         patient_consultations = models.PatientConsultation.objects.filter(
             episode__patient__in=patients
         ).filter(
-            when__date=self.end_date
+            when__date__lte=self.end_date
         ).select_related('episode')
         patient_id_to_consultations = defaultdict(list)
         for pc in patient_consultations:
-            if pc.reason_for_interaction == "MDT meeting":
-                patient_id_to_consultations[pc.episode.patient_id].append(
-                    pc
-                )
+            patient_id_to_consultations[pc.episode.patient_id].append(
+                pc
+            )
 
         culture_lab_numbers = []
         for culture_histories in self.patient_id_to_culture_histories.values():
@@ -582,13 +581,17 @@ class MDTList(LoginRequiredMixin, TemplateView):
         patient_id_lab_number_to_culture = {
             (i.patient_id, i.lab_number): i for i in culture_tests
         }
-
         rows = []
         for patient in patients:
             timeline = []
-            notes = [
-                (i.when, "note",  i) for i in patient_id_to_consultations.get(patient.id, [])
-            ]
+            seen_by = []
+            reviewed = False
+            for pc in patient_id_to_consultations.get(patient.id, []):
+                if pc.reason_for_interaction == "MDT meeting":
+                    if pc.when.date() == self.end_date:
+                        reviewed = True
+                else:
+                    seen_by.append(pc.initials)
             pcr_historys = self.patient_id_to_pcr_histories.get(patient.id, [])
             positive_pcrs = lab.TBPCR.get_positive_observations().filter(
                 test__patient_id__in=[i.patient_id for i in pcr_historys]
@@ -621,7 +624,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
                         'culture': lab.display_afb_culture(test)
                     },
                 ))
-            timeline = sorted(notes + pcrs + cultures, key=lambda x: x[0], reverse=True)
+            timeline = sorted(pcrs + cultures, key=lambda x: x[0], reverse=True)
             tb_category_name = episode_categories.TbEpisode.display_name
             episode = None
             tb_episodes = [
@@ -632,14 +635,21 @@ class MDTList(LoginRequiredMixin, TemplateView):
             rows.append({
                 "episode": episode,
                 "demographics": patient.demographics_set.all()[0],
-                "timeline": timeline
+                "timeline": timeline,
+                "reviewed": reviewed,
+                "seen_by": ", ".join(sorted(list(set(seen_by))))
             })
         return rows
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         patients = self.get_patients()
-        ctx["rows"] = self.patients_to_rows(patients)
+        rows = self.patients_to_rows(patients)
+        ctx["rows"] = sorted(
+            rows,
+            key=lambda x: (x["reviewed"], x["timeline"][0][0]),
+            reverse=True
+        )
         return ctx
 
 

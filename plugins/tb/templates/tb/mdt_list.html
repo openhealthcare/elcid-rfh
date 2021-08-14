@@ -31,9 +31,10 @@
   <table class="table table-striped">
     <tbody>
       <tr>
-        <th class="col-md-3">Patient</th>
-        <th class="col-md-1">Imaging</th>
-        <th class="col-md-8">Lab test</th>
+        <th class="col-md-2">Patient</th>
+        <th class="col-md-6">Lab test</th>
+        <th class="col-md-2">Seen by</th>
+        <th class="col-md-1 text-center">Reviewed</th>
       </tr>
     {% for row in rows %}
       <tr>
@@ -51,14 +52,6 @@
           </a>
             {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% endif %}
-        </td>
-        <td>
-          <span style="white-space: nowrap;">
-          <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
-            PACS
-            <i class="fa fa-external-link" aria-hidden="true"></i>
-          </a>
-          </span>
         </td>
         <td class="tb-mdt-row">
           {% for when, timeline_type, values in row.timeline %}
@@ -105,10 +98,16 @@
                 {% endfor %}
               </div>
             </div>
-            {% elif timeline_type == 'note' %}
-              {% include "tb/partials/note.html" with note=values %}
             {% endif %}
           {% endfor %}
+        </td>
+        <td>{{ row.seen_by }}</td>
+        <td>
+          {% if row.reviewed %}
+          <h4 class="text-center">
+            <i class="fa fa-check"></i>
+          </h4>
+          {% endif %}
         </td>
       </tr>
     {% endfor %}
