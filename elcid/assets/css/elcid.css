@@ -21,6 +21,14 @@ body {
   margin-top: 5px;
 }
 
+.content-offset-below-0 {
+  margin-bottom: 0;
+}
+
+.content-offset-below-5 {
+  margin-bottom: 5px;
+}
+
 .content-offset-25 {
   margin-top: 25px;
 }
@@ -31,6 +39,10 @@ body {
 
 .bg-secondary {
   background-color: #D36C08;
+}
+
+.primary-text {
+  color: #0091C9;
 }
 
 .panel.panel-primary {
@@ -323,10 +335,6 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   padding-right: 50px;
 }
 
-.tb-summary-panel {
-  min-height: 160px;
-}
-
 .panel tr.table-edit td {
   vertical-align: middle;
 }
@@ -364,6 +372,10 @@ div.add-isolate:hover {
 
 .left-offset-15 {
   margin-left: 15px;
+}
+
+.left-offset-20 {
+  margin-left: 20px;
 }
 
 .form-hint {
@@ -512,6 +524,19 @@ div.add-isolate:hover {
   margin-bottom: 0;
 }
 
+.tb-clinic-list .date-header .date-header-link {
+  display: none;
+  color: #999;
+}
+
+.tb-clinic-list .date-header .date-header-link:hover {
+  text-decoration: none;
+}
+
+.tb-clinic-list .date-header:hover .date-header-link {
+  display: inline;
+}
+
 .tb-mdt-row p {
   margin-top: 0;
   margin-bottom: 0;
@@ -536,5 +561,9 @@ div.add-isolate:hover {
   font-size: 24px;
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
 /*# sourceMappingURL=elcid.css.map */

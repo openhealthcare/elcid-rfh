@@ -39,6 +39,8 @@ class TbPlugin(plugins.OpalPlugin):
 
     apis = [
         ('tb_test_summary', api.TbTestSummary,),
+        (api.TbTests.base_name, api.TbTests,),
+        (api.TBAppointments.base_name, api.TBAppointments,),
     ]
 
     @classmethod
