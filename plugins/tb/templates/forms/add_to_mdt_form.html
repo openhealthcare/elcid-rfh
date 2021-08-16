@@ -6,7 +6,7 @@
       <div class="row" >
         <div class="col-md-12">
           <label class="radio-inline" ng-repeat="item in addToMDTHelper.mdtDisplay">
-            <input type="radio" name="add_to_mdt.add_to_which_mdt" value="[[ addToMDTHelper.mdtValues[$index] ]]" ng-model="editing.add_to_mdt.add_to_which_mdt">
+            <input type="radio" ng-change="editing.add_to_mdt.add_to_which_mdt = addToMDTHelper.mdtDateStr" name="add_to_mdt.add_to_which_mdt" value="[[ addToMDTHelper.mdtValues[$index] ]]" ng-model="addToMDTHelper.mdtDateStr">
             [[ item ]]
           </label>
         </div>

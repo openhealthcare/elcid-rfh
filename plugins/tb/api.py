@@ -235,7 +235,7 @@ class TBCalendar(LoginRequiredViewset):
     Returns the last appointment that they attended and
     all appointments between then and now that were cancelled or No shows
     """
-    base_name = "tb_appointments"
+    base_name = "tb_calendar"
 
     @patient_from_pk
     def retrieve(self, request, patient):
