@@ -26,6 +26,7 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/tb_treatment.js',
             'js/tb/controllers/mantoux_test.js',
             'js/tb/controllers/add_episode_helper.js',
+            'js/tb/controllers/add_to_mdt_helper.js',
             'js/tb/controllers/tb_date_helper.js',
             'js/tb/directives.js'
             # 'js/tb/services/larry.js',
@@ -40,7 +41,7 @@ class TbPlugin(plugins.OpalPlugin):
     apis = [
         ('tb_test_summary', api.TbTestSummary,),
         (api.TbTests.base_name, api.TbTests,),
-        (api.TBAppointments.base_name, api.TBAppointments,),
+        (api.TBCalendar.base_name, api.TBCalendar,),
     ]
 
     @classmethod

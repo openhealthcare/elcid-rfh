@@ -1,0 +1,18 @@
+{% load forms %}
+<div ng-controller="AddToMDTHelperCtrl as addToMDTHelper">
+  <div class="form-group">
+    <label class="control-label col-sm-3">Add to MDT</label>
+    <div class="col-sm-8">
+      <div class="row" >
+        <div class="col-md-12">
+          <label class="radio-inline" ng-repeat="item in addToMDTHelper.mdt_display()">
+            <input type="radio" name="add_to_mdt.add_to_which_mdt" value="[[ addToMDTHelper.mdt_values()[$index] ]]" ng-model="editing.add_to_mdt.add_to_which_mdt">
+            [[ item ]]
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% textarea field="AddToMDT.reason" %}
+</div>

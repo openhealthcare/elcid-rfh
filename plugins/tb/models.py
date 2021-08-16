@@ -3,8 +3,7 @@ Models for tb
 """
 import datetime
 from django.db import models as fields
-from plugins.labtests import models as lab
-from opal.core.fields import ForeignKeyOrFreeText
+from opal.core.fields import ForeignKeyOrFreeText, enum
 from opal.core import lookuplists
 from opal import models
 
@@ -610,6 +609,28 @@ def parse_date(some_val):
         except ValueError:
             pass
     return result
+
+
+class AddToMDT(models.EpisodeSubrecord):
+    """
+    This model allows users to add someone to a
+    future MDT.
+
+    We use the created timestamp and
+    the created by timestamp
+    to figure out when this is.
+    """
+    _icon = "fa fa-bullhorn"
+
+    class Meta:
+        verbose_name = "Add To MDT"
+
+    reason = fields.TextField(blank=True, default="")
+    add_to_which_mdt = fields.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Add To Which MDT"
+    )
 
 
 class AbstractTBObservation(fields.Model):

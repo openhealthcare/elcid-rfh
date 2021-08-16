@@ -1,6 +1,13 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3><i class="fa fa-calendar"></i> TB Appointments</h3>
+    <h3>
+      <i class="fa fa-calendar"></i> TB Calendar
+      <span class="pull-right">
+        <i class="fa fa-plus-circle edit pull-right pointer" ng-click="episode.recordEditor.newItem('add_to_mdt')">
+        </i>
+      </span>
+      </i>
+    </h3>
   </div>
   <div patient-api target="tb_appointments" endpoint="tb_appointments" class="panel-footer">
     <div ng-show="tb_appointments.next_appointment">

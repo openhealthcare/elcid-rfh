@@ -225,13 +225,14 @@ class TbTests(LoginRequiredViewset):
         })
 
 
-class TBAppointments(LoginRequiredViewset):
+class TBCalendar(LoginRequiredViewset):
     """
+    Returns the MDT list if the patient is due to be on it.
     Returns the next planned appointment.
     Returns all appointments for the same day (
     usually only 1, but multiple has happened
     )
-    Returns the last appointment that they atteneded and
+    Returns the last appointment that they attended and
     all appointments between then and now that were cancelled or No shows
     """
     base_name = "tb_appointments"
@@ -265,6 +266,7 @@ class TBAppointments(LoginRequiredViewset):
             last_appointments.append(appointment)
             if appointment["status_code"] in ['Checked In', 'Checked Out']:
                 break
+
         return json_response({
             "todays_appointments": todays_appointments,
             "next_appointment": next_appointment,
