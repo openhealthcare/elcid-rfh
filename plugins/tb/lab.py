@@ -132,6 +132,8 @@ class AFBRefLab(TBObservation):
     @classmethod
     def display_lines(cls, observation):
         val = observation.observation_value.strip()
+        if not val or val.lower() == 'pending':
+            return []
         to_remove = "~".join([
             'Key: Susceptibility interpretation (Note: update to I)',
             'S = susceptible using standard dosing',
@@ -181,11 +183,14 @@ def display_afb_culture(lab_test):
                 )
             if line:
                 cleaned_culture_lines.append(line)
-    return {
-        "smear": smear_lines,
-        "culture": cleaned_culture_lines,
-        "ref_lab": ref_lab_lines
-    }
+    result = {}
+    if smear_lines:
+        result["smear"] = smear_lines
+    if cleaned_culture_lines:
+        result["culture"] = cleaned_culture_lines
+    if ref_lab_lines:
+        result["ref_lab"] = ref_lab_lines
+    return result
 
 
 class TBPCR(TBObservation):
