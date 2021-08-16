@@ -100,6 +100,9 @@ class AFBCulture(TBObservation):
             "R = resistant",
         ])
         val = val.replace(to_remove, "").strip()
+        # Ignore the culture version of pending
+        if val == "AFB culture to follow.":
+            return []
         splitted = [i.strip() for i in val.split("~") if i.strip()]
         splitted.insert(0, cls.OBSERVATION_NAME)
         return splitted
