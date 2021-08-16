@@ -567,15 +567,10 @@ div.add-isolate:hover{
    z-index: 10;
 }
 
-.patient-detail-heading{
- h1{
-  transition: all 0.4s ease;
- }
- &.shrunken  {
+.patient-detail-heading.shrunken  {
   h1{
     font-size: 24px;
     margin-top: 5px;
     margin-bottom: 5px;
-  }
   }
 }

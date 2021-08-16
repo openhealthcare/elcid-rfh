@@ -532,11 +532,6 @@ div.add-isolate:hover {
   z-index: 10;
 }
 
-.patient-detail-heading h1 {
-  -webkit-transition: all 0.4s ease;
-  transition: all 0.4s ease;
-}
-
 .patient-detail-heading.shrunken h1 {
   font-size: 24px;
   margin-top: 5px;
