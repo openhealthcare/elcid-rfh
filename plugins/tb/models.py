@@ -893,6 +893,8 @@ class AFBCulturePositiveHistory(fields.Model):
     when a smear becomes positive and when a
     culture becomes positive
     """
+    created = fields.DateTimeField(auto_now_add=True)
+    updated = fields.DateTimeField(auto_now=True)
     lab_number = fields.CharField(
         blank=True, null=True, max_length=256
     )
@@ -914,6 +916,8 @@ class TBPCRPositiveHistory(fields.Model):
     positive, this is used for a speed improvement
     on the TB MDT list.
     """
+    created = fields.DateTimeField(auto_now_add=True)
+    updated = fields.DateTimeField(auto_now=True)
     lab_number = fields.CharField(
         blank=True, null=True, max_length=256
     )
