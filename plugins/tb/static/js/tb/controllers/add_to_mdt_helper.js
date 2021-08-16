@@ -2,7 +2,8 @@ angular.module('opal.controllers').controller('AddToMDTHelperCtrl',
   function($scope, displayDateFilter) {
     "use strict";
     var self = this;
-    this.nextDates = function(){
+
+    this.getNextDates = function(){
       var thisWednesday = null;
       _.each(_.range(7), function(d){
         var day_of_week = moment().add(d, "d").toDate();
@@ -16,9 +17,9 @@ angular.module('opal.controllers').controller('AddToMDTHelperCtrl',
       })
       return nextDates;
     }
-    this.mdt_display = function(){
+    this.getMDTDisplay = function(){
       var today = moment();
-      var result = _.map(self.nextDates(), function(nd){
+      var result = _.map(self.getNextDates(), function(nd){
         if(nd.isSame(today, "d")){
           return "Today";
         }
@@ -29,10 +30,19 @@ angular.module('opal.controllers').controller('AddToMDTHelperCtrl',
       });
       return result;
     }
-    this.mdt_values = function(){
-      return _.map(self.nextDates(), function(nd){
-        return nd.format('DD/MM/YYYY');
+    this.getMDTValues = function(){
+      var previousValue = $scope.editing.add_to_mdt.add_to_which_mdt;
+      return _.map(self.getNextDates(), function(nd){
+        if(previousValue){
+          if(moment(previousValue).isSame(nd, "d")){
+            return previousValue
+          }
+        }
+        return nd.toDate();
       });
     }
+    this.mdtDisplay = this.getMDTDisplay();
+    this.mdtValues = this.getMDTValues();
+    debugger;
     return this;
 });

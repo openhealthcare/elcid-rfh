@@ -10,6 +10,19 @@
     </h3>
   </div>
   <div patient-api target="tb_appointments" endpoint="tb_appointments" class="panel-footer">
+    <div ng-show="tb_appointments.appear_on_mdt">
+      <strong>Scheduled to appear on MDT<span ng-show="tb_appointments.appear_on_mdt.length > 1">s</span></strong>
+      <a class="pointer" ng-click="episode.recordEditor.editItem('add_to_mdt', episode.add_to_mdt[$index])" ng-repeat="add_to_mdt in tb_appointments.appear_on_mdt track by $index">
+      <div class="row">
+        <div class="col-sm-3">
+          [[ add_to_mdt.add_to_which_mdt | displayDate ]]
+        </div>
+        <div class="col-sm-9">
+          [[ add_to_mdt.reason ]]
+        </div>
+      </div>
+      </a>
+    </div>
     <div ng-show="tb_appointments.next_appointment">
       <strong>Next Appointment</strong><br>
       <div class="row">

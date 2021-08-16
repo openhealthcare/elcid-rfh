@@ -267,7 +267,16 @@ class TBCalendar(LoginRequiredViewset):
             if appointment["status_code"] in ['Checked In', 'Checked Out']:
                 break
 
+        appear_on_mdts = models.AddToMDT.objects.filter(
+            episode__patient=patient
+        ).filter(
+            add_to_which_mdt__gte=datetime.date.today()
+        ).order_by("-add_to_which_mdt")
+
         return json_response({
+            "appear_on_mdt": [
+                i.to_dict(self.request.user) for i in appear_on_mdts
+            ],
             "todays_appointments": todays_appointments,
             "next_appointment": next_appointment,
             "last_appointments": last_appointments,
