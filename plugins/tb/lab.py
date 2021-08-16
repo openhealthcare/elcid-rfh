@@ -32,6 +32,37 @@ class TBObservation(object):
         return cls.get_positive_observations() | cls.get_negative_observations()
 
 
+class AFBSmear(TBObservation):
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
+    OBSERVATION_NAME = 'AFB Smear'
+
+    @classmethod
+    def get_positive_observations(cls):
+        return cls.get_observations().filter(
+            Q(observation_value__startswith="AAFB + Seen") |
+            Q(observation_value__startswith="AAFB 2+ Seen") |
+            Q(observation_value__startswith="AAFB 3+ Seen") |
+            Q(observation_value__startswith="AAFB 4+ Seen")
+        )
+
+    @classmethod
+    def get_negative_observations(cls):
+        return cls.get_observations().filter(
+            observation_value__startswith="AAFB not seen"
+        )
+
+    @classmethod
+    def display_lines(cls, observation):
+        val = f"{cls.OBSERVATION_NAME} {observation.observation_value}"
+        return [
+            i.strip() for i in val.split("~") if i.strip()
+        ]
+
+
 class AFBCulture(TBObservation):
     TEST_NAMES = [
         'AFB : CULTURE',
@@ -70,42 +101,8 @@ class AFBCulture(TBObservation):
         ])
         val = val.replace(to_remove, "").strip()
         splitted = [i.strip() for i in val.split("~") if i.strip()]
-        if len(splitted) == 1:
-            val = " ".join(splitted)
-            return [f"{cls.OBSERVATION_NAME} {val}"]
         splitted.insert(0, cls.OBSERVATION_NAME)
         return splitted
-
-
-class AFBSmear(TBObservation):
-    TEST_NAMES = [
-        'AFB : CULTURE',
-        'AFB : EARLY MORN. URINE',
-        'AFB BLOOD CULTURE'
-    ]
-    OBSERVATION_NAME = 'AFB Smear'
-
-    @classmethod
-    def get_positive_observations(cls):
-        return cls.get_observations().filter(
-            Q(observation_value__startswith="AAFB + Seen") |
-            Q(observation_value__startswith="AAFB 2+ Seen") |
-            Q(observation_value__startswith="AAFB 3+ Seen") |
-            Q(observation_value__startswith="AAFB 4+ Seen")
-        )
-
-    @classmethod
-    def get_negative_observations(cls):
-        return cls.get_observations().filter(
-            observation_value__startswith="AAFB not seen"
-        )
-
-    @classmethod
-    def display_lines(cls, observation):
-        val = f"{cls.OBSERVATION_NAME} {observation.observation_value}"
-        return [
-            i.strip() for i in val.split("~") if i.strip()
-        ]
 
 
 class AFBRefLab(TBObservation):
@@ -142,9 +139,6 @@ class AFBRefLab(TBObservation):
         ])
         val = val.replace(to_remove, "").strip()
         splitted = [i.strip() for i in val.split("~") if i.strip()]
-        if len(splitted) == 1:
-            val = " ".join(splitted)
-            return [f"{cls.OBSERVATION_NAME} {val}"]
         splitted.insert(0, cls.OBSERVATION_NAME)
         return splitted
 
@@ -183,13 +177,20 @@ def display_afb_culture(lab_test):
                 )
             if line:
                 cleaned_culture_lines.append(line)
-    result = {}
+    by_obs_name = {}
     if smear_lines:
-        result["smear"] = smear_lines
+        by_obs_name["smear"] = smear_lines
     if cleaned_culture_lines:
-        result["culture"] = cleaned_culture_lines
+        by_obs_name["culture"] = cleaned_culture_lines
     if ref_lab_lines:
-        result["ref_lab"] = ref_lab_lines
+        by_obs_name["ref_lab"] = ref_lab_lines
+
+    result = {}
+    for obs_type, value in by_obs_name.items():
+        if len(value) == 2:
+            result[obs_type] = [f"{value[0]} {value[1]}"]
+        else:
+            result[obs_type] = value
     return result
 
 
