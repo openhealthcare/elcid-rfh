@@ -64,6 +64,8 @@
               {% include "tb/partials/tb_obs.html" with lab_test=instance title=instance.title %}
             {% elif timeline_type == 'note' %}
               {% include "tb/partials/note.html" with note=instance %}
+            {% elif timeline_type == 'added_to_mdt' %}
+              {% include "tb/partials/added_to_mdt.html" with added_to_mdt=instance %}
             {% else %}
               {% include "tb/partials/appointment.html" with appointment=instance %}
             {% endif %}

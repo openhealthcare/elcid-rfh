@@ -531,19 +531,12 @@ class MDTList(LoginRequiredMixin, TemplateView):
         for pc in patient_consultations:
             patient_id_to_consultations[pc.episode.patient_id].append(pc)
 
-        # Make sure the list is sorted by the most recent observation
-        patients = sorted(
-            patients,
-            key=lambda x: patient_id_to_obs[x.id][0].reported_datetime,
-            reverse=True
-        )
-
         result = []
         for patient in patients:
             result.append(
                 self.patient_to_row(
                     patient,
-                    patient_id_to_obs[patient.id],
+                    patient_id_to_obs.get(patient.id, []),
                     patient_id_to_consultations[patient.id]
                 )
             )
@@ -559,7 +552,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(117)
+        return self.end_date - datetime.timedelta(7)
 
     def title(self):
         from_dt = self.start_date.strftime("%-d %b %Y")
@@ -580,6 +573,12 @@ class MDTList(LoginRequiredMixin, TemplateView):
             patient_ids = patient_ids.union(tb_obs_model.objects.filter(
                 **filter_args
             ).values_list('patient_id', flat=True))
+        patient_ids = patient_ids.union(
+            models.AddToMDT.objects.filter(
+                when=self.end_date,
+                site__iexact=self.kwargs["site"]
+            ).values_list('episode__patient_id', flat=True)
+        )
         return Patient.objects.filter(
             id__in=patient_ids
         ).prefetch_related(
@@ -669,7 +668,22 @@ class MDTList(LoginRequiredMixin, TemplateView):
             (i.when, "note",  i) for i in patient_consultations if i.when
         ]
 
-        timeline = obs + notes + appointments
+        mdts = models.AddToMDT.objects.filter(
+            when=self.end_date,
+        ).filter(
+            episode__patient=patient
+        ).filter(
+            site__iexact=self.kwargs["site"]
+        )
+        added_to_mdts = []
+        for mdt in mdts:
+            when = timezone.make_aware(datetime.datetime.combine(
+                mdt.when, datetime.time.min
+            ))
+            added_to_mdts.append(
+                (when, "added_to_mdt", mdt,)
+            )
+        timeline = obs + notes + appointments + added_to_mdts
         timeline = sorted(timeline, key=lambda x: x[0], reverse=True)
 
         return {
@@ -681,7 +695,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         patients = self.get_patients()
-        ctx["rows"] = self.patients_to_rows(patients)
+        rows = self.patients_to_rows(patients)
+        ctx["rows"] = sorted(
+            rows, key=lambda x: x["timeline"][0][0], reverse=True
+        )
         ctx["last_week"] = self.start_date
         return ctx
 
