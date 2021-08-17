@@ -10,15 +10,21 @@
     </h3>
   </div>
   <div patient-api target="tb_calendar" endpoint="tb_calendar" get-params="{cacheStamp: tbCalendarHelper.timeStamp}" class="panel-footer">
-    <div ng-show="tb_calendar.appear_on_mdt">
+    <div ng-show="tb_calendar.appear_on_mdt.length">
       <strong>Scheduled to appear on MDT<span ng-show="tb_calendar.appear_on_mdt.length > 1">s</span></strong>
-        <a class="pointer" ng-click="tbCalendarHelper.edit(add_to_mdt)" ng-repeat="add_to_mdt in tb_calendar.appear_on_mdt track by $index">
-        <div class="row">
+        <div ng-repeat="add_to_mdt in tb_calendar.appear_on_mdt track by $index" class="row">
           <div class="col-sm-3">
-            [[ add_to_mdt.when | displayDate ]]
+            <span ng-show="$index === 0 || tb_calendar.appear_on_mdt[$index-1].when !== tb_calendar.appear_on_mdt[$index].when" >
+              [[ add_to_mdt.when | displayDate ]]
+            </span>
           </div>
           <div class="col-sm-9">
-            [[ add_to_mdt.reason ]]
+            <span ng-show="!add_to_mdt.id">
+              [[ add_to_mdt.reason ]]
+            </span>
+            <a class="pointer" ng-show="add_to_mdt.id" ng-click="tbCalendarHelper.edit(add_to_mdt)" >
+              [[ add_to_mdt.reason ]]
+            </a>
           </div>
         </div>
       </a>

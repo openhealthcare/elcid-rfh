@@ -11,6 +11,10 @@ from plugins.tb import models
 from plugins.tb import constants
 from plugins.appointments import models as appointment_models
 from plugins.labtests import models as lab_models
+from django.utils import timezone
+
+
+MDT_START = timezone.make_aware(datetime.datetime(2021, 7, 21))
 
 
 class TbTestSummary(LoginRequiredViewset):
@@ -237,6 +241,86 @@ class TBCalendar(LoginRequiredViewset):
     """
     base_name = "tb_calendar"
 
+    def get_mdt_date(self, reported_date):
+        """
+        Returns the next Wednesday from the date
+
+        If it is a Wednesday it returns today.
+        """
+        for i in range(7):
+            possible_date = reported_date + datetime.timedelta(i)
+            if possible_date.isoweekday() == 3:
+                return possible_date
+
+    def get_last_discussed(self, patient):
+        """
+        Returns the datetime the patient was last dicussed
+        at MDT.
+
+        If they haven't been discussed returns the datetime
+        of the first MDT dicussion done using this system.
+        """
+
+        mdt_discussions = models.PatientConsultation.objects.filter(
+            episode__patient=patient,
+        )
+        mdt_discussions = [
+            i for i in mdt_discussions if i.reason_for_interaction == "MDT meeting"
+        ]
+        if mdt_discussions:
+            return max([i.created for i in mdt_discussions])
+        else:
+            return MDT_START
+
+    def get_added_to_mdts(self, patient, last_discussed):
+        """
+        Get the dates a patient is scheduled to be discussed
+        on an MDT.
+
+        If the patient has already been dicussed at MDT today then
+        exclude added_to_mdts of today.
+
+        Otherwise include it.
+        """
+        add_to_mdts = models.AddToMDT.objects.filter(
+            episode__patient=patient
+        )
+        today = datetime.date.today()
+
+        if last_discussed.date() == today:
+            add_to_mdts = add_to_mdts.filter(
+                when__gt=last_discussed.date()
+            )
+        else:
+            add_to_mdts = add_to_mdts.filter(
+                when__gte=today
+            )
+        return add_to_mdts
+
+    def get_positive_tb_obs(self, patient, last_discussed):
+        """
+        Get all positive TB obs that are yet to
+        be discussed at MDT.
+
+        This should use a created timestamp however
+        we don't have one available, this will suffice
+        for this TB Calendar at the moment.
+        """
+        tb_obs = [
+            models.TBPCR,
+            models.AFBSmear,
+            models.AFBCulture,
+            models.AFBRefLab,
+        ]
+        result = list()
+        for tb_ob in tb_obs:
+            result.extend(tb_ob.objects.filter(
+                patient=patient,
+                positive=True,
+                reported_datetime__gt=last_discussed
+            ))
+        return result
+
     @patient_from_pk
     def retrieve(self, request, patient):
         appointment_fields = [
@@ -267,16 +351,27 @@ class TBCalendar(LoginRequiredViewset):
             if appointment["status_code"] in ['Checked In', 'Checked Out']:
                 break
 
-        appear_on_mdts = models.AddToMDT.objects.filter(
-            episode__patient=patient
-        ).filter(
-            when__gte=datetime.date.today()
-        ).order_by("-when")
+        last_discussed = self.get_last_discussed(patient)
+        add_to_mdts = self.get_added_to_mdts(patient, last_discussed)
+        appear_on_mdt = [
+            i.to_dict(self.request.user) for i in add_to_mdts
+        ]
+        positive_results = self.get_positive_tb_obs(patient, last_discussed)
+        for positive in positive_results:
+            mdt_date = self.get_mdt_date(positive.reported_datetime.date())
+            tb_obs_dict = {
+                "when": mdt_date
+            }
+            if isinstance(positive, models.AFBRefLab):
+                tb_obs_dict["reason"] = "Ref Lab Report Returned"
+            else:
+                tb_obs_dict["reason"] = f"{positive.OBSERVATION_NAME} Positive"
+            appear_on_mdt.append(tb_obs_dict)
+
+        appear_on_mdt = sorted(appear_on_mdt, key=lambda x: x["when"], reverse=True)
 
         return json_response({
-            "appear_on_mdt": [
-                i.to_dict(self.request.user) for i in appear_on_mdts
-            ],
+            "appear_on_mdt": appear_on_mdt,
             "todays_appointments": todays_appointments,
             "next_appointment": next_appointment,
             "last_appointments": last_appointments,

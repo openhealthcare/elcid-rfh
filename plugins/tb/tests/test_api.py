@@ -6,7 +6,7 @@ from opal.core.test import OpalTestCase
 
 from plugins.labtests import models
 
-from plugins.tb import utils
+from plugins.tb import api, episode_categories
 
 
 class TestMultipleResults(OpalTestCase):
@@ -107,3 +107,92 @@ class TestMultipleResults(OpalTestCase):
             ]
         }
         self.assertEqual(result.json(), expected)
+
+
+class TBCalendarTestCase(OpalTestCase):
+    def setUp(self):
+        self.api = api.TBCalendar()
+        self.patient, self.episode = self.new_patient_and_episode_please()
+        self.episode.category_name = episode_categories.TbEpisode.display_name
+        self.episode.save()
+
+    def test_get_mdt_date(self):
+        # A wednesday
+        mdt_dt = datetime.date(2021, 8, 18)
+        self.assertEqual(
+            self.api.get_mdt_date(mdt_dt),
+            mdt_dt
+        )
+
+        # A Monday
+        self.assertEqual(
+            self.api.get_mdt_date(
+                datetime.date(2021, 8, 16)
+            ),
+            mdt_dt
+        )
+
+        # A Friday
+        self.assertEqual(
+            self.api.get_mdt_date(
+                datetime.date(2021, 8, 13)
+            ),
+            mdt_dt
+        )
+
+    def test_get_last_discussed(self):
+        now = timezone.now()
+        pc = self.episode.patientconsultation_set.create()
+        pc.reason_for_interaction = "MDT meeting"
+        pc.created = now
+        pc.save()
+        self.assertEqual(
+            self.api.get_last_discussed(self.patient),
+            now
+        )
+
+    def get_get_last_discussed_none(self):
+        self.assertEqual(
+            self.api.get_last_discussed(self.patient),
+            api.MDT_START
+        )
+
+    def test_get_added_to_mdt_today_after_mdt(self):
+        now = timezone.now()
+        self.episode.addtomdt_set.create(
+            when=datetime.date.today()
+        )
+        self.assertEqual(
+            list(self.api.get_added_to_mdts(self.patient, now)), []
+        )
+
+    def test_get_get_added_to_mdt_today_before_mdt(self):
+        now = timezone.now()
+        yesterday = now - datetime.timedelta(1)
+        mdt = self.episode.addtomdt_set.create(
+            when=datetime.date.today()
+        )
+        self.assertEqual(
+            list(self.api.get_added_to_mdts(self.patient, yesterday)),
+            [mdt]
+        )
+
+    def test_get_positive_obs_discussed(self):
+        now = timezone.now()
+        yesterday = now - datetime.timedelta(1)
+        yesterday_morning = yesterday - datetime.timedelta(hours=1)
+        self.patient.tbpcr_set.create(
+            reported_datetime=yesterday_morning,
+            pending=False,
+            positive=True
+        )
+        today_pcr = self.patient.tbpcr_set.create(
+            reported_datetime=now,
+            pending=False,
+            positive=True
+        )
+        now = timezone.now()
+        self.assertEqual(
+            self.api.get_positive_tb_obs(self.patient, yesterday),
+            [today_pcr]
+        )
