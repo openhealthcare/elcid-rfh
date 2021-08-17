@@ -638,6 +638,16 @@ class MDTList(LoginRequiredMixin, TemplateView):
             result.extend(obs)
         return result
 
+    def reviewed_on_end_date(self, patient_consulations):
+        """
+        Returns True if a patient has already been reviewed
+        in at the MDT (self.end_date)
+        """
+        for pc in patient_consulations:
+            if pc.reason_for_interaction == "MDT meeting":
+                if pc.when.date() == self.end_date:
+                    return True
+
     def patient_to_row(self, patient, obs, patient_consultations):
         demographics = patient.demographics_set.all()[0]
         tb_category = episode_categories.TbEpisode.display_name
@@ -671,11 +681,11 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
         timeline = obs + notes + appointments
         timeline = sorted(timeline, key=lambda x: x[0], reverse=True)
-
         return {
             "episode": episode,
             "demographics": demographics,
             "timeline": timeline,
+            "reviewed": self.reviewed_on_end_date(patient_consultations)
         }
 
     def get_context_data(self, *args, **kwargs):

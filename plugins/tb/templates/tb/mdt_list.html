@@ -31,7 +31,8 @@
       <tr>
         <th class="col-md-3">Patient</th>
         <th class="col-md-1">Imaging</th>
-        <th class="col-md-8">Timeline</th>
+        <th class="col-md-6">Timeline</th>
+        <th class="col-md-1">Reviewed</th>
       </tr>
     {% for row in rows %}
       <tr>
@@ -68,6 +69,11 @@
               {% include "tb/partials/appointment.html" with appointment=instance %}
             {% endif %}
           {% endfor %}
+        </td>
+        <td>
+          {% if row.reviewed %}
+            <i class="fa fa-check fa-2x"></i>
+          {% endif %}
         </td>
       </tr>
     {% endfor %}
