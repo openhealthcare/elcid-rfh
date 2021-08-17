@@ -270,8 +270,8 @@ class TBCalendar(LoginRequiredViewset):
         appear_on_mdts = models.AddToMDT.objects.filter(
             episode__patient=patient
         ).filter(
-            add_to_which_mdt__gte=datetime.date.today()
-        ).order_by("-add_to_which_mdt")
+            when__gte=datetime.date.today()
+        ).order_by("-when")
 
         return json_response({
             "appear_on_mdt": [

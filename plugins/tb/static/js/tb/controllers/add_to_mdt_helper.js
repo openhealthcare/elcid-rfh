@@ -50,7 +50,7 @@ angular.module('opal.controllers').controller('AddToMDTHelperCtrl',
     }
 
     var setUp = function(){
-      var previous = $scope.editing.add_to_mdt.add_to_which_mdt;
+      var previous = $scope.editing.add_to_mdt.when;
       if(previous){
         self.mdtDateStr = moment(previous).format('DD/MM/YYYY');
       }

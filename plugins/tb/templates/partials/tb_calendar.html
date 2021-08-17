@@ -15,7 +15,7 @@
         <a class="pointer" ng-click="tbCalendarHelper.edit(add_to_mdt)" ng-repeat="add_to_mdt in tb_calendar.appear_on_mdt track by $index">
         <div class="row">
           <div class="col-sm-3">
-            [[ add_to_mdt.add_to_which_mdt | displayDate ]]
+            [[ add_to_mdt.when | displayDate ]]
           </div>
           <div class="col-sm-9">
             [[ add_to_mdt.reason ]]

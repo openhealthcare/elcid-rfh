@@ -630,7 +630,7 @@ class AddToMDT(models.EpisodeSubrecord):
     site = fields.CharField(
         blank=True, null=True, max_length=256, choices=SITES
     )
-    add_to_which_mdt = fields.DateField(
+    when = fields.DateField(
         blank=True,
         null=True,
         verbose_name="Add To Which MDT"
