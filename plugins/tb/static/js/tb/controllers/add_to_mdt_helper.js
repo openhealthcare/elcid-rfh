@@ -1,6 +1,12 @@
 angular.module('opal.controllers').controller('AddToMDTHelperCtrl',
   function($scope, displayDateFilter) {
     "use strict";
+    /*
+    * This does 2 things.
+    * 1. Provides the options for the next 4 dates of MDTs for the user
+    * to choose from.
+    * 2. Handles the fact that dates can't be saved by radio buttons.
+    */
     var self = this;
     this.mdtDateStr = null;
 
