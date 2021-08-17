@@ -621,11 +621,15 @@ class AddToMDT(models.EpisodeSubrecord):
     to figure out when this is.
     """
     _icon = "fa fa-bullhorn"
+    SITES = enum("RFH", "Barnet")
 
     class Meta:
         verbose_name = "Add To MDT"
 
     reason = fields.TextField(blank=True, default="")
+    site = fields.CharField(
+        blank=True, null=True, max_length=256, choices=SITES
+    )
     add_to_which_mdt = fields.DateField(
         blank=True,
         null=True,

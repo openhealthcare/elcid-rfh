@@ -1,5 +1,6 @@
 {% load forms %}
 <div ng-controller="AddToMDTHelperCtrl as addToMDTHelper">
+  {% radio field="AddToMDT.site" required=True %}
   <div class="form-group">
     <label class="control-label col-sm-3">Add to MDT</label>
     <div class="col-sm-8">
