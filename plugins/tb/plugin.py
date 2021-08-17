@@ -28,6 +28,7 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/add_episode_helper.js',
             'js/tb/controllers/add_to_mdt_helper.js',
             'js/tb/controllers/tb_date_helper.js',
+            'js/tb/controllers/tb_calendar_helper.js',
             'js/tb/directives.js'
             # 'js/tb/services/larry.js',
         ],
