@@ -7,10 +7,31 @@ angular.module('opal.controllers').controller('AddToMDTHelperCtrl',
     this.getNextDates = function(){
       /*
       * Give me the dates of the next 4 Wednesdays
+      * If the patient has already been discussed at MDT
+      * today, then we do not include today in the
+      * Wednesdays.
       */
       var thisWednesday = null;
-      _.each(_.range(7), function(d){
+      var start;
+      var discussed = _.find($scope.the_episode.patient_consultation, function(pc){
+        if(!pc.created){
+          return
+        }
+        if(!pc.reason_for_interaction === 'MDT meeting'){
+          return
+        }
+        return moment().isSame(moment(pc.created), "d")
+      });
+
+      if(discussed){
+        start = 1
+      }
+      else{
+        start = 0
+      }
+      _.each(_.range(start, start + 7), function(d){
         var day_of_week = moment().add(d, "d").toDate();
+        console.log(day_of_week.getDay());
         if(day_of_week.getDay() === 3){
           thisWednesday = day_of_week;
         }
