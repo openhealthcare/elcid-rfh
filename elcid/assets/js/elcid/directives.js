@@ -31,20 +31,24 @@ directives.directive('patientApi', function($http, $window){
         link: function(scope, element, attrs){
             var endpoint = attrs.endpoint;
             var target   = attrs.target;
-            var url = '/api/v0.1/' + endpoint + '/' + '' + scope.patient.id + '' + '/';
-            if(attrs.getParams){
-              var getParams = scope.$eval(attrs.getParams);
-              url += '?' + $.param(getParams);
-            }
-            $http({cache: true, url: url, method: 'GET'}).then(
+
+            var loadData = function(){
+              var url = '/api/v0.1/' + endpoint + '/' + '' + scope.patient.id + '' + '/';
+              if(attrs.getParams){
+                var getParams = scope.$eval(attrs.getParams);
+                url += '?' + $.param(getParams);
+              }
+              $http({cache: true, url: url, method: 'GET'}).then(
                 function(response){
                     scope[target] = response.data;
                 },
                 function(){
                     $window.alert('Error loading data from the server')
                 }
-            )
-
+              )
+            }
+            scope.$watch(attrs.getParams, loadData, true);
+            loadData();
         }
     }
 });
