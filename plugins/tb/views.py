@@ -742,3 +742,60 @@ class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
         ctx["date_to_rows"] = date_to_rows
         ctx["num_consultations"] = len(patient_consultations)
         return ctx
+
+
+class TBActivity(TemplateView):
+    @property
+    def start_date(self):
+        return datetime.date(2020, 1, 1)
+
+    @property
+    def end_date(self):
+        return datetime.date(2021, 1, 1)
+
+    @property
+    def weeks(self):
+        weeks = []
+        for i in range(51):
+            weeks.append(
+                self.start_date + i*7,
+                max([
+                    self.start_date + ((i+1)*7),
+                    self.end_date
+                ])
+            )
+        return weeks
+
+    def get_top_summary(self):
+        return {
+            "Number of patients": 0,
+            "Number of appointments": 0,
+            "Number of positive TB Test": 0
+        }
+
+    def patients_by_appointment_type(self):
+        return {
+            "Nurse appointments": 0,
+            "Doctor Appointments": 0,
+            "Telephone Appointments": 0,
+            "Other": 0
+        }
+
+    def patients_by_appointment_status(self):
+        return {
+
+        }
+
+    def new_patients_by_demographics(self):
+        return {}
+
+    def new_patients_by_number_of_appointments(self):
+        return {
+            (0-5),
+            (6-10),
+            ()
+        }
+
+    def get_context_data(self):
+        new_patients
+        pass
