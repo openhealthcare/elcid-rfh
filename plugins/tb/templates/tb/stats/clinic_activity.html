@@ -1,0 +1,38 @@
+{% extends "tb/base.html" %}
+{% block tb_content %}
+<div class="panel panel-default tb-stats">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>
+          RFH Clinic Activity
+        </h1>
+        <p class="content-offset-below-10">
+          A review of all appointments and MDT in the period
+          {{ view.start_date }} - {{ view.end_date }}
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="row headline">
+      <div class="col-md-4">
+        <h1>{{ summary.number_of_appointments }}</h1>
+        <h3>Appointments</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>{{ summary.number_of_patients }}</h1>
+        <h3>Patients</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>
+          {{ summary.number_of_patients_who_had_their_last_appointment }}
+        </h1>
+        <h3>
+          Finished TB Care
+        </h3>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

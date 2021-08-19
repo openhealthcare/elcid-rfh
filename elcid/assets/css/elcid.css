@@ -553,4 +553,18 @@ div.add-isolate:hover {
 .nowrap {
   white-space: nowrap;
 }
+
+.tb-stats {
+  background-color: #FFF;
+}
+
+.tb-stats .headline h1 {
+  font-size: 68px;
+  text-align: center;
+}
+
+.tb-stats .headline h3 {
+  margin-top: 0;
+  text-align: center;
+}
 /*# sourceMappingURL=elcid.css.map */

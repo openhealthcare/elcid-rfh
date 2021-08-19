@@ -586,3 +586,18 @@ div.add-isolate:hover{
 .nowrap{
   white-space: nowrap;
 }
+
+.tb-stats{
+  background-color: $white;
+
+  .headline{
+    h1{
+      font-size: 68px;
+      text-align: center;
+    }
+    h3{
+      margin-top: 0;
+      text-align: center;
+    }
+  }
+}
