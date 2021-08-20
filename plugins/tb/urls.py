@@ -73,7 +73,7 @@ urlpatterns = [
         name="outstanding_mdt_list"
     ),
     url(
-        r'tb/clinic_activity/$',
+        r'tb/clinic_activity/(?P<year>\d+)/?$',
         views.ClinicActivity.as_view(),
         name="clinic_activity"
     )

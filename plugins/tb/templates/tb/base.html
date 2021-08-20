@@ -1,4 +1,5 @@
 {% load elcid_panels %}
+{% now "Y" as current_year %}
 <div class="left-menu">
   <h3>
     <a href="/#/tb/clinic-list/">TB</a>
@@ -21,7 +22,7 @@
       </a>
     </li>
     <li>
-      <a href="/#/tb/clinic-activity/">
+      <a href="/#/tb/clinic-activity/{{ current_year }}/">
         Clinic Activity
       </a>
     </li>

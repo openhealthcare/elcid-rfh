@@ -757,11 +757,11 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
 
     @property
     def start_date(self):
-        return datetime.date(2020, 1, 1)
+        return datetime.date(int(self.kwargs["year"]), 1, 1)
 
     @property
     def end_date(self):
-        return datetime.date(2021, 1, 1)
+        return datetime.date(int(self.kwargs["year"]) + 1, 1, 1)
 
     @property
     def periods(self):
