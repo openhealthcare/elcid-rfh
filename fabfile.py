@@ -156,6 +156,7 @@ def run_management_command(some_command, env):
         )
         print(cmd)
         result = local(cmd, capture=True)
+    for field in
         print(result.stdout)
         print(result.stderr)
     if result.failed:

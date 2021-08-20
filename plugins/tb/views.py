@@ -766,7 +766,7 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
     @property
     def periods(self):
         result = []
-        for i in range(18):
+        for i in range(12):
             start_month = self.start_date.month + (i % 12)
             start_year = self.start_date.year + int(i / 12)
             end_month = self.start_date.month + ((i + 1) % 12)
@@ -780,55 +780,108 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
         return result
 
     def summary(self):
-        number_of_attended_appointments = Appointment.objects.filter(
-            derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-        ).filter(
-            start_datetime__date__gt=self.start_date
-        ).filter(
-            end_datetime__date__lt=self.end_date
-        ).exclude(
-            status_code__in=["Canceled", "No Show"]
-        ).count()
-        patient_ids = set(Appointment.objects.filter(
-            derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-        ).filter(
-            start_datetime__date__gt=self.start_date
-        ).filter(
-            end_datetime__date__lt=self.end_date
-        ).exclude(
-            status_code__in=["Canceled", "No Show"]
-        ).values_list("patient_id", flat=True).distinct())
+        number_of_attended_appointments = (
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gt=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+            .exclude(status_code__in=["Canceled", "No Show"])
+            .count()
+        )
+        patient_ids = set(
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gt=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+            .exclude(status_code__in=["Canceled", "No Show"])
+            .values_list("patient_id", flat=True)
+            .distinct()
+        )
         number_of_patients = len(patient_ids)
-        patients_with_future_appointments = set(Appointment.objects.filter(
-            derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-        ).filter(
-            start_datetime__date__gt=self.end_date
-        ).filter(
-            patient_id__in=patient_ids
-        ).values_list("patient_id", flat=True).distinct())
+        patients_with_future_appointments = set(
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gt=self.end_date)
+            .filter(patient_id__in=patient_ids)
+            .values_list("patient_id", flat=True)
+            .distinct()
+        )
         number_of_patients_who_had_their_last_appointment = number_of_patients - len(
             patients_with_future_appointments
         )
         return {
             "number_of_appointments": number_of_attended_appointments,
             "number_of_patients": number_of_patients,
-            "number_of_patients_who_had_their_last_appointment": number_of_patients_who_had_their_last_appointment
+            "number_of_patients_who_had_their_last_appointment": number_of_patients_who_had_their_last_appointment,
         }
 
     def appointments_by_status(self, *args, **kwargs):
+        appointments = (
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gte=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+        )
+        appointment_type_month_count = defaultdict(lambda: [0 for i in self.periods])
+
+        for appointment in appointments:
+            appointment_type_month_count[appointment.status_code][
+                appointment.start_datetime.month-1
+            ] += 1
+
         return {
-            "x": self.periods,
-            "vals": [
-                ["Attended", [1 for i in self.periods]],
-                ["Cancelled", [1 for i in self.periods]],
-                ["No show", [1 for i in self.periods]],
-            ]
+            "x": [i[0].strftime("%b") for i in self.periods],
+            "vals": [[k] + v for k, v in appointment_type_month_count.items()],
         }
+
+    def appointments_by_type(self):
+        appointments = (
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gte=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+            .exclude(status_code__in=["Canceled", "No Show"])
+        )
+        type_to_count = defaultdict(int)
+        for appointment in appointments:
+            type_to_count[appointment.derived_appointment_type] += 1
+        return {k: v for k, v in sorted(type_to_count.items(), key=lambda x: -x[1])}
+
+    def patients_shared_with_other_clinics(self):
+        patient_ids = (
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gte=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+            .exclude(status_code__in=["Canceled", "No Show"])
+        ).values_list(patient_id=True)
+        other_appointments = (
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gte=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+            .filter(patient_id__in=patient_ids)
+            .exclude(derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES)
+            .exclude(status_code__in=["Canceled", "No Show"])
+        )
+        result = defaultdict(set)
+        for other_appointment in other_appointments:
+            result[other_appointment.derived_appointment_type].add(
+                other_appointment.patient_id
+            )
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["summary"] = self.summary()
         ctx["appointments_by_status"] = self.appointments_by_status()
+        ctx["appointments_by_type"] = self.appointments_by_type()
         return ctx
 
 

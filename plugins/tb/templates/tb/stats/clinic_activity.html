@@ -1,4 +1,5 @@
 {% extends "tb/base.html" %}
+{% load tb_stats %}
 {% block tb_content %}
 <div class="panel panel-default tb-stats">
   <div class="panel-heading">
@@ -31,6 +32,16 @@
         <h3>
           Finished TB Care
         </h3>
+      </div>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12">
+        {% category_bar_chart "Attendance" appointments_by_status.x appointments_by_status.vals %}
+      </div>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12">
+        {% three_col_table_with_percent 'Appointments by type' appointments_by_type %}
       </div>
     </div>
   </div>
