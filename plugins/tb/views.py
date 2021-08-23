@@ -1,22 +1,36 @@
 """
 Views for the TB Opal Plugin
 """
+import json
 import datetime
 from collections import defaultdict
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
+from django.utils.functional import cached_property
 from opal.core.serialization import deserialize_datetime
+from opal.core import subrecords
 from opal.models import PatientConsultationReasonForInteraction
-from elcid.models import Diagnosis, Demographics
+from elcid.models import (
+    Diagnosis,
+    Demographics,
+    PrimaryDiagnosis,
+    SymptomComplex, ReferralRoute
+)
+from elcid.utils import timing
 from plugins.appointments.models import Appointment
 from opal.models import Patient
-from plugins.tb import episode_categories, constants, models, lab
+from plugins.tb import episode_categories, constants, models
 from plugins.tb.models import (
     AFBRefLab,
+    AdverseReaction,
+    CommuninicationConsiderations,
+    Nationality,
     PatientConsultation,
-    AFBCulture,
+    SocialHistory,
+    TBHistory,
+    Travel,
     Treatment,
     TBPCR,
 )
@@ -764,7 +778,7 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
         return datetime.date(int(self.kwargs["year"]) + 1, 1, 1)
 
     @property
-    def periods(self):
+    def months(self):
         result = []
         for i in range(12):
             start_month = self.start_date.month + (i % 12)
@@ -779,26 +793,68 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
             )
         return result
 
+    @property
+    def weeks(self):
+        result = []
+        for i in range(52):
+            if self.start_date + datetime.timedelta(i * 7) < self.end_date:
+                start = self.start_date + datetime.timedelta(i * 7)
+                end = self.start_date + datetime.timedelta((i + 1) * 7)
+                result.append((start, end))
+            else:
+                break
+        return result
+
+    @cached_property
+    def appointments_qs(self):
+        return list(
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gt=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+        )
+
+    @cached_property
+    def mdt_meeting_qs(self):
+        mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
+            name="MDT meeting"
+        )
+        return list(
+            PatientConsultation.objects.filter(
+                when__date__gte=self.start_date,
+                when__date__lt=self.end_date,
+                reason_for_interaction_fk_id=mdt_meeting.id,
+            )
+        )
+
+    @cached_property
+    def non_mdt_consultations(self):
+        mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
+            name="MDT meeting"
+        )
+        return (
+            PatientConsultation.objects.filter(when__date__gte=self.start_date)
+            .filter(when__date__lte=self.end_date)
+            .exclude(reason_for_interaction_fk_id=mdt_meeting.id)
+            .select_related("episode")
+        )
+
+    @property
+    def atttended_appointments(self):
+        return [
+            i
+            for i in self.appointments_qs
+            if i.status_code not in ["Canceled", "No Show"]
+        ]
+
+    @timing
     def summary(self):
-        number_of_attended_appointments = (
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-            )
-            .filter(start_datetime__date__gt=self.start_date)
-            .filter(end_datetime__date__lt=self.end_date)
-            .exclude(status_code__in=["Canceled", "No Show"])
-            .count()
-        )
-        patient_ids = set(
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-            )
-            .filter(start_datetime__date__gt=self.start_date)
-            .filter(end_datetime__date__lt=self.end_date)
-            .exclude(status_code__in=["Canceled", "No Show"])
-            .values_list("patient_id", flat=True)
-            .distinct()
-        )
+        attended_appointments = self.atttended_appointments
+        number_of_attended_appointments = len(attended_appointments)
+        patient_ids = set()
+        for i in attended_appointments:
+            patient_ids.add(i.patient_id)
         number_of_patients = len(patient_ids)
         patients_with_future_appointments = set(
             Appointment.objects.filter(
@@ -818,246 +874,251 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
             "number_of_patients_who_had_their_last_appointment": number_of_patients_who_had_their_last_appointment,
         }
 
+    @timing
     def appointments_by_status(self, *args, **kwargs):
-        appointments = (
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-            )
-            .filter(start_datetime__date__gte=self.start_date)
-            .filter(end_datetime__date__lt=self.end_date)
-        )
-        appointment_type_month_count = defaultdict(lambda: [0 for i in self.periods])
+        appointments = self.appointments_qs
+        appointment_type_month_count = defaultdict(lambda: [0 for i in self.months])
 
         for appointment in appointments:
             appointment_type_month_count[appointment.status_code][
-                appointment.start_datetime.month-1
+                appointment.start_datetime.month - 1
             ] += 1
 
         return {
-            "x": [i[0].strftime("%b") for i in self.periods],
+            "x": [i[0].strftime("%b") for i in self.months],
             "vals": [[k] + v for k, v in appointment_type_month_count.items()],
         }
 
+    @timing
     def appointments_by_type(self):
-        appointments = (
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-            )
-            .filter(start_datetime__date__gte=self.start_date)
-            .filter(end_datetime__date__lt=self.end_date)
-            .exclude(status_code__in=["Canceled", "No Show"])
-        )
+        appointments = self.atttended_appointments
         type_to_count = defaultdict(int)
         for appointment in appointments:
             type_to_count[appointment.derived_appointment_type] += 1
         return {k: v for k, v in sorted(type_to_count.items(), key=lambda x: -x[1])}
 
-    def patients_shared_with_other_clinics(self):
-        patient_ids = (
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+    @timing
+    def mdt_start_stop(self):
+        pcs = self.mdt_meeting_qs
+        by_week = defaultdict(list)
+        for pc in pcs:
+            for start_week, end_week in self.weeks:
+                if pc.when.date() >= start_week:
+                    if pc.when.date() < end_week:
+                        by_week[start_week].append(pc)
+        duration = dict()
+        count = dict()
+        for start, _ in self.weeks:
+            pcs = by_week.get(start, [])
+            if not pcs:
+                duration[start] = 0
+                count[start] = 0
+            else:
+                whens = [i.when for i in pcs]
+                start_datetime = min(whens)
+                end_datetime = max(whens)
+                if end_datetime == start_datetime:
+                    duration[start] = 0
+                else:
+                    duration[start] = int(
+                        (end_datetime - start_datetime).total_seconds() / 60
+                    )
+                count[start] = len(whens)
+        return {
+            "x_axis": json.dumps(
+                [f"{i.strftime('%d/%m')}-{b.strftime('%d/%m')}" for i, b in self.weeks]
+            ),
+            "vals": json.dumps(
+                [
+                    ["duration"] + list(duration.values()),
+                    ["count"] + list(count.values()),
+                ]
+            ),
+        }
+
+    def elcid_review(self):
+        # patients on elcid
+        # appointments on elcid
+        pcs = self.non_mdt_consultations
+        appointments = self.atttended_appointments
+        elcid_appointments = []
+        elcid_patients = []
+        for start_date, end_date in self.months:
+            months_appointments = []
+            for appointment in appointments:
+                app_start = appointment.start_datetime.date()
+                if start_date <= app_start and end_date > app_start:
+                    months_appointments.append(appointment)
+            months_pcs = []
+            for pc in pcs:
+                pc_date = pc.when.date()
+                if start_date <= pc_date and end_date > pc_date:
+                    months_pcs.append(pc)
+            total_appointments = len(months_appointments)
+            total_patients = len(set([i.patient_id for i in months_appointments]))
+            total_elcid_appointments = len(months_pcs)
+            total_elcid_patients = len(set([i.episode.patient_id for i in months_pcs]))
+            if total_elcid_appointments and total_appointments:
+                percent_elcid_appointments = (
+                    total_elcid_appointments / total_appointments * 100
+                )
+                elcid_appointments.append(int(min([percent_elcid_appointments, 100])))
+            else:
+                elcid_appointments.append(0)
+            if total_elcid_patients and total_patients:
+                percent_elcid_patients = total_elcid_patients / total_patients * 100
+                elcid_patients.append(int(min([percent_elcid_patients, 100])))
+            else:
+                elcid_patients.append(0)
+        return {
+            "x": [i[0].strftime("%b") for i in self.months],
+            "vals": [
+                ["% Appointments on elcid"] + elcid_appointments,
+                ["% Patients on elcid"] + elcid_patients,
+            ],
+        }
+
+    def users_recorded(self):
+        """
+        The users who recorded patient consultations in elcid
+        """
+        pcs = self.non_mdt_consultations
+        by_initials = defaultdict(int)
+        for pc in pcs:
+            by_initials[pc.initials] += 1
+        less_than_5 = 0
+        result = dict()
+        for k, v in by_initials.items():
+            if v < 5:
+                less_than_5 += v
+            else:
+                result[k] = v
+        result["Other (<10)"] = less_than_5
+        return result.items()
+
+    def patient_notes_by_derrived_type(self):
+        """
+        Look at notes, if there is an appointment for that
+        patient on that day, then record the appointment type
+        as that is the type of appointment type that is
+        recording data. If not on the day, check for an
+        appointment the day before in case they were
+        slow at recording the data.
+        """
+        pcs = self.non_mdt_consultations
+        when_patient_id_to_pcs = {
+            (i.when.date(), i.episode.patient_id) for i in pcs
+        }
+        result = defaultdict(int)
+        appointments = self.appointments_qs
+        for appointment in appointments:
+            appointment_date = appointment.start_datetime.date()
+            patient_id = appointment.patient_id
+            if (appointment_date, patient_id,) in when_patient_id_to_pcs:
+                result[appointment.derived_appointment_type] += 1
+            else:
+                day_before = appointment_date - datetime.timedelta(1)
+                if (day_before, patient_id,) in when_patient_id_to_pcs:
+                    result[appointment.derived_appointment_type] += 1
+        return result.items()
+
+    def get_subrecord_with_appointment_count(self, subrecord, qs=None):
+        """
+        for patients with appointments this year, tell
+        me if the subrecord has been fille din.
+        """
+        patient_ids = list(set([i.patient_id for i in self.appointments_qs]))
+        if not qs:
+            qs = subrecord.objects.all()
+        if getattr(subrecord, "_is_singleton", False):
+            qs = qs.exclude(
+                consistency_token=''
             )
-            .filter(start_datetime__date__gte=self.start_date)
-            .filter(end_datetime__date__lt=self.end_date)
-            .exclude(status_code__in=["Canceled", "No Show"])
-        ).values_list(patient_id=True)
-        other_appointments = (
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+        if subrecord in set(subrecords.patient_subrecords()):
+            qs = qs.filter(
+                patient__episode__category_name=episode_categories.TbEpisode.display_name
             )
-            .filter(start_datetime__date__gte=self.start_date)
-            .filter(end_datetime__date__lt=self.end_date)
-            .filter(patient_id__in=patient_ids)
-            .exclude(derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES)
-            .exclude(status_code__in=["Canceled", "No Show"])
+            return len(set(qs.filter(
+                patient_id__in=patient_ids
+            ).values_list(
+                'patient_id', flat=True
+            ).distinct()))
+        else:
+            qs = qs.filter(
+                episode__category_name=episode_categories.TbEpisode.display_name
+            )
+            return len(set(qs.filter(
+                episode__patient_id__in=patient_ids
+            ).values_list(
+                'episode_id', flat=True
+            ).distinct()))
+
+    def subrecords_recorded(self):
+        patient_ids = list(set([
+            i.episode.patient_id for i in self.non_mdt_consultations
+        ]))
+        result = {}
+        result["Discussed On elCID"] = len(patient_ids)
+        result["Primary Diagnosis"] = self.get_subrecord_with_appointment_count(
+            Diagnosis, Diagnosis.objects.filter(
+                category=Diagnosis.PRIMARY
+            )
         )
-        result = defaultdict(set)
-        for other_appointment in other_appointments:
-            result[other_appointment.derived_appointment_type].add(
-                other_appointment.patient_id
+        result["Seconday Diagnosis"] = self.get_subrecord_with_appointment_count(
+            Diagnosis, Diagnosis.objects.exclude(
+                category=Diagnosis.PRIMARY
             )
+        )
+        result[SymptomComplex.get_display_name()] = self.get_subrecord_with_appointment_count(
+            SymptomComplex
+        )
+        result["TB Medication"] = self.get_subrecord_with_appointment_count(
+            Treatment, Treatment.objects.filter(category=Treatment.TB)
+        )
+        result["Other Medication"] = self.get_subrecord_with_appointment_count(
+            Treatment, Treatment.objects.exclude(category=Treatment.TB)
+        )
+        result[AdverseReaction.get_display_name()] = self.get_subrecord_with_appointment_count(
+            AdverseReaction
+        )
+        result[ReferralRoute.get_display_name()] = self.get_subrecord_with_appointment_count(
+            ReferralRoute
+        )
+        language = set(
+            CommuninicationConsiderations.objects.filter(
+                patient_id__in=patient_ids
+            ).exclude(
+                updated=None
+            ).values_list('patient_id', flat=True).distinct()
+        )
+        nationality = set(
+            Nationality.objects.filter(
+                patient_id__in=patient_ids
+            ).exclude(
+                updated=None
+            ).values_list('patient_id', flat=True).distinct()
+        )
+        nationality_and_language = language.union(nationality)
+        result["Nationality and Language"] = len(nationality_and_language)
+        result[Travel] = self.get_subrecord_with_appointment_count(
+            Travel
+        )
+        result[TBHistory.get_display_name()] = self.get_subrecord_with_appointment_count(
+            TBHistory
+        )
+        result[SocialHistory.get_display_name()] = self.get_subrecord_with_appointment_count(
+            SocialHistory
+        )
+        return result
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         ctx["summary"] = self.summary()
         ctx["appointments_by_status"] = self.appointments_by_status()
         ctx["appointments_by_type"] = self.appointments_by_type()
+        ctx["mdt_start_stop"] = self.mdt_start_stop()
+        ctx["elcid_review"] = self.elcid_review()
+        ctx["users_recorded"] = self.users_recorded()
+        ctx["appointment_types_recording"] = self.patient_notes_by_derrived_type()
+        ctx["populated"] = self.subrecords_recorded()
         return ctx
-
-
-class TBActivity(LoginRequiredMixin, TemplateView):
-    @property
-    def start_date(self):
-        return datetime.date(2020, 1, 1)
-
-    @property
-    def end_date(self):
-        return datetime.date(2021, 6, 1)
-
-    @property
-    def periods(self):
-        result = []
-        for i in range(18):
-            start_month = self.start_date.month + (i % 12)
-            start_year = self.start_date.year + int(i / 12)
-            end_month = self.start_date.month + ((i + 1) % 12)
-            end_year = self.start_date.year + int((i + 1) / 12)
-            result.append(
-                (
-                    datetime.date(start_year, start_month, 1),
-                    datetime.date(end_year, end_month, 1),
-                )
-            )
-        return result
-
-    def get_positive_patient_ids_for_date_range(self, start_date, end_date):
-        patient_ids = set()
-        for obs in [lab.AFBSmear, lab.AFBCulture, lab.AFBRefLab, lab.TBPCR]:
-            patient_ids = patient_ids.union(
-                set(
-                    obs.get_positive_observations()
-                    .filter(observation_datetime__date__gte=start_date)
-                    .filter(observation_datetime__date__lt=end_date)
-                    .values_list("test__patient_id", flat=True)
-                )
-            )
-        return patient_ids
-
-    def get_new_positives_by_period(self):
-        return {
-            (datetime.date(2020, 1, 1), datetime.date(2020, 2, 1)): 14,
-            (datetime.date(2020, 2, 1), datetime.date(2020, 3, 1)): 7,
-            (datetime.date(2020, 3, 1), datetime.date(2020, 4, 1)): 10,
-            (datetime.date(2020, 4, 1), datetime.date(2020, 5, 1)): 8,
-            (datetime.date(2020, 5, 1), datetime.date(2020, 6, 1)): 10,
-            (datetime.date(2020, 6, 1), datetime.date(2020, 7, 1)): 5,
-            (datetime.date(2020, 7, 1), datetime.date(2020, 8, 1)): 11,
-            (datetime.date(2020, 8, 1), datetime.date(2020, 9, 1)): 7,
-            (datetime.date(2020, 9, 1), datetime.date(2020, 10, 1)): 11,
-            (datetime.date(2020, 10, 1), datetime.date(2020, 11, 1)): 8,
-            (datetime.date(2020, 11, 1), datetime.date(2020, 12, 1)): 10,
-            (datetime.date(2020, 12, 1), datetime.date(2021, 1, 1)): 7,
-            (datetime.date(2021, 1, 1), datetime.date(2021, 2, 1)): 7,
-            (datetime.date(2021, 2, 1), datetime.date(2021, 3, 1)): 10,
-            (datetime.date(2021, 3, 1), datetime.date(2021, 4, 1)): 16,
-            (datetime.date(2021, 4, 1), datetime.date(2021, 5, 1)): 12,
-            (datetime.date(2021, 5, 1), datetime.date(2021, 6, 1)): 18,
-            (datetime.date(2021, 6, 1), datetime.date(2021, 7, 1)): 10,
-        }
-        previous_positives_patients = self.get_positive_patient_ids_for_date_range(
-            datetime.date.min, self.start_date
-        )
-        result = {}
-        for start_date, end_date in self.periods:
-            pos_patients = self.get_positive_patient_ids_for_date_range(
-                start_date, end_date
-            )
-            new_pos_patients = [
-                i for i in list(pos_patients) if i not in previous_positives_patients
-            ]
-            result[(start_date, end_date)] = len(new_pos_patients)
-            previous_positives_patients = previous_positives_patients.union(
-                pos_patients
-            )
-        return result
-
-    def get_patients_with_appointments_for_date_range(self, start_date, end_date):
-        return list(
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-            )
-            .filter(start_datetime__date__gt=start_date)
-            .filter(end_datetime__date__lt=end_date)
-            .exclude(status_code__in=["Canceled", "No Show"])
-            .values_list("patient_id", flat=True)
-        )
-
-    def get_new_patients_appointments(self):
-        return {
-            (datetime.date(2020, 1, 1), datetime.date(2020, 2, 1)): 80,
-            (datetime.date(2020, 2, 1), datetime.date(2020, 3, 1)): 155,
-            (datetime.date(2020, 3, 1), datetime.date(2020, 4, 1)): 111,
-            (datetime.date(2020, 4, 1), datetime.date(2020, 5, 1)): 41,
-            (datetime.date(2020, 5, 1), datetime.date(2020, 6, 1)): 39,
-            (datetime.date(2020, 6, 1), datetime.date(2020, 7, 1)): 74,
-            (datetime.date(2020, 7, 1), datetime.date(2020, 8, 1)): 57,
-            (datetime.date(2020, 8, 1), datetime.date(2020, 9, 1)): 42,
-            (datetime.date(2020, 9, 1), datetime.date(2020, 10, 1)): 92,
-            (datetime.date(2020, 10, 1), datetime.date(2020, 11, 1)): 76,
-            (datetime.date(2020, 11, 1), datetime.date(2020, 12, 1)): 58,
-            (datetime.date(2020, 12, 1), datetime.date(2021, 1, 1)): 55,
-            (datetime.date(2021, 1, 1), datetime.date(2021, 2, 1)): 60,
-            (datetime.date(2021, 2, 1), datetime.date(2021, 3, 1)): 43,
-            (datetime.date(2021, 3, 1), datetime.date(2021, 4, 1)): 78,
-            (datetime.date(2021, 4, 1), datetime.date(2021, 5, 1)): 75,
-            (datetime.date(2021, 5, 1), datetime.date(2021, 6, 1)): 83,
-            (datetime.date(2021, 6, 1), datetime.date(2021, 7, 1)): 88,
-        }
-        previous_patients = set(
-            self.get_patients_with_appointments_for_date_range(
-                datetime.date.min, self.start_date
-            )
-        )
-        result = {}
-        for start_date, end_date in self.periods:
-            patients = self.get_patients_with_appointments_for_date_range(
-                start_date, end_date
-            )
-            new_patients = [i for i in patients if i not in previous_patients]
-            result[(start_date, end_date)] = len(new_patients)
-            previous_patients = previous_patients.union(new_patients)
-        return result
-
-    def get_new_patients_with_appointments_for_date_range(self, start_date, end_date):
-        return list(
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-            )
-            .filter(start_datetime__date__gt=start_date)
-            .filter(end_datetime__date__lt=end_date)
-            .filter(derived_appointment_type__contains="New")
-            .exclude(status_code__in=["Canceled", "No Show"])
-            .values_list("patient_id", flat=True)
-        )
-
-    def get_new_appointments_with_new(self):
-        return {
-            (datetime.date(2020, 1, 1), datetime.date(2020, 2, 1)): 61,
-            (datetime.date(2020, 2, 1), datetime.date(2020, 3, 1)): 72,
-            (datetime.date(2020, 3, 1), datetime.date(2020, 4, 1)): 81,
-            (datetime.date(2020, 4, 1), datetime.date(2020, 5, 1)): 30,
-            (datetime.date(2020, 5, 1), datetime.date(2020, 6, 1)): 31,
-            (datetime.date(2020, 6, 1), datetime.date(2020, 7, 1)): 40,
-            (datetime.date(2020, 7, 1), datetime.date(2020, 8, 1)): 37,
-            (datetime.date(2020, 8, 1), datetime.date(2020, 9, 1)): 32,
-            (datetime.date(2020, 9, 1), datetime.date(2020, 10, 1)): 44,
-            (datetime.date(2020, 10, 1), datetime.date(2020, 11, 1)): 53,
-            (datetime.date(2020, 11, 1), datetime.date(2020, 12, 1)): 51,
-            (datetime.date(2020, 12, 1), datetime.date(2021, 1, 1)): 31,
-            (datetime.date(2021, 1, 1), datetime.date(2021, 2, 1)): 49,
-            (datetime.date(2021, 2, 1), datetime.date(2021, 3, 1)): 23,
-            (datetime.date(2021, 3, 1), datetime.date(2021, 4, 1)): 44,
-            (datetime.date(2021, 4, 1), datetime.date(2021, 5, 1)): 54,
-            (datetime.date(2021, 5, 1), datetime.date(2021, 6, 1)): 67,
-            (datetime.date(2021, 6, 1), datetime.date(2021, 7, 1)): 82,
-        }
-        previous_patients = set(
-            self.get_new_patients_with_appointments_for_date_range(
-                datetime.date.min, self.start_date
-            )
-        )
-        result = {}
-        for start_date, end_date in self.periods:
-            patients = self.get_new_patients_with_appointments_for_date_range(
-                start_date, end_date
-            )
-            new_patients = [i for i in patients if i not in previous_patients]
-            result[(start_date, end_date)] = len(new_patients)
-            previous_patients = previous_patients.union(new_patients)
-        return result
-
-    def get_count_of_appointments_for_new_patients(self):
-        pass
-
-    def get_length_of_care(self):
-        pass

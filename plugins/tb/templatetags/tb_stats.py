@@ -120,3 +120,32 @@ def three_col_table_with_percent(title, results):
         "tables": tables
     }
     return ctx
+
+
+@register.inclusion_tag(
+    "tb/stats/templatetags/pie_chart.html"
+)
+def pie_chart(
+    title, field_vals
+):
+    """
+    Takes in a title then a list of lists
+    where the first item is the name of the pie
+    chart like the c3 api.
+    """
+    field_vals = list(field_vals)
+    colors = {}
+    for idx, field_val in enumerate(field_vals):
+        colors[field_val[0]] = COLORS[idx]
+    return {
+        "html_id": title.lower().replace(" ", "_"),
+        "graph": {
+            "field_vals": json.dumps(field_vals),
+            "colors": json.dumps(colors)
+        },
+        "table": {
+            "field_vals": dict(field_vals),
+            "colors": json.dumps(colors)
+        },
+        "title": title,
+    }

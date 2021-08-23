@@ -1,15 +1,12 @@
-{% extends "tb/base.html" %}
-{% load tb_stats %}
-{% block tb_content %}
+{% extends "tb/base.html" %} {% load tb_stats %} {% block tb_content %}
 <div class="panel panel-default tb-stats">
   <div class="panel-heading">
     <div class="row">
       <div class="col-md-12">
-        <h1>
-          RFH Clinic Activity
-        </h1>
+        <h1>RFH Clinic Activity</h1>
         <p class="content-offset-below-10">
-          A review of the workings of the clinic {{ view.start_date }} - {{ view.end_date }}
+          A review of the workings of the clinic {{ view.start_date }} - {{
+          view.end_date }}
         </p>
       </div>
     </div>
@@ -25,12 +22,8 @@
         <h3>Patients</h3>
       </div>
       <div class="col-md-4">
-        <h1>
-          {{ summary.number_of_patients_who_had_their_last_appointment }}
-        </h1>
-        <h3>
-          Finished TB Care
-        </h3>
+        <h1>{{ summary.number_of_patients_who_had_their_last_appointment }}</h1>
+        <h3>Finished TB Care</h3>
       </div>
     </div>
     <div class="row content-offset">
@@ -43,6 +36,91 @@
         {% three_col_table_with_percent 'Appointments by type' appointments_by_type %}
       </div>
     </div>
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h1>MDT Review</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="content-offset-20" id="mdt_review"></div>
+      <script>
+        c3.generate({
+          bindto: '#mdt_review',
+          data: {
+            columns: {{ mdt_start_stop.vals | safe }},
+            type: 'line',
+            types: {'count': 'bar'},
+            axes: {
+              'duration': 'y2'
+            },
+          },
+          legend: {
+              show: false
+          },
+          axis: {
+            x: {
+              type: 'category',
+              categories: {{ mdt_start_stop.x_axis | safe }},
+              tick: {
+                culling: 26,
+                rotate: 75,
+                multiline: false
+              },
+            },
+            y: {
+              label: {
+                text: 'Count of patients',
+                position: 'outer-middle'
+              }
+            },
+            y2: {
+              show: true,
+              label: {
+                text: 'Duration (minutes)',
+                position: 'outer-middle'
+              }
+            }
+          }
+        });
+      </script>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12">
+        {% category_bar_chart "TB Dataset" elcid_review.x elcid_review.vals %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        {% pie_chart "elCID Patient notes by user" users_recorded %}
+      </div>
+      <div class="col-md-4">
+        {% pie_chart "Appointment types recorded on elCID" appointment_types_recording %}
+      </div>
+      <div class="col-md-4">
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <h3>Populated Panels</h3>
+          </div>
+        </div>
+        <div class="row content-offset-20">
+          <div class="col-md-12">
+            <table class="table table-striped">
+              {% for row in populated.items %}
+              <tr>
+                <td>
+                  {{ row.0 }}
+                </td>
+                <td>
+                  {{ row.1 }}
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-{% endblock %}
+  {% endblock %}
+</div>
