@@ -18,7 +18,7 @@ class RNOHDemographics(PatientSubrecord):
         verbose_name = 'RNOH Demographics'
 
 
-class OPATOutcomes(EpisodeSubrecord):
+class OPATEpisodes(EpisodeSubrecord):
     _icon = 'fa fa-pencil-square'
 
     OUTCOME_CHOICES = enum(
@@ -29,6 +29,19 @@ class OPATOutcomes(EpisodeSubrecord):
         'Failed'
     )
 
+    ADMINISTRATION_CHOICES = enum(
+        'Self', 'Family', 'Carer', 'District Nurse', 'HAH', 'Private Local', 'OPAT', 'Local A&E', 'Other'
+    )
+
+    SUPPLY_CHOICES = enum(
+        'RNOH', 'GP', 'Local hospital', 'Private'
+    )
+
+    admission_date         = models.DateField(blank=True, null=True)
+    discharge_date         = models.DateField(blank=True, null=True)
+    opat_end_date          = models.DateField(blank=True, null=True)
+    administration         = models.CharField(blank=True, null=True, max_length=200, choices=ADMINISTRATION_CHOICES)
+    supply                 = models.CharField(blank=True, null=True, max_length=200, choices=SUPPLY_CHOICES)
     outcome_early          = models.CharField(blank=True, null=True, max_length=200, choices=OUTCOME_CHOICES)
     outcome_early_date     = models.DateField(blank=True, null=True)
     outcome_one_year       = models.CharField(blank=True, null=True, max_length=200, choices=OUTCOME_CHOICES)

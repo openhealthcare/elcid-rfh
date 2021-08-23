@@ -465,10 +465,11 @@ class ImagingTypes(lookuplists.LookupList):
 class Imaging(EpisodeSubrecord):
     _icon = 'fa fa-eye'
 
-    date = models.DateField(blank=True, null=True)
+    date         = models.DateField(blank=True, null=True)
     imaging_type = ForeignKeyOrFreeText(ImagingTypes)
-    site = models.CharField(max_length=200, blank=True, null=True)
-    details = models.TextField(blank=True, null=True)
+    site         = models.CharField(max_length=200, blank=True, null=True)
+    hospital     = ForeignKeyOrFreeText(omodels.Hospital)
+    details      = models.TextField(blank=True, null=True)
 
 
 class PositiveBloodCultureHistory(PatientSubrecord):
