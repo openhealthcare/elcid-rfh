@@ -1,16 +1,18 @@
 {% extends 'patient_detail_base.html' %}
 
 {% block content %}
-  <div class="col-md-12 death-banner" ng-show="patient.demographics[0].death_indicator">
-    <h1>
-      <i class="fa fa-warning"></i>
-      Patient deceased
-      <small ng-show="patient.demographics[0].date_of_death">
-        ([[ patient.demographics[0].date_of_death | displayDate ]])
-      </small>
-    </h1>
+  <div fixed-header>
+    <div class="col-md-12 death-banner" ng-show="patient.demographics[0].death_indicator">
+      <h1>
+        <i class="fa fa-warning"></i>
+        Patient deceased
+        <small ng-show="patient.demographics[0].date_of_death">
+          ([[ patient.demographics[0].date_of_death | displayDate ]])
+        </small>
+      </h1>
+    </div>
+    {{ block.super }}
   </div>
-  {{ block.super }}
 {% endblock %}
 
 {% block episodes_switcher %}
@@ -20,7 +22,7 @@
         <i class="fa fa-history"></i>
         Services
         <i class="fa fa-plus-circle edit pull-right pointer"
-           ng-click="open_modal('AddToServiceCtrl', '/templates/add_to_service_modal.html', {patient: patient, refresh:refresh})"></i>
+           ng-click="open_modal('AddToServiceCtrl', '/templates/add_to_service_modal.html', {profile:profile, patient: patient, refresh:refresh})"></i>
       </h3>
     </div>
     <div class="list-group">

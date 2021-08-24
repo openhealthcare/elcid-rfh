@@ -259,7 +259,8 @@ a.list-group-item {
 }
 
 .death-banner {
-    margin-top: -15px;
+    margin-top: -95px;
+    padding-top: 80px;
     background-color: #864200;
     color: white;
     margin-bottom: 12px;
@@ -584,6 +585,7 @@ div.add-isolate:hover{
 }
 
 
+
 .navbar li .services-dropdown-item a{
     padding: 16px;
 }
@@ -591,6 +593,19 @@ div.add-isolate:hover{
 .navbar-nav li.dropdown:hover a {
     background: transparent;
 
+}
+.panel-heading.patient-detail-heading{
+   position: fixed;
+   width: 100%;
+   z-index: 10;
+}
+
+.patient-detail-heading.shrunken  {
+  h1{
+    font-size: 24px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
 }
 
 .nowrap{

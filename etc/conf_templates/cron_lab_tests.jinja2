@@ -1,1 +1,2 @@
 14 */2 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py batch_load2 >> /usr/lib/ohc/log/cron.log 2>&1
+56 */2 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py create_observation_histories >> /usr/lib/ohc/log/cron.log 2>&1
