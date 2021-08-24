@@ -10,8 +10,8 @@ angular.module('opal.controllers').controller('TBCalendarHelper',
 		* from the api endpoint.
 		*/
 		var self = this;
-		this.getAddToMDT = function(addToMDT){
-			return _.findWhere($scope.episode.add_to_mdt, {id: addToMDT.id});
+		this.getAddToMDT = function(addToMDTId){
+			return _.findWhere($scope.episode.add_to_mdt, {id: addToMDTId});
 		}
 
 		this.timeStamp = Date.now();
@@ -24,9 +24,9 @@ angular.module('opal.controllers').controller('TBCalendarHelper',
 			$scope.episode.recordEditor.newItem('add_to_mdt').then(self.update);
 		}
 
-		this.edit = function(add_to_mdt){
+		this.edit = function(addToMDTId){
 			$scope.episode.recordEditor.editItem(
-				'add_to_mdt', self.getAddToMDT(add_to_mdt)
+				'add_to_mdt', self.getAddToMDT(addToMDTId)
 			).then(self.update);
 		}
 });

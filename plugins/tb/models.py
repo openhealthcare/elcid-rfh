@@ -238,6 +238,7 @@ class AccessConsiderations(models.PatientSubrecord):
 
 
 class PatientConsultation(models.PatientConsultation):
+    MDT_REASON_FOR_INTERACTION = "MDT meeting"
     plan = fields.TextField(blank=True, default="")
     examination_findings = fields.TextField(
         blank=True, default=""

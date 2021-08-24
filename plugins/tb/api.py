@@ -241,16 +241,20 @@ class TBCalendar(LoginRequiredViewset):
     """
     base_name = "tb_calendar"
 
-    def get_mdt_date(self, reported_date):
+    def get_mdt_datetime(self, symbol_date, past=False):
         """
-        Returns the next Wednesday from the date
-
+        Returns the next/last Wednesday 13:00 from the date
         If it is a Wednesday it returns today.
         """
         for i in range(7):
-            possible_date = reported_date + datetime.timedelta(i)
+            if past:
+                possible_date = symbol_date - datetime.timedelta(i)
+            else:
+                possible_date = symbol_date + datetime.timedelta(i)
             if possible_date.isoweekday() == 3:
-                return possible_date
+                return timezone.make_aware(datetime.datetime.combine(
+                    possible_date, datetime.time(13)
+                ))
 
     def get_last_discussed(self, patient):
         """
@@ -263,16 +267,16 @@ class TBCalendar(LoginRequiredViewset):
 
         mdt_discussions = models.PatientConsultation.objects.filter(
             episode__patient=patient,
+        ).filter(
+            when__date__gte=datetime.date.today() - datetime.timedelta(30)
         )
+        mdt_reason = models.PatientConsultation.MDT_REASON_FOR_INTERACTION
         mdt_discussions = [
-            i for i in mdt_discussions if i.reason_for_interaction == "MDT meeting"
+            i for i in mdt_discussions if i.reason_for_interaction == mdt_reason
         ]
-        if mdt_discussions:
-            return max([i.created for i in mdt_discussions])
-        else:
-            return MDT_START
+        return mdt_discussions
 
-    def get_added_to_mdts(self, patient, last_discussed):
+    def get_added_to_mdts(self, patient):
         """
         Get the dates a patient is scheduled to be discussed
         on an MDT.
@@ -286,10 +290,16 @@ class TBCalendar(LoginRequiredViewset):
             episode__patient=patient
         )
         today = datetime.date.today()
+        pcs = models.PatientConsultation.objects.filter(
+            when__date=datetime.date.today()
+        )
+        discussed_at_mdt_today = [
+            i for i in pcs if i.reason_for_interaction == i.MDT_REASON_FOR_INTERACTION
+        ]
 
-        if last_discussed.date() == today:
+        if discussed_at_mdt_today:
             add_to_mdts = add_to_mdts.filter(
-                when__gt=last_discussed.date()
+                when__gt=today
             )
         else:
             add_to_mdts = add_to_mdts.filter(
@@ -297,82 +307,135 @@ class TBCalendar(LoginRequiredViewset):
             )
         return add_to_mdts
 
-    def get_positive_tb_obs(self, patient, last_discussed):
+    def get_positive_tb_obs(self, patient):
         """
-        Get all positive TB obs that are yet to
-        be discussed at MDT.
-
-        This should use a created timestamp however
-        we don't have one available, this will suffice
-        for this TB Calendar at the moment.
+        Get positive Cultures/PCRs
+        if there is a ref lab, we don't need to point out there is a culture
+        if there is a culture, we don't need to point out there is a smear
         """
+        last_mdt_date = self.get_mdt_datetime(
+            datetime.date.today(), past=True
+        )
         tb_obs = [
-            models.TBPCR,
-            models.AFBSmear,
-            models.AFBCulture,
             models.AFBRefLab,
+            models.AFBCulture,
+            models.AFBSmear,
         ]
         result = list()
         for tb_ob in tb_obs:
             result.extend(tb_ob.objects.filter(
                 patient=patient,
                 positive=True,
-                reported_datetime__gt=last_discussed
+                reported_datetime__date__gte=last_mdt_date
             ))
+            if result:
+                break
+
+        result.extend(models.TBPCR.objects.filter(
+                patient=patient,
+                positive=True,
+                reported_datetime__date__gte=last_mdt_date
+        ))
         return result
 
-    @patient_from_pk
-    def retrieve(self, request, patient):
-        appointment_fields = [
-            "start_datetime",
-            "status_code",
-            "derived_appointment_type",
-            "derived_clinic_resource"
-        ]
+    def get_appointments(self, patient):
         appointments = appointment_models.Appointment.objects.filter(
             patient=patient
         ).filter(
             derived_appointment_type__in=constants.TB_APPOINTMENT_CODES
+        ).filter(
+            start_datetime__date__gte=datetime.date.today() - datetime.timedelta(30)
         )
-        todays_appointments = list(appointments.filter(
-            start_datetime__date=datetime.date.today()
-        ).values(*appointment_fields))
-        next_appointment = appointments.filter(
-            start_datetime__date__gt=datetime.date.today(),
-        ).exclude(
-            status_code__in=["Rescheduled", "Canceled"]
-        ).values(*appointment_fields).order_by('start_datetime').first()
-        last_appointments_qs = appointments.filter(
-            start_datetime__date__lt=datetime.date.today()
-        ).values(*appointment_fields).order_by('-start_datetime')
-        last_appointments = []
-        for appointment in last_appointments_qs:
-            last_appointments.append(appointment)
-            if appointment["status_code"] in ['Checked In', 'Checked Out']:
-                break
+        return appointments
 
-        last_discussed = self.get_last_discussed(patient)
-        add_to_mdts = self.get_added_to_mdts(patient, last_discussed)
-        appear_on_mdt = [
-            i.to_dict(self.request.user) for i in add_to_mdts
-        ]
-        positive_results = self.get_positive_tb_obs(patient, last_discussed)
-        for positive in positive_results:
-            mdt_date = self.get_mdt_date(positive.reported_datetime.date())
-            tb_obs_dict = {
-                "when": mdt_date
+    def appointment_to_line(self, appointment):
+        return (
+            appointment.start_datetime,
+            "appointment",
+            {
+                "status_code": appointment.status_code,
+                "derived_appointment_type": appointment.derived_appointment_type,
+                "derived_clinic_resource": appointment.derived_clinic_resource
             }
-            if isinstance(positive, models.AFBRefLab):
-                tb_obs_dict["reason"] = "Ref Lab Report Returned"
-            else:
-                tb_obs_dict["reason"] = f"{positive.OBSERVATION_NAME} Positive"
-            appear_on_mdt.append(tb_obs_dict)
+        )
 
-        appear_on_mdt = sorted(appear_on_mdt, key=lambda x: x["when"], reverse=True)
+    def added_to_mdt_to_line(self, add_to_mdt):
+        when = timezone.make_aware(datetime.datetime.combine(
+            add_to_mdt.when, datetime.time(13, 00)
+        ))
+        user = add_to_mdt.updated_by
+        if not user:
+            user = add_to_mdt.created_by
+        return (
+                when,
+                f"{add_to_mdt.site} MDT",
+                {
+                    "reason": f"Added by {user.username}",
+                    "id": add_to_mdt.id  # used to tell us if its editable in the front end
+                }
+            )
 
+    def last_discussed_to_line(self, patient_consultation):
+        return (patient_consultation.when, "MDT", {"reason": "Discussed at MDT"})
+
+    def positive_result_to_line(self, positive_result):
+        if "K" in positive_result.lab_number:
+            site = "Barnet"
+        else:
+            site = "RFH"
+        mdt_date = self.get_mdt_datetime(positive_result.reported_datetime.date())
+        if isinstance(positive_result, models.AFBRefLab):
+            reason = "Ref Lab Report Returned"
+        else:
+            reason = f"{positive_result.OBSERVATION_NAME} Positive"
+        return (mdt_date, f"{site} MDT", {"reason": reason})
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+        timeline_rows = []
+
+        # all appointments from 30 days ago to the future
+        appointments = self.get_appointments(patient)
+        timeline_rows.extend([
+            self.appointment_to_line(i) for i in appointments
+        ])
+
+        # the last 30 days worth of MDT discussions for this patient
+        timeline_rows.extend(
+            self.last_discussed_to_line(i) for i in self.get_last_discussed(patient)
+        )
+
+        # the future added_to_mdt subrecords for this patient
+        add_to_mdts = self.get_added_to_mdts(patient)
+        timeline_rows.extend(
+            self.added_to_mdt_to_line(i) for i in add_to_mdts
+        )
+
+        # the number of future positive results for this patient
+        positive_results = self.get_positive_tb_obs(patient)
+        timeline_rows.extend(
+            self.positive_result_to_line(i) for i in positive_results
+        )
+
+        # combine the keys to lines,
+        # e.g. if someone had a positive PCR and was added to the an MDT
+        # it should be
+        # ('when', 'Barnet MDT': [{reason: 'PCR positive'}, {reason: 'Added by Wilma'}])
+        combined_timeline = defaultdict(list)
+        for when, row_type, timeline_row in timeline_rows:
+            combined_timeline[(when, row_type,)].append(timeline_row)
+
+        timeline = []
+        # flatten the timeline into
+        # [when, row_type(e.g. appoitment, [lines things that happened]]
+        for key, rows in combined_timeline.items():
+            when, row_type = key
+            timeline.append((when, row_type, rows,))
+
+        timeline = sorted(timeline, key=lambda x: x[0], reverse=True)
+        today = datetime.date.today()
         return json_response({
-            "appear_on_mdt": appear_on_mdt,
-            "todays_appointments": todays_appointments,
-            "next_appointment": next_appointment,
-            "last_appointments": last_appointments,
+            "Upcoming": [i for i in timeline if i[0].date() > today],
+            "Today": [i for i in timeline if i[0].date() == today],
+            "Last 30 Days": [i for i in timeline if i[0].date() < today]
         })
