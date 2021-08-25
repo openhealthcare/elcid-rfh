@@ -40,6 +40,10 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
     main_language = models.CharField(blank=True, null=True, max_length=100)
     nationality = models.CharField(blank=True, null=True, max_length=100)
 
+    @property
+    def age(self):
+        return datetime.date.today().year - self.date_of_birth.year
+
     class Meta:
         verbose_name_plural = "Demographics"
 

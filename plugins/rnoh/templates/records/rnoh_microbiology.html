@@ -35,8 +35,10 @@
     [[ item.organism ]]
 </span>
 <span ng-show="item.sensitivities.length > 1">
-    [[ item.sensitivities ]]
+<br />
+  S: <span ng-repeat="s in item.sensitivities">[[ s ]] </span>
 </span>
 <span ng-show="item.resistances.length > 1">
-    [[ item.resistances ]]
+  <br />
+  R: <span ng-repeat="r in item.resistances">[[ r ]] </span>
 </span>
