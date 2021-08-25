@@ -8,6 +8,11 @@
     <li>
     <a href="/#/rnoh/inpatients/">Inpatients</a>
     </li>
+    {% for name in view.INDIVIDUAL_WARD_NAMES %}
+    <li>
+      <a href="/#/rnoh/ward/{{ name.lower }}/">{{ name }}</a>
+    </li>
+    {% endfor %}
     <li>
       <a href="/#/rnoh/numbers/">Useful Information</a>
     </li>

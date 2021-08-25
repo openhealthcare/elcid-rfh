@@ -98,6 +98,7 @@ app.config(
 
              .when('/rnoh/inpatients/',             static_template_route('/templates/rnoh/inpatients.html'))
              .when('/rnoh/numbers/',                static_template_route('/templates/rnoh/numbers.html'))
+             .when('/rnoh/ward/:ward_name/',        param_template_route('/templates/rnoh/ward_list/', 'ward_name'))
 
              .when('/patient-information-load-stats/', static_template_route(
                  '/templates/monitoring/patient_information_load_stats.html'))

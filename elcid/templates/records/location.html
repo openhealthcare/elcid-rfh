@@ -3,7 +3,10 @@
     <b>Hospital</b>
   </div>
   <div class="col-md-8">
-    [[item.hospital]]
+    <a href="/#/rnoh/inpatients/" ng-show="item.hospital == 'RNOH'" class="orange-link">
+      [[item.hospital]]
+    </a>
+    <span ng-show="item.hospital != 'RNOH'">[[ item.hospital ]]</span>
   </div>
 </div>
 <div class="row">

@@ -1,19 +1,28 @@
 {% extends "rnoh/base.html" %}
 {% block rnoh_content %}
-{% for episode in episodes reversed %}
 <div class="panel panel-default panel-container">
+  <div class="panel-heading">
+    <h1>{{ list_name }}: {{ episodes.count }} patient{% if episodes.count != 1 %}s{% endif %}</h1>
+  </div>
+  {% if episodes.count == 0 %}
+  <div class="panel-body">
+    <h5>No patients currently on this list</h5>
+  </div>
+  {% else %}
+  {% for episode in episodes reversed %}
+
   {% with episode.patient.demographics as demographics %}
   <div class="panel-heading">
     <div class="row">
       <div class="col-md-6">
         <a href="/#/patient/{{ episode.patient.id }}/{{ episode.id }}" class="orange-link">
-        <strong>
-          {{ demographics.name }} {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
-        </strong>
-        {{ demographics.date_of_birth }}
-        {% if demographics.sex %}{{ demographics.sex }} {% endif %}
-        {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %}
-        ({{ demographics.age }})
+          <strong>
+            {{ demographics.name }} {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
+          </strong>
+          {{ demographics.date_of_birth }}
+          {% if demographics.sex %}{{ demographics.sex }} {% endif %}
+          {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %}
+          ({{ demographics.age }})
         </a>
       </div>
       <div class="col-md-4">
@@ -99,7 +108,7 @@
         <strong>Treatment:</strong>
         {% for treatment in episode.treatment_set.all reversed %}
         <p>
-         {{ treatment.start_date }} {{ treatment.drug }} {{ treatment.dose }} {{ treatment.frequency }}
+          {{ treatment.start_date }} {{ treatment.drug }} {{ treatment.dose }} {{ treatment.frequency }}
         </p>
         {% endfor %}
         {% endif %}
@@ -125,7 +134,10 @@
 
   </div>
 
-</div> <!--  Panel -->
-{% endfor %}
 
+  {% endfor %}
+  {% endif %}
+
+
+</div> <!--  Panel -->
 {% endblock %}

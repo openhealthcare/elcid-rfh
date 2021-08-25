@@ -54,11 +54,22 @@ class RNOHMicrobiology(EpisodeSubrecord):
 
     _icon = "fa fa-crosshairs"
 
+    BLOOD_CULTURE = 'Blood Culture'
+    GENERIC_CULTURE = 'Culture'
+
     TEST_NAME_CHOICES = enum(
-        'Culture',
+        BLOOD_CULTURE,
+        'Covid-19',
+        GENERIC_CULTURE,
         'MRSA Screen',
         'CPE Screen'
     )
+
+    CULTURE_TESTS = [
+        BLOOD_CULTURE,
+        GENERIC_CULTURE
+    ]
+
 
     SAMPLE_TYPE_CHOICES = enum(
         'Tissue',
@@ -71,7 +82,8 @@ class RNOHMicrobiology(EpisodeSubrecord):
         'Urine',
         'Sputum',
         'Stool',
-        'CSF'
+        'CSF',
+        'NPS'
     )
 
     BOTTLE_CHOICES = enum(
