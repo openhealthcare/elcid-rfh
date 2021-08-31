@@ -349,13 +349,21 @@ class TBCalendar(LoginRequiredViewset):
         return appointments
 
     def appointment_to_line(self, appointment):
+        clean_clinic_resource = appointment.derived_clinic_resource
+        splitted = appointment.derived_clinic_resource.split("~")
+        if len(splitted) == 2:
+            # quite often we get rows that look like joanne wilson~joanne wilson
+            # ie, repeating the name with a tilda in between
+            # in these instances, just show the name once
+            if splitted[0].strip() == splitted[1].strip():
+                clean_clinic_resource = splitted[0].strip()
         return (
             appointment.start_datetime,
             "appointment",
             {
                 "status_code": appointment.status_code,
                 "derived_appointment_type": appointment.derived_appointment_type,
-                "derived_clinic_resource": appointment.derived_clinic_resource
+                "derived_clinic_resource": clean_clinic_resource
             }
         )
 
@@ -385,9 +393,9 @@ class TBCalendar(LoginRequiredViewset):
             site = "RFH"
         mdt_date = self.get_mdt_datetime(positive_result.reported_datetime.date())
         if isinstance(positive_result, models.AFBRefLab):
-            reason = "Ref Lab Report Returned"
+            reason = "Ref Lab Report Updatd"
         else:
-            reason = f"{positive_result.OBSERVATION_NAME} Positive"
+            reason = f"{positive_result.OBSERVATION_NAME} Updated"
         return (mdt_date, f"{site} MDT", {"reason": reason})
 
     @patient_from_pk

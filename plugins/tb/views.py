@@ -677,8 +677,11 @@ class MDTList(LoginRequiredMixin, TemplateView):
         )
         added_to_mdts = []
         for mdt in mdts:
+            when = timezone.make_aware(datetime.datetime.combine(
+                mdt.when, datetime.time(13, 00)
+            ))
             added_to_mdts.append(
-                (mdt.created, "added_to_mdt", mdt,)
+                (when, "added_to_mdt", mdt,)
             )
         timeline = obs + notes + appointments + added_to_mdts
         timeline = sorted(timeline, key=lambda x: x[0], reverse=True)

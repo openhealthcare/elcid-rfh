@@ -3,9 +3,9 @@
     <strong>
     <i class="fa fa-bullhorn primary-text"></i>
     &nbsp;
-    {{ added_to_mdt.created |date:"d M Y G:i" }}
-    Added to the MDT by {{ added_to_mdt.created_by }}
-    </strong>
+    {{ added_to_mdt.when |date:"d M Y" }}
+    Scheduled for MDT
+    </strong> by {{ added_to_mdt.created_by }}
     {{ added_to_mdt.reason | linebreaks }}
   </div>
 </div>
