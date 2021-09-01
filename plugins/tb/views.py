@@ -1100,7 +1100,7 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
         )
         nationality_and_language = language.union(nationality)
         result["Nationality and Language"] = len(nationality_and_language)
-        result[Travel] = self.get_subrecord_with_appointment_count(
+        result[Travel.get_display_name()] = self.get_subrecord_with_appointment_count(
             Travel
         )
         result[TBHistory.get_display_name()] = self.get_subrecord_with_appointment_count(
