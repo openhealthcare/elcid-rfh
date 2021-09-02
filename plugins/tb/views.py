@@ -770,6 +770,20 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
     template_name = "tb/stats/clinic_activity.html"
 
     @property
+    def menu_years(self):
+        minimum_year = 2020
+        current_year = datetime.date.today().year
+        result = []
+        for i in range(4):
+            start_year = current_year - i
+            end_year = current_year - i + 1
+            if start_year < minimum_year:
+                break
+            result.append((start_year, end_year,))
+        result.reverse()
+        return result
+
+    @property
     def start_date(self):
         return datetime.date(int(self.kwargs["year"]), 1, 1)
 

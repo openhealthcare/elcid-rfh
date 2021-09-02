@@ -567,4 +567,17 @@ div.add-isolate:hover {
   margin-top: 0;
   text-align: center;
 }
+
+.tb-stats .view-switcher {
+  position: absolute;
+  top: 20px;
+  right: 28px;
+  z-index: 10;
+}
+
+.tb-stats .view-switcher h4 {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  padding: 0 20px;
+}
 /*# sourceMappingURL=elcid.css.map */
