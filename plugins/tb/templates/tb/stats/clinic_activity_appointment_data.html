@@ -18,7 +18,7 @@
   </div>
   <div class="panel-body">
     {% for month, appointment_info in appointment_info_by_month.items %}
-    <h1>{{ month }} ({{ appointment_info|length }} appointments)</h1>
+    <h3>{{ month }} ({{ appointment_info|length }} appointments)</h1>
     <table class="table table-striped">
       <thead>
         <tr>
