@@ -1,6 +1,8 @@
 {% extends "tb/base.html" %}
 {% load tb_stats %}
 {% block tb_content %}
+{% url 'clinic_activity' year=view.kwargs.year as clinic_activity_url %}
+{% url 'clinic_activity_appointment_data' year=view.kwargs.year as appointment_data_url %}
 <div class="panel panel-default tb-stats">
   <div class="panel-heading">
     <div class="row">
@@ -42,8 +44,8 @@
     </div>
   </div>
   <div class="panel-body">
-    <h1>{{ appointment_info|length }} Appointments</h1>
-    {% if appointment_info %}
+    {% for month, appointment_info in appointment_info_by_month.items %}
+    <h1>{{ month }} ({{ appointment_info|length }} appointments)</h1>
     <table class="table table-striped">
       <thead>
         <tr>
@@ -74,7 +76,7 @@
         {% endfor %}
       </tbody>
     </table>
-    {% endif %}
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

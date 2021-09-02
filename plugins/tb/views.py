@@ -1279,5 +1279,9 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx["appointment_info"] = self.get_appointment_info()
+        appointment_info = self.get_appointment_info()
+        by_month = defaultdict(list)
+        for appointment_row in appointment_info:
+            by_month[appointment_row["Start"].strftime('%B')].append(appointment_row)
+        ctx["appointment_info_by_month"] = dict(by_month)
         return ctx
