@@ -38,6 +38,12 @@
         <li>
           <a href="/#/appointment-load-stats/">Appointment load stats</a>
         </li>
+        <li>
+          {% now "Y" as current_year %}
+          <a href="/#/tb/clinic-activity/{{ current_year }}/">
+            Clinic Activity
+          </a>
+        </li>
       </ul>
     </div> <!-- Panel -->
   </div>
