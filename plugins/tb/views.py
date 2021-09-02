@@ -866,10 +866,16 @@ class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
     @property
     def weeks(self):
         result = []
+        first_monday = None
+        for i in range(7):
+            first_monday = self.start_date - datetime.timedelta(i)
+            if first_monday.isoweekday() == 1:
+                break
+
         for i in range(52):
-            if self.start_date + datetime.timedelta(i * 7) < self.end_date:
-                start = self.start_date + datetime.timedelta(i * 7)
-                end = self.start_date + datetime.timedelta((i + 1) * 7)
+            if first_monday + datetime.timedelta(i * 7) < self.end_date:
+                start = first_monday + datetime.timedelta(i * 7)
+                end = first_monday + datetime.timedelta((i + 1) * 7)
                 result.append((start, end))
             else:
                 break
