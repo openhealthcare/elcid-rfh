@@ -2,7 +2,6 @@
 Defines a service discoverable for the elCID application
 """
 from opal.core import discoverable
-from opal.models import UserProfile
 
 
 class ClinicalService(discoverable.DiscoverableFeature, discoverable.RestrictableFeature):
@@ -10,6 +9,7 @@ class ClinicalService(discoverable.DiscoverableFeature, discoverable.Restrictabl
 
     @classmethod
     def visible_to(klass, user):
+        from opal.models import UserProfile
 
         if user.is_superuser:
             return True
