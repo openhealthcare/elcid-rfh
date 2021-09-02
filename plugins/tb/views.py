@@ -895,7 +895,7 @@ class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
                 when__date__gte=self.start_date,
                 when__date__lt=self.end_date,
                 reason_for_interaction_fk_id=mdt_meeting.id,
-            )
+            ).select_related("episode")
         )
 
     @cached_property
@@ -1198,6 +1198,52 @@ class ClinicActivity(AbstractClinicActivity):
         return ctx
 
 
+class ClinicActivityMDTData(AbstractClinicActivity):
+    template_name = "tb/stats/clinic_activity_mdt_data.html"
+
+    def get_week(self, some_date):
+        weeks = self.weeks
+        week = [
+            (i, v,) for i, v in weeks if some_date >= i and some_date < v
+        ]
+        return week[0]
+
+    def get_mdt_info(self):
+        mdt_meetings = self.mdt_meeting_qs
+        patient_ids = set([i.episode.patient_id for i in mdt_meetings])
+        demographics = Demographics.objects.filter(
+            patient_id__in=patient_ids
+        )
+        patient_id_to_demographics = {i.patient_id: i for i in demographics}
+        result = []
+        for mdt_meeting in mdt_meetings:
+            episode_id = mdt_meeting.episode_id
+            patient_id = mdt_meeting.episode.patient_id
+            host = self.request.get_host()
+            link = f"http://{host}/#/patient/{patient_id}/{episode_id}"
+            demographics = patient_id_to_demographics[patient_id]
+            result.append({
+                "Link": link,
+                "Name": demographics.name,
+                "MRN": demographics.hospital_number,
+                "When": mdt_meeting.when,
+                "By": mdt_meeting.initials
+            })
+        result = sorted(result, key=lambda x: x["When"])
+        return result
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        mdt_info = self.get_mdt_info()
+        rows_by_week = defaultdict(list)
+        for mdt_row in mdt_info:
+            rows_by_week[self.get_week(mdt_row["When"].date())].append(
+                mdt_row
+            )
+        ctx["rows_by_week"] = dict(rows_by_week)
+        return ctx
+
+
 class ClinicActivityAppointmentData(AbstractClinicActivity):
     template_name = "tb/stats/clinic_activity_appointment_data.html"
 
@@ -1262,7 +1308,7 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
         symptom_patient_ids = self.get_patient_ids_with_subrecords(
             SymptomComplex
         )
-        referrals = self.get_patient_ids_with_subrecords(
+        referral_patient_ids = self.get_patient_ids_with_subrecords(
             ReferralRoute
         )
 
@@ -1331,7 +1377,7 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
                 "Seen by": seen_by,
                 "Primary diagnosis": patient_id in primary_diagnosis_patient_ids,
                 SymptomComplex.get_display_name(): patient_id in symptom_patient_ids,
-                ReferralRoute.get_display_name(): patient_id in referrals
+                ReferralRoute.get_display_name(): patient_id in referral_patient_ids
             }
 
             if self.request.method == "POST":

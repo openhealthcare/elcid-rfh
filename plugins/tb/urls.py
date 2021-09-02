@@ -81,5 +81,10 @@ urlpatterns = [
         r'tb/clinic_activity/appointment_data/(?P<year>\d+)/$',
         views.ClinicActivityAppointmentData.as_view(),
         name="clinic_activity_appointment_data"
-    )
+    ),
+    url(
+        r'tb/clinic_activity/mdt_data/(?P<year>\d+)/$',
+        views.ClinicActivityMDTData.as_view(),
+        name="clinic_activity_mdt_data"
+    ),
 ]
