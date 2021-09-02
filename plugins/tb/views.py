@@ -1222,15 +1222,31 @@ class ClinicActivityMDTData(AbstractClinicActivity):
             host = self.request.get_host()
             link = f"http://{host}/#/patient/{patient_id}/{episode_id}"
             demographics = patient_id_to_demographics[patient_id]
-            result.append({
+            row = {
                 "Link": link,
                 "Name": demographics.name,
                 "MRN": demographics.hospital_number,
                 "When": mdt_meeting.when,
                 "By": mdt_meeting.initials
-            })
+            }
+            if self.request.method == "POST":
+                row["Examination findings"] = mdt_meeting.examination_findings
+                row["Discussion"] = mdt_meeting.discussion
+                row["Plan"] = mdt_meeting.plan
+            result.append(row)
+
         result = sorted(result, key=lambda x: x["When"])
         return result
+
+    def post(self, *args, **kwargs):
+        zip_file_name = f"mdt_data_{self.kwargs['year']}.zip"
+        csv_name = f"mdt_data_{self.kwargs['year']}.csv"
+        table_data = self.get_mdt_info()
+        with ZipCsvWriter(zip_file_name) as zf:
+            zf.write_csv(
+                csv_name, table_data
+            )
+        return zip_file_to_response(zf.name)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
