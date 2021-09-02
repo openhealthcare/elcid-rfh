@@ -1,5 +1,6 @@
 {% url 'clinic_activity' year=view.kwargs.year as clinic_activity_url %}
 {% url 'clinic_activity_appointment_data' year=view.kwargs.year as appointment_data_url %}
+{% url 'clinic_activity_mdt_data' year=view.kwargs.year as mdt_data_url %}
 <div class="view-switcher">
   <div class="row content-offset-below-10">
     <div class="col-md-12 text-right">
@@ -22,6 +23,9 @@
         </a>
         <a href="/#/tb/clinic-activity/appointment_data/{{ view.kwargs.year }}/" class='btn {% if request.path == appointment_data_url %}btn-secondary{% else %}btn-default{% endif %}'>
           <h4>Appointment data</h4>
+        </a>
+        <a href="/#/tb/clinic-activity/mdt_data/{{ view.kwargs.year }}/" class='btn {% if request.path == mdt_data_url %}btn-secondary{% else %}btn-default{% endif %}'>
+          <h4>MDT data</h4>
         </a>
       </div>
     </div>

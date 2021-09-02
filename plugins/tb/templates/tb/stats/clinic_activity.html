@@ -2,13 +2,13 @@
 <div class="panel panel-default tb-stats">
   <div class="panel-heading">
     <div class="row">
-      <div class="col-md-8">
+      <div class="col-md-7">
         <h1>RFH Clinic Activity {{ view.kwargs.year }}</h1>
         <p class="content-offset-below-10">
           A review of the workings of the clinic and the TB dataset for patients with appointments between {{ view.start_date }} - {{ view.end_date }}
         </p>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-5">
         {% include "tb/stats/stats_menu.html" %}
       </div>
     </div>
