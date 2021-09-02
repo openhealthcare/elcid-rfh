@@ -1,9 +1,16 @@
 """
 Views for the TB Opal Plugin
 """
+import csv
 import json
 import datetime
+import tempfile
+import os
+import io
+import zipfile
+from pathlib import Path
 from collections import defaultdict
+from django.http import HttpResponse
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
@@ -17,7 +24,6 @@ from opal.models import (
 from elcid.models import (
     Diagnosis,
     Demographics,
-    PrimaryDiagnosis,
     SymptomComplex, ReferralRoute
 )
 from elcid.utils import timing
@@ -37,6 +43,57 @@ from plugins.tb.models import (
 )
 from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
+
+
+class ZipCsvWriter:
+    """
+    Write a list of dicts to a zip file
+
+    example code
+
+    with ZipCsvWriter("extract01092020.zip") as z:
+        z.write_csv("allergens.csv", [{"allergen": "flour"}])
+
+    return z.name
+    """
+    def __init__(self, folder_name):
+        self.folder_name = folder_name
+
+    def __enter__(self):
+        temp_dir = tempfile.mkdtemp()
+        self.zip_file_name = os.path.join(temp_dir, f'{self.folder_name}')
+        self.zipfile = zipfile.ZipFile(self.zip_file_name, mode='w')
+        return self
+
+    def write_csv(self, file_name, list_of_dicts):
+        buffer = io.StringIO()
+        wr = None
+        if list_of_dicts:
+            headers = list_of_dicts[0].keys()
+            wr = csv.DictWriter(
+                buffer, fieldnames=headers
+            )
+            wr.writeheader()
+            wr.writerows(list_of_dicts)
+        self.zipfile.writestr(file_name, buffer.getvalue())
+
+    @property
+    def name(self):
+        return self.zip_file_name
+
+    def __exit__(self, *args):
+        self.zipfile.close()
+
+
+def zip_file_to_response(file_with_path):
+    with open(file_with_path, 'rb') as download:
+        content = download.read()
+
+    file_name = Path(file_with_path).name
+    resp = HttpResponse(content)
+    disp = f'attachment; filename="{file_name}"'
+    resp['Content-Disposition'] = disp
+    return resp
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
@@ -1135,7 +1192,7 @@ class ClinicActivity(AbstractClinicActivity):
         ctx["appointments_by_type"] = self.appointments_by_type()
         ctx["mdt_start_stop"] = self.mdt_start_stop()
         ctx["elcid_review"] = self.elcid_review()
-        ctx["users_not recorded"] = self.users_recorded()
+        ctx["users_recorded"] = self.users_recorded()
         ctx["appointment_types_recording"] = self.patient_notes_by_derrived_type()
         ctx["populated"] = self.subrecords_recorded()
         return ctx
@@ -1208,6 +1265,42 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
         referrals = self.get_patient_ids_with_subrecords(
             ReferralRoute
         )
+
+        if self.request.method == "POST":
+            secondary_diagnosis_qs = Diagnosis.objects.filter(
+                category=Diagnosis.PRIMARY
+            )
+            secondary_diagnosis_patient_ids = self.get_patient_ids_with_subrecords(
+                Diagnosis, secondary_diagnosis_qs
+            )
+            tb_medication_qs = Treatment.objects.filter(
+                category=Treatment.TB
+            )
+            tb_medication_patient_ids = self.get_patient_ids_with_subrecords(
+                Treatment, tb_medication_qs
+            )
+            other_medication_qs = Treatment.objects.exclude(
+                category=Treatment.TB
+            )
+            other_medication_patient_ids = self.get_patient_ids_with_subrecords(
+                Treatment, other_medication_qs
+            )
+            nationality_patient_ids = self.get_patient_ids_with_subrecords(
+                Nationality
+            )
+            language_patient_ids = self.get_patient_ids_with_subrecords(
+                CommuninicationConsiderations
+            )
+            travel_patient_ids = self.get_patient_ids_with_subrecords(
+                Travel
+            )
+            tb_history_patient_ids = self.get_patient_ids_with_subrecords(
+                TBHistory
+            )
+            social_history_patient_ids = self.get_patient_ids_with_subrecords(
+                SocialHistory
+            )
+
         result = []
         host = self.request.get_host()
         for appointment in appointments:
@@ -1242,37 +1335,16 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
             }
 
             if self.request.method == "POST":
-                row["Seconday Diagnosis"] = Diagnosis.objects.filter(
-                    category=Diagnosis.PRIMARY
-                ).filter(
-                    episode__patient_id=appointment.patient_id
-                ).exists()
-                row["TB Medication"] = Treatment.objects.filter(
-                    category=Treatment.TB
-                ).filter(
-                    episode__patient_id=appointment.patient_id
-                ).exists()
-                row["Other Medication"] = Treatment.objects.filter(
-                    category=Treatment.TB
-                ).exclude(
-                    episode__patient_id=appointment.patient_id
-                ).exists()
-                nationality = self.subrecord_populated(
-                    patient_id, Nationality
-                )
-                language = self.subrecord_populated(
-                    patient_id, CommuninicationConsiderations
-                )
-                row["Nationality and Language"] = nationality or language
-                row[Travel.get_display_name()] = self.subrecord_populated(
-                    patient_id, Travel
-                )
-                row[TBHistory.get_display_name()] = self.subrecord_populated(
-                    patient_id, TBHistory
-                )
-                row[SocialHistory.get_display_name()] = self.subrecord_populated(
-                    patient_id, SocialHistory
-                )
+                has_sec_diag = patient_id in secondary_diagnosis_patient_ids
+                row["Secondary diagnosis"] = has_sec_diag
+                row["TB Medication"] = patient_id in tb_medication_patient_ids
+                row["Other Medication"] = patient_id in other_medication_patient_ids
+                has_nationality = patient_id in nationality_patient_ids
+                has_language = patient_id in language_patient_ids
+                row["Nationality and Language"] = has_nationality or has_language
+                row[Travel.get_display_name()] = patient_id in travel_patient_ids
+                row[TBHistory.get_display_name()] = patient_id in tb_history_patient_ids
+                row[SocialHistory.get_display_name()] = patient_id in social_history_patient_ids
             result.append(row)
         result = sorted(result, key=lambda x: x["Start"])
         return result
@@ -1285,3 +1357,13 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
             by_month[appointment_row["Start"].strftime('%B')].append(appointment_row)
         ctx["appointment_info_by_month"] = dict(by_month)
         return ctx
+
+    def post(self, *args, **kwargs):
+        zip_file_name = f"appointments_{self.kwargs['year']}.zip"
+        csv_name = f"appointments_{self.kwargs['year']}.csv"
+        table_data = self.get_appointment_info()
+        with ZipCsvWriter(zip_file_name) as zf:
+            zf.write_csv(
+                csv_name, table_data
+            )
+        return zip_file_to_response(zf.name)
