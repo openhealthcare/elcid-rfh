@@ -1,0 +1,80 @@
+{% extends "tb/base.html" %}
+{% load tb_stats %}
+{% block tb_content %}
+<div class="panel panel-default tb-stats">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>RFH Clinic Activity {{ view.kwargs.year }}</h1>
+        <p class="content-offset-below-10">
+          A review of the workings of the clinic and the TB dataset for patients with appointments between {{ view.start_date }} - {{ view.end_date }}
+        </p>
+      </div>
+      <div class="col-md-4">
+        <div class="view-switcher">
+          <div class="row content-offset-below-10">
+            <div class="col-md-12 text-right">
+              <div class="btn-group">
+                {% for start_year, end_year in view.menu_years %}
+                <a href="/#/tb/clinic-activity/{{ start_year }}/" class='btn {% if start_year == view.kwargs.year|add:"0" %}btn-secondary{% else %}btn-default{% endif %}'>
+                  <h4>
+                    {{ start_year }} - {{ end_year }}
+                  </h4>
+                </a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12 text-right">
+              <div class="btn-group">
+                <a href="/#/tb/clinic-activity/{{ view.kwargs.year }}/" class='btn {% if request.path == clinic_activity_url %}btn-secondary{% else %}btn-default{% endif %}'>
+                  <h4>Summary</h4>
+                </a>
+                <a href="/#/tb/clinic-activity/appointment_data/{{ view.kwargs.year }}/" class='btn {% if request.path == appointment_data_url %}btn-secondary{% else %}btn-default{% endif %}'>
+                  <h4>Appointment data</h4>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel-body">
+    <h1>{{ appointment_info|length }} Appointments</h1>
+    {% if appointment_info %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          {% for column, val in appointment_info.0.items %}
+          {% if not column == 'Link' %}
+          <th {% if val == True or val == False %}class="text-center"{% endif %}>{{ column }}</th>
+          {% endif %}
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in appointment_info %}
+        <tr>
+          {% for key, value in row.items %}
+          {% if not key == 'Link' %}
+          <td {% if val == True or val == False %}class="text-center"{% endif %}>
+            {% if key == 'Name' %}
+            <a class="orange-link" href="{{ row.Link }}">
+              {% value_display value %}
+            </a>
+            {% else %}
+              {% value_display value %}
+            {% endif %}
+          </td>
+          {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

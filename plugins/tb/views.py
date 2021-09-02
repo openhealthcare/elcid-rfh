@@ -11,7 +11,9 @@ from django.views.generic import TemplateView
 from django.utils.functional import cached_property
 from opal.core.serialization import deserialize_datetime
 from opal.core import subrecords
-from opal.models import PatientConsultationReasonForInteraction
+from opal.models import (
+    PatientConsultationReasonForInteraction, Patient, Episode
+)
 from elcid.models import (
     Diagnosis,
     Demographics,
@@ -20,7 +22,6 @@ from elcid.models import (
 )
 from elcid.utils import timing
 from plugins.appointments.models import Appointment
-from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
 from plugins.tb.models import (
     AFBRefLab,
@@ -766,9 +767,7 @@ class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-class ClinicActivity(LoginRequiredMixin, TemplateView):
-    template_name = "tb/stats/clinic_activity.html"
-
+class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
     @property
     def menu_years(self):
         minimum_year = 2020
@@ -861,6 +860,10 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
             for i in self.appointments_qs
             if i.status_code not in ["Canceled", "No Show"]
         ]
+
+
+class ClinicActivity(AbstractClinicActivity):
+    template_name = "tb/stats/clinic_activity.html"
 
     @timing
     def summary(self):
@@ -1132,7 +1135,149 @@ class ClinicActivity(LoginRequiredMixin, TemplateView):
         ctx["appointments_by_type"] = self.appointments_by_type()
         ctx["mdt_start_stop"] = self.mdt_start_stop()
         ctx["elcid_review"] = self.elcid_review()
-        ctx["users_recorded"] = self.users_recorded()
+        ctx["users_not recorded"] = self.users_recorded()
         ctx["appointment_types_recording"] = self.patient_notes_by_derrived_type()
         ctx["populated"] = self.subrecords_recorded()
+        return ctx
+
+
+class ClinicActivityAppointmentData(AbstractClinicActivity):
+    template_name = "tb/stats/clinic_activity_appointment_data.html"
+
+    def get_patient_ids_with_subrecords(self, subrecord, qs=None):
+        """
+        Return the patient ids for subrecords with appointments
+        during the start/end dates
+        """
+
+        patient_ids = list(set([i.patient_id for i in self.appointments_qs]))
+        if qs is None:
+            qs = subrecord.objects.all()
+        if getattr(subrecord, "_is_singleton", False):
+            qs = qs.exclude(
+                consistency_token=''
+            )
+        if subrecord in set(subrecords.patient_subrecords()):
+            qs = qs.filter(
+                patient__episode__category_name=episode_categories.TbEpisode.display_name
+            )
+            return set(qs.filter(
+                patient_id__in=patient_ids
+            ).values_list(
+                'patient_id', flat=True
+            ).distinct())
+        else:
+            qs = qs.filter(
+                episode__category_name=episode_categories.TbEpisode.display_name
+            )
+            return set(qs.filter(
+                episode__patient_id__in=patient_ids
+            ).values_list(
+                'episode__patient_id', flat=True
+            ).distinct())
+
+    def get_appointment_info(self):
+        appointments = self.appointments_qs
+        non_mdt_consultations = self.non_mdt_consultations
+        initials_by_date = {
+            i.when.date: i.initials for i in non_mdt_consultations
+        }
+        patient_ids = set([i.patient_id for i in appointments])
+        episodes = Episode.objects.filter(
+            category_name=episode_categories.TbEpisode.display_name
+        ).filter(
+            patient_id__in=patient_ids
+        )
+        patient_id_to_episode_id = {
+            i.patient_id: i.id for i in episodes
+        }
+
+        demographics = Demographics.objects.filter(patient_id__in=patient_ids)
+        patient_id_to_demographics = {
+            i.patient_id: i for i in demographics
+        }
+        primary_diagnosis_qs = Diagnosis.objects.filter(
+            category=Diagnosis.PRIMARY
+        )
+        primary_diagnosis_patient_ids = self.get_patient_ids_with_subrecords(
+            Diagnosis, primary_diagnosis_qs
+        )
+        symptom_patient_ids = self.get_patient_ids_with_subrecords(
+            SymptomComplex
+        )
+        referrals = self.get_patient_ids_with_subrecords(
+            ReferralRoute
+        )
+        result = []
+        host = self.request.get_host()
+        for appointment in appointments:
+            patient_id = appointment.patient_id
+            demographics = patient_id_to_demographics.get(
+                patient_id
+            )
+            seen_by = False
+            start_dt = appointment.start_datetime.date()
+            seen_by = initials_by_date.get(start_dt)
+            episode_id = patient_id_to_episode_id.get(patient_id)
+
+            if episode_id:
+                link = f"http://{host}/#/patient/{patient_id}/{episode_id}"
+            else:
+                link = f"http://{host}/#/patient/{patient_id}"
+            if not seen_by:
+                next_day = start_dt + datetime.timedelta(1)
+                if next_day in initials_by_date:
+                    seen_by = initials_by_date.get(next_day)
+            row = {
+                "Link": link,
+                "Name": demographics.name,
+                "MRN": demographics.hospital_number,
+                "Start": appointment.start_datetime,
+                "Type": appointment.derived_appointment_type,
+                "Status": appointment.status_code,
+                "Seen by": seen_by,
+                "Primary diagnosis": patient_id in primary_diagnosis_patient_ids,
+                SymptomComplex.get_display_name(): patient_id in symptom_patient_ids,
+                ReferralRoute.get_display_name(): patient_id in referrals
+            }
+
+            if self.request.method == "POST":
+                row["Seconday Diagnosis"] = Diagnosis.objects.filter(
+                    category=Diagnosis.PRIMARY
+                ).filter(
+                    episode__patient_id=appointment.patient_id
+                ).exists()
+                row["TB Medication"] = Treatment.objects.filter(
+                    category=Treatment.TB
+                ).filter(
+                    episode__patient_id=appointment.patient_id
+                ).exists()
+                row["Other Medication"] = Treatment.objects.filter(
+                    category=Treatment.TB
+                ).exclude(
+                    episode__patient_id=appointment.patient_id
+                ).exists()
+                nationality = self.subrecord_populated(
+                    patient_id, Nationality
+                )
+                language = self.subrecord_populated(
+                    patient_id, CommuninicationConsiderations
+                )
+                row["Nationality and Language"] = nationality or language
+                row[Travel.get_display_name()] = self.subrecord_populated(
+                    patient_id, Travel
+                )
+                row[TBHistory.get_display_name()] = self.subrecord_populated(
+                    patient_id, TBHistory
+                )
+                row[SocialHistory.get_display_name()] = self.subrecord_populated(
+                    patient_id, SocialHistory
+                )
+            result.append(row)
+        result = sorted(result, key=lambda x: x["Start"])
+        return result
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx["appointment_info"] = self.get_appointment_info()
         return ctx

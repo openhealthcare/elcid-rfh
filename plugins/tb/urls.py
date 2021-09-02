@@ -73,8 +73,13 @@ urlpatterns = [
         name="outstanding_mdt_list"
     ),
     url(
-        r'tb/clinic_activity/(?P<year>\d+)/?$',
+        r'tb/clinic_activity/(?P<year>\d+)/$',
         views.ClinicActivity.as_view(),
         name="clinic_activity"
+    ),
+    url(
+        r'tb/clinic_activity/appointment_data/(?P<year>\d+)/$',
+        views.ClinicActivityAppointmentData.as_view(),
+        name="pclinic_activity_appointment_data"
     )
 ]
