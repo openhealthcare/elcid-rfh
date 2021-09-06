@@ -827,7 +827,7 @@ class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
 class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
     @property
     def menu_years(self):
-        minimum_year = 2020
+        minimum_year = 2019
         current_year = datetime.date.today().year
         result = []
         for i in range(4):
