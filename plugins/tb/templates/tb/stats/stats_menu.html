@@ -8,7 +8,7 @@
         {% for start_year, end_year in view.menu_years %}
         <a href="/#/tb/clinic-activity/{{ start_year }}/" class='btn {% if start_year == view.kwargs.year|add:"0" %}btn-secondary{% else %}btn-default{% endif %}'>
           <h4>
-            {{ start_year }} - {{ end_year }}
+            {{ start_year }}
           </h4>
         </a>
         {% endfor %}

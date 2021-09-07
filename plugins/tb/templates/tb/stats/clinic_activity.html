@@ -1,11 +1,14 @@
-{% extends "tb/base.html" %} {% load tb_stats %} {% block tb_content %}
+{% extends "tb/base.html" %}
+{% load tb_stats %}
+{% load humanize %}
+{% block tb_content %}
 <div class="panel panel-default tb-stats">
   <div class="panel-heading">
     <div class="row">
       <div class="col-md-7">
         <h1>Clinic Activity {{ view.kwargs.year }} - Summary</h1>
         <p class="content-offset-below-10">
-          A review of the workings of the clinic and the TB dataset for patients with appointments between {{ view.start_date }} - {{ view.end_date }}
+          Patients with appointments in {{ view.start_date.year }}
         </p>
       </div>
       <div class="col-md-5">
@@ -16,21 +19,21 @@
   <div class="panel-body">
     <div class="row headline">
       <div class="col-md-4">
-        <h1>{{ summary.number_of_appointments }}</h1>
+        <h1>{{ summary.number_of_appointments | intcomma }}</h1>
         <h3>Appointments</h3>
       </div>
       <div class="col-md-4">
-        <h1>{{ summary.number_of_patients }}</h1>
+        <h1>{{ summary.number_of_patients | intcomma  }}</h1>
         <h3>Patients</h3>
       </div>
       <div class="col-md-4">
-        <h1>{{ summary.number_of_patients_who_had_their_last_appointment }}</h1>
+        <h1>{{ summary.number_of_patients_who_had_their_last_appointment | intcomma  }}</h1>
         <h3>Finished TB Care</h3>
       </div>
     </div>
     <div class="row content-offset">
       <div class="col-md-12">
-        {% category_bar_chart "Attendance" appointments_by_status.x appointments_by_status.vals %}
+        {% category_bar_chart "Appointments" appointments_by_status.x appointments_by_status.vals %}
       </div>
     </div>
     <div class="row content-offset">
