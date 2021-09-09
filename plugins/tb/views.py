@@ -936,22 +936,14 @@ class ClinicActivity(AbstractClinicActivity):
         for i in attended_appointments:
             patient_ids.add(i.patient_id)
         number_of_patients = len(patient_ids)
-        patients_with_future_appointments = set(
-            Appointment.objects.filter(
-                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
-            )
-            .filter(start_datetime__date__gt=self.end_date)
-            .filter(patient_id__in=patient_ids)
-            .values_list("patient_id", flat=True)
-            .distinct()
-        )
-        number_of_patients_who_had_their_last_appointment = number_of_patients - len(
-            patients_with_future_appointments
-        )
+        number_of_new_patients = 0
+        for i in attended_appointments:
+            if i.derived_appointment_type in constants.TB_NEW_APPOINTMENT_CODES:
+                number_of_new_patients += 1
         return {
             "number_of_appointments": number_of_attended_appointments,
             "number_of_patients": number_of_patients,
-            "number_of_patients_who_had_their_last_appointment": number_of_patients_who_had_their_last_appointment,
+            "number_of_new_patients": number_of_new_patients,
         }
 
     @timing
