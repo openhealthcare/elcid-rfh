@@ -8,6 +8,8 @@ from plugins.labtests.models import (
 )
 from plugins.labtests import logger
 
+FIELDS_TO_IGNORE = ["reported_datetime", "last_updated", "observation_number"]
+
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -35,6 +37,8 @@ class Command(BaseCommand):
                     if getattr(field, "auto_now", False):
                         continue
                     field_name = field.name
+                    if field_name in FIELDS_TO_IGNORE:
+                        continue
                     filter_args[field_name] = getattr(ob, field_name)
                 if not ObservationHistory.objects.filter(
                     **filter_args
