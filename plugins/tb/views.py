@@ -909,9 +909,9 @@ class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
         mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
             name="MDT meeting"
         )
-        return (
+        return list(
             PatientConsultation.objects.filter(when__date__gte=self.start_date)
-            .filter(when__date__lte=self.end_date)
+            .filter(when__date__lt=self.end_date)
             .exclude(reason_for_interaction_fk_id=mdt_meeting.id)
             .select_related("episode")
         )
@@ -1034,7 +1034,7 @@ class ClinicActivity(AbstractClinicActivity):
                 key = (appointment.patient_id, start.date(),)
                 # if there is an appointment on the day for the patient after the start
                 # time then mark it as recorded on elcid
-                pc = pcs_by_patient_id_date.pop(key)
+                pc = pcs_by_patient_id_date.get(key)
                 if pc and start <= pc.when:
                     on_elcid_by_type[appt_type] += 1
             for appt_type in appt_types:
@@ -1054,7 +1054,6 @@ class ClinicActivity(AbstractClinicActivity):
         result = defaultdict(int)
         for pc in pcs:
             result[pc.when.month] += 1
-        import ipdb; ipdb.set_trace()
         return {
             "x": [i[0].strftime("%b") for i in self.months],
             "vals": vals,
@@ -1078,31 +1077,12 @@ class ClinicActivity(AbstractClinicActivity):
         result["Other (<10)"] = less_than_5
         return result.items()
 
-    def patient_notes_by_derrived_type(self):
-        """
-        Look at notes, if there is an appointment for that
-        patient on that day, then record the appointment type
-        as that is the type of appointment type that is
-        recording data. If not on the day, check for an
-        appointment the day before in case they were
-        slow at recording the data.
-        """
-        pcs = self.non_mdt_consultations
-        when_patient_id_to_pcs = {
-            (i.when.date(), i.episode.patient_id) for i in pcs
-        }
+    def patient_notes_by_reason_for_interaction(self):
+        pcs = self.non_mdt_consultations + self.mdt_meeting_qs
         result = defaultdict(int)
-        appointments = self.appointments_qs
-        for appointment in appointments:
-            appointment_date = appointment.start_datetime.date()
-            patient_id = appointment.patient_id
-            if (appointment_date, patient_id,) in when_patient_id_to_pcs:
-                result[appointment.derived_appointment_type] += 1
-            else:
-                day_before = appointment_date - datetime.timedelta(1)
-                if (day_before, patient_id,) in when_patient_id_to_pcs:
-                    result[appointment.derived_appointment_type] += 1
-        return result.items()
+        for pc in pcs:
+            result[pc.reason_for_interaction] += 1
+        return sorted(result.items(), key=lambda x: x[1], reverse=True)
 
     def get_subrecord_with_appointment_count(self, subrecord, qs=None):
         """
@@ -1201,7 +1181,7 @@ class ClinicActivity(AbstractClinicActivity):
         ctx["mdt_start_stop"] = self.mdt_start_stop()
         ctx["elcid_review"] = self.elcid_review()
         ctx["users_recorded"] = self.users_recorded()
-        ctx["appointment_types_recording"] = self.patient_notes_by_derrived_type()
+        ctx["patient_notes_by_reason_for_interaction"] = self.patient_notes_by_reason_for_interaction()
         ctx["populated"] = self.subrecords_recorded()
         return ctx
 
