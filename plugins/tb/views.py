@@ -1009,45 +1009,55 @@ class ClinicActivity(AbstractClinicActivity):
         }
 
     def elcid_review(self):
+        # recorded on elcid by appointment type
         # patients on elcid
-        # appointments on elcid
         pcs = self.non_mdt_consultations
+        pcs_by_patient_id_date = {
+            (i.episode.patient_id, i.when.date(),): i for i in pcs
+        }
         appointments = self.atttended_appointments
-        elcid_appointments = []
-        elcid_patients = []
+        appt_types = list(set(i.derived_appointment_type for i in appointments))
+        appt_types = sorted(appt_types)
+        appt_types_to_values = defaultdict(list)
         for start_date, end_date in self.months:
             months_appointments = []
             for appointment in appointments:
                 app_start = appointment.start_datetime.date()
                 if start_date <= app_start and end_date > app_start:
                     months_appointments.append(appointment)
-            months_pcs = []
-            for pc in pcs:
-                pc_date = pc.when.date()
-                if start_date <= pc_date and end_date > pc_date:
-                    months_pcs.append(pc)
-            total_appointments = len(months_appointments)
-            total_patients = len(set([i.patient_id for i in months_appointments]))
-            total_elcid_appointments = len(months_pcs)
-            total_elcid_patients = len(set([i.episode.patient_id for i in months_pcs]))
-            if total_elcid_appointments and total_appointments:
-                percent_elcid_appointments = (
-                    total_elcid_appointments / total_appointments * 100
-                )
-                elcid_appointments.append(int(min([percent_elcid_appointments, 100])))
-            else:
-                elcid_appointments.append(0)
-            if total_elcid_patients and total_patients:
-                percent_elcid_patients = total_elcid_patients / total_patients * 100
-                elcid_patients.append(int(min([percent_elcid_patients, 100])))
-            else:
-                elcid_patients.append(0)
+            on_elcid_by_type = defaultdict(int)
+            by_type = defaultdict(int)
+            for appointment in months_appointments:
+                appt_type = appointment.derived_appointment_type
+                by_type[appt_type] += 1
+                start = appointment.start_datetime
+                key = (appointment.patient_id, start.date(),)
+                # if there is an appointment on the day for the patient after the start
+                # time then mark it as recorded on elcid
+                pc = pcs_by_patient_id_date.pop(key)
+                if pc and start <= pc.when:
+                    on_elcid_by_type[appt_type] += 1
+            for appt_type in appt_types:
+                total = by_type[appt_type]
+                on_elcid = on_elcid_by_type[appt_type]
+                if total:
+                    percent = int((on_elcid/total) * 100)
+                else:
+                    percent = 0
+                appt_types_to_values[appt_type].append(percent)
+
+        vals = []
+        for appt_type in appt_types:
+            values = appt_types_to_values[appt_type]
+            if any(values):
+                vals.append([f"{appt_type} recorded %"] + values)
+        result = defaultdict(int)
+        for pc in pcs:
+            result[pc.when.month] += 1
+        import ipdb; ipdb.set_trace()
         return {
             "x": [i[0].strftime("%b") for i in self.months],
-            "vals": [
-                ["% Appointments on elcid"] + elcid_appointments,
-                ["% Patients on elcid"] + elcid_patients,
-            ],
+            "vals": vals,
         }
 
     def users_recorded(self):
