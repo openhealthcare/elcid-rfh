@@ -686,6 +686,10 @@ class MDTList(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+class BetaMDTList(LoginRequiredMixin, TemplateView):
+    template_name = "tb/beta_mdt_list.html"
+
+
 class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
     template_name = "tb/mdt_list_outstanding.html"
 
