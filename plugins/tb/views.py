@@ -883,13 +883,21 @@ class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
 
     @cached_property
     def appointments_qs(self):
-        return list(
+        appointments = list(
             Appointment.objects.filter(
                 derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
             )
             .filter(start_datetime__date__gt=self.start_date)
             .filter(end_datetime__date__lt=self.end_date)
+            .exclude(status_code__in=["Checked In", "Canceled"])
         )
+        cleaned_appointments = []
+        for appointment in appointments:
+            if appointment.start_datetime < timezone.now():
+                if appointment.status_code == 'Confirmed':
+                    continue
+            cleaned_appointments.append(appointment)
+        return cleaned_appointments
 
     @cached_property
     def mdt_meeting_qs(self):
