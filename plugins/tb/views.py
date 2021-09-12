@@ -3,18 +3,18 @@ Views for the TB Opal Plugin
 """
 import datetime
 from collections import defaultdict
-from django.views.generic import DetailView, ListView
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
-from django.views.generic import TemplateView
+from django.views.generic import DetailView, ListView, TemplateView
+from elcid.models import Demographics, Diagnosis
 from opal.core.serialization import deserialize_datetime
-from opal.models import PatientConsultationReasonForInteraction
-from elcid.models import Diagnosis, Demographics
+from opal.models import Episode, Patient, PatientConsultationReasonForInteraction
 from plugins.appointments.models import Appointment
-from opal.models import Patient
-from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
 from plugins.labtests import models as lab_models
+from plugins.tb import constants, episode_categories, models
+from plugins.tb.models import (TBPCR, AFBCulture, AFBRefLab,
+                               PatientConsultation, Treatment)
 from plugins.tb.utils import get_tb_summary_information
 
 
@@ -688,6 +688,122 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
 class BetaMDTList(LoginRequiredMixin, TemplateView):
     template_name = "tb/beta_mdt_list.html"
+    BARNET = "barnet"
+    RFH = "rfh"
+
+    @property
+    def end_datetime(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 3:
+                return datetime.datetime.combine(
+                    some_date, datetime.time(12, 00)
+                )
+
+    @property
+    def start_datetime(self):
+        return self.end_datetime - datetime.timedelta(7)
+
+    def get_events(self, *args, **kwargs):
+        qs = models.ObservationEvent.objects.filter(
+            reported__lte=self.end_datetime
+        ).filter(
+            reported__gt=self.start_datetime
+        )
+        filter_args = {}
+        if self.kwargs["site"] == self.BARNET:
+            filter_args["lab_number__contains"] = "K"
+        else:
+            filter_args["lab_number__contains"] = "L"
+        return qs.filter(**filter_args)
+
+    def get_lab_tests(self, events):
+        """
+        Returns a dictionary of all related lab tests
+        keyed by patient id, test name, lab number
+        """
+        patient_ids = [i.patient_id for i in events]
+        lab_numbers = [i.lab_number for i in events]
+        lab_tests = lab_models.LabTest.objects.filter(
+            patient_id__in=patient_ids
+        ).filter(
+            lab_number__in=lab_numbers
+        ).prefetch_related(
+            'observation_set'
+        )
+        result = {}
+        for lt in lab_tests:
+            key = (lt.patient_id, lt.test_name, lt.lab_numnber)
+            result[key] = lt
+        return result
+
+    def get_last_mdt_note(self, events):
+        """
+        Returns a dictionary of the last mdt note
+        per patient, keyed by patient id
+        """
+        reason_for_interaction = PatientConsultationReasonForInteraction.objects.get(
+            name='MDT meeting'
+        )
+        notes = models.PatientConsultation.objects.filter(
+            episode__patient_id__in=set([i.patient_id for i in events]),
+        ).filter(
+            reason_for_interaction_fk_id=reason_for_interaction
+        ).select_related('episode')
+        notes_by_patient_id = defaultdict(list)
+        for note in notes:
+            patient_id = note.episode.patient_id
+            notes_by_patient_id[patient_id].append(note)
+
+        result = {}
+        for patient_id, notes in notes_by_patient_id.items():
+            result[patient_id] = sorted(notes, key=lambda x: x.when)[-1]
+        return result
+
+    def get_episodes(self, events):
+        """
+        Returns a dictionary of tb episodes keyed by patient_id
+        """
+        episodes = Episode.objects.filter(
+            category_name=episode_categories.TbEpisode.display_name
+        ).filter(
+            patient_id__in=set([i.patient_id for i in events])
+        )
+        return {
+            i.patient_id: i for i in episodes
+        }
+
+    def get_rows(self, events):
+        events_by_patient_id = defaultdict(list)
+        for event in events:
+            events_by_patient_id[event.patient_id].append(event)
+
+        lab_tests = self.get_lab_tests(events)
+        mdt_notes = self.get_last_mdt_note(events)
+        episodes = self.get_episodes(events)
+        rows = []
+
+        for patient_id, events in events_by_patient_id.items():
+            episode = episodes.get(patient_id)
+            mdt_note = mdt_notes.get(patient_id)
+            tests = []
+            for event in events:
+                key = (event.patient_id, event.test_name, event.lab_number,)
+                tests.append(
+                    lab_tests.get(key)
+                )
+            rows.append({
+                'episode': episode,
+                'mdt_note': mdt_note,
+                'tests': tests
+            })
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        events = self.get_events()
+        ctx["rows"] = self.get_rows(events)
+        return ctx
 
 
 class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
