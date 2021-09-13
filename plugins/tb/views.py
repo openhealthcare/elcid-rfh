@@ -988,7 +988,7 @@ class ClinicActivity(AbstractClinicActivity):
             "x": json.dumps(months),
             "graph_vals": json.dumps([
                 ["Attended"] + checked_out,
-                ["no_show"] + no_show_percentage
+                ["No show (%)"] + no_show_percentage
             ]),
             "table_headers": months,
             "table_vals": table_vals
