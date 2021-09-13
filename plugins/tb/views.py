@@ -3,7 +3,7 @@ Views for the TB Opal Plugin
 """
 import datetime
 from collections import defaultdict
-
+from plugins.tb import lab
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, TemplateView
@@ -705,6 +705,22 @@ class BetaMDTList(LoginRequiredMixin, TemplateView):
     def start_datetime(self):
         return self.end_datetime - datetime.timedelta(7)
 
+    def get_negative_observation_ids(self, events):
+        """
+        The MDT list contains positive TB tests.
+
+        However a culture test also includes a smear test that
+        can be negative.
+
+        This returns all ids for negative smear tests
+        for our patients
+        """
+        return set(lab.AFBSmear.get_negative_observations().filter(
+            test__patient_id__in=[i.patient_id for i in events]
+        ).filter(
+            test__lab_number__in=[i.lab_number for i in events]
+        ).values_list('id', flat=True))
+
     def get_events(self, *args, **kwargs):
         qs = models.ObservationEvent.objects.filter(
             reported__lte=self.end_datetime
@@ -734,7 +750,7 @@ class BetaMDTList(LoginRequiredMixin, TemplateView):
         )
         result = {}
         for lt in lab_tests:
-            key = (lt.patient_id, lt.test_name, lt.lab_numnber)
+            key = (lt.patient_id, lt.test_name, lt.lab_number)
             result[key] = lt
         return result
 
@@ -774,6 +790,60 @@ class BetaMDTList(LoginRequiredMixin, TemplateView):
             i.patient_id: i for i in episodes
         }
 
+    def get_demographics(self, events):
+        """
+        Returns a dictionary of demographics keyed by patient_id
+        """
+        demographics = Demographics.objects.filter(
+            patient_id__in=set([i.patient_id for i in events])
+        )
+        return {i.patient_id: i for i in demographics}
+
+    def get_test_display(self, lt, negative_observation_ids):
+        obs_names = [
+            lab.AFBSmear.OBSERVATION_NAME,
+            lab.AFBCulture.OBSERVATION_NAME,
+            lab.TBPCR.OBSERVATION_NAME,
+
+        ]
+        relevant_observations = [
+            i for i in lt.observation_set.all() if i.observation_name in obs_names
+        ]
+        result = {}
+        result["lab_number"] = lt.lab_number
+        result["test_name"] = lt.test_name
+        result["observation_datetime"] = relevant_observations[0].observation_datetime
+        result["key"] = (result["observation_datetime"], result["test_name"], result["lab_number"])
+        result["obs"] = []
+        positive_pcr = "The PCR to detect M.tuberculosis complex was\nPOSITIVE"
+
+        to_strip = " ".join([
+            "Key: Susceptibility interpretation",
+            "(Note: update to I)~S = susceptible",
+            "using standard dosing~I= susceptible",
+            "at increased dosing, high dose regimen",
+            "must be used (please see your local antibiotic",
+            "policy or Microguide for dosing guidance)~R =",
+            "resistant"
+        ])
+        for obs in relevant_observations:
+            is_negative = obs.id in negative_observation_ids
+            obs_value = obs.observation_value.split(to_strip)[0]
+            obs_value = "\n".join([i.strip() for i in obs_value.split("~")])
+            if obs_value == positive_pcr:
+                obs_value = "Positive"
+
+            if obs_value.startswith('1)'):
+                obs_value = f"{obs.observation_name}:\n{obs_value}"
+            else:
+                obs_value = f"{obs.observation_name}: {obs_value}"
+
+
+            result["obs"].append(
+                (obs_value, is_negative,)
+            )
+        return result
+
     def get_rows(self, events):
         events_by_patient_id = defaultdict(list)
         for event in events:
@@ -782,22 +852,28 @@ class BetaMDTList(LoginRequiredMixin, TemplateView):
         lab_tests = self.get_lab_tests(events)
         mdt_notes = self.get_last_mdt_note(events)
         episodes = self.get_episodes(events)
+        negative_observation_ids = self.get_negative_observation_ids(events)
+        patients_demographics = self.get_demographics(events)
         rows = []
 
         for patient_id, events in events_by_patient_id.items():
             episode = episodes.get(patient_id)
             mdt_note = mdt_notes.get(patient_id)
+            demographics = patients_demographics.get(patient_id)
             tests = []
             for event in events:
                 key = (event.patient_id, event.test_name, event.lab_number,)
                 tests.append(
-                    lab_tests.get(key)
+                    self.get_test_display(lab_tests[key], negative_observation_ids)
                 )
+            tests = sorted(tests, key=lambda x: x["observation_datetime"], reverse=True)
             rows.append({
+                'demographics': demographics,
                 'episode': episode,
                 'mdt_note': mdt_note,
                 'tests': tests
             })
+        return rows
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
