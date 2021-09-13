@@ -964,9 +964,34 @@ class ClinicActivity(AbstractClinicActivity):
                 appointment.start_datetime.month - 1
             ] += 1
 
+        checked_out = appointment_type_month_count["Checked Out"]
+        no_shows = appointment_type_month_count["No Show"]
+        confirmed = appointment_type_month_count["Confirmed"]
+        no_show_percentage = []
+        for idx, month_checked_out in enumerate(checked_out):
+            month_no_show = appointment_type_month_count["No Show"][idx]
+            month_total = month_no_show + month_checked_out
+            if month_total:
+                no_show_percentage.append(int((month_no_show/month_total) * 100))
+            else:
+                no_show_percentage.append(0)
+        months = [i[0].strftime("%b") for i in self.months]
+        table_vals = [
+            ["Attended"] + checked_out,
+            ["No show"] + no_shows
+        ]
+        if any(confirmed):
+            table_vals.append(["Confirmed"] + confirmed)
+            table_vals = sorted(table_vals, key=lambda x: x[0])
+
         return {
-            "x": [i[0].strftime("%b") for i in self.months],
-            "vals": [[k] + v for k, v in appointment_type_month_count.items()],
+            "x": json.dumps(months),
+            "graph_vals": json.dumps([
+                ["Attended"] + checked_out,
+                ["no_show"] + no_show_percentage
+            ]),
+            "table_headers": months,
+            "table_vals": table_vals
         }
 
     @timing
