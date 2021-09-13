@@ -1065,11 +1065,17 @@ class ClinicActivity(AbstractClinicActivity):
                 by_type[appt_type] += 1
                 start = appointment.start_datetime
                 key = (appointment.patient_id, start.date(),)
-                # if there is an appointment on the day for the patient after the start
+                # If there is an appointment on the day for the patient after the start
                 # time then mark it as recorded on elcid
                 pc = pcs_by_patient_id_date.get(key)
                 if pc and start <= pc.when:
                     on_elcid_by_type[appt_type] += 1
+                else:
+                    # If there isn't a patient, see if there is a pc the
+                    # next day and count that.
+                    key = (appointment.patient_id, start.date() + datetime.timedelta(1),)
+                    if key in pcs_by_patient_id_date:
+                        on_elcid_by_type[appt_type] += 1
             for appt_type in appt_types:
                 total = by_type[appt_type]
                 on_elcid = on_elcid_by_type[appt_type]
