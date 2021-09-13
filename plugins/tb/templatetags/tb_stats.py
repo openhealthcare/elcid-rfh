@@ -81,30 +81,9 @@ def value_display(value):
 
 
 @register.inclusion_tag(
-    "tb/stats/templatetags/table_with_percent.html"
-)
-def table_with_percent(title, results):
-    """
-    Takes in the title, but also a dictionary
-    of key to integer.
-    """
-    ctx = {"title": title, "table": {}}
-    if not results:
-        return ctx
-
-    total = sum(results.values())
-    for k, v in results.items():
-        ctx["table"][k] = {
-            "val": v,
-            "percent": round(v/total * 100)
-        }
-    return ctx
-
-
-@register.inclusion_tag(
     "tb/stats/templatetags/three_col_table_with_percent.html"
 )
-def three_col_table_with_percent(title, results):
+def table_with_percent(title, results):
     """
     Like table with percent but displays it in three colums
     """

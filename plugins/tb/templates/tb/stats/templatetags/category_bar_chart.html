@@ -22,7 +22,7 @@
       {% for k in table.field_vals %}
         <tr>
         {% for v in k %}
-        <td {% if not forloop.first %}class="text-center" {% endif %}style="color: {{ forloop.parentloop.counter0 | color }}">
+        <td {% if not forloop.first %}class="text-center" {% else %}style="color: {{ forloop.parentloop.counter0 | color }}" {% endif %}>
         {% value_display v %}
         </td>
         {% endfor %}
@@ -38,9 +38,6 @@
       columns: {{ graph.field_vals | safe }},
       type: 'bar',
       colors: {{ graph.colors | safe }},
-    },
-    legend: {
-        show: false
     },
     axis: {
       x: {
