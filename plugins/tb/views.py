@@ -1107,7 +1107,7 @@ class ClinicActivity(AbstractClinicActivity):
                 less_than_5 += v
             else:
                 result[k] = v
-        result["Other (<10)"] = less_than_5
+        result["Other (<5)"] = less_than_5
         return result.items()
 
     def patient_notes_by_reason_for_interaction(self):
