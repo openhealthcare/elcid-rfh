@@ -56,13 +56,17 @@
                   categories: {{ appointments_by_status.x | safe }},
                 },
                 y: {
+                  min: 0,
+                  max: {{ appointments_by_status.attendance_max }},
+                  padding: {top:0, bottom:0},
                   label: {
-                    text: 'Attendance',
+                    text: 'Attended appointments',
                     position: 'outer-middle'
                   }
                 },
                 y2: {
                   min: 0,
+                  max: 100,
                   padding: {top:0, bottom:0},
                   show: true,
                   label: {
