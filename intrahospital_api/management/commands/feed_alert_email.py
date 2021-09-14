@@ -20,7 +20,11 @@ from intrahospital_api import logger
 
 def send_email(title, context):
     template_name = "email/feed_alert.html"
-    html_message = render_to_string(template_name, context)
+    html_message = render_to_string(template_name, {
+        "title": title,
+        "table_context": context,
+        "today": datetime.date.today()
+    })
     plain_message = strip_tags(html_message)
     send_mail(
         title,
@@ -41,7 +45,7 @@ def check_feeds():
     errors = []
     str_format = '%d/%m/%Y %H:%M:%S'
     today = datetime.date.today()
-    email_ctx = {'today': today}
+    table_ctx = {}
 
     # Check Lab tests
     observation_last_updated = Observation.objects.aggregate(
@@ -50,7 +54,7 @@ def check_feeds():
     if not observation_last_updated.date() == today:
         observation_last_updated_str = observation_last_updated.strftime(str_format)
         errors.append(f"No Lab tests loaded since {observation_last_updated_str}")
-    email_ctx["Last observation updated"] = observation_last_updated
+    table_ctx["Last observation updated"] = observation_last_updated
 
     # Check Appointments
     appointment_dts = Appointment.objects.aggregate(
@@ -64,7 +68,7 @@ def check_feeds():
     if not last_appointment.date() == today:
         last_appointment_str = last_appointment.strftime(str_format)
         errors.append(f"No Appointments loaded since {last_appointment_str}")
-    email_ctx["Last appointment updated/inserted"] = last_appointment
+    table_ctx["Last appointment updated/inserted"] = last_appointment
 
     # Check Imaging
     imaging_last_reported = Imaging.objects.aggregate(
@@ -73,7 +77,7 @@ def check_feeds():
     if not imaging_last_reported.date() == today:
         imaging_last_reported_str = imaging_last_reported.strftime(str_format)
         errors.append(f"No Imaging loaded since {imaging_last_reported_str}")
-    email_ctx["Last imaging date reported"] = imaging_last_reported
+    table_ctx["Last imaging date reported"] = imaging_last_reported
 
     # Check Patient information
     crs_master_file_last_updated = MasterFileMeta.objects.aggregate(
@@ -84,10 +88,10 @@ def check_feeds():
             str_format
         )
         errors.append(f"No patient information loaded since {crs_last_updated_str}")
-    email_ctx["Last crs masterfile updated"] = crs_master_file_last_updated
+    table_ctx["Last crs masterfile updated"] = crs_master_file_last_updated
     if len(errors):
         title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
-        send_email(title, email_ctx)
+        send_email(title, table_ctx)
 
 
 class Command(BaseCommand):
