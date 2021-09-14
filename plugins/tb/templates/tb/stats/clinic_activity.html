@@ -162,7 +162,32 @@
     </div>
     <div class="row content-offset">
       <div class="col-md-12">
-        {% category_bar_chart "TB Dataset" elcid_review.x elcid_review.vals %}
+        {% category_bar_chart "elCID entries" elcid_review.x elcid_review.vals %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+            {% for header in elcid_review.table.headers %}
+              <th>{{ header }}</th>
+            {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row_name, values in elcid_review.table.rows.items %}
+            <tr>
+              <td>{{ row_name }}</td>
+              {% for val in values %}
+              <td {% if not val.2 %}class="text-muted"{% endif %}>{{ val.0 }}/{{ val.1 }} {% if val.2 %}({{ val.2 }}%){% endif %}</td>
+              {% endfor %}
+            </tr>
+
+            {% endfor %}
+          </tbody>
+
+        </table>
       </div>
     </div>
     <div class="row">

@@ -1058,6 +1058,7 @@ class ClinicActivity(AbstractClinicActivity):
         appt_types = list(set(i.derived_appointment_type for i in appointments))
         appt_types = sorted(appt_types)
         appt_types_to_values = defaultdict(list)
+        table_rows = defaultdict(list)
         for start_date, end_date in self.months:
             months_appointments = []
             for appointment in appointments:
@@ -1090,18 +1091,20 @@ class ClinicActivity(AbstractClinicActivity):
                 else:
                     percent = 0
                 appt_types_to_values[appt_type].append(percent)
-
+                table_rows[appt_type].append((on_elcid, total, percent,))
         vals = []
         for appt_type in appt_types:
             values = appt_types_to_values[appt_type]
             if any(values):
                 vals.append([f"{appt_type} recorded %"] + values)
-        result = defaultdict(int)
-        for pc in pcs:
-            result[pc.when.month] += 1
         return {
             "x": [i[0].strftime("%b") for i in self.months],
             "vals": vals,
+            "table": {
+                "headers": [""] + [i[0].strftime("%b") for i in self.months],
+                # exclude appointment types where nothing is populated on elcid
+                "rows": {k: v for k, v in table_rows.items() if any(i[0] for i in v)}
+            }
         }
 
     def users_recorded(self):

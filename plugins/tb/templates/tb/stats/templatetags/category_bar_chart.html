@@ -10,27 +10,6 @@
 </div>
 <div class="content-offset-20" id="{{ html_id }}">
 </div>
-<div class="row content-offset-20">
-  <div class="col-md-12">
-    <table class="table table-striped">
-      <tr>
-        <th></th>
-        {% for x_value in table.x_axis %}
-        <th class="text-center">{{ x_value }}</th>
-        {% endfor %}
-      </tr>
-      {% for k in table.field_vals %}
-        <tr>
-        {% for v in k %}
-        <td {% if not forloop.first %}class="text-center" {% else %}style="color: {{ forloop.parentloop.counter0 | color }}" {% endif %}>
-        {% value_display v %}
-        </td>
-        {% endfor %}
-        </tr>
-      {% endfor %}
-    </table>
-  </div>
-</div>
 <script>
   c3.generate({
     bindto: '#{{ html_id }}',
