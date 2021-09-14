@@ -1041,7 +1041,7 @@ class ClinicActivity(AbstractClinicActivity):
             ),
             "vals": json.dumps(
                 [
-                    ["duration"] + list(duration.values()),
+                    ["duration"] + list([i or None for i in duration.values()]),
                     ["count"] + list(count.values()),
                 ]
             ),
