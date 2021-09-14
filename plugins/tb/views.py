@@ -1119,15 +1119,21 @@ class ClinicActivity(AbstractClinicActivity):
                 less_than_5 += v
             else:
                 result[k] = v
+        result = dict(sorted(
+            result.items(), key=lambda x: x[1], reverse=True
+        ))
         result["Other (<5)"] = less_than_5
-        return result.items()
+        return result
 
     def patient_notes_by_reason_for_interaction(self):
         pcs = self.non_mdt_consultations + self.mdt_meeting_qs
         result = defaultdict(int)
         for pc in pcs:
             result[pc.reason_for_interaction] += 1
-        return sorted(result.items(), key=lambda x: x[1], reverse=True)
+        result = dict(sorted(
+            result.items(), key=lambda x: x[1], reverse=True
+        ))
+        return result
 
     def get_subrecord_with_appointment_count(self, subrecord, qs=None):
         """
@@ -1165,7 +1171,7 @@ class ClinicActivity(AbstractClinicActivity):
             i.episode.patient_id for i in self.non_mdt_consultations
         ]))
         result = {}
-        result["Discussed On elCID"] = len(patient_ids)
+        result["Patient Notes"] = len(patient_ids)
         result["Primary Diagnosis"] = self.get_subrecord_with_appointment_count(
             Diagnosis, Diagnosis.objects.filter(
                 category=Diagnosis.PRIMARY

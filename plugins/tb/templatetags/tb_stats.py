@@ -79,11 +79,31 @@ def value_display(value):
         "is_list": is_list
     }
 
+@register.inclusion_tag(
+    "tb/stats/templatetags/table_with_percent.html"
+)
+def table_with_percent(title, result_dict):
+    """
+    Takes in the title, but also a dictionary
+    of key to integer.
+    """
+    ctx = {"title": title, "table": {}}
+    if not result_dict:
+        return ctx
+
+    total = sum(result_dict.values())
+    for k, v in result_dict.items():
+        ctx["table"][k] = {
+            "val": v,
+            "percent": round(v/total * 100)
+        }
+    return ctx
+
 
 @register.inclusion_tag(
     "tb/stats/templatetags/three_col_table_with_percent.html"
 )
-def table_with_percent(title, results):
+def three_col_table_with_percent(title, results):
     """
     Like table with percent but displays it in three colums
     """
@@ -99,32 +119,3 @@ def table_with_percent(title, results):
         "tables": tables
     }
     return ctx
-
-
-@register.inclusion_tag(
-    "tb/stats/templatetags/pie_chart.html"
-)
-def pie_chart(
-    title, field_vals
-):
-    """
-    Takes in a title then a list of lists
-    where the first item is the name of the pie
-    chart like the c3 api.
-    """
-    field_vals = list(field_vals)
-    colors = {}
-    for idx, field_val in enumerate(field_vals):
-        colors[field_val[0]] = COLORS[idx]
-    return {
-        "html_id": title.lower().replace(" ", "_"),
-        "graph": {
-            "field_vals": json.dumps(field_vals),
-            "colors": json.dumps(colors)
-        },
-        "table": {
-            "field_vals": dict(field_vals),
-            "colors": json.dumps(colors)
-        },
-        "title": title,
-    }
