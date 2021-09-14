@@ -68,6 +68,11 @@ urlpatterns = [
         name="tb_mdt"
     ),
     url(
+        r'^tb/beta_mdt/(?P<site>[a-z_\-]+)/$',
+        views.BetaMDTList.as_view(),
+        name="tb_beta_mdt"
+    ),
+    url(
         r'^templates/tb/outstanding_mdt_list/$',
         views.OutstandingActionsMDT.as_view(),
         name="outstanding_mdt_list"

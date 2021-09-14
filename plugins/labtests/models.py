@@ -266,8 +266,6 @@ class ObservationHistory(AbstractObserveration):
         'AFB : EARLY MORN. URINE',
         'AFB BLOOD CULTURE',
         'BLOOD CULTURE',
-        'BLOOD CULTURE',
-        'AFB BLOOD CULTURE'
     ]
     test_name = models.CharField(max_length=256, blank=True, null=True)
     lab_number = models.CharField(max_length=256, blank=True, null=True)

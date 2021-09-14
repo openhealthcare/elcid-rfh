@@ -74,6 +74,7 @@ app.config(
              .when('/tb/mdt-outstanding/',  static_template_route('/templates/tb/outstanding_mdt_list/'))
              .when('/tb/mdt/:site/', param_template_route('/tb/mdt/', 'site'))
 
+             .when('/tb/beta_mdt/:site/', param_template_route('/tb/beta_mdt/', 'site'))
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))

@@ -16,6 +16,8 @@ RESP_APPOINTMENT_CODES = [
     "Resp F/Up",
     "Resp Telephone F/Up",
     "Resp Telephone New",
+    "Resp Medicine Tuberculosis General New",
+    "Resp Medicine Tuberculosis General F/Up"
 ]
 
 THORACIC_APPOINTMENT_TYPES = ["Thoracic F/Up", "Thoracic New"]
