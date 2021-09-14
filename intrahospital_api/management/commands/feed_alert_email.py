@@ -1,6 +1,6 @@
 """
-A management command run by a daily cron job that
-sends an email if one of the feeds has not loaded
+A management command run by a cron job on week days
+that sends an email if one of the feeds has not loaded
 that day.
 """
 import datetime
