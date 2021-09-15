@@ -18,8 +18,8 @@ from opal.core.views import json_response
 from opal.core import serialization
 from opal.models import Episode, Tagging
 
-from elcid import patient_lists
-from intrahospital_api import loader
+from elcid import patient_lists, models
+from intrahospital_api import update_demographics
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
 
@@ -556,34 +556,88 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 class DemographicsSearch(LoginRequiredViewset):
     base_name = 'demographics_search'
-    PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
-    PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
-    PATIENT_NOT_FOUND = "patient_not_found"
+
+    def get_from_local(self, query):
+        """
+        Searches the local demographics for a patient.
+
+        We only look for exact matches by hospital number or nhs number
+        as these should be unique identifiers, however we return
+        an array just in case the patient is duplicated for
+        some reason.
+        """
+        hn_matches = list(models.Demographics.objects.filter(
+            hospital_number=query
+        ))
+        nhs_matches = list(models.Demographics.objects.filter(
+            nhs_number=query
+        ))
+        matches = hn_matches + nhs_matches
+        return [i.to_dict(self.request.user) for i in matches]
+
+    def match_with_locals_where_possible(self, upstream_results):
+        """
+        If we have upstream matches, see if we
+        can match these to local results by nhs number
+        or hospital number.
+
+        If so add that patient_id to the result.
+        """
+        query_by_nhs_numbers = models.Demographics.objects.filter(
+            nhs_number__in=[i["nhs_number"] for i in upstream_results]
+        )
+        nhs_number_to_demographics = defaultdict(list)
+        for row in query_by_nhs_numbers:
+            nhs_number_to_demographics[row.nhs_number].append(row)
+        query_by_hn = models.Demographics.objects.filter(
+            hospital_number__in=[i["hospital_number"] for i in upstream_results]
+        )
+        hn_to_demographics = defaultdict(list)
+        for row in query_by_hn:
+            hn_to_demographics[row.hospital_number].append(row)
+        result = []
+        for upstream_result in upstream_results:
+            hn_results = hn_to_demographics.get(
+                upstream_result["hospital_number"], []
+            )
+            for hn_result in hn_results:
+                result.append(hn_result.to_dict(self.request.user))
+            if hn_results:
+                continue
+            nhs_results = nhs_number_to_demographics.get(
+                upstream_result["nhs_number"], []
+            )
+            for nhs_result in nhs_results:
+                result.append(nhs_result.to_dict(self.request.user))
+            if nhs_results:
+                continue
+            result.append(upstream_result)
+        return result
 
     def list(self, request, *args, **kwargs):
-        hospital_number = request.query_params.get("hospital_number")
-        if not hospital_number:
-            return HttpResponseBadRequest("Please pass in a hospital number")
-        demographics = emodels.Demographics.objects.filter(
-            hospital_number=hospital_number
-        ).last()
+        """
+        If the query matches a local hospital number
+        or nhs number we don't query further, just
+        return those results.
 
-        # the patient is in elcid
-        if demographics:
-            return json_response(dict(
-                patient=demographics.patient.to_dict(request.user),
-                status=self.PATIENT_FOUND_IN_ELCID
-            ))
-        else:
-            if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                demographics = loader.load_demographics(hospital_number)
+        Otherwise we will query upstream as name is
+        not a unique identifier.
 
-                if demographics:
-                    return json_response(dict(
-                        patient=dict(demographics=[demographics]),
-                        status=self.PATIENT_FOUND_UPSTREAM
-                    ))
-        return json_response(dict(status=self.PATIENT_NOT_FOUND))
+        The results will then be checked if they
+        exist locally we will add the elcid patient_id.
+
+        Otherwise they will not have a patient id.
+        """
+        query = request.query_params.get("query")
+        if not query:
+            return []
+        local_result = self.get_from_local(query)
+        if local_result:
+            return local_result
+
+        upstream_results = update_demographics.demographics_search_query(query)
+        matches = self.match_with_locals_where_possible(upstream_results)
+        return matches
 
 
 class BloodCultureIsolateApi(SubrecordViewSet):

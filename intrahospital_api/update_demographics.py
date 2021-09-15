@@ -411,3 +411,27 @@ def update_patient_information_since(last_updated):
     logger.info(f"patient information: patients found {number_of_patients_found}")
     logger.info(f"patient information: patients updated {len(new_master_files)}")
     return len(new_master_files)
+
+
+def demographics_search_query(some_str):
+    from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+    query = f"""
+    SELECT * FROM VIEW_CRS_Patient_Masterfile
+    WHERE
+    (SURNAME = @query)
+    OR
+    (PATIENT_NUMBER = @query)
+    OR
+    (NHS_Number = @query)
+    """
+    api = ProdAPI()
+    query_result = api.execute_hospital_query(query, params={"query": some_str})
+    result = []
+    for row in query_result:
+        result.append({
+            "hospital_number": row["PATIENT_NUMBER"],
+            "nhs_number": row["NHS_Number"],
+            "surname": row["SURNAME"],
+            "first_name": row["FORENAME1"]
+        })
+    return result
