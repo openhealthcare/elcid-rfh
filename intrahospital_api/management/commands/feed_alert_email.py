@@ -53,7 +53,7 @@ def check_feeds():
     )["max_updated"]
     if not observation_last_updated.date() == today:
         observation_last_updated_str = observation_last_updated.strftime(str_format)
-        errors.append(f"No Lab tests loaded since {observation_last_updated_str}")
+        errors.append(f"No lab tests loaded since {observation_last_updated_str}")
     table_ctx["Last observation updated"] = observation_last_updated
 
     # Check Appointments
@@ -67,7 +67,7 @@ def check_feeds():
     ])
     if not last_appointment.date() == today:
         last_appointment_str = last_appointment.strftime(str_format)
-        errors.append(f"No Appointments loaded since {last_appointment_str}")
+        errors.append(f"No appointments loaded since {last_appointment_str}")
     table_ctx["Last appointment updated/inserted"] = last_appointment
 
     # Check Imaging
@@ -76,7 +76,7 @@ def check_feeds():
     )["max_date_reported"]
     if not imaging_last_reported.date() == today:
         imaging_last_reported_str = imaging_last_reported.strftime(str_format)
-        errors.append(f"No Imaging loaded since {imaging_last_reported_str}")
+        errors.append(f"No imaging loaded since {imaging_last_reported_str}")
     table_ctx["Last imaging date reported"] = imaging_last_reported
 
     # Check Patient information
@@ -88,7 +88,7 @@ def check_feeds():
             str_format
         )
         errors.append(f"No patient information loaded since {crs_last_updated_str}")
-    table_ctx["Last crs masterfile updated"] = crs_master_file_last_updated
+    table_ctx["Last CRS masterfile updated"] = crs_master_file_last_updated
     if len(errors):
         title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
         send_email(title, table_ctx)
