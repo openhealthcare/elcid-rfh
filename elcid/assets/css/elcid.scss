@@ -230,6 +230,10 @@ a.list-group-item {
   white-space: normal;
 }
 
+.border-right{
+  border-right: 1px solid $obsidian-light;
+}
+
 .patient-timeline-discussion{
   min-height: 120px;
   ul{

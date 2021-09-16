@@ -1,7 +1,7 @@
 {% load forms %}
 
 {# INITIAL STATE #}
-<div class="row" ng-if="state === states.INITIAL">
+<div class="row" ng-show="state === states.INITIAL">
     <div class="col-sm-8">
       <h4>Search (hospital number, nhs number or surname)</h4>
       <input required autofocus class="form-control" type="text"
@@ -22,32 +22,36 @@
 </div>
 
 {# PATIENT_LIST #}
-<div class="row" ng-if="state === states.PATIENT_LIST">
-  <div class="col-md-5 col-md-offset-2">
-    <span ng-show="count > 1">
-      <p class="lead">
-        We've found [[ count ]] similar patients.
-      </p>
-      <p class="lead content-offset-below-20">
-        Did you mean:
-      </p>
-      <ul class="list-group">
-        <li class="list-group-item" ng-repeat="patient in patientList">
-          <h4 class="inline">
-            <a ng-show="patient.patient_id" class="orange-link" href="/#/patient/[[ patient.patient_id ]]">
-              [[ patient.first_name ]] [[ patient.surname ]]
-              [[ patient.hospital_number ]]
-            </a>
-            <a ng-hide="patient.patient_id" class="orange-link" ng-click="select(patient)">
-              [[ patient.first_name ]] [[ patient.surname ]] ([[ patient.date_of_birth | displayDate ]])
-              [[ patient.hospital_number ]]
-            </a>
-            <br>
-            <span ng-show="patient.date_of_birth">([[ patient.date_of_birth | displayDate ]])</span>
-          </h4>
-        </li>
-      </ul>
-    </span>
+<div class="row" ng-show="state === states.PATIENT_LIST">
+  <div class="col-md-6 border-right">
+    <div class="row">
+      <div class="col-md-10">
+        <span ng-show="patientList.length">
+          <p class="lead">
+            We've found [[ patientList.length ]] patients.
+          </p>
+          <p class="lead">
+            Did you mean:
+          </p>
+          <ul class="list-group">
+            <li class="list-group-item" ng-repeat="patient in patientList">
+              <h4 class="inline">
+                <a ng-show="patient.patient_id" class="orange-link" href="/#/patient/[[ patient.patient_id ]]">
+                  [[ patient.first_name ]] [[ patient.surname ]]
+                  [[ patient.hospital_number ]]
+                </a>
+                <a ng-hide="patient.patient_id" class="orange-link" ng-click="select(patient)">
+                  [[ patient.first_name ]] [[ patient.surname ]] ([[ patient.date_of_birth | displayDate ]])
+                  [[ patient.hospital_number ]]
+                </a>
+                <br>
+                <span ng-show="patient.date_of_birth">([[ patient.date_of_birth | displayDate ]])</span>
+              </h4>
+            </li>
+          </ul>
+        </span>
+      </div>
+    </div>
   </div>
   <div class="col-md-4 col-md-push-1 content-offset-100">
     <div class="row">
@@ -57,9 +61,9 @@
         </p>
       </div>
     </div>
-    <div class="row content-offset-20">
+    <div class="row">
       <div class="col-md-12">
-        <button class="btn btn-lg btn-primary ng-binding ng-isolate-scope" ng-click="scope.state = scope.states.EDITING_DEMOGRAPHICS">
+        <button class="btn btn-lg btn-primary" ng-click="goToEditing()">
           Create new patient
         </button>
       </div>
@@ -67,12 +71,13 @@
   </div>
 </div>
 
-<!-- Editing demographics state -->
-<div class="row" ng-if="state == states.HAS_DEMOGRAPHICS">
+
+{# EDITING_DEMOGRAPHICS #}
+<div class="row" ng-show="state === states.EDITING_DEMOGRAPHICS">
   <div class="col-md-12">
     <div class="row">
       <div class="col-md-12 text-center">
-        <p ng-show='!patientList.length'>
+        <p class="lead" ng-show='!patientList.length'>
           Unable to find a patient with [[ searchQuery.query ]]. Add now:
         </p>
         <p class="lead">
@@ -82,34 +87,28 @@
     </div>
     <form class="form-horizontal">
       <div class="row">
-        <div class="col-md-6">
-          <div class="horizontal-form">
-          {% input label="Hospital number" field="Demographics.hospital_number" style="vertical" %}
-          </div>
+        <div class="col-md-10">
+          {% input label="Hospital number" field="Demographics.hospital_number" %}
         </div>
       </div>
       <div class="row">
-        <div class="col-md-6">
-          <div class="horizontal-form">
-          {% input field="Demographics.first_name" style="vertical" %}
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="horizontal-form">
-          {% input field="Demographics.surname" style="vertical" %}
-          </div>
+        <div class="col-md-10">
+          {% input field="Demographics.first_name" %}
         </div>
       </div>
       <div class="row">
-        <div class="col-md-6">
-          <div class="horizontal-form">
-          {% datepicker field="Demographics.date_of_birth" style="vertical" label="Date of birth" %}
-          </div>
+        <div class="col-md-10">
+          {% input field="Demographics.surname" %}
         </div>
-        <div class="col-md-6">
-          <div class="horizontal-form">
-          {% select field="Demographics.sex" style="vertical" %}
-          </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% date_of_birth_field %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% radio field="Demographics.sex" %}
         </div>
       </div>
     </form>

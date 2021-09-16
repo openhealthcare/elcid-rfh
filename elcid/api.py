@@ -624,10 +624,10 @@ class DemographicsSearch(LoginRequiredViewset):
         """
         query = request.query_params.get("query")
         if not query:
-            return json_response([])
+            return json_response({"patient_list": []})
         local_result = self.get_from_local(query)
         if local_result:
-            return json_response(local_result)
+            return json_response({"patient_list": local_result})
 
         upstream_results = update_demographics.demographics_search_query(query)
         matches = self.match_with_locals_where_possible(upstream_results)

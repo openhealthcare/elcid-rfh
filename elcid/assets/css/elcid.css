@@ -214,6 +214,10 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   white-space: normal;
 }
 
+.border-right {
+  border-right: 1px solid #cbc9c8;
+}
+
 .patient-timeline-discussion {
   min-height: 120px;
 }
