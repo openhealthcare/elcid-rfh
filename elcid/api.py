@@ -1,13 +1,7 @@
 """
 API endpoints for the elCID application
 """
-import datetime
-import re
 from collections import defaultdict, OrderedDict
-from operator import itemgetter
-
-from django.conf import settings
-from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from rest_framework import viewsets, status
 from opal.core.api import router as opal_router
@@ -16,10 +10,10 @@ from opal.core.api import (
 )
 from opal.core.views import json_response
 from opal.core import serialization
-from opal.models import Episode, Tagging
+from opal.models import Patient, Tagging
 
-from elcid import patient_lists, models
-from intrahospital_api import update_demographics
+from elcid import episode_categories, patient_lists, models
+from intrahospital_api import update_demographics, loader
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
 
@@ -630,14 +624,16 @@ class DemographicsSearch(LoginRequiredViewset):
         """
         query = request.query_params.get("query")
         if not query:
-            return []
+            return json_response([])
         local_result = self.get_from_local(query)
         if local_result:
-            return local_result
+            return json_response(local_result)
 
         upstream_results = update_demographics.demographics_search_query(query)
         matches = self.match_with_locals_where_possible(upstream_results)
-        return matches
+        return json_response({
+            "patient_list": matches
+        })
 
 
 class BloodCultureIsolateApi(SubrecordViewSet):
