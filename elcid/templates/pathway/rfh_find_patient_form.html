@@ -1,13 +1,15 @@
 {% load forms %}
-<div class="row" ng-if="state == 'initial'">
+
+{# INITIAL STATE #}
+<div class="row" ng-if="state === states.INITIAL">
     <div class="col-sm-8">
-      <h4>Hospital number</h4>
+      <h4>Search (hospital number, nhs number or surname)</h4>
       <input required autofocus class="form-control" type="text"
-             ng-model="demographics.hospital_number"
-             ng-keypress="$event.keyCode == 13 && lookup_hospital_number()"
+             ng-model="searchQuery.query"
+             ng-keypress="$event.keyCode == 13 && search()"
              />
       <br />
-      <button class="btn btn-lg btn-primary" ng-click="lookup_hospital_number()">
+      <button class="btn btn-lg btn-primary" ng-click="search()">
         <i class="fa fa-search"></i>
         Search
       </button>
@@ -19,94 +21,97 @@
     </div>
 </div>
 
+{# PATIENT_LIST #}
+<div class="row" ng-if="state === states.PATIENT_LIST">
+  <div class="col-md-5 col-md-offset-2">
+    <span ng-show="count > 1">
+      <p class="lead">
+        We've found [[ count ]] similar patients.
+      </p>
+      <p class="lead content-offset-below-20">
+        Did you mean:
+      </p>
+      <ul class="list-group">
+        <li class="list-group-item" ng-repeat="patient in patientList">
+          <h4 class="inline">
+            <a ng-show="patient.patient_id" class="orange-link" href="/#/patient/[[ patient.patient_id ]]">
+              [[ patient.first_name ]] [[ patient.surname ]]
+              [[ patient.hospital_number ]]
+            </a>
+            <a ng-hide="patient.patient_id" class="orange-link" ng-click="select(patient)">
+              [[ patient.first_name ]] [[ patient.surname ]] ([[ patient.date_of_birth | displayDate ]])
+              [[ patient.hospital_number ]]
+            </a>
+            <br>
+            <span ng-show="patient.date_of_birth">([[ patient.date_of_birth | displayDate ]])</span>
+          </h4>
+        </li>
+      </ul>
+    </span>
+  </div>
+  <div class="col-md-4 col-md-push-1 content-offset-100">
+    <div class="row">
+      <div class="col-md-12">
+        <p class="lead">
+          Or create a new patient:
+        </p>
+      </div>
+    </div>
+    <div class="row content-offset-20">
+      <div class="col-md-12">
+        <button class="btn btn-lg btn-primary ng-binding ng-isolate-scope" ng-click="scope.state = scope.states.EDITING_DEMOGRAPHICS">
+          Create new patient
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Editing demographics state -->
-<div class="row" ng-if="state == 'editing_demographics'">
+<div class="row" ng-if="state == states.HAS_DEMOGRAPHICS">
   <div class="col-md-12">
     <div class="row">
       <div class="col-md-12 text-center">
+        <p ng-show='!patientList.length'>
+          Unable to find a patient with [[ searchQuery.query ]]. Add now:
+        </p>
         <p class="lead">
-          Unable to find a patient with the hospital number [[ demographics.hospital_number ]]. Add now:
+          Add the patient's details:
         </p>
       </div>
     </div>
     <form class="form-horizontal">
-      <div class="form-group">
-        <label class="control-label col-sm-3">Hospital #</label>
-        <label class="control-label col-sm-8 text-left">
-          [[ demographics.hospital_number ]]
-        </label>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="horizontal-form">
+          {% input label="Hospital number" field="Demographics.hospital_number" style="vertical" %}
+          </div>
+        </div>
       </div>
-      {% input "autofocus" field="Demographics.first_name" model="demographics.first_name" %}
-      {% input field="Demographics.surname" model="demographics.surname" %}
-      {% date_of_birth_field model_name="demographics.date_of_birth" %}
-      {% select field="Demographics.sex" model="demographics.sex" %}
+      <div class="row">
+        <div class="col-md-6">
+          <div class="horizontal-form">
+          {% input field="Demographics.first_name" style="vertical" %}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="horizontal-form">
+          {% input field="Demographics.surname" style="vertical" %}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="horizontal-form">
+          {% datepicker field="Demographics.date_of_birth" style="vertical" label="Date of birth" %}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="horizontal-form">
+          {% select field="Demographics.sex" style="vertical" %}
+          </div>
+        </div>
+      </div>
     </form>
   </div>
 </div>
-<span ng-if="state === 'has_demographics'">
-  <div class="row">
-    <div class="col-sm-7">
-      <div class="row">
-        <div class="col-md-12">
-          <p class="lead">
-            Found [[ demographics.first_name ]] [[ demographics.surname ]]
-          </p>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="row">
-            <div class="col-md-4">
-              <b>Hospital #</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.hospital_number ]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Name</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.first_name ]]
-              [[ demographics.surname ]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Date of Birth</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.date_of_birth | displayDate ]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Gender</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.sex ]]
-            </div>
-          </div>
-          <br />
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-5">
-      <div ng-show="allTags.length" class="well text-center">
-        <div class="row">
-          <div class="col-md-12">
-            <p class="lead">
-              Current Lists
-            </p>
-          </div>
-        </div>
-        <span ng-repeat="tag in allTags">
-          <a class="btn btn-default pointer" href="/#/list/[[ tag ]]">
-            [[ metadata.tags[tag].display_name ]]
-          </a>
-        </span>
-      </div>
-    </div>
-  </div>
-</span>
