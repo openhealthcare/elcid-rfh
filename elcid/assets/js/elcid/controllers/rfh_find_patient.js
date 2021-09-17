@@ -24,7 +24,12 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       $http.get(patientURL).then(function(response) {
         scope.patientList = response.data.patient_list
         ngProgressLite.done();
-        scope.state = scope.states.PATIENT_LIST
+        if(scope.patientList.length){
+          scope.state = scope.states.PATIENT_LIST
+        }
+        else{
+          scope.state = scope.states.EDITING_DEMOGRAPHICS
+        }
       }, function(){
         alert('Unable to search');
         ngProgressLite.done();
