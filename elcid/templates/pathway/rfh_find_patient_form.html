@@ -28,7 +28,12 @@
       <div class="col-md-10">
         <span ng-show="patientList.length">
           <p class="lead">
+            <span ng-hide="patientList.length === 1">
+            We've found a patient that matches this description.
+            </span>
+            <span ng-show="patientList.length === 1">
             We've found [[ patientList.length ]] patients.
+            </span>
           </p>
           <p class="lead">
             Did you mean:
