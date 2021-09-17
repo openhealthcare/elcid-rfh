@@ -1,74 +1,62 @@
 angular.module('opal.controllers').controller('RfhFindPatientCtrl',
-  function(scope, step, episode, DemographicsSearch, ngProgressLite, $window) {
+  function(scope, step, episode, DemographicsSearch, $q, ngProgressLite, $http) {
     "use strict";
 
-    scope.lookup_hospital_number = function() {
+    scope.states = {
+      // the initial state the asks for a search term
+      INITIAL: "INITIAL",
+
+      // shows the list of patients or suggests the user creates a patient
+      // if they click on a patient that already exists, they get taken
+      // that patients detail screen
+      PATIENT_LIST: "PATIENT_LIST",
+
+      // the user did not want any of the list of patients
+      // and is entering demographics manually
+      EDITING_DEMOGRAPHICS: "EDITING_DEMOGRAPHICS",
+    }
+
+    scope.search = function(){
       ngProgressLite.set(0);
       ngProgressLite.start();
-      var searchArgs = {}
-      // we can't find the patient on either elicd or the hospital demographics
-      searchArgs[DemographicsSearch.PATIENT_FOUND_IN_ELCID] = scope.new_for_patient;
-
-      // the patient has been entered into elcid before
-      searchArgs[DemographicsSearch.PATIENT_FOUND_UPSTREAM] = scope.new_for_patient;
-
-      // the patient exists on the intrahospital api, but not in elcid
-      searchArgs[DemographicsSearch.PATIENT_NOT_FOUND] = scope.new_patient;
-
-      DemographicsSearch.find(
-        scope.demographics.hospital_number,
-        searchArgs
-      )
-    };
+      var url = '/elcid/v0.1/demographics_search/?query=';
+      var patientURL = url + encodeURIComponent(scope.searchQuery.query);
+      $http.get(patientURL).then(function(response) {
+        scope.patientList = response.data.patient_list
+        ngProgressLite.done();
+        if(scope.patientList.length){
+          scope.state = scope.states.PATIENT_LIST
+        }
+        else{
+          scope.state = scope.states.EDITING_DEMOGRAPHICS
+        }
+      }, function(){
+        alert('Unable to search');
+        ngProgressLite.done();
+      });
+    }
 
     this.initialise = function(scope){
-      scope.state = 'initial';
+      scope.state = scope.states.INITIAL;
+      scope.patientList = [];
       scope.hideFooter = true;
-
-      scope.demographics = {
-        hospital_number: undefined
+      scope.searchQuery = {
+        query: undefined
       };
     };
 
-    scope.new_patient = function(result){
-        scope.hideFooter = false;
-        scope.state = 'editing_demographics';
-        ngProgressLite.done();
-    };
+    this.select = function(demographicsDict){
+      scope.demographics = demographicsDict;
+      pathway.goNext(scope.editing)
+    }
 
-    scope.new_for_patient = function(patient){
-        var allTags = [];
-        _.each(patient.episodes, function(episode){
-          _.each(_.keys(episode.tagging[0]), function(tag){
-            // episodes are singletons
-            // if there is already an episode of this type
-            // hoist location and tagging up so
-            // it appears in other forms.
-            if(step.category_name === episode.category_name){
-              scope.editing.tagging = episode.tagging[0];
-              scope.editing.location = episode.location[0];
-              if(scope.metadata.tags[tag]){
-                allTags.push(tag);
-              }
-            }
-          });
-        });
-        scope.allTags = _.uniq(allTags);
-        scope.demographics = patient.demographics[0];
-        scope.state   = 'has_demographics';
-        scope.hideFooter = false;
-        ngProgressLite.done();
-    };
+    scope.goToEditing = function(){
+      scope.state = scope.states.EDITING_DEMOGRAPHICS
+      scope.hideFooter = false;
+    }
+
     scope.showNext = function(editing){
-        return scope.state === 'has_demographics' || scope.state === 'editing_demographics';
-    };
-
-    scope.preSave = function(editing){
-        // this is not great
-        editing.demographics = scope.demographics;
-        if(editing.demographics && editing.demographics.patient_id){
-          scope.pathway.save_url = scope.pathway.save_url + "/" + editing.demographics.patient_id;
-        }
+        return scope.state === scope.states.EDITING_DEMOGRAPHICS
     };
 
     this.initialise(scope);
