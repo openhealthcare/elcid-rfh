@@ -629,11 +629,11 @@ class DemographicsSearch(LoginRequiredViewset):
                 return json_response({
                     "patient_list": [i.to_dict(request.user) for i in local_result]
                 })
-            upstream_results = update_demographics.demographics_search_query(
+            upstream_results = update_demographics.demographics_search(
                 hospital_number=number, nhs_number=number
             )
         else:
-            upstream_results = update_demographics.demographics_search_query(
+            upstream_results = update_demographics.demographics_search(
                 surname=surname, date_of_birth=dob
             )
         matches = self.match_with_locals_where_possible(upstream_results)
