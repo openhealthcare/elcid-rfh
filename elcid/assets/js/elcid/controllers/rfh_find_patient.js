@@ -16,10 +16,36 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       EDITING_DEMOGRAPHICS: "EDITING_DEMOGRAPHICS",
     }
 
-    scope.search = function(){
-      ngProgressLite.set(0);
-      ngProgressLite.start();
+    scope.pollTask = function(taskId){
+      /*
+      * If we're searching upstream a task ID is returned by the demographics
+      * search url. Poll it to wait for the task to complete and then update
+      * accordingly.
+      */
+      var url = '/elcid/v0.1/upstream_demographics_search/' + taskId + '/'
+      var deferred = $q.defer();
+      var interval = setInterval(function(){
+        $http.get(url).then(function(response){
+          if(response.data.state === 'SUCCESS'){
+            deferred.resolve(response.data.patient_list);
+            clearInterval(interval);
+          }
+        });
+      }, 500);
+      return deferred.promise;
+    }
+
+    scope.getSearch = function(){
+      /*
+      * Searches upstream, if it returns a task ID, then
+      * we are searching upstream so we pass through to
+      * the pollTask which will poll the celery task until
+      * we're done.
+      *
+      * The promise this function returns flattens this.
+      */
       var url = '/elcid/v0.1/demographics_search/?';
+      var deferred = $q.defer();
       var params = {}
       _.each(scope.searchQuery, function(val, key){
         if(moment.isMoment(val)){
@@ -29,22 +55,48 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       });
       var patientURL = url + $.param(params);
       $http.get(patientURL).then(function(response) {
-        scope.patientList = response.data.patient_list
-        ngProgressLite.done();
-        if(scope.patientList.length){
-          scope.state = scope.states.PATIENT_LIST
+        if(scope.data.task_id){
+          scope.pollTask(scope.data.task_id).then(function(patientList){
+            deferred.resolve(response.data.patient_list);
+          })
         }
         else{
-          scope.state = scope.states.EDITING_DEMOGRAPHICS
+          deferred.resolve(response.data.patient_list);
         }
       }, function(){
-        alert('Unable to search');
-        ngProgressLite.done();
+        deferred.reject();
       });
+
+      return deferred.promise;
+    }
+
+    scope.search = function(){
+      ngProgressLite.set(0);
+      ngProgressLite.start();
+      loading = true;
+      scope.getSearch().then(function(patientList){
+        scope.patientList = patientList;
+        ngProgressLite.done();
+        loading = false;
+      });
+    }
+
+    scope.disableSearchButton = function(){
+      if(scope.searchQuery.surname && scope.searchQuery.date_of_birth){
+        return true
+      }
+      if(scope.searchQuery.number){
+        return true;
+      }
+      if(scope.loading){
+        return true;
+      }
+      return false;
     }
 
     this.initialise = function(scope){
       scope.state = scope.states.INITIAL;
+      scope.loading = false;
       scope.patientList = [];
       scope.hideFooter = true;
       scope.searchQuery = {
