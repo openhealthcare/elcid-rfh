@@ -55,8 +55,8 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       });
       var patientURL = url + $.param(params);
       $http.get(patientURL).then(function(response) {
-        if(scope.data.task_id){
-          scope.pollTask(scope.data.task_id).then(function(patientList){
+        if(response.data.task_id){
+          scope.pollTask(response.data.task_id).then(function(patientList){
             deferred.resolve(response.data.patient_list);
           })
         }
@@ -73,30 +73,39 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     scope.search = function(){
       ngProgressLite.set(0);
       ngProgressLite.start();
-      loading = true;
+      scope.searchButtonDisabled = true;
       scope.getSearch().then(function(patientList){
         scope.patientList = patientList;
         ngProgressLite.done();
-        loading = false;
+        scope.searchButtonDisabled = false;
+        if(scope.patientList.length){
+          scope.state = scope.states.PATIENT_LIST;
+        }
+        else{
+          scope.state = scope.states.EDITING_DEMOGRAPHICS;
+        }
       });
     }
 
     scope.disableSearchButton = function(){
       if(scope.searchQuery.surname && scope.searchQuery.date_of_birth){
-        return true
+        scope.searchButtonDisabled = false;
+        return;
       }
       if(scope.searchQuery.number){
-        return true;
+        scope.searchButtonDisabled = false;
+        return;
       }
-      if(scope.loading){
-        return true;
-      }
-      return false;
+      scope.searchButtonDisabled = true;
     }
 
     this.initialise = function(scope){
       scope.state = scope.states.INITIAL;
       scope.loading = false;
+      scope.searchButtonDisabled = true;
+      scope.$watch("searchQuery", function(){
+        scope.disableSearchButton();
+      }, true);
       scope.patientList = [];
       scope.hideFooter = true;
       scope.searchQuery = {
