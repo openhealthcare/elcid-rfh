@@ -423,7 +423,7 @@ def demographics_search(**kwargs):
         raise ValueError('Demographics search expects arguments')
     query_args = []
     if "hospital_number" in kwargs:
-        query_args.append("UPPER((PATIENT_NUMBER) = UPPER(@hospital_number))")
+        query_args.append("(UPPER(PATIENT_NUMBER) = UPPER(@hospital_number))")
     if "nhs_number" in kwargs:
         query_args.append("(NHS_NUMBER = @nhs_number)")
     if "surname" in kwargs:
