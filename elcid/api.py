@@ -2,7 +2,7 @@
 API endpoints for the elCID application
 """
 from collections import defaultdict, OrderedDict
-from django.http import HttpResponseBadRequest
+from django.db.models import Q
 from rest_framework import viewsets, status
 from opal.core.api import router as opal_router
 from opal.core.api import (
@@ -363,7 +363,6 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
         return ticker
 
-
     def get_ticker_observations(self, patient):
         """
         Some results are displayed as a ticker in chronological
@@ -560,14 +559,9 @@ class DemographicsSearch(LoginRequiredViewset):
         an array just in case the patient is duplicated for
         some reason.
         """
-        hn_matches = list(models.Demographics.objects.filter(
-            hospital_number=query
-        ))
-        nhs_matches = list(models.Demographics.objects.filter(
-            nhs_number=query
-        ))
-        matches = hn_matches + nhs_matches
-        return [i.to_dict(self.request.user) for i in matches]
+        return models.Demographics.objects.filter(
+            Q(hospital_number=query) | Q(nhs_number=query)
+        )
 
     def match_with_locals_where_possible(self, upstream_results):
         """
@@ -622,14 +616,26 @@ class DemographicsSearch(LoginRequiredViewset):
 
         Otherwise they will not have a patient id.
         """
-        query = request.query_params.get("query")
-        if not query:
+        number = request.query_params.get("number")
+        dob = request.query_params.get("date_of_birth")
+        if dob:
+            dob = serialization.deserialize_date(dob)
+        surname = request.query_params.get("surname")
+        if not any([number, dob, surname]):
             return json_response({"patient_list": []})
-        local_result = self.get_from_local(query)
-        if local_result:
-            return json_response({"patient_list": local_result})
-
-        upstream_results = update_demographics.demographics_search_query(query)
+        if number:
+            local_result = self.get_from_local(number)
+            if local_result:
+                return json_response({
+                    "patient_list": [i.to_dict(request.user) for i in local_result]
+                })
+            upstream_results = update_demographics.demographics_search_query(
+                hospital_number=number, nhs_number=number
+            )
+        else:
+            upstream_results = update_demographics.demographics_search_query(
+                surname=surname, date_of_birth=dob
+            )
         matches = self.match_with_locals_where_possible(upstream_results)
         return json_response({
             "patient_list": matches
@@ -647,7 +653,6 @@ class BloodCultureIsolateApi(SubrecordViewSet):
             bc.to_dict(request.user),
             status_code=status.HTTP_201_CREATED
         )
-
 
 
 class AddToServiceViewSet(LoginRequiredViewset):

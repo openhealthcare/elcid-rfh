@@ -413,19 +413,27 @@ def update_patient_information_since(last_updated):
     return len(new_master_files)
 
 
-def demographics_search_query(some_str):
-    from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-    query = f"""
-    SELECT * FROM VIEW_CRS_Patient_Masterfile
-    WHERE
-    (SURNAME = @query)
-    OR
-    (PATIENT_NUMBER = @query)
-    OR
-    (NHS_Number = @query)
+def demographics_search(**kwargs):
     """
-    api = ProdAPI()
-    query_result = api.execute_hospital_query(query, params={"query": some_str})
+    Allows searching by named arguments
+    expects 'hospital_number', 'nhs_number', 'surname'
+    or 'date_of_birth'
+    """
+    if kwargs is None:
+        raise ValueError('Demographics search expects arguments')
+    query_args = []
+    if "hospital_number" in kwargs:
+        query_args.append("(PATIENT_NUMBER = @hospital_number)")
+    if "nhs_number" in kwargs:
+        query_args.append("(NHS_Number = @nhs_number)")
+    if "surname" in kwargs:
+        query_args.append("(SURNAME = @surname)")
+    if "date_of_birth" in kwargs:
+        query_args.append("(DOB = @date_of_birth)")
+    query = "SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE"  + " OR ".join(
+        query_args
+    )
+    query_result = api.execute_hospital_query(query, params=kwargs)
     result = []
     for row in query_result:
         result.append({

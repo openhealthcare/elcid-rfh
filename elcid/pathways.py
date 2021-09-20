@@ -71,7 +71,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         Step(
             template="pathway/rfh_find_patient_form.html",
             step_controller="RfhFindPatientCtrl",
-            display_name="Patient Details",
+            display_name="Find patient",
             icon="fa fa-user",
             category_name=InfectionService.display_name
         ),
@@ -125,7 +125,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             data, user=user, patient=patient, episode=episode
         )
 
-        # there should always be a new episode
+        # there should always be a new= episode
         saved_episode.start = datetime.date.today()
         saved_episode.save()
 
