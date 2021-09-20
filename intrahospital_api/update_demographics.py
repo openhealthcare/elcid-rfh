@@ -440,6 +440,7 @@ def demographics_search(**kwargs):
             "hospital_number": row["PATIENT_NUMBER"],
             "nhs_number": row["NHS_NUMBER"],
             "surname": row["SURNAME"],
-            "first_name": row["FORENAME1"]
+            "first_name": row["FORENAME1"],
+            "date_of_birth": row["DOB"],
         })
     return result

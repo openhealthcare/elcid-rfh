@@ -20,7 +20,14 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       ngProgressLite.set(0);
       ngProgressLite.start();
       var url = '/elcid/v0.1/demographics_search/?';
-      var patientURL = url + $.param(scope.searchQuery);
+      var params = {}
+      _.each(scope.searchQuery, function(val, key){
+        if(moment.isMoment(val)){
+          val = val.format('DD/MM/YYYY');
+        }
+        params[key] = val;
+      });
+      var patientURL = url + $.param(params);
       $http.get(patientURL).then(function(response) {
         scope.patientList = response.data.patient_list
         ngProgressLite.done();
