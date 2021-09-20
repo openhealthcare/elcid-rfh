@@ -2,23 +2,48 @@
 
 {# INITIAL STATE #}
 <div class="row" ng-show="state === states.INITIAL">
-    <div class="col-sm-8">
-      <h4>Search (hospital number, nhs number or surname)</h4>
-      <input required autofocus class="form-control" type="text"
-             ng-model="searchQuery.query"
+  <div class="col-md-12">
+    <p class="lead">
+      If we already have your patient on the system, we can pull their
+      details for you
+    </p>
+    <div class="row">
+      <div class="col-md-6">
+        <h4>Hospital number or NHS number</h4>
+        <input required autofocus class="form-control" type="text"
+             ng-model="searchQuery.number"
              ng-keypress="$event.keyCode == 13 && search()"
              />
-      <br />
-      <button class="btn btn-lg btn-primary" ng-click="search()">
-        <i class="fa fa-search"></i>
-        Search
-      </button>
-      <br />
-      <p>
-        If we already have your patient on the system, we can pull their
-        details for you
-      </p>
+      </div>
     </div>
+  <div class="relative">
+    <hr>
+    <div class="hr-text-container">
+      <div class="hr-text">Or</div>
+    </div>
+  </div>
+    <div class="row">
+      <div class="col-md-12">
+        <h4>Surname and date of birth</h4>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-6 form-horizontal">
+        <input class="form-control" type="text" ng-model="searchQuery.surname">
+      </div>
+      <div class="col-md-4">
+        <div date-of-birth ng-model="searchQuery.date_of_birth"></div>
+      </div>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12 text-center">
+        <button class="btn btn-lg btn-primary" ng-click="search()">
+          <i class="fa fa-search"></i>
+          Search
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 {# PATIENT_LIST #}

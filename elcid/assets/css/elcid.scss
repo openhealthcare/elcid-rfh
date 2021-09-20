@@ -606,3 +606,23 @@ div.add-isolate:hover{
 .nowrap{
   white-space: nowrap;
 }
+
+
+.relative{
+  position: relative;
+}
+
+.hr-text-container{
+  text-align: center;
+  font-size: 18px;
+  top: -13px;
+  width: 100%;
+  position: absolute;
+}
+.hr-text{
+  display: inline-block;
+  background-color: $white;
+  padding-left: 10px;
+  padding-right: 10px;
+  color: darken($bg, 20%);
+}
