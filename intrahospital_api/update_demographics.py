@@ -425,7 +425,7 @@ def demographics_search(**kwargs):
     if "hospital_number" in kwargs:
         query_args.append("(PATIENT_NUMBER = @hospital_number)")
     if "nhs_number" in kwargs:
-        query_args.append("(NHS_Number = @nhs_number)")
+        query_args.append("(NHS_NUMBER = @nhs_number)")
     if "surname" in kwargs:
         query_args.append("(SURNAME = @surname)")
     if "date_of_birth" in kwargs:
@@ -438,7 +438,7 @@ def demographics_search(**kwargs):
     for row in query_result:
         result.append({
             "hospital_number": row["PATIENT_NUMBER"],
-            "nhs_number": row["NHS_Number"],
+            "nhs_number": row["NHS_NUMBER"],
             "surname": row["SURNAME"],
             "first_name": row["FORENAME1"]
         })
