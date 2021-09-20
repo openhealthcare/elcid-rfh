@@ -54,7 +54,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
 
     this.select = function(demographicsDict){
       scope.demographics = demographicsDict;
-      pathway.goNext(scope.editing)
+      scope.pathway.goNext(scope.editing)
     }
 
     scope.goToEditing = function(){
