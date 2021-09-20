@@ -591,7 +591,7 @@ class DemographicsSearch(LoginRequiredViewset):
                     "patient_list": [i.to_dict(request.user) for i in local_result]
                 })
         task_id = update_demographics.async_find_patient_upstream(
-            number=number, surname=surname, dob=dob
+            number=number, surname=surname, date_of_birth=dob
         )
         return json_response({
             'task_id': task_id
