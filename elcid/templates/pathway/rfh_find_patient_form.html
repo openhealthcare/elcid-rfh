@@ -37,7 +37,7 @@
     </div>
     <div class="row content-offset">
       <div class="col-md-12 text-center">
-        <button class="btn btn-lg btn-primary" ng-disabled="!(searchQuery.surname && searchQuery.date_of_birth) && !searchQuery.number" ng-click="search()">
+        <button class="btn btn-lg btn-primary" ng-disabled="searchButtonDisabled" ng-click="search()">
           <i class="fa fa-search"></i>
           Search
         </button>

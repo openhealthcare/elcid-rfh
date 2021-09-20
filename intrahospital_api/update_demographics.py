@@ -413,11 +413,43 @@ def update_patient_information_since(last_updated):
     return len(new_master_files)
 
 
+def async_find_patient_upstream(
+    number=None, date_of_birth=None, surname=None
+):
+    from intrahospital_api import tasks
+    return tasks.search_upstream_demographics.delay(
+        number=number, date_of_birth=date_of_birth, surname=surname
+    ).id
+
+
+def find_patient_upstream(
+    number=None, date_of_birth=None, surname=None
+):
+    if number:
+        hn_results = demographics_search(
+            hospital_number=number
+        )
+        if hn_results:
+            return hn_results
+        nhs_num_results = demographics_search(
+            nhs_number=number
+        )
+        if nhs_num_results:
+            return nhs_num_results
+    return demographics_search(
+        date_of_birth=date_of_birth,
+        surname=surname
+    )
+
+
 def demographics_search(**kwargs):
     """
     Allows searching by named arguments
     expects 'hospital_number', 'nhs_number', 'surname'
     or 'date_of_birth'
+
+    hospital number and surname are searched
+    case insensitively
     """
     if kwargs is None:
         raise ValueError('Demographics search expects arguments')
