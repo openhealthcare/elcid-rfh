@@ -17,57 +17,6 @@ from intrahospital_api import constants
 from plugins.tb import constants as tb_constants
 
 
-class AddTbPatientPathway(WizardPathway):
-    display_name = "Add Patient"
-    slug = 'add_tb_patient'
-
-    steps = (
-        pathways.Step(
-            template="pathway/rfh_find_patient_form.html",
-            step_controller="RfhFindPatientCtrl",
-            display_name="Patient Details",
-            icon="fa fa-user",
-            category_name=episode_categories.TbEpisode.display_name
-        ),
-    )
-
-    def redirect_url(self, user=None, patient=None, episode=None):
-        if not episode:
-            episode = patient.episode_set.last()
-        return "/#/patient/{0}/{1}".format(patient.id, episode.id)
-
-    @transaction.atomic
-    def save(self, data, user, patient=None, episode=None):
-
-        if patient:
-            # at present we don't close tb episodes if they
-            # already have one, do nothing and return that
-            episode = patient.episode_set.filter(
-                tagging__value=tb_constants.TB_TAG
-            ).first()
-            if episode:
-                return patient, episode
-
-        saved_patient, episode = super(AddTbPatientPathway, self).save(
-            data, user=user, patient=patient, episode=episode
-        )
-
-        episode.set_tag_names([tb_constants.TB_TAG], user)
-        episode.category_name = "TB"
-        episode.stage = "New Referral"
-        episode.save()
-
-        # if the patient its a new patient and we have
-        # got their demographics from the upstream api service
-        # bring in their lab tests
-        if not patient and settings.ADD_PATIENT_LAB_TESTS:
-            demo_system = data["demographics"][0].get("external_system")
-            if demo_system == constants.EXTERNAL_SYSTEM:
-                loader.load_patient(saved_patient)
-
-        return saved_patient, episode
-
-
 class NewSubrecordStep(HelpTextStep):
     step_controller = "NewSubrecordStepCtrl"
     multiple = False
