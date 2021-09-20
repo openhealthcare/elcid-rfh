@@ -5,8 +5,6 @@ elCID Royal Free Hospital implementation
 from opal.core import application
 from opal.core.menus import MenuItem
 
-from plugins.tb import constants as tb_constants
-
 from elcid import episode_categories
 from elcid.menus import ServicesMenuItem
 
@@ -26,10 +24,7 @@ class StandardAddPatientMenuItem(MenuItem):
         profile = UserProfile.objects.get(user=user)
         if profile.readonly:
             return False
-
-        return not profile.roles.filter(
-            name=tb_constants.TB_ROLE
-        ).exists()
+        return True
 
 
 # ie, not the TB one
