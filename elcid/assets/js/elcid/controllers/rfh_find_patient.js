@@ -61,7 +61,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       $http.get(patientURL).then(function(response) {
         if(response.data.task_id){
           scope.pollTask(response.data.task_id).then(function(patientList){
-            deferred.resolve(response.data.patient_list);
+            deferred.resolve(patientList);
           })
         }
         else{
