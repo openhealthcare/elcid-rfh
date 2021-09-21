@@ -31,6 +31,6 @@ def search_upstream_demographics(
     **kwargs
 ):
     from intrahospital_api import update_demographics
-    return update_demographics.demographics_search(
+    return update_demographics.find_patient_upstream(
         **kwargs
     )
