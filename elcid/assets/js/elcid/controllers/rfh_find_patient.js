@@ -127,7 +127,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     scope.select = function(demographicsDict){
       scope.editing.demographics = demographicsDict;
       scope.editing.demographics.date_of_birth = toMomentFilter(
-        demographics.date_of_birth
+        demographicsDict.date_of_birth
       ).toDate();
       scope.pathway.goNext(scope.editing);
     }
