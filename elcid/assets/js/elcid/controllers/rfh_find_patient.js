@@ -148,6 +148,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     this.initialise = function(scope){
       scope.state = scope.states.INITIAL;
       scope.searching = false;
+      scope.areYouSure = false;
       scope.searchButtonDisabled = true;
       scope.$watch("searchQuery", function(){
         scope.disableSearchButton();
@@ -170,6 +171,21 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     scope.goToEditing = function(){
       scope.state = scope.states.EDITING_DEMOGRAPHICS
       scope.hideFooter = false;
+    }
+
+    scope.check = function(){
+      // if there is only one patient in the patient list
+      // and they have a patient id
+      // add a required confirmation before they can
+      // add a new patient
+      if(scope.patientList.length === 1){
+        if(scope.patientList[0].patient_id){
+          scope.areYouSure = true;
+        }
+      }
+      else{
+        scope.goToEditing();
+      }
     }
 
     scope.showNext = function(editing){

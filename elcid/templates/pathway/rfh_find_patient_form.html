@@ -93,20 +93,43 @@
     </div>
   </div>
   <div class="col-md-4 col-md-push-1 content-offset-100">
-    <div class="row">
-      <div class="col-md-12">
-        <p class="lead">
-          Or create a new patient:
-        </p>
+    {# if there is only one patient in the patient list and they have an id, make sure they still want to create a patient #}
+    <span ng-repeat="patient in patientList" ng-show="areYouSure">
+      <div class="row">
+        <div class="col-md-12">
+          <p class="lead">
+            Are you sure you don't want
+            <a ng-show="patient.patient_id" class="orange-link" href="/#/patient/[[ patient.patient_id ]]">
+              [[ patient.first_name ]] [[ patient.surname ]]
+              [[ patient.hospital_number ]]
+            </a>
+          </p>
+        </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-md-12">
-        <button class="btn btn-lg btn-primary" ng-click="goToEditing()">
-          Create new patient
-        </button>
+      <div class="row">
+        <div class="col-md-12">
+          <button class="btn btn-lg btn-primary" ng-click="goToEditing()">
+            Yes, let me add a new patient
+          </button>
+        </div>
       </div>
-    </div>
+    </span>
+    <span ng-hide="areYouSure">
+      <div class="row">
+        <div class="col-md-12">
+          <p class="lead">
+            Or create a new patient:
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <button ng-hide=""class="btn btn-lg btn-primary" ng-click="check()">
+            Create new patient
+          </button>
+        </div>
+      </div>
+    </span>
   </div>
 </div>
 
