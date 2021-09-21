@@ -436,6 +436,7 @@ def find_patient_upstream(
         )
         if nhs_num_results:
             return nhs_num_results
+        return []
     return demographics_search(
         date_of_birth=date_of_birth,
         surname=surname
