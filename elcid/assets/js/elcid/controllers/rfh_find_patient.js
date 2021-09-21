@@ -30,6 +30,10 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
             deferred.resolve(response.data.patient_list);
             clearInterval(interval);
           }
+          if(response.data.state === 'FAILURE'){
+            deferred.reject();
+            clearInterval(interval);
+          }
         });
       }, 500);
       return deferred.promise;
