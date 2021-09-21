@@ -643,7 +643,7 @@ class UpstreamDemographicsSearch(LoginRequiredViewset):
     def retrieve(self, request, **kwargs):
         from celery.result import AsyncResult
         from opal.core import celery
-        task_id = kwargs['task_id']
+        task_id = kwargs['pk']
         result = AsyncResult(id=task_id, app=celery.app)
         if result.state == 'SUCCESS':
             patient_list = result.get()

@@ -454,13 +454,13 @@ def demographics_search(**kwargs):
     if kwargs is None:
         raise ValueError('Demographics search expects arguments')
     query_args = []
-    if "hospital_number" in kwargs:
+    if kwargs.get('hospital_number'):
         query_args.append("(UPPER(PATIENT_NUMBER) = UPPER(@hospital_number))")
-    if "nhs_number" in kwargs:
+    if kwargs.get('nhs_number'):
         query_args.append("(NHS_NUMBER = @nhs_number)")
-    if "surname" in kwargs:
+    if kwargs.get('surname'):
         query_args.append("(UPPER(SURNAME) = UPPER(@surname))")
-    if "date_of_birth" in kwargs:
+    if kwargs.get('date_of_birth'):
         query_args.append("(DOB = @date_of_birth)")
     query = "SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE"  + " AND ".join(
         query_args
