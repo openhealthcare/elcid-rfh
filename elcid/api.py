@@ -640,10 +640,10 @@ class UpstreamDemographicsSearch(LoginRequiredViewset):
             result.append(upstream_result)
         return result
 
-    def retreive(self, request, **kwargs):
+    def retrieve(self, request, **kwargs):
         from celery.result import AsyncResult
         from opal.core import celery
-        task_id = kwargs['task_id']
+        task_id = kwargs['pk']
         result = AsyncResult(id=task_id, app=celery.app)
         if result.state == 'SUCCESS':
             patient_list = result.get()
@@ -683,7 +683,7 @@ elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
-elcid_router.register(UpstreamDemographicsSearch.base_name, DemographicsSearch)
+elcid_router.register(UpstreamDemographicsSearch.base_name, UpstreamDemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
