@@ -38,8 +38,14 @@
     <div class="row content-offset">
       <div class="col-md-12 text-center">
         <button class="btn btn-lg btn-primary" ng-disabled="searchButtonDisabled" ng-click="search()">
-          <i class="fa fa-search"></i>
-          Search
+          <span ng-show="searching">
+            <i class="fa fa-spinner fa-spin"></i>
+            Searching
+          </span>
+          <span ng-hide="searching">
+            <i class="fa fa-search"></i>
+            Search
+          </span>
         </button>
       </div>
     </div>
