@@ -78,10 +78,12 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       ngProgressLite.set(0);
       ngProgressLite.start();
       scope.searchButtonDisabled = true;
+      scope.searching = true
       scope.getSearch().then(function(patientList){
         scope.patientList = patientList;
         ngProgressLite.done();
         scope.searchButtonDisabled = false;
+        scope.searching = false
         scope.hideFooter = true;
         if(scope.patientList.length){
           scope.state = scope.states.PATIENT_LIST;
@@ -112,7 +114,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
 
     this.initialise = function(scope){
       scope.state = scope.states.INITIAL;
-      scope.loading = false;
+      scope.searching = false;
       scope.searchButtonDisabled = true;
       scope.$watch("searchQuery", function(){
         scope.disableSearchButton();
