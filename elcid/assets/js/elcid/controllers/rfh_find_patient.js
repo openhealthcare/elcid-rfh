@@ -82,11 +82,12 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
         scope.patientList = patientList;
         ngProgressLite.done();
         scope.searchButtonDisabled = false;
+        scope.hideFooter = true;
         if(scope.patientList.length){
           scope.state = scope.states.PATIENT_LIST;
         }
         else{
-          scope.state = scope.states.EDITING_DEMOGRAPHICS;
+          scope.goToEditing();
         }
       });
     }
