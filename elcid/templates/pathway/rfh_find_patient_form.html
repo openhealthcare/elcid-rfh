@@ -29,10 +29,13 @@
     </div>
     <div class="row form-group">
       <div class="col-md-6 form-horizontal">
-        <input class="form-control" type="text" ng-model="searchQuery.surname">
+        <input class="form-control" type="text" ng-change="disableSearchButton()" ng-model="searchQuery.surname">
       </div>
       <div class="col-md-4">
-        <div date-of-birth ng-model="searchQuery.date_of_birth"></div>
+        <input class="form-control" type="text" ng-model="dateOfBirthString" ng-change="setDate()" placeholder="DD/MM/YYYY">
+        <span class="help-block" ng-show="dateError">
+          [[ dateError ]]
+        </span>
       </div>
     </div>
     <div class="row content-offset">
