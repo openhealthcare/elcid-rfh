@@ -194,6 +194,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     scope.reset = function(){
       scope.state = scope.states.INITIAL;
       scope.searching = false;
+      scope.editing.demographics = {};
       scope.areYouSure = false;
       scope.searchButtonDisabled = true;
       scope.dateOfBirthString = "";
