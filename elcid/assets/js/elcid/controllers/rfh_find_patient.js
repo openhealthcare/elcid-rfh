@@ -2,6 +2,8 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
   function(scope, toMomentFilter, $q, ngProgressLite, $http) {
     "use strict";
 
+    var self = this;
+
     scope.states = {
       // the initial state the asks for a search term
       INITIAL: "INITIAL",
@@ -71,13 +73,13 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       ngProgressLite.set(0);
       ngProgressLite.start();
       scope.searchButtonDisabled = true;
-      scope.searching = true
+      scope.searching = true;
+      scope.hideFooter = false;
       scope.getSearch().then(function(patientList){
         scope.patientList = patientList;
         ngProgressLite.done();
         scope.searchButtonDisabled = false;
         scope.searching = false
-        scope.hideFooter = true;
         if(scope.patientList.length){
           scope.state = scope.states.PATIENT_LIST;
         }
@@ -88,7 +90,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
               date_of_birth: scope.searchQuery.date_of_birth
             }
           }
-          scope.goToEditing();
+        scope.state = scope.states.EDITING_DEMOGRAPHICS
         }
       });
     }
@@ -145,9 +147,54 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       scope.searchButtonDisabled = true;
     }
 
-    this.initialise = function(scope){
+    this.resetPathwayMethods = function(){
+      /*
+      * We are doing a wizard step inside a
+      * wizard step.
+      *
+      * Wrap the pathway previous/next methods
+      * to make it look like this is a vanilla
+      * wizard pathway.
+      */
+     scope.pathway.oldHasPrevious = scope.pathway.hasPrevious
+     scope.pathway.oldGoPrevious = scope.pathway.goPrevious
+     scope.pathway.oldShowNext = scope.pathway.showNext
+
+     var newHasPrevious = function(){
+       if(this.currentStep.scope.state){
+         if(this.currentStep.scope.state === this.currentStep.scope.states.PATIENT_LIST || scope.state === scope.states.EDITING_DEMOGRAPHICS){
+           return true
+         }
+       }
+       return this.oldHasPrevious()
+     }
+     var newGoPrevious = function(editing){
+      if(this.currentStep.scope.state){
+        if(this.currentStep.scope.state === this.currentStep.scope.states.PATIENT_LIST || scope.states.EDITING_DEMOGRAPHICS){
+          this.currentStep.scope.reset();
+          return;
+        }
+      }
+      return this.oldGoPrevious(editing)
+     }
+     var newShowNext = function(editing){
+      if(this.currentStep.scope.state){
+        if(this.currentStep.scope.state !== this.currentStep.scope.states.EDITING_DEMOGRAPHICS){
+          return false;
+        }
+      }
+      return this.oldShowNext(editing);
+     }
+
+     scope.pathway.hasPrevious = _.bind(newHasPrevious, scope.pathway);
+     scope.pathway.goPrevious = _.bind(newGoPrevious, scope.pathway);
+     scope.pathway.showNext = _.bind(newShowNext, scope.pathway);
+    }
+
+    scope.reset = function(){
       scope.state = scope.states.INITIAL;
       scope.searching = false;
+      scope.areYouSure = false;
       scope.searchButtonDisabled = true;
       scope.$watch("searchQuery", function(){
         scope.disableSearchButton();
@@ -157,6 +204,11 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       scope.searchQuery = {
         query: undefined
       };
+    }
+
+    this.initialise = function(scope){
+      self.resetPathwayMethods();
+      scope.reset()
     };
 
     scope.select = function(demographicsDict){
@@ -167,9 +219,23 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       scope.pathway.goNext(scope.editing);
     }
 
+    scope.check = function(){
+      // if there is only one patient in the patient list
+      // and they have a patient id
+      // add a required confirmation before they can
+      // add a new patient
+      if(scope.patientList.length === 1){
+        if(scope.patientList[0].patient_id){
+          scope.areYouSure = true;
+        }
+      }
+      else{
+        scope.state = scope.states.EDITING_DEMOGRAPHICS;
+      }
+    }
+
     scope.goToEditing = function(){
-      scope.state = scope.states.EDITING_DEMOGRAPHICS
-      scope.hideFooter = false;
+      scope.state = scope.states.EDITING_DEMOGRAPHICS;
     }
 
     scope.showNext = function(editing){

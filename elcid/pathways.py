@@ -6,7 +6,6 @@ import datetime
 from django.db import transaction
 from django.conf import settings
 from opal.core.pathway.pathways import (
-    RedirectsToPatientMixin,
     Step,
     PagePathway,
     WizardPathway,
@@ -125,7 +124,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             data, user=user, patient=patient, episode=episode
         )
 
-        # there should always be a new= episode
+        # there should always be a new episode
         saved_episode.start = datetime.date.today()
         saved_episode.save()
 
