@@ -29,17 +29,26 @@
     </div>
     <div class="row form-group">
       <div class="col-md-6 form-horizontal">
-        <input class="form-control" type="text" ng-model="searchQuery.surname">
+        <input class="form-control" type="text" ng-change="disableSearchButton()" ng-model="searchQuery.surname">
       </div>
       <div class="col-md-4">
-        <div date-of-birth ng-model="searchQuery.date_of_birth"></div>
+        <input class="form-control" type="text" ng-model="dateOfBirthString" ng-change="setDate()" placeholder="DD/MM/YYYY">
+        <span class="help-block" ng-show="dateError">
+          [[ dateError ]]
+        </span>
       </div>
     </div>
     <div class="row content-offset">
       <div class="col-md-12 text-center">
         <button class="btn btn-lg btn-primary" ng-disabled="searchButtonDisabled" ng-click="search()">
-          <i class="fa fa-search"></i>
-          Search
+          <span ng-show="searching">
+            <i class="fa fa-spinner fa-spin"></i>
+            Searching
+          </span>
+          <span ng-hide="searching">
+            <i class="fa fa-search"></i>
+            Search
+          </span>
         </button>
       </div>
     </div>
@@ -122,6 +131,11 @@
       <div class="row">
         <div class="col-md-10">
           {% input label="Hospital number" field="Demographics.hospital_number" %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% input field="Demographics.nhs_number" %}
         </div>
       </div>
       <div class="row">

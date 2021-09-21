@@ -50,14 +50,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       */
       var url = '/elcid/v0.1/demographics_search/?';
       var deferred = $q.defer();
-      var params = {}
-      _.each(scope.searchQuery, function(val, key){
-        if(moment.isMoment(val)){
-          val = val.format('DD/MM/YYYY');
-        }
-        params[key] = val;
-      });
-      var patientURL = url + $.param(params);
+      var patientURL = url + $.param(scope.searchQuery);
       $http.get(patientURL).then(function(response) {
         if(response.data.task_id){
           scope.pollTask(response.data.task_id).then(function(patientList){
@@ -78,10 +71,12 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       ngProgressLite.set(0);
       ngProgressLite.start();
       scope.searchButtonDisabled = true;
+      scope.searching = true
       scope.getSearch().then(function(patientList){
         scope.patientList = patientList;
         ngProgressLite.done();
         scope.searchButtonDisabled = false;
+        scope.searching = false
         scope.hideFooter = true;
         if(scope.patientList.length){
           scope.state = scope.states.PATIENT_LIST;
@@ -98,6 +93,46 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       });
     }
 
+    scope.setDate = function(){
+      /*
+      * validates scope.dateOfBirthString is of the correct
+      * format and is a realistic dob.
+      *
+      * If it is sets it on scope.searchQuery.date_of_birth
+      */
+      scope.dateError = "";
+      scope.searchQuery.date_of_birth = null;
+      if(!scope.dateOfBirthString){
+        return;
+      }
+      if(scope.dateOfBirthString.length < 10){
+        return;
+      }
+
+      // If its not valid, set the error and return
+      var mom = moment(scope.dateOfBirthString, "DD/MM/YYYY")
+      if(!mom.isValid()){
+        scope.dateError = "Please enter a valid date";
+        return
+      }
+
+      // If its in the future, set the error and return
+      var asDate = mom.toDate();
+      if(asDate > new Date()){
+        scope.dateError = "Please enter a valid date";
+        return;
+      }
+
+      // if its over a 150 years old, set the error and return
+      var ages_ago = new Date()
+      ages_ago.setFullYear(new Date().getFullYear() - 150);
+      if(asDate < ages_ago){
+        scope.dateError = "Please enter a valid date";
+        return;
+      }
+      scope.searchQuery.date_of_birth = scope.dateOfBirthString;
+    }
+
     scope.disableSearchButton = function(){
       if(scope.searchQuery.surname && scope.searchQuery.date_of_birth){
         scope.searchButtonDisabled = false;
@@ -112,7 +147,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
 
     this.initialise = function(scope){
       scope.state = scope.states.INITIAL;
-      scope.loading = false;
+      scope.searching = false;
       scope.searchButtonDisabled = true;
       scope.$watch("searchQuery", function(){
         scope.disableSearchButton();
