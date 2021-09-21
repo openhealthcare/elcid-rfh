@@ -196,6 +196,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       scope.searching = false;
       scope.areYouSure = false;
       scope.searchButtonDisabled = true;
+      scope.dateOfBirthString = "";
       scope.$watch("searchQuery", function(){
         scope.disableSearchButton();
       }, true);
@@ -227,11 +228,10 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       if(scope.patientList.length === 1){
         if(scope.patientList[0].patient_id){
           scope.areYouSure = true;
+          return;
         }
       }
-      else{
-        scope.state = scope.states.EDITING_DEMOGRAPHICS;
-      }
+      scope.state = scope.states.EDITING_DEMOGRAPHICS;
     }
 
     scope.goToEditing = function(){
