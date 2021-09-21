@@ -125,7 +125,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     };
 
     scope.select = function(demographicsDict){
-      scope.demographics = demographicsDict;
+      scope.editing.demographics = demographicsDict;
       scope.pathway.goNext(scope.editing);
     }
 
