@@ -436,6 +436,7 @@ def find_patient_upstream(
         )
         if nhs_num_results:
             return nhs_num_results
+        return []
     return demographics_search(
         date_of_birth=date_of_birth,
         surname=surname
@@ -462,7 +463,7 @@ def demographics_search(**kwargs):
         query_args.append("(UPPER(SURNAME) = UPPER(@surname))")
     if kwargs.get('date_of_birth'):
         query_args.append("(DOB = @date_of_birth)")
-    query = "SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE"  + " AND ".join(
+    query = "SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE " + " AND ".join(
         query_args
     )
     query_result = api.execute_hospital_query(query, params=kwargs)
