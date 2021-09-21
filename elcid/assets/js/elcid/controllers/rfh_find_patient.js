@@ -87,6 +87,12 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
           scope.state = scope.states.PATIENT_LIST;
         }
         else{
+          if(scope.searchQuery.surname){
+            scope.editing.demographics = {
+              surname: scope.searchQuery.surname,
+              date_of_birth: scope.searchQuery.date_of_birth
+            }
+          }
           scope.goToEditing();
         }
       });

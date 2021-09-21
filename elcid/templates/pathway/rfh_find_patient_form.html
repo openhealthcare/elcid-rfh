@@ -108,7 +108,10 @@
     <div class="row">
       <div class="col-md-12 text-center">
         <p class="lead" ng-show='!patientList.length'>
-          Unable to find a patient with [[ searchQuery.query ]]. Add now:
+          Unable to find a patient with
+          <span ng-show="searchQuery.number">[[ searchQuery.number ]].</span>
+          <span ng-show="searchQuery.surname">[[ searchQuery.surname ]] - [[ searchQuery.date_of_birth ]].</span>
+          Add now:
         </p>
         <p class="lead">
           Add the patient's details:
