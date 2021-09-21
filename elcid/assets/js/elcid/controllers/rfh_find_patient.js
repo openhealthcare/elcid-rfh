@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller('RfhFindPatientCtrl',
-  function(scope, step, episode, DemographicsSearch, $q, ngProgressLite, $http) {
+  function(scope, toMomentFilter, $q, ngProgressLite, $http) {
     "use strict";
 
     scope.states = {
@@ -126,6 +126,9 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
 
     scope.select = function(demographicsDict){
       scope.editing.demographics = demographicsDict;
+      scope.editing.demographics.date_of_birth = toMomentFilter(
+        demographics.date_of_birth
+      ).toDate();
       scope.pathway.goNext(scope.editing);
     }
 
