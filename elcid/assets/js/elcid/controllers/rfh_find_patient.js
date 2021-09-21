@@ -61,7 +61,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       $http.get(patientURL).then(function(response) {
         if(response.data.task_id){
           scope.pollTask(response.data.task_id).then(function(patientList){
-            deferred.resolve(response.data.patient_list);
+            deferred.resolve(patientList);
           })
         }
         else{
@@ -82,11 +82,18 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
         scope.patientList = patientList;
         ngProgressLite.done();
         scope.searchButtonDisabled = false;
+        scope.hideFooter = true;
         if(scope.patientList.length){
           scope.state = scope.states.PATIENT_LIST;
         }
         else{
-          scope.state = scope.states.EDITING_DEMOGRAPHICS;
+          if(scope.searchQuery.surname){
+            scope.editing.demographics = {
+              surname: scope.searchQuery.surname,
+              date_of_birth: scope.searchQuery.date_of_birth
+            }
+          }
+          scope.goToEditing();
         }
       });
     }
@@ -118,7 +125,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
     };
 
     scope.select = function(demographicsDict){
-      scope.demographics = demographicsDict;
+      scope.editing.demographics = demographicsDict;
       scope.pathway.goNext(scope.editing);
     }
 
