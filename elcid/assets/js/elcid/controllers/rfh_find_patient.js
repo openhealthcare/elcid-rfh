@@ -92,6 +92,8 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
           }
         scope.state = scope.states.EDITING_DEMOGRAPHICS
         }
+      }, function(){
+        alert('Unable to search, please refresh your page and try again.')
       });
     }
 
