@@ -426,31 +426,28 @@ def find_patient_upstream(
     number=None, date_of_birth=None, surname=None
 ):
     if number:
-        hn_results = demographics_search(
-            hospital_number=number
+        return demographics_search(
+            hospital_number=number,
+            nhs_number=number,
+            conjunction='OR'
         )
-        if hn_results:
-            return hn_results
-        nhs_num_results = demographics_search(
-            nhs_number=number
-        )
-        if nhs_num_results:
-            return nhs_num_results
-        return []
     return demographics_search(
         date_of_birth=date_of_birth,
         surname=surname
     )
 
 
-def demographics_search(**kwargs):
+def demographics_search(conjunction='AND', **kwargs):
     """
     Allows searching by named arguments
     expects 'hospital_number', 'nhs_number', 'surname'
     or 'date_of_birth'
 
     hospital number and surname are searched
-    case insensitively
+    case insensitively.
+
+    By default its an 'AND' query, but conjunction
+    can be changed to 'OR'
     """
     if kwargs is None:
         raise ValueError('Demographics search expects arguments')
@@ -463,9 +460,10 @@ def demographics_search(**kwargs):
         query_args.append("(UPPER(SURNAME) = UPPER(@surname))")
     if kwargs.get('date_of_birth'):
         query_args.append("(DOB = @date_of_birth)")
-    query = "SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE " + " AND ".join(
+    clauses = f" {conjunction } ".join(
         query_args
     )
+    query = "SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE " + clauses
     query_result = api.execute_hospital_query(query, params=kwargs)
     result = []
     for row in query_result:
