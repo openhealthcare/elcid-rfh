@@ -563,6 +563,13 @@ class DemographicsSearch(LoginRequiredViewset):
             Q(hospital_number=query) | Q(nhs_number=query)
         )
 
+    def clean_punctuation(self, word):
+        if word is None:
+            return None
+        for letter in [".", ",", ";", "/", "\\"]:
+            word = word.replace(letter, "")
+        return word.strip()
+
     def list(self, request, *args, **kwargs):
         """
         If the query matches a local hospital number
@@ -578,10 +585,12 @@ class DemographicsSearch(LoginRequiredViewset):
         Otherwise they will not have a patient id.
         """
         number = request.query_params.get("number")
+        number = self.clean_punctuation(number)
         dob = request.query_params.get("date_of_birth")
         if dob:
             dob = serialization.deserialize_date(dob)
         surname = request.query_params.get("surname")
+        surname = self.clean_punctuation(surname)
         if not any([number, dob, surname]):
             return json_response({"patient_list": []})
         if number:
