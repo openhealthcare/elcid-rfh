@@ -560,7 +560,7 @@ class DemographicsSearch(LoginRequiredViewset):
         some reason.
         """
         return models.Demographics.objects.filter(
-            Q(hospital_number=query) | Q(nhs_number=query)
+            Q(hospital_number__iexact=query) | Q(nhs_number=query)
         )
 
     def clean_punctuation(self, word):
