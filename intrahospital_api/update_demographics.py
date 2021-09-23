@@ -463,7 +463,7 @@ def demographics_search(conjunction='AND', **kwargs):
     clauses = f" {conjunction } ".join(
         query_args
     )
-    query = "SELECT * FROM VIEW_CRS_Patient_Masterfile WHERE " + clauses
+    query = "SELECT PATIENT_NUMBER, NHS_NUMBER, SURNAME, FORENAME1, DOB FROM VIEW_CRS_Patient_Masterfile WHERE " + clauses
     query_result = api.execute_hospital_query(query, params=kwargs)
     result = []
     for row in query_result:
