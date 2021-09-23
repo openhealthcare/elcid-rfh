@@ -7,6 +7,7 @@
     </section>
     <section ng-show="editing.location.hospital == 'RNOH'">
       {% select field="Location.ward" lookuplist="metadata.rnoh_wards" %}
+      {% select field="Location.unit" %}
     </section>
     {% input field="Location.bed" %}
     {% input field="Location.consultant" %}
