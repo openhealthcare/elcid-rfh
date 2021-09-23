@@ -31,7 +31,8 @@ class RNOHInpatientsView(RNOHView):
             location__hospital_fk=rnoh_id
         ).exclude(
             location__ward_ft__in=INDIVIDUAL_WARD_NAMES
-        )
+        ).order_by('-location__ward_ft', '-location__bed')
+
         context['episodes'] = episodes
         context['list_name'] = 'RNOH Inpatients'
         return context
