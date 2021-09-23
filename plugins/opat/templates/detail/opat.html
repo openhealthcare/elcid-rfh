@@ -1,6 +1,7 @@
 {% load panels %}
 {% load forms %}
 <div class="col-md-6">
+  {% record_panel models.OPATRecord %}
 </div>
 <div class="col-md-6">
   {% include "inline_forms/clinical_timeline.html" %}
