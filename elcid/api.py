@@ -586,7 +586,6 @@ class DemographicsSearch(LoginRequiredViewset):
         """
         number = request.query_params.get("number")
         number = self.clean_punctuation(number)
-        number = number.replace(",", "").replace(".", "")
         dob = request.query_params.get("date_of_birth")
         if dob:
             dob = serialization.deserialize_date(dob)
