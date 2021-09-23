@@ -100,12 +100,13 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         Else if the patient doesn't exist load in the patient.
         """
 
-        hospital = data['location'][0]['hospital']
-
+        hospital = ""
+        if "location" in data:
+            hospital = data['location'][0]['hospital']
 
         if patient:
             if hospital == 'RNOH':
-                rnoh_episode =  patient.episode_set.filter(
+                rnoh_episode = patient.episode_set.filter(
                     category_name=RNOHEpisode.display_name
                 ).last()
                 if rnoh_episode:
@@ -128,7 +129,6 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         # there should always be a new episode
         saved_episode.start = datetime.date.today()
         saved_episode.save()
-
 
         if hospital == 'RNOH':
             # Move the location data to an RNOH episode,
