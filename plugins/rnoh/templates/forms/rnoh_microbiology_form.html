@@ -1,0 +1,77 @@
+{% load forms %}
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="RNOHMicrobiology.sample_date" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% select field="RNOHMicrobiology.test_name" style="vertical" %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-2 col-md-offset-1">
+    {% input field="RNOHMicrobiology.number_positive" style="vertical"%}
+  </div>
+  <div class="col-md-2">
+    {% input field="RNOHMicrobiology.number_samples" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="RNOHMicrobiology.hospital" style="vertical" %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% select field="RNOHMicrobiology.sample_type" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="RNOHMicrobiology.site" style="vertical" %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% select field="RNOHMicrobiology.side" style="vertical" %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% select field="RNOHMicrobiology.result" style="vertical" %}
+  </div>
+</div>
+
+<section ng-show="[{% for name in models.RNOHMicrobiology.CULTURE_TESTS %}'{{name}}'{% if not forloop.last %},{% endif %}{% endfor %}].indexOf(editing.rnoh_microbiology.test_name) != -1">
+<div class="row">
+  <div class="col-md-6 col-md-offset-1">
+    {% input field="RNOHMicrobiology.organism" style="vertical" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% select field="RNOHMicrobiology.bottle" style="vertical" %}
+  </div>
+  <div class="col-md-2 col-md-offset-1">
+    {% input field="RNOHMicrobiology.day_positive" style="vertical" %}
+  </div>
+
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-1">
+    {% select model="editing.rnoh_microbiology.sensitivities" label="Sensitivities" multiple=True tagging=False lookuplist="antimicrobial_list" style="vertical" %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-1">
+    {% select model="editing.rnoh_microbiology.resistances" label="Resistance" multiple=True tagging=False lookuplist="antimicrobial_list" style="vertical" %}
+  </div>
+</div>
+</section>
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-1">
+    {% textarea field="RNOHMicrobiology.notes" style="vertical" %}
+  </div>
+</div>
