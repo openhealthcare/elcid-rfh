@@ -42,7 +42,8 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
 
     @property
     def age(self):
-        return datetime.date.today().year - self.date_of_birth.year
+        if self.date_of_birth:
+            return datetime.date.today().year - self.date_of_birth.year
 
     class Meta:
         verbose_name_plural = "Demographics"
