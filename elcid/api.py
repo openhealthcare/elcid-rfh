@@ -616,35 +616,25 @@ class UpstreamDemographicsSearch(LoginRequiredViewset):
         can match these to local results by nhs number
         or hospital number.
 
-        If so add that patient_id to the result.
+        If so add send over the serialized demographics.
+
+        If for whatever reason the patient is duplicated in
+        our system we send over both copies and let the
+        use decide.
         """
-        query_by_nhs_numbers = models.Demographics.objects.filter(
-            nhs_number__in=[i["nhs_number"] for i in upstream_results]
-        )
-        nhs_number_to_demographics = defaultdict(list)
-        for row in query_by_nhs_numbers:
-            nhs_number_to_demographics[row.nhs_number].append(row)
-        query_by_hn = models.Demographics.objects.filter(
-            hospital_number__in=[i["hospital_number"] for i in upstream_results]
-        )
-        hn_to_demographics = defaultdict(list)
-        for row in query_by_hn:
-            hn_to_demographics[row.hospital_number].append(row)
         result = []
         for upstream_result in upstream_results:
-            hn_results = hn_to_demographics.get(
-                upstream_result["hospital_number"], []
-            )
-            for hn_result in hn_results:
-                result.append(hn_result.to_dict(self.request.user))
-            if hn_results:
-                continue
-            nhs_results = nhs_number_to_demographics.get(
-                upstream_result["nhs_number"], []
-            )
-            for nhs_result in nhs_results:
-                result.append(nhs_result.to_dict(self.request.user))
-            if nhs_results:
+            local = None
+            if upstream_result["hospital_number"]:
+                local = models.Demographics.objects.filter(
+                    hospital_number=upstream_result["hospital_number"]
+                )
+            if not local and upstream_result["nhs_number"]:
+                local = models.Demographics.objects.filter(
+                    nhs_number=upstream_result["nhs_number"]
+                )
+            if local:
+                result.extend([i.to_dict(self.request.user) for i in local])
                 continue
             result.append(upstream_result)
         return result
