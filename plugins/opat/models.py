@@ -46,3 +46,15 @@ class OPATRecord(EpisodeSubrecord):
     outcome_one_year_date  = models.DateField(blank=True, null=True)
     outcome_two_years      = models.CharField(blank=True, null=True, max_length=200, choices=OUTCOME_CHOICES)
     outcome_two_years_date = models.DateField(blank=True, null=True)
+
+
+class OPATActions(EpisodeSubrecord):
+
+    _icon = 'fa fa-list'
+
+    date_requested     = models.DateField(blank=True, null=True)
+    action             = models.TextField(blank=True, null=True)
+    person_responsible = models.CharField(blank=True, null=True, max_length=255)
+
+    class Meta:
+        verbose_name = 'Actions'

@@ -2,6 +2,23 @@
 {% load forms %}
 <div class="col-md-6">
   {% record_panel models.OPATRecord %}
+  {% record_panel models.SymptomComplex %}
+  {% record_panel models.PastMedicalHistory %}
+  {% record_panel models.PrimaryDiagnosis %}
+  {% record_panel models.Diagnosis %}
+  <div class="panel panel-default">
+    <div class="panel-heading"><h3>
+      {% icon 'fa fa-crosshairs' %} Results
+    </h3></div>
+    <div class="panel-body overflow-x-auto">
+      {% include "partials/lab_test_sparklines.html" with target="patient" %}
+    </div>
+  </div>
+  {% include "partials/imaging_panel.html" %}
+  {% record_panel models.Allergies %}
+  {% record_panel models.Treatment %}
+  {% record_panel models.Line %}
+  {% record_panel models.OPATActions %}
 </div>
 <div class="col-md-6">
   {% include "inline_forms/clinical_timeline.html" %}
