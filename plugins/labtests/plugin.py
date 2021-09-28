@@ -4,20 +4,18 @@ Plugin definition for the labtests Opal plugin
 from opal.core import plugins
 
 from plugins.labtests.urls import urlpatterns
+from plugins.labtests import api
+
 
 class LabtestsPlugin(plugins.OpalPlugin):
     """
     Main entrypoint to expose this plugin to our Opal application.
     """
     urls = urlpatterns
-    javascripts = {
-        # Add your javascripts here!
-        'opal.labtests': [
-            # 'js/labtests/app.js',
-            # 'js/labtests/controllers/larry.js',
-            # 'js/labtests/services/larry.js',
-        ]
-    }
+
+    apis = [
+        (api.StarObservation.base_name, api.StarObservation,),
+    ]
 
     def list_schemas(self):
         """

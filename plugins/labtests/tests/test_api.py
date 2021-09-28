@@ -7,7 +7,7 @@ class StarObservationTestCase(OpalTestCase):
     def setUp(self):
         self.request = self.rf.get("/")
         self.list_url = reverse(
-            "lab_test_results_view-list",
+            "star_observation-list",
             request=self.request
         )
         # initialise the property
@@ -29,7 +29,7 @@ class StarObservationTestCase(OpalTestCase):
             "observation_name": "Culture result",
         })
         self.assertTrue(
-            lab_models.StarredObservsation.objects.filter(
+            lab_models.StarredObservation.objects.filter(
                 patient_id=self.patient.id,
                 test_name="Blood culture",
                 lab_number="111",
@@ -37,10 +37,10 @@ class StarObservationTestCase(OpalTestCase):
                 created_by=self.user
             ).exists()
         )
-        self.assertEqual(lab_models.StarredObservsation.objects.count(), 1)
+        self.assertEqual(lab_models.StarredObservation.objects.count(), 1)
 
     def test_delete(self):
-        starred_obs = lab_models.StarredObservsation.objects.create(
+        starred_obs = lab_models.StarredObservation.objects.create(
             patient_id=self.patient.id,
             test_name="Blood culture",
             lab_number="111",
@@ -48,11 +48,11 @@ class StarObservationTestCase(OpalTestCase):
             created_by=self.user
         )
         detail_url = reverse(
-            "lab_test_results_view-detail",
+            "star_observation-detail",
             kwargs={'pk': starred_obs.id},
             request=self.request,
         )
         self.client.delete(detail_url)
         self.assertFalse(
-            lab_models.StarredObservsation.objects.all().exists()
+            lab_models.StarredObservation.objects.all().exists()
         )
