@@ -567,7 +567,15 @@ div.add-isolate:hover {
   white-space: nowrap;
 }
 
-.star-obs {
+.infection-summary-row .star-obs {
+  visibility: hidden;
+}
+
+.infection-summary-row:hover .star-obs {
+  visibility: visible;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td.results-field .star-obs, .results-field .star-obs {
   visibility: hidden;
   display: none;
 }

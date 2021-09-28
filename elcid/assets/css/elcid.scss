@@ -603,12 +603,25 @@ div.add-isolate:hover{
   white-space: nowrap;
 }
 
-.star-obs{
-  visibility: hidden;
-  display: none;
+.infection-summary-row{
+  .star-obs{
+    visibility: hidden;
+  }
+
+
+  &:hover{
+    .star-obs{
+      visibility: visible
+    }
+  }
 }
 
+
 .table-striped > tbody > tr:nth-child(odd) > td.results-field, .results-field{
+  .star-obs{
+    visibility: hidden;
+    display: none;
+  }
   &.starred, &:hover{
     background-color: $obsidian-light;
     .star-obs{
