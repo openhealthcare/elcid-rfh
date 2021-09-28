@@ -327,6 +327,7 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
+    sent_upstream = models.BooleanField(default=False)
 
     def to_dict(self, *args, **kwargs):
         result = super().to_dict(*args, **kwargs)
