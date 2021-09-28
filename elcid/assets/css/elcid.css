@@ -575,17 +575,33 @@ div.add-isolate:hover {
   visibility: visible;
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td.results-field .star-obs, .results-field .star-obs {
+.long-form-results-row .star-obs {
   visibility: hidden;
   display: none;
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td.results-field.starred, .table-striped > tbody > tr:nth-child(odd) > td.results-field:hover, .results-field.starred, .results-field:hover {
+.long-form-results-row:hover, .long-form-results-row.starred {
   background-color: #cbc9c8;
 }
 
-.table-striped > tbody > tr:nth-child(odd) > td.results-field.starred .star-obs, .table-striped > tbody > tr:nth-child(odd) > td.results-field:hover .star-obs, .results-field.starred .star-obs, .results-field:hover .star-obs {
+.long-form-results-row:hover .star-obs, .long-form-results-row.starred .star-obs {
   visibility: visible;
   display: inline;
+}
+
+.table-results-row .star-obs {
+  visibility: hidden;
+}
+
+.table-striped > tbody > tr > td.table-results-row-populated .star-obs {
+  visibility: hidden;
+}
+
+.table-striped > tbody > tr > td.table-results-row-populated:hover, .table-striped > tbody > tr > td.table-results-row-populated.starred {
+  background-color: #cbc9c8;
+}
+
+.table-striped > tbody > tr > td.table-results-row-populated:hover .star-obs, .table-striped > tbody > tr > td.table-results-row-populated.starred .star-obs {
+  visibility: visible;
 }
 /*# sourceMappingURL=elcid.css.map */

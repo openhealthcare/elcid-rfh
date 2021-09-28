@@ -616,17 +616,36 @@ div.add-isolate:hover{
   }
 }
 
-
-.table-striped > tbody > tr:nth-child(odd) > td.results-field, .results-field{
+.long-form-results-row{
   .star-obs{
     visibility: hidden;
     display: none;
   }
-  &.starred, &:hover{
+  &:hover, &.starred{
     background-color: $obsidian-light;
+
     .star-obs{
       visibility: visible;
       display: inline;
+    }
+  }
+}
+
+.table-results-row{
+  .star-obs{
+    visibility: hidden;
+  }
+}
+
+.table-striped > tbody > tr > td.table-results-row-populated{
+  .star-obs{
+    visibility: hidden;
+  }
+  &:hover, &.starred{
+    background-color: $obsidian-light;
+
+    .star-obs{
+      visibility: visible;
     }
   }
 }
