@@ -90,7 +90,7 @@ def write_clinical_advice(advice):
     note_data = {
         'elcid_version'    : get_elcid_version(),
         'note_id'          : advice.id,
-        'patient_id'       : patient.23783,
+        'patient_id'       : patient.id,
         'written_by'       : advice.initials,
         'hospital_number'  : demographics.hospital_number,
         'patient_forename' : demographics.first_name,
