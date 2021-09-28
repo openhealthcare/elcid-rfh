@@ -602,3 +602,16 @@ div.add-isolate:hover{
 .nowrap{
   white-space: nowrap;
 }
+
+.star-obs{
+  visibility: hidden;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td.results-field, .results-field{
+  &.starred, &:hover{
+    background-color: $obsidian-light;
+    .star-obs{
+      visibility: visible;
+    }
+  }
+}

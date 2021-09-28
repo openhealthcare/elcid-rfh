@@ -12,6 +12,15 @@ class LabtestsPlugin(plugins.OpalPlugin):
     Main entrypoint to expose this plugin to our Opal application.
     """
     urls = urlpatterns
+    javascripts = {
+        # Add your javascripts here!
+        'opal.services': [
+            "labtests/js/services/star_observation.js"
+            # 'js/labtests/app.js',
+            # 'js/labtests/controllers/larry.js',
+            # 'js/labtests/services/larry.js',
+        ]
+    }
 
     apis = [
         (api.StarObservation.base_name, api.StarObservation,),

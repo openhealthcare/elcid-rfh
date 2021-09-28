@@ -41,17 +41,26 @@
               </div>
 
               <div class="col-md-9">
-                <div class="row" ng-repeat="observation in instance.observations">
+                <div ng-class="{'starred': observation.star}" class="row results-field" ng-repeat="observation in instance.observations">
                   <div class="col-md-4">[[ observation.name ]] [[ observation.units ]]</div>
-                  <div class="col-md-8">
+                  <div class="col-md-5">
                     <p class="tilde-replacement-paragraph"
                        ng-repeat="par_obs in resultView.splitObservation(observation.value) track by $index">
                       [[ par_obs ]]
                     </p>
                   </div>
+                  <div class="col-md-3">
+                    <span class="star-obs">
+                      <a ng-hide="observation.star" ng-click="resultView.starObservation.starObservation(patient.id, test_name, instance.lab_number, observation.name, observation)" class="pointer">
+                        <i class="fa fa-star-o fa-lg"></i>
+                      </a>
+                      <a ng-show="observation.star" ng-click="resultView.starObservation.unstarObservation(observation)" class="pointer">
+                        <i class="fa fa-star fa-lg"></i>
+                      </a>
+                    </span>
+                  </div>
                 </div>
               </div>
-
             </div>
 
             <div ng-show="!resultView.showAll[test_name] && resultView.lab_tests[test_name].instances.length > 10">
@@ -69,7 +78,7 @@
               <tr>
                 <th class="col-xs-3"></th> <!-- Observation name -->
                 <th class="col-xs-1"></th <!-- Reference range -->
-                <th class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                <th class="col-xs-1 text-center" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
                   <span title="[[ resultView.lab_tests[test_name].instances.lab_numbers[date] ]] [[ date ]]"
                         class="pointer">
                     [[ date | displayDate ]]
@@ -87,7 +96,7 @@
                   [[ resultView.lab_tests[test_name].instances.observation_units[observation_name] ]]
                 </td>
 
-                <td class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                <td ng-class="{'results-field': resultView.lab_tests[test_name].instances.observation_series[observation_name][date].value, 'starred': resultView.lab_tests[test_name].instances.observation_series[observation_name][date].star}" class="col-xs-1 text-center" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
                   <span
                     class="pointer [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].display_class ]]"
                     title="Range: [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].range ]]">
@@ -95,6 +104,14 @@
                        ng-repeat="par_obs in resultView.splitObservation(resultView.lab_tests[test_name].instances.observation_series[observation_name][date].value) track by $index">
                       [[ par_obs ]]
                     </p>
+                    <span class="star-obs">
+                      <a ng-hide="resultView.lab_tests[test_name].instances.observation_series[observation_name][date].star" ng-click="resultView.starObservation.starObservation(patient.id, test_name, resultView.lab_tests[test_name].instances.lab_numbers[date], observation_name, resultView.lab_tests[test_name].instances.observation_series[observation_name][date])" class="pointer">
+                        <i class="fa fa-star-o fa-lg"></i>
+                      </a>
+                      <a ng-show="resultView.lab_tests[test_name].instances.observation_series[observation_name][date].star" ng-click="resultView.starObservation.unstarObservation(resultView.lab_tests[test_name].instances.observation_series[observation_name][date])" class="pointer">
+                        <i class="fa fa-star fa-lg"></i>
+                      </a>
+                    </span>
                   </span>
                 </td>
                 <td class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">

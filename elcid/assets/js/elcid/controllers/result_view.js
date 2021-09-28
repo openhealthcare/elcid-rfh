@@ -1,11 +1,12 @@
 angular.module('opal.controllers').controller('ResultView', function(
-    $scope, LabTestResults, ngProgressLite
+    $scope, LabTestResults, ngProgressLite, StarObservation
 ){
     "use strict";
     var vm = this;
 
     this.labTests = [];
     this.showAll = {};
+    this.starObservation = StarObservation;
 
     this.parseFloat = parseFloat;
     this.Math = window.Math;
