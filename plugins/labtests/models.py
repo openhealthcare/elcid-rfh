@@ -4,6 +4,7 @@ from django.utils.dateformat import format as dt_format
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import User
 from opal.core import serialization
 from opal import models as omodels
 
@@ -274,3 +275,32 @@ class ObservationHistory(AbstractObserveration):
         on_delete=models.CASCADE,
         related_name="observation_history"
     )
+
+
+class StarredObservation(
+    models.Model
+):
+    patient = models.ForeignKey(
+        omodels.Patient,
+        on_delete=models.CASCADE,
+    )
+    test_name = models.CharField(max_length=256, blank=True, null=True)
+    lab_number = models.CharField(max_length=256, blank=True, null=True)
+    observation_name = models.CharField(max_length=256, blank=True, null=True)
+    created_by = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Created By"
+    )
+    created = models.DateTimeField(auto_now_add=True)
+
+    def update_from_dict(self, data, user, **kwargs):
+        self.created_by = user
+        fields = [
+            "patient_id", "test_name", "lab_number", "observation_name"
+        ]
+        for field in fields:
+            setattr(self, field, data[field])
+        self.save()
