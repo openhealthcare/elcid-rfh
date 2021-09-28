@@ -96,7 +96,7 @@ def write_clinical_advice(advice):
         'patient_forename' : demographics.first_name,
         'patient_surname'  : demographics.surname,
         'event_datetime'   : advice.when,
-        'modified_datetime': None,
+        'modified_datetime': advice.when,
         'note_type'        : 'Microbiology/Virology Consult Note',
         'note_subject'     : 'elCID Testing Note',
         'note'             : get_note_text(advice)
