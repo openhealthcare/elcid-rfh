@@ -12,8 +12,10 @@ from opal.core.views import json_response
 from opal.core import serialization
 from opal.models import Patient, Tagging
 
+
 from elcid import episode_categories, patient_lists, models
-from intrahospital_api import update_demographics, loader
+from intrahospital_api import update_demographics, loader, epr
+
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
 
@@ -686,6 +688,21 @@ class AddToServiceViewSet(LoginRequiredViewset):
             'status_code': status.HTTP_202_ACCEPTED
         })
 
+class SendUpstreamViewSet(LoginRequiredViewset):
+    base_name = 'send_upstream'
+
+    @patient_from_pk
+    def update(self, request, patient):
+
+        # TODO: Cater for other subrecord write triggers
+        advice = emodels.MicrobiologyInput.objects.get(id=request.data['item_id'])
+
+        epr.write_clinical_advice(advice)
+
+        return json_response({
+            'status_code': status.HTTP_202_ACCEPTED
+        })
+
 
 elcid_router = OPALRouter()
 elcid_router.register(
@@ -703,3 +720,4 @@ lab_test_router.register('lab_test_results_view', LabTestResultsView)
 
 
 opal_router.register('add_to_service', AddToServiceViewSet)
+opal_router.register('send_upstream', SendUpstreamViewSet)
