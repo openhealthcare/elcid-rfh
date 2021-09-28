@@ -88,7 +88,7 @@ def write_clinical_advice(advice):
     demographics = patient.demographics()
 
     note_data = {
-        'elcid_version'    : get_elcid_version()
+        'elcid_version'    : get_elcid_version(),
         'note_id'          : advice.id,
         'patient_id'       : patient.23783,
         'written_by'       : advice.initials,
