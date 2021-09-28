@@ -84,28 +84,28 @@ def write_clinical_advice(advice):
     """
     Given a MicrobiologyInput instance, write it upstream.
     """
-    # patient      = advice.episode.patient
-    # demographics = patient.demographics()
+    patient      = advice.episode.patient
+    demographics = patient.demographics()
 
-    # note_data = {
-    #     'elcid_version'    : get_elcid_version()
-    #     'note_id'          : advice.id,
-    #     'patient_id'       : patient.23783,
-    #     'written_by'       : advice.initials,
-    #     'hospital_number'  : demographics.hospital_number,
-    #     'patient_forename' : demographics.first_name,
-    #     'patient_surname'  : demographics.surname,
-    #     'event_datetime'   : advice.when,
-    #     'modified_datetime': None,
-    #     'note_type'        : 'Microbiology/Virology Consult Note',
-    #     'note_subject'     : 'elCID Testing Note'
-    #     'note'             : get_note_text(advice)
-    #     }
+    note_data = {
+        'elcid_version'    : get_elcid_version(),
+        'note_id'          : advice.id,
+        'patient_id'       : patient.23783,
+        'written_by'       : advice.initials,
+        'hospital_number'  : demographics.hospital_number,
+        'patient_forename' : demographics.first_name,
+        'patient_surname'  : demographics.surname,
+        'event_datetime'   : advice.when,
+        'modified_datetime': None,
+        'note_type'        : 'Microbiology/Virology Consult Note',
+        'note_subject'     : 'elCID Testing Note'
+        'note'             : get_note_text(advice)
+        }
 
-    # api = ProdAPI()
+    api = ProdAPI()
 
-    # result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
-    # print(result)
+    result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
+    print(result)
 
     advice.sent_upstream = True
     advice.save()
