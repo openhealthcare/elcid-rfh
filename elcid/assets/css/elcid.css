@@ -569,6 +569,7 @@ div.add-isolate:hover {
 
 .star-obs {
   visibility: hidden;
+  display: none;
 }
 
 .table-striped > tbody > tr:nth-child(odd) > td.results-field.starred, .table-striped > tbody > tr:nth-child(odd) > td.results-field:hover, .results-field.starred, .results-field:hover {
@@ -577,5 +578,6 @@ div.add-isolate:hover {
 
 .table-striped > tbody > tr:nth-child(odd) > td.results-field.starred .star-obs, .table-striped > tbody > tr:nth-child(odd) > td.results-field:hover .star-obs, .results-field.starred .star-obs, .results-field:hover .star-obs {
   visibility: visible;
+  display: inline;
 }
 /*# sourceMappingURL=elcid.css.map */

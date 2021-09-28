@@ -605,6 +605,7 @@ div.add-isolate:hover{
 
 .star-obs{
   visibility: hidden;
+  display: none;
 }
 
 .table-striped > tbody > tr:nth-child(odd) > td.results-field, .results-field{
@@ -612,6 +613,7 @@ div.add-isolate:hover{
     background-color: $obsidian-light;
     .star-obs{
       visibility: visible;
+      display: inline;
     }
   }
 }
