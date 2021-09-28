@@ -98,7 +98,7 @@ def write_clinical_advice(advice):
         'event_datetime'   : advice.when,
         'modified_datetime': None,
         'note_type'        : 'Microbiology/Virology Consult Note',
-        'note_subject'     : 'elCID Testing Note'
+        'note_subject'     : 'elCID Testing Note',
         'note'             : get_note_text(advice)
         }
 
