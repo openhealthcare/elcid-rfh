@@ -7,6 +7,7 @@ from collections import defaultdict, OrderedDict
 from operator import itemgetter
 
 from django.conf import settings
+from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from rest_framework import viewsets, status
@@ -69,6 +70,30 @@ class LabTestResultsView(LoginRequiredViewset):
     patient detail page.
     """
     base_name = 'lab_test_results_view'
+
+    @cached_property
+    def starred_results_dict(self):
+        starred_obs = lab_test_models.StarredObservation.objects.filter(
+            patient_id=self.kwargs["pk"]
+        )
+        result = {}
+        for starred_ob in starred_obs:
+            key = (
+                starred_ob.test_name,
+                starred_ob.lab_number,
+                starred_ob.observation_name,
+            )
+            result[key] = starred_ob.id
+        return result
+
+    def get_starred_id(self, test, observation):
+        key = (
+            test.test_name,
+            test.lab_number,
+            observation.observation_name,
+        )
+        return self.starred_results_dict.get(key)
+
 
     def get_non_comments_for_patient(self, patient):
         """
@@ -175,6 +200,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
                     observation_names.add(name)
                     data[name][serialization.serialize_datetime(instance.datetime_ordered)] = {
+                        'star'         : self.get_starred_id(instance, observation),
                         'value'        : observation.observation_value,
                         'range'        : observation.reference_range,
                         'display_class': self.display_class_for_observation(observation)
@@ -204,7 +230,8 @@ class LabTestResultsView(LoginRequiredViewset):
                     {
                         'name' : o.observation_name.rstrip('.'),
                         'value': o.observation_value,
-                        'units': o.units
+                        'units': o.units,
+                        'star': self.get_starred_id(instance, o),
                     }
                 )
 
