@@ -53,3 +53,79 @@ class InfectionAlert(EpisodeSubrecord):
         if diff  > datetime.timedelta(days=6*30):
             return True
         return False
+
+
+class IPCStatus(EpisodeSubrecord):
+    _is_singleton = True
+    mrsa = models.BooleanField(
+        default=False, verbose_name='MRSA'
+    )
+    mrsa_date = models.DateField(
+        blank=True, null=True, verbose_name='MRSA Date'
+    )
+
+    mrsa_neg = models.BooleanField(default=False, verbose_name='MRSA Neg')
+    mrsa_neg_date = models.DateField(
+        blank=True, null=True, verbose_name='MRSA Neg Date'
+    )
+
+    reactive = models.BooleanField(default=False)
+    reactive_date = models.DateField(blank=True, null=True)
+
+    c_difficile = models.BooleanField(default=False)
+    c_difficile_date = models.DateField(blank=True, null=True)
+
+    vre = models.BooleanField(default=False, verbose_name='VRE')
+    vre_date = models.DateField(blank=True, null=True, verbose_name='VRE Date')
+
+    vre_neg = models.BooleanField(
+        default=False, verbose_name='VRE Neg'
+    )
+    vre_neg_date = models.DateField(
+        blank=True, null=True, verbose_name='VRE Neg Date'
+    )
+
+    carb_resistance = models.BooleanField(default=False)
+    carb_resistance_date = models.DateField(
+        blank=True, null=True
+    )
+
+    contact_of_carb_resistance = models.BooleanField(default=False)
+    contact_of_carb_resistance_date = models.DateField(
+        blank=True, null=True
+    )
+
+    acinetobacter = models.BooleanField(default=False)
+    acinetobacter_date = models.DateField(blank=True, null=True)
+
+    contact_of_acinetobacter = models.BooleanField(default=False)
+    contact_of_acinetobacter_date = models.DateField(blank=True, null=True)
+
+    cjd = models.BooleanField(default=False, verbose_name='CJD')
+    cjd_date = models.DateField(
+        blank=True, null=True, verbose_name='CJD Date'
+    )
+
+    candida_auris = models.BooleanField(default=False)
+    candida_auris_date = models.DateField(blank=True, null=True)
+
+    contact_of_candida_auris = models.BooleanField(default=False)
+    contact_of_candida_auris_date = models.DateField(blank=True, null=True)
+
+    multi_drug_resistant_organism = models.BooleanField(default=False)
+    multi_drug_resistant_organism_date = models.DateField(blank=True, null=True)
+
+    covid_19 = models.BooleanField(default=False, verbose_name='Covid-19')
+    covid_19_date = models.DateField(
+        blank=True, null=True, verbose_name='Covid-19 Date'
+    )
+
+    contact_of_covid_19 = models.BooleanField(
+        default=False, verbose_name='Contact of Covid-19'
+    )
+    contact_of_covid_19_date = models.DateField(
+        blank=True, null=True, verbose_name='Contact of Covid-19 Date'
+    )
+
+    other = models.CharField(default='', null=True, max_length=256)
+    other_date = models.DateField(blank=True, null=True)
