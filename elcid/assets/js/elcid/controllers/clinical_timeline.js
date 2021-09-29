@@ -61,6 +61,29 @@ angular.module('opal.controllers').controller(
           $modal.open(modal_opts);
         };
 
+        this.sendUpstream = function(item){
+          var ctrl = "SendUpstreamCtrl";
+          var templateUrl = "/templates/send_upstream_modal.html"
+
+          var callBack = function(){
+            $scope.refresh().then(function(){
+              return self.getClinicalAdvice();
+            });
+          }
+
+          var modal_opts = {
+            backdrop: 'static',
+            templateUrl: templateUrl,
+            controller: ctrl,
+            resolve: {
+                patient: function() { return $scope.patient; },
+                item: function() { return item; },
+                callBack: function(){ return callBack },
+            }
+          }
+          $modal.open(modal_opts);
+        }
+
         this.getClinicalAdviceFormObject = function(item){
           if(!item){
             item = $scope.episode.newItem("microbiology_input");

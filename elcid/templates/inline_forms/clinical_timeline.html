@@ -161,7 +161,7 @@
                   <div class="row content-offset-10" ng-hide="item.sent_upstream">
                     <div class="col-md-12">
                       <i class="fa fa-exchange edit pull-right pointer"
-                         ng-click="open_modal('SendUpstreamCtrl', '/templates/send_upstream_modal.html', {patient:patient, item:item, refresh_patient:refresh, refresh_timeline:clinicalTimeline.getClinicalAdvice})"></i>
+                         ng-click="clinicalTimeline.sendUpstream(item)"></i>
                     </div>
                   </div>
                 </div>
