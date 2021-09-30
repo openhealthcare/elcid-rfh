@@ -133,6 +133,9 @@ def load_recent_encounters():
     for encounter in encounters:
         mrn = encounter['PID_3_MRN']
 
+        if mrn == '':
+            continue
+
         if Demographics.objects.filter(hospital_number=mrn).exists():
             patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
 
