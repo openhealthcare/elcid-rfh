@@ -23,6 +23,8 @@
 </div>
 {# we add the content offset below so the lowest datepicker will always open, otherwise it has issues with the bottom of the screen #}
 <div class="content-offset-below" ng-show="editing.opat_record.accepted === true">
+  {% datepicker field="OPATRecord.accepted_date" user_options=True %}
+  {% select field="OPATRecord.indication" %}
   {% datepicker field="OPATRecord.admission_date" %}
   {% datepicker field="OPATRecord.discharge_date" %}
   {% datepicker field="OPATRecord.opat_start_date" %}
@@ -37,5 +39,6 @@
   {% select field="OPATRecord.outcome_two_years" %}
 </div>
 <span ng-show="editing.opat_record.accepted === false">
+  {% datepicker field="OPATRecord.rejected_date" user_options=True %}
   {% textarea field="OPATRecord.rejection_reason" %}
 </span>

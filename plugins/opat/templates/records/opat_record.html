@@ -1,13 +1,19 @@
-<span ng-show="item.accepted">
+<span ng-show="item.accepted === true">
    <b>Accepted
+      <span ng-show="item.accepted_date">
+         ([[ item.accepted_date|displayDate ]])
+      </span>
       <span ng-show="item.decision_making_consultant">
          by [[ item.decision_making_consultant ]]
       </span>
    </b>
    <br />
 </span>
-<span ng-hide="item.accepted">
+<span ng-show="item.accepted === false">
    <b>Rejected
+      <span ng-show="item.rejected_date">
+         ([[ item.rejected_date|displayDate ]])
+      </span>
       <span ng-show="item.decision_making_consultant">
          by [[ item.decision_making_consultant ]]
       </span>
@@ -21,6 +27,16 @@
       </b>
    </div>
    <div markdown="rejection_reason" class="col-md-7">
+   </div>
+</div>
+<div ng-show="item.indication" class="row">
+   <div class="col-md-5">
+      <b>
+         Indication
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.indication ]]
    </div>
 </div>
 

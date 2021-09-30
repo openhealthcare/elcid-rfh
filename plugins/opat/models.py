@@ -2,8 +2,13 @@
 Models for plugins.opat
 """
 from django.db import models
-from opal.core.fields import enum
+from opal.core.fields import enum, ForeignKeyOrFreeText
 from opal.models import EpisodeSubrecord
+from opal.core import lookuplists
+
+
+class OPATIndication(lookuplists.LookupList):
+    pass
 
 
 class OPATRecord(EpisodeSubrecord):
@@ -30,8 +35,11 @@ class OPATRecord(EpisodeSubrecord):
     )
 
     accepted               = models.NullBooleanField()
-    rejection_reason       = models.TextField(default="")
+    accepted_date          = models.DateField(blank=True, null=True)
+    rejected_date          = models.DateField(blank=True, null=True)
+    rejection_reason       = models.TextField(blank=True, null=True)
     decision_making_consultant = models.CharField(blank=True, null=True, max_length=256)
+    indication             = ForeignKeyOrFreeText(OPATIndication)
     referral_date          = models.DateField(blank=True, null=True)
     referral_source        = models.CharField(blank=True, null=True, max_length=256)
     admission_date         = models.DateField(blank=True, null=True)
