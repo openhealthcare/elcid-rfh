@@ -1,125 +1,121 @@
 {% load panels %}
 {% load forms %}
-<div ng-if="view === 'test_results'">
+<div ng-controller="ResultView as resultView" class="col-md-12 lab-tests">
 
-  <div ng-controller="ResultView as resultView" class="col-md-12 lab-tests">
+  <div class="panel panel-default">
+    <div class="panel-heading">
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
-
-        <div class="row">
-          <div class="col-md-9">
-            <h3>
-              Lab Tests <i class="fa fa-flask"></i>
-            </h3>
-          </div>
-          <div class="text-right col-md-3">
-            <input class="form-control" placeholder="Filter" ng-model="resultView.filterString" />
-          </div>
+      <div class="row">
+        <div class="col-md-9">
+          <h3>
+            Lab Tests <i class="fa fa-flask"></i>
+          </h3>
+        </div>
+        <div class="text-right col-md-3">
+          <input class="form-control" placeholder="Filter" ng-model="resultView.filterString" />
         </div>
       </div>
-      <!-- End Panel Header -->
+    </div>
+    <!-- End Panel Header -->
 
-      <ul class="list-group">
-        <li class="list-group-item " ng-repeat="test_name in resultView.test_order"
-            ng-show="resultView.show(test_name)">
-          <h5 class="">
-            [[ test_name ]]
-          </h5>
+    <ul class="list-group">
+      <li class="list-group-item " ng-repeat="test_name in resultView.test_order"
+          ng-show="resultView.show(test_name)">
+        <h5 class="">
+          [[ test_name ]]
+        </h5>
 
-          <div ng-if="resultView.lab_tests[test_name].long_form">
+        <div ng-if="resultView.lab_tests[test_name].long_form">
 
-            <div ng-repeat="instance in resultView.lab_tests[test_name].instances"
-                 class="row content-offset-below-10" ng-show="resultView.showAll[test_name] || $index < 11">
+          <div ng-repeat="instance in resultView.lab_tests[test_name].instances"
+                class="row content-offset-below-10" ng-show="resultView.showAll[test_name] || $index < 11">
 
-              <div class="col-md-3">
-                [[ instance.lab_number ]]
-                <br />
-                [[ instance.date | displayDateTime]]
-                <br />
-                [[ instance.site ]]
-              </div>
+            <div class="col-md-3">
+              [[ instance.lab_number ]]
+              <br />
+              [[ instance.date | displayDateTime]]
+              <br />
+              [[ instance.site ]]
+            </div>
 
-              <div class="col-md-9">
-                <div ng-class="{'starred': observation.star}" class="row long-form-results-row" ng-repeat="observation in instance.observations">
-                  <div class="col-md-4">
-                    <div class="star-obs-container">
-                      <span class="star-obs">
-                        <a ng-hide="observation.star" ng-click="resultView.starObservation.starObservation(patient.id, test_name, instance.lab_number, observation.name, observation)" class="pointer">
-                          <i class="fa fa-star-o fa-lg"></i>
-                        </a>
-                        <a ng-show="observation.star" ng-click="resultView.starObservation.unstarObservation(observation)" class="pointer">
-                          <i class="fa fa-star fa-lg"></i>
-                        </a>
-                      </span>
-                    </div>
-                    [[ observation.name ]] [[ observation.units ]]</div>
-                  <div class="col-md-8">
-                    <p class="tilde-replacement-paragraph"
-                       ng-repeat="par_obs in resultView.splitObservation(observation.value) track by $index">
-                      [[ par_obs ]]
-                    </p>
+            <div class="col-md-9">
+              <div ng-class="{'starred': observation.star}" class="row long-form-results-row" ng-repeat="observation in instance.observations">
+                <div class="col-md-4">
+                  <div class="star-obs-container">
+                    <span class="star-obs">
+                      <a ng-hide="observation.star" ng-click="resultView.starObservation.starObservation(patient.id, test_name, instance.lab_number, observation.name, observation)" class="pointer">
+                        <i class="fa fa-star-o fa-lg"></i>
+                      </a>
+                      <a ng-show="observation.star" ng-click="resultView.starObservation.unstarObservation(observation)" class="pointer">
+                        <i class="fa fa-star fa-lg"></i>
+                      </a>
+                    </span>
                   </div>
+                  [[ observation.name ]] [[ observation.units ]]</div>
+                <div class="col-md-8">
+                  <p class="tilde-replacement-paragraph"
+                      ng-repeat="par_obs in resultView.splitObservation(observation.value) track by $index">
+                    [[ par_obs ]]
+                  </p>
                 </div>
               </div>
             </div>
-
-            <div ng-show="!resultView.showAll[test_name] && resultView.lab_tests[test_name].instances.length > 10">
-              <a ng-click="resultView.toggleShowAll(test_name)"
-                 class="orange-link pointer"
-                 >
-                Show [[ resultView.lab_tests[test_name].instances.length - 10 ]] more
-              </a>
-            </div>
-
           </div>
 
-          <div ng-if="!resultView.lab_tests[test_name].long_form">
-            <table class="table table-striped">
-              <tr>
-                <th class="col-xs-3"></th> <!-- Observation name -->
-                <th class="col-xs-1"></th <!-- Reference range -->
-                <th class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
-                  <span title="[[ resultView.lab_tests[test_name].instances.lab_numbers[date] ]] [[ date ]]" class="pointer">
-                    [[ date | displayDate ]]
-                  </span>
-                </th>
-                <th class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">
-                </th>
-
-              </tr>
-
-              <tr ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
-                <td class="col-xs-3">[[ observation_name ]]</td>
-                <td class="col-xs-1">
-                  [[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]
-                  [[ resultView.lab_tests[test_name].instances.observation_units[observation_name] ]]
-                </td>
-
-                <td class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
-                  <span
-                    class="pointer [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].display_class ]]"
-                    title="Range: [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].range ]]"
-                  >
-                  <p
-                    class="tilde-replacement-paragraph"
-                    ng-repeat="par_obs in resultView.splitObservation(resultView.lab_tests[test_name].instances.observation_series[observation_name][date].value) track by $index"
-                  >
-                    [[ par_obs ]]
-                  </p>
-                  </span>
-                </td>
-                <td class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">
-                </td>
-
-              </tr>
-
-            </table>
+          <div ng-show="!resultView.showAll[test_name] && resultView.lab_tests[test_name].instances.length > 10">
+            <a ng-click="resultView.toggleShowAll(test_name)"
+                class="orange-link pointer"
+                >
+              Show [[ resultView.lab_tests[test_name].instances.length - 10 ]] more
+            </a>
           </div>
 
-        </li>
-      </ul>
-    </div>
+        </div>
+
+        <div ng-if="!resultView.lab_tests[test_name].long_form">
+          <table class="table table-striped">
+            <tr>
+              <th class="col-xs-3"></th> <!-- Observation name -->
+              <th class="col-xs-1"></th <!-- Reference range -->
+              <th class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                <span title="[[ resultView.lab_tests[test_name].instances.lab_numbers[date] ]] [[ date ]]" class="pointer">
+                  [[ date | displayDate ]]
+                </span>
+              </th>
+              <th class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">
+              </th>
+
+            </tr>
+
+            <tr ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
+              <td class="col-xs-3">[[ observation_name ]]</td>
+              <td class="col-xs-1">
+                [[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]
+                [[ resultView.lab_tests[test_name].instances.observation_units[observation_name] ]]
+              </td>
+
+              <td class="col-xs-1" ng-repeat="date in resultView.lab_tests[test_name].instances.test_datetimes | limitTo:8">
+                <span
+                  class="pointer [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].display_class ]]"
+                  title="Range: [[ resultView.lab_tests[test_name].instances.observation_series[observation_name][date].range ]]"
+                >
+                <p
+                  class="tilde-replacement-paragraph"
+                  ng-repeat="par_obs in resultView.splitObservation(resultView.lab_tests[test_name].instances.observation_series[observation_name][date].value) track by $index"
+                >
+                  [[ par_obs ]]
+                </p>
+                </span>
+              </td>
+              <td class="col-xs-1" ng-repeat="i in [].constructor(resultView.Math.max(10 - resultView.lab_tests[test_name].instances.test_datetimes.length, 0)) track by $index">
+              </td>
+
+            </tr>
+
+          </table>
+        </div>
+
+      </li>
+    </ul>
   </div>
-
-</div> <!-- Angular display div to check if this is the results view -->
+</div>

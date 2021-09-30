@@ -56,5 +56,15 @@ angular.module('opal.controllers').controller('ResultView', function(
         vm.showAll[what] = true;
     }
 
-    vm.getLabTests($scope.patient);
+    /*
+    * If the view is the result page and the tests have not
+    * loaded then load the results.
+    *
+    * After we've loaded them, cache them.
+    */
+    $scope.$watch('view', function(){
+        if(!_.size(vm.lab_tests) && $scope.view === "test_results"){
+            vm.getLabTests($scope.patient);
+        }
+    })
 });
