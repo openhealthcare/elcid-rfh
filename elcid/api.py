@@ -228,7 +228,7 @@ class LabTestResultsView(LoginRequiredViewset):
                 serialised_observations.append(
                     {
                         'name' : o.observation_name.rstrip('.'),
-                        'value': o.observation_value,
+                        'value': o.observation_value.replace("~", "\n"),
                         'units': o.units,
                         'star': self.get_starred_id(instance, o),
                     }
