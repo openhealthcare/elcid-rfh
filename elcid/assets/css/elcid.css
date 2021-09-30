@@ -567,12 +567,9 @@ div.add-isolate:hover {
   white-space: nowrap;
 }
 
-.infection-summary-row .star-obs {
-  visibility: hidden;
-}
-
-.infection-summary-row:hover .star-obs {
-  visibility: visible;
+.long-form-results-row .star-obs-container {
+  display: inline-block;
+  width: 20px;
 }
 
 .long-form-results-row .star-obs {
@@ -586,22 +583,6 @@ div.add-isolate:hover {
 
 .long-form-results-row:hover .star-obs, .long-form-results-row.starred .star-obs {
   visibility: visible;
-  display: inline;
-}
-
-.table-results-row .star-obs {
-  visibility: hidden;
-}
-
-.table-striped > tbody > tr > td.table-results-row-populated .star-obs {
-  visibility: hidden;
-}
-
-.table-striped > tbody > tr > td.table-results-row-populated:hover, .table-striped > tbody > tr > td.table-results-row-populated.starred {
-  background-color: #cbc9c8;
-}
-
-.table-striped > tbody > tr > td.table-results-row-populated:hover .star-obs, .table-striped > tbody > tr > td.table-results-row-populated.starred .star-obs {
-  visibility: visible;
+  display: inline-block;
 }
 /*# sourceMappingURL=elcid.css.map */

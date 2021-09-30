@@ -603,20 +603,11 @@ div.add-isolate:hover{
   white-space: nowrap;
 }
 
-.infection-summary-row{
-  .star-obs{
-    visibility: hidden;
-  }
-
-
-  &:hover{
-    .star-obs{
-      visibility: visible
-    }
-  }
-}
-
 .long-form-results-row{
+  .star-obs-container{
+    display: inline-block;
+    width: 20px;
+  }
   .star-obs{
     visibility: hidden;
     display: none;
@@ -626,26 +617,7 @@ div.add-isolate:hover{
 
     .star-obs{
       visibility: visible;
-      display: inline;
-    }
-  }
-}
-
-.table-results-row{
-  .star-obs{
-    visibility: hidden;
-  }
-}
-
-.table-striped > tbody > tr > td.table-results-row-populated{
-  .star-obs{
-    visibility: hidden;
-  }
-  &:hover, &.starred{
-    background-color: $obsidian-light;
-
-    .star-obs{
-      visibility: visible;
+      display: inline-block;
     }
   }
 }

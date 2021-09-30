@@ -42,22 +42,23 @@
 
               <div class="col-md-9">
                 <div ng-class="{'starred': observation.star}" class="row long-form-results-row" ng-repeat="observation in instance.observations">
-                  <div class="col-md-4">[[ observation.name ]] [[ observation.units ]]</div>
-                  <div class="col-md-5">
+                  <div class="col-md-4">
+                    <div class="star-obs-container">
+                      <span class="star-obs">
+                        <a ng-hide="observation.star" ng-click="resultView.starObservation.starObservation(patient.id, test_name, instance.lab_number, observation.name, observation)" class="pointer">
+                          <i class="fa fa-star-o fa-lg"></i>
+                        </a>
+                        <a ng-show="observation.star" ng-click="resultView.starObservation.unstarObservation(observation)" class="pointer">
+                          <i class="fa fa-star fa-lg"></i>
+                        </a>
+                      </span>
+                    </div>
+                    [[ observation.name ]] [[ observation.units ]]</div>
+                  <div class="col-md-8">
                     <p class="tilde-replacement-paragraph"
                        ng-repeat="par_obs in resultView.splitObservation(observation.value) track by $index">
                       [[ par_obs ]]
                     </p>
-                  </div>
-                  <div class="col-md-3">
-                    <span class="star-obs">
-                      <a ng-hide="observation.star" ng-click="resultView.starObservation.starObservation(patient.id, test_name, instance.lab_number, observation.name, observation)" class="pointer">
-                        <i class="fa fa-star-o fa-lg"></i>
-                      </a>
-                      <a ng-show="observation.star" ng-click="resultView.starObservation.unstarObservation(observation)" class="pointer">
-                        <i class="fa fa-star fa-lg"></i>
-                      </a>
-                    </span>
                   </div>
                 </div>
               </div>
