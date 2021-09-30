@@ -28,12 +28,16 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, file_name, *args, **options):
+
         no_hospital_number = 0
         created_patients = 0
         created_episodes = 0
+
         with open(file_name) as f:
             rows = json.load(f)
-        for row in rows:
+            count = len(rows)
+
+        for i, row in enumerate(rows):
             if not row["hospital_number"]:
                 no_hospital_number += 1
                 continue
@@ -65,7 +69,8 @@ class Command(BaseCommand):
             )
             if created:
                 created_episodes += 1
-            ipc_status = episode.ipcstatus_set.get()
+
+            ipc_status = patient.ipcstatus_set.get()
             ipc_status.comments = row["comments"]
 
             fields_to_ignore = set(demographics_fields + ["comments", "date_of_birth"])
@@ -84,6 +89,9 @@ class Command(BaseCommand):
                 setattr(ipc_status, field, True)
                 setattr(ipc_status, date_field, date_value)
             ipc_status.save()
+
+            print(f'Saved {i}/{count}')
+
         print(f'Skipped because of no hospital number: {no_hospital_number}')
         print(f'Created patients: {created_patients}')
         print(f'Created episodes: {created_episodes}')

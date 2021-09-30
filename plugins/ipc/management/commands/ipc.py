@@ -13,6 +13,7 @@ class Command(BaseCommand):
     def handle(self, *a, **k):
 
         models.InfectionAlert.objects.all().delete() # TODO Remove this
+
         ohc_user = User.objects.get(username='ohc')
 
         for test_type in lab.IPC_TESTS:
