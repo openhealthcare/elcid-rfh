@@ -200,7 +200,6 @@ class LabTestResultsView(LoginRequiredViewset):
 
                     observation_names.add(name)
                     data[name][serialization.serialize_datetime(instance.datetime_ordered)] = {
-                        'star'         : self.get_starred_id(instance, observation),
                         'value'        : observation.observation_value,
                         'range'        : observation.reference_range,
                         'display_class': self.display_class_for_observation(observation)
