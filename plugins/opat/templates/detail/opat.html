@@ -17,7 +17,8 @@
   </div>
   {% include "partials/imaging_panel.html" %}
   {% record_panel models.Allergies %}
-  {% record_panel models.Treatment %}
+  {% include "panels/opat_medication.html" %}
+  {% include "panels/non_opat_medication.html" %}
   {% record_panel models.Line %}
   {% record_panel models.OPATRecord %}
   {% include "panels/opat_panel.html" %}
