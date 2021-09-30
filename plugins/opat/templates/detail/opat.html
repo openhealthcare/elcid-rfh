@@ -3,6 +3,7 @@
 <div class="col-md-6">
 
   {% include "panels/current_opat_referral.html" %}
+  {% teams_panel %}
   {% record_panel models.SymptomComplex %}
   {% record_panel models.PastMedicalHistory %}
   {% record_panel models.PrimaryDiagnosis %}
