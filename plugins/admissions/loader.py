@@ -142,7 +142,7 @@ def load_recent_encounters():
             save_encounter(encounter, patient)
 
         else:
-            patient = create_rfh_patient_from_hospital_number(mrn, InfectionService.display_name)
+            patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
             save_encounter(encounter, patient)
 
 
