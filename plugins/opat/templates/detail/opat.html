@@ -1,7 +1,8 @@
 {% load panels %}
 {% load forms %}
 <div class="col-md-6">
-  {% record_panel models.OPATRecord %}
+
+  {% include "panels/current_opat_referral.html" %}
   {% record_panel models.SymptomComplex %}
   {% record_panel models.PastMedicalHistory %}
   {% record_panel models.PrimaryDiagnosis %}
@@ -18,7 +19,8 @@
   {% record_panel models.Allergies %}
   {% record_panel models.Treatment %}
   {% record_panel models.Line %}
-  {% record_panel models.OPATActions %}
+  {% record_panel models.OPATRecord %}
+  {% include "panels/opat_panel.html" %}
 </div>
 <div class="col-md-6">
   {% include "inline_forms/clinical_timeline.html" %}
