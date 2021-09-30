@@ -16,15 +16,8 @@
     </div>
 
     <div class="content-offset-below-20" ng-show="data.ticker.length">
-      <div class="row infection-summary-row" ng-repeat="test in data.ticker">
-        <div class="col-md-4">
-          <a ng-hide="test.star" ng-click="starObservation.starObservation(patientId, test.test_name, test.lab_number, test.observation_name, test)" class="pointer star-obs">
-            <i class="fa fa-star-o fa-lg"></i>
-          </a>
-          <a ng-show="test.star" ng-click="starObservation.unstarObservation(test)" class="pointer">
-            <i class="fa fa-star fa-lg"></i>
-          </a>
-          [[ test.date_str | displayDate ]]</div>
+      <div class="row" ng-repeat="test in data.ticker">
+        <div class="col-md-4">[[ test.date_str ]]</div>
         <div class="col-md-4">[[ test.name ]]</div>
         <div class="col-md-4">[[ test.value ]]</div>
       </div>

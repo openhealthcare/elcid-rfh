@@ -92,7 +92,7 @@ directives.directive("sparkLine", function () {
 });
 
 
-directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader, StarObservation){
+directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader){
   "use strict";
   return {
     restrict: 'A',
@@ -109,8 +109,6 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
       // js object scope(ie this)
       patientLoadStatus.load();
       scope.patientLoadStatus = patientLoadStatus;
-      scope.starObservation = StarObservation;
-      scope.patientId = episode.demographics[0].patient_id;
 
       if(!scope.patientLoadStatus.isAbsent()){
         scope.patientLoadStatus.promise.then(function(){
