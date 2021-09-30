@@ -37,7 +37,10 @@
       {% endwith %}
       <td>{{ patient.admitted }}</td>
       <td>
-        {% location_alerts patient %}
+        {% if permissions.ipc_user %}
+          {% location_alerts patient %}
+        {% endif %}
+        {% ipc_status patient.patient %}
       </td>
     </tr>
     {% endfor %}
