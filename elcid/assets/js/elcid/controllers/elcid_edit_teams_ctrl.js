@@ -11,7 +11,7 @@ angular
 			$scope.editing = {tagging: episode.tagging[0].makeCopy()}
 			var categorySlug = episode.category_name.toLowerCase().replaceAll(" ", "_")
 			var url = "/elcid/v0.1/tags_for_category/" + categorySlug + '/';
-			$http.get(url).then(function(response){
+			$http({cache: true, url: url, method: 'GET'}).then(function(response){
 				Metadata.load().then(function(metadata){
 					_.each($scope.editing.tagging, function (value, key) {
 						if(value && key !== 'id' && !key.startsWith("_")){
