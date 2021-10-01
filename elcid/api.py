@@ -1,14 +1,11 @@
 """
 API endpoints for the elCID application
 """
-import datetime
-import re
 from collections import defaultdict, OrderedDict
-from operator import itemgetter
-
 from django.conf import settings
-from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
+from opal.core.episodes import EpisodeCategory
+from opal.core.patient_lists import TaggedPatientList
 from rest_framework import viewsets, status
 from opal.core.api import router as opal_router
 from opal.core.api import (
@@ -16,7 +13,7 @@ from opal.core.api import (
 )
 from opal.core.views import json_response
 from opal.core import serialization
-from opal.models import Episode, Tagging
+from opal.models import Tagging
 
 from elcid import patient_lists
 from intrahospital_api import loader
@@ -599,7 +596,6 @@ class BloodCultureIsolateApi(SubrecordViewSet):
         )
 
 
-
 class AddToServiceViewSet(LoginRequiredViewset):
     base_name = 'add_to_service'
 
@@ -611,12 +607,33 @@ class AddToServiceViewSet(LoginRequiredViewset):
         })
 
 
+class TagsForCategory(LoginRequiredViewset):
+    """
+    An api end point that returns the tags that an
+    episode category can use
+    """
+    base_name = 'tags_for_category'
+    lookup_field = 'slug'
+
+    def retrieve(self, request, slug):
+        episode_category = EpisodeCategory.get(
+            slug
+        )
+        result = []
+        for patient_list in TaggedPatientList.for_user(request.user):
+            list_category = getattr(patient_list, 'episode_category', None)
+            if list_category and list_category == episode_category:
+                result.append(patient_list.tag)
+        return json_response(result)
+
+
 elcid_router = OPALRouter()
 elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
+elcid_router.register(TagsForCategory.base_name, TagsForCategory)
 
 lab_test_router = OPALRouter()
 lab_test_router.register(
