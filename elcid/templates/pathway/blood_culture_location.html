@@ -1,18 +1,10 @@
-{% load forms %}
+  {% load forms %}
 <form class="form-horizontal">
   <div class="form-group">
-    {% select field="Location.hospital" %}
-    <section ng-show="editing.location.hospital != 'RNOH' ">
-      {% input field="Location.ward" %}
-    </section>
-    <section ng-show="editing.location.hospital == 'RNOH'">
-      {% select field="Location.ward" lookuplist="metadata.rnoh_wards" %}
-    </section>
-    {% input field="Location.bed" %}
-    {% input field="Location.consultant" %}
+    {% include models.Location.get_form_template %}
     <div class="form-group form-horizontal">
       <label class="control-label col-sm-3">
-        Teams
+      Teams
       </label>
       <div class="col-sm-8">
         <ui-select multiple ng-model="value" on-remove="onRemove($item, $model)" on-select="onSelect($item, $model)" theme="bootstrap">

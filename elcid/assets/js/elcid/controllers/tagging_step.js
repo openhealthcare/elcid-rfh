@@ -3,9 +3,8 @@ angular.module('opal.controllers').controller('TaggingStepCtrl',
       "use strict";
 
       var INFECTION_SERVICE = "infection_service";
-      var RNOH = "rnoh"
 
-      scope.categorySlug = INFECTION_SERVICE
+      scope.categorySlug = INFECTION_SERVICE;
 
       scope.init = function(){
         scope.value = [];
@@ -15,13 +14,12 @@ angular.module('opal.controllers').controller('TaggingStepCtrl',
         $http({cache: true, url: url, method: 'GET'}).then(function(response){
           _.each(scope.editing.tagging, function (value, key) {
             if(value && key !== 'id' && !key.startsWith("_")){
-              scope.value.push(metadata.tags[key]);
+              scope.value.push(scope.metadata.tags[key]);
             }
           });
           _.each(response.data, function(tagSlug){
-            scope.tagsList.push(metadata.tags[tagSlug])
+            scope.tagsList.push(scope.metadata.tags[tagSlug])
           });
-          loading = false;
         })
       }
 
@@ -32,21 +30,6 @@ angular.module('opal.controllers').controller('TaggingStepCtrl',
       scope.onSelect = function($item, $modal){
         scope.editing.tagging[$modal] = true;
       }
-
-      scope.$watch('editing.location.hospital', function(){
-        if(scope.editing.location.hospital === 'RNOH'){
-          if(scope.categorySlug !== RNOH){
-            scope.categorySlug = RNOH;
-            scope.init();
-          }
-        }
-        else{
-          if(scope.categorySlug !== INFECTION_SERVICE){
-            scope.categorySlug = INFECTION_SERVICE;
-            scope.init();
-          }
-        }
-      });
 
       scope.init();
   }
