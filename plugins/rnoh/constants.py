@@ -12,13 +12,11 @@ GROUPED_WARD_NAMES = [
     'JUB',
     'PPU',
     'COX',
-    'New-Results',
-    'Reference-Lab',
-    'Jobs',
 
 ]
 
 INDIVIDUAL_WARD_NAMES = [
+    'Outstanding',
     'MDT-Spinal',
     'MDT-JRU',
     'MDT-LRU',
