@@ -131,3 +131,6 @@ class IPCStatus(PatientSubrecord):
 
     other = models.CharField(default='', null=True, max_length=256)
     other_date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'IPC Portal Status'
