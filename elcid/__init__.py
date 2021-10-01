@@ -51,11 +51,11 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/general_delete.js',
         'js/elcid/controllers/remove_patient_step.js',
         'js/elcid/controllers/add_to_service.js',
+        'js/elcid/controllers/elcid_edit_teams_ctrl.js',
         'js/elcid/services/demographics_search.js',
         'js/elcid/controllers/tagging_step.js',
         'js/elcid/controllers/investigations.js',
         'js/elcid/controllers/add_antifungal_patients.js',
-
         'js/elcid/services/blood_culture_isolate.js',
         'js/elcid/services/clinical_advice.js',
         'js/elcid/services/blood_culture_loader.js',
