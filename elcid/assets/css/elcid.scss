@@ -621,6 +621,7 @@ div.add-isolate:hover{
 }
 
 
+
 .relative{
   position: relative;
 }
@@ -638,4 +639,28 @@ div.add-isolate:hover{
   padding-left: 10px;
   padding-right: 10px;
   color: darken($bg, 20%);
+
+}
+
+.long-form-results-row{
+    .fa-star{
+        color: $green;
+    }
+  .star-obs-container{
+    display: inline-block;
+    width: 20px;
+  }
+  .star-obs{
+    visibility: hidden;
+    display: none;
+  }
+  &:hover, &.starred{
+      background-color: lighten($obsidian-light, 16%);
+
+    .star-obs{
+      visibility: visible;
+      display: inline-block;
+    }
+  }
+
 }
