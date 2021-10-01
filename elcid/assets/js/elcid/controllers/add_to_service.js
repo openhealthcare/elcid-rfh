@@ -5,7 +5,7 @@ angular.module('opal.controllers').controller(
         $scope.patient        = patient;
         $scope.detail_refresh = refresh;
 
-        var ADDABLE = ['TB', 'COVID-19']
+        var ADDABLE = ['TB', 'COVID-19', 'RNOH', 'OPAT']
 
         var current_categories = _.pluck(patient.episodes, "category_name")
 

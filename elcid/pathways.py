@@ -1,17 +1,24 @@
+"""
+Pathways for the RFH elCID application
+"""
 import datetime
-from intrahospital_api import loader
-from intrahospital_api import constants
-from elcid import models
-from elcid.episode_categories import InfectionService
+
 from django.db import transaction
 from django.conf import settings
-
 from opal.core.pathway.pathways import (
     RedirectsToPatientMixin,
     Step,
     PagePathway,
     WizardPathway,
 )
+
+
+from intrahospital_api import loader
+from intrahospital_api import constants
+from plugins.rnoh.episode_categories import RNOHEpisode
+
+from elcid import models
+from elcid.episode_categories import InfectionService
 
 
 class IgnoreDemographicsMixin(object):
@@ -83,14 +90,29 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
     @transaction.atomic
     def save(self, data, user, patient=None, episode=None):
         """
-            If the patient already exists and has an infectious service
-            episode. Update that episode.
+        If the patient already exists and has an infectious service
+        episode, Update that episode
 
-            Else if the patient already exists, create a new episode.
+        If the patient is recorded as being at RNOH, create an RNOH episode
 
-            Else if the patient doesn't exist load in the patient.
+        Else if the patient already exists, create a new episode.
+
+        Else if the patient doesn't exist load in the patient.
         """
+
+        hospital = data['location'][0]['hospital']
+
+
         if patient:
+            if hospital == 'RNOH':
+                rnoh_episode =  patient.episode_set.filter(
+                    category_name=RNOHEpisode.display_name
+                ).last()
+                if rnoh_episode:
+                    return super(AddPatientPathway, self).save(
+                        data, user=user, patient=patient, episode=rnoh_episode
+                    )
+
             infectious_episode = patient.episode_set.filter(
                 category_name=InfectionService.display_name
             ).last()
@@ -106,6 +128,14 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         # there should always be a new episode
         saved_episode.start = datetime.date.today()
         saved_episode.save()
+
+
+        if hospital == 'RNOH':
+            # Move the location data to an RNOH episode,
+            # create a background infection episode
+            saved_episode.category_name = RNOHEpisode.display_name
+            saved_episode.save()
+            saved_patient.create_episode(category_name=InfectionService.display_name)
 
         # if the patient its a new patient and we have
         # got their demographics from the upstream api service

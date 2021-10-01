@@ -1,0 +1,44 @@
+{% load forms %}
+
+{% input field="OPATRecord.decision_making_consultant" %}
+{% datepicker field="OPATRecord.referral_date" %}
+{% input field="OPATRecord.referral_source" %}
+
+<div class="form-group">
+  <label class="control-label col-sm-3">
+    Referral Accepted
+  </label>
+  <div class="col-sm-8">
+    <div ng-controller="CleanRecordCtrl as cleanRecordCtrl" class="row content-offset-below-20">
+      <div class="col-md-12">
+        <button type="button" ng-change="cleanRecordCtrl.clean(editing.opat_record, ['accepted', 'decision_making_consultant', 'referral_date', 'referral_source'])" class="btn btn-primary" ng-model="editing.opat_record.accepted" uib-btn-checkbox btn-checkbox-true="true" btn-checkbox-false="null">
+          Accepted
+        </button>
+        <button type="button" ng-change="cleanRecordCtrl.clean(editing.opat_record, ['accepted', 'decision_making_consultant', 'referral_date', 'referral_source'])" class="btn btn-primary content-offset-left-10" ng-model="editing.opat_record.accepted" uib-btn-checkbox btn-checkbox-true="false" btn-checkbox-false="null">
+          Rejected
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{# we add the content offset below so the lowest datepicker will always open, otherwise it has issues with the bottom of the screen #}
+<div class="content-offset-below" ng-show="editing.opat_record.accepted === true">
+  {% datepicker field="OPATRecord.accepted_date" user_options=True %}
+  {% select field="OPATRecord.indication" %}
+  {% datepicker field="OPATRecord.admission_date" %}
+  {% datepicker field="OPATRecord.discharge_date" %}
+  {% datepicker field="OPATRecord.opat_start_date" %}
+  {% datepicker field="OPATRecord.opat_end_date" %}
+  {% select field="OPATRecord.administration" %}
+  {% select field="OPATRecord.supply" %}
+  {% datepicker field="OPATRecord.outcome_early_date" %}
+  {% select field="OPATRecord.outcome_early" %}
+  {% datepicker field="OPATRecord.outcome_one_year_date" %}
+  {% select field="OPATRecord.outcome_one_year" %}
+  {% datepicker field="OPATRecord.outcome_two_years_date" %}
+  {% select field="OPATRecord.outcome_two_years" %}
+</div>
+<span ng-show="editing.opat_record.accepted === false">
+  {% datepicker field="OPATRecord.rejected_date" user_options=True %}
+  {% textarea field="OPATRecord.rejection_reason" %}
+</span>
