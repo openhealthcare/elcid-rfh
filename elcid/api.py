@@ -461,8 +461,6 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
         return ticker
 
-<<<<<<< HEAD
-=======
     def get_covid_ticker(self, patient):
         """
         Get the covid ticker, add the property
@@ -478,7 +476,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
             t["observation_name"] = t["name"]
         return ticker
 
->>>>>>> starred-obs
+
     def get_ticker_observations(self, patient):
         """
         Some results are displayed as a ticker in chronological

@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from opal.core.api import LoginRequiredViewset
 from opal.models import Patient
 from opal.core.views import json_response
-
 from elcid.api import InfectionServiceTestSummaryApi as InfectionServiceTestSummaryAPI
 
 from plugins.imaging.models import Imaging
