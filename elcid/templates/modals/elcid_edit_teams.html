@@ -3,9 +3,21 @@
 
 {% block icon_name %}fa fa-users{% endblock %}
 {% block title %}
-Change Teams
+Change Teams ([[ episode.demographics[0].first_name ]] [[ episode.demographics[0].surname ]])
 {% endblock %}
 {% block modal_body %}
-<form class="form-horizontal">
-</form>
+<div class="form-group form-horizontal">
+  <label class="control-label col-sm-3">
+    Teams
+  </label>
+  <div class="col-sm-8">
+    <ui-select multiple ng-model="value" on-remove="onRemove($item, $model)" on-select="onSelect($item, $model)" theme="bootstrap">
+      <ui-select-match>[[ $item.display_name ]]</ui-select-match>
+      <ui-select-choices repeat="i.name as i in tagsList | filter:$select.search" value="[[ $select.selected.name ]]">
+        <div ng-bind-html="i.display_name | highlight: $select.search"></div>
+      </ui-select-choices>
+    </ui-select>
+  </div>
+</div>
+
 {% endblock %}

@@ -9,6 +9,7 @@ from operator import itemgetter
 from django.conf import settings
 from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
+from opal.core.episodes import EpisodeCategory
 from rest_framework import viewsets, status
 from opal.core.api import router as opal_router
 from opal.core.api import (
@@ -599,7 +600,6 @@ class BloodCultureIsolateApi(SubrecordViewSet):
         )
 
 
-
 class AddToServiceViewSet(LoginRequiredViewset):
     base_name = 'add_to_service'
 
@@ -611,12 +611,27 @@ class AddToServiceViewSet(LoginRequiredViewset):
         })
 
 
+class TagsForCategory(LoginRequiredViewset):
+    """
+    An api end point that returns the tags that an
+    episode category can use
+    """
+    base_name = 'tags_for_category'
+    lookup_field = 'slug'
+
+    def retrieve(self, request, slug):
+        return json_response([
+            "acute", "antifungal", "bacteraemia"
+        ])
+
+
 elcid_router = OPALRouter()
 elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
+elcid_router.register(TagsForCategory.base_name, TagsForCategory)
 
 lab_test_router = OPALRouter()
 lab_test_router.register(
