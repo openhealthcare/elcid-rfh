@@ -33,6 +33,10 @@ body {
   margin-top: 25px;
 }
 
+.content-offset-left-10 {
+  margin-left: 10px;
+}
+
 .bg-primary {
   background-color: #0091C9;
 }
