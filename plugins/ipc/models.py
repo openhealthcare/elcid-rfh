@@ -6,7 +6,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from opal.core.fields import enum
-from opal.models import EpisodeSubrecord
+from opal.models import EpisodeSubrecord, PatientSubrecord
 
 from plugins.labtests import models as lab_test_models
 
@@ -55,8 +55,10 @@ class InfectionAlert(EpisodeSubrecord):
         return False
 
 
-class IPCStatus(EpisodeSubrecord):
+class IPCStatus(PatientSubrecord):
+
     _is_singleton = True
+
     mrsa = models.BooleanField(
         default=False, verbose_name='MRSA'
     )
@@ -129,3 +131,6 @@ class IPCStatus(EpisodeSubrecord):
 
     other = models.CharField(default='', null=True, max_length=256)
     other_date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'IPC Portal Status'
