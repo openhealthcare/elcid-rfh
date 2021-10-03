@@ -7,6 +7,8 @@ Creates IPC Status for them all.
 import json
 import datetime
 from plugins.ipc.models import IPCStatus
+from django.contrib.auth.models import User
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 from opal.models import Patient
 from plugins.ipc import episode_categories
@@ -31,6 +33,7 @@ class Command(BaseCommand):
         no_hospital_number = 0
         created_patients = 0
         created_episodes = 0
+        ohc = User.objects.filter(username='ohc').first()
         with open(file_name) as f:
             rows = json.load(f)
         for row in rows:
@@ -67,6 +70,9 @@ class Command(BaseCommand):
                 created_episodes += 1
             ipc_status = episode.ipcstatus_set.get()
             ipc_status.comments = row["comments"]
+            if not ipc_status.created:
+                ipc_status.created = timezone.now()
+                ipc_status.created_by = ohc
 
             fields_to_ignore = set(demographics_fields + ["comments", "date_of_birth"])
             model_fields = set(i.name for i in IPCStatus._meta.get_fields())
