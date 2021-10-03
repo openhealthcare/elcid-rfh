@@ -24,6 +24,20 @@ class Appointment(models.Model):
 
     Our table becomes a filtered subset of the upstream database.
     """
+
+    # status codes
+    CHECKED_IN = 'Checked In'
+    CHECKED_OUT = 'Checked Out'
+
+    NO_SHOW = 'No Show'
+    RESCHEDULED = 'Rescheduled'
+    CANCELED = 'Canceled'
+
+    SCHEDULED = 'Scheduled'
+    CONFIRMED = 'Confirmed'
+
+    HOLD = 'Hold'
+
     # We link the upstream data to our system via a single foreign key to the
     # Patient object. In practice we take the MRN fields and match them
     # with patient.demographics().hospital_number
