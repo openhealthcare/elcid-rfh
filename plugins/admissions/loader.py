@@ -138,9 +138,15 @@ def load_excounters_since(timestamp):
         if patients:
             for patient in patients:
                 save_encounter(encounter, patient)
+                patient.patientencounterstatus_set.update(
+                    has_encounters=True
+                )
         else:
             patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
             save_encounter(encounter, patient)
+            patient.patientencounterstatus_set.update(
+                has_encounters=True
+            )
 
 
 def load_transfer_history():
