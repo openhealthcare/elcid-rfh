@@ -58,6 +58,7 @@ class InfectionAlert(EpisodeSubrecord):
 class IPCStatus(PatientSubrecord):
 
     _is_singleton = True
+    _icon = 'fa fa-list-ul'
 
     mrsa = models.BooleanField(
         default=False, verbose_name='MRSA'

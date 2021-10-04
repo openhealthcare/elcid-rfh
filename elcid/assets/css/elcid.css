@@ -17,6 +17,10 @@ body {
   margin-top: 30px;
 }
 
+.content-offset-150 {
+  margin-top: 150px;
+}
+
 .content-offset-5 {
   margin-top: 5px;
 }

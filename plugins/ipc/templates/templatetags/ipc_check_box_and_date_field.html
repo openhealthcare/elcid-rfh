@@ -2,15 +2,15 @@
   <label class="control-label col-sm-3"> {{ label }}</label>
   <div class="col-sm-2" >
     <div class="btn-group">
-      <label class="btn btn-primary" ng-model="{{ field }}" uib-btn-radio="true">Yes</label>
-      <label class="btn btn-primary" ng-model="{{ field }}" uib-btn-radio="undefined">No</label>
+      <label class="btn btn-primary" ng-model="{{ model }}" uib-btn-radio="true">Yes</label>
+      <label class="btn btn-primary" ng-model="{{ model }}" uib-btn-radio="false">No</label>
     </div>
   </div>
   <div class="col-sm-5" >
     <div class="input-group">
       <input type="text" class="form-control"
               uib-datepicker-popup="dd/MM/yyyy"
-              ng-model="{{ model }}"
+              ng-model="{{ date_model }}"
               is-open="{{ formname }}['{{ date_field }}' + '_open']"
               min-date="{{ mindate}}"
               max-date="maxDate"
@@ -22,8 +22,8 @@
               close-text="Close"
         />
         <span class="input-group-btn">
-          <button type="button" class="btn btn-default" ng-click="{{ model }} = dateHelper.now()" href="">Today</a>
-          <button type="button" class="btn btn-default" ng-click="{{ model }} = dateHelper.yesterday()" href="">Yesterday</a>
+          <button type="button" class="btn btn-default" ng-click="{{ date_model }} = dateHelper.now()" href="">Today</a>
+          <button type="button" class="btn btn-default" ng-click="{{ date_model }} = dateHelper.yesterday()" href="">Yesterday</a>
         </span>
       </div>
   </div>
