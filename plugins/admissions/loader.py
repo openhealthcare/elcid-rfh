@@ -131,16 +131,15 @@ def load_recent_encounters():
         params={'timestamp': timestamp}
     )
     for encounter in encounters:
-        mrn = encounter['PID_3_MRN']
+        mrn = encounter['PID_3_MRN'].strip()
 
         if mrn == '':
             continue
 
-        if Demographics.objects.filter(hospital_number=mrn).exists():
-            patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
-
-            save_encounter(encounter, patient)
-
+        patients = Patient.objects.filter(demographics__hospital_number=mrn)
+        if patients:
+            for patient in patients:
+                save_encounter(encounter, patient)
         else:
             patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
             save_encounter(encounter, patient)
