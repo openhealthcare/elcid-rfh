@@ -14,6 +14,7 @@ from django.conf import settings
 from plugins.appointments.models import Appointment
 from plugins.labtests.models import Observation
 from plugins.imaging.models import Imaging
+from plugins.admissions.models import Encounter
 from elcid.models import MasterFileMeta
 from intrahospital_api import logger
 
@@ -89,6 +90,22 @@ def check_feeds():
         )
         errors.append(f"No patient information loaded since {crs_last_updated_str}")
     table_ctx["Last CRS masterfile updated"] = crs_master_file_last_updated
+    if len(errors):
+        title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
+        send_email(title, table_ctx)
+
+    # Check Admissions
+    encounter_last_updated = Encounter.objects.aggregate(
+        last_updated=Max("last_updated")
+    )["last_updated"]
+    if not encounter_last_updated.date() == today:
+        encounter_last_updated_str = encounter_last_updated.strftime(
+            str_format
+        )
+        errors.append(
+            f"No encounter information loaded since {encounter_last_updated_str}"
+        )
+    table_ctx["Last encounter updated"] = encounter_last_updated
     if len(errors):
         title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
         send_email(title, table_ctx)
