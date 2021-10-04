@@ -411,3 +411,67 @@ def update_patient_information_since(last_updated):
     logger.info(f"patient information: patients found {number_of_patients_found}")
     logger.info(f"patient information: patients updated {len(new_master_files)}")
     return len(new_master_files)
+
+
+def async_find_patient_upstream(
+    number=None, date_of_birth=None, surname=None
+):
+    from intrahospital_api import tasks
+    return tasks.search_upstream_demographics.delay(
+        number=number, date_of_birth=date_of_birth, surname=surname
+    ).id
+
+
+def find_patient_upstream(
+    number=None, date_of_birth=None, surname=None
+):
+    if number:
+        return demographics_search(
+            hospital_number=number,
+            nhs_number=number,
+            conjunction='OR'
+        )
+    return demographics_search(
+        date_of_birth=date_of_birth,
+        surname=surname
+    )
+
+
+def demographics_search(conjunction='AND', **kwargs):
+    """
+    Allows searching by named arguments
+    expects 'hospital_number', 'nhs_number', 'surname'
+    or 'date_of_birth'
+
+    hospital number and surname are searched
+    case insensitively.
+
+    By default its an 'AND' query, but conjunction
+    can be changed to 'OR'
+    """
+    if kwargs is None:
+        raise ValueError('Demographics search expects arguments')
+    query_args = []
+    if kwargs.get('hospital_number'):
+        query_args.append("(UPPER(PATIENT_NUMBER) = UPPER(@hospital_number))")
+    if kwargs.get('nhs_number'):
+        query_args.append("(NHS_NUMBER = @nhs_number)")
+    if kwargs.get('surname'):
+        query_args.append("(UPPER(SURNAME) = UPPER(@surname))")
+    if kwargs.get('date_of_birth'):
+        query_args.append("(DOB = @date_of_birth)")
+    clauses = f" {conjunction } ".join(
+        query_args
+    )
+    query = "SELECT PATIENT_NUMBER, NHS_NUMBER, SURNAME, FORENAME1, DOB FROM VIEW_CRS_Patient_Masterfile WHERE " + clauses
+    query_result = api.execute_hospital_query(query, params=kwargs)
+    result = []
+    for row in query_result:
+        result.append({
+            "hospital_number": row["PATIENT_NUMBER"],
+            "nhs_number": row["NHS_NUMBER"],
+            "surname": row["SURNAME"],
+            "first_name": row["FORENAME1"],
+            "date_of_birth": row["DOB"]
+        })
+    return result

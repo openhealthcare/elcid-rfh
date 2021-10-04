@@ -1,0 +1,86 @@
+{% extends "tb/base.html" %}
+{% load elcid_panels %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-6">
+        <h1>{{ request.GET.site }} TB MDT</h1>
+        <p class="content-offset-below-10">{{ rows | length }} patients with a positive test in the last week</p>
+      </div>
+      <div class="col-md-5 text-right content-offset-25">
+        <div class="btn-group" role="group">
+          <a
+            href="/#{% url 'tb_beta_mdt' site=view.RFH %}"
+            class="btn btn-primary {% if view.kwargs.site == view.RFH %}active{% endif %}"
+          >
+            RFH
+          </a>
+          <a
+            href="/#{% url 'tb_beta_mdt' site=view.BARNET %}"
+            class="btn btn-primary {% if view.kwargs.site == view.BARNET %}active{% endif %}"
+          >
+            Barnet
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th class="col-md-3">Patient</th>
+        <th class="col-md-5">Lab tests</th>
+        <th class="col-md-4">Notes</th>
+      </tr>
+    {% for row in rows %}
+      <tr>
+        <td>
+          {% if row.episode %}
+          <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+          {{ row.demographics.date_of_birth }}
+          <br>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% else %}
+          <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+          </a>
+            {{ row.demographics.sex }} {{ row.demographics.get_age }}
+          {% endif %}
+        </td>
+        <td>
+          {% for test in row.tests %}
+          <div class="row content-offset-below-10">
+            <div class="col-md-5">
+              {% ifchanged test.key %}
+                {{ test.observation_datetime.date }} {{ test.lab_number }}
+                <br>{{ test.test_name }}
+              {% endifchanged %}
+            </div>
+            <div class="col-md-7 tb-mdt-row">
+              {% for obs_value, is_negative in test.obs %}
+                {% if is_negative %}
+                <span class="text-muted">
+                {{ obs_value|linebreaks }}
+                </span>
+                {% else %}
+                {{ obs_value|linebreaks }}
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </td>
+        <td>
+          {{ row.mdt_note.when }}
+          {{ row.mdt_note.initials }}
+          {{ row.mdt_note.plan  | linebreaks }}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

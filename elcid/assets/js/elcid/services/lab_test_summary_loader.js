@@ -7,7 +7,7 @@ angular.module('opal.services').factory('LabTestSummaryLoader', function($q, $ht
     var load = function(patientId){
       var deferred = $q.defer();
       var patientUrl = url + '' + patientId + '/';
-      $http({ cache: true, url: patientUrl, method: 'GET'}).then(function(response) {
+      $http.get(patientUrl).then(function(response) {
           deferred.resolve(response.data);
       }, function() {
           console.error("unable to load in the infection_service_summary_api");

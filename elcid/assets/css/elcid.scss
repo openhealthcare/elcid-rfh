@@ -56,6 +56,10 @@ body{
     margin-top: 25px;
 }
 
+.content-offset-left-10{
+  margin-left: 10px;
+}
+
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
 
@@ -232,6 +236,10 @@ a.list-group-item {
 
 .btn-text-wrap{
   white-space: normal;
+}
+
+.border-right{
+  border-right: 1px solid $obsidian-light;
 }
 
 .patient-timeline-discussion{
@@ -589,6 +597,15 @@ div.add-isolate:hover{
 }
 
 
+
+.navbar li .services-dropdown-item a{
+    padding: 16px;
+}
+
+.navbar-nav li.dropdown:hover a {
+    background: transparent;
+
+}
 .panel-heading.patient-detail-heading{
    position: fixed;
    width: 100%;
@@ -613,4 +630,47 @@ div.add-isolate:hover{
   padding-right: 12px;
   padding-bottom: 7.8px;
   padding-left: 12px;
+}
+
+.relative{
+  position: relative;
+}
+
+.hr-text-container{
+  text-align: center;
+  font-size: 18px;
+  top: -13px;
+  width: 100%;
+  position: absolute;
+}
+.hr-text{
+  display: inline-block;
+  background-color: $white;
+  padding-left: 10px;
+  padding-right: 10px;
+  color: darken($bg, 20%);
+
+}
+
+.long-form-results-row{
+    .fa-star{
+        color: $green;
+    }
+  .star-obs-container{
+    display: inline-block;
+    width: 20px;
+  }
+  .star-obs{
+    visibility: hidden;
+    display: none;
+  }
+  &:hover, &.starred{
+      background-color: lighten($obsidian-light, 16%);
+
+    .star-obs{
+      visibility: visible;
+      display: inline-block;
+    }
+  }
+
 }

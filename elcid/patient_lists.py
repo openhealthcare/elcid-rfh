@@ -72,14 +72,6 @@ class Antifungal(RfhPatientList, TaggedPatientList):
     schema = []
 
 
-class RnohWardround(RfhPatientList, TaggedPatientList):
-    display_name = 'RNOH Ward Round'
-    direct_add = True
-    tag = "rnoh_wardround"
-    template_name = 'episode_list.html'
-    schema = []
-
-
 class Hepatobiliary(RfhPatientList, TaggedPatientList):
     display_name  = 'Hepatobiliary Service'
     direct_add    = True

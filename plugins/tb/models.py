@@ -301,6 +301,7 @@ class Treatment(models.Treatment):
     category = fields.CharField(blank=True, null=True, max_length=255)
 
     TB = "tb"
+    OPAT = 'opat'
 
 
 class TBHistory(models.PatientSubrecord):
@@ -885,3 +886,19 @@ class TBPCR(AbstractTBObservation):
 
 
 TB_OBS = (TBPCR, AFBRefLab, AFBCulture, AFBSmear)
+
+
+class ObservationEvent(fields.Model):
+    PCR_POSITIVE = "pcr_positive"
+    SMEAR_POSITIVE = "smear_positive"
+    CULTURE_POSITIVE = "culture_positive"
+
+    patient = fields.ForeignKey(
+        models.Patient,
+        on_delete=fields.CASCADE,
+    )
+    test_name = fields.CharField(max_length=256)
+    lab_number = fields.CharField(max_length=256)
+    event = fields.CharField(max_length=256)
+    reported = fields.DateTimeField()
+    created = fields.DateTimeField(auto_now_add=True)

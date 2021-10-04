@@ -1,34 +1,58 @@
 {% load forms %}
-<div class="row" ng-if="state == 'initial'">
-    <div class="col-sm-8">
-      <h4>Hospital number</h4>
-      <input required autofocus class="form-control" type="text"
-             ng-model="demographics.hospital_number"
-             ng-keypress="$event.keyCode == 13 && lookup_hospital_number()"
-             />
-      <br />
-      <button class="btn btn-lg btn-primary" ng-click="lookup_hospital_number()">
-        <i class="fa fa-search"></i>
-        Search
-      </button>
-      <br />
-      <p>
-        If we already have your patient on the system, we can pull their
-        details for you
-      </p>
-    </div>
-</div>
 
-<!-- Editing demographics state -->
-<div class="row" ng-if="state == 'editing_demographics'">
+{# INITIAL STATE #}
+<div class="row" ng-show="state === states.INITIAL">
   <div class="col-md-12">
+    <p class="lead">
+      If we already have your patient on the system, we can pull their
+      details for you
+    </p>
     <div class="row">
-      <div class="col-md-12 text-center">
-        <p class="lead">
-          Unable to find a patient with the hospital number [[ demographics.hospital_number ]]. Add now:
-        </p>
+      <div class="col-md-6">
+        <h4>Hospital number or NHS number</h4>
+        <input autofocus class="form-control" type="text"
+             ng-model="searchQuery.number"
+             ng-keypress="$event.keyCode == 13 && search()"
+             />
       </div>
     </div>
+  <div class="relative">
+    <hr>
+    <div class="hr-text-container">
+      <div class="hr-text">Or</div>
+    </div>
+  </div>
+    <div class="row">
+      <div class="col-md-12">
+        <h4>Surname and date of birth</h4>
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-6 form-horizontal">
+        <input class="form-control" type="text" ng-change="disableSearchButton()" ng-model="searchQuery.surname">
+      </div>
+      <div class="col-md-4">
+        <input class="form-control" type="text" ng-model="dateOfBirthString" ng-change="setDate()" placeholder="DD/MM/YYYY">
+        <span class="help-block" ng-show="dateError">
+          [[ dateError ]]
+        </span>
+      </div>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12 text-center">
+        <button class="btn btn-lg btn-primary" ng-disabled="searchButtonDisabled" ng-click="search()">
+          <span ng-show="searching">
+            <i class="fa fa-spinner fa-spin"></i>
+            Searching
+          </span>
+          <span ng-hide="searching">
+            <i class="fa fa-search"></i>
+            Search
+          </span>
+        </button>
+      </div>
+    </div>
+
     <form class="form-horizontal">
       <div class="form-group">
         <label class="control-label col-sm-3">Hospital #</label>
@@ -36,77 +60,142 @@
           [[ demographics.hospital_number ]]
         </label>
       </div>
+      {% input field="Demographics.nhs_number" model="demographics.nhs_number" %}
       {% input "autofocus" field="Demographics.first_name" model="demographics.first_name" %}
       {% input field="Demographics.surname" model="demographics.surname" %}
       {% date_of_birth_field model_name="demographics.date_of_birth" %}
       {% select field="Demographics.sex" model="demographics.sex" %}
     </form>
+
   </div>
 </div>
-<span ng-if="state === 'has_demographics'">
-  <div class="row">
-    <div class="col-sm-7">
-      <div class="row">
-        <div class="col-md-12">
+
+{# PATIENT_LIST #}
+<div class="row" ng-show="state === states.PATIENT_LIST">
+  <div class="col-md-6 border-right">
+    <div class="row">
+      <div class="col-md-10">
+        <span ng-show="patientList.length">
           <p class="lead">
-            Found [[ demographics.first_name ]] [[ demographics.surname ]]
+            <span ng-hide="patientList.length === 1">
+            We've found a patient that matches this description.
+            </span>
+            <span ng-show="patientList.length === 1">
+            We've found [[ patientList.length ]] patients.
+            </span>
           </p>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="row">
-            <div class="col-md-4">
-              <b>Hospital #</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.hospital_number ]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Name</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.first_name ]]
-              [[ demographics.surname ]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Date of Birth</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.date_of_birth | displayDate ]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Gender</b>
-            </div>
-            <div class="col-md-8">
-              [[ demographics.sex ]]
-            </div>
-          </div>
-          <br />
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-5">
-      <div ng-show="allTags.length" class="well text-center">
-        <div class="row">
-          <div class="col-md-12">
-            <p class="lead">
-              Current Lists
-            </p>
-          </div>
-        </div>
-        <span ng-repeat="tag in allTags">
-          <a class="btn btn-default pointer" href="/#/list/[[ tag ]]">
-            [[ metadata.tags[tag].display_name ]]
-          </a>
+          <p class="lead">
+            Did you mean:
+          </p>
+          <ul class="list-group">
+            <li class="list-group-item" ng-repeat="patient in patientList">
+              <h4 class="inline">
+                <a ng-show="patient.patient_id" class="orange-link" href="/#/patient/[[ patient.patient_id ]]">
+                  [[ patient.first_name ]] [[ patient.surname ]]
+                  [[ patient.hospital_number ]]
+                </a>
+                <a ng-hide="patient.patient_id" class="orange-link pointer" ng-click="select(patient)">
+                  [[ patient.first_name ]] [[ patient.surname ]] ([[ patient.date_of_birth | displayDate ]])
+                  [[ patient.hospital_number ]]
+                </a>
+                <br>
+                <span ng-show="patient.date_of_birth">([[ patient.date_of_birth | displayDate ]])</span>
+              </h4>
+            </li>
+          </ul>
         </span>
       </div>
     </div>
   </div>
-</span>
+  <div class="col-md-4 col-md-push-1 content-offset-100">
+    {# if there is only one patient in the patient list and they have an id, make sure they still want to create a patient #}
+    <span ng-repeat="patient in patientList" ng-show="areYouSure">
+      <div class="row">
+        <div class="col-md-12">
+          <p class="lead">
+            Are you sure you don't want
+            <a ng-show="patient.patient_id" class="orange-link" href="/#/patient/[[ patient.patient_id ]]">
+              [[ patient.first_name ]] [[ patient.surname ]]
+              [[ patient.hospital_number ]]
+            </a>
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <button class="btn btn-lg btn-primary" ng-click="goToEditing()">
+            Yes, let me add a new patient
+          </button>
+        </div>
+      </div>
+    </span>
+    <span ng-hide="areYouSure">
+      <div class="row">
+        <div class="col-md-12">
+          <p class="lead">
+            Or create a new patient:
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <button ng-hide=""class="btn btn-lg btn-primary" ng-click="check()">
+            Create new patient
+          </button>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+
+{# EDITING_DEMOGRAPHICS #}
+<div class="row" ng-show="state === states.EDITING_DEMOGRAPHICS">
+  <div class="col-md-12">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <p class="lead" ng-show='!patientList.length'>
+          Unable to find a patient with
+          <span ng-show="searchQuery.number">[[ searchQuery.number ]].</span>
+          <span ng-show="searchQuery.surname">[[ searchQuery.surname ]] - [[ searchQuery.date_of_birth | displayDate ]].</span>
+          Add now:
+        </p>
+        <p class="lead">
+          Add the patient's details:
+        </p>
+      </div>
+    </div>
+    <form class="form-horizontal">
+      <div class="row">
+        <div class="col-md-10">
+          {% input label="Hospital number" field="Demographics.hospital_number" %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% input field="Demographics.nhs_number" %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% input field="Demographics.first_name" %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% input field="Demographics.surname" %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% date_of_birth_field %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-10">
+          {% radio field="Demographics.sex" %}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+{% load panels %}
+{% load forms %}
+<div class="col-md-6">
+
+  {% include "panels/current_opat_referral.html" %}
+  {% teams_panel %}
+  {% record_panel models.SymptomComplex %}
+  {% record_panel models.PastMedicalHistory %}
+  {% include "panels/non_opat_medication.html" %}
+  {% record_panel models.Allergies %}
+  {% include "partials/imaging_panel.html" %}
+  {% record_panel models.PrimaryDiagnosis %}
+  {% record_panel models.Diagnosis %}
+  {% record_panel models.OPATActions %}
+  <div class="panel panel-default">
+    <div class="panel-heading"><h3>
+      {% icon 'fa fa-crosshairs' %} Results
+    </h3></div>
+    <div class="panel-body overflow-x-auto">
+      {% include "partials/lab_test_sparklines.html" with target="patient" %}
+    </div>
+  </div>
+  {% include "panels/opat_medication.html" %}
+  {% record_panel models.Line %}
+  {% include "panels/opat_panel.html" %}
+</div>
+<div class="col-md-6">
+  {% include "inline_forms/clinical_timeline.html" %}
+</div>

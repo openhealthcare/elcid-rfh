@@ -1,14 +1,17 @@
 """
 API endpoints for the elCID application
 """
-import datetime
-import re
 from collections import defaultdict, OrderedDict
 from operator import itemgetter
 
+
+
 from django.conf import settings
-from django.utils.text import slugify
+from django.db.models import Q
 from django.http import HttpResponseBadRequest
+from django.utils.functional import cached_property
+from django.utils.text import slugify
+
 from rest_framework import viewsets, status
 from opal.core.api import router as opal_router
 from opal.core.api import (
@@ -16,10 +19,12 @@ from opal.core.api import (
 )
 from opal.core.views import json_response
 from opal.core import serialization
-from opal.models import Episode, Tagging
+from opal.models import Patient, Tagging
 
-from elcid import patient_lists
-from intrahospital_api import loader
+
+from elcid import episode_categories, patient_lists, models
+from intrahospital_api import update_demographics, loader, epr
+
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
 
@@ -69,6 +74,30 @@ class LabTestResultsView(LoginRequiredViewset):
     patient detail page.
     """
     base_name = 'lab_test_results_view'
+
+    @cached_property
+    def starred_results_dict(self):
+        starred_obs = lab_test_models.StarredObservation.objects.filter(
+            patient_id=self.kwargs["pk"]
+        )
+        result = {}
+        for starred_ob in starred_obs:
+            key = (
+                starred_ob.test_name,
+                starred_ob.lab_number,
+                starred_ob.observation_name,
+            )
+            result[key] = starred_ob.id
+        return result
+
+    def get_starred_id(self, test, observation):
+        key = (
+            test.test_name,
+            test.lab_number,
+            observation.observation_name,
+        )
+        return self.starred_results_dict.get(key)
+
 
     def get_non_comments_for_patient(self, patient):
         """
@@ -203,8 +232,9 @@ class LabTestResultsView(LoginRequiredViewset):
                 serialised_observations.append(
                     {
                         'name' : o.observation_name.rstrip('.'),
-                        'value': o.observation_value,
-                        'units': o.units
+                        'value': o.observation_value.replace("~", "\n"),
+                        'units': o.units,
+                        'star': self.get_starred_id(instance, o),
                     }
                 )
 
@@ -300,6 +330,61 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
     NUM_RESULTS = 5
 
+    @cached_property
+    def starred_results_dict(self):
+        """
+        A cached property of test_name, lab_number, observation_name to StarredObservation.id
+        """
+        starred_obs = lab_test_models.StarredObservation.objects.filter(
+            patient_id=self.kwargs["pk"]
+        )
+        result = {}
+        for starred_ob in starred_obs:
+            key = (
+                starred_ob.test_name,
+                starred_ob.lab_number,
+                starred_ob.observation_name,
+            )
+            result[key] = starred_ob.id
+        return result
+
+    def get_starred(self, patient, ticker):
+        """
+        If a lab test has been starred and is not already
+        in the ticker add it
+        """
+        result = []
+        already_starred = {i["star"] for i in ticker}
+        others_starred = [
+            key for key, starred_id in self.starred_results_dict.items()
+            if starred_id not in already_starred
+        ]
+        if not others_starred:
+            return []
+        observations = lab_test_models.Observation.objects.filter(
+            test__patient=patient,
+            test__test_name__in=[i[0] for i in others_starred],
+            test__lab_number__in=[i[1] for i in others_starred],
+            observation_name__in=[i[2] for i in others_starred],
+        ).select_related('test')
+        for observation in observations:
+            test = observation.test
+            starred_id = self.starred_results_dict.get((
+                test.test_name, test.lab_number, observation.observation_name
+            ))
+            if starred_id:
+                timestamp = observation.observation_datetime
+                result.append({
+                    'date_str': observation.observation_datetime.strftime('%d/%m/%Y %H:%M'),
+                    'timestamp': timestamp,
+                    'name': observation.observation_name,
+                    'observation_name': observation.observation_name,
+                    'value': "\n".join(observation.observation_value.strip().split("~")),
+                    'star': starred_id,
+                    'test_name': test.test_name,
+                    'lab_number': test.lab_number
+                })
+        return result
 
     def _get_antifungal_ticker_dict(self, test):
         """
@@ -311,26 +396,33 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         test_name = test.test_name
 
         result_string = ''
+        star_id = None
 
         for observation in observations:
-
             if observation.observation_name in self.ANTIFUNGAL_TESTS[test_name]:
                 result_string += ' {} {}'.format(
                     self.ANTIFUNGAL_SHORT_NAMES[observation.observation_name],
                     observation.observation_value.split('~')[0]
                 )
+                if not star_id:
+                    star_id = self.starred_results_dict.get(
+                        (test_name, test.lab_number, observation.observation_name,)
+                    )
 
         display_name = '{} {}'.format(
             self.ANTIFUNGAL_SHORT_NAMES[test_name],
             test.site.replace('&', ' ').split(' ')[0]
         )
 
-
         return {
             'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
             'timestamp': timestamp,
             'name'     : display_name,
-            'value'    : result_string.strip()
+            'value'    : result_string.strip(),
+            'star'     : star_id,
+            'test_name': test_name,
+            'lab_number': test.lab_number,
+            'observation_name': self.ANTIFUNGAL_TESTS[test_name][0]
         }
 
     def get_antifungal_observations(self, patient):
@@ -369,16 +461,31 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
         return ticker
 
+    def get_covid_ticker(self, patient):
+        """
+        Get the covid ticker, add the property
+        'star' which points is the id of the StarredObservation
+        if its been starred, otherwise its None
+        """
+        ticker = covid_lab.get_covid_result_ticker(patient)
+        for t in ticker:
+            star_id = self.starred_results_dict.get(
+                (t["test_name"], t["lab_number"], t["name"],)
+            )
+            t["star"] = star_id
+            t["observation_name"] = t["name"]
+        return ticker
+
 
     def get_ticker_observations(self, patient):
         """
         Some results are displayed as a ticker in chronological
         order.
         """
-        ticker =  covid_lab.get_covid_result_ticker(patient)
+        ticker = self.get_covid_ticker(patient)
         ticker += self.get_antifungal_observations(patient)
+        ticker += self.get_starred(patient, ticker)
         ticker = list(reversed(sorted(ticker, key=lambda i: i['timestamp'])))
-
         return ticker
 
     def get_recent_dates_to_observations(self, qs):
@@ -556,34 +663,118 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 class DemographicsSearch(LoginRequiredViewset):
     base_name = 'demographics_search'
-    PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
-    PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
-    PATIENT_NOT_FOUND = "patient_not_found"
+
+    def get_from_local(self, query):
+        """
+        Searches the local demographics for a patient.
+
+        We only look for exact matches by hospital number or nhs number
+        as these should be unique identifiers, however we return
+        an array just in case the patient is duplicated for
+        some reason.
+        """
+        return models.Demographics.objects.filter(
+            Q(hospital_number=query) | Q(nhs_number=query)
+        )
+
+    def clean_punctuation(self, word):
+        if word is None:
+            return None
+        for letter in [".", ",", ";", "/", "\\"]:
+            word = word.replace(letter, "")
+        return word.strip()
 
     def list(self, request, *args, **kwargs):
-        hospital_number = request.query_params.get("hospital_number")
-        if not hospital_number:
-            return HttpResponseBadRequest("Please pass in a hospital number")
-        demographics = emodels.Demographics.objects.filter(
-            hospital_number=hospital_number
-        ).last()
+        """
+        If the query matches a local hospital number
+        or nhs number we don't query further, just
+        return those results.
 
-        # the patient is in elcid
-        if demographics:
-            return json_response(dict(
-                patient=demographics.patient.to_dict(request.user),
-                status=self.PATIENT_FOUND_IN_ELCID
-            ))
-        else:
-            if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                demographics = loader.load_demographics(hospital_number)
+        Otherwise we will query upstream as name is
+        not a unique identifier.
 
-                if demographics:
-                    return json_response(dict(
-                        patient=dict(demographics=[demographics]),
-                        status=self.PATIENT_FOUND_UPSTREAM
-                    ))
-        return json_response(dict(status=self.PATIENT_NOT_FOUND))
+        The results will then be checked if they
+        exist locally we will add the elcid patient_id.
+
+        Otherwise they will not have a patient id.
+        """
+        number = request.query_params.get("number")
+        number = self.clean_punctuation(number)
+        dob = request.query_params.get("date_of_birth")
+        if dob:
+            dob = serialization.deserialize_date(dob)
+        surname = request.query_params.get("surname")
+        surname = self.clean_punctuation(surname)
+        if not any([number, dob, surname]):
+            return json_response({"patient_list": []})
+        if number:
+            local_result = self.get_from_local(number)
+            if local_result:
+                return json_response({
+                    "patient_list": [i.to_dict(request.user) for i in local_result]
+                })
+        task_id = update_demographics.async_find_patient_upstream(
+            number=number, surname=surname, date_of_birth=dob
+        )
+        return json_response({
+            'task_id': task_id
+        })
+
+
+class UpstreamDemographicsSearch(LoginRequiredViewset):
+    base_name = 'upstream_demographics_search'
+
+    def match_with_locals_where_possible(self, upstream_results):
+        """
+        If we have upstream matches, see if we
+        can match these to local results by nhs number
+        or hospital number.
+
+        If so add that patient_id to the result.
+        """
+        query_by_nhs_numbers = models.Demographics.objects.filter(
+            nhs_number__in=[i["nhs_number"] for i in upstream_results]
+        )
+        nhs_number_to_demographics = defaultdict(list)
+        for row in query_by_nhs_numbers:
+            nhs_number_to_demographics[row.nhs_number].append(row)
+        query_by_hn = models.Demographics.objects.filter(
+            hospital_number__in=[i["hospital_number"] for i in upstream_results]
+        )
+        hn_to_demographics = defaultdict(list)
+        for row in query_by_hn:
+            hn_to_demographics[row.hospital_number].append(row)
+        result = []
+        for upstream_result in upstream_results:
+            hn_results = hn_to_demographics.get(
+                upstream_result["hospital_number"], []
+            )
+            for hn_result in hn_results:
+                result.append(hn_result.to_dict(self.request.user))
+            if hn_results:
+                continue
+            nhs_results = nhs_number_to_demographics.get(
+                upstream_result["nhs_number"], []
+            )
+            for nhs_result in nhs_results:
+                result.append(nhs_result.to_dict(self.request.user))
+            if nhs_results:
+                continue
+            result.append(upstream_result)
+        return result
+
+    def retrieve(self, request, **kwargs):
+        from celery.result import AsyncResult
+        from opal.core import celery
+        task_id = kwargs['pk']
+        result = AsyncResult(id=task_id, app=celery.app)
+        if result.state == 'SUCCESS':
+            patient_list = result.get()
+            return json_response({
+                "state": result.state,
+                "patient_list": self.match_with_locals_where_possible(patient_list)
+            })
+        return json_response({"state": result.state})
 
 
 class BloodCultureIsolateApi(SubrecordViewSet):
@@ -599,7 +790,6 @@ class BloodCultureIsolateApi(SubrecordViewSet):
         )
 
 
-
 class AddToServiceViewSet(LoginRequiredViewset):
     base_name = 'add_to_service'
 
@@ -610,12 +800,28 @@ class AddToServiceViewSet(LoginRequiredViewset):
             'status_code': status.HTTP_202_ACCEPTED
         })
 
+class SendUpstreamViewSet(LoginRequiredViewset):
+    base_name = 'send_upstream'
+
+    @patient_from_pk
+    def update(self, request, patient):
+
+        # TODO: Cater for other subrecord write triggers
+        advice = emodels.MicrobiologyInput.objects.get(id=request.data['item_id'])
+
+        epr.write_clinical_advice(advice)
+
+        return json_response({
+            'status_code': status.HTTP_202_ACCEPTED
+        })
+
 
 elcid_router = OPALRouter()
 elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
+elcid_router.register(UpstreamDemographicsSearch.base_name, UpstreamDemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
@@ -626,3 +832,4 @@ lab_test_router.register('lab_test_results_view', LabTestResultsView)
 
 
 opal_router.register('add_to_service', AddToServiceViewSet)
+opal_router.register('send_upstream', SendUpstreamViewSet)
