@@ -5,7 +5,7 @@ from django import template
 
 from plugins.admissions.models import UpstreamLocation
 
-from plugins.ipc import constants
+from plugins.ipc import constants, models
 from plugins.ipc.episode_categories import IPCEpisode
 from plugins.ipc.models import IPCStatus
 
@@ -49,3 +49,15 @@ def ipc_status(patient, **k):
             ])
 
     return {'alerts': alerts}
+
+
+@register.inclusion_tag('templatetags/ipc_check_box_and_date_field.html')
+def ipc_check_box_and_date_field(field):
+    ctx = {"formname": "form", "field": field}
+    ctx["date_field"] = f"{field}_date"
+    ctx["label"] = models.IPCStatus._get_field_title(field)
+    ctx["model"] = f"editing.{field}"
+    ctx["date_model"] = f"{ctx['field']}_date"
+    if not models.IPCStatus._meta.get_field(ctx["date_field"]):
+        raise ValueError(f'Unknown IPC date field {ctx["date_field"]}')
+    return ctx
