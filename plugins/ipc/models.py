@@ -129,7 +129,7 @@ class IPCStatus(PatientSubrecord):
         blank=True, null=True, verbose_name='Contact of Covid-19 Date'
     )
 
-    other = models.CharField(default='', null=True, max_length=256)
+    other = models.CharField(blank=True, null=True, max_length=256)
     other_date = models.DateField(blank=True, null=True)
 
     class Meta:
