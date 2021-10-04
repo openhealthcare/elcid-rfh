@@ -18,7 +18,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         try:
             t1 = time.time()
-            loader.load_recent_encounters()
+            timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
+            loader.load_excounters_since(timestamp)
             t2 = time.time()
 
             when             = timezone.make_aware(datetime.datetime.fromtimestamp(t1))

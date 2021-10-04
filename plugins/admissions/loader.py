@@ -104,7 +104,7 @@ def load_encounters(patient):
             status.save()
 
 
-def load_recent_encounters():
+def load_excounters_since(timestamp):
     """
     Query upstream for all encounters updated in a recent period.
 
@@ -123,8 +123,6 @@ def load_recent_encounters():
     """
     from intrahospital_api.loader import create_rfh_patient_from_hospital_number
     api = ProdAPI()
-
-    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
 
     encounters = api.execute_hospital_query(
         Q_GET_RECENT_ENCOUNTERS,

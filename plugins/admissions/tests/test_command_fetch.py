@@ -15,7 +15,7 @@ class CommandTestCase(OpalTestCase):
     def test_creates_facts(self):
         self.assertEqual(0, Fact.objects.all().count())
 
-        with mock.patch.object(fetch_admissions.loader, 'load_recent_encounters'):
+        with mock.patch.object(fetch_admissions.loader, 'load_excounters_since'):
             cmd = fetch_admissions.Command()
             cmd.handle()
             self.assertEqual(2, Fact.objects.all().count())
