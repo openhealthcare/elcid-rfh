@@ -106,7 +106,7 @@ class Application(application.OpalApplication):
         if profile.roles.filter(name=IPC_ROLE).exists():
             menu_items.append(
                 menus.MenuItem(
-                    href='/#/ipc/',
+                    href='/#/ipc/wards/',
                     display='IPC',
                     icon='fa fa-warning',
                     activepattern='ipc'
