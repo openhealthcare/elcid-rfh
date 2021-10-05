@@ -93,7 +93,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       // If its not valid, set the error and return
       var mom = moment(scope.dateOfBirthString, "DD/MM/YYYY")
       if(!mom.isValid()){
-        scope.dateError = "Please enter a valid date";
+        scope.dateError = "Please enter a valid date of the form DD/MM/YYYY";
         return
       }
 
