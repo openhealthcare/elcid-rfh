@@ -413,15 +413,6 @@ def update_patient_information_since(last_updated):
     return len(new_master_files)
 
 
-def async_find_patient_upstream(
-    number=None, date_of_birth=None, surname=None
-):
-    from intrahospital_api import tasks
-    return tasks.search_upstream_demographics.delay(
-        number=number, date_of_birth=date_of_birth, surname=surname
-    ).id
-
-
 def find_patient_upstream(
     number=None, date_of_birth=None, surname=None
 ):

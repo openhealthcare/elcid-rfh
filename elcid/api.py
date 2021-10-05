@@ -684,46 +684,6 @@ class DemographicsSearch(LoginRequiredViewset):
             word = word.replace(letter, "")
         return word.strip()
 
-    def list(self, request, *args, **kwargs):
-        """
-        If the query matches a local hospital number
-        or nhs number we don't query further, just
-        return those results.
-
-        Otherwise we will query upstream as name is
-        not a unique identifier.
-
-        The results will then be checked if they
-        exist locally we will add the elcid patient_id.
-
-        Otherwise they will not have a patient id.
-        """
-        number = request.query_params.get("number")
-        number = self.clean_punctuation(number)
-        dob = request.query_params.get("date_of_birth")
-        if dob:
-            dob = serialization.deserialize_date(dob)
-        surname = request.query_params.get("surname")
-        surname = self.clean_punctuation(surname)
-        if not any([number, dob, surname]):
-            return json_response({"patient_list": []})
-        if number:
-            local_result = self.get_from_local(number)
-            if local_result:
-                return json_response({
-                    "patient_list": [i.to_dict(request.user) for i in local_result]
-                })
-        task_id = update_demographics.async_find_patient_upstream(
-            number=number, surname=surname, date_of_birth=dob
-        )
-        return json_response({
-            'task_id': task_id
-        })
-
-
-class UpstreamDemographicsSearch(LoginRequiredViewset):
-    base_name = 'upstream_demographics_search'
-
     def match_with_locals_where_possible(self, upstream_results):
         """
         If we have upstream matches, see if we
@@ -753,18 +713,42 @@ class UpstreamDemographicsSearch(LoginRequiredViewset):
             result.append(upstream_result)
         return result
 
-    def retrieve(self, request, **kwargs):
-        from celery.result import AsyncResult
-        from opal.core import celery
-        task_id = kwargs['pk']
-        result = AsyncResult(id=task_id, app=celery.app)
-        if result.state == 'SUCCESS':
-            patient_list = result.get()
-            return json_response({
-                "state": result.state,
-                "patient_list": self.match_with_locals_where_possible(patient_list)
-            })
-        return json_response({"state": result.state})
+    def list(self, request, *args, **kwargs):
+        """
+        If the query matches a local hospital number
+        or nhs number we don't query further, just
+        return those results.
+
+        Otherwise we will query upstream as name is
+        not a unique identifier.
+
+        The results will then be checked if they
+        exist locally we will add the elcid patient_id.
+
+        Otherwise they will not have a patient id.
+        """
+        number = request.query_params.get("number")
+        number = self.clean_punctuation(number)
+        dob = request.query_params.get("date_of_birth")
+        if dob:
+            dob = serialization.deserialize_date(dob)
+        surname = request.query_params.get("surname")
+        surname = self.clean_punctuation(surname)
+        if not any([number, dob, surname]):
+            return json_response({"patient_list": []})
+        if number:
+            local_result = self.get_from_local(number)
+            if local_result:
+                return json_response({
+                    "patient_list": [i.to_dict(request.user) for i in local_result]
+                })
+
+        result = update_demographics.find_patient_upstream(
+            number=number, surname=surname, date_of_birth=dob
+        )
+        return json_response({
+            "patient_list": self.match_with_locals_where_possible(result)
+        })
 
 
 class BloodCultureIsolateApi(SubrecordViewSet):
@@ -790,6 +774,7 @@ class AddToServiceViewSet(LoginRequiredViewset):
             'status_code': status.HTTP_202_ACCEPTED
         })
 
+
 class SendUpstreamViewSet(LoginRequiredViewset):
     base_name = 'send_upstream'
 
@@ -811,7 +796,6 @@ elcid_router.register(
     UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
-elcid_router.register(UpstreamDemographicsSearch.base_name, UpstreamDemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
@@ -819,7 +803,5 @@ lab_test_router.register(
     'infection_service_summary_api', InfectionServiceTestSummaryApi
 )
 lab_test_router.register('lab_test_results_view', LabTestResultsView)
-
-
 opal_router.register('add_to_service', AddToServiceViewSet)
 opal_router.register('send_upstream', SendUpstreamViewSet)
