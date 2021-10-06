@@ -70,14 +70,16 @@ def get_elcid_version():
 
 def get_note_text(advice, *fields):
     """
-    Given a MicrobiologyInput instance, return the note text for upstream
+    Given an instance of a model and a list of fields return
+    the fields as a new line seperated string
     """
     return "\n".join(getattr(advice, i) for i in fields)
 
 
 def write_clinical_advice(advice):
     """
-    Given a MicrobiologyInput instance, write it upstream.
+    Given a MicrobiologyInput or a PatientConsultation
+    instance, write it upstream.
     """
     patient      = advice.episode.patient
     demographics = patient.demographics()
@@ -91,11 +93,15 @@ def write_clinical_advice(advice):
         'patient_surname'  : demographics.surname,
         'event_datetime'   : advice.when,
         'modified_datetime': advice.when,
-        'note_subject'     : 'elCID Testing Note',
+        'note_subject'     : f'elCID {advice.reason_for_interaction}'.strip(),
     }
 
     if isinstance(advice, elcid_models.MicrobiologyInput):
-        note_data["note_type"] = 'Microbiology/Virology Consult Note'
+        rfi = advice.reason_for_interaction
+        if rfi == advice.ICU_WARD_REVIEW_REASON_FOR_INTERACTION:
+            note_data["note_type"] = "Infection Control Consult Note"
+        else:
+            note_data["note_type"] = 'Microbiology/Virology Consult Note'
         note_data["note"] = get_note_text(
           advice,
           "reason_for_interaction",
@@ -104,7 +110,7 @@ def write_clinical_advice(advice):
           "agreed_plan"
         )
     elif isinstance(advice, tb_models.PatientConsultation):
-        note_data["note_type"] = 'TB Consult Note'
+        note_data["note_type"] = 'Respiratory Medicine Consult Note'
         note_data["note"] = get_note_text(
           advice,
           "reason_for_interaction",
