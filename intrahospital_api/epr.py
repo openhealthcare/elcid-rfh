@@ -26,6 +26,8 @@ id int IDENTITY(1,1) NOT NULL,
 from django.conf import settings
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from elcid import models as elcid_models
+from plugins.tb import models as tb_models
 
 
 Q_NOTE_INSERT = """
@@ -66,16 +68,11 @@ def get_elcid_version():
     return f"{settings.OPAL_BRAND_NAME} {settings.VERSION_NUMBER}"
 
 
-def get_note_text(advice):
+def get_note_text(advice, *fields):
     """
     Given a MicrobiologyInput instance, return the note text for upstream
     """
-    return "\n".join(
-        [advice.reason_for_interaction,
-         advice.clinical_discussion,
-         advice.infection_control,
-         advice.agreed_plan
-         ])
+    return "\n".join(getattr(advice, i) for i in fields)
 
 
 def write_clinical_advice(advice):
@@ -84,7 +81,6 @@ def write_clinical_advice(advice):
     """
     patient      = advice.episode.patient
     demographics = patient.demographics()
-
     note_data = {
         'elcid_version'    : get_elcid_version(),
         'note_id'          : advice.id,
@@ -95,10 +91,31 @@ def write_clinical_advice(advice):
         'patient_surname'  : demographics.surname,
         'event_datetime'   : advice.when,
         'modified_datetime': advice.when,
-        'note_type'        : 'Microbiology/Virology Consult Note',
         'note_subject'     : 'elCID Testing Note',
-        'note'             : get_note_text(advice)
-        }
+    }
+
+    if isinstance(advice, elcid_models.MicrobiologyInput):
+        note_data["note_type"] = 'Microbiology/Virology Consult Note'
+        note_data["note"] = get_note_text(
+          advice,
+          "reason_for_interaction",
+          "clinical_discussion",
+          "infection_control",
+          "agreed_plan"
+        )
+    elif isinstance(advice, tb_models.PatientConsultation):
+        note_data["note_type"] = 'TB Consult Note'
+        note_data["note"] = get_note_text(
+          advice,
+          "reason_for_interaction",
+          "infection_control",
+          "discussion",
+          "plan"
+        )
+    else:
+        raise ValueError(
+          'Only microbiology input and patient consultations can be sent downstream'
+        )
 
     api = ProdAPI()
 
