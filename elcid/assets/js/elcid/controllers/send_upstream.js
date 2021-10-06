@@ -8,18 +8,16 @@ angular.module('opal.controllers').controller(
         $scope.refresh_timeline = refresh_timeline;
 
         $scope.send_upstream = function(){
-            $http.put('/api/v0.1/send_upstream/' + $scope._patient.id + '/',
-                      {item_id: item.id}
-                     ).then(
-                         function(response){
-                             $scope.detail_refresh().then(
-                                 function(){
-                                     $scope.refresh_timeline();
-                                     $modalInstance.close()
-                                 }
-                             )
-                         }
-                     )
+            $http.put('/api/v0.1/send_upstream/' + item.id + '/').then(
+                function(response){
+                    $scope.detail_refresh().then(
+                        function(){
+                            $scope.refresh_timeline();
+                            $modalInstance.close()
+                        }
+                    )
+                }
+            )
         }
 
         $scope.cancel = function(){
