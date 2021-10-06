@@ -23,12 +23,11 @@ Date_Sent_to_Cerner datetime NULL, --# Date/time Stamp sent to Cerner
 Cerner_HL7_Message varchar (max) NULL, --# User visible agreed plan
 id int IDENTITY(1,1) NOT NULL,
 """
-import datetime
-
 from django.conf import settings
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-
+from elcid import models as elcid_models
+from plugins.tb import models as tb_models
 
 
 Q_NOTE_INSERT = """
@@ -64,29 +63,26 @@ VALUES
 """
 
 
-
 def get_elcid_version():
     "String for upstream to identify the sending app"
     return f"{settings.OPAL_BRAND_NAME} {settings.VERSION_NUMBER}"
 
-def get_note_text(advice):
+
+def get_note_text(advice, *fields):
     """
-    Given a MicrobiologyInput instance, return the note text for upstream
+    Given an instance of a model and a list of fields return
+    the fields as a new line seperated string
     """
-    return "\n".join(
-        [advice.reason_for_interaction,
-         advice.clinical_discussion,
-         advice.infection_control,
-         advice.agreed_plan
-         ])
+    return "\n".join(getattr(advice, i) for i in fields)
+
 
 def write_clinical_advice(advice):
     """
-    Given a MicrobiologyInput instance, write it upstream.
+    Given a MicrobiologyInput or a PatientConsultation
+    instance, write it upstream.
     """
     patient      = advice.episode.patient
     demographics = patient.demographics()
-
     note_data = {
         'elcid_version'    : get_elcid_version(),
         'note_id'          : advice.id,
@@ -97,10 +93,35 @@ def write_clinical_advice(advice):
         'patient_surname'  : demographics.surname,
         'event_datetime'   : advice.when,
         'modified_datetime': advice.when,
-        'note_type'        : 'Microbiology/Virology Consult Note',
-        'note_subject'     : 'elCID Testing Note',
-        'note'             : get_note_text(advice)
-        }
+        'note_subject'     : f'elCID {advice.reason_for_interaction}'.strip(),
+    }
+
+    if isinstance(advice, elcid_models.MicrobiologyInput):
+        rfi = advice.reason_for_interaction
+        if rfi == advice.ICU_WARD_REVIEW_REASON_FOR_INTERACTION:
+            note_data["note_type"] = "Infection Control Consult Note"
+        else:
+            note_data["note_type"] = 'Microbiology/Virology Consult Note'
+        note_data["note"] = get_note_text(
+          advice,
+          "reason_for_interaction",
+          "clinical_discussion",
+          "infection_control",
+          "agreed_plan"
+        )
+    elif isinstance(advice, tb_models.PatientConsultation):
+        note_data["note_type"] = 'Respiratory Medicine Consult Note'
+        note_data["note"] = get_note_text(
+          advice,
+          "reason_for_interaction",
+          "infection_control",
+          "discussion",
+          "plan"
+        )
+    else:
+        raise ValueError(
+          'Only microbiology input and patient consultations can be sent downstream'
+        )
 
     api = ProdAPI()
 
