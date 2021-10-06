@@ -1,13 +1,9 @@
 """
 API endpoints for the elCID application
 """
-import datetime
-import re
 from collections import defaultdict, OrderedDict
-from operator import itemgetter
 
 from django.conf import settings
-from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from rest_framework import viewsets, status
 from opal.core.api import item_from_pk, router as opal_router
