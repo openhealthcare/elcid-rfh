@@ -23,12 +23,9 @@ Date_Sent_to_Cerner datetime NULL, --# Date/time Stamp sent to Cerner
 Cerner_HL7_Message varchar (max) NULL, --# User visible agreed plan
 id int IDENTITY(1,1) NOT NULL,
 """
-import datetime
-
 from django.conf import settings
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-
 
 
 Q_NOTE_INSERT = """
@@ -64,10 +61,10 @@ VALUES
 """
 
 
-
 def get_elcid_version():
     "String for upstream to identify the sending app"
     return f"{settings.OPAL_BRAND_NAME} {settings.VERSION_NUMBER}"
+
 
 def get_note_text(advice):
     """
@@ -79,6 +76,7 @@ def get_note_text(advice):
          advice.infection_control,
          advice.agreed_plan
          ])
+
 
 def write_clinical_advice(advice):
     """
