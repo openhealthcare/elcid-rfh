@@ -127,7 +127,7 @@ directives.directive('fixedHeader', function(){
     restrict: 'A',
     link: function(scope, $elm, attrs) {
       var panelHeader = $(".panel-heading.patient-detail-heading");
-      var cnt = 0;
+      var counter = 0;
       var adjustHeights = function(){
         var panelHeaderHeight = panelHeader.height();
 
@@ -152,8 +152,8 @@ directives.directive('fixedHeader', function(){
         else{
           panelHeader.removeClass('shrunken');
         }
-        cnt += 1;
-        if(cnt > 20){
+        counter += 1;
+        if(counter > 20){
           clearInterval(interval)
         }
       }
