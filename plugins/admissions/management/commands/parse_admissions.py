@@ -39,13 +39,19 @@ class Command(BaseCommand):
         beds = {}
 
         for encounter in encounters:
-            beds[(encounter.pv1_3_building, strip_wardname(encounter.pv1_3_ward), encounter.pv1_3_bed)] = encounter
+            key = (
+                encounter.pv1_3_building,
+                strip_wardname(encounter.pv1_3_ward),
+                encounter.pv1_3_bed.upper()
+            )
 
+            beds[key] = encounter
 
         locations = [
             models.UpstreamLocation(
                 building=e.pv1_3_building,
                 ward=strip_wardname(e.pv1_3_ward),
+                room=e.pv1_3_room,
                 bed=e.pv1_3_bed,
                 hospital=e.pv1_3_hospital,
                 patient=e.patient,
