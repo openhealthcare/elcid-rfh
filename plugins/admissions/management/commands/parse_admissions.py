@@ -25,7 +25,7 @@ def strip_bedname(bedname):
     The reporting of beds from upstream varies over time
     we uppercase and remove spaces to avoid duplication
     """
-    return bedname.upper.replace(' ', '')
+    return bedname.upper().replace(' ', '')
 
 
 class Command(BaseCommand):
