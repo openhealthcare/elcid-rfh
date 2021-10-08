@@ -18,7 +18,7 @@
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
-      <th>Alerts</th>
+      <!-- <th>Alerts</th> -->
     </tr>
     {% for patient in patients %}
     <tr>
@@ -36,12 +36,9 @@
       </td>
       {% endwith %}
       <td>{{ patient.admitted }}</td>
-      <td>
-        {% if permissions.ipc_user %}
-          {% location_alerts patient %}
-        {% endif %}
-        {% ipc_status patient.patient %}
-      </td>
+      <!-- <td> -->
+      <!--   {% location_alerts patient %} -->
+      <!-- </td> -->e
     </tr>
     {% endfor %}
   </table>
