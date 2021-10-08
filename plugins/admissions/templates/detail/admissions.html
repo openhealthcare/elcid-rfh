@@ -23,6 +23,7 @@
           <!-- <th>Last Update Type</th> -->
           <th>Location</th>
           <th>Class</th>
+          <th>FIN</th>
           {% if permissions.ipc_user %}<th></th>{% endif %}
         </tr>
         <tr ng-repeat="admission in admissionView.admissions">
@@ -40,6 +41,7 @@
             [[ admission.room ]] [[ admission.bed ]]
           </td>
           <td>[[ admission.patient_class ]]</td>
+          <td>[[ admission.fin_hsn ]]</td>
           {% if permissions.ipc_user %}<td>
             <a href="/#/admissions/transfer-history/[[ admission.spell_number ]]/" class="orange-link">
               Location History
