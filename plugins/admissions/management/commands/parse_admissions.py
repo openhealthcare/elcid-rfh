@@ -24,8 +24,15 @@ def strip_bedname(bedname):
     """
     The reporting of beds from upstream varies over time
     we uppercase and remove spaces to avoid duplication
+
+    Occasionally ben names come in just as e.g. 14
     """
-    return bedname.upper().replace(' ', '')
+    name = bedname.upper().replace(' ', '')
+
+    if len(name) == 2:
+        name = f"BED{name}"
+
+    return name
 
 
 class Command(BaseCommand):
