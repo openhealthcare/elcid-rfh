@@ -71,7 +71,7 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
 
         patients = UpstreamLocation.objects.filter(
             ward__iexact=k['ward_code'].replace('-', ' ')).order_by(
-                'room', 'bed'
+                'bed'
             )
 
         context['patients'] = patients
