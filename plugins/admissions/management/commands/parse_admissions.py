@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 building=e.pv1_3_building,
                 ward=strip_wardname(e.pv1_3_ward),
                 room=e.pv1_3_room,
-                bed=e.pv1_3_bed,
+                bed=strip_bedname(e.pv1_3_bed),
                 hospital=e.pv1_3_hospital,
                 patient=e.patient,
                 admitted=e.pv1_44_admit_date_time,
