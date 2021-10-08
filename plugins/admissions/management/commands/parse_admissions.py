@@ -33,10 +33,10 @@ def strip_bedname(bedname):
         name = f"BED{name}"
 
     if name.endswith('BED'):
-        name = "BED" + name[:02]
+        name = "BED" + name[:2]
 
     if name.endswith('COT'):
-        name = "COT" + name[:02]
+        name = "COT" + name[:2]
 
     return name
 
