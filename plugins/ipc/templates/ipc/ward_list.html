@@ -240,6 +240,16 @@
           TEL {% ward_count "TEL" %}
         </a>
       </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+      {% for ward in all_wards %}
+      <a href="/#/ipc/ward/{{ward.ward.lower}}/">{{ ward.ward }} {% ward_count ward.ward %} </a><br/>
+      {% endfor %}
+      </div>
+    </div>
+
 
 
   </div>

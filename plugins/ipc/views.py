@@ -62,6 +62,12 @@ class RecentTestsView(LoginRequiredMixin, TemplateView):
 class WardListView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/ward_list.html'
 
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        context['all_wards'] = UpstreamLocation.objects.values('ward').order_by('ward').distinct()
+        return context
+
 
 class WardDetailView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/ward_detail.html'
