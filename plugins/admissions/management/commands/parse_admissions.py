@@ -9,11 +9,23 @@ from plugins.admissions import models
 
 
 def strip_wardname(wardname):
+    """
+    The same ward can come through with at least two
+    different prefixes. Stripping these allows us
+    to treat them as the same place
+    """
     if wardname.startswith('RAL '):
         return wardname.replace('RAL ', '')
     if wardname.startswith('RF-'):
         return wardname.replace('RF-', '')
     return wardname
+
+def strip_bedname(bedname):
+    """
+    The reporting of beds from upstream varies over time
+    we uppercase and remove spaces to avoid duplication
+    """
+    return bedname.upper.replace(' ', '')
 
 
 class Command(BaseCommand):
@@ -42,7 +54,7 @@ class Command(BaseCommand):
             key = (
                 encounter.pv1_3_building,
                 strip_wardname(encounter.pv1_3_ward),
-                encounter.pv1_3_bed.upper()
+                strip_bedname(encounter.pv1_3_bed)
             )
 
             beds[key] = encounter
