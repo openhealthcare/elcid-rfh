@@ -34,8 +34,6 @@ class Command(BaseCommand):
 
             covid = take.filter(rota='COVID')
             non_covid = take.filter(rota='NON-COVID')
-            print(target)
-            print(take.count())
             CovidAcuteMedicalDashboardReportingDay(
                 date=target, patients_referred=take.count(),
                 covid=covid.count(), non_covid=non_covid.count()
