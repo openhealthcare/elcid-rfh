@@ -49,3 +49,7 @@ BUILDING_CODES = {
     'ED' : 'Edgware Community Hospital',
     'RFH': 'Royal Free Hospital'
 }
+
+TRANSFER_HISTORY_LOAD_TIME_FACT = "Transfer history load time"
+TRANSFER_HISTORY_CREATED_COUNT_FACT = "Transfer history created count"
+TRANSFER_HISTORY_COUNT_FACT = "Transfer history count fact"

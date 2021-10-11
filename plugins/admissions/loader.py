@@ -213,6 +213,7 @@ def load_transfer_history_since(since):
     created = create_transfer_histories_from_upstream_result(query_result)
     created_end = time.time()
     logger.info(f'Transfer histories: created {len(created)} in {created_end - query_end}')
+    return created
 
 
 @transaction.atomic
