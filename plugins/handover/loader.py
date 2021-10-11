@@ -2,6 +2,8 @@
 Load AMT Handovr records from upstream
 """
 from django.db import transaction
+from django.db.models import DateTimeField
+from django.utils import timezone
 from opal.models import Patient
 
 from elcid.models import Demographics
@@ -87,6 +89,7 @@ WHERE
 id = @id
 """
 
+
 def create_handover_from_upstream(data):
     """
     Given an upstream data dictionary returned by the API,
@@ -98,6 +101,14 @@ def create_handover_from_upstream(data):
         demographics__hospital_number=data['MRN']).first()
 
     for k, v in data.items():
+        if v:
+            fieldtype = type(
+                AMTHandover._meta.get_field(
+                    AMTHandover.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]
+                )
+            )
+            if fieldtype == DateTimeField:
+                v = timezone.make_aware(v)
         setattr(
             handover,
             AMTHandover.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
