@@ -37,12 +37,13 @@ SELECT *
 FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
 """
 
-
+# UPDATED_DATE is the same as CREATED_DATE if there
+# has not been an update, ie its always set.
 Q_GET_TRANSFERS_SINCE = """
     SELECT *
     FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
     WHERE
-    CREATED_DATE >= @since OR UPDATED_DATE >= @since
+    UPDATED_DATE >= @since
 """
 
 
