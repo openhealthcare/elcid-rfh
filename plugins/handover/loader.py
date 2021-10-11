@@ -7,6 +7,7 @@ from opal.models import Patient
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api.apis.prod_api import db_retry
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 
 from plugins.icu import logger
@@ -108,6 +109,12 @@ def create_handover_from_upstream(data):
     return handover
 
 
+@db_retry
+def get_current():
+    api = ProdAPI()
+    return api.execute_hospital_query(Q_GET_CURRENT)
+
+
 @transaction.atomic
 def sync_amt_handover():
     """
@@ -118,9 +125,7 @@ def sync_amt_handover():
 
     This function is called from a management command + cron job
     """
-    api = ProdAPI()
-
-    current_patients = api.execute_hospital_query(Q_GET_CURRENT)
+    current_patients = get_current()
 
     current_ids = [h['id'] for h in current_patients]
 
