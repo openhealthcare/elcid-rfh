@@ -466,6 +466,7 @@ class ProdApi(base_api.BaseApi):
         self.hospital_settings = settings.HOSPITAL_DB
         self.trust_settings = settings.TRUST_DB
         self.warehouse_settings = settings.WAREHOUSE_DB
+        self.epma_settings = settings.EPMA_DB
         if not all([
             self.hospital_settings.get("ip_address"),
             self.hospital_settings.get("database"),
@@ -546,6 +547,23 @@ class ProdApi(base_api.BaseApi):
             with conn.cursor() as cur:
                 logger.info(
                     "Running warehouse query {} {}".format(query, params)
+                )
+                cur.execute(query, params)
+                result = cur.fetchall()
+        logger.debug(result)
+        return result
+
+    def execute_epma_query(self, query, params=None):
+        with pytds.connect(
+            self.epma_settings["ip_address"],
+            self.epma_settings["database"],
+            self.epma_settings["username"],
+            self.epma_settings["password"],
+            as_dict=True
+        ) as conn:
+            with conn.cursor() as cur:
+                logger.info(
+                    "Running EPMA query {} {}".format(query, params)
                 )
                 cur.execute(query, params)
                 result = cur.fetchall()
