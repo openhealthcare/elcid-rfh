@@ -13,7 +13,7 @@ class EPMAMedOrder(models.Model):
     e_encntr_type_desc = models.CharField(max_length=256, blank=True, null=True)
     e_treatmentfunction = models.CharField(max_length=256, blank=True, null=True)
     e_mainspecialty = models.CharField(max_length=256, blank=True, null=True)
-    e_loc_faciLity_desc = models.CharField(max_length=256, blank=True, null=True)
+    e_loc_facility_desc = models.CharField(max_length=256, blank=True, null=True)
     e_building = models.CharField(max_length=256, blank=True, null=True)
     e_warddisplay = models.CharField(max_length=256, blank=True, null=True)
     e_leadconsultant = models.CharField(max_length=256, blank=True, null=True)
