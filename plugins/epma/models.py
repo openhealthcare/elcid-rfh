@@ -4,6 +4,7 @@ from opal.models import Patient
 
 class EPMAMedOrder(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    created_in_elcid = models.DateTimeField(auto_now_add=True)
     localpatientid = models.CharField(max_length=256)
     o_encntr_id = models.CharField(max_length=256)
     o_order_id = models.CharField(max_length=256)
@@ -28,7 +29,7 @@ class EPMAMedOrder(models.Model):
     oa_firstpersonnelposition = models.CharField(max_length=256, blank=True, null=True)
     o_status_desc = models.CharField(max_length=256, blank=True, null=True)
     o_discontinue_ind = models.CharField(max_length=256, blank=True, null=True)
-    o_clinical_display_line = models.CharField(max_length=256, blank=True, null=True)
+    o_clinical_display_line = models.TextField(blank=True, null=True)
     o_order_signed_date_tm = models.DateTimeField(blank=True, null=True)
     o_start_dt_tm = models.CharField(max_length=256, blank=True, null=True)
     o_stop_dt_tm = models.CharField(max_length=256, blank=True, null=True)
@@ -41,7 +42,8 @@ class EPMAMedOrder(models.Model):
     o_synonym_id = models.CharField(max_length=256)
     ord_cat_syn_cki = models.CharField(max_length=256, blank=True, null=True)
     domain_name = models.CharField(max_length=256, blank=True, null=True)
-    load_dt_tm = models.CharField(max_length=256, blank=True, null=True)
+    load_dt_tm = models.DateTimeField(blank=True, null=True)
+    o_start_dt_tm = models.DateTimeField(blank=True, null=True)
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         "LOCALPATIENTID": "localpatientid",
@@ -84,6 +86,7 @@ class EPMAMedOrder(models.Model):
 
 
 class EPMAMedOrderDetail(models.Model):
+    created_in_elcid = models.DateTimeField(auto_now_add=True)
     order_id = models.CharField(max_length=256)
     epmamedorder = models.ForeignKey(EPMAMedOrder, on_delete=models.CASCADE)
     action_sequence = models.CharField(max_length=256)
@@ -109,6 +112,7 @@ class EPMAMedOrderDetail(models.Model):
 
 
 class EPMATherapeuticClassLookup(models.Model):
+    created_in_elcid = models.DateTimeField(auto_now_add=True)
     mcdx_drug_identifier = models.CharField(max_length=256)
     mcdx_multum_category_id = models.CharField(max_length=256)
     mcdx_updt_dt_tm = models.CharField(max_length=256)
