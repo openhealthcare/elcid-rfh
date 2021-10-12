@@ -180,6 +180,7 @@ INSTALLED_APPS = (
     'plugins.handover',
     'plugins.upstream_lists',
     'plugins.ipc',
+    'plugins.epma',
     'intrahospital_api',
     'elcid',
     'passwordreset',
