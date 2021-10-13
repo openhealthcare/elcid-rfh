@@ -374,11 +374,8 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
                     'date_str': observation.observation_datetime.strftime('%d/%m/%Y %H:%M'),
                     'timestamp': timestamp,
                     'name': observation.observation_name,
-                    'observation_name': observation.observation_name,
                     'value': "\n".join(observation.observation_value.strip().split("~")),
                     'star': starred_id,
-                    'test_name': test.test_name,
-                    'lab_number': test.lab_number
                 })
         return result
 
@@ -416,9 +413,6 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
             'name'     : display_name,
             'value'    : result_string.strip(),
             'star'     : star_id,
-            'test_name': test_name,
-            'lab_number': test.lab_number,
-            'observation_name': self.ANTIFUNGAL_TESTS[test_name][0]
         }
 
     def get_antifungal_observations(self, patient):
