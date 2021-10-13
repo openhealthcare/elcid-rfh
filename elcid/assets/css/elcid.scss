@@ -604,6 +604,9 @@ div.add-isolate:hover{
 }
 
 .long-form-results-row{
+    .fa-star{
+        color: $green;
+    }
   .star-obs-container{
     display: inline-block;
     width: 20px;
@@ -613,7 +616,7 @@ div.add-isolate:hover{
     display: none;
   }
   &:hover, &.starred{
-    background-color: $obsidian-light;
+      background-color: lighten($obsidian-light, 16%);
 
     .star-obs{
       visibility: visible;
