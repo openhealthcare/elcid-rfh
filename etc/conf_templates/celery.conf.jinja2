@@ -1,5 +1,5 @@
 [program:celery]
-command={{ env_name }}/bin/python manage.py celery worker -l info
+command={{ env_name }}/bin/celery -A opal.core worker -l INFO
 directory=%(here)s/../
 ;user=nobody
 numprocs=1
