@@ -283,9 +283,7 @@ def get_covid_result_ticker(patient):
                     'date_str'  : timestamp.strftime('%d/%m/%Y %H:%M'),
                     'timestamp' : timestamp,
                     'name'      : _get_covid_test(test).OBSERVATION_NAME,
-                    'value'     : result_string,
-                    'test_name' : test.test_name,
-                    'lab_number': test.lab_number,
+                    'value'     : result_string
                 }
             )
 
