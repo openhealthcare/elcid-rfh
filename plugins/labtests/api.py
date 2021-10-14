@@ -17,6 +17,13 @@ class LabTest(LoginRequiredViewset):
                 result[field.name] = getattr(instance, field.name)
         return result
 
+    def serialize_observation(self, obs):
+        result = self.serialize_model(obs)
+        if not result['reference_range'].strip().strip('-'):
+            result['reference_range'] = None
+        result["observation_value"] = "\n".join(result["observation_value"].split("~"))
+        return result
+
     def serialize_lab_test(self, lab_test):
         result = self.serialize_model(lab_test)
         result['patient_id'] = lab_test.patient_id
@@ -24,7 +31,7 @@ class LabTest(LoginRequiredViewset):
 
         for obs in lab_test.observation_set.all():
             result['observations'].append(
-                self.serialize_model(obs)
+                self.serialize_observation(obs)
             )
         return result
 

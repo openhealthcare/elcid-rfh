@@ -52,16 +52,16 @@
               </div>
               <div class="row content-offset-10 content-offset-below-10">
                 <div class="col-md-3">
-                  <b>Ordered</b>
+                  <b>Date time</b>
                 </div>
                 <div class="col-md-3">
                   [[ lab_test.datetime_ordered | displayDateTime ]]
                 </div>
                 <div class="col-md-3">
-                  <b>Clinical info</b>
+                  <b>Reported</b>
                 </div>
                 <div class="col-md-3">
-                  [[ lab_test.clinical_info ]]
+                  [[ lab_test.observations[0].reported_datetime ]]
                 </div>
               </div>
               <div class="row content-offset-10 content-offset-below-10">
@@ -78,57 +78,41 @@
                   [[ lab_test.encounter_consultant_name ]]
                 </div>
               </div>
-              <div class="row content-offset-10 content-offset-below-10">
+              <div ng-show="lab_test.encounter_location_name" class="row content-offset-10 content-offset-below-10">
                 <div class="col-md-3">
                   <b>Encounter location</b>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-9">
                   [[ lab_test.encounter_location_name ]]
                   <span ng-show="lab_test.encounter_location_code">
                     ([[ lab_test.encounter_location_code ]])
                   </span>
                 </div>
               </div>
-              <span ng-repeat="obs in lab_test.observations">
+              <div ng-show="lab_test.clinical_info" class="row content-offset-10 content-offset-below-10">
+                <div class="col-md-3">
+                  <b>Clinical info</b>
+                </div>
+                <div class="col-md-9">
+                  [[ lab_test.clinical_info ]]
+                </div>
+              </div>
+              <span ng-repeat="item in lab_test.observations">
                 <hr>
                 <div class="row content-offset-10 content-offset-below-10">
-                  <div class="col-md-3">
+                  <div ng-show="!item.observation_value || item.observation_value.length < 50" class="col-md-3">
                     <strong>
-                    [[ obs.observation_name ]] [[ obs.observation_value ]] [[ obs.units ]]
+                    [[ item.observation_name ]]
                     </strong>
                   </div>
-                  <div class="col-md-3">
+                  <div ng-show="!item.observation_value || item.observation_value.length < 50" class="col-md-3">
+                    [[ item.observation_value ]]
+                  </div>
+                  <div ng-show="item.observation_value && item.observation_value.length >= 50" class="col-md-6">
                     <strong>
-                    [[ obs.observation_name ]] [[ obs.observation_value ]] [[ obs.units ]]
+                      [[ item.observation_name ]]
                     </strong>
-                  </div>
-                </div>
-                <div class="row content-offset-10 content-offset-below-10">
-                  <div class="col-md-3">
-                    <b>
-                      Observation datetime
-                    </b>
-                  </div>
-                  <div class="col-md-3">
-                    [[ obs.observation_datetime | displayDate ]]
-                  </div>
-                  <div class="col-md-3">
-                    <b>
-                      Reference range
-                    </b>
-                  </div>
-                  <div class="col-md-3">
-                    [[ obs.reference_range ]]
-                  </div>
-                </div>
-                <div class="row content-offset-10 content-offset-below-10">
-                  <div class="col-md-3">
-                    <b>
-                      Reported datetime
-                    </b>
-                  </div>
-                  <div class="col-md-3">
-                    [[ obs.reported_datetime | displayDate ]]
+                    <div markdown='observation_value'></div>
                   </div>
                   <div class="col-md-3">
                     <b>
@@ -136,9 +120,18 @@
                     </b>
                   </div>
                   <div class="col-md-3">
-                    [[ obs.observation_number ]]
+                    [[ item.observation_number ]]
                   </div>
                 </div>
+                <div ng-show="item.reference_range" class="row content-offset-10 content-offset-below-10">
+                  <div class="col-md-3">
+                    <b>
+                      Reference range
+                    </b>
+                  </div>
+                  <div class="col-md-3">
+                    [[ item.reference_range ]]
+                  </div>
               </span>
             </div>
           </div>
