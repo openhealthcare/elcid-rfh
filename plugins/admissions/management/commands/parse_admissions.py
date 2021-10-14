@@ -2,6 +2,7 @@
 Management command
 """
 import datetime
+from django.db import transaction
 
 from django.core.management.base import BaseCommand
 
@@ -42,7 +43,7 @@ def strip_bedname(bedname):
 
 
 class Command(BaseCommand):
-
+    @transaction.atomic
     def handle(self, *a, **k):
 
         models.UpstreamLocation.objects.all().delete()
