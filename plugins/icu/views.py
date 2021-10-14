@@ -22,8 +22,6 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         """
         Given a WARD_NAME string, return summary info about that ICU ward
         """
-        today = datetime.date.today()
-
         try:
             beds     = ICUWard.objects.get(name=ward_name).beds
         except ICUWard.DoesNotExist:
@@ -38,34 +36,11 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             patient__in=[p.patient for p in handover_patients]
         ).count()
 
-        stays       = [
-            (today - p.admitted).days +1 for p in handover_patients if p.admitted
-        ]
-        staycounter = collections.defaultdict(int)
-
-        for stay in stays:
-            staycounter[stay] += 1
-
-        timeseries = ['Patients']
-        ticks      = ['x']
-
-        if handover_patient_count > 0:
-            y_axis_upper_bound = max(staycounter.values()) + 1
-        else:
-            y_axis_upper_bound = 1
-
-        for stay in sorted(staycounter.keys()):
-            ticks.append(stay)
-            timeseries.append(staycounter[stay])
-
-
         info = {
             'name'          : ward_name,
             'beds'          : beds,
             'patient_count' : handover_patient_count,
             'covid_patients': covid_patients,
-            'stay'          : [ticks, timeseries],
-            'yticks'        : list(range(1, y_axis_upper_bound)),
             'link'          : f'/#/list/upstream/{ward_name}',
             'patients'      : self.get_patient_info(ward_name)
         }
