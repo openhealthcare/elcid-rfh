@@ -129,6 +129,9 @@ directives.directive('fixedHeader', function(){
       var panelHeader = $(".panel-heading.patient-detail-heading");
       var counter = 0;
       var adjustHeights = function(){
+        if(document.documentElement.scrollTop > 100){
+          return;
+        }
         var panelHeaderHeight = panelHeader.height();
 
         // the nav bar collapses at small sizes, accomdate for this.
