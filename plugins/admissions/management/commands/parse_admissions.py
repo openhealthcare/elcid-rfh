@@ -8,6 +8,39 @@ from django.core.management.base import BaseCommand
 from plugins.admissions import models
 
 
+def strip_wardname(wardname):
+    """
+    The same ward can come through with at least two
+    different prefixes. Stripping these allows us
+    to treat them as the same place
+    """
+    if wardname.startswith('RAL '):
+        return wardname.replace('RAL ', '')
+    if wardname.startswith('RF-'):
+        return wardname.replace('RF-', '')
+    return wardname
+
+def strip_bedname(bedname):
+    """
+    The reporting of beds from upstream varies over time
+    we uppercase and remove spaces to avoid duplication
+
+    Occasionally ben names come in just as e.g. 14
+    """
+    name = bedname.upper().replace(' ', '')
+
+    if len(name) == 2:
+        name = f"BED{name}"
+
+    if name.endswith('BED'):
+        name = "BED" + name[:2]
+
+    if name.endswith('COT'):
+        name = "COT" + name[:2]
+
+    return name
+
+
 class Command(BaseCommand):
 
     def handle(self, *a, **k):
@@ -28,17 +61,29 @@ class Command(BaseCommand):
             evn_2_movement_date__isnull=True
         ).order_by('evn_2_movement_date')
 
-        for encounter in encounters:
-            location, _ = models.UpstreamLocation.objects.get_or_create(
-                building=encounter.pv1_3_building,
-                ward=encounter.pv1_3_ward,
-                room=encounter.pv1_3_room,
-                bed=encounter.pv1_3_bed
-            )
-            location.hospital  = encounter.pv1_3_hospital
-            location.patient   = encounter.patient
-            location.admitted  = encounter.pv1_44_admit_date_time
-            location.encounter = encounter
+        beds = {}
 
-            location.save()
-            self.stdout.write('.')
+        for encounter in encounters:
+            key = (
+                encounter.pv1_3_building,
+                strip_wardname(encounter.pv1_3_ward),
+                strip_bedname(encounter.pv1_3_bed)
+            )
+
+            beds[key] = encounter
+
+        locations = [
+            models.UpstreamLocation(
+                building=e.pv1_3_building,
+                ward=strip_wardname(e.pv1_3_ward),
+                room=e.pv1_3_room,
+                bed=strip_bedname(e.pv1_3_bed),
+                hospital=e.pv1_3_hospital,
+                patient=e.patient,
+                admitted=e.pv1_44_admit_date_time,
+                encounter=e
+            )
+            for e in beds.values()
+        ]
+
+        models.UpstreamLocation.objects.bulk_create(locations)
