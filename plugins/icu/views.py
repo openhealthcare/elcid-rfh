@@ -32,17 +32,12 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         """
         Given a WARD_NAME string, return summary info about that ICU ward
         """
-        try:
-            beds     = ICUWard.objects.get(name=ward_name).beds
-        except ICUWard.DoesNotExist:
-            beds = None
         covid_patients = CovidPatient.objects.filter(
             patient__in=patients
         ).count()
 
         info = {
             'name'          : ward_name,
-            'beds'          : beds,
             'patient_count' : len(patients),
             'covid_patients': covid_patients,
             'link'          : f'/#/list/upstream/{ward_name}',
