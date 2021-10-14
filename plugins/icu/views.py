@@ -4,7 +4,6 @@ Views for the ICU plugin
 import collections
 import datetime
 
-from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from opal.models import Episode, Clinical_advice_reason_for_interaction
@@ -13,7 +12,6 @@ from elcid.episode_categories import InfectionService
 from elcid.models import MicrobiologyInput
 from plugins.covid.models import CovidPatient
 
-from plugins.icu import constants
 from plugins.icu.models import ICUWard, ICUHandoverLocation, current_icu_patients
 
 
