@@ -6,7 +6,7 @@
   <ul>
     {% for ward in wards %}
     <li>
-      <a class="pointer" target="#{{ ward.name }}" scroll-on-click >
+      <a class="pointer" target="#{{ ward.name | slugify }}" scroll-on-click >
         {{ ward.name }} ({{ ward.patient_count }})
       </a>
     </li>
@@ -28,7 +28,7 @@
           {% for ward in wards %}
           <div class="row">
             <div class="col-md-9">
-              <h2 id="{{ ward.name }}">
+              <h2 id="{{ ward.name | slugify }}">
                 <a href="{{ ward.link }}">
                   {{ ward.name}}
                 </a>
@@ -62,7 +62,7 @@
                     {{ patient.demographics.date_of_birth }}
                   </td>
                   <td>
-                    {{ patient.handoverlocation.bed }}
+                    {{ patient.bed }}
                   </td>
                   <td>
                     {{ patient.last_review.when }}
