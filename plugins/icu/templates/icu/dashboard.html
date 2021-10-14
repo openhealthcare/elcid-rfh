@@ -6,7 +6,7 @@
   <ul>
     {% for ward in wards %}
     <li>
-      <a class="pointer" target="#{{ ward.name }}" scroll-on-click >
+      <a class="pointer" target="#{{ ward.name | slugify }}" scroll-on-click >
         {{ ward.name }} ({{ ward.patient_count }})
       </a>
     </li>
@@ -28,7 +28,7 @@
           {% for ward in wards %}
           <div class="row">
             <div class="col-md-9">
-              <h2 id="{{ ward.name }}">
+              <h2 id="{{ ward.name | slugify }}">
                 <a href="{{ ward.link }}">
                   {{ ward.name}}
                 </a>
@@ -62,7 +62,7 @@
                     {{ patient.demographics.date_of_birth }}
                   </td>
                   <td>
-                    {{ patient.handoverlocation.bed }}
+                    {{ patient.bed }}
                   </td>
                   <td>
                     {{ patient.last_review.when }}
@@ -100,40 +100,3 @@
   </div>     <!-- Panel -->
 
 </div>   <!-- Col 11 -->
-
-<script>
-
-  var render_graph = function(element_id, data, yticks){
-
-      var config = {
-          bindto: document.getElementById(element_id),
-          data: {
-              columns: data,
-              type: 'bar',
-              x: 'x',
-          },
-          bar: {
-              width: {
-                  ratio: 0.2 // this makes bar width 50% of length between ticks
-              }
-              // or
-              //width: 100 // this makes bar width 100px
-          },
-          axis: {
-              y: {
-                  tick: {'values': yticks}
-              },
-              x: {
-                  label: {text: 'Days since ICU Admission', position: 'outer-middle'},
-                  tick : {
-                      culling: { max: 10 }
-                  }
-              }
-          }
-      }
-
-      c3.generate(config)
-
-  }
-  {% for ward in wards %}render_graph('{{ ward.name }}_graph', {{ ward.stay | safe }}, {{ ward.yticks | safe }} );{% endfor %}
-</script>

@@ -8,6 +8,8 @@ from django.utils import timezone
 from opal.models import (
     Clinical_advice_reason_for_interaction, Patient, PatientSubrecord
 )
+from plugins.icu import constants
+from plugins.admissions.models import UpstreamLocation
 
 
 def parse_icu_location(location_string):
@@ -179,8 +181,8 @@ class ICUHandover(PatientSubrecord):
 def current_icu_patients():
     """
     The upstream Freenet ICU Handover view sometimes leaves patients permanently in
-    an undischarged state when they are on 'ghost' wards - temporary wards that 
-    existed during an ICU surge, and were then removed from the Freenet application 
+    an undischarged state when they are on 'ghost' wards - temporary wards that
+    existed during an ICU surge, and were then removed from the Freenet application
     before all patients had been removed on their database.
 
     We believe a patient is _actually_ on ICU if they either:
@@ -188,7 +190,8 @@ def current_icu_patients():
     - Received ICU clinical advice within the last 4 days
     """
     four_days_ago = timezone.now() - datetime.timedelta(4)
-    patient_ids_within_four_days = set(ICUHandoverLocation.objects.filter(
+    icu_locations = UpstreamLocation.objects.filter(ward__in=constants.WARD_NAMES)
+    patient_ids_within_four_days = set(icu_locations.filter(
         admitted__gte=four_days_ago
     ).values_list('patient_id', flat=True).distinct())
 
