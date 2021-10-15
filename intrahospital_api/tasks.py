@@ -24,13 +24,3 @@ def write_advice_upstream(clinical_advice_id):
         ))
     from intrahospital_api import writeback
     writeback.write_advice_upstream(clinical_advice_id)
-
-
-@shared_task
-def search_upstream_demographics(
-    **kwargs
-):
-    from intrahospital_api import update_demographics
-    return update_demographics.find_patient_upstream(
-        **kwargs
-    )

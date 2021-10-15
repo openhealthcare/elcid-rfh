@@ -18,52 +18,29 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       EDITING_DEMOGRAPHICS: "EDITING_DEMOGRAPHICS",
     }
 
-    scope.pollTask = function(taskId){
-      /*
-      * If we're searching upstream a task ID is returned by the demographics
-      * search url. Poll it to wait for the task to complete and then update
-      * accordingly.
-      */
-      var url = '/elcid/v0.1/upstream_demographics_search/' + taskId + '/'
-      var deferred = $q.defer();
-      var interval = setInterval(function(){
-        $http.get(url).then(function(response){
-          if(response.data.state === 'SUCCESS'){
-            deferred.resolve(response.data.patient_list);
-            clearInterval(interval);
-          }
-          if(response.data.state === 'FAILURE'){
-            deferred.reject();
-            clearInterval(interval);
-          }
-        });
-      }, 500);
-      return deferred.promise;
-    }
-
     scope.getSearch = function(){
       /*
-      * Searches upstream, if it returns a task ID, then
-      * we are searching upstream so we pass through to
-      * the pollTask which will poll the celery task until
-      * we're done.
-      *
-      * The promise this function returns flattens this.
+      * Searches upstream, this can take a while.
+      * subsequent queries after the first work a lot
+      * quicker, so if we fail the first time
+      * try again before rejecting
       */
       var url = '/elcid/v0.1/demographics_search/?';
       var deferred = $q.defer();
       var patientURL = url + $.param(scope.searchQuery);
-      $http.get(patientURL).then(function(response) {
-        if(response.data.task_id){
-          scope.pollTask(response.data.task_id).then(function(patientList){
-            deferred.resolve(patientList);
-          })
-        }
-        else{
+      $http.get(patientURL).then(
+        function(response) {
           deferred.resolve(response.data.patient_list);
-        }
-      }, function(){
-        deferred.reject();
+        },
+        // if we fail we try again
+        function(){
+          $http.get(patientURL).then(function(response) {
+            deferred.resolve(response.data.patient_list);
+          },
+          function(){
+            deferred.reject();
+          }
+        )
       });
 
       return deferred.promise;
@@ -116,7 +93,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       // If its not valid, set the error and return
       var mom = moment(scope.dateOfBirthString, "DD/MM/YYYY")
       if(!mom.isValid()){
-        scope.dateError = "Please enter a valid date";
+        scope.dateError = "Please enter a valid date of the form DD/MM/YYYY";
         return
       }
 
