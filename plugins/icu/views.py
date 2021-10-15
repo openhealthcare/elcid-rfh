@@ -12,7 +12,7 @@ from elcid.episode_categories import InfectionService
 from elcid.models import MicrobiologyInput
 from plugins.admissions.models import UpstreamLocation
 from plugins.covid.models import CovidPatient
-from plugins.icu.models import ICUWard, ICUHandoverLocation, current_icu_patients
+from plugins.icu.models import current_icu_patients
 from plugins.icu import constants
 
 
