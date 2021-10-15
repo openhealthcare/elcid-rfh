@@ -37,7 +37,7 @@ class LabTest(LoginRequiredViewset):
 
     def retrieve(self, request, slug):
         lab_tests = models.LabTest.objects.filter(
-            lab_number__iexact=slug
+            lab_number=slug.upper()
         ).prefetch_related('observation_set')
         if not lab_tests:
             return json_response(
