@@ -52,19 +52,13 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             id__in=patient_ids_within_four_days
         )
 
-    def get_ward_to_patients(self):
-        icu_patients = self.get_current_icu_patients().prefetch_related("upstreamlocation")
-        ward_to_patients = collections.defaultdict(list)
-        for icu_patient in icu_patients:
-            for upstream_location in icu_patient.upstreamlocation.all():
-                if upstream_location.ward in constants.WARD_NAMES:
-                    ward_to_patients[upstream_location.ward].append(icu_patient)
-        return ward_to_patients
-
-    def get_ward_info(self, ward_name, patients):
+    def get_ward_info(self, ward_name):
         """
         Given a WARD_NAME string, return summary info about that ICU ward
         """
+        patients = self.get_current_icu_patients().filter(
+            upstreamlocation__ward=ward_name
+        )
         covid_patients = CovidPatient.objects.filter(
             patient__in=patients
         ).count()
@@ -110,16 +104,17 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *a, **k):
         context = super(ICUDashboardView, self).get_context_data(*a, **k)
-        ward_to_patients = self.get_ward_to_patients()
         wards = []
-        for ward_name, patients in ward_to_patients.items():
-            wards.append(self.get_ward_info(ward_name, patients))
+        for ward_name in constants.WARD_NAMES:
+            ward_info = self.get_ward_info(ward_name)
+            if ward_info["patient_count"]:
+                wards.append(ward_info)
 
         context['wards'] = wards
         context['icu_patients'] = 0
-        if ward_to_patients:
+        if wards:
             context['icu_patients'] = sum(
-                [len(patients) for patients in ward_to_patients.values()]
+                [ward_info["patient_count"] for patients in ward_info]
             )
         context['today'] = datetime.date.today()
         return context
