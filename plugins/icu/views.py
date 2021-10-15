@@ -6,21 +6,54 @@ import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from opal.models import Episode, Clinical_advice_reason_for_interaction
+from django.utils import timezone
+from opal.models import (
+    Episode, Clinical_advice_reason_for_interaction, Patient
+)
 
 from elcid.episode_categories import InfectionService
 from elcid.models import MicrobiologyInput
 from plugins.admissions.models import UpstreamLocation
 from plugins.covid.models import CovidPatient
-from plugins.icu.models import current_icu_patients
 from plugins.icu import constants
 
 
 class ICUDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'icu/dashboard.html'
 
+    def get_current_icu_patients(self):
+        """
+        The upstream Freenet ICU Handover view sometimes leaves patients permanently in
+        an undischarged state when they are on 'ghost' wards - temporary wards that
+        existed during an ICU surge, and were then removed from the Freenet application
+        before all patients had been removed on their database.
+
+        We believe a patient is _actually_ on ICU if they either:
+        - Have an ICU admission date within the last 4 days
+        - Received ICU clinical advice within the last 4 days
+        """
+        four_days_ago = timezone.now() - datetime.timedelta(4)
+        icu_locations = UpstreamLocation.objects.filter(ward__in=constants.WARD_NAMES)
+        patient_ids_within_four_days = set(icu_locations.filter(
+            admitted__gte=four_days_ago
+        ).values_list('patient_id', flat=True).distinct())
+
+        icu_round_reason = Clinical_advice_reason_for_interaction.objects.get(
+            name=MicrobiologyInput.ICU_REASON_FOR_INTERACTION
+        )
+
+        review_within_four_days = set(MicrobiologyInput.objects.filter(
+            when__gte=four_days_ago,
+            reason_for_interaction_fk_id=icu_round_reason.id
+        ).values_list('episode__patient_id', flat=True))
+
+        patient_ids_within_four_days.update(review_within_four_days)
+        return Patient.objects.filter(
+            id__in=patient_ids_within_four_days
+        )
+
     def get_ward_to_patients(self):
-        icu_patients = current_icu_patients().prefetch_related("upstreamlocation")
+        icu_patients = self.get_current_icu_patients().prefetch_related("upstreamlocation")
         ward_to_patients = collections.defaultdict(list)
         for icu_patient in icu_patients:
             for upstream_location in icu_patient.upstreamlocation.all():
@@ -40,7 +73,6 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             'name'          : ward_name,
             'patient_count' : len(patients),
             'covid_patients': covid_patients,
-            'link'          : f'/#/list/upstream/{ward_name}',
             'patients'      : self.get_patient_info(ward_name, patients)
         }
         return info
