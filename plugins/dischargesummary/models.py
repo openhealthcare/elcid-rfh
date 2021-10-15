@@ -18,6 +18,7 @@ class DischargeSummary(models.Model):
     # with patient.demographics().hospital_number
     patient = models.ForeignKey(
         Patient, on_delete=models.CASCADE, related_name='dischargesummaries')
+    created_in_elcid        = models.DateTimeField(auto_now_add=True)
 
     sql_internal_id         = models.IntegerField(blank=True, null=True)
     rf1_number              = models.CharField(blank=True, null=True, max_length=255)
@@ -28,6 +29,7 @@ class DischargeSummary(models.Model):
     date_of_admission       = models.DateTimeField(blank=True, null=True)
     date_of_discharge       = models.DateTimeField(blank=True, null=True)
     last_updated            = models.DateTimeField(blank=True, null=True)
+    last_updated_str        = models.CharField(blank=True, null=True, max_length=255)
     ward_name               = models.CharField(blank=True, null=True, max_length=255)
     consultant_name         = models.CharField(blank=True, null=True, max_length=255)
     consultant_department   = models.CharField(blank=True, null=True, max_length=255)
@@ -55,7 +57,7 @@ class DischargeSummary(models.Model):
         'PATIENT_DOB'           : 'patient_dob',
         'DATE_OF_ADMISSION'     : 'date_of_admission',
         'DATE_OF_DISCHARGE'     : 'date_of_discharge',
-        'LAST_UPDATED'          : 'last_updated',
+        'LAST_UPDATED'          : 'last_updated_str',
         'WARD_NAME'             : 'ward_name',
         'CONSULTANT_NAME'       : 'consultant_name',
         'CONSULTANT_DEPARTMENT' : 'consultant_department',
@@ -130,21 +132,23 @@ class DischargeMedication(models.Model):
         DischargeSummary, on_delete=models.CASCADE, related_name='medications'
     )
 
-    sql_internal_id = models.IntegerField(blank=True, null=True)
-    tta_main_id     = models.IntegerField(blank=True, null=True)
-    last_updated    = models.CharField(blank=True, null=True, max_length=255)
-    drug_name       = models.CharField(blank=True, null=True, max_length=255)
-    dose            = models.CharField(blank=True, null=True, max_length=255)
-    route           = models.CharField(blank=True, null=True, max_length=255)
-    frequency       = models.CharField(blank=True, null=True, max_length=255)
-    duration        = models.CharField(blank=True, null=True, max_length=255)
-    status          = models.CharField(blank=True, null=True, max_length=255)
-    status_comments = models.CharField(blank=True, null=True, max_length=255)
+    sql_internal_id  = models.IntegerField(blank=True, null=True)
+    created_in_elcid = models.DateTimeField(auto_now_add=True)
+    tta_main_id      = models.IntegerField(blank=True, null=True)
+    last_updated_str = models.CharField(blank=True, null=True, max_length=255)
+    last_updated     = models.DateTimeField(blank=True, null=True)
+    drug_name        = models.CharField(blank=True, null=True, max_length=255)
+    dose             = models.CharField(blank=True, null=True, max_length=255)
+    route            = models.CharField(blank=True, null=True, max_length=255)
+    frequency        = models.CharField(blank=True, null=True, max_length=255)
+    duration         = models.CharField(blank=True, null=True, max_length=255)
+    status           = models.CharField(blank=True, null=True, max_length=255)
+    status_comments  = models.CharField(blank=True, null=True, max_length=255)
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'SQL_Internal_ID': 'sql_internal_id',
         'TTA_Main_ID'    : 'tta_main_id',
-        'LAST_UPDATED'   : 'last_updated',
+        'LAST_UPDATED'   : 'last_updated_str',
         'DRUG_NAME'      : 'drug_name',
         'DOSE'           : 'dose',
         'ROUTE'          : 'route',
