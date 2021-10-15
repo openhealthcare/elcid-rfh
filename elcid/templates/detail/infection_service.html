@@ -1,42 +1,44 @@
 {% load panels %}
 {% load forms %}
-<div class="col-md-6">
-  {% record_panel models.Location %}
-  {% record_panel models.Allergies %}
-  {% record_panel models.ICUAdmission %}
-  {% teams_panel %}
-  {% if permissions.view_lab_test_trends %}
-    <div class="panel panel-default">
-      <div class="panel-heading"><h3>
-        {% icon 'fa fa-crosshairs' %} Results
-      </h3></div>
-      <div class="panel-body overflow-x-auto">
-        {% include "partials/lab_test_sparklines.html" with target="patient" %}
+<div ng-if="view == null && episode.category_name == 'Infection Service'">
+  <div class="col-md-6">
+    {% record_panel models.Location %}
+    {% record_panel models.Allergies %}
+    {% record_panel models.ICUAdmission %}
+    {% teams_panel %}
+    {% if permissions.view_lab_test_trends %}
+      <div class="panel panel-default">
+        <div class="panel-heading"><h3>
+          {% icon 'fa fa-crosshairs' %} Results
+        </h3></div>
+        <div class="panel-body overflow-x-auto">
+          {% include "partials/lab_test_sparklines.html" with target="patient" %}
+        </div>
       </div>
+    {% endif %}
+
+
+    {% record_panel models.PrimaryDiagnosis %}
+    {% record_panel models.PastMedicalHistory %}
+    {% record_panel models.Diagnosis %}
+    {% record_panel models.RiskFactor %}
+    {% record_panel models.Travel %}
+    {% record_panel models.Procedure %}
+    <div class="visible-print">
+      {% record_panel models.MicrobiologyInput %}
     </div>
-  {% endif %}
 
-
-  {% record_panel models.PrimaryDiagnosis %}
-  {% record_panel models.PastMedicalHistory %}
-  {% record_panel models.Diagnosis %}
-  {% record_panel models.RiskFactor %}
-  {% record_panel models.Travel %}
-  {% record_panel models.Procedure %}
-  <div class="visible-print">
-    {% record_panel models.MicrobiologyInput %}
+    {% record_panel models.Line %}
+    {% include "partials/antimicrobial_panel.html" %}
+    {% include 'panels/other_medication.html' %}
+    {% include "partials/imaging_panel.html" %}
+    {% record_panel models.OtherInvestigation title="Other Investigations"%}
+    {% include "partials/edrm_panel.html" %}
+    {% include "panels/blood_culture_set.html" %}
+    {% record_panel models.FinalDiagnosis %}
   </div>
-
-  {% record_panel models.Line %}
-  {% include "partials/antimicrobial_panel.html" %}
-  {% include 'panels/other_medication.html' %}
-  {% include "partials/imaging_panel.html" %}
-  {% record_panel models.OtherInvestigation title="Other Investigations"%}
-  {% include "partials/edrm_panel.html" %}
-  {% include "panels/blood_culture_set.html" %}
-  {% record_panel models.FinalDiagnosis %}
-</div>
-<div class="col-md-6">
-  {% record_panel models.InfectionServiceNote %}
-  {% include "inline_forms/clinical_timeline.html" %}
+  <div class="col-md-6">
+    {% record_panel models.InfectionServiceNote %}
+    {% include "inline_forms/clinical_timeline.html" %}
+  </div>
 </div>
