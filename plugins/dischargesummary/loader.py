@@ -22,6 +22,10 @@ Q_GET_ALL_MEDICATIONS = """
 SELECT * FROM VIEW_ElCid_Freenet_TTA_Main
 """
 
+# If a patient is not in our database and they were discharged
+# after 1/10/2021 then add them to the database
+ADD_AFTER = datetime.datetime(2021, 10, 1)
+
 
 def cast_to_datetime(some_str):
     result = None
@@ -63,8 +67,9 @@ def save_discharge_summaries(rows):
     for row in rows:
         hn = row['RF1_NUMBER']
         if hn not in hn_to_patient_ids:
-            discharge_summary = cast_to_instance(DischargeSummary(), row)
-            discharge_summary.patient = create_rfh_patient_from_hospital_number(hn)
+            if row["DATE_OF_DISCHARGE"] > ADD_AFTER:
+                discharge_summary = cast_to_instance(DischargeSummary(), row)
+                discharge_summary.patient = create_rfh_patient_from_hospital_number(hn)
         else:
             for patient_id in hn_to_patient_ids[hn]:
                 discharge_summary = cast_to_instance(DischargeSummary(), row)
@@ -91,9 +96,7 @@ def save_medications(rows):
 
     discharge_medications = []
     for row in rows:
-        if row["tta_main_id"] not in sql_id_to_discharge_summaries:
-            logger.warning(f'Unable to find a discharge summary for {row["tta_main_id"]}')
-        else:
+        if row["tta_main_id"] in sql_id_to_discharge_summaries:
             for discharge_summary in sql_id_to_discharge_summaries[row["tta_main_id"]]:
                 discharge_medication = cast_to_instance(DischargeMedication(), row)
                 discharge_medication.discharge = discharge_summary
