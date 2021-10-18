@@ -535,31 +535,26 @@ class ProdApi(base_api.BaseApi):
             for rows in batch_loader:
                 print(rows)
         """
-        try:
-            with pytds.connect(
-                self.hospital_settings["ip_address"],
-                self.hospital_settings["database"],
-                self.hospital_settings["username"],
-                self.hospital_settings["password"],
-                as_dict=True
-            ) as conn:
-                with conn.cursor() as cur:
-                    logger.info(
-                        "Running upstream query {} {}".format(query, params)
-                    )
-                    cur.execute(query, params)
-                    yield self._generator_hospital_query(cur, batch_size)
-        finally:
-            return
+        with pytds.connect(
+            self.hospital_settings["ip_address"],
+            self.hospital_settings["database"],
+            self.hospital_settings["username"],
+            self.hospital_settings["password"],
+            as_dict=True
+        ) as conn:
+            with conn.cursor() as cur:
+                logger.info(
+                    "Running upstream query {} {}".format(query, params)
+                )
+                yield self._generator_hospital_query(cur, query, params, batch_size)
 
-    def _generator_hospital_query(self, cur, batch_size):
+    def _generator_hospital_query(self, cur, query, params, batch_size):
+        cur.execute(query, params)
         while True:
-            rows = cur.fetchmany(batch_size)
-            if not rows:
+            result = cur.fetchmany(batch_size)
+            if not result:
                 break
-            logger.debug(rows)
-            yield rows
-        return
+            yield result
 
     def execute_trust_query(self, query, params=None):
         with pytds.connect(
