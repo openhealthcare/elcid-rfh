@@ -115,8 +115,8 @@ def load_all_discharge_summaries():
     logger.info(
         f'Deleted discharge summaries/medications in {start_time - deleted_time}'
     )
-    with api.hospital_query_iterator(
-        Q_GET_ALL_SUMMARIES, iterate_count=1000
+    with api.hospital_query_batch_iterator(
+        Q_GET_ALL_SUMMARIES, batch_size=1000
     ) as batch_loader:
         for rows in batch_loader:
             save_discharge_summaries(rows)
@@ -124,8 +124,8 @@ def load_all_discharge_summaries():
     logger.info(
         f'Created discharge summaries in {discharge_summaries_loaded - deleted_time}'
     )
-    with api.hospital_query_iterator(
-        Q_GET_ALL_MEDICATIONS, iterate_count=1000
+    with api.hospital_query_batch_iterator(
+        Q_GET_ALL_MEDICATIONS, batch_size=1000
     ) as batch_loader:
         for rows in batch_loader:
             save_medications(rows)

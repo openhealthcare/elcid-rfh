@@ -548,13 +548,13 @@ class ProdApi(base_api.BaseApi):
                         "Running upstream query {} {}".format(query, params)
                     )
                     cur.execute(query, params)
-                    yield self._generator_hospital_query(cur, iterate_count)
+                    yield self._generator_hospital_query(cur, batch_size)
         finally:
             return
 
-    def _generator_hospital_query(cur, iterate_count):
+    def _generator_hospital_query(self, cur, batch_size):
         while True:
-            rows = cur.fetchmany(iterate_count)
+            rows = cur.fetchmany(batch_size)
             if not rows:
                 break
             logger.debug(rows)
