@@ -159,7 +159,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'axes',
     'reversion',
     'plugins.tb',
     'opal',
