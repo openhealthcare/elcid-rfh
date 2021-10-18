@@ -106,13 +106,13 @@
                     </strong>
                   </div>
                   <div ng-show="!item.observation_value || item.observation_value.length < 50" class="col-md-3">
-                    [[ item.observation_value ]]
+                    [[ item.observation_value ]] [[ item.units ]]
                   </div>
                   <div ng-show="item.observation_value && item.observation_value.length >= 50" class="col-md-6">
                     <strong>
                       [[ item.observation_name ]]
                     </strong>
-                    <div markdown='observation_value'></div>
+                    <span ng-bind-html="item.observation_value + ' ' + item.units | markdown"></span>
                   </div>
                   <div class="col-md-3">
                     <b>
