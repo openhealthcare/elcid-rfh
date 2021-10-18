@@ -9,7 +9,6 @@ from django.db.models import DateTimeField
 from django.utils import timezone
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.dischargesummary import logger
 from plugins.dischargesummary.models import (
     DischargeSummary, DischargeMedication, PatientDischargeSummaryStatus
@@ -52,6 +51,7 @@ def cast_to_instance(instance, row):
 
 
 def save_discharge_summaries(rows):
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
     hns = [row['RF1_NUMBER'] for row in rows]
     hn_to_patient_ids = defaultdict(list)
     demos = Demographics.objects.filter(hospital_number__in=hns)
