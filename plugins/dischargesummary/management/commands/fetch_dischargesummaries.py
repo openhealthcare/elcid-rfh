@@ -15,7 +15,7 @@ class Command(BaseCommand):
         failure_count = 0
         for patient in Patient.objects.all():
             try:
-                loader.load_dischargesummaries(patient)
+                loader.load_all_discharge_summaries(patient)
             except Exception:
                 failure_count += 1
 

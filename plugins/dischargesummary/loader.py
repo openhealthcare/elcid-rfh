@@ -1,110 +1,117 @@
 """
 Load discharge summary data from upstream and save it
 """
+from collections import defaultdict
 import datetime
-
 from django.db import transaction
 from django.db.models import DateTimeField
 from django.utils import timezone
-
+from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-
+from intrahospital_api.loader import create_rfh_patient_from_hospital_number
 from plugins.dischargesummary import logger
 from plugins.dischargesummary.models import (
     DischargeSummary, DischargeMedication, PatientDischargeSummaryStatus
-    )
+)
 
-Q_GET_SUMMARIES = """
-SELECT *
-FROM VIEW_ElCid_Freenet_TTA_Main
-WHERE
-RF1_NUMBER = @mrn
+Q_GET_ALL_SUMMARIES = """
+SELECT * FROM VIEW_ElCid_Freenet_TTA_Main
 """
 
-Q_GET_MEDS_FOR_SUMMARY = """
-SELECT *
-FROM VIEW_ElCid_Freenet_TTA_Drugs
-WHERE
-TTA_Main_ID = @tta_id
+Q_GET_ALL_MEDICATIONS = """
+SELECT * FROM VIEW_ElCid_Freenet_TTA_Main
 """
 
 
-def save_summary_meds(summary, data):
-    """
-    Given a DischargeSummary and the raw data for the meds attached to it,
-    save those meds.
-    """
-    for med in data:
-        our_med = DischargeMedication(discharge=summary)
-        for k, v in med.items():
-            setattr(our_med, DischargeMedication.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
-        our_med.save()
+def cast_to_datetime(some_str):
+    result = None
+    try:
+        result = datetime.datetime.strptime(some_str, '%d/%m/%Y %H:%M:%S')
+    except ValueError:
+        try:
+            result = datetime.datetime.strptime(some_str, '%b %d %Y %I:%M%p')
+        except ValueError:
+            return
+    return timezone.make_aware(result)
 
 
-def load_dischargesummaries(patient):
-    """
-    Given a PATIENT load upstream discharge summary data and save it.
-    """
-    api = ProdAPI()
-
-    demographic = patient.demographics()
-
-    summary_count = patient.dischargesummaries.count()
-
-    summaries = api.execute_hospital_query(
-        Q_GET_SUMMARIES,
-        params={'mrn': demographic.hospital_number}
-    )
-
-    for summary in summaries:
-
-        meds = api.execute_hospital_query(
-            Q_GET_MEDS_FOR_SUMMARY,
-            params={'tta_id': summary['SQL_Internal_ID']}
-        )
-
-
-        parsed = {}
-        for k, v in summary.items():
-            if v: # Ignore empty values
-
-                fieldtype = type(
-                    DischargeSummary._meta.get_field(
-                        DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]
-                    )
+def cast_to_instance(instance, row):
+    for k, v in row.items():
+        if v:  # Ignore empty values
+            fieldtype = type(
+                instance.__class__._meta.get_field(
+                    instance.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]
                 )
-                if fieldtype == DateTimeField:
-                    try:
-                        v = timezone.make_aware(v)
-                    except AttributeError:
-                        # Only some of the "DateTime" fields are typed as such
-                        v = datetime.datetime.strptime(v, '%d/%m/%Y %H:%M:%S')
-                        v = timezone.make_aware(v)
-
-                parsed[DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v
+            )
+            if fieldtype == DateTimeField:
+                v = timezone.make_aware(v)
+            setattr(instance, instance.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
+    instance.updated = cast_to_datetime(instance.updated_str)
+    return instance
 
 
-        our_summary, _ = DischargeSummary.objects.get_or_create(
-            patient=patient,
-            date_of_admission=parsed['date_of_admission'],
-            date_of_discharge=parsed['date_of_discharge']
+def save_discharge_summaries(rows):
+    hns = [row['RF1_NUMBER'] for row in rows]
+    hn_to_patient_ids = defaultdict(list)
+    demos = Demographics.objects.filter(hospital_number__in=hns)
+    for demo in demos:
+        hn_to_patient_ids[demo.hospital_number].append(
+            demo.patient_id
         )
+    discharge_summaries = []
+    for row in rows:
+        hn = row['RF1_NUMBER']
+        if hn not in hn_to_patient_ids:
+            discharge_summary = cast_to_instance(DischargeSummary(), row)
+            discharge_summary.patient = create_rfh_patient_from_hospital_number(hn)
+        else:
+            for patient_id in hn_to_patient_ids[hn]:
+                discharge_summary = cast_to_instance(DischargeSummary(), row)
+                discharge_summary.patient_id = patient_id
+        discharge_summaries.append(discharge_summary)
+    DischargeSummary.objects.bulk_create(discharge_summaries)
+    all_patient_ids = []
+    for patient_ids in hn_to_patient_ids.values():
+        all_patient_ids.extend(patient_ids)
+    PatientDischargeSummaryStatus.objects.filter(
+        patient_id__in=all_patient_ids
+    ).update(
+        has_dischargesummaries=True
+    )
 
-        for k, v in parsed.items():
-            setattr(our_summary, k, v)
 
-        with transaction.atomic():
-            our_summary.save()
-            our_summary.medications.all().delete()
-            save_summary_meds(our_summary, meds)
+def save_medications(rows):
+    discharge_summaries = DischargeSummary.objects.filter(
+        sql_internal_id__in=[row['tta_main_id'] for row in rows]
+    )
+    sql_id_to_discharge_summaries = defaultdict(list)
+    for discharge_summary in discharge_summaries:
+        sql_id_to_discharge_summaries[discharge_summary.sql_internal_id]
 
-        logger.info('Saved DischargeSummary {}'.format(our_summary.pk))
+    discharge_medications = []
+    for row in rows:
+        if row["tta_main_id"] not in sql_id_to_discharge_summaries:
+            logger.warning(f'Unable to find a discharge summary for {row["tta_main_id"]}')
+        else:
+            for discharge_summary in sql_id_to_discharge_summaries[row["tta_main_id"]]:
+                discharge_medication = cast_to_instance(DischargeMedication(), row)
+                discharge_medication.discharge = discharge_summary
+                discharge_medications.append(discharge_medication)
+    DischargeMedication.objects.bulk_create(discharge_medications)
 
-    if summary_count == 0:
-        if len(summaries) > 0:
-            # This is the first summary for this patient.
-            status = PatientDischargeSummaryStatus.objects.get(patient=patient)
-            status.has_dischargesummaries = True
-            status.save()
 
-    return
+@transaction.atomic
+def load_all_discharge_summaries():
+    api = ProdAPI()
+    DischargeSummary.objects.all().delete()
+    DischargeMedication.objects.all().delete()
+    with api.hospital_query_iterator(
+        Q_GET_ALL_SUMMARIES, iterate_count=1000
+    ) as batch_loader:
+        for rows in batch_loader:
+            save_discharge_summaries(rows)
+    with api.hospital_query_iterator(
+        Q_GET_ALL_MEDICATIONS, iterate_count=1000
+    ) as batch_loader:
+        for rows in batch_loader:
+            save_medications(rows)
