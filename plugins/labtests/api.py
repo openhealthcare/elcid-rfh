@@ -6,7 +6,7 @@ from plugins.labtests import models
 
 
 class LabTest(LoginRequiredViewset):
-    base_name = 'lab_test'
+    basename = 'lab_test'
     lookup_field = 'slug'
 
     def serialize_model(self, instance):
