@@ -2,6 +2,7 @@
 Load discharge summary data from upstream and save it
 """
 from collections import defaultdict
+import time
 import datetime
 from django.db import transaction
 from django.db.models import DateTimeField
@@ -102,16 +103,30 @@ def save_medications(rows):
 
 @transaction.atomic
 def load_all_discharge_summaries():
+    logger.info("Loader started")
+    start_time = time.time()
     api = ProdAPI()
     DischargeSummary.objects.all().delete()
     DischargeMedication.objects.all().delete()
+    deleted_time = time.time()
+    logger.info(
+        f'Deleted discharge summaries/medications in {start_time - deleted_time}'
+    )
     with api.hospital_query_iterator(
         Q_GET_ALL_SUMMARIES, iterate_count=1000
     ) as batch_loader:
         for rows in batch_loader:
             save_discharge_summaries(rows)
+    discharge_summaries_loaded = time.time()
+    logger.info(
+        f'Created discharge summaries in {discharge_summaries_loaded - deleted_time}'
+    )
     with api.hospital_query_iterator(
         Q_GET_ALL_MEDICATIONS, iterate_count=1000
     ) as batch_loader:
         for rows in batch_loader:
             save_medications(rows)
+    discharge_medications_loaded = time.time()
+    logger.info(
+        f'Created discharge medications in {discharge_medications_loaded - discharge_summaries_loaded}'
+    )
