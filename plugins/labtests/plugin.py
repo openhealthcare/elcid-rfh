@@ -9,7 +9,15 @@ from plugins.labtests import api
 
 class LabtestsPlugin(plugins.OpalPlugin):
     urls = urlpatterns
-    javascripts = {}
+
+    javascripts = {
+        'opal.controllers': [
+            'labtests/js/controllers/lab_detail.js',
+        ],
+        'opal.services': [
+            'labtests/js/services/lab_detail_loader.js',
+        ]
+    }
 
     apis = [
         (api.LabTest.base_name, api.LabTest,),
