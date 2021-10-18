@@ -6,6 +6,7 @@ import time
 import datetime
 from django.db import transaction
 from django.db.models import DateTimeField
+from elcid.episode_categories import InfectionService
 from django.utils import timezone
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
@@ -19,7 +20,7 @@ SELECT * FROM VIEW_ElCid_Freenet_TTA_Main
 """
 
 Q_GET_ALL_MEDICATIONS = """
-SELECT * FROM VIEW_ElCid_Freenet_TTA_Main
+SELECT * FROM VIEW_ElCid_Freenet_TTA_Drugs
 """
 
 # If a patient is not in our database and they were discharged
@@ -50,7 +51,7 @@ def cast_to_instance(instance, row):
             if fieldtype == DateTimeField:
                 v = timezone.make_aware(v)
             setattr(instance, instance.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
-    instance.updated = cast_to_datetime(instance.updated_str)
+    instance.last_updated = cast_to_datetime(instance.last_updated_str)
     return instance
 
 
@@ -67,14 +68,18 @@ def save_discharge_summaries(rows):
     for row in rows:
         hn = row['RF1_NUMBER']
         if hn not in hn_to_patient_ids:
-            if row["DATE_OF_DISCHARGE"] > ADD_AFTER:
+            significant_date = row["DATE_OF_DISCHARGE"] or row["DATE_OF_ADMISSION"]
+            if significant_date and significant_date > ADD_AFTER:
                 discharge_summary = cast_to_instance(DischargeSummary(), row)
-                discharge_summary.patient = create_rfh_patient_from_hospital_number(hn)
+                discharge_summary.patient = create_rfh_patient_from_hospital_number(
+                    hn, InfectionService
+                )
+                discharge_summaries.append(discharge_summary)
         else:
             for patient_id in hn_to_patient_ids[hn]:
                 discharge_summary = cast_to_instance(DischargeSummary(), row)
                 discharge_summary.patient_id = patient_id
-        discharge_summaries.append(discharge_summary)
+                discharge_summaries.append(discharge_summary)
     DischargeSummary.objects.bulk_create(discharge_summaries)
     all_patient_ids = []
     for patient_ids in hn_to_patient_ids.values():
@@ -88,19 +93,20 @@ def save_discharge_summaries(rows):
 
 def save_medications(rows):
     discharge_summaries = DischargeSummary.objects.filter(
-        sql_internal_id__in=[row['tta_main_id'] for row in rows]
+        sql_internal_id__in=[row['TTA_Main_ID'] for row in rows]
     )
     sql_id_to_discharge_summaries = defaultdict(list)
     for discharge_summary in discharge_summaries:
-        sql_id_to_discharge_summaries[discharge_summary.sql_internal_id]
+        sql_id_to_discharge_summaries[discharge_summary.sql_internal_id].append(discharge_summary)
 
     discharge_medications = []
     for row in rows:
-        if row["tta_main_id"] in sql_id_to_discharge_summaries:
-            for discharge_summary in sql_id_to_discharge_summaries[row["tta_main_id"]]:
-                discharge_medication = cast_to_instance(DischargeMedication(), row)
-                discharge_medication.discharge = discharge_summary
-                discharge_medications.append(discharge_medication)
+        for discharge_summary in sql_id_to_discharge_summaries.get(
+            row["TTA_Main_ID"], []
+        ):
+            discharge_medication = cast_to_instance(DischargeMedication(), row)
+            discharge_medication.discharge = discharge_summary
+            discharge_medications.append(discharge_medication)
     DischargeMedication.objects.bulk_create(discharge_medications)
 
 
