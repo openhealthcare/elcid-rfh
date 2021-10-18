@@ -112,7 +112,7 @@ app.config(
                      referencedata: function(Referencedata) { return Referencedata; },
                  },
              })
-             .when('/lab_test/:lab_number/',      {
+             .when('/lab-test/:lab_number/',      {
                 controller: function($scope, lab_number, lab_data){
                     $scope.lab_number = lab_number;
                     $scope.lab_data = lab_data;
