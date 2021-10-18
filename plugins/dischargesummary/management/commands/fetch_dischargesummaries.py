@@ -12,17 +12,4 @@ from plugins.dischargesummary import loader, logger
 class Command(BaseCommand):
 
     def handle(self, *a, **k):
-        failure_count = 0
-        for patient in Patient.objects.all():
-            try:
-                loader.load_all_discharge_summaries(patient)
-            except Exception:
-                failure_count += 1
-
-        if failure_count:
-            msg = "Failed to load dischargesummaries for {} patients".format(
-                failure_count
-            )
-            msg += "\nLast exception \n{}".format(traceback.format_exc())
-            logger.error(msg)
-        return
+        loader.load_all_discharge_summaries()
