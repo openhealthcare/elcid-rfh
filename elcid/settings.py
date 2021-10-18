@@ -182,7 +182,7 @@ INSTALLED_APPS = (
     'elcid',
     'passwordreset',
     'django.contrib.admin',
-    'djcelery',
+    'django_celery_results',
     'obs',
 )
 
@@ -196,6 +196,9 @@ API_USER = "needs to be set"
 
 # this needs to be set to true on prod
 ASYNC_API = False
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
 
 # if the intrahospital api is prod
 # there 2 databases
