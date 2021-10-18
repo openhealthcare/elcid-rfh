@@ -23,20 +23,17 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
     def get_current_icu_patients(self):
         """
-        The upstream Freenet ICU Handover view sometimes leaves patients permanently in
-        an undischarged state when they are on 'ghost' wards - temporary wards that
-        existed during an ICU surge, and were then removed from the Freenet application
-        before all patients had been removed on their database.
+        We look at an intersect of all patients who have an upstream
+        location in one of the ICU wards and who have ICU clinical advice.
 
-        We believe a patient is _actually_ on ICU if they either:
-        - Have an ICU admission date within the last 4 days
-        - Received ICU clinical advice within the last 4 days
+        This is to fix issues where the patients location may not have been
+        updated.
         """
         four_days_ago = timezone.now() - datetime.timedelta(4)
         icu_locations = UpstreamLocation.objects.filter(ward__in=constants.WARD_NAMES)
-        patient_ids_within_four_days = set(icu_locations.filter(
-            admitted__gte=four_days_ago
-        ).values_list('patient_id', flat=True).distinct())
+        patient_ids_within_four_days = set(
+            icu_locations.values_list('patient_id', flat=True).distinct()
+        )
 
         icu_round_reason = Clinical_advice_reason_for_interaction.objects.get(
             name=MicrobiologyInput.ICU_REASON_FOR_INTERACTION
