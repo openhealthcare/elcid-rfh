@@ -570,4 +570,12 @@ div.add-isolate:hover {
 .nowrap {
   white-space: nowrap;
 }
+
+.navbar li .services-dropdown-item a {
+  padding: 16px;
+}
+
+.navbar-nav li.dropdown:hover a {
+  background: transparent;
+}
 /*# sourceMappingURL=elcid.css.map */
