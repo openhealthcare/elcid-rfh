@@ -23,6 +23,22 @@ Q_GET_ALL_MEDICATIONS = """
 SELECT * FROM VIEW_ElCid_Freenet_TTA_Drugs
 """
 
+Q_GET_SUMMARIES_FOR_MRN = """
+SELECT *
+FROM VIEW_ElCid_Freenet_TTA_Main
+WHERE
+RF1_NUMBER = @mrn
+"""
+
+Q_GET_MEDICATIONS_FOR_MRN = """
+SELECT * FROM VIEW_ElCid_Freenet_TTA_Drugs
+WHERE TTA_Main_ID IN (
+    SELECT SQL_Internal_ID FROM
+    VIEW_ElCid_Freenet_TTA_Main
+    WHERE RF1_NUMBER = @mrn
+)
+"""
+
 # If a patient is not in our database and they were discharged
 # after 1/10/2021 then add them to the database
 ADD_AFTER = datetime.datetime(2021, 10, 1)
@@ -116,7 +132,6 @@ def load_all_discharge_summaries():
     start_time = time.time()
     api = ProdAPI()
     DischargeSummary.objects.all().delete()
-    DischargeMedication.objects.all().delete()
     deleted_time = time.time()
     logger.info(
         f'Deleted discharge summaries/medications in {start_time - deleted_time}'
@@ -139,3 +154,20 @@ def load_all_discharge_summaries():
     logger.info(
         f'Created discharge medications in {discharge_medications_loaded - discharge_summaries_loaded}'
     )
+
+
+@transaction.atomic
+def load_discharge_summaries(patient):
+    api = ProdAPI()
+    mrn = patient.demographics_set.all()[0].hospital_number
+    DischargeSummary.objects.filter(
+        patient__demographics__hospital_number=mrn
+    ).delete()
+    discharge_summary_rows = api.execute_hospital_query(
+        Q_GET_SUMMARIES_FOR_MRN, params={"mrn": mrn}
+    )
+    save_discharge_summaries(discharge_summary_rows)
+    discharge_medication_rows = api.execute_hospital_query(
+        Q_GET_MEDICATIONS_FOR_MRN, params={"mrn": mrn}
+    )
+    save_medications(discharge_medication_rows)
