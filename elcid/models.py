@@ -306,7 +306,7 @@ class MicrobiologyInput(EpisodeSubrecord):
     _modal = 'lg'
     _list_limit = 3
     ICU_REASON_FOR_INTERACTION = "ICU round"
-
+    ICU_WARD_REVIEW_REASON_FOR_INTERACTION = "ICN Ward Review"
     ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"
 
     when = models.DateTimeField(null=True, blank=True)
@@ -327,6 +327,7 @@ class MicrobiologyInput(EpisodeSubrecord):
     maximum_temperature = models.IntegerField(null=True, blank=True)
     renal_function = ForeignKeyOrFreeText(RenalFunction)
     liver_function = ForeignKeyOrFreeText(LiverFunction)
+    sent_upstream = models.BooleanField(default=False)
 
     def to_dict(self, *args, **kwargs):
         result = super().to_dict(*args, **kwargs)

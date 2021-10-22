@@ -1,1 +1,2 @@
 0 12 * * 1,2,3,4,5 {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py feed_alert_email >> /usr/lib/ohc/log/cron.log 2>&1
+23 * * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py write_old_advice_to_epr >> /usr/lib/ohc/log/cron.log 2>&1
