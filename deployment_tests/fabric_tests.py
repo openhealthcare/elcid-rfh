@@ -147,9 +147,9 @@ class EnvTestCase(FabfileTestCase):
             "/home/ohc/.virtualenvs/elcidrfh-some_branch"
         )
 
-    def test_database_name(self):
+    def test_databasename(self):
         self.assertEqual(
-            self.env.database_name,
+            self.env.databasename,
             "elcidrfh_some_branch"
         )
 
@@ -1362,7 +1362,7 @@ class DumpAndCopyTestCase(FabfileTestCase):
         Env.return_value = self.env
         fabfile.dump_and_copy("some_env")
         dump_database.assert_called_once_with(
-            self.env, self.env.database_name, self.env.backup_name
+            self.env, self.env.databasename, self.env.backup_name
         )
         copy_backup.assert_called_once_with(self.env)
         clean_old_backups.assert_called_once_with()
