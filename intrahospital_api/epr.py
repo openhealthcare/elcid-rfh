@@ -144,11 +144,19 @@ def write_old_advice_upstream():
     log_prefix = "Intrahospital API.write_old_advice_upstream:"
     logger.info(f'{log_prefix} Starting to write old clinical advice to EPR')
     four_hours_ago = timezone.now() - datetime.timedelta(hours=4)
-    advice = MicrobiologyInput.objects.filter(
-      when__lt=four_hours_ago
+    advice = list(MicrobiologyInput.objects.filter(
+      created__lt=four_hours_ago
     ).filter(
       sent_upstream=False
-    )
+    ).exclude(
+      updated__gte=four_hours_ago
+    ))
+    advice += list(MicrobiologyInput.objects.filter(
+      updated__lt=four_hours_ago
+    ).filter(
+      sent_upstream=False
+    ))
+    advice = list(set(advice))
     ward_round_intraction = MicrobiologyInput.ICU_WARD_REVIEW_REASON_FOR_INTERACTION
     to_send = [
       i for i in advice if i.reason_for_interaction == ward_round_intraction
