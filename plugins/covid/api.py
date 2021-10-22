@@ -14,7 +14,7 @@ from plugins.imaging.models import Imaging
 
 
 class CovidServiceTestSummaryAPI(InfectionServiceTestSummaryAPI):
-    basename = 'covid_service_summary_api'
+    base_name = 'covid_service_summary_api'
 
     RELEVANT_TESTS = OrderedDict((
         ("FULL BLOOD COUNT", ["Lymphocytes", "Neutrophils"],),
@@ -29,7 +29,7 @@ class CovidServiceTestSummaryAPI(InfectionServiceTestSummaryAPI):
 
 
 class CovidCXRViewSet(LoginRequiredViewset):
-    basename = 'covid_cxr'
+    base_name = 'covid_cxr'
 
     def retrieve(self, request, pk):
         patient = get_object_or_404(Patient.objects.all(), pk=pk)

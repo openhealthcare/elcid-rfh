@@ -8,7 +8,7 @@ from opal.core.views import json_response
 
 
 class AMTHandoverViewSet(LoginRequiredViewset):
-    basename = 'amthandovers'
+    base_name = 'amthandovers'
 
     def retrieve(self, request, pk):
         patient = get_object_or_404(Patient.objects.all(), pk=pk)
@@ -19,7 +19,7 @@ class AMTHandoverViewSet(LoginRequiredViewset):
 
 
 class NursingHandoverViewSet(LoginRequiredViewset):
-    basename = 'nursinghandovers'
+    base_name = 'nursinghandovers'
 
     def retrieve(self, request, pk):
         patient = get_object_or_404(Patient.objects.all(), pk=pk)

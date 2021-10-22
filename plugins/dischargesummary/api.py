@@ -8,7 +8,7 @@ from opal.core.views import json_response
 
 
 class DischargeSummaryViewSet(LoginRequiredViewset):
-    basename = 'dischargesummaries'
+    base_name = 'dischargesummaries'
 
     def retrieve(self, request, pk):
         patient = get_object_or_404(Patient.objects.all(), pk=pk)

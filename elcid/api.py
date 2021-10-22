@@ -65,7 +65,7 @@ class LabTestResultsView(LoginRequiredViewset):
     The API endpoint that returns data for the test results view on the
     patient detail page.
     """
-    basename = 'lab_test_results_view'
+    base_name = 'lab_test_results_view'
 
     def get_non_comments_for_patient(self, patient):
         """
@@ -267,7 +267,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
 
 class InfectionServiceTestSummaryApi(LoginRequiredViewset):
-    basename = 'infection_service_summary_api'
+    base_name = 'infection_service_summary_api'
     RELEVANT_TESTS = OrderedDict((
         ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
         ("CLOTTING SCREEN", ["INR"],),
@@ -495,7 +495,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         lab_number
         observation name
     """
-    basename = "upstream_blood_culture_results"
+    base_name = "upstream_blood_culture_results"
 
     def no_growth_observations(self, observations):
         """
@@ -552,7 +552,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 
 class DemographicsSearch(LoginRequiredViewset):
-    basename = 'demographics_search'
+    base_name = 'demographics_search'
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
     PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
     PATIENT_NOT_FOUND = "patient_not_found"
@@ -585,7 +585,7 @@ class DemographicsSearch(LoginRequiredViewset):
 
 class BloodCultureIsolateApi(SubrecordViewSet):
     model = emodels.BloodCultureIsolate
-    basename = emodels.BloodCultureIsolate.get_api_name()
+    base_name = emodels.BloodCultureIsolate.get_api_name()
 
     def create(self, request):
         bc = self.model()
@@ -597,7 +597,7 @@ class BloodCultureIsolateApi(SubrecordViewSet):
 
 
 class AddToServiceViewSet(LoginRequiredViewset):
-    basename = 'add_to_service'
+    base_name = 'add_to_service'
 
     @patient_from_pk
     def update(self, request, patient):
@@ -629,10 +629,10 @@ class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
 
 elcid_router = OPALRouter()
 elcid_router.register(
-    UpstreamBloodCultureApi.basename, UpstreamBloodCultureApi
+    UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
 )
-elcid_router.register(DemographicsSearch.basename, DemographicsSearch)
-elcid_router.register(BloodCultureIsolateApi.basename, BloodCultureIsolateApi)
+elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
+elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
 lab_test_router.register(

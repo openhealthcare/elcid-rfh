@@ -20,5 +20,5 @@ class LabtestsPlugin(plugins.OpalPlugin):
     }
 
     apis = [
-        (api.LabTest.basename, api.LabTest,),
+        (api.LabTest.base_name, api.LabTest,),
     ]

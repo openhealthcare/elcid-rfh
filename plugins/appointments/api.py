@@ -8,7 +8,7 @@ from opal.core.views import json_response
 
 
 class AppointmentViewSet(LoginRequiredViewset):
-    basename = 'appointment'
+    base_name = 'appointment'
 
     def retrieve(self, request, pk):
         patient = get_object_or_404(Patient.objects.all(), pk=pk)

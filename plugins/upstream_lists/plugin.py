@@ -10,5 +10,5 @@ class UpstreamListPlugin(plugins.OpalPlugin):
     urls = urlpatterns
 
     apis = [
-        (api.UpstreamPatientListViewSet.basename, api.UpstreamPatientListViewSet)
+        (api.UpstreamPatientListViewSet.base_name, api.UpstreamPatientListViewSet)
     ]
