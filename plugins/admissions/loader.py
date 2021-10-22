@@ -157,31 +157,6 @@ def load_excounters_since(timestamp):
         )
 
 
-def load_transfer_history():
-    """
-    TEMP ONLY
-    """
-    api = ProdAPI()
-
-    histories = api.execute_warehouse_query(
-        Q_GET_ALL_HISTORY
-    )
-    for history in histories:
-
-        try:
-            hist = TransferHistory()
-            for k, v in history.items():
-                setattr(
-                    hist,
-                    TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
-                    v
-                )
-            hist.save()
-        except:
-            print(history)
-            raise
-
-
 def cast_to_transfer_history(upstream_dict):
     hist = TransferHistory()
     for k, v in upstream_dict.items():
