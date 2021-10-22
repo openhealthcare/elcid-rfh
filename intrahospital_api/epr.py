@@ -23,10 +23,13 @@ Date_Sent_to_Cerner datetime NULL, --# Date/time Stamp sent to Cerner
 Cerner_HL7_Message varchar (max) NULL, --# User visible agreed plan
 id int IDENTITY(1,1) NOT NULL,
 """
+import datetime
 from django.conf import settings
+from django.utils import timezone
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from elcid import models as elcid_models
+from intrahospital_api import logger
+from elcid.models import MicrobiologyInput
 from plugins.tb import models as tb_models
 
 
@@ -96,7 +99,7 @@ def write_clinical_advice(advice):
         'note_subject'     : f'elCID {advice.reason_for_interaction}'.strip(),
     }
 
-    if isinstance(advice, elcid_models.MicrobiologyInput):
+    if isinstance(advice, MicrobiologyInput):
         rfi = advice.reason_for_interaction
         if rfi == advice.ICU_WARD_REVIEW_REASON_FOR_INTERACTION:
             note_data["note_type"] = "Infection Control Consult Note"
@@ -131,3 +134,33 @@ def write_clinical_advice(advice):
     advice.sent_upstream = True
     advice.save()
     return True
+
+
+def write_old_advice_upstream():
+    """
+    If ICU ward round clinical advice has not been manually
+    sent upstream then write it back after four hours
+    """
+    log_prefix = "Intrahospital API.write_old_advice_upstream:"
+    logger.info(f'{log_prefix} Starting to write old clinical advice to EPR')
+    four_hours_ago = timezone.now() - datetime.timedelta(hours=4)
+    advice = MicrobiologyInput.objects.filter(
+      when__lt=four_hours_ago
+    ).filter(
+      sent_upstream=False
+    )
+    ward_round_intraction = MicrobiologyInput.ICU_WARD_REVIEW_REASON_FOR_INTERACTION
+    to_send = [
+      i for i in advice if i.reason_for_interaction == ward_round_intraction
+    ]
+    failed = 0
+    for advice in to_send:
+        try:
+            write_clinical_advice(advice)
+        except Exception:
+            failed += 1
+    if failed:
+        logger.error(
+          f'{log_prefix} Unable to write back {failed} old clinical advice to EPR'
+        )
+    logger.info(f'{log_prefix} written {len(to_send)} old clinical advice to EPR')
