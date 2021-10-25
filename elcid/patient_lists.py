@@ -25,6 +25,7 @@ PATIENT_LIST_SUBRECORDS = [
 class RfhPatientList(AbstractBase):
     comparator_service = "EpisodeAddedComparator"
     order = 50
+    episode_category = InfectionService
 
     def to_dict(self, user):
         qs = super(RfhPatientList, self).get_queryset()
