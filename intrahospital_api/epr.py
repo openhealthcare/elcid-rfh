@@ -79,7 +79,7 @@ def get_note_text(advice, *fields):
 
         if getattr(advice, field):
             fieldname = field.replace('_', ' ').capitalize()
-            sections.append(f"\n{fieldname}\n")
+            sections.append(f"\n** {fieldname} **\n")
             sections.append(getattr(advice, field))
 
     return "\n".join(sections)
