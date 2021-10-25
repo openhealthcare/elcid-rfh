@@ -554,7 +554,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 class DemographicsSearch(LoginRequiredViewset):
     basename = 'demographics_search'
->>>>>>> epr
+
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
     PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
     PATIENT_NOT_FOUND = "patient_not_found"
