@@ -268,6 +268,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
 class InfectionServiceTestSummaryApi(LoginRequiredViewset):
     basename = 'infection_service_summary_api'
+
     RELEVANT_TESTS = OrderedDict((
         ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
         ("CLOTTING SCREEN", ["INR"],),
@@ -553,6 +554,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 class DemographicsSearch(LoginRequiredViewset):
     basename = 'demographics_search'
+>>>>>>> epr
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
     PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
     PATIENT_NOT_FOUND = "patient_not_found"
@@ -618,12 +620,14 @@ class AbstractSendUpstreamViewSet(LoginRequiredViewset):
 
 
 class SendMicroBiologyUpstream(AbstractSendUpstreamViewSet):
-    base_name = "send_upstream"
+    basename = "send_upstream"
+
     model = emodels.MicrobiologyInput
 
 
 class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
-    base_name = "send_pc_upstream"
+    basename = "send_pc_upstream"
+
     model = tb_models.PatientConsultation
 
 
