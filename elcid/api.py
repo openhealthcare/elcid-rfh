@@ -621,20 +621,22 @@ class AbstractSendUpstreamViewSet(LoginRequiredViewset):
 
 class SendMicroBiologyUpstream(AbstractSendUpstreamViewSet):
     basename = "send_upstream"
+
     model = emodels.MicrobiologyInput
 
 
 class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
     basename = "send_pc_upstream"
+
     model = tb_models.PatientConsultation
 
 
 elcid_router = OPALRouter()
 elcid_router.register(
-    UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
+    UpstreamBloodCultureApi.basename, UpstreamBloodCultureApi
 )
-elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
-elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
+elcid_router.register(DemographicsSearch.basename, DemographicsSearch)
+elcid_router.register(BloodCultureIsolateApi.basename, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
 lab_test_router.register(
@@ -644,8 +646,8 @@ lab_test_router.register('lab_test_results_view', LabTestResultsView)
 
 
 opal_router.register('add_to_service', AddToServiceViewSet)
-opal_router.register(SendMicroBiologyUpstream.base_name, SendMicroBiologyUpstream)
+opal_router.register(SendMicroBiologyUpstream.basename, SendMicroBiologyUpstream)
 opal_router.register(
-    SendPatientConsultationUpstream.base_name,
+    SendPatientConsultationUpstream.basename,
     SendPatientConsultationUpstream
 )
