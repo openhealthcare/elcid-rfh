@@ -122,10 +122,11 @@ def write_clinical_advice(advice):
     elif isinstance(advice, tb_models.PatientConsultation):
         note_data["note_type"] = 'Respiratory Medicine Consult Note'
         note_data["note"] = get_note_text(
-          advice,
-          "infection_control",
-          "discussion",
-          "plan"
+            advice,
+            "infection_control",
+            "progress",
+            "discussion",
+            "plan"
         )
     else:
         raise ValueError(
