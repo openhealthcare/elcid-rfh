@@ -73,7 +73,16 @@ def get_note_text(advice, *fields):
     Given an instance of a model and a list of fields return
     the fields as a new line seperated string
     """
-    return "\n".join(getattr(advice, i) for i in fields)
+    sections = []
+
+    for field in fields:
+
+        if getattr(advice, field):
+            fieldname = field.replace('_', ' ').capitalize()
+            sections.append(f"{fieldname}\n")
+            sections.append(getattr(advice, field))
+
+    return "\n".join(sections)
 
 
 def write_clinical_advice(advice):
@@ -98,13 +107,12 @@ def write_clinical_advice(advice):
 
     if isinstance(advice, elcid_models.MicrobiologyInput):
         rfi = advice.reason_for_interaction
-        if rfi == advice.ICU_WARD_REVIEW_REASON_FOR_INTERACTION:
+        if rfi == advice.ICN_WARD_REVIEW_REASON_FOR_INTERACTION:
             note_data["note_type"] = "Infection Control Consult Note"
         else:
             note_data["note_type"] = 'Microbiology/Virology Consult Note'
         note_data["note"] = get_note_text(
           advice,
-          "reason_for_interaction",
           "clinical_discussion",
           "infection_control",
           "agreed_plan"
@@ -113,7 +121,6 @@ def write_clinical_advice(advice):
         note_data["note_type"] = 'Respiratory Medicine Consult Note'
         note_data["note"] = get_note_text(
           advice,
-          "reason_for_interaction",
           "infection_control",
           "discussion",
           "plan"
