@@ -646,8 +646,8 @@ lab_test_router.register('lab_test_results_view', LabTestResultsView)
 
 
 opal_router.register('add_to_service', AddToServiceViewSet)
-opal_router.register(SendMicroBiologyUpstream.base_name, SendMicroBiologyUpstream)
+opal_router.register(SendMicroBiologyUpstream.basename, SendMicroBiologyUpstream)
 opal_router.register(
-    SendPatientConsultationUpstream.base_name,
+    SendPatientConsultationUpstream.basename,
     SendPatientConsultationUpstream
 )
