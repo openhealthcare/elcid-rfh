@@ -16,7 +16,7 @@ from plugins.monitoring.models import Fact
 class Command(BaseCommand):
 
     def handle(self, *a, **k):
-        three_days_ago = datetime.date.today() - datetime.timdelta(3)
+        three_days_ago = datetime.date.today() - datetime.timedelta(3)
         time_start = time.time()
         try:
             loader.load_discharge_summaries_since(three_days_ago)

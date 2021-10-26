@@ -144,8 +144,8 @@ def delete_existing_summaries(rows):
     for row in rows:
         DischargeSummary.objects.filter(
             patient__demographics__hospital_number=row['RF1_NUMBER'],
-            date_of_admission=timezone.make_aware(row["date_of_admission"]),
-            date_of_discharge=timezone.make_aware(row["date_of_discharge"]),
+            date_of_admission=timezone.make_aware(row["DATE_OF_ADMISSION"]),
+            date_of_discharge=timezone.make_aware(row["DATE_OF_DISCHARGE"]),
         ).delete()
 
 
