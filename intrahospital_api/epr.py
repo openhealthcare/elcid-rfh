@@ -83,8 +83,8 @@ def get_note_text(advice, *fields):
             sections.append(getattr(advice, field))
 
     text = "\n".join(sections)
-    text += "\n\nEND OF NOTE\n\n"
-    return text
+    final_text = f"\n{text}\n\nEND OF NOTE\n\n"
+    return final_text
 
 
 def write_clinical_advice(advice):
