@@ -83,6 +83,19 @@ def get_note_text(advice, *fields):
             sections.append(f"\n** {fieldname} **\n")
             sections.append(getattr(advice, field))
 
+    user = None
+    if advice.created_by:
+        user = advice.created_by
+    if advice.updated_by:
+        user = advice.updated_by
+
+    if user:
+        user_string = f"{user.get_full_name()} {user.email} {user.username}"
+
+        sections.append(f"\n** Written by **\n")
+        sections.append(user_string)
+
+
     text = "\n".join(sections)
     final_text = f"\n{text}\n\nEND OF NOTE\n\n"
     return final_text
@@ -115,10 +128,11 @@ def write_clinical_advice(advice):
         else:
             note_data["note_type"] = 'Microbiology/Virology Consult Note'
         note_data["note"] = get_note_text(
-          advice,
-          "clinical_discussion",
-          "infection_control",
-          "agreed_plan"
+            advice,
+            "clinical_discussion",
+            "infection_control",
+            "agreed_plan",
+            "initials"
         )
     elif isinstance(advice, tb_models.PatientConsultation):
         note_data["note_type"] = 'Respiratory Medicine Consult Note'
@@ -127,7 +141,8 @@ def write_clinical_advice(advice):
             "infection_control",
             "progress",
             "discussion",
-            "plan"
+            "plan",
+            "initials"
         )
     else:
         raise ValueError(
