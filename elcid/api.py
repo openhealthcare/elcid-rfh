@@ -1,29 +1,27 @@
 """
 API endpoints for the elCID application
 """
-import datetime
-import re
 from collections import defaultdict, OrderedDict
-from operator import itemgetter
 
 from django.conf import settings
-from django.utils.text import slugify
 from django.http import HttpResponseBadRequest
 from rest_framework import viewsets, status
-from opal.core.api import router as opal_router
+from opal.core.api import item_from_pk, router as opal_router
 from opal.core.api import (
     OPALRouter, patient_from_pk, LoginRequiredViewset, SubrecordViewSet
 )
 from opal.core.views import json_response
 from opal.core import serialization
-from opal.models import Episode, Tagging
+from opal.models import Tagging
 
 from elcid import patient_lists
-from intrahospital_api import loader
+from intrahospital_api import loader, epr
+from intrahospital_api import constants as intrahospital_api_constants
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
 
 from elcid import models as emodels
+from plugins.tb import models as tb_models
 
 
 _ALWAYS_SHOW_AS_TABULAR = [
@@ -271,6 +269,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
 class InfectionServiceTestSummaryApi(LoginRequiredViewset):
     base_name = 'infection_service_summary_api'
+
     RELEVANT_TESTS = OrderedDict((
         ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
         ("CLOTTING SCREEN", ["INR"],),
@@ -556,6 +555,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 class DemographicsSearch(LoginRequiredViewset):
     base_name = 'demographics_search'
+
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
     PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
     PATIENT_NOT_FOUND = "patient_not_found"
@@ -599,7 +599,6 @@ class BloodCultureIsolateApi(SubrecordViewSet):
         )
 
 
-
 class AddToServiceViewSet(LoginRequiredViewset):
     base_name = 'add_to_service'
 
@@ -609,6 +608,41 @@ class AddToServiceViewSet(LoginRequiredViewset):
         return json_response({
             'status_code': status.HTTP_202_ACCEPTED
         })
+
+
+class AbstractSendUpstreamViewSet(LoginRequiredViewset):
+    def is_allowed(self):
+        return self.request.user.profile.roles.filter(
+            name=intrahospital_api_constants.SEND_TO_EPR
+        ).exists()
+
+    @item_from_pk
+    def update(self, request, item):
+        if not self.is_allowed():
+            return json_response({
+                'status_code': status.HTTP_403_FORBIDDEN
+            })
+
+        epr.write_clinical_advice(item)
+
+        return json_response({
+            'status_code': status.HTTP_202_ACCEPTED
+        })
+
+
+class SendMicroBiologyUpstream(AbstractSendUpstreamViewSet):
+    base_name = "send_upstream"
+
+    model = emodels.MicrobiologyInput
+
+
+class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
+    base_name = "send_pc_upstream"
+
+    def is_allowed(self):
+        return self.request.user.is_superuser
+
+    model = tb_models.PatientConsultation
 
 
 elcid_router = OPALRouter()
@@ -626,3 +660,8 @@ lab_test_router.register('lab_test_results_view', LabTestResultsView)
 
 
 opal_router.register('add_to_service', AddToServiceViewSet)
+opal_router.register(SendMicroBiologyUpstream.base_name, SendMicroBiologyUpstream)
+opal_router.register(
+    SendPatientConsultationUpstream.base_name,
+    SendPatientConsultationUpstream
+)
