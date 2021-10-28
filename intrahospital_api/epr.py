@@ -133,10 +133,10 @@ def write_clinical_advice(advice):
           'Only microbiology input and patient consultations can be sent downstream'
         )
 
-    api = ProdAPI()
+    # api = ProdAPI()
 
-    result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
-    print(result)
+    # result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
+    # print(result)
 
     advice.sent_upstream = True
     advice.save()
