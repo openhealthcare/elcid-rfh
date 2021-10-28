@@ -158,7 +158,7 @@
                       <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
                     </div>
                   </div>
-                  {% if request.user.is_superuser %}
+                  {% if permissions.send_to_epr %}
                   <div class="row content-offset-10" ng-hide="item.sent_upstream">
                     <div class="col-md-12">
                       <i class="fa fa-exchange edit pull-right pointer"

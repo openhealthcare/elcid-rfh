@@ -16,6 +16,7 @@ from opal.models import Tagging
 
 from elcid import patient_lists
 from intrahospital_api import loader, epr
+from intrahospital_api import constants as intrahospital_api_constants
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
 
@@ -610,8 +611,18 @@ class AddToServiceViewSet(LoginRequiredViewset):
 
 
 class AbstractSendUpstreamViewSet(LoginRequiredViewset):
+    def is_allowed(self):
+        return self.request.user.profile.roles.filter(
+            name=intrahospital_api_constants.SEND_TO_EPR
+        ).exists()
+
     @item_from_pk
     def update(self, request, item):
+        if not self.is_allowed():
+            return json_response({
+                'status_code': status.HTTP_403_FORBIDDEN
+            })
+
         epr.write_clinical_advice(item)
 
         return json_response({
@@ -627,6 +638,9 @@ class SendMicroBiologyUpstream(AbstractSendUpstreamViewSet):
 
 class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
     base_name = "send_pc_upstream"
+
+    def is_allowed(self):
+        return self.request.user.is_superuser
 
     model = tb_models.PatientConsultation
 
