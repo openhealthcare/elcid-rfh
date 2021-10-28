@@ -83,6 +83,22 @@ def get_note_text(advice, *fields):
             sections.append(f"\n** {fieldname} **\n")
             sections.append(getattr(advice, field))
 
+    sections.append(f"\n** Initials **\n")
+    sections.append(advice.initials)
+
+    user = None
+    if advice.created_by:
+        user = advice.created_by
+    if advice.updated_by:
+        user = advice.updated_by
+
+    if user:
+        user_string = f"{user.get_full_name()} {user.email} {user.username}"
+
+        sections.append(f"\n** Written by **\n")
+        sections.append(user_string)
+
+
     text = "\n".join(sections)
     final_text = f"\n{text}\n\nEND OF NOTE\n\n"
     return final_text
