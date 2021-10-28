@@ -26,6 +26,7 @@ id int IDENTITY(1,1) NOT NULL,
 from django.conf import settings
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import logger
 from elcid import models as elcid_models
 from plugins.tb import models as tb_models
 
@@ -133,11 +134,10 @@ def write_clinical_advice(advice):
           'Only microbiology input and patient consultations can be sent downstream'
         )
 
-    # api = ProdAPI()
+    api = ProdAPI()
 
-    # result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
-    # print(result)
-
+    result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
+    logger.info(result)
     advice.sent_upstream = True
     advice.save()
     return True
