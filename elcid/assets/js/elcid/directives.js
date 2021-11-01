@@ -105,19 +105,22 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
           episode
       );
 
-      // make sure we are using the correct
-      // js object scope(ie this)
       patientLoadStatus.load();
       scope.patientLoadStatus = patientLoadStatus;
-
-      if(!scope.patientLoadStatus.isAbsent()){
-        scope.patientLoadStatus.promise.then(function(){
-            // success
-            LabTestSummaryLoader.load(patientId).then(function(result){
-              scope.data = result;
-            });
-        });
+      var loadData = function(){
+        if(!scope.patientLoadStatus.isAbsent()){
+          scope.patientLoadStatus.promise.then(function(){
+              // success
+              LabTestSummaryLoader.load(patientId).then(function(result){
+                scope.data = result;
+              });
+          });
+        }
       }
+      scope.$watch('episode.category_name', function(){
+        loadData();
+      });
+      loadData();
     }
   };
 });
