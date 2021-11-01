@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-md-5">
+        <span ng-show="item.date_requested">
+            [[ item.date_requested | displayDate ]]
+        </span>
+        <span ng-show="item.person_responsible">
+            [[ item.person_responsible ]]
+        </span>
+    </div>
+    <div class="col-md-7">
+        <span markdown="action" ng-show="item.action">
+            [[ item.action ]]
+           <br />
+        </span>
+    </div>
+</div>

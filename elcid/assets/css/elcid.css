@@ -33,6 +33,10 @@ body {
   margin-top: 25px;
 }
 
+.content-offset-left-10 {
+  margin-left: 10px;
+}
+
 .bg-primary {
   background-color: #0091C9;
 }
@@ -549,6 +553,14 @@ div.add-isolate:hover {
 
 .modal-footer.externally-sourced {
   margin-top: 0;
+}
+
+.navbar li .services-dropdown-item a {
+  padding: 16px;
+}
+
+.navbar-nav li.dropdown:hover a {
+  background: transparent;
 }
 
 .panel-heading.patient-detail-heading {

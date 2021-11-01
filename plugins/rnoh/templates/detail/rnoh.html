@@ -1,0 +1,204 @@
+{% load panels %}
+<div class="col-md-12">
+<div class="row">
+  <div class="col-md-6">
+    {% record_panel models.RNOHDemographics %}
+    {% record_panel models.Location %}
+    {% record_panel models.Allergies %}
+  </div>
+
+  <div class="col-md-6">
+    {% record_panel models.Diagnosis %}
+    {% record_panel models.PastMedicalHistory %}
+    {% record_panel models.RiskFactor %}
+    {% include 'tb/obs_panel.html' %}
+    {% record_panel models.Imaging %}
+    {% record_panel models.Line %}
+    {% record_panel models.OPATEpisodes %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6">
+    {% record_panel models.RNOHMicrobiology %}
+  </div>
+
+  <div class="col-md-6">
+    {% record_panel models.Procedure %}
+    {% record_panel models.Treatment %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {% record_panel models.RNOHActions %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    {% load forms %}
+    <div ng-controller="ClinicalTimeline as clinicalTimeline">
+
+      <div ng-show="clinicalTimeline.clinicalAdvice.length" class="panel panel-default hidden-print">
+        <div class="panel-body">
+          <div class="patient-timeline-container">
+
+            <svg class="speech-bubble-timeline-container">
+              <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
+              <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
+            </svg>
+            <div ng-repeat="item in clinicalTimeline.clinicalAdvice | orderBy:'-'" class="row content-offset-20">
+
+              <div class="col-md-3 patient-timeline">
+                <div class="patient-timeline-speech-bubble">
+                  <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
+                </div>
+                <div ng-show="item.when">
+                  <div class="patient-timeline-date">
+                    [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-9">
+                <div class="patient-timeline-discussion">
+                  <div class="row">
+                    <div class="col-sm-10 timeline-data-[[ $index ]]">
+                      <span ng-show="item.initials && item.initials.trim().length">
+                        <p>
+                          <b>By: </b> [[item.initials]]
+                          <span ng-show="item.discussed_with">(discussed with [[ item.discussed_with ]])</span>
+                        </p>
+                      </span>
+                      <span ng-show="item.reason_for_interaction">
+                        <p>
+                          <b>Reason For Interaction: </b><br/>[[item.reason_for_interaction]]
+                        </p>
+                      </span>
+
+                      <div ng-show="item.reason_for_interaction === '{{ models.MicrobiologyInput.ICU_REASON_FOR_INTERACTION }}'">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <b>Ventilation:</b>
+                          </div>
+                          <div class="col-md-6">
+                            [[ item.micro_input_icu_round_relation.icu_round.ventilation_type ]]
+                            <span ng-show="item.micro_input_icu_round_relation.icu_round.fio2">
+                              FiO₂:
+                              [[ item.micro_input_icu_round_relation.icu_round.fio2 ]]
+                            </span>
+                          </div>
+                        </div> <!-- row -->
+
+                        <div class="row">
+                          <div class="col-md-6">
+                            <b>Inotropic Support:</b>
+                          </div>
+                          <div class="col-md-6">
+                            [[ item.micro_input_icu_round_relation.icu_round.inotrope ]]
+                            [[ item.micro_input_icu_round_relation.icu_round.inotrope_dose ]]
+                          </div>
+                        </div> <!-- row -->
+
+                        <div class="row">
+                          <div class="col-md-6">
+                            <b>Vasopressor:</b>
+                          </div>
+                          <div class="col-md-6">
+                            [[ item.micro_input_icu_round_relation.icu_round.vasopressor ]]
+                            [[ item.micro_input_icu_round_relation.icu_round.vasopressor_dose ]]
+                          </div>
+                        </div> <!-- row -->
+
+                        <div class="row">
+                          <div class="col-md-6">
+                            <b>MELD:</b>
+                          </div>
+                          <div class="col-md-6">
+                            [[ item.micro_input_icu_round_relation.icu_round.meld_score ]]
+                          </div>
+                        </div> <!-- row -->
+
+                        <div class="row">
+                          <div class="col-md-6">
+                            <b>SOFA:</b>
+                          </div>
+                          <div class="col-md-6">
+                            [[ item.micro_input_icu_round_relation.icu_round.sofa_score ]]
+                          </div>
+                        </div> <!-- row -->
+                        <div class="row">
+                          <div class="col-md-6">
+                            <b>Temperature:</b>
+                          </div>
+                          <div class="col-md-6">
+                            [[ item.micro_input_icu_round_relation.observation.temperature ]]
+                          </div>
+                        </div> <!-- row -->
+
+                      </div>
+
+                      <div class="content-offset-10" ng-show="clinicalTimeline.hasIcuOrObservation(item)"></div>
+                      <span ng-show="item.clinical_discussion">
+                        <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
+                      </span>
+                      <span ng-show="item.infection_control">
+                        <b>Infection control: </b><div markdown="infection_control"></div>
+                      </span>
+                      <span ng-show="item.agreed_plan">
+                        <b>Agreed Plan: </b><div markdown="agreed_plan"></div>
+                      </span>
+
+
+                    </div>
+                    <div class="col-sm-2">
+                      <div class="row">
+                        <div class="col-md-12">
+                          <i class="fa fa-pencil edit pull-right pointer" ng-click="clinicalTimeline.editItem(item)"></i>
+                        </div>
+                      </div>
+                      <div class="row content-offset-10">
+                        <div class="col-md-12">
+                          <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      {% if not user.profile.readonly %}
+      <div  class="panel panel-default hidden-print">
+        <div class="panel-heading"><h3>
+            <i class="fa fa-comments"></i> Clinical Advice
+        </div></h3>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-12">
+              <form class="form-horizontal">
+                <div ng-repeat="formItem in [clinicalTimeline.formItem]">
+                  {% include 'rnoh/narrative_form.html' %}
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12 text-right">
+              <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
+                <i class="fa fa-save"></i>
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+
+    </div>
+
+  </div>
+</div>
+</div>

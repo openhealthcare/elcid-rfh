@@ -1,0 +1,59 @@
+{% extends "base_templates/form_modal_base.html" %}
+{% load forms %}
+
+{% block title %}
+OPAT Medication
+<span ng-show="profile.can_see_pid() && editingName">
+  ([[ editingName]])
+</span>
+{% endblock %}
+
+{% block form %}
+{% input field="Treatment.drug" lookuplist="drug_list" %}
+{% input field="Treatment.dose" %}
+{% input field="Treatment.route" %}
+{% input field="Treatment.frequency" %}
+{% datepicker field="Treatment.start_date" user_options=True %}
+
+<div class="form-group">
+  <label class="control-label col-sm-3">
+    Planned End Date
+  </label>
+  <div class="col-sm-8">
+      <div class="input-group">
+        <input type="text" class="form-control"
+               uib-datepicker-popup="dd/MM/yyyy"
+               max-date="maxDate"
+               ng-model="editing.treatment.planned_end_date"
+               is-open="form.planned_end_date_open"
+               show-button-bar="false"
+               show-weeks="false"
+               name="planned_end_date"
+               datepicker-options="{startingDay: 1}"
+               ng-focus="form.planned_end_date_open=true"
+               close-text="Close"
+               />
+         <span ng-controller="TBDateHelper as tb_date_helper" class="input-group-btn">
+           <button type="button" class="btn btn-default" ng-click="editing.treatment.planned_end_date = tb_date_helper.three_months_from_now()" href="">3 months</a>
+           <button type="button" class="btn btn-default" ng-click="editing.treatment.planned_end_date = tb_date_helper.six_months_from_now()" href="">6 months</a>
+         </span>
+       </div>
+  </div>
+</div>
+
+{% datepicker field="Treatment.end_date" element_name="'treatment_end'" user_options=True %}
+{% endblock form %}
+
+{% block modal_save %}
+<span ng-show="form">
+  <button check-form="form" class="btn btn-primary" ng-click="editing.treatment.category = '{{ models.Treatment.OPAT }}'; form.$valid && save('save')">
+    <i class="fa fa-save"></i>
+    {% block modal_save_button_text %}
+    Save
+    {% endblock %}
+  </button>
+</span>
+<div ng-class="{'content-offset': form.treatment_end_open}" class="row">
+  <div class="col-md-12"></div>
+</div>
+{% endblock %}

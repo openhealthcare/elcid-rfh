@@ -302,6 +302,7 @@ class Treatment(models.Treatment):
     category = fields.CharField(blank=True, null=True, max_length=255)
 
     TB = "tb"
+    OPAT = 'opat'
 
 
 class TBHistory(models.PatientSubrecord):
