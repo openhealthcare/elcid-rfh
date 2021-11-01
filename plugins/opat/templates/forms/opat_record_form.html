@@ -1,8 +1,9 @@
 {% load forms %}
 
-{% input field="OPATRecord.decision_making_consultant" %}
 {% datepicker field="OPATRecord.referral_date" %}
 {% input field="OPATRecord.referral_source" %}
+
+{% input field="OPATRecord.decision_making_consultant" %}
 
 <div class="form-group">
   <label class="control-label col-sm-3">
@@ -33,10 +34,12 @@
   {% select field="OPATRecord.supply" %}
   {% datepicker field="OPATRecord.outcome_early_date" %}
   {% select field="OPATRecord.outcome_early" %}
-  {% datepicker field="OPATRecord.outcome_one_year_date" %}
-  {% select field="OPATRecord.outcome_one_year" %}
-  {% datepicker field="OPATRecord.outcome_two_years_date" %}
-  {% select field="OPATRecord.outcome_two_years" %}
+  <section ng-show="editing.opat_end_date">
+    {% datepicker field="OPATRecord.outcome_one_year_date" %}
+    {% select field="OPATRecord.outcome_one_year" %}
+    {% datepicker field="OPATRecord.outcome_two_years_date" %}
+    {% select field="OPATRecord.outcome_two_years" %}
+  </section>
 </div>
 <span ng-show="editing.opat_record.accepted === false">
   {% datepicker field="OPATRecord.rejected_date" user_options=True %}
