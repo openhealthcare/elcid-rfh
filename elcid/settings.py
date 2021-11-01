@@ -440,6 +440,10 @@ REST_FRAMEWORK = {
     )
 }
 
+# When this setting is true, we will only try and send down to EPR
+# if the first name starts with ZZZTEST (case insensitive)
+RESTRICT_EPR = True
+
 if 'test' not in sys.argv:
     try:
         from elcid.local_settings import *
