@@ -616,11 +616,32 @@ div.add-isolate:hover{
   white-space: nowrap;
 }
 
-
 .navbar li .services-dropdown-item a{
   padding: 16px;
 }
 
 .navbar-nav li.dropdown:hover a {
   background: transparent;
+}
+
+.long-form-results-row{
+    .fa-star{
+        color: $green;
+    }
+  .star-obs-container{
+    display: inline-block;
+    width: 20px;
+  }
+  .star-obs{
+    visibility: hidden;
+    display: none;
+  }
+  &:hover, &.starred{
+      background-color: lighten($obsidian-light, 16%);
+
+    .star-obs{
+      visibility: visible;
+      display: inline-block;
+    }
+  }
 }

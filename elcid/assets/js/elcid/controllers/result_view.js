@@ -1,11 +1,12 @@
 angular.module('opal.controllers').controller('ResultView', function(
-    $scope, LabTestResults, ngProgressLite
+    $scope, LabTestResults, ngProgressLite, StarObservation
 ){
     "use strict";
     var vm = this;
 
     this.labTests = [];
     this.showAll = {};
+    this.starObservation = StarObservation;
 
     this.parseFloat = parseFloat;
     this.Math = window.Math;
@@ -55,5 +56,15 @@ angular.module('opal.controllers').controller('ResultView', function(
         vm.showAll[what] = true;
     }
 
-    vm.getLabTests($scope.patient);
+    /*
+    * If the view is the result page and the tests have not
+    * loaded then load the results.
+    *
+    * After we've loaded them, cache them.
+    */
+    $scope.$watch('view', function(){
+        if(!_.size(vm.lab_tests) && $scope.view === "test_results"){
+            vm.getLabTests($scope.patient);
+        }
+    })
 });

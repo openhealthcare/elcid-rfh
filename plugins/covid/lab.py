@@ -280,10 +280,10 @@ def get_covid_result_ticker(patient):
 
             data.append(
                 {
-                    'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
-                    'timestamp': timestamp,
-                    'name'     : _get_covid_test(test).OBSERVATION_NAME,
-                    'value'    : result_string
+                    'date_str'  : timestamp.strftime('%d/%m/%Y %H:%M'),
+                    'timestamp' : timestamp,
+                    'name'      : _get_covid_test(test).OBSERVATION_NAME,
+                    'value'     : result_string
                 }
             )
 
