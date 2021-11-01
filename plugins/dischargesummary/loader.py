@@ -15,6 +15,8 @@ from plugins.dischargesummary.models import (
     DischargeSummary, DischargeMedication, PatientDischargeSummaryStatus
 )
 
+LOG_PREFIX = "Discharge Summary Loader:"
+
 Q_GET_ALL_SUMMARIES_SINCE = """
 SELECT * FROM VIEW_ElCid_Freenet_TTA_Main
 WHERE CONVERT(DATETIME, LAST_UPDATED, 103) > @some_date
@@ -155,45 +157,29 @@ def delete_existing_medications(rows):
     ).delete()
 
 
-@transaction.atomic
-def load_all_discharge_summaries():
-    logger.info("Loader started")
-    start_time = time.time()
-    api = ProdAPI()
-    DischargeSummary.objects.all().delete()
-    deleted_time = time.time()
-    logger.info(
-        f'Deleted discharge summaries/medications in {start_time - deleted_time}'
-    )
-    with api.hospital_query_batch_iterator(
-        Q_GET_ALL_SUMMARIES_SINCE,
-        params={"some_date": datetime.datetime.min},
-        batch_size=1000
-    ) as batch_loader:
-        for rows in batch_loader:
-            save_discharge_summaries(rows)
-    discharge_summaries_loaded = time.time()
-    logger.info(
-        f'Created discharge summaries in {discharge_summaries_loaded - deleted_time}'
-    )
-    with api.hospital_query_batch_iterator(
-        Q_GET_ALL_MEDICATIONS_SINCE,
-        params={"some_date": datetime.datetime.min},
-        batch_size=1000
-    ) as batch_loader:
-        for rows in batch_loader:
-            save_medications(rows)
-    discharge_medications_loaded = time.time()
-    logger.info(
-        f'Created discharge medications in {discharge_medications_loaded - discharge_summaries_loaded}'
-    )
-
-
-@transaction.atomic
 def load_discharge_summaries_since(some_date):
     """
-    Looks at the Discharge summary table and updates it.
-    It also saves the summaries attatched discharge medications.
+    Loads discharge summaries from a certain date, deleting the existing
+    and replacing them.
+    """
+    logger.info(f'{LOG_PREFIX} started, loading since {some_date}')
+    start_time = time.time()
+    api = ProdAPI()
+    summary_rows = api.execute_hospital_query(
+        Q_GET_ALL_SUMMARIES_SINCE, params={"some_date": some_date}
+    )
+    end_summary_load_time = time.time()
+    logger.info(
+        f"{LOG_PREFIX} finished the summary load in {end_summary_load_time - start_time}"
+    )
+    load_discharge_summaries_from_query_result(summary_rows)
+
+
+@transaction.atomic
+def load_discharge_summaries_from_query_result(summary_rows):
+    """
+    Saves upstream discharge summaries/medications from an
+    upstream result.
 
     Notably the last updated is stored as a string, and
     although we can convert it, that conversion requires
@@ -203,41 +189,30 @@ def load_discharge_summaries_since(some_date):
     with that mrn/date admitted/date discharged. We then create
     these with their attatched discharge medications.
     """
-    log_prefix = "Discharge Summary Loader:"
-    logger.info(f'{log_prefix} started, loading since {some_date}')
-    start_time = time.time()
-    api = ProdAPI()
-    summary_rows = api.execute_hospital_query(
-        Q_GET_ALL_SUMMARIES_SINCE, params={"some_date": some_date}
-    )
-    end_summary_load_time = time.time()
-    logger.info(
-        f"{log_prefix} finished the summary load in {end_summary_load_time - start_time}"
-    )
-
     # Delete all the summaries, not this deletes the summaries
     # and any attached medications
     # Medications do not seem to be updated without the summary
     # also being updated
     # (not entirely true, there seem to be medications that
     # do not have a link to summary, we ignore these.)
+    api = ProdAPI()
     delete_existing_summaries(summary_rows)
     deleted_time = time.time()
     logger.info(
-        f"{log_prefix} deleted summaries in {deleted_time - end_summary_load_time}"
+        f"{LOG_PREFIX} deleted summaries in {deleted_time - end_summary_load_time}"
     )
     # Create our new summaries
     save_discharge_summaries(summary_rows)
     created_summary_time = time.time()
     logger.info(
-        f"{log_prefix} created summaries in {created_summary_time - deleted_time}"
+        f"{LOG_PREFIX} created summaries in {created_summary_time - deleted_time}"
     )
     medication_rows = api.execute_hospital_query(
         Q_GET_ALL_MEDICATIONS_SINCE, params={"some_date": some_date}
     )
     save_medications(medication_rows)
     logger.info(
-        f"{log_prefix} created medications in {time.time() - created_summary_time}"
+        f"{LOG_PREFIX} created medications in {time.time() - created_summary_time}"
     )
 
 
@@ -245,6 +220,9 @@ def load_discharge_summaries_since(some_date):
 def load_discharge_summaries(patient):
     api = ProdAPI()
     mrn = patient.demographics_set.all()[0].hospital_number
+    logger.info(
+        f"{LOG_PREFIX} starting to load discharge summaries for {mrn}"
+    )
     DischargeSummary.objects.filter(
         patient__demographics__hospital_number=mrn
     ).delete()
@@ -256,3 +234,6 @@ def load_discharge_summaries(patient):
         Q_GET_MEDICATIONS_FOR_MRN, params={"mrn": mrn}
     )
     save_medications(discharge_medication_rows)
+    logger.info(
+        f"{LOG_PREFIX} finishing load discharge summaries for {mrn}"
+    )
