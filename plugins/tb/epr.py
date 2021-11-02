@@ -30,8 +30,8 @@ def render_template(template_name, ctx):
     return template.render(**ctx)
 
 
-def get_doctor_consultation(clinical_advice):
-    ctx = {"initial": True, "clinical_advice": clinical_advice}
+def get_doctor_consultation(clinical_advice, initial=False):
+    ctx = {"initial": initial, "clinical_advice": clinical_advice}
     episode = clinical_advice.episode
     patient = clinical_advice.episode.patient
     ctx["demographics"] = patient.demographics()
@@ -138,3 +138,12 @@ def get_doctor_consultation(clinical_advice):
         if obs:
             ctx["weight"] = obs.weight
     return render_template('doctor_consultation.html', ctx)
+
+
+def render_advice(clinical_advice):
+    initial_consultations = ["LTBI initial assessment", "TB initial assessment"]
+    follow_ups_consultaions = ["LTBI follow up", "TB follow up"]
+    if clinical_advice.reason_for_interaction in initial_consultations:
+        return get_doctor_consultation(clinical_advice, initial=True)
+    elif clinical_advice.reason_for_interaction in follow_ups_consultaions:
+        return get_doctor_consultation(clinical_advice, initial=False)

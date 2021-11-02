@@ -109,6 +109,7 @@ None recorded
 {% endfor %}
 
 {% endif %}
+{% if initial %}
 **Symptoms**
 {% if symptom_complex_list %}
 {% for symptom_complex in symptom_complex_list %}
@@ -118,22 +119,23 @@ None recorded
 No recorded respiratory or systemic TB symptoms
 {% endif %}
 
-{% if social_history.notes %}
+{% endif %}
+{% if social_history.notes and initial %}
 **Social history**
 {{ social_history.notes }}
 
 {% endif %}
-{% if social_history.smoking %}
+{% if social_history.smoking and initial %}
 **Smoking**
 {{ social_history.smoking }}
 
 {% endif %}
-{% if social_history.drinking %}
+{% if social_history.drinking and initial %}
 **Alcohol**
 {{ social_history.drinking }} {% if social_history.history_of_alocohol_dependence %}(history of dependence){% endif %}
 
 {% endif %}
-{% if social_history.recreational_drug_use %}
+{% if social_history.recreational_drug_use and initial %}
 **Recreational Drug Use**
 {{ social_history.recreational_drug_use }} {% if social_history.recreational_drug_type %}({{ social_history.recreational_drug_type }}){% endif %}
 
