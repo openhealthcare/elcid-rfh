@@ -3,6 +3,7 @@ from elcid.models import Diagnosis
 from plugins.tb.models import AFBRefLab, Treatment, TBPCR
 from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
+from plugins.tb import views
 from jinja2 import Environment, FileSystemLoader
 import os
 
@@ -140,10 +141,21 @@ def get_doctor_consultation(clinical_advice, initial=False):
     return render_template('doctor_consultation.html', ctx)
 
 
+def get_nurse_consultation(clinical_advicer):
+    ctx = views.NurseLetter.get_nurse_letter_context(clinical_advicer)
+    return render_template('nurse_consultation.html', ctx)
+
+
 def render_advice(clinical_advice):
     initial_consultations = ["LTBI initial assessment", "TB initial assessment"]
     follow_ups_consultaions = ["LTBI follow up", "TB follow up"]
-    if clinical_advice.reason_for_interaction in initial_consultations:
+    nurse_consultations = [
+        "Nurse led clinic", "Nurse telephone consultation", "Contact screening"
+    ]
+    rfi = clinical_advice.reason_for_interaction
+    if rfi in initial_consultations:
         return get_doctor_consultation(clinical_advice, initial=True)
-    elif clinical_advice.reason_for_interaction in follow_ups_consultaions:
+    elif rfi in follow_ups_consultaions:
         return get_doctor_consultation(clinical_advice, initial=False)
+    elif rfi in nurse_consultations:
+        return get_nurse_consultation(clinical_advice)

@@ -165,7 +165,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"
     model = PatientConsultation
 
-    def get_lab_test_observations(self, patient, clinical_advice, test_name, observation_names):
+    @classmethod
+    def get_lab_test_observations(cls, patient, clinical_advice, test_name, observation_names):
         """
         Return a lab test where at least one of the observations for
         that day are numeric
@@ -192,7 +193,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
             i for i in observations if i.observation_name in observation_names
         ]
 
-    def get_bloods(self, patient, clinical_advice):
+    @classmethod
+    def get_bloods(cls, patient, clinical_advice):
         """
         Returns the most recent observations before the clincial
         advice for liver, urea, CRP, and full blood count observations.
@@ -200,7 +202,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         result = []
 
         # Liver observations
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "LIVER PROFILE",
@@ -208,7 +210,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
 
         # Urea observations
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "UREA AND ELECTROLYTES",
@@ -216,7 +218,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
 
         # CRP
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "C REACTIVE PROTEIN",
@@ -224,7 +226,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
 
         # Full blood count
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "C FULL BLOOD COUNT",
@@ -232,7 +234,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
         return result
 
-    def get_observations(self, patient_consultation):
+    @classmethod
+    def get_observations(cls, patient_consultation):
         """
         These are observations
         as in obs.models, ie weight and temperature
@@ -269,11 +272,17 @@ class NurseLetter(LoginRequiredMixin, DetailView):
                 result[obs_field] = str(obs_val).rsplit('.0', 1)[0]
         return result
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = ctx["object"].episode
+    @classmethod
+    def get_nurse_letter_context(cls, patient_consultation):
+        """
+        We declare the get context method in a class method
+        so that we can also use the same context to
+        create the letter that goes up to EPR
+        """
+        episode = patient_consultation.episode
+        ctx = {"object": patient_consultation}
         ctx["patient"] = episode.patient
-        ctx["bloods"] = self.get_bloods(episode.patient, ctx["object"])
+        ctx["bloods"] = cls.get_bloods(episode.patient, patient_consultation)
         if not ctx["bloods"]:
             ctx["bloods_normal"] = False
         else:
@@ -299,7 +308,12 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         adverse_reaction = episode.adversereaction_set.first()
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
-        ctx["observations"] = self.get_observations(ctx["object"])
+        ctx["observations"] = cls.get_observations(patient_consultation)
+        return ctx
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx.update(self.__class__.get_nurse_letter_context(self.object))
         return ctx
 
 

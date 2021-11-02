@@ -1,0 +1,73 @@
+The patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when|date }}
+
+{% if diagnosis and diagnosis.condition %}
+**Diagnosis**
+{{ diagnosis.condition }}
+
+{% endif %}
+{% if treatment_commenced %}
+**Treatment commenced **
+{{ treatment_commenced | date }}
+
+{% endif %}
+{% if current_treatments %}
+**Current medication**
+{{ current_treatments }}
+
+{% endif %}
+{% if adverse_reaction %}
+**Allergies/Adverse reactions**
+{{ adverse_reaction }}
+
+{% endif %}
+**Latest Bloods**
+{% if bloods_normal %}
+Normal
+{% elif not bloods %}
+N/A
+{% else %}
+{% for observation in bloods %}
+{{ observation.observation_datetime.date }} {{ observation.observation_name }} {{ "%.2f"|format(observation.value_numeric) }} {% if observation.cleaned_reference_range %} ({{ "%.2f"|format(observation.cleaned_reference_range.min) }} - {{ "%.2f"|format(observation.cleaned_reference_range.max) }}) {% endif %}
+{% endfor %}
+{% endif %}
+
+**Clinic Observation**
+{% if observations.bp_systolic and observations.bp_diastolic %}
+BP: {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}
+{% endif %}
+{% if observations.pulse %}
+Pulse: {{ observations.pulse }} beats/min
+{% endif %}
+{% if observations.resp_rate %}
+RR: {{ observations.resp_rate }} breaths/min
+{% endif %}
+{% if observations.sp02 %}
+Sp02: {{ observations.sp02 }} %
+{% endif %}
+{% if observations.temperature %}
+Temperature: {{ observations.temperature }} ºC
+{% endif %}
+{% if observations.height %}
+Height: {{ observations.height }} m
+{% endif %}
+
+{% if object.examination_findings %}
+**Examination Findings**
+{{ object.examination_findings }}
+
+{% endif %}
+{% if object.discussion %}
+**Discussion**
+{{ object.discussion }}
+
+{% endif %}
+{% if object.progress %}
+**Progress**
+{{ object.progress }}
+
+{% endif %}
+{% if object.plan %}
+**Plan**
+{{ object.plan }}
+
+{% endif %}
