@@ -1,0 +1,182 @@
+**Primary diagnosis**
+{% if primary_diagnosis_list %}
+{% for diagnosis in primary_diagnosis_list %}
+{{ diagnosis.condition }}
+{% if diagnosis.provisional %}?{% endif %}
+{% if diagnosis.details %}
+   {{ diagnosis.details }}
+{% endif %}
+{% endfor %}
+{% else %}
+No recorded primary diagnoses
+{% endif %}
+
+**Secondary diagnosis**
+{% if secondary_diagnosis_list %}
+{% for diagnosis in secondary_diagnosis_list %}
+{{ diagnosis.condition }}
+{% if diagnosis.provisional %}?{% endif %}
+{% if diagnosis.details %}
+   {{ diagnosis.details }}
+{% endif %}
+{% endfor %}
+{% else %}
+No recorded secondary diagnoses
+{% endif %}
+
+**TB medications**
+{% if tb_medication_list %}
+{% for treatment in tb_medication_list %}
+{{ treatment.drug }} {{ treatment.dose }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
+{% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
+{% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}
+{% endif %}
+{% endfor %}
+{% else %}
+No recorded medications
+{% endif %}
+
+**Other medications**
+{% if other_medication_list %}
+{% for treatment in other_medication_list %}
+{{ treatment.drug }} {{ treatment.dose }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
+{% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
+{% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}
+{% endif %}
+{% endfor %}
+
+{% else %}
+No recorded medications
+
+{% endif %}
+
+{% if communication_considerations.language and not communication_considerations.language == "English" %}
+**Language**
+{{ communication_considerations.language }} {% if communication_considerations.needs_an_interpreter %}(needs an interpreter){% endif %}
+
+{% endif %}
+{% if initial and referral and referral.referral_type %}
+**Referred by**
+{{ referral.referral_type }}
+
+{% endif %}
+{% if initial and referral and referral.referral_reason %}
+**Referred for referral**
+{{ referral.referral_reason }}
+
+{% endif %}
+**Travel**
+{% if travel_list %}
+{% for travel in travel_list %}
+{{ travel.country }}{% if travel.when %}, {{ travel.when }}{% endif %} {% if travel.duration %}({{ travel.duration}}){% endif %}
+{% endfor %}
+
+{% else %}
+No recorded travel
+
+{% endif %}
+
+**Previous TB Diagnosis**
+{% if tb_history.tb_type %}
+{{ tb_history.tb_type }} {{ tb_history.site_of_tb }}{% if tb_history.diagnosis_date_year or tb_history.diagnosis_date_month or tb_history.diagnosis_date_day %}
+- {% if tb_history.diagnosis_date_day %}{{ tb_history.diagnosis_date_day }}/{% endif %}{% if tb_history.diagnosis_date_month %}{{ tb_history.diagnosis_date_month }}/{% endif %}{{ tb_history.diagnosis_date_year }}
+{% endif %}
+{% if tb_history.how_long_treated_years or tb_history.how_long_treated_months or tb_history.how_long_treated_days %}
+Treated for {% if tb_history.how_long_treated_years %}
+{{ tb_history.how_long_treated_years }} year{{ tb_history.how_long_treated_years|pluralize }}
+{% endif %}{% if tb_history.how_long_treated_months %}
+{{ tb_history.how_long_treated_months }} month{{ tb_history.how_long_treated_months|pluralize }}
+{% endif %}{% if tb_history.how_long_treated_days %}
+{{ tb_history.how_long_treated_days }} day{{ tb_history.how_long_treated_days|pluralize }}
+{% endif %}
+{% endif %}{% if tb_history.country_treated or tb_history.treatment_centre %}
+In {{ tb_history.country_treated }} {{ tb_history.treatment_centre }}
+{% endif %}{% if tb_history.diagnosis_details %}
+{{ tb_history.diagnosis_details }}
+{% endif %}
+{% else %}
+None recorded
+{% endif %}
+
+{% if index_case_list %}
+**Index Case{{ index_case_list|pluralize }}**
+{% for index_case in index_case_list %}
+{% if index_case.ltbr_number %}LTBI: {{ index_case.ltbr_number }}{% endif %}
+{% if index_case.hospital_number %} #{{ index_case.hospital_number }}{% endif %}
+{% if index_case.diagnosis_day or index_case.diagnosis_month or index_case.diagnosis_year %}
+ Diagnosed: {% if index_case.diagnosis_day %}{{ index_case.diagnosis_day }}/{% endif %}{% if index_case.diagnosis_month %}{{ index_case.diagnosis_month }}/{% endif %}{{ index_case.diagnosis_year }}
+{% endif %}
+{% endfor %}
+
+{% endif %}
+**Symptoms**
+{% if symptom_complex_list %}
+{% for symptom_complex in symptom_complex_list %}
+{% for symptom in symptom_complex.symptoms.all() %}{{ symptom.name }}{% endfor %} {{ symptom_complex.duration }} {% if symptom_complex.duration %} - {{ symptom_complex.details }}{% endif %}
+{% endfor %}
+{% else %}
+No recorded respiratory or systemic TB symptoms
+{% endif %}
+
+{% if social_history.notes %}
+**Social history**
+{{ social_history.notes }}
+
+{% endif %}
+{% if social_history.smoking %}
+**Smoking**
+{{ social_history.smoking }}
+
+{% endif %}
+{% if social_history.drinking %}
+**Alcohol**
+{{ social_history.drinking }} {% if social_history.history_of_alocohol_dependence %}(history of dependence){% endif %}
+
+{% endif %}
+{% if social_history.recreational_drug_use %}
+**Recreational Drug Use**
+{{ social_history.recreational_drug_use }} {% if social_history.recreational_drug_type %}({{ social_history.recreational_drug_type }}){% endif %}
+
+{% endif %}
+**Allergies**
+{% if allergies_list %}
+{% for allergy in allergies_list %}
+{{ allergy.drug }}{% if allergy.provisional %}?{% endif %} {{ allergy.deltails }}
+{% endfor %}
+{% else %}
+No recorded allergies
+{% endif %}
+
+**Weight**
+{% if weight %}{{ "%.1f"|format(weight) }}
+{% else %}No weight recorded{% endif %}
+
+{% if clinical_advice.examination_findings %}
+**Examination Findings**
+{{ clinical_advice.examination_findings.strip() }}
+
+{% endif %}
+{% for imaging in imaging_list %}
+**{{ imaging.imaging_type }}{% if imaging.site %}({{ imaging.site }}){% endif %}**
+{{ imaging.date | date }} {{ imaging.details }}
+
+{% endfor %}
+{% if igra or tb_tests %}
+**Key investigations**
+{% for obs in tb_tests %}
+{{ obs.observation_datetime | date }} {{ obs.OBSERVATION_NAME }}: {{ obs.display_value() }}
+{% endfor %}
+{% for obs in igra %}
+{{ obs.observation_datetime | date }} {{ obs.observation_name }}: {{ obs.observation_value }}
+{% endfor %}
+
+{% endif %}
+{% if clinical_advice.discussion %}
+**Discussion**
+{{ clinical_advice.discussion }}
+
+{% endif %}
+{% if clinical_advice.plan %}
+**Plan**
+{{ clinical_advice.plan }}
+{% endif %}
