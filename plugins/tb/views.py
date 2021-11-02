@@ -24,10 +24,11 @@ class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
 
 
 class AbstractLetterView(LoginRequiredMixin, DetailView):
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
+    @classmethod
+    def get_letter_context(cls, patient_consultation):
+        ctx = {}
+        episode = patient_consultation.episode
+        patient = patient_consultation.episode.patient
         ctx["demographics"] = patient.demographics()
         ctx["primary_diagnosis_list"] = episode.diagnosis_set.filter(
             category=Diagnosis.PRIMARY
@@ -75,11 +76,11 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
 
         # Show the last positive culture and PCR and the last recent resulted if later
         # than the last positive
-        pcr_qs = TBPCR.objects.filter(patient=self.object.episode.patient)
+        pcr_qs = TBPCR.objects.filter(patient=patient_consultation.episode.patient)
         last_positive_pcr = pcr_qs.filter(
             positive=True
         ).filter(
-            patient=self.object.episode.patient
+            patient=patient_consultation.episode.patient
         ).order_by(
             '-observation_datetime'
         ).first()
@@ -96,7 +97,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["pcrs"] = [i for i in [last_positive_pcr, last_resulted] if i]
         ctx["pcrs"].reverse()
 
-        afb_qs = AFBRefLab.objects.filter(patient=self.object.episode.patient)
+        afb_qs = AFBRefLab.objects.filter(patient=patient_consultation.episode.patient)
         last_positive_culture = afb_qs.filter(positive=True).order_by(
             '-observation_datetime'
         ).first()
@@ -116,12 +117,12 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["travel_list"] = episode.travel_set.all()
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
-        ctx["allergies_list"] = patient.allergies_set.all()
+        ctx["allergies_list"] = [i for i in patient.allergies_set.all() if i.drug or i.details]
         ctx["imaging_list"] = episode.imaging_set.all()
         ctx["tb_history"] = patient.tbhistory_set.get()
         ctx["index_case_list"] = patient.indexcase_set.all()
         ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
-        consultation_datetime = self.object.when
+        consultation_datetime = patient_consultation.when
         if consultation_datetime:
             obs = episode.observation_set.filter(
                 datetime__date=consultation_datetime.date()
@@ -130,21 +131,25 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
                 ctx["weight"] = obs.weight
         return ctx
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(self.__class__.get_letter_context(self.object))
+        return ctx
+
 
 class InitialAssessment(AbstractLetterView):
     template_name = "tb/letters/initial_assessment.html"
     model = PatientConsultation
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
+    @classmethod
+    def get_letter_context(cls, patient_consultation):
+        ctx = super().get_letter_context(patient_consultation)
+        episode = patient_consultation.episode
+        patient = patient_consultation.episode.patient
         ctx["referral"] = episode.referralroute_set.get()
         ctx["social_history"] = episode.socialhistory_set.get()
 
-        ctx["symptom_complex_list"] = episode.symptomcomplex_set.all()
-        # TODO this has to change
-
+        ctx["symptom_complex_list"] = [i for i in episode.symptomcomplex_set.all() if i.symptoms.exists()]
         ctx["patient"] = patient
         return ctx
 
@@ -266,7 +271,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         return result
 
     @classmethod
-    def get_nurse_letter_context(cls, patient_consultation):
+    def get_letter_context(cls, patient_consultation):
         """
         We declare the get context method in a class method
         so that we can also use the same context to
@@ -306,7 +311,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        ctx.update(self.__class__.get_nurse_letter_context(self.object))
+        ctx.update(self.__class__.get_letter_context(self.object))
         return ctx
 
 
