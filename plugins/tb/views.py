@@ -153,13 +153,6 @@ class FollowUp(AbstractLetterView):
     template_name = "tb/letters/follow_up.html"
     model = PatientConsultation
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
-        ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
-        return ctx
-
 
 class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"
