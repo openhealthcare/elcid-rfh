@@ -2,20 +2,189 @@
 Views for the TB Opal Plugin
 """
 import datetime
+from html.parser import HTMLParser
 from collections import defaultdict
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
+from django.template.loader import render_to_string
 from opal.core.serialization import deserialize_datetime
 from opal.models import PatientConsultationReasonForInteraction
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.tb.models import AFBRefLab, PatientConsultation, Treatment, TBPCR
 from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
+
+
+class AdviceParser(HTMLParser):
+    text = ""
+
+    def handle_starttag(self, tag, attrs):
+        if tag in {'b', "h1", "h2", "h3", "h4", "h5"}:
+            self.text += "\n\n**"
+        if tag in {'br', "p"} and self.text and not self.text[-1] == "\n":
+            self.text += "\n"
+
+    def handle_endtag(self, tag):
+        if tag in {'b', "h1", "h2", "h3", "h4", "h5", "strong"}:
+            self.text += "**\n"
+        if tag == 'p':
+            self.text += "\n"
+
+    def handle_data(self, data):
+        self.text += data.strip()
+
+
+def render_to_advice(template_name, context):
+    html = render_to_string(template_name, context)
+    parser = AdviceParser()
+    parser.feed(html)
+    return parser.text
+
+
+def parse_advice(clinical_advice):
+    initial_advice = [
+        clinical_advice.TB_INITIAL_ASSESSMENT, clinical_advice.LTBI_INITIAL_ASSESSMENT
+    ]
+    doctor_follow_up = [
+        clinical_advice.TB_FOLLOW_UP, clinical_advice.LTBI_FOLLOW_UP
+    ]
+    nurse = [
+        clinical_advice.NURSE_LED_CLINIC,
+        clinical_advice.NURSE_TELEPHONE_CONSULTATION,
+        clinical_advice.CONTACT_SCREENING
+    ]
+    if clinical_advice.reason_for_interaction in initial_advice:
+        return render_to_advice(
+            InitialAssessment.template_name, get_doctor_letter_context(
+                clinical_advice, initial_assessment=True
+            )
+        )
+    if clinical_advice.reason_for_interaction in doctor_follow_up:
+        return render_to_advice(
+            FollowUp.template_name, get_doctor_letter_context(
+                clinical_advice
+            )
+        )
+    if clinical_advice.reason_for_interaction in nurse:
+        pass
+
+
+def get_doctor_letter_context(clinical_advice, initial_assessment=False):
+    ctx = {"object": clinical_advice}
+    episode = clinical_advice.episode
+    patient = clinical_advice.patient
+    ctx["demographics"] = patient.demographics()
+    ctx["primary_diagnosis_list"] = episode.diagnosis_set.filter(
+        category=Diagnosis.PRIMARY
+    ).order_by("-date_of_diagnosis")
+
+    ctx["secondary_diagnosis_list"] = episode.diagnosis_set.exclude(
+        category=Diagnosis.PRIMARY
+    ).order_by("-date_of_diagnosis")
+
+    ctx["tb_medication_list"] = episode.treatment_set.filter(category=Treatment.TB)
+    ctx["nationality"] = patient.nationality_set.first()
+    ctx["other_medication_list"] = episode.treatment_set.exclude(
+        category=Treatment.TB
+    )
+    ctx[
+        "communication_considerations"
+    ] = patient.communinicationconsiderations_set.get()
+    ctx["results"] = get_tb_summary_information(patient)
+    for result in ctx["results"].values():
+        result["observation_datetime"] = deserialize_datetime(
+            result["observation_datetime"]
+        )
+    last_qf_obs = lab_models.Observation.objects.filter(
+        test__patient=patient,
+        test__test_name='QUANTIFERON TB GOLD IT',
+        observation_name='QFT TB interpretation'
+    ).exclude(
+        observation_value__iexact='pending'
+    ).order_by('-observation_datetime').first()
+    ctx["igra"] = []
+    if last_qf_obs:
+        last_qf_test = last_qf_obs.test
+        ctx["igra"] = [
+            last_qf_test.observation_set.filter(
+                observation_name='QFT TB interpretation'
+            ).first(),
+            last_qf_test.observation_set.filter(
+                observation_name='QFT IFN gamma result (TB1)'
+            ).first(),
+            last_qf_test.observation_set.filter(
+                observation_name='QFT IFN gamma result (TB2)'
+            ).first()
+        ]
+        ctx["igra"] = [i for i in ctx["igra"] if i]
+
+    # Show the last positive culture and PCR and the last recent resulted if later
+    # than the last positive
+    pcr_qs = TBPCR.objects.filter(patient=self.object.episode.patient)
+    last_positive_pcr = pcr_qs.filter(
+        positive=True
+    ).filter(
+        patient=self.object.episode.patient
+    ).order_by(
+        '-observation_datetime'
+    ).first()
+    if last_positive_pcr:
+        last_resulted = pcr_qs.filter(pending=False).filter(
+            observation_datetime__date__gt=last_positive_pcr.observation_datetime.date()
+        ).order_by(
+            '-observation_datetime'
+        ).first()
+    else:
+        last_resulted = pcr_qs.filter(pending=False).order_by(
+            '-observation_datetime'
+        ).first()
+    ctx["pcrs"] = [i for i in [last_positive_pcr, last_resulted] if i]
+    ctx["pcrs"].reverse()
+
+    afb_qs = AFBRefLab.objects.filter(patient=self.object.episode.patient)
+    last_positive_culture = afb_qs.filter(positive=True).order_by(
+        '-observation_datetime'
+    ).first()
+    if last_positive_culture:
+        last_resulted = afb_qs.filter(pending=False).filter(
+            observation_datetime__date__gt=last_positive_culture.observation_datetime.date()
+        ).order_by(
+            '-observation_datetime'
+        ).first()
+    else:
+        last_resulted = afb_qs.filter(pending=False).order_by(
+            '-observation_datetime'
+        ).first()
+    ctx["cultures"] = [i for i in [last_positive_culture, last_resulted] if i]
+    ctx["cultures"].reverse()
+
+    ctx["travel_list"] = episode.travel_set.all()
+    ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
+    ctx["past_medication_list"] = episode.antimicrobial_set.all()
+    ctx["allergies_list"] = patient.allergies_set.all()
+    ctx["imaging_list"] = episode.imaging_set.all()
+    ctx["tb_history"] = patient.tbhistory_set.get()
+    ctx["index_case_list"] = patient.indexcase_set.all()
+    ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
+    consultation_datetime = clinical_advice.when
+    if consultation_datetime:
+        obs = episode.observation_set.filter(
+            datetime__date=consultation_datetime.date()
+        ).last()
+        if obs:
+            ctx["weight"] = obs.weight
+
+    if initial_assessment:
+        ctx["referral"] = episode.referralroute_set.get()
+        ctx["social_history"] = episode.socialhistory_set.get()
+        ctx["symptom_complex_list"] = episode.symptomcomplex_set.all()
+        ctx["patient"] = patient
+    return ctx
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
@@ -23,136 +192,20 @@ class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
     model = PatientConsultation
 
 
-class AbstractLetterView(LoginRequiredMixin, DetailView):
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
-        ctx["demographics"] = patient.demographics()
-        ctx["primary_diagnosis_list"] = episode.diagnosis_set.filter(
-            category=Diagnosis.PRIMARY
-        ).order_by("-date_of_diagnosis")
-
-        ctx["secondary_diagnosis_list"] = episode.diagnosis_set.exclude(
-            category=Diagnosis.PRIMARY
-        ).order_by("-date_of_diagnosis")
-
-        ctx["tb_medication_list"] = episode.treatment_set.filter(category=Treatment.TB)
-        ctx["nationality"] = patient.nationality_set.first()
-        ctx["other_medication_list"] = episode.treatment_set.exclude(
-            category=Treatment.TB
-        )
-        ctx[
-            "communication_considerations"
-        ] = patient.communinicationconsiderations_set.get()
-        ctx["results"] = get_tb_summary_information(patient)
-        for result in ctx["results"].values():
-            result["observation_datetime"] = deserialize_datetime(
-                result["observation_datetime"]
-            )
-        last_qf_obs = lab_models.Observation.objects.filter(
-            test__patient=patient,
-            test__test_name='QUANTIFERON TB GOLD IT',
-            observation_name='QFT TB interpretation'
-        ).exclude(
-            observation_value__iexact='pending'
-        ).order_by('-observation_datetime').first()
-        ctx["igra"] = []
-        if last_qf_obs:
-            last_qf_test = last_qf_obs.test
-            ctx["igra"] = [
-                last_qf_test.observation_set.filter(
-                    observation_name='QFT TB interpretation'
-                ).first(),
-                last_qf_test.observation_set.filter(
-                    observation_name='QFT IFN gamma result (TB1)'
-                ).first(),
-                last_qf_test.observation_set.filter(
-                    observation_name='QFT IFN gamma result (TB2)'
-                ).first()
-            ]
-            ctx["igra"] = [i for i in ctx["igra"] if i]
-
-        # Show the last positive culture and PCR and the last recent resulted if later
-        # than the last positive
-        pcr_qs = TBPCR.objects.filter(patient=self.object.episode.patient)
-        last_positive_pcr = pcr_qs.filter(
-            positive=True
-        ).filter(
-            patient=self.object.episode.patient
-        ).order_by(
-            '-observation_datetime'
-        ).first()
-        if last_positive_pcr:
-            last_resulted = pcr_qs.filter(pending=False).filter(
-                observation_datetime__date__gt=last_positive_pcr.observation_datetime.date()
-            ).order_by(
-                '-observation_datetime'
-            ).first()
-        else:
-            last_resulted = pcr_qs.filter(pending=False).order_by(
-                '-observation_datetime'
-            ).first()
-        ctx["pcrs"] = [i for i in [last_positive_pcr, last_resulted] if i]
-        ctx["pcrs"].reverse()
-
-        afb_qs = AFBRefLab.objects.filter(patient=self.object.episode.patient)
-        last_positive_culture = afb_qs.filter(positive=True).order_by(
-            '-observation_datetime'
-        ).first()
-        if last_positive_culture:
-            last_resulted = afb_qs.filter(pending=False).filter(
-                observation_datetime__date__gt=last_positive_culture.observation_datetime.date()
-            ).order_by(
-                '-observation_datetime'
-            ).first()
-        else:
-            last_resulted = afb_qs.filter(pending=False).order_by(
-                '-observation_datetime'
-            ).first()
-        ctx["cultures"] = [i for i in [last_positive_culture, last_resulted] if i]
-        ctx["cultures"].reverse()
-
-        ctx["travel_list"] = episode.travel_set.all()
-        ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
-        ctx["past_medication_list"] = episode.antimicrobial_set.all()
-        ctx["allergies_list"] = patient.allergies_set.all()
-        ctx["imaging_list"] = episode.imaging_set.all()
-        ctx["tb_history"] = patient.tbhistory_set.get()
-        ctx["index_case_list"] = patient.indexcase_set.all()
-        ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
-        consultation_datetime = self.object.when
-        if consultation_datetime:
-            obs = episode.observation_set.filter(
-                datetime__date=consultation_datetime.date()
-            ).last()
-            if obs:
-                ctx["weight"] = obs.weight
-        return ctx
-
-
-class InitialAssessment(AbstractLetterView):
+class InitialAssessment(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/initial_assessment.html"
     model = PatientConsultation
 
     def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
-        ctx["referral"] = episode.referralroute_set.get()
-        ctx["social_history"] = episode.socialhistory_set.get()
-
-        ctx["symptom_complex_list"] = episode.symptomcomplex_set.all()
-        # TODO this has to change
-
-        ctx["patient"] = patient
-        return ctx
+        return get_doctor_letter_context(self.object, initial_assessment=True)
 
 
-class FollowUp(AbstractLetterView):
+class FollowUp(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/follow_up.html"
     model = PatientConsultation
 
+    def get_context_data(self, *args, **kwargs):
+        return get_doctor_letter_context(self.object)
 
 class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"

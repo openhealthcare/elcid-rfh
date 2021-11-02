@@ -239,6 +239,16 @@ class AccessConsiderations(models.PatientSubrecord):
 
 
 class PatientConsultation(models.PatientConsultation):
+
+    # reason for interaction constants
+    TB_INITIAL_ASSESSMENT = "TB initial assessment"
+    LTBI_INITIAL_ASSESSMENT = "LTBI initial assessment"
+    TB_FOLLOW_UP = "TB follow up"
+    LTBI_FOLLOW_UP = "LTBI follow up"
+    NURSE_LED_CLINIC = "Nurse led clinic"
+    NURSE_TELEPHONE_CONSULTATION = "Nurse telephone consultation"
+    CONTACT_SCREENING = "Contact screening"
+
     plan = fields.TextField(blank=True, default="")
     examination_findings = fields.TextField(
         blank=True, default=""
