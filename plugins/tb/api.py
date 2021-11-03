@@ -14,7 +14,7 @@ from plugins.labtests import models as lab_models
 
 
 class TbTestSummary(LoginRequiredViewset):
-    base_name = 'tb_test_summary'
+    basename = 'tb_test_summary'
     """"
     Example payload
 
@@ -46,7 +46,7 @@ class TbTestSummary(LoginRequiredViewset):
 
 
 class TbTests(LoginRequiredViewset):
-    base_name = 'tb_tests'
+    basename = 'tb_tests'
 
     @patient_from_pk
     def retrieve(self, request, patient):
@@ -234,7 +234,7 @@ class TBAppointments(LoginRequiredViewset):
     Returns the last appointment that they atteneded and
     all appointments between then and now that were cancelled or No shows
     """
-    base_name = "tb_appointments"
+    basename = "tb_appointments"
 
     @patient_from_pk
     def retrieve(self, request, patient):
