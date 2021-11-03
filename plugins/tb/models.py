@@ -249,6 +249,7 @@ class PatientConsultation(models.PatientConsultation):
     infection_control = fields.TextField(
         blank=True, default=""
     )
+    sent_upstream = fields.BooleanField(default=False)
 
 
 class ContactDetails(models.PatientSubrecord):
