@@ -1,30 +1,30 @@
 {% load forms %}
 <div ng-controller="ClinicalTimeline as clinicalTimeline">
   {% if not user.profile.readonly %}
-    <div  class="panel panel-default hidden-print">
-      <div class="panel-heading"><h3>
-          <i class="fa fa-comments"></i> Clinical Advice
-      </div></h3>
-      <div class="panel-body">
-        <div class="row">
-          <div class="col-md-12">
-            <form class="form-horizontal">
-              <div ng-repeat="formItem in [clinicalTimeline.formItem]">
-                {% include models.MicrobiologyInput.get_form_template %}
-              </div>
-            </form>
-          </div>
+  <div  class="panel panel-default hidden-print">
+    <div class="panel-heading"><h3>
+        <i class="fa fa-comments"></i> Clinical Advice
+    </div></h3>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-12">
+          <form class="form-horizontal">
+            <div ng-repeat="formItem in [clinicalTimeline.formItem]">
+              {% include models.MicrobiologyInput.get_form_template %}
+            </div>
+          </form>
         </div>
-        <div class="row">
-          <div class="col-md-12 text-right">
-            <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
-              <i class="fa fa-save"></i>
-              Save
-            </button>
-          </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 text-right">
+          <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
+            <i class="fa fa-save"></i>
+            Save
+          </button>
         </div>
       </div>
     </div>
+  </div>
   {% endif %}
 
   <div ng-show="clinicalTimeline.clinicalAdvice.length" class="panel panel-default hidden-print">
@@ -143,11 +143,12 @@
                   <span ng-show="item.agreed_plan">
                     <b>Agreed Plan: </b><div markdown="agreed_plan"></div>
                   </span>
-
-
+                  <div class="bg-success" ng-show="item.sent_upstream">
+                    <p><i>Note written to EPR</i><p>
+                  </div>
                 </div>
                 <div class="col-sm-2">
-                  <div class="row">
+                  <div class="row" ng-hide="item.sent_upstream">
                     <div class="col-md-12">
                       <i class="fa fa-pencil edit pull-right pointer" ng-click="clinicalTimeline.editItem(item)"></i>
                     </div>
@@ -157,7 +158,17 @@
                       <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
                     </div>
                   </div>
+                  {% if permissions.send_to_epr %}
+                  <div class="row content-offset-10" ng-hide="item.sent_upstream">
+                    <div class="col-md-12">
+                      <i class="fa fa-exchange edit pull-right pointer"
+                         ng-click="open_modal('SendUpstreamCtrl', '/templates/send_upstream_modal.html', {patient:patient, item:item, refresh_patient:refresh, refresh_timeline:clinicalTimeline.getClinicalAdvice})"></i>
+                    </div>
+                  </div>
+                  {% endif %}
                 </div>
+
+
               </div>
             </div>
           </div>

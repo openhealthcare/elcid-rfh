@@ -4,11 +4,7 @@ A management command that is run by a cron job
 import datetime
 import time
 from django.db import transaction
-from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 from django.utils import timezone
 from opal.models import Patient
 
@@ -17,22 +13,6 @@ from intrahospital_api.loader import api
 from intrahospital_api import update_lab_tests
 from plugins.labtests.models import Observation
 from plugins.monitoring.models import Fact
-
-def send_email(title, template_name, context):
-    html_message = render_to_string(template_name, context)
-    plain_message = strip_tags(html_message)
-    send_mail(
-        title,
-        plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        settings.ADMINS,
-        html_message=html_message,
-    )
-
-def create_email(**kwargs):
-    template_name = "email/table_email.html"
-    title = f"{settings.OPAL_BRAND_NAME} results sync"
-    send_email(title, template_name, {"table_context": kwargs, "title": title})
 
 
 @transaction.atomic
@@ -70,10 +50,9 @@ class Command(BaseCommand):
                 continue
 
             if not patient_demographics_set.exists():
-                continue # Not in our cohort
+                continue  # Not in our cohort
 
             update_patient(patient_demographics_set.first().patient,  item["lab_tests"])
-
 
         t2 = time.time()
 
@@ -82,7 +61,6 @@ class Command(BaseCommand):
         kw['time'] = int(t2-t1)
         kw['upstream_query_time'] = int(tquery2 - tquery1)
         kw['48hr_obs'] = obs_count
-        create_email(**kw)
 
         # Save as Facts
         when = timezone.make_aware(datetime.datetime.fromtimestamp(t1))
@@ -115,5 +93,3 @@ class Command(BaseCommand):
             label='48hr Observations',
             value_int=kw['48hr_obs']
         ).save()
-
-

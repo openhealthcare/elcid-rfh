@@ -4,7 +4,6 @@ elCID Royal Free Hospital implementation
 
 from opal.core import application
 from opal.core import menus
-from plugins.tb import constants as tb_constants
 from plugins.ipc.constants import IPC_ROLE
 from elcid import episode_categories
 
@@ -24,13 +23,9 @@ class StandardAddPatientMenuItem(menus.MenuItem):
         profile = UserProfile.objects.get(user=user)
         if profile.readonly:
             return False
-
-        return not profile.roles.filter(
-            name=tb_constants.TB_ROLE
-        ).exists()
+        return True
 
 
-# ie, not the TB one
 standard_add_patient_menu_item = StandardAddPatientMenuItem(
     href='/pathway/#/add_patient',
     display='Add Patient',
@@ -56,6 +51,8 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/general_delete.js',
         'js/elcid/controllers/remove_patient_step.js',
         'js/elcid/controllers/add_to_service.js',
+        'js/elcid/controllers/send_upstream.js',
+        'js/elcid/controllers/send_pc_upstream.js',
         'js/elcid/services/demographics_search.js',
         'js/elcid/controllers/tagging_step.js',
         'js/elcid/controllers/investigations.js',
@@ -111,7 +108,7 @@ class Application(application.OpalApplication):
         if profile.roles.filter(name=IPC_ROLE).exists():
             menu_items.append(
                 menus.MenuItem(
-                    href='/#/ipc/',
+                    href='/#/ipc/wards/',
                     display='IPC',
                     icon='fa fa-warning',
                     activepattern='ipc'

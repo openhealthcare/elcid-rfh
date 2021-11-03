@@ -1,0 +1,36 @@
+<style>
+  .c3-line {
+    stroke-width: 2px;
+  }
+</style>
+<div class="content-offset">
+  <div class="row ">
+    <div class="col-md-8 col-md-offset-2 content-offset">
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1>Admissions Load Stats Dashboard</h1>
+        </div> <!-- heading -->
+        <div class="panel-body">
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Encounter Load times in minutes</h2>
+              <div id="encounter_load_time_fact"></div>
+            </div>
+          </div> <!-- row -->
+          <script>render_graph('encounter_load_time_fact', {{ encounter_load_time_fact | safe }}, 'line');</script>
+
+          <div class="row content-offset">
+            <div class="col-md-12">
+              <h2>Encounter count</h2>
+              <div class="content-offset-20" id="encounter_count_fact"></div>
+            </div>
+          </div> <!-- row -->
+          <script>render_graph('encounter_count_fact', {{ encounter_count_fact | safe }}, 'line');</script>
+
+        </div>   <!-- panel body -->
+      </div>     <!-- Panel -->
+    </div>
+  </div>
+</div>

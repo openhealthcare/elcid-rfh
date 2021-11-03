@@ -500,7 +500,7 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
         ctx["rows_by_date"] = {k: dict(v) for k, v in ctx["rows_by_date"].items()}
 
         for some_date, state_dict in ctx["rows_by_date"].items():
-            not_canceled = state_dict["not_canceled"]
+            not_canceled = state_dict.get("not_canceled", [])
             recent_consultation = [
                 k[3] for k in not_canceled if k[3] and k[3].when.date() == some_date
             ]

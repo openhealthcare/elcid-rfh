@@ -57,39 +57,6 @@ class TaggingListFilter(admin.SimpleListFilter):
         return omodels.Patient.objects.all()
 
 
-class PatientAdmin(OldPatientAdmin):
-    actions = ["refresh_lab_tests"]
-    list_filter = (TaggingListFilter,)
-    list_display = (
-        '__str__',
-        'patient_detail_link',
-        'upstream_lab_results',
-        'upstream_blood_culture_results',
-    )
-
-    def refresh_lab_tests(self, request, queryset):
-        for patient in queryset:
-            loader.load_patient(patient, run_async=False)
-
-    def upstream_lab_results(self, obj):
-        hospital_number = obj.demographics_set.first().hospital_number
-        url = reverse(
-            'raw_results', kwargs=dict(hospital_number=hospital_number)
-        )
-        return format_html("<a href='{url}'>{url}</a>", url=url)
-
-    def upstream_blood_culture_results(self, obj):
-        hospital_number = obj.demographics_set.first().hospital_number
-        url = reverse(
-            'raw_results', kwargs=dict(
-                hospital_number=hospital_number, test_type="BLOOD CULTURE"
-            )
-        )
-        return format_html("<a href='{url}'>{url}</a>", url=url)
-
-    refresh_lab_tests.short_description = "Load in lab tests from upstream"
-
-
 class PatientLoadAdmin(admin.ModelAdmin):
     list_filter = ['state']
     ordering = ('-started',)
@@ -116,8 +83,6 @@ class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
 
 admin.site.register(rmodels.Version, admin.ModelAdmin)
 admin.site.register(rmodels.Revision, admin.ModelAdmin)
-admin.site.unregister(omodels.Patient)
 admin.site.unregister(imodels.InitialPatientLoad)
-admin.site.register(omodels.Patient, PatientAdmin)
 admin.site.register(imodels.InitialPatientLoad, InitialPatientLoadAdmin)
 admin.site.register(imodels.BatchPatientLoad, BatchPatientLoadAdmin)

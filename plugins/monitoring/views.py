@@ -21,6 +21,11 @@ from plugins.appointments.constants import (
     APPOINTMENTS_COUNT_FACT
 )
 
+from plugins.admissions.constants import (
+    ENCOUNTER_LOAD_MINUTES,
+    TOTAL_ENCOUNTERS
+)
+
 from plugins.monitoring.models import Fact
 
 
@@ -111,7 +116,21 @@ class AppointmentLoadStats(LoginRequiredMixin, TemplateView):
         return context
 
 
-class SystemStats(LoginRequiredMixin, TemplateView):
+class AdmissionLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/admission_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['encounter_load_time_fact'] = graph_data_for_label(
+            ENCOUNTER_LOAD_MINUTES
+        )
+        context['encounter_count_fact'] = graph_data_for_label(
+            TOTAL_ENCOUNTERS
+        )
+        return context
+
+
+class SystemStats(  LoginRequiredMixin, TemplateView):
     template_name = 'monitoring/system_stats.html'
 
     def get_context_data(self, *a, **k):

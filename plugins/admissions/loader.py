@@ -7,6 +7,7 @@ from django.db.models import DateTimeField
 from django.utils import timezone
 from opal.models import Patient
 
+from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
@@ -103,7 +104,7 @@ def load_encounters(patient):
             status.save()
 
 
-def load_recent_encounters():
+def load_excounters_since(timestamp):
     """
     Query upstream for all encounters updated in a recent period.
 
@@ -120,21 +121,28 @@ def load_recent_encounters():
     If the patient is one we are interested in we either create or update
     our copy of the encounter data using the upstream ID.
     """
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
     api = ProdAPI()
-
-    timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
 
     encounters = api.execute_hospital_query(
         Q_GET_RECENT_ENCOUNTERS,
         params={'timestamp': timestamp}
     )
     for encounter in encounters:
-        mrn = encounter['PID_3_MRN']
+        mrn = encounter['PID_3_MRN'].strip()
+
+        if mrn == '':
+            continue
 
         if Demographics.objects.filter(hospital_number=mrn).exists():
             patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
-
             save_encounter(encounter, patient)
+        else:
+            patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
+            save_encounter(encounter, patient)
+        patient.patientencounterstatus_set.update(
+            has_encounters=True
+        )
 
 
 def load_transfer_history():

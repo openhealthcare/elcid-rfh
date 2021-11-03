@@ -104,6 +104,7 @@ app.config(
              .when('/imaging-load-stats/',             static_template_route(
                  '/templates/monitoring/imaging_load_stats.html'))
               .when('/appointment-load-stats/', static_template_route('/templates/monitoring/appointment_load_stats.html'))
+              .when('/admission-load-stats/', static_template_route('/templates/monitoring/admission_load_stats.html'))
               .when('/nursing-handover/:ward_code/',      {
                  controller: 'WelcomeCtrl',
                  controllerAs: 'welcome',

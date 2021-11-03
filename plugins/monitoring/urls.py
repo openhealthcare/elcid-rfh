@@ -31,4 +31,9 @@ urlpatterns = [
         views.AppointmentLoadStats.as_view(),
         name='appointment_load_stats'
     ),
+    url(
+        'templates/monitoring/admission_load_stats.html',
+        views.AdmissionLoadStats.as_view(),
+        name='admission_load_stats'
+    ),
 ]
