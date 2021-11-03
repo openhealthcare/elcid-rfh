@@ -100,9 +100,9 @@ def render_advice(clinical_advice):
     rfi = clinical_advice.reason_for_interaction
     text = ""
     if rfi in initial_consultations:
-        text = get_initial_doctor_consultation(clinical_advice, initial=True)
+        text = get_initial_doctor_consultation(clinical_advice)
     elif rfi in follow_ups_consultaions:
-        text = get_followup_doctor_consultation(clinical_advice, initial=False)
+        text = get_followup_doctor_consultation(clinical_advice)
     elif rfi in nurse_consultations:
         text = get_nurse_consultation(clinical_advice)
     if text:
