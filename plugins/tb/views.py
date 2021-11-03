@@ -1,27 +1,110 @@
 """
 Views for the TB Opal Plugin
 """
+import csv
+import json
 import datetime
-from html.parser import HTMLParser
+import tempfile
+import os
+import io
+import zipfile
+from pathlib import Path
 from collections import defaultdict
+from django.http import HttpResponse
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
 from django.template.loader import render_to_string
+from django.utils.functional import cached_property
 from opal.core.serialization import deserialize_datetime
-from opal.models import PatientConsultationReasonForInteraction
-from elcid.models import Diagnosis, Demographics
+from opal.core import subrecords
+from opal.models import (
+    PatientConsultationReasonForInteraction, Patient, Episode
+)
+from elcid.models import (
+    Diagnosis,
+    Demographics,
+    SymptomComplex, ReferralRoute
+)
+from elcid.utils import timing
 from plugins.appointments.models import Appointment
-from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import AFBRefLab, PatientConsultation, Treatment, TBPCR
+from plugins.tb.models import (
+    AFBRefLab,
+    AdverseReaction,
+    CommuninicationConsiderations,
+    Nationality,
+    PatientConsultation,
+    SocialHistory,
+    TBHistory,
+    Travel,
+    Treatment,
+    TBPCR,
+)
 from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
 
 
+<<<<<<< HEAD
 class AdviceParser(HTMLParser):
     text = ""
+=======
+class ZipCsvWriter:
+    """
+    Write a list of dicts to a zip file
+
+    example code
+
+    with ZipCsvWriter("extract01092020.zip") as z:
+        z.write_csv("allergens.csv", [{"allergen": "flour"}])
+
+    return z.name
+    """
+    def __init__(self, folder_name):
+        self.folder_name = folder_name
+
+    def __enter__(self):
+        temp_dir = tempfile.mkdtemp()
+        self.zip_file_name = os.path.join(temp_dir, f'{self.folder_name}')
+        self.zipfile = zipfile.ZipFile(self.zip_file_name, mode='w')
+        return self
+
+    def write_csv(self, file_name, list_of_dicts):
+        buffer = io.StringIO()
+        wr = None
+        if list_of_dicts:
+            headers = list_of_dicts[0].keys()
+            wr = csv.DictWriter(
+                buffer, fieldnames=headers
+            )
+            wr.writeheader()
+            wr.writerows(list_of_dicts)
+        self.zipfile.writestr(file_name, buffer.getvalue())
+
+    @property
+    def name(self):
+        return self.zip_file_name
+
+    def __exit__(self, *args):
+        self.zipfile.close()
+
+
+def zip_file_to_response(file_with_path):
+    with open(file_with_path, 'rb') as download:
+        content = download.read()
+
+    file_name = Path(file_with_path).name
+    resp = HttpResponse(content)
+    disp = f'attachment; filename="{file_name}"'
+    resp['Content-Disposition'] = disp
+    return resp
+
+
+class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
+    template_name = "tb/clinical_advice.html"
+    model = PatientConsultation
+>>>>>>> tb-clinic-activity
 
     def handle_starttag(self, tag, attrs):
         if tag in {'b', "h1", "h2", "h3", "h4", "h5"}:
@@ -69,6 +152,7 @@ def parse_advice(clinical_advice):
             FollowUp.template_name, get_doctor_letter_context(
                 clinical_advice
             )
+<<<<<<< HEAD
         )
     if clinical_advice.reason_for_interaction in nurse:
         pass
@@ -185,6 +269,95 @@ def get_doctor_letter_context(clinical_advice, initial_assessment=False):
         ctx["symptom_complex_list"] = episode.symptomcomplex_set.all()
         ctx["patient"] = patient
     return ctx
+=======
+        last_qf_obs = (
+            lab_models.Observation.objects.filter(
+                test__patient=patient,
+                test__test_name="QUANTIFERON TB GOLD IT",
+                observation_name="QFT TB interpretation",
+            )
+            .exclude(observation_value__iexact="pending")
+            .order_by("-observation_datetime")
+            .first()
+        )
+        ctx["igra"] = []
+        if last_qf_obs:
+            last_qf_test = last_qf_obs.test
+            ctx["igra"] = [
+                last_qf_test.observation_set.filter(
+                    observation_name="QFT TB interpretation"
+                ).first(),
+                last_qf_test.observation_set.filter(
+                    observation_name="QFT IFN gamma result (TB1)"
+                ).first(),
+                last_qf_test.observation_set.filter(
+                    observation_name="QFT IFN gamma result (TB2)"
+                ).first(),
+            ]
+            ctx["igra"] = [i for i in ctx["igra"] if i]
+
+        # Show the last positive culture and PCR and the last recent resulted if later
+        # than the last positive
+        pcr_qs = TBPCR.objects.filter(patient=self.object.episode.patient)
+        last_positive_pcr = (
+            pcr_qs.filter(positive=True)
+            .filter(patient=self.object.episode.patient)
+            .order_by("-observation_datetime")
+            .first()
+        )
+        if last_positive_pcr:
+            last_resulted = (
+                pcr_qs.filter(pending=False)
+                .filter(
+                    observation_datetime__date__gt=last_positive_pcr.observation_datetime.date()
+                )
+                .order_by("-observation_datetime")
+                .first()
+            )
+        else:
+            last_resulted = (
+                pcr_qs.filter(pending=False).order_by("-observation_datetime").first()
+            )
+        ctx["pcrs"] = [i for i in [last_positive_pcr, last_resulted] if i]
+        ctx["pcrs"].reverse()
+
+        afb_qs = AFBRefLab.objects.filter(patient=self.object.episode.patient)
+        last_positive_culture = (
+            afb_qs.filter(positive=True).order_by("-observation_datetime").first()
+        )
+        if last_positive_culture:
+            last_resulted = (
+                afb_qs.filter(pending=False)
+                .filter(
+                    observation_datetime__date__gt=last_positive_culture.observation_datetime.date()
+                )
+                .order_by("-observation_datetime")
+                .first()
+            )
+        else:
+            last_resulted = (
+                afb_qs.filter(pending=False).order_by("-observation_datetime").first()
+            )
+        ctx["cultures"] = [i for i in [last_positive_culture, last_resulted] if i]
+        ctx["cultures"].reverse()
+
+        ctx["travel_list"] = episode.travel_set.all()
+        ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
+        ctx["past_medication_list"] = episode.antimicrobial_set.all()
+        ctx["allergies_list"] = patient.allergies_set.all()
+        ctx["imaging_list"] = episode.imaging_set.all()
+        ctx["tb_history"] = patient.tbhistory_set.get()
+        ctx["index_case_list"] = patient.indexcase_set.all()
+        ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
+        consultation_datetime = self.object.when
+        if consultation_datetime:
+            obs = episode.observation_set.filter(
+                datetime__date=consultation_datetime.date()
+            ).last()
+            if obs:
+                ctx["weight"] = obs.weight
+        return ctx
+>>>>>>> tb-clinic-activity
 
 
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
@@ -211,20 +384,22 @@ class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"
     model = PatientConsultation
 
-    def get_lab_test_observations(self, patient, clinical_advice, test_name, observation_names):
+    def get_lab_test_observations(
+        self, patient, clinical_advice, test_name, observation_names
+    ):
         """
         Return a lab test where at least one of the observations for
         that day are numeric
         """
         if not clinical_advice.when:
             return []
-        last_lab_tests = patient.lab_tests.filter(
-            test_name=test_name
-        ).filter(
-            datetime_ordered__lt=clinical_advice.when
-        ).prefetch_related(
-            'observation_set'
-        ).order_by("-datetime_ordered").reverse()
+        last_lab_tests = (
+            patient.lab_tests.filter(test_name=test_name)
+            .filter(datetime_ordered__lt=clinical_advice.when)
+            .prefetch_related("observation_set")
+            .order_by("-datetime_ordered")
+            .reverse()
+        )
         test = None
         for last_lab_test in last_lab_tests:
             for observation in last_lab_test.observation_set.all():
@@ -234,9 +409,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         if not test:
             return []
         observations = last_lab_test.observation_set.all()
-        return [
-            i for i in observations if i.observation_name in observation_names
-        ]
+        return [i for i in observations if i.observation_name in observation_names]
 
     def get_bloods(self, patient, clinical_advice):
         """
@@ -246,36 +419,41 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         result = []
 
         # Liver observations
-        result.extend(self.get_lab_test_observations(
-            patient,
-            clinical_advice,
-            "LIVER PROFILE",
-            ["ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"]
-        ))
+        result.extend(
+            self.get_lab_test_observations(
+                patient,
+                clinical_advice,
+                "LIVER PROFILE",
+                ["ALT", "AST", "Albumin", "Alkaline Phosphatase", "Total Bilirubin"],
+            )
+        )
 
         # Urea observations
-        result.extend(self.get_lab_test_observations(
-            patient,
-            clinical_advice,
-            "UREA AND ELECTROLYTES",
-            ["Creatinine", "Potassium", "Sodium", "Urea"]
-        ))
+        result.extend(
+            self.get_lab_test_observations(
+                patient,
+                clinical_advice,
+                "UREA AND ELECTROLYTES",
+                ["Creatinine", "Potassium", "Sodium", "Urea"],
+            )
+        )
 
         # CRP
-        result.extend(self.get_lab_test_observations(
-            patient,
-            clinical_advice,
-            "C REACTIVE PROTEIN",
-            ["C Reactive Protein"]
-        ))
+        result.extend(
+            self.get_lab_test_observations(
+                patient, clinical_advice, "C REACTIVE PROTEIN", ["C Reactive Protein"]
+            )
+        )
 
         # Full blood count
-        result.extend(self.get_lab_test_observations(
-            patient,
-            clinical_advice,
-            "C FULL BLOOD COUNT",
-            ["Hb", "WBC", "Platelets"]
-        ))
+        result.extend(
+            self.get_lab_test_observations(
+                patient,
+                clinical_advice,
+                "C FULL BLOOD COUNT",
+                ["Hb", "WBC", "Platelets"],
+            )
+        )
         return result
 
     def get_observations(self, patient_consultation):
@@ -312,7 +490,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
                 if obs_val is not None:
                     break
             if obs_val:
-                result[obs_field] = str(obs_val).rsplit('.0', 1)[0]
+                result[obs_field] = str(obs_val).rsplit(".0", 1)[0]
         return result
 
     def get_context_data(self, *args, **kwargs):
@@ -324,18 +502,15 @@ class NurseLetter(LoginRequiredMixin, DetailView):
             ctx["bloods_normal"] = False
         else:
             # are all the bloods within reference range
-            ctx["bloods_normal"] = not any([
-                i for i in ctx["bloods"] if i.is_outside_reference_range()
-            ])
+            ctx["bloods_normal"] = not any(
+                [i for i in ctx["bloods"] if i.is_outside_reference_range()]
+            )
         ctx["diagnosis"] = episode.diagnosis_set.filter(
             category=Diagnosis.PRIMARY
         ).first()
-        tb_treatments = episode.treatment_set.filter(
-            category=Treatment.TB
-        )
+        tb_treatments = episode.treatment_set.filter(category=Treatment.TB)
         tb_treatments = sorted(
-            [i for i in tb_treatments if i.start_date],
-            key=lambda x: x.start_date
+            [i for i in tb_treatments if i.start_date], key=lambda x: x.start_date
         )
         if tb_treatments:
             ctx["treatment_commenced"] = tb_treatments[0].start_date
@@ -385,6 +560,7 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
       name to be defined, on the view, ie the name of the list
       get_queryset to return a bunch of appointments
     """
+
     def get_queryset(self, *args, **kwargs):
         raise NotImplementedError()
 
@@ -433,8 +609,8 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
             demographics = patient_id_to_demographics.get(admission.patient_id)
             recent_consultation = patient_id_to_consultation.get(admission.patient_id)
             start_date = admission.start_datetime.date()
-            if admission.status_code == 'Canceled':
-                ctx["rows_by_date"][start_date]['canceled'].append(
+            if admission.status_code == "Canceled":
+                ctx["rows_by_date"][start_date]["canceled"].append(
                     (
                         admission,
                         demographics,
@@ -443,7 +619,7 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
                     )
                 )
             else:
-                ctx["rows_by_date"][start_date]['not_canceled'].append(
+                ctx["rows_by_date"][start_date]["not_canceled"].append(
                     (
                         admission,
                         demographics,
@@ -462,7 +638,7 @@ class AbstractTBAppointmentList(LoginRequiredMixin, ListView):
                 k[3] for k in not_canceled if k[3] and k[3].when.date() == some_date
             ]
             ctx["rows_by_date"][some_date]["stats"] = {
-                'on_elcid': len(recent_consultation)
+                "on_elcid": len(recent_consultation)
             }
         return ctx
 
@@ -481,12 +657,12 @@ class ClinicListForDate(AbstractTBAppointmentList):
 
     def get_queryset(self, *args, **kwargs):
         appointment_types = constants.TB_APPOINTMENT_CODES
-        return Appointment.objects.filter(
-            derived_appointment_type__in=appointment_types
-        ).filter(
-            start_datetime__date=self.date_stamp,
-        ).prefetch_related(
-            'patient__episode_set'
+        return (
+            Appointment.objects.filter(derived_appointment_type__in=appointment_types)
+            .filter(
+                start_datetime__date=self.date_stamp,
+            )
+            .prefetch_related("patient__episode_set")
         )
 
 
@@ -498,15 +674,11 @@ class ClinicList(AbstractTBAppointmentList):
         today = timezone.now().date()
         until = today + datetime.timedelta(30)
         appointment_types = constants.RFH_TB_APPOINTMENT_CODES
-        return Appointment.objects.filter(
-            derived_appointment_type__in=appointment_types
-        ).filter(
-            start_datetime__date__gte=today,
-            start_datetime__date__lte=until
-        ).order_by(
-           "start_datetime"
-        ).prefetch_related(
-            'patient__episode_set'
+        return (
+            Appointment.objects.filter(derived_appointment_type__in=appointment_types)
+            .filter(start_datetime__date__gte=today, start_datetime__date__lte=until)
+            .order_by("start_datetime")
+            .prefetch_related("patient__episode_set")
         )
 
 
@@ -518,21 +690,14 @@ class Last30Days(AbstractTBAppointmentList):
         today = timezone.now().date()
         until = today - datetime.timedelta(30)
         appointment_types = constants.RFH_TB_APPOINTMENT_CODES
-        appointments = Appointment.objects.filter(
-            derived_appointment_type__in=appointment_types
-        ).filter(
-           start_datetime__lte=today,
-           start_datetime__gte=until
-        ).exclude(
-           status_code="Canceled"
-        ).order_by(
-           "start_datetime"
-        ).prefetch_related(
-            'patient__episode_set'
+        appointments = (
+            Appointment.objects.filter(derived_appointment_type__in=appointment_types)
+            .filter(start_datetime__lte=today, start_datetime__gte=until)
+            .exclude(status_code="Canceled")
+            .order_by("start_datetime")
+            .prefetch_related("patient__episode_set")
         )
-        return sorted(
-            appointments, key=lambda x: x.start_datetime.date(), reverse=True
-        )
+        return sorted(appointments, key=lambda x: x.start_datetime.date(), reverse=True)
 
 
 class PrintConsultation(LoginRequiredMixin, DetailView):
@@ -546,17 +711,17 @@ class MDTList(LoginRequiredMixin, TemplateView):
     RFH = "rfh"
     SITES = [RFH, BARNET]
     ALL_OBS = [
-            models.TBPCR,
-            models.AFBSmear,
-            models.AFBCulture,
-            models.AFBRefLab,
+        models.TBPCR,
+        models.AFBSmear,
+        models.AFBCulture,
+        models.AFBRefLab,
     ]
 
     def patients_to_rows(self, patients):
         filter_kwargs = {
-            'patient__in': patients,
-            'reported_datetime__isnull': False,
-            'positive': True
+            "patient__in": patients,
+            "reported_datetime__isnull": False,
+            "positive": True,
         }
 
         patient_id_to_obs = defaultdict(list)
@@ -572,7 +737,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
 
         patient_consultations = models.PatientConsultation.objects.filter(
             episode__patient__in=patients
-        ).select_related('episode')
+        ).select_related("episode")
         patient_id_to_consultations = defaultdict(list)
         for pc in patient_consultations:
             patient_id_to_consultations[pc.episode.patient_id].append(pc)
@@ -581,7 +746,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
         patients = sorted(
             patients,
             key=lambda x: patient_id_to_obs[x.id][0].reported_datetime,
-            reverse=True
+            reverse=True,
         )
 
         result = []
@@ -590,7 +755,7 @@ class MDTList(LoginRequiredMixin, TemplateView):
                 self.patient_to_row(
                     patient,
                     patient_id_to_obs[patient.id],
-                    patient_id_to_consultations[patient.id]
+                    patient_id_to_consultations[patient.id],
                 )
             )
         return result
@@ -613,26 +778,23 @@ class MDTList(LoginRequiredMixin, TemplateView):
         return title.replace("  ", " ")
 
     def get_patients(self):
-        filter_args = {
-            "reported_datetime__gte": self.start_date,
-            "positive": True
-        }
+        filter_args = {"reported_datetime__gte": self.start_date, "positive": True}
         if self.kwargs["site"] == self.BARNET:
             filter_args["lab_number__contains"] = "K"
         else:
             filter_args["lab_number__contains"] = "L"
         patient_ids = set()
         for tb_obs_model in self.ALL_OBS:
-            patient_ids = patient_ids.union(tb_obs_model.objects.filter(
-                **filter_args
-            ).values_list('patient_id', flat=True))
-        return Patient.objects.filter(
-            id__in=patient_ids
-        ).prefetch_related(
-            'demographics_set',
-            'episode_set',
-            'appointments'
-        ).distinct()
+            patient_ids = patient_ids.union(
+                tb_obs_model.objects.filter(**filter_args).values_list(
+                    "patient_id", flat=True
+                )
+            )
+        return (
+            Patient.objects.filter(id__in=patient_ids)
+            .prefetch_related("demographics_set", "episode_set", "appointments")
+            .distinct()
+        )
 
     def filter_obs(self, obs):
         # The smear, culture and ref lab are all derrived from the same test
@@ -658,14 +820,18 @@ class MDTList(LoginRequiredMixin, TemplateView):
         for some_date, obs in date_to_obs.items():
             if any([i for i in obs if isinstance(i, models.AFBRefLab)]):
                 obs = [
-                    i for i in obs if not isinstance(i, (
-                        models.AFBSmear, models.AFBCulture,
-                    ))
+                    i
+                    for i in obs
+                    if not isinstance(
+                        i,
+                        (
+                            models.AFBSmear,
+                            models.AFBCulture,
+                        ),
+                    )
                 ]
             elif any([i for i in obs if isinstance(i, models.AFBCulture)]):
-                obs = [
-                    i for i in obs if not isinstance(i, models.AFBSmear)
-                ]
+                obs = [i for i in obs if not isinstance(i, models.AFBSmear)]
             date_to_filtered_obs[some_date] = obs
 
         # create a dictionary of date to a unique list of observation values
@@ -687,14 +853,14 @@ class MDTList(LoginRequiredMixin, TemplateView):
     def patient_to_row(self, patient, obs, patient_consultations):
         demographics = patient.demographics_set.all()[0]
         tb_category = episode_categories.TbEpisode.display_name
-        tb_episodes = [i for i in patient.episode_set.all() if i.category_name == tb_category]
+        tb_episodes = [
+            i for i in patient.episode_set.all() if i.category_name == tb_category
+        ]
         episode = None
         if tb_episodes:
             episode = tb_episodes[0]
 
-        obs = [
-            (i.reported_datetime, 'obs', i) for i in self.filter_obs(obs)
-        ]
+        obs = [(i.reported_datetime, "obs", i) for i in self.filter_obs(obs)]
 
         # Only show the first TB related appointment and all
         # future TB related appointments
@@ -708,12 +874,15 @@ class MDTList(LoginRequiredMixin, TemplateView):
                     appointments.append(appointment)
 
         appointments = [
-            (i.start_datetime, "appointment", i,) for i in appointments
+            (
+                i.start_datetime,
+                "appointment",
+                i,
+            )
+            for i in appointments
         ]
 
-        notes = [
-            (i.when, "note",  i) for i in patient_consultations if i.when
-        ]
+        notes = [(i.when, "note", i) for i in patient_consultations if i.when]
 
         timeline = obs + notes + appointments
         timeline = sorted(timeline, key=lambda x: x[0], reverse=True)
@@ -740,51 +909,698 @@ class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
         mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
             name="MDT meeting"
         )
-        patient_consultations = PatientConsultation.objects.exclude(
-            plan=""
-        ).exclude(
-            when=None
-        ).filter(
-            reason_for_interaction_fk_id=mdt_meeting.id
-        ).select_related('episode')
-        episodes = [i.episode for i in patient_consultations]
-        demographics = Demographics.objects.filter(
-            patient__episode__in=episodes
+        patient_consultations = (
+            PatientConsultation.objects.exclude(plan="")
+            .exclude(when=None)
+            .filter(reason_for_interaction_fk_id=mdt_meeting.id)
+            .select_related("episode")
         )
-        patient_id_to_demographics = {
-            i.patient_id: i for i in demographics
-        }
+        episodes = [i.episode for i in patient_consultations]
+        demographics = Demographics.objects.filter(patient__episode__in=episodes)
+        patient_id_to_demographics = {i.patient_id: i for i in demographics}
         date_to_episode_to_mdt_notes = defaultdict(lambda: defaultdict(list))
         for patient_consultation in patient_consultations:
             episode = patient_consultation.episode
-            date_to_episode_to_mdt_notes[patient_consultation.when.date()][episode].append(
-                patient_consultation
-            )
+            date_to_episode_to_mdt_notes[patient_consultation.when.date()][
+                episode
+            ].append(patient_consultation)
 
         date_to_rows = defaultdict(list)
 
         for date, episode_to_mdt_notes in date_to_episode_to_mdt_notes.items():
             for episode, mdt_notes in episode_to_mdt_notes.items():
-                date_to_rows[date].append({
-                    "episode": episode,
-                    "mdt_notes": sorted(mdt_notes, key=lambda x: x.when, reverse=True),
-                    "demographics": patient_id_to_demographics[episode.patient_id]
-                })
+                date_to_rows[date].append(
+                    {
+                        "episode": episode,
+                        "mdt_notes": sorted(
+                            mdt_notes, key=lambda x: x.when, reverse=True
+                        ),
+                        "demographics": patient_id_to_demographics[episode.patient_id],
+                    }
+                )
 
         # sort the date to rows by reverse date
         date_to_rows = {
-            k: v for k, v in sorted(
-                date_to_rows.items(), key=lambda x: x[0], reverse=True
-            )
+            k: v
+            for k, v in sorted(date_to_rows.items(), key=lambda x: x[0], reverse=True)
         }
         # sort the rows in date to rows by the latest mdt note
         for some_date in date_to_rows.keys():
             date_to_rows[some_date] = sorted(
                 date_to_rows[some_date],
                 key=lambda x: x["mdt_notes"][0].when,
-                reverse=True
+                reverse=True,
             )
 
         ctx["date_to_rows"] = date_to_rows
         ctx["num_consultations"] = len(patient_consultations)
         return ctx
+
+
+class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
+    @property
+    def menu_years(self):
+        minimum_year = 2019
+        current_year = datetime.date.today().year
+        result = []
+        for i in range(4):
+            start_year = current_year - i
+            end_year = current_year - i + 1
+            if start_year < minimum_year:
+                break
+            result.append((start_year, end_year,))
+        result.reverse()
+        return result
+
+    @property
+    def start_date(self):
+        return datetime.date(int(self.kwargs["year"]), 1, 1)
+
+    @property
+    def end_date(self):
+        return datetime.date(int(self.kwargs["year"]) + 1, 1, 1)
+
+    @property
+    def months(self):
+        result = []
+        for i in range(12):
+            start_month = self.start_date.month + (i % 12)
+            start_year = self.start_date.year + int(i / 12)
+            end_month = self.start_date.month + ((i + 1) % 12)
+            end_year = self.start_date.year + int((i + 1) / 12)
+            result.append(
+                (
+                    datetime.date(start_year, start_month, 1),
+                    datetime.date(end_year, end_month, 1),
+                )
+            )
+        return result
+
+    @property
+    def weeks(self):
+        result = []
+        first_monday = None
+        for i in range(7):
+            first_monday = self.start_date - datetime.timedelta(i)
+            if first_monday.isoweekday() == 1:
+                break
+
+        for i in range(52):
+            if first_monday + datetime.timedelta(i * 7) < self.end_date:
+                start = first_monday + datetime.timedelta(i * 7)
+                end = first_monday + datetime.timedelta((i + 1) * 7)
+                result.append((start, end))
+            else:
+                break
+        return result
+
+    @cached_property
+    def appointments_qs(self):
+        appointments = list(
+            Appointment.objects.filter(
+                derived_appointment_type__in=constants.RFH_TB_APPOINTMENT_CODES
+            )
+            .filter(start_datetime__date__gt=self.start_date)
+            .filter(end_datetime__date__lt=self.end_date)
+            .exclude(status_code__in=["Checked In", "Canceled"])
+        )
+        cleaned_appointments = []
+        for appointment in appointments:
+            if appointment.start_datetime < timezone.now():
+                if appointment.status_code == 'Confirmed':
+                    continue
+            cleaned_appointments.append(appointment)
+        return cleaned_appointments
+
+    @cached_property
+    def mdt_meeting_qs(self):
+        mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
+            name="MDT meeting"
+        )
+        return list(
+            PatientConsultation.objects.filter(
+                when__date__gte=self.start_date,
+                when__date__lt=self.end_date,
+                reason_for_interaction_fk_id=mdt_meeting.id,
+            ).select_related("episode")
+        )
+
+    @cached_property
+    def non_mdt_consultations(self):
+        mdt_meeting = PatientConsultationReasonForInteraction.objects.get(
+            name="MDT meeting"
+        )
+        return list(
+            PatientConsultation.objects.filter(when__date__gte=self.start_date)
+            .filter(when__date__lt=self.end_date)
+            .exclude(reason_for_interaction_fk_id=mdt_meeting.id)
+            .select_related("episode")
+        )
+
+    @property
+    def atttended_appointments(self):
+        return [
+            i
+            for i in self.appointments_qs
+            if i.status_code not in ["Canceled", "No Show"]
+        ]
+
+
+class ClinicActivity(AbstractClinicActivity):
+    template_name = "tb/stats/clinic_activity.html"
+
+    @timing
+    def summary(self):
+        attended_appointments = self.atttended_appointments
+        number_of_attended_appointments = len(attended_appointments)
+        patient_ids = set()
+        for i in attended_appointments:
+            patient_ids.add(i.patient_id)
+        number_of_patients = len(patient_ids)
+        number_of_new_patients = 0
+        for i in attended_appointments:
+            if i.derived_appointment_type in constants.TB_NEW_APPOINTMENT_CODES:
+                number_of_new_patients += 1
+        return {
+            "number_of_appointments": number_of_attended_appointments,
+            "number_of_patients": number_of_patients,
+            "number_of_new_patients": number_of_new_patients,
+        }
+
+    @timing
+    def appointments_by_status(self, *args, **kwargs):
+        appointments = self.appointments_qs
+        appointment_type_month_count = defaultdict(lambda: [0 for i in self.months])
+
+        for appointment in appointments:
+            appointment_type_month_count[appointment.status_code][
+                appointment.start_datetime.month - 1
+            ] += 1
+
+        checked_out = appointment_type_month_count["Checked Out"]
+        no_shows = appointment_type_month_count["No Show"]
+        confirmed = appointment_type_month_count["Confirmed"]
+        no_show_percentage = []
+        today = datetime.date.today()
+        for idx, month_checked_out in enumerate(checked_out):
+            month_no_show = appointment_type_month_count["No Show"][idx]
+            month_total = month_no_show + month_checked_out
+
+            month = self.months[idx][0].month
+            year = self.months[idx][0].year
+            # only include the no show % for completed months
+            if month_total and (month < today.month or year < today.year):
+                no_show_percentage.append(int((month_no_show/month_total) * 100))
+            else:
+                no_show_percentage.append(None)
+        months = [i[0].strftime("%b") for i in self.months]
+        table_vals = [
+            ["Attended"] + checked_out,
+            ["No show"] + no_shows
+        ]
+        if any(confirmed):
+            table_vals.append(["Confirmed"] + confirmed)
+            table_vals = sorted(table_vals, key=lambda x: x[0])
+
+        return {
+            "x": json.dumps(months),
+            "attendance_max": max(checked_out + [500]),
+            "graph_vals": json.dumps([
+                ["Attended"] + checked_out,
+                ["No show (%)"] + no_show_percentage
+            ]),
+            "table_headers": months,
+            "table_vals": table_vals
+        }
+
+    @timing
+    def appointments_by_type(self):
+        appointments = self.atttended_appointments
+        type_to_count = defaultdict(int)
+        for appointment in appointments:
+            type_to_count[appointment.derived_appointment_type] += 1
+        return {k: v for k, v in sorted(type_to_count.items(), key=lambda x: -x[1])}
+
+    @timing
+    def mdt_start_stop(self):
+        pcs = self.mdt_meeting_qs
+        by_week = defaultdict(list)
+        for pc in pcs:
+            for start_week, end_week in self.weeks:
+                if pc.when.date() >= start_week:
+                    if pc.when.date() < end_week:
+                        by_week[start_week].append(pc)
+        duration = dict()
+        count = dict()
+        for start, _ in self.weeks:
+            pcs = by_week.get(start, [])
+            if not pcs:
+                duration[start] = 0
+                count[start] = 0
+            else:
+                whens = [i.when for i in pcs]
+                start_datetime = min(whens)
+                end_datetime = max(whens)
+                if end_datetime == start_datetime:
+                    duration[start] = 0
+                else:
+                    duration[start] = int(
+                        (end_datetime - start_datetime).total_seconds() / 60
+                    )
+                count[start] = len(whens)
+        return {
+            "x_axis": json.dumps(
+                [f"{i.strftime('%d/%m')}-{b.strftime('%d/%m')}" for i, b in self.weeks]
+            ),
+            "vals": json.dumps(
+                [
+                    ["duration"] + list([i or None for i in duration.values()]),
+                    ["count"] + list(count.values()),
+                ]
+            ),
+        }
+
+    def elcid_review(self):
+        # recorded on elcid by appointment type
+        # patients on elcid
+        pcs = self.non_mdt_consultations
+        pcs_by_patient_id_date = {
+            (i.episode.patient_id, i.when.date(),): i for i in pcs
+        }
+        appointments = self.atttended_appointments
+        appt_types = list(set(i.derived_appointment_type for i in appointments))
+        appt_types = sorted(appt_types)
+        appt_types_to_values = defaultdict(list)
+        table_rows = defaultdict(list)
+        for start_date, end_date in self.months:
+            months_appointments = []
+            for appointment in appointments:
+                app_start = appointment.start_datetime.date()
+                if start_date <= app_start and end_date > app_start:
+                    months_appointments.append(appointment)
+            on_elcid_by_type = defaultdict(int)
+            by_type = defaultdict(int)
+            for appointment in months_appointments:
+                appt_type = appointment.derived_appointment_type
+                by_type[appt_type] += 1
+                start = appointment.start_datetime
+                key = (appointment.patient_id, start.date(),)
+                # If there is an appointment on the day for the patient after the start
+                # time then mark it as recorded on elcid
+                pc = pcs_by_patient_id_date.get(key)
+                if pc and start <= pc.when:
+                    on_elcid_by_type[appt_type] += 1
+                else:
+                    # If there isn't a patient, see if there is a pc the
+                    # next day and count that.
+                    key = (appointment.patient_id, start.date() + datetime.timedelta(1),)
+                    if key in pcs_by_patient_id_date:
+                        on_elcid_by_type[appt_type] += 1
+            for appt_type in appt_types:
+                total = by_type[appt_type]
+                on_elcid = on_elcid_by_type[appt_type]
+                if total:
+                    percent = int((on_elcid/total) * 100)
+                else:
+                    percent = 0
+                appt_types_to_values[appt_type].append(percent)
+                table_rows[appt_type].append((on_elcid, total, percent,))
+        vals = []
+        for appt_type in appt_types:
+            values = appt_types_to_values[appt_type]
+            if any(values):
+                vals.append([f"{appt_type} recorded %"] + values)
+        return {
+            "x": [i[0].strftime("%b") for i in self.months],
+            "vals": vals,
+            "table": {
+                "headers": [""] + [i[0].strftime("%b") for i in self.months],
+                # exclude appointment types where nothing is populated on elcid
+                "rows": {k: v for k, v in table_rows.items() if any(i[0] for i in v)}
+            }
+        }
+
+    def users_recorded(self):
+        """
+        The users who recorded patient consultations in elcid
+        """
+        pcs = self.non_mdt_consultations
+        by_initials = defaultdict(int)
+        for pc in pcs:
+            by_initials[pc.initials] += 1
+        less_than_5 = 0
+        result = dict()
+        for k, v in by_initials.items():
+            if v < 5:
+                less_than_5 += v
+            else:
+                result[k] = v
+        result = dict(sorted(
+            result.items(), key=lambda x: x[1], reverse=True
+        ))
+        result["Other (<5)"] = less_than_5
+        return result
+
+    def patient_notes_by_reason_for_interaction(self):
+        pcs = self.non_mdt_consultations + self.mdt_meeting_qs
+        result = defaultdict(int)
+        for pc in pcs:
+            result[pc.reason_for_interaction] += 1
+        result = dict(sorted(
+            result.items(), key=lambda x: x[1], reverse=True
+        ))
+        return result
+
+    def get_subrecord_with_appointment_count(self, subrecord, qs=None):
+        """
+        for patients with appointments this year, tell
+        me if the subrecord has been fille din.
+        """
+        patient_ids = list(set([i.patient_id for i in self.appointments_qs]))
+        if not qs:
+            qs = subrecord.objects.all()
+        if getattr(subrecord, "_is_singleton", False):
+            qs = qs.exclude(
+                consistency_token=''
+            )
+        if subrecord in set(subrecords.patient_subrecords()):
+            qs = qs.filter(
+                patient__episode__category_name=episode_categories.TbEpisode.display_name
+            )
+            return len(set(qs.filter(
+                patient_id__in=patient_ids
+            ).values_list(
+                'patient_id', flat=True
+            ).distinct()))
+        else:
+            qs = qs.filter(
+                episode__category_name=episode_categories.TbEpisode.display_name
+            )
+            return len(set(qs.filter(
+                episode__patient_id__in=patient_ids
+            ).values_list(
+                'episode_id', flat=True
+            ).distinct()))
+
+    def subrecords_recorded(self):
+        patient_ids = list(set([
+            i.episode.patient_id for i in self.non_mdt_consultations
+        ]))
+        result = {}
+        result["Patient Notes"] = len(patient_ids)
+        result["Primary Diagnosis"] = self.get_subrecord_with_appointment_count(
+            Diagnosis, Diagnosis.objects.filter(
+                category=Diagnosis.PRIMARY
+            )
+        )
+        result["Seconday Diagnosis"] = self.get_subrecord_with_appointment_count(
+            Diagnosis, Diagnosis.objects.exclude(
+                category=Diagnosis.PRIMARY
+            )
+        )
+        result[SymptomComplex.get_display_name()] = self.get_subrecord_with_appointment_count(
+            SymptomComplex
+        )
+        result["TB Medication"] = self.get_subrecord_with_appointment_count(
+            Treatment, Treatment.objects.filter(category=Treatment.TB)
+        )
+        result["Other Medication"] = self.get_subrecord_with_appointment_count(
+            Treatment, Treatment.objects.exclude(category=Treatment.TB)
+        )
+        result[AdverseReaction.get_display_name()] = self.get_subrecord_with_appointment_count(
+            AdverseReaction
+        )
+        result[ReferralRoute.get_display_name()] = self.get_subrecord_with_appointment_count(
+            ReferralRoute
+        )
+        language = set(
+            CommuninicationConsiderations.objects.filter(
+                patient_id__in=patient_ids
+            ).exclude(
+                updated=None
+            ).values_list('patient_id', flat=True).distinct()
+        )
+        nationality = set(
+            Nationality.objects.filter(
+                patient_id__in=patient_ids
+            ).exclude(
+                updated=None
+            ).values_list('patient_id', flat=True).distinct()
+        )
+        nationality_and_language = language.union(nationality)
+        result["Nationality and Language"] = len(nationality_and_language)
+        result[Travel.get_display_name()] = self.get_subrecord_with_appointment_count(
+            Travel
+        )
+        result[TBHistory.get_display_name()] = self.get_subrecord_with_appointment_count(
+            TBHistory
+        )
+        result[SocialHistory.get_display_name()] = self.get_subrecord_with_appointment_count(
+            SocialHistory
+        )
+        return result
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx["summary"] = self.summary()
+        ctx["appointments_by_status"] = self.appointments_by_status()
+        ctx["appointments_by_type"] = self.appointments_by_type()
+        ctx["mdt_start_stop"] = self.mdt_start_stop()
+        ctx["elcid_review"] = self.elcid_review()
+        ctx["users_recorded"] = self.users_recorded()
+        ctx["patient_notes_by_reason_for_interaction"] = self.patient_notes_by_reason_for_interaction()
+        ctx["populated"] = self.subrecords_recorded()
+        return ctx
+
+
+class ClinicActivityMDTData(AbstractClinicActivity):
+    template_name = "tb/stats/clinic_activity_mdt_data.html"
+
+    def get_week(self, some_date):
+        weeks = self.weeks
+        week = [
+            (i, v,) for i, v in weeks if some_date >= i and some_date < v
+        ]
+        return week[0]
+
+    def get_mdt_info(self):
+        mdt_meetings = self.mdt_meeting_qs
+        patient_ids = set([i.episode.patient_id for i in mdt_meetings])
+        demographics = Demographics.objects.filter(
+            patient_id__in=patient_ids
+        )
+        patient_id_to_demographics = {i.patient_id: i for i in demographics}
+        result = []
+        for mdt_meeting in mdt_meetings:
+            episode_id = mdt_meeting.episode_id
+            patient_id = mdt_meeting.episode.patient_id
+            host = self.request.get_host()
+            link = f"http://{host}/#/patient/{patient_id}/{episode_id}"
+            demographics = patient_id_to_demographics[patient_id]
+            row = {
+                "Link": link,
+                "Name": demographics.name,
+                "MRN": demographics.hospital_number,
+                "When": mdt_meeting.when,
+                "By": mdt_meeting.initials
+            }
+            if self.request.method == "POST":
+                row["Examination findings"] = mdt_meeting.examination_findings
+                row["Discussion"] = mdt_meeting.discussion
+                row["Plan"] = mdt_meeting.plan
+            result.append(row)
+
+        result = sorted(result, key=lambda x: x["When"])
+        return result
+
+    def post(self, *args, **kwargs):
+        zip_file_name = f"mdt_data_{self.kwargs['year']}.zip"
+        csv_name = f"mdt_data_{self.kwargs['year']}.csv"
+        table_data = self.get_mdt_info()
+        with ZipCsvWriter(zip_file_name) as zf:
+            zf.write_csv(
+                csv_name, table_data
+            )
+        return zip_file_to_response(zf.name)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        mdt_info = self.get_mdt_info()
+        rows_by_week = defaultdict(list)
+        for mdt_row in mdt_info:
+            rows_by_week[self.get_week(mdt_row["When"].date())].append(
+                mdt_row
+            )
+        ctx["rows_by_week"] = dict(rows_by_week)
+        return ctx
+
+
+class ClinicActivityAppointmentData(AbstractClinicActivity):
+    template_name = "tb/stats/clinic_activity_appointment_data.html"
+
+    def get_patient_ids_with_subrecords(self, subrecord, qs=None):
+        """
+        Return the patient ids for subrecords with appointments
+        during the start/end dates
+        """
+
+        patient_ids = list(set([i.patient_id for i in self.appointments_qs]))
+        if qs is None:
+            qs = subrecord.objects.all()
+        if getattr(subrecord, "_is_singleton", False):
+            qs = qs.exclude(
+                consistency_token=''
+            )
+        if subrecord in set(subrecords.patient_subrecords()):
+            qs = qs.filter(
+                patient__episode__category_name=episode_categories.TbEpisode.display_name
+            )
+            return set(qs.filter(
+                patient_id__in=patient_ids
+            ).values_list(
+                'patient_id', flat=True
+            ).distinct())
+        else:
+            qs = qs.filter(
+                episode__category_name=episode_categories.TbEpisode.display_name
+            )
+            return set(qs.filter(
+                episode__patient_id__in=patient_ids
+            ).values_list(
+                'episode__patient_id', flat=True
+            ).distinct())
+
+    def get_appointment_info(self):
+        appointments = self.appointments_qs
+        non_mdt_consultations = self.non_mdt_consultations
+        initials_by_date = {
+            i.when.date: i.initials for i in non_mdt_consultations
+        }
+        patient_ids = set([i.patient_id for i in appointments])
+        episodes = Episode.objects.filter(
+            category_name=episode_categories.TbEpisode.display_name
+        ).filter(
+            patient_id__in=patient_ids
+        )
+        patient_id_to_episode_id = {
+            i.patient_id: i.id for i in episodes
+        }
+
+        demographics = Demographics.objects.filter(patient_id__in=patient_ids)
+        patient_id_to_demographics = {
+            i.patient_id: i for i in demographics
+        }
+        primary_diagnosis_qs = Diagnosis.objects.filter(
+            category=Diagnosis.PRIMARY
+        )
+        primary_diagnosis_patient_ids = self.get_patient_ids_with_subrecords(
+            Diagnosis, primary_diagnosis_qs
+        )
+        symptom_patient_ids = self.get_patient_ids_with_subrecords(
+            SymptomComplex
+        )
+        referral_patient_ids = self.get_patient_ids_with_subrecords(
+            ReferralRoute
+        )
+
+        if self.request.method == "POST":
+            secondary_diagnosis_qs = Diagnosis.objects.filter(
+                category=Diagnosis.PRIMARY
+            )
+            secondary_diagnosis_patient_ids = self.get_patient_ids_with_subrecords(
+                Diagnosis, secondary_diagnosis_qs
+            )
+            tb_medication_qs = Treatment.objects.filter(
+                category=Treatment.TB
+            )
+            tb_medication_patient_ids = self.get_patient_ids_with_subrecords(
+                Treatment, tb_medication_qs
+            )
+            other_medication_qs = Treatment.objects.exclude(
+                category=Treatment.TB
+            )
+            other_medication_patient_ids = self.get_patient_ids_with_subrecords(
+                Treatment, other_medication_qs
+            )
+            nationality_patient_ids = self.get_patient_ids_with_subrecords(
+                Nationality
+            )
+            language_patient_ids = self.get_patient_ids_with_subrecords(
+                CommuninicationConsiderations
+            )
+            travel_patient_ids = self.get_patient_ids_with_subrecords(
+                Travel
+            )
+            tb_history_patient_ids = self.get_patient_ids_with_subrecords(
+                TBHistory
+            )
+            social_history_patient_ids = self.get_patient_ids_with_subrecords(
+                SocialHistory
+            )
+
+        result = []
+        host = self.request.get_host()
+        for appointment in appointments:
+            patient_id = appointment.patient_id
+            demographics = patient_id_to_demographics.get(
+                patient_id
+            )
+            seen_by = False
+            start_dt = appointment.start_datetime.date()
+            seen_by = initials_by_date.get(start_dt)
+            episode_id = patient_id_to_episode_id.get(patient_id)
+
+            if episode_id:
+                link = f"http://{host}/#/patient/{patient_id}/{episode_id}"
+            else:
+                link = f"http://{host}/#/patient/{patient_id}"
+            if not seen_by:
+                next_day = start_dt + datetime.timedelta(1)
+                if next_day in initials_by_date:
+                    seen_by = initials_by_date.get(next_day)
+            row = {
+                "Link": link,
+                "Name": demographics.name,
+                "MRN": demographics.hospital_number,
+                "Start": appointment.start_datetime,
+                "Type": appointment.derived_appointment_type,
+                "Status": appointment.status_code,
+                "Seen by": seen_by,
+                "Primary diagnosis": patient_id in primary_diagnosis_patient_ids,
+                SymptomComplex.get_display_name(): patient_id in symptom_patient_ids,
+                ReferralRoute.get_display_name(): patient_id in referral_patient_ids
+            }
+
+            if self.request.method == "POST":
+                has_sec_diag = patient_id in secondary_diagnosis_patient_ids
+                row["Secondary diagnosis"] = has_sec_diag
+                row["TB Medication"] = patient_id in tb_medication_patient_ids
+                row["Other Medication"] = patient_id in other_medication_patient_ids
+                has_nationality = patient_id in nationality_patient_ids
+                has_language = patient_id in language_patient_ids
+                row["Nationality and Language"] = has_nationality or has_language
+                row[Travel.get_display_name()] = patient_id in travel_patient_ids
+                row[TBHistory.get_display_name()] = patient_id in tb_history_patient_ids
+                row[SocialHistory.get_display_name()] = patient_id in social_history_patient_ids
+            result.append(row)
+        result = sorted(result, key=lambda x: x["Start"])
+        return result
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        appointment_info = self.get_appointment_info()
+        by_month = defaultdict(list)
+        for appointment_row in appointment_info:
+            by_month[appointment_row["Start"].strftime('%B')].append(appointment_row)
+        ctx["appointment_info_by_month"] = dict(by_month)
+        return ctx
+
+    def post(self, *args, **kwargs):
+        zip_file_name = f"appointments_{self.kwargs['year']}.zip"
+        csv_name = f"appointments_{self.kwargs['year']}.csv"
+        table_data = self.get_appointment_info()
+        with ZipCsvWriter(zip_file_name) as zf:
+            zf.write_csv(
+                csv_name, table_data
+            )
+        return zip_file_to_response(zf.name)

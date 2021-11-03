@@ -2,22 +2,19 @@
 Helpers for working with TB lab tests.
 """
 
-
+import re
 from plugins.labtests.models import Observation
 from django.db.models import Q
 
 
-class TBTest(object):
-    TEST_NAME = None
-    TEST_CODE = None
+class TBObservation(object):
+    TEST_NAMES = None
     OBSERVATION_NAME = None
 
     @classmethod
     def get_observations(cls):
         return Observation.objects.filter(
-            test__test_name=cls.TEST_NAME
-        ).filter(
-            test__test_code=cls.TEST_CODE
+            test__test_name__in=cls.TEST_NAMES
         ).filter(
             observation_name=cls.OBSERVATION_NAME
         )
@@ -34,71 +31,13 @@ class TBTest(object):
     def get_resulted_observations(cls):
         return cls.get_positive_observations() | cls.get_negative_observations()
 
-    @classmethod
-    def get_last_resulted_observation(cls, patient):
-        last_negative = cls.get_negative_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        last_positive = cls.get_positive_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        if last_negative and last_positive:
-            last_negative_date = last_negative.test.datetime_ordered.date()
-            last_positive_date = last_positive.test.datetime_ordered.date()
-            if last_negative_date > last_positive_date:
-                return last_negative
-            return last_positive
-        return last_positive or last_negative
 
-    @classmethod
-    def get_first_resulted_observation(cls, patient):
-        first_negative = cls.get_negative_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        first_positive = cls.get_positive_observations().filter(
-            test__patient=patient
-        ).order_by(
-            "-test__datetime_ordered"
-        ).first()
-        if first_negative and first_positive:
-            first_negative_date = first_negative.test.datetime_ordered.date()
-            first_positive_date = first_positive.test.datetime_ordered.date()
-            if first_negative_date > first_positive_date:
-                return first_negative
-            return first_positive
-
-
-class AFBCulture(TBTest):
-    TEST_NAME = 'AFB : CULTURE'
-    TEST_CODE = 'AFB'
-    OBSERVATION_NAME = 'TB: Culture Result'
-
-    @classmethod
-    def get_positive_observations(cls):
-        return cls.get_observations().filter(
-            observation_value__startswith="1"
-        )
-
-    @classmethod
-    def get_negative_observations(cls):
-        return cls.get_observations().filter(
-            observation_value__startswith="No "
-        )
-
-    @classmethod
-    def display_observation_value(cls, observation):
-        return observation.observation_value.split("~")[0].lstrip("1)").strip()
-
-
-class AFBSmear(TBTest):
-    TEST_NAME = 'AFB : CULTURE'
-    TEST_CODE = 'AFB'
+class AFBSmear(TBObservation):
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
     OBSERVATION_NAME = 'AFB Smear'
 
     @classmethod
@@ -117,13 +56,149 @@ class AFBSmear(TBTest):
         )
 
     @classmethod
-    def display_observation_value(cls, observation):
-        return observation.observation_value.split("~")[0].strip()
+    def display_lines(cls, observation):
+        val = f"{cls.OBSERVATION_NAME} {observation.observation_value}"
+        return [
+            i.strip() for i in val.split("~") if i.strip()
+        ]
 
 
-class TBPCR(TBTest):
-    TEST_NAME = 'TB PCR TEST'
-    TEST_CODE = "TBGX"
+class AFBCulture(TBObservation):
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
+    OBSERVATION_NAME = 'TB: Culture Result'
+
+    @classmethod
+    def get_positive_observations(cls):
+        return cls.get_observations().filter(
+            observation_value__startswith="1"
+        )
+
+    @classmethod
+    def get_negative_observations(cls):
+        return cls.get_observations().filter(
+            observation_value__startswith="No "
+        )
+
+    @classmethod
+    def display_lines(cls, observation):
+        val = observation.observation_value.strip()
+        to_remove = "~".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
+        ])
+        val = val.replace(to_remove, "").strip()
+        to_remove = "~".join([
+            "Key: Susceptibility interpretation (Note: update to I)",
+            "S = susceptible using standard dosing",
+            "I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)",
+            "R = resistant",
+        ])
+        val = val.replace(to_remove, "").strip()
+        # Ignore the culture version of pending
+        if val == "AFB culture to follow.":
+            return []
+        splitted = [i.strip() for i in val.split("~") if i.strip()]
+        splitted.insert(0, cls.OBSERVATION_NAME)
+        return splitted
+
+
+class AFBRefLab(TBObservation):
+    TEST_NAMES = [
+        'AFB : CULTURE',
+        'AFB : EARLY MORN. URINE',
+        'AFB BLOOD CULTURE'
+    ]
+    OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
+
+    @classmethod
+    def get_positive_observations(cls):
+        return cls.get_observations().filter(
+            observation_value__startswith="1"
+        )
+
+    @classmethod
+    def get_negative_observations(cls):
+        """
+        Ref lab reports are always positive
+        """
+        return Observation.objects.none()
+
+    @classmethod
+    def display_lines(cls, observation):
+        val = observation.observation_value.strip()
+        if not val or val.lower() == 'pending':
+            return []
+        to_remove = "~".join([
+            'Key: Susceptibility interpretation (Note: update to I)',
+            'S = susceptible using standard dosing',
+            'I= susceptible at increased dosing, high dose regimen must be used (please see your local antibiotic policy or Microguide for dosing guidance)',
+            'R = resistant',
+        ])
+        val = val.replace(to_remove, "").strip()
+        splitted = [i.strip() for i in val.split("~") if i.strip()]
+        splitted.insert(0, cls.OBSERVATION_NAME)
+        return splitted
+
+
+def display_afb_culture(lab_test):
+    smear_lines = None
+    culture_lines = None
+    ref_lab_lines = None
+    for observation in lab_test.observation_set.all():
+        if observation.observation_name == AFBSmear.OBSERVATION_NAME:
+            smear_lines = AFBSmear.display_lines(observation)
+        if observation.observation_name == AFBCulture.OBSERVATION_NAME:
+            culture_lines = AFBCulture.display_lines(observation)
+        if observation.observation_name == AFBRefLab.OBSERVATION_NAME:
+            if not observation.observation_value.lower() == 'pending':
+                ref_lab_lines = AFBRefLab.display_lines(observation)
+
+    # If we have a ref lab report already, lets strip out the
+    # bit from the culture that tells us its going to be sent
+    # sent to the ref lab
+    to_strip = [
+        "Sent to Ref Lab for confirmation.$",
+        "Isolate sent to Reference laboratory$",
+        "Isolate sent to Reference  laboratory$"
+    ]
+    cleaned_culture_lines = culture_lines
+    if culture_lines and ref_lab_lines:
+        cleaned_culture_lines = []
+        for line in culture_lines:
+            for some_str in to_strip:
+                line = re.sub(
+                    some_str,
+                    "",
+                    line,
+                    flags=re.IGNORECASE
+                )
+            if line:
+                cleaned_culture_lines.append(line)
+    by_obs_name = {}
+    if smear_lines:
+        by_obs_name["smear"] = smear_lines
+    if cleaned_culture_lines:
+        by_obs_name["culture"] = cleaned_culture_lines
+    if ref_lab_lines:
+        by_obs_name["ref_lab"] = ref_lab_lines
+
+    result = {}
+    for obs_type, value in by_obs_name.items():
+        if len(value) == 2:
+            result[obs_type] = [f"{value[0]} {value[1]}"]
+        else:
+            result[obs_type] = value
+    return result
+
+
+class TBPCR(TBObservation):
+    TEST_NAMES = ['TB PCR TEST']
     OBSERVATION_NAME = 'TB PCR'
 
     @classmethod
@@ -142,28 +217,18 @@ class TBPCR(TBTest):
         pos2 = "'The PCR to detect M.tuberculosis complex was ~ POSITIVE"
         return cls.get_observations().filter(
             Q(observation_value__contains=pos1) |
-            Q(observation_name='TB PCR (GeneXpert) Positive') |
+            Q(observation_value='TB PCR (GeneXpert) Positive') |
             Q(observation_value__contains=pos2)
         )
 
     @classmethod
-    def display_observation_value(cls, observation):
-        # to_remove = "This does not exclude a diagnosis of tuberculosis."
-        obs_value = observation.observation_value
-        # if obs_value.endswith(to_remove):
-        #     obs_value = obs_value[:obs_value.index(to_remove)].strip()
-        return obs_value.split("~")[0].strip()
-
-
-TBTests = [
-    AFBCulture, AFBSmear, TBPCR
-]
-
-
-def get_tb_test(observation):
-    for tb_test in TBTests:
-        obs_test = observation.test
-        if obs_test.test_name == tb_test.TEST_NAME:
-            if obs_test.test_code == tb_test.TEST_CODE:
-                if observation.observation_name == tb_test.OBSERVATION_NAME:
-                    return tb_test
+    def display_lines(cls, observation):
+        val = observation.observation_value
+        if "The PCR to detect M.tuberculosis complex was~POSITIVE" in val:
+            return ["The PCR to detect M.tuberculosis complex was POSITIVE"]
+        if "The PCR to detect M.tuberculosis complex was ~ POSITIVE" in val:
+            return ["The PCR to detect M.tuberculosis complex was POSITIVE"]
+        if val.startswith("NOT detected."):
+            return ["NOT detected."]
+        val = f"{cls.OBSERVATION_NAME} {val}"
+        return [i.strip() for i in val.split("~") if i.strip()]

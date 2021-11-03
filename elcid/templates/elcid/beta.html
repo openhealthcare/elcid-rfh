@@ -39,6 +39,12 @@
           <a href="/#/appointment-load-stats/">Appointment load stats</a>
         </li>
         <li>
+          {% now "Y" as current_year %}
+          <a href="/#/tb/clinic-activity/{{ current_year }}/">
+            TB Clinic Activity
+          </a>
+        </li>
+        <li>
           <a href="/#/admission-load-stats/">Admission load stats</a>
         </li>
       </ul>
