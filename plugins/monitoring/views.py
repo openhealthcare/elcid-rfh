@@ -7,6 +7,11 @@ from django.views.generic import TemplateView
 from elcid.constants import (
     PATIENT_INFORMATION_SYNC_TIME, PATIENT_INFORMATION_UPDATE_COUNT
 )
+from plugins.dischargesummary.constants import (
+    DISCHARGE_SUMMARY_LOAD_FACT,
+    TOTAL_DISCHARGE_MEDICATIONS,
+    TOTAL_DISCHARGE_SUMMARIES
+)
 from plugins.imaging.constants import (
     IMAGING_LOAD_TIME_FACT,
     IMAGING_LOAD_CREATED_COUNT_FACT,
@@ -126,6 +131,23 @@ class AdmissionLoadStats(LoginRequiredMixin, TemplateView):
         )
         context['encounter_count_fact'] = graph_data_for_label(
             TOTAL_ENCOUNTERS
+        )
+        return context
+
+
+class DischargeLoadStats(LoginRequiredMixin, TemplateView):
+    template_name = 'monitoring/discharge_summary_load_stats.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['discharge_load_time_fact'] = graph_data_for_label(
+            DISCHARGE_SUMMARY_LOAD_FACT
+        )
+        context['disharge_summary_count_fact'] = graph_data_for_label(
+            TOTAL_DISCHARGE_SUMMARIES
+        )
+        context['disharge_medication_count_fact'] = graph_data_for_label(
+            TOTAL_DISCHARGE_MEDICATIONS
         )
         return context
 

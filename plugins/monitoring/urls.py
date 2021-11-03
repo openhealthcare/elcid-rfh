@@ -36,4 +36,9 @@ urlpatterns = [
         views.AdmissionLoadStats.as_view(),
         name='admission_load_stats'
     ),
+    url(
+        'templates/monitoring/discharge_summary_load_stats.html',
+        views.DischargeLoadStats.as_view(),
+        name='discharge_summary_load_stats'
+    ),
 ]
