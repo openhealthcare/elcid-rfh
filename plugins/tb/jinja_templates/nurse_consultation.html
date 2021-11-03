@@ -20,17 +20,6 @@ The patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when
 {{ adverse_reaction }}
 
 {% endif %}
-**Latest Bloods**
-{% if bloods_normal %}
-Normal
-{% elif not bloods %}
-N/A
-{% else %}
-{% for observation in bloods %}
-{{ observation.observation_datetime.date }} {{ observation.observation_name }} {{ "%.2f"|format(observation.value_numeric) }} {% if observation.cleaned_reference_range %} ({{ "%.2f"|format(observation.cleaned_reference_range.min) }} - {{ "%.2f"|format(observation.cleaned_reference_range.max) }}) {% endif %}
-{% endfor %}
-{% endif %}
-
 **Clinic Observation**
 {% if observations.bp_systolic and observations.bp_diastolic %}
 BP: {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}

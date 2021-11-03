@@ -150,27 +150,15 @@ No recorded allergies
 {% endif %}
 
 **Weight**
-{% if weight %}{{ "%.1f"|format(weight) }}
-{% else %}No weight recorded{% endif %}
+{% if weight %}
+{{ "%.1f"|format(weight) }}
+{% else %}
+No weight recorded
+{% endif %}
 
 {% if object.examination_findings %}
 **Examination Findings**
 {{ object.examination_findings.strip() }}
-
-{% endif %}
-{% for imaging in imaging_list %}
-**{{ imaging.imaging_type }}{% if imaging.site %}({{ imaging.site }}){% endif %}**
-{{ imaging.date | date }} {{ imaging.details }}
-
-{% endfor %}
-{% if igra or tb_tests %}
-**Key investigations**
-{% for obs in tb_tests %}
-{{ obs.observation_datetime | date }} {{ obs.OBSERVATION_NAME }}: {{ obs.display_value() }}
-{% endfor %}
-{% for obs in igra %}
-{{ obs.observation_datetime | date }} {{ obs.observation_name }}: {{ obs.observation_value }}
-{% endfor %}
 
 {% endif %}
 {% if object.discussion %}
