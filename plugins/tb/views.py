@@ -20,6 +20,7 @@ from django.utils.functional import cached_property
 from opal.core.serialization import deserialize_datetime
 from opal.core import subrecords
 from opal.models import (
+
     PatientConsultationReasonForInteraction, Patient, Episode
 )
 from elcid.models import (
@@ -46,10 +47,6 @@ from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
 
 
-<<<<<<< HEAD
-class AdviceParser(HTMLParser):
-    text = ""
-=======
 class ZipCsvWriter:
     """
     Write a list of dicts to a zip file
@@ -104,7 +101,6 @@ def zip_file_to_response(file_with_path):
 class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
     template_name = "tb/clinical_advice.html"
     model = PatientConsultation
->>>>>>> tb-clinic-activity
 
     def handle_starttag(self, tag, attrs):
         if tag in {'b', "h1", "h2", "h3", "h4", "h5"}:
