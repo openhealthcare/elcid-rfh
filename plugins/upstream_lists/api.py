@@ -16,7 +16,7 @@ class UpstreamPatientListViewSet(LoginRequiredViewset):
     mirror upstream handover lists that we do not know the
     name of in advance and thus cannot declare in code.
     """
-    base_name = 'patientlist/upstream'
+    basename = 'patientlist/upstream'
 
     def retrieve(self, request, pk=None):
         patients = current_icu_patients()

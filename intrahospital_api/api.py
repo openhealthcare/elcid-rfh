@@ -70,8 +70,7 @@ def patient_to_dict(patient, user):
 
 
 class UpstreamDataViewset(viewsets.ViewSet):
-    base_name = 'upstream'
-
+    basename = 'upstream'
     permission_classes = (IsAuthenticated,)
 
     def retrieve(self, request, pk=None):
@@ -84,8 +83,7 @@ class UpstreamDataViewset(viewsets.ViewSet):
 
 
 class PatientViewSet(viewsets.ViewSet):
-    base_name = 'patient'
-
+    basename = 'patient'
     permission_classes = (IsAuthenticated,)
 
     def retrieve(self, request, pk=None):
