@@ -40,19 +40,55 @@ def sign_template(note, clinical_advice):
 
 
 def get_initial_doctor_consultation(clinical_advice):
+    """
+    Returns a rendered template for advice with the reasons for interaction
+    "LTBI initial assessment", "TB initial assessment"
+
+    It uses the same context and similar display to the
+    Initial consultation TB Doctors letter
+    """
     ctx = views.InitialAssessment.get_letter_context(clinical_advice)
     ctx["inital"] = True
     return render_template('doctor_consultation.html', ctx)
 
 
 def get_followup_doctor_consultation(clinical_advice):
+    """
+    Returns a rendered template for advice with the reasons for interaction
+    LTBI follow up", "TB follow up"
+
+    It uses the same context and similar display to the
+    follow up consultation TB Doctors letter
+    """
     ctx = views.FollowUp.get_letter_context(clinical_advice)
     return render_template('doctor_consultation.html', ctx)
 
 
 def get_nurse_consultation(clinical_advicer):
+    """
+    Returns a rendered template for advice with the reasons for interaction
+    "Nurse led clinic", "Nurse telephone consultation", "Contact screening"
+
+    It uses the same context and similar display to the
+    nurse letter
+    """
     ctx = views.NurseLetter.get_letter_context(clinical_advicer)
     return render_template('nurse_consultation.html', ctx)
+
+
+def get_default_consultation(clinical_advice):
+    """
+    If it is not a reason for interaction that usually has a
+    letter, then just use a default output.
+    """
+    from intrahospital_api.epr import get_note_text
+    return get_note_text(
+        clinical_advice,
+        "infection_control",
+        "progress",
+        "discussion",
+        "plan",
+    )
 
 
 def render_advice(clinical_advice):
@@ -70,4 +106,6 @@ def render_advice(clinical_advice):
     elif rfi in nurse_consultations:
         text = get_nurse_consultation(clinical_advice)
     if text:
+        # the default consultation already signs the advice.
         return sign_template(text, clinical_advice)
+    return get_default_consultation(clinical_advice)
