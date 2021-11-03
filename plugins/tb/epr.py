@@ -38,7 +38,7 @@ def sign_template(note, clinical_advice):
         user = clinical_advice.updated_by
     if user:
         user_string = f"{user.get_full_name()} {user.email} {user.username}"
-        note = f"{note.strip()}** Written by **\n{user_string}"
+        note = f"{note.strip()}\n\n** Written by **\n\n{user_string}"
     final_text = f"\n{note}\n\nEND OF NOTE\n\n"
     return final_text
 
