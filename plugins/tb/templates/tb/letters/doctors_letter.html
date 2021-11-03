@@ -1,0 +1,66 @@
+{% extends 'letters/base.html' %} {% block letter_content %}
+{% include "tb/letters/partials/primary_diagnosis.html" %}
+{% include "tb/letters/partials/secondary_diagnosis.html" %}
+
+<p>
+  <b>TB medication: </b><br />
+  {% include "tb/letters/partials/medication.html" with medication_list=tb_medication_list %}
+</p>
+
+<p>
+  <b>Other medication: </b><br />
+  {% include "tb/letters/partials/medication.html" with medication_list=other_medication_list %}
+</p>
+
+{% include "tb/letters/partials/language.html" with medication_list=other_medication_list %}
+
+{% if initial_assessment %}
+<p>
+  <b>Referred by:</b><br />
+  {{ referral.referral_type }}
+</p>
+
+<p>
+  <b>Reason for referral:</b><br />
+  {{ referral.referral_reason }}
+</p>
+{% endif %}
+
+{% include "tb/letters/partials/travel.html" %}
+{% include "tb/letters/partials/tb_history.html" %}
+{% include "tb/letters/partials/index_case.html" %}
+{% if initial_assessment %}
+{% include "tb/letters/partials/symptoms.html" %}
+{% include "tb/letters/partials/social_history.html" %}
+{% endif %}
+{% include "tb/letters/partials/allergies.html" %}
+
+
+<p>
+  <b>Weight:</b><br />
+  {% if weight %}
+    {{ weight|floatformat }}kg
+  {% else %}
+    No weight recorded for {{ object.when | date }}
+  {% endif %}
+</p>
+
+<p>
+  <b>Examination findings:</b><br />
+  <span ng-bind-html="'{{ object.examination_findings }}'|markdown">
+  </span>
+</p>
+
+{% include 'tb/letters/partials/imaging.html' %}
+{% include 'tb/letters/partials/other_investigations.html' %}
+
+<p>
+  <b>Discussion:</b>
+  <span ng-bind-html="'{{ object.discussion }}'|markdown"></span>
+</p>
+
+<p>
+  <b>Plan:</b><br /><span ng-bind-html="'{{ object.plan }}'|markdown"></span>
+</p>
+
+{% endblock %}
