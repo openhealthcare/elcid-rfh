@@ -26,10 +26,24 @@ def render_template(template_name, ctx):
     return template.render(**ctx)
 
 
+def sign_template(note, clinical_advice):
+    user = None
+    if clinical_advice.created_by:
+        user = clinical_advice.created_by
+    if clinical_advice.updated_by:
+        user = clinical_advice.updated_by
+    if user:
+        user_string = f"{user.get_full_name()} {user.email} {user.username}"
+        note = f"{note.strip()}** Written by **\n{user_string}"
+    final_text = f"\n{note}\n\nEND OF NOTE\n\n"
+    return final_text
+
+
 def get_initial_doctor_consultation(clinical_advice):
     ctx = views.InitialAssessment.get_letter_context(clinical_advice)
     ctx["inital"] = True
     return render_template('doctor_consultation.html', ctx)
+
 
 def get_followup_doctor_consultation(clinical_advice):
     ctx = views.FollowUp.get_letter_context(clinical_advice)
@@ -48,9 +62,12 @@ def render_advice(clinical_advice):
         "Nurse led clinic", "Nurse telephone consultation", "Contact screening"
     ]
     rfi = clinical_advice.reason_for_interaction
+    text = ""
     if rfi in initial_consultations:
-        return get_initial_doctor_consultation(clinical_advice, initial=True)
+        text = get_initial_doctor_consultation(clinical_advice, initial=True)
     elif rfi in follow_ups_consultaions:
-        return get_followup_doctor_consultation(clinical_advice, initial=False)
+        text = get_followup_doctor_consultation(clinical_advice, initial=False)
     elif rfi in nurse_consultations:
-        return get_nurse_consultation(clinical_advice)
+        text = get_nurse_consultation(clinical_advice)
+    if text:
+        return sign_template(text, clinical_advice)

@@ -26,6 +26,10 @@ class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
 class AbstractLetterView(LoginRequiredMixin, DetailView):
     @classmethod
     def get_letter_context(cls, patient_consultation):
+        """
+        This generates the contet for the letter, it also
+        generates the context for the note sent to EPR
+        """
         ctx = {}
         episode = patient_consultation.episode
         patient = patient_consultation.episode.patient
