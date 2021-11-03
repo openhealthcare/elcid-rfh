@@ -24,6 +24,7 @@ Cerner_HL7_Message varchar (max) NULL, --# User visible agreed plan
 id int IDENTITY(1,1) NOT NULL,
 """
 from django.conf import settings
+from django.db import transaction
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import logger
@@ -101,6 +102,12 @@ def get_note_text(advice, *fields):
     return final_text
 
 
+def is_test_patient(demographics):
+    if demographics.surname and demographics.surname.upper().startswith('ZZZTEST'):
+        return True
+
+
+@transaction.atomic
 def write_clinical_advice(advice):
     """
     Given a MicrobiologyInput or a PatientConsultation
@@ -149,10 +156,16 @@ def write_clinical_advice(advice):
           'Only microbiology input and patient consultations can be sent downstream'
         )
 
-    api = ProdAPI()
-
-    result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
-    logger.info(result)
     advice.sent_upstream = True
     advice.save()
+
+    if settings.RESTRICT_EPR and not is_test_patient(demographics):
+        logger.warn(
+            f"EPR: RESTRICT_EPR == True, so not sending patient {patient.id} to EPR"
+        )
+        return True
+
+    api = ProdAPI()
+    result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
+    logger.info(result)
     return True
