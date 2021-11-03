@@ -155,6 +155,7 @@ class Encounter(models.Model):
         'pv1_45_discharge_date_time': 'discharge_datetime',
         'pv1_3_ambulatory_indicator': 'ambulatory_indicator',
         'pid_18_account_number'     : 'spell_number',
+        'fin_hsn'                   : 'fin_hsn',
     }
 
     def to_dict(self):

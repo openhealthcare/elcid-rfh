@@ -91,6 +91,9 @@
                       <b>Plan: </b>
                       <div markdown="plan"></div>
                     </span>
+                    <div class="bg-success" ng-show="item.sent_upstream">
+                      <p><i>Note written to EPR</i><p>
+                    </div>
                   </div>
                   <div class="col-sm-2">
                     <div class="row">
@@ -124,6 +127,12 @@
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
+                      {% if request.user.is_superuser %}
+                      <div ng-hide="item.sent_upstream" class="col-md-12">
+                          <i class="fa fa-exchange edit pull-right pointer"
+                          ng-click="open_modal('SendPatientConsultationUpstreamCtrl', '/templates/send_upstream_modal.html', {item:item, callback: refresh})"></i>
+                      </div>
+                      {% endif %}
                     </div>
                   </div>
                 </div>

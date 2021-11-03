@@ -71,5 +71,20 @@ urlpatterns = [
         r'^templates/tb/outstanding_mdt_list/$',
         views.OutstandingActionsMDT.as_view(),
         name="outstanding_mdt_list"
-    )
+    ),
+    url(
+        r'tb/clinic_activity/(?P<year>\d+)/$',
+        views.ClinicActivity.as_view(),
+        name="clinic_activity"
+    ),
+    url(
+        r'tb/clinic_activity/appointment_data/(?P<year>\d+)/$',
+        views.ClinicActivityAppointmentData.as_view(),
+        name="clinic_activity_appointment_data"
+    ),
+    url(
+        r'tb/clinic_activity/mdt_data/(?P<year>\d+)/$',
+        views.ClinicActivityMDTData.as_view(),
+        name="clinic_activity_mdt_data"
+    ),
 ]

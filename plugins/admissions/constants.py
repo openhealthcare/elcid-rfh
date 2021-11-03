@@ -49,3 +49,7 @@ BUILDING_CODES = {
     'ED' : 'Edgware Community Hospital',
     'RFH': 'Royal Free Hospital'
 }
+
+# Facts for the admissions load times
+ENCOUNTER_LOAD_MINUTES = "Encounter Load Minutes"
+TOTAL_ENCOUNTERS = "Total Encounters"
