@@ -1,12 +1,9 @@
 ** Primary Diagnosis **
 {% if primary_diagnosis_list %}
 {% for diagnosis in primary_diagnosis_list %}
-{{ diagnosis.condition }}
-{% if diagnosis.provisional %}?{% endif %}
-{% if diagnosis.details %}
-   {{ diagnosis.details }}
-{% endif %}
+{{ diagnosis.condition }}{% if diagnosis.provisional %} ?{% endif %}{% if diagnosis.details %}, {{ diagnosis.details }}{% endif %}
 {% endfor %}
+
 {% else %}
 No recorded primary diagnoses
 {% endif %}
@@ -14,12 +11,9 @@ No recorded primary diagnoses
 ** Secondary Diagnosis **
 {% if secondary_diagnosis_list %}
 {% for diagnosis in secondary_diagnosis_list %}
-{{ diagnosis.condition }}
-{% if diagnosis.provisional %}?{% endif %}
-{% if diagnosis.details %}
-   {{ diagnosis.details }}
-{% endif %}
+{{ diagnosis.condition }}{% if diagnosis.provisional %} ?{% endif %}{% if diagnosis.details %}, {{ diagnosis.details }}{% endif %}
 {% endfor %}
+
 {% else %}
 No recorded secondary diagnoses
 {% endif %}
@@ -49,7 +43,6 @@ No recorded medications
 No recorded medications
 
 {% endif %}
-
 {% if communication_considerations.language and not communication_considerations.language == "English" %}
 ** Language **
 {{ communication_considerations.language }} {% if communication_considerations.needs_an_interpreter %}(needs an interpreter){% endif %}
@@ -75,7 +68,6 @@ No recorded medications
 No recorded travel
 
 {% endif %}
-
 ** Previous TB Diagnosis **
 {% if tb_history.tb_type %}
 {{ tb_history.tb_type }} {{ tb_history.site_of_tb }}{% if tb_history.diagnosis_date_year or tb_history.diagnosis_date_month or tb_history.diagnosis_date_day %}

@@ -20,6 +20,7 @@ The patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when
 {{ adverse_reaction }}
 
 {% endif %}
+{% if observations.bp_systolic or observations.bp_diastolic or observations.pulse or observations.resp_rate or observations.sp02 or observations.temperature or observations.height %}
 ** Clinic Observations **
 {% if observations.bp_systolic and observations.bp_diastolic %}
 BP: {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}
@@ -40,6 +41,7 @@ Temperature: {{ observations.temperature }} ºC
 Height: {{ observations.height }} m
 {% endif %}
 
+{% endif %}
 {% if object.examination_findings %}
 ** Examination Findings **
 {{ object.examination_findings }}
