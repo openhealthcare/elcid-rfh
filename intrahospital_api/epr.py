@@ -29,6 +29,7 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import logger
 from elcid import models as elcid_models
 from plugins.tb import models as tb_models
+from plugins.tb.epr import render_advice as render_tb_advice
 
 
 Q_NOTE_INSERT = """
@@ -136,14 +137,7 @@ def write_clinical_advice(advice):
         )
     elif isinstance(advice, tb_models.PatientConsultation):
         note_data["note_type"] = 'Respiratory Medicine Consult Note'
-        note_data["note"] = get_note_text(
-            advice,
-            "infection_control",
-            "progress",
-            "discussion",
-            "plan",
-            "initials"
-        )
+        note_data["note"] = render_tb_advice(advice)
     else:
         raise ValueError(
           'Only microbiology input and patient consultations can be sent downstream'
