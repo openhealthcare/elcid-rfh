@@ -120,22 +120,22 @@ No recorded respiratory or systemic TB symptoms
 {% endif %}
 
 {% endif %}
-{% if social_history.notes and initial %}
+{% if initial and social_history.notes %}
 **Social history**
 {{ social_history.notes }}
 
 {% endif %}
-{% if social_history.smoking and initial %}
+{% if initial and social_history.smoking %}
 **Smoking**
 {{ social_history.smoking }}
 
 {% endif %}
-{% if social_history.drinking and initial %}
+{% if intitial and social_history.drinking %}
 **Alcohol**
 {{ social_history.drinking }} {% if social_history.history_of_alocohol_dependence %}(history of dependence){% endif %}
 
 {% endif %}
-{% if social_history.recreational_drug_use and initial %}
+{% if initial and social_history.recreational_drug_use %}
 **Recreational Drug Use**
 {{ social_history.recreational_drug_use }} {% if social_history.recreational_drug_type %}({{ social_history.recreational_drug_type }}){% endif %}
 
@@ -153,9 +153,9 @@ No recorded allergies
 {% if weight %}{{ "%.1f"|format(weight) }}
 {% else %}No weight recorded{% endif %}
 
-{% if clinical_advice.examination_findings %}
+{% if object.examination_findings %}
 **Examination Findings**
-{{ clinical_advice.examination_findings.strip() }}
+{{ object.examination_findings.strip() }}
 
 {% endif %}
 {% for imaging in imaging_list %}
@@ -173,12 +173,12 @@ No recorded allergies
 {% endfor %}
 
 {% endif %}
-{% if clinical_advice.discussion %}
+{% if object.discussion %}
 **Discussion**
-{{ clinical_advice.discussion }}
+{{ object.discussion }}
 
 {% endif %}
-{% if clinical_advice.plan %}
+{% if object.plan %}
 **Plan**
-{{ clinical_advice.plan }}
+{{ object.plan }}
 {% endif %}

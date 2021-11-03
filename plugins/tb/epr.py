@@ -3,8 +3,12 @@ from jinja2 import Environment, FileSystemLoader
 import os
 
 
-def pluralize(some_list):
-    if not len(some_list) == 1:
+def pluralize(list_or_int):
+    if isinstance(list_or_int, list):
+        some_int = len(list_or_int)
+    else:
+        some_int = list_or_int
+    if not some_int == 1:
         return "s"
     return ""
 

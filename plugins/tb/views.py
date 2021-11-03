@@ -30,7 +30,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         This generates the contet for the letter, it also
         generates the context for the note sent to EPR
         """
-        ctx = {}
+        ctx = {"object": patient_consultation}
         episode = patient_consultation.episode
         patient = patient_consultation.episode.patient
         ctx["demographics"] = patient.demographics()
