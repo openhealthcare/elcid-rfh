@@ -136,32 +136,49 @@ def write_clinical_advice(advice):
     return True
 
 
-def write_old_advice_upstream():
+def write_old_clinical_advice_based_on_reason_for_interaction(
+    model, reason_for_interaction, older_than_delta
+):
     """
-    If ICU ward round clinical advice has not been manually
-    sent upstream then write it back after four hours
+    Takes in a model, a reason for interaction and time delta.
+    Creates a qs of models with that reason for interaction.
+    Looks at the created/updated time stamp and sends all that are
+    older than the timestamp.
+
+    example useage
+        write_old_clinical_advice_based_on_reason_for_interaction(
+            MicrobiologyInput,
+            MicrobiologyInput.ICU_WARD_REVIEW_REASON_FOR_INTERACTION,
+            datetime.timedelta(hours=3)
+        )
+
+    sends all ICU ward review inputs that were created or updated
+    over three hours ago if they have not already been sent.
     """
-    log_prefix = "Intrahospital API.write_old_advice_upstream:"
-    logger.info(f'{log_prefix} Starting to write old clinical advice to EPR')
-    four_hours_ago = timezone.now() - datetime.timedelta(hours=4)
-    advice = list(MicrobiologyInput.objects.filter(
-      created__lt=four_hours_ago
+    now = timezone.now()
+    older_than = now - older_than_delta
+    advice = list(model.objects.filter(
+      created__lt=older_than
     ).filter(
       sent_upstream=False
     ).exclude(
-      updated__gte=four_hours_ago
+      updated__gte=older_than
     ))
     advice += list(MicrobiologyInput.objects.filter(
-      updated__lt=four_hours_ago
+      updated__lt=older_than
     ).filter(
       sent_upstream=False
     ))
     advice = list(set(advice))
-    ward_round_intraction = MicrobiologyInput.ICU_WARD_REVIEW_REASON_FOR_INTERACTION
     to_send = [
-      i for i in advice if i.reason_for_interaction == ward_round_intraction
+      i for i in advice if i.reason_for_interaction == reason_for_interaction
     ]
     failed = 0
+    log_prefix = "Intrahospital API.write_old_advice_upstream:"
+    logger.info(" ".join([
+        f"{log_prefix} Starting to write {reason_for_interaction}",
+        f"clinical advice to EPR older than {older_than.strftime('%d/%m/%Y %H:%M:%S')}"
+    ]))
     for advice in to_send:
         try:
             write_clinical_advice(advice)
@@ -172,3 +189,15 @@ def write_old_advice_upstream():
           f'{log_prefix} Unable to write back {failed} old clinical advice to EPR'
         )
     logger.info(f'{log_prefix} written {len(to_send)} old clinical advice to EPR')
+
+
+def write_old_advice_upstream():
+    """
+    If ICU ward round clinical advice has not been manually
+    sent upstream then write it back after four hours
+    """
+    write_old_clinical_advice_based_on_reason_for_interaction(
+        MicrobiologyInput,
+        MicrobiologyInput.ICU_WARD_REVIEW_REASON_FOR_INTERACTION,
+        datetime.timedelta(hours=4)
+    )
