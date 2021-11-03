@@ -1,26 +1,26 @@
 The patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when|date }}
 
 {% if diagnosis and diagnosis.condition %}
-**Diagnosis**
+** Diagnosis **
 {{ diagnosis.condition }}
 
 {% endif %}
 {% if treatment_commenced %}
-**Treatment commenced **
+** Treatment Commenced **
 {{ treatment_commenced | date }}
 
 {% endif %}
 {% if current_treatments %}
-**Current medication**
+** Current medication **
 {{ current_treatments }}
 
 {% endif %}
 {% if adverse_reaction %}
-**Allergies/Adverse reactions**
+** Allergies/Adverse reactions **
 {{ adverse_reaction }}
 
 {% endif %}
-**Clinic Observation**
+** Clinic Observations **
 {% if observations.bp_systolic and observations.bp_diastolic %}
 BP: {{ observations.bp_systolic }}/{{ observations.bp_diastolic }}
 {% endif %}
@@ -41,22 +41,22 @@ Height: {{ observations.height }} m
 {% endif %}
 
 {% if object.examination_findings %}
-**Examination Findings**
+** Examination Findings **
 {{ object.examination_findings }}
 
 {% endif %}
 {% if object.discussion %}
-**Discussion**
+** Discussion **
 {{ object.discussion }}
 
 {% endif %}
 {% if object.progress %}
-**Progress**
+** Progress **
 {{ object.progress }}
 
 {% endif %}
 {% if object.plan %}
-**Plan**
+** Plan **
 {{ object.plan }}
 
 {% endif %}
