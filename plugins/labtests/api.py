@@ -6,7 +6,7 @@ from plugins.labtests.models import StarredObservation
 
 class StarObservation(SubrecordViewSet):
     model = StarredObservation
-    base_name = "star_observation"
+    basename = "star_observation"
 
     def create(self, request):
         model = self.model()
