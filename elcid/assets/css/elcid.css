@@ -154,6 +154,10 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   color: #343637;
 }
 
+.empty-list {
+  margin-top: 16px;
+}
+
 .patient-row .label-warning {
   margin-top: 5px;
   display: inline-block;
