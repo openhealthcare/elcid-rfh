@@ -52,6 +52,10 @@ body{
     margin-top: 25px;
 }
 
+.content-offset-left-10{
+  margin-left: 10px;
+}
+
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
 
@@ -585,6 +589,15 @@ div.add-isolate:hover{
 }
 
 
+
+.navbar li .services-dropdown-item a{
+    padding: 16px;
+}
+
+.navbar-nav li.dropdown:hover a {
+    background: transparent;
+
+}
 .panel-heading.patient-detail-heading{
    position: fixed;
    width: 100%;

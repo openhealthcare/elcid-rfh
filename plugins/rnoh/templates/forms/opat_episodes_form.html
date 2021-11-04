@@ -1,0 +1,46 @@
+{% load forms %}
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="OPATEpisodes.admission_date" style="vertical"%}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="OPATEpisodes.discharge_date" style="vertical" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8 col-md-offset-1">
+    {% datepicker field="OPATEpisodes.opat_end_date" style="vertical"%}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="OPATEpisodes.administration" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="OPATEpisodes.supply" style="vertical" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="OPATEpisodes.outcome_early" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="OPATEpisodes.outcome_early_date" style="vertical" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="OPATEpisodes.outcome_one_year" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="OPATEpisodes.outcome_one_year_date" style="vertical" %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 col-md-offset-1">
+    {% input field="OPATEpisodes.outcome_two_years" style="vertical" %}
+  </div>
+  <div class="col-md-4 col-md-offset-1">
+    {% datepicker field="OPATEpisodes.outcome_two_years_date" style="vertical" %}
+  </div>
+</div>

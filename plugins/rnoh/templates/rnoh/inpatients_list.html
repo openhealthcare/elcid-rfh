@@ -1,0 +1,143 @@
+{% extends "rnoh/base.html" %}
+{% block rnoh_content %}
+<div class="panel panel-default panel-container">
+  <div class="panel-heading">
+    <h1>{{ list_name }}: {{ episodes.count }} patient{% if episodes.count != 1 %}s{% endif %}</h1>
+  </div>
+  {% if episodes.count == 0 %}
+  <div class="panel-body">
+    <h5>No patients currently on this list</h5>
+  </div>
+  {% else %}
+  {% for episode in episodes reversed %}
+
+  {% with episode.patient.demographics as demographics %}
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-6">
+        <a href="/#/patient/{{ episode.patient.id }}/{{ episode.id }}" class="orange-link">
+          <strong>
+            {{ demographics.name }} {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
+          </strong>
+          {{ demographics.date_of_birth }}
+          {% if demographics.sex %}{{ demographics.sex }} {% endif %}
+          {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %}
+          ({{ demographics.age }})
+        </a>
+      </div>
+      <div class="col-md-4">
+        {% with episode.location_set.get as location %}
+        {% if location.consultant %}<strong>Consultant:</strong> {{ location.consultant }}{% endif %}
+        {% if location.unit %}<strong>Unit:</strong> {{ location.unit }}{% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  </div> <!-- Heading -->
+  {% endwith%}
+
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-3">
+        {% with episode.location_set.get as location %}
+        <strong>Location:</strong> {{ location.ward }} {{ location.bed }}
+        {% endwith %}
+      </div>
+      <div class="col-md-3">
+        {% if episode.patient.allergies_set.all.count > 0 %}
+        <strong>Allergies:</strong>
+        {% for allergy in episode.patient.allergies_set.all %}
+        {{ allergy.drug }}<br />
+        {% endfor %}
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        {% if episode.rnohactions_set.all.count > 0 %}
+        <strong>Actions:</strong>
+        {% for action in episode.rnohactions_set.all %}
+        {{ action.date }} {{ action.action }}
+        {% endfor %}
+        {% endif %}
+      </div>
+
+    </div> <!-- row -->
+
+    <div class="row">
+      <div class="col-md-10">
+        {% for advice in episode.microbiologyinput_set.all reversed %}
+        <strong>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</strong><br />
+        {{ advice.clinical_discussion }}
+        <br />
+        {{ advice.plan }}
+
+        {% endfor %}
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+      <div class="col-md-4">
+        {% if episode.rnohmicrobiology_set.all.count > 0 %}
+        <strong>Microbiology:</strong>
+        {% for micro in episode.rnohmicrobiology_set.all reversed %}
+        <p>
+          {{ micro.sample_date }}
+          {% if micro.test_name %} {{ micro.test_name }} {% endif %}
+          {% if micro.number_positive %}
+
+          {{ micro.number_positive }}
+          /
+          {{ micro.number_samples }}{% endif %}
+
+          {% if micro.side %} {{ micro.side }} {% endif %}
+          {% if micro.site %} {{ micro.site }} {% endif %}
+
+          {% if micro.result %}{{ micro.result }}{% endif %}
+
+          {% if micro.organism %} {{ micro.organism }} {% endif %}
+
+          {% if micro.notes %} {{ micro.notes }} {% endif %}
+
+        </p>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="col-md-4">
+        {% if episode.treatment_set.all.count > 0 %}
+        <strong>Treatment:</strong>
+        {% for treatment in episode.treatment_set.all reversed %}
+        <p>
+          {{ treatment.start_date }} {{ treatment.drug }} {{ treatment.dose }} {{ treatment.frequency }}
+        </p>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="col-md-4">
+        {% if episode.procedure_set.all.count > 0 %}
+        <strong>Procedures:</strong>
+        {% for procedure in episode.procedure_set.all %}
+        <p>
+          {{ procedure.date }}
+          {% if procedure.operation %} {{ procedure.operation }} {% endif %}
+          {% if procedure.side %} {{ procedure.side }} {% endif %}
+          {% if procedure.site %} {{ procedure.site }} {% endif %}
+          {% if procedure.details %} {{ procedure.details }} {% endif %}
+        </p>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+  {% endfor %}
+  {% endif %}
+
+
+</div> <!--  Panel -->
+{% endblock %}
