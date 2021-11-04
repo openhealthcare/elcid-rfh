@@ -4,11 +4,8 @@ API endpoints for the elCID application
 from collections import defaultdict, OrderedDict
 
 from django.conf import settings
-<<<<<<< HEAD
-=======
 from django.utils.functional import cached_property
 from django.utils.text import slugify
->>>>>>> starred-obs
 from django.http import HttpResponseBadRequest
 from rest_framework import viewsets, status
 from opal.core.api import item_from_pk, router as opal_router
