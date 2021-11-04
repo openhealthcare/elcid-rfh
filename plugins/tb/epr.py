@@ -15,8 +15,8 @@ def pluralize(list_or_int):
 
 def rjust(some_str, column_width=30):
     if not some_str:
-        return ""
-    padding = max(column_width - len(some_str), 0)
+        return some_str + (" " * column_width)
+    padding = max(column_width - len(some_str.strip()), 0)
     return some_str + (" " * padding)
 
 

@@ -1,6 +1,6 @@
 {{ "Primary Diagnosis:" | rjust }}{% if primary_diagnosis_list %}
 {% for diagnosis in primary_diagnosis_list %}
-{{ diagnosis.condition|ljust_block(loop.index0) }}{% if diagnosis.provisional %} ?{% endif %}{% if diagnosis.details %}, {{ diagnosis.details }}{% endif %}
+{{ diagnosis.condition.strip()|ljust_block(loop.index0) }}{% if diagnosis.provisional %} ?{% endif %}{% if diagnosis.details %}, {{ diagnosis.details }}{% endif %}
 
 {% endfor %}
 {% else %}
@@ -25,7 +25,7 @@ No recorded secondary diagnoses
 {% endif %}
 {{ "TB Medications:" | rjust }}{% if tb_medication_list %}
 {% for treatment in tb_medication_list %}
-{{ treatment.drug|ljust_block(loop.index0)|rjust(12) }} {{ treatment.dose|rjust(12) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
+{{ treatment.drug.strip()|ljust_block(loop.index0)|rjust(14) }} {{ treatment.dose.strip()|rjust(14) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
 {% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
@@ -41,7 +41,7 @@ No recorded medications
 {% endif %}
 {{ "Other Medications:" | rjust }}{% if other_medication_list %}
 {% for treatment in other_medication_list %}
-{{ treatment.drug|ljust_block(loop.index0)|rjust(12) }} {{ treatment.dose|rjust(12) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
+{{ treatment.drug|ljust_block(loop.index0)|rjust(14) }} {{ treatment.dose|rjust(14) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
 {% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
@@ -67,14 +67,14 @@ No recorded medications
 {% endif %}
 {{ "Travel:" | rjust }}{% if travel_list %}
 {% for travel in travel_list %}
-{{ travel.country|ljust_block(loop.index0)|rjust(12) }}{% if travel.when %} {{ travel.when|rjust(12) }}{% endif %} {% if travel.duration %}({{ travel.duration}}){% endif %}
+{{ travel.country|ljust_block(loop.index0)|rjust(14) }}{% if travel.when %} {{ travel.when }}{% endif %} {% if travel.duration %}({{ travel.duration}}){% endif %}
 
 {% endfor %}
 {% else %}
 No recorded travel
 {% endif %}
 {{ "Previous TB Diagnosis:" | rjust }}{% if tb_history.tb_type %}
-{{ tb_history.tb_type|rjust(12) }}{{ tb_history.site_of_tb|rjust(12) }}{% if tb_history.diagnosis_date_year or tb_history.diagnosis_date_month or tb_history.diagnosis_date_day %}
+{{ tb_history.tb_type|rjust(14) }}{{ tb_history.site_of_tb|rjust(14) }}{% if tb_history.diagnosis_date_year or tb_history.diagnosis_date_month or tb_history.diagnosis_date_day %}
 - {% if tb_history.diagnosis_date_day %}{{ tb_history.diagnosis_date_day }}/{% endif %}{% if tb_history.diagnosis_date_month %}{{ tb_history.diagnosis_date_month }}/{% endif %}{{ tb_history.diagnosis_date_year }}{% endif %}
 {% if tb_history.how_long_treated_years or tb_history.how_long_treated_months or tb_history.how_long_treated_days %}
 {{ "Treated for "|ljust }}{% if tb_history.how_long_treated_years %}{{ tb_history.how_long_treated_years }} year{{ tb_history.how_long_treated_years|pluralize }}{% endif %}
