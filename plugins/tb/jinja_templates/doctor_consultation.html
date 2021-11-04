@@ -62,6 +62,7 @@ No recorded medications
 {% if travel_list %}
 {% for travel in travel_list %}
 {{ travel.country }}{% if travel.when %}, {{ travel.when }}{% endif %} {% if travel.duration %}({{ travel.duration}}){% endif %}
+
 {% endfor %}
 
 {% else %}
