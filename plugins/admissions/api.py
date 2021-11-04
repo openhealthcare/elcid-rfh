@@ -22,7 +22,7 @@ EXCLUDE_ADMISSIONS = [
 ]
 
 class AdmissionViewSet(LoginRequiredViewset):
-    base_name = 'admissions'
+    basename = 'admissions'
 
     def retrieve(self, request, pk):
         patient    = get_object_or_404(Patient.objects.all(), pk=pk)

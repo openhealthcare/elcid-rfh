@@ -66,7 +66,7 @@ class LabTestResultsView(LoginRequiredViewset):
     The API endpoint that returns data for the test results view on the
     patient detail page.
     """
-    base_name = 'lab_test_results_view'
+    basename = 'lab_test_results_view'
 
     def get_non_comments_for_patient(self, patient):
         """
@@ -268,8 +268,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
 
 class InfectionServiceTestSummaryApi(LoginRequiredViewset):
-    base_name = 'infection_service_summary_api'
-
+    basename = 'infection_service_summary_api'
     RELEVANT_TESTS = OrderedDict((
         ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
         ("CLOTTING SCREEN", ["INR"],),
@@ -497,7 +496,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
         lab_number
         observation name
     """
-    base_name = "upstream_blood_culture_results"
+    basename = "upstream_blood_culture_results"
 
     def no_growth_observations(self, observations):
         """
@@ -554,8 +553,7 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 
 class DemographicsSearch(LoginRequiredViewset):
-    base_name = 'demographics_search'
-
+    basename = 'demographics_search'
     PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
     PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
     PATIENT_NOT_FOUND = "patient_not_found"
@@ -588,7 +586,7 @@ class DemographicsSearch(LoginRequiredViewset):
 
 class BloodCultureIsolateApi(SubrecordViewSet):
     model = emodels.BloodCultureIsolate
-    base_name = emodels.BloodCultureIsolate.get_api_name()
+    basename = emodels.BloodCultureIsolate.get_api_name()
 
     def create(self, request):
         bc = self.model()
@@ -600,7 +598,7 @@ class BloodCultureIsolateApi(SubrecordViewSet):
 
 
 class AddToServiceViewSet(LoginRequiredViewset):
-    base_name = 'add_to_service'
+    basename = 'add_to_service'
 
     @patient_from_pk
     def update(self, request, patient):
@@ -631,13 +629,13 @@ class AbstractSendUpstreamViewSet(LoginRequiredViewset):
 
 
 class SendMicroBiologyUpstream(AbstractSendUpstreamViewSet):
-    base_name = "send_upstream"
+    basename = "send_upstream"
 
     model = emodels.MicrobiologyInput
 
 
 class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
-    base_name = "send_pc_upstream"
+    basename = "send_pc_upstream"
 
     def is_allowed(self):
         return self.request.user.is_superuser
@@ -647,10 +645,10 @@ class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
 
 elcid_router = OPALRouter()
 elcid_router.register(
-    UpstreamBloodCultureApi.base_name, UpstreamBloodCultureApi
+    UpstreamBloodCultureApi.basename, UpstreamBloodCultureApi
 )
-elcid_router.register(DemographicsSearch.base_name, DemographicsSearch)
-elcid_router.register(BloodCultureIsolateApi.base_name, BloodCultureIsolateApi)
+elcid_router.register(DemographicsSearch.basename, DemographicsSearch)
+elcid_router.register(BloodCultureIsolateApi.basename, BloodCultureIsolateApi)
 
 lab_test_router = OPALRouter()
 lab_test_router.register(
@@ -660,8 +658,8 @@ lab_test_router.register('lab_test_results_view', LabTestResultsView)
 
 
 opal_router.register('add_to_service', AddToServiceViewSet)
-opal_router.register(SendMicroBiologyUpstream.base_name, SendMicroBiologyUpstream)
+opal_router.register(SendMicroBiologyUpstream.basename, SendMicroBiologyUpstream)
 opal_router.register(
-    SendPatientConsultationUpstream.base_name,
+    SendPatientConsultationUpstream.basename,
     SendPatientConsultationUpstream
 )
