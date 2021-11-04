@@ -120,6 +120,9 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
       scope.$watch('episode.category_name', function(){
         loadData();
       });
+      scope.$watch('view', function(){
+        loadData();
+      });
       loadData();
     }
   };
