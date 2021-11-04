@@ -4,6 +4,11 @@ API endpoints for the elCID application
 from collections import defaultdict, OrderedDict
 
 from django.conf import settings
+<<<<<<< HEAD
+=======
+from django.utils.functional import cached_property
+from django.utils.text import slugify
+>>>>>>> starred-obs
 from django.http import HttpResponseBadRequest
 from rest_framework import viewsets, status
 from opal.core.api import item_from_pk, router as opal_router
@@ -67,6 +72,30 @@ class LabTestResultsView(LoginRequiredViewset):
     patient detail page.
     """
     basename = 'lab_test_results_view'
+
+    @cached_property
+    def starred_results_dict(self):
+        starred_obs = lab_test_models.StarredObservation.objects.filter(
+            patient_id=self.kwargs["pk"]
+        )
+        result = {}
+        for starred_ob in starred_obs:
+            key = (
+                starred_ob.test_name,
+                starred_ob.lab_number,
+                starred_ob.observation_name,
+            )
+            result[key] = starred_ob.id
+        return result
+
+    def get_starred_id(self, test, observation):
+        key = (
+            test.test_name,
+            test.lab_number,
+            observation.observation_name,
+        )
+        return self.starred_results_dict.get(key)
+
 
     def get_non_comments_for_patient(self, patient):
         """
@@ -201,8 +230,9 @@ class LabTestResultsView(LoginRequiredViewset):
                 serialised_observations.append(
                     {
                         'name' : o.observation_name.rstrip('.'),
-                        'value': o.observation_value,
-                        'units': o.units
+                        'value': o.observation_value.replace("~", "\n"),
+                        'units': o.units,
+                        'star': self.get_starred_id(instance, o),
                     }
                 )
 
@@ -298,6 +328,58 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
     NUM_RESULTS = 5
 
+    @cached_property
+    def starred_results_dict(self):
+        """
+        A cached property of test_name, lab_number, observation_name to StarredObservation.id
+        """
+        starred_obs = lab_test_models.StarredObservation.objects.filter(
+            patient_id=self.kwargs["pk"]
+        )
+        result = {}
+        for starred_ob in starred_obs:
+            key = (
+                starred_ob.test_name,
+                starred_ob.lab_number,
+                starred_ob.observation_name,
+            )
+            result[key] = starred_ob.id
+        return result
+
+    def get_starred(self, patient, ticker):
+        """
+        If a lab test has been starred and is not already
+        in the ticker add it
+        """
+        result = []
+        already_starred = {i["star"] for i in ticker}
+        others_starred = [
+            key for key, starred_id in self.starred_results_dict.items()
+            if starred_id not in already_starred
+        ]
+        if not others_starred:
+            return []
+        observations = lab_test_models.Observation.objects.filter(
+            test__patient=patient,
+            test__test_name__in=[i[0] for i in others_starred],
+            test__lab_number__in=[i[1] for i in others_starred],
+            observation_name__in=[i[2] for i in others_starred],
+        ).select_related('test')
+        for observation in observations:
+            test = observation.test
+            starred_id = self.starred_results_dict.get((
+                test.test_name, test.lab_number, observation.observation_name
+            ))
+            if starred_id:
+                timestamp = observation.observation_datetime
+                result.append({
+                    'date_str': observation.observation_datetime.strftime('%d/%m/%Y %H:%M'),
+                    'timestamp': timestamp,
+                    'name': observation.observation_name,
+                    'value': "\n".join(observation.observation_value.strip().split("~")),
+                    'star': starred_id,
+                })
+        return result
 
     def _get_antifungal_ticker_dict(self, test):
         """
@@ -309,26 +391,30 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
         test_name = test.test_name
 
         result_string = ''
+        star_id = None
 
         for observation in observations:
-
             if observation.observation_name in self.ANTIFUNGAL_TESTS[test_name]:
                 result_string += ' {} {}'.format(
                     self.ANTIFUNGAL_SHORT_NAMES[observation.observation_name],
                     observation.observation_value.split('~')[0]
                 )
+                if not star_id:
+                    star_id = self.starred_results_dict.get(
+                        (test_name, test.lab_number, observation.observation_name,)
+                    )
 
         display_name = '{} {}'.format(
             self.ANTIFUNGAL_SHORT_NAMES[test_name],
             test.site.replace('&', ' ').split(' ')[0]
         )
 
-
         return {
             'date_str' : timestamp.strftime('%d/%m/%Y %H:%M'),
             'timestamp': timestamp,
             'name'     : display_name,
-            'value'    : result_string.strip()
+            'value'    : result_string.strip(),
+            'star'     : star_id,
         }
 
     def get_antifungal_observations(self, patient):
@@ -367,16 +453,30 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
         return ticker
 
+    def get_covid_ticker(self, patient):
+        """
+        Get the covid ticker, add the property
+        'star' which points is the id of the StarredObservation
+        if its been starred, otherwise its None
+        """
+        ticker = covid_lab.get_covid_result_ticker(patient)
+        for t in ticker:
+            star_id = self.starred_results_dict.get(
+                (t["test_name"], t["lab_number"], t["name"],)
+            )
+            t["star"] = star_id
+            t["observation_name"] = t["name"]
+        return ticker
 
     def get_ticker_observations(self, patient):
         """
         Some results are displayed as a ticker in chronological
         order.
         """
-        ticker =  covid_lab.get_covid_result_ticker(patient)
+        ticker = self.get_covid_ticker(patient)
         ticker += self.get_antifungal_observations(patient)
+        ticker += self.get_starred(patient, ticker)
         ticker = list(reversed(sorted(ticker, key=lambda i: i['timestamp'])))
-
         return ticker
 
     def get_recent_dates_to_observations(self, qs):

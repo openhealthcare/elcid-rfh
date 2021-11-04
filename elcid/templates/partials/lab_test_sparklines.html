@@ -16,11 +16,22 @@
     </div>
 
     <div class="content-offset-below-20" ng-show="data.ticker.length">
-      <div class="row" ng-repeat="test in data.ticker">
-        <div class="col-md-4">[[ test.date_str ]]</div>
-        <div class="col-md-4">[[ test.name ]]</div>
-        <div class="col-md-4">[[ test.value ]]</div>
-      </div>
+      <span ng-repeat="item in data.ticker">
+        <div class="row">
+          <div class="col-md-4">[[ item.date_str ]]</div>
+          <span ng-show="item.value && item.value.length < 20">
+            <div class="col-md-4">[[ item.name ]]</div>
+            <div class="col-md-4">[[ item.value ]]</div>
+          </span>
+          <span ng-show="item.value && item.value.length >= 20">
+            <div class="col-md-8">[[ item.name ]]</div>
+          </span>
+        </div>
+        <div ng-show="item.value && item.value.length >= 20" class="row">
+          <div class="col-md-4"></div>
+          <div markdown="value" class="col-md-8"></div>
+        </div>
+      </span>
     </div>
 
     <table ng-show="data.obs_values.length" class="col-md-12 table">

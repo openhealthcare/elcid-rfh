@@ -643,3 +643,25 @@ div.add-isolate:hover{
     }
   }
 }
+
+.long-form-results-row{
+    .fa-star{
+        color: $green;
+    }
+  .star-obs-container{
+    display: inline-block;
+    width: 20px;
+  }
+  .star-obs{
+    visibility: hidden;
+    display: none;
+  }
+  &:hover, &.starred{
+      background-color: lighten($obsidian-light, 16%);
+
+    .star-obs{
+      visibility: visible;
+      display: inline-block;
+    }
+  }
+}

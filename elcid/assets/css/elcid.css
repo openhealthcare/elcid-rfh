@@ -606,4 +606,27 @@ div.add-isolate:hover {
   margin-bottom: 2px;
   padding: 0 20px;
 }
+
+.long-form-results-row .fa-star {
+  color: #9cc96b;
+}
+
+.long-form-results-row .star-obs-container {
+  display: inline-block;
+  width: 20px;
+}
+
+.long-form-results-row .star-obs {
+  visibility: hidden;
+  display: none;
+}
+
+.long-form-results-row:hover, .long-form-results-row.starred {
+  background-color: #f3f2f2;
+}
+
+.long-form-results-row:hover .star-obs, .long-form-results-row.starred .star-obs {
+  visibility: visible;
+  display: inline-block;
+}
 /*# sourceMappingURL=elcid.css.map */
