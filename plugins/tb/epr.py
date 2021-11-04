@@ -13,6 +13,45 @@ def pluralize(list_or_int):
     return ""
 
 
+def rjust(some_str, column_width=30):
+    if not some_str:
+        return ""
+    padding = max(column_width - len(some_str), 0)
+    return some_str + (" " * padding)
+
+
+def ljust(some_str):
+    column_width = 30
+    total = [(" " * column_width) + i for i in some_str.split("\n")]
+    return "\n".join(total)
+
+
+def ljust_block(some_str, idx):
+    if not idx == 0:
+        return ljust(some_str)
+    return some_str
+
+
+def remove_multiple_new_lines(some_str):
+    """
+    If there are multiple newlines e.g. hello\n\n\nthere
+    just return hello\n\nthere
+    """
+    cleaned = "\n".join([i.rstrip() for i in some_str.split("\n")])
+    new_line = 0
+    result = ""
+    for c in cleaned:
+        if c == "\n" and new_line < 2:
+            new_line += 1
+            result += c
+        elif c == "\n":
+            continue
+        else:
+            new_line = 0
+            result += c
+    return result
+
+
 def render_template(template_name, ctx):
     file_location = os.path.abspath(os.path.dirname(__file__))
     template_location = os.path.join(file_location, 'jinja_templates')
@@ -24,10 +63,14 @@ def render_template(template_name, ctx):
     jinja_env.filters["date"] = lambda x: x.strftime("%d/%m/%Y")
     jinja_env.filters["datetime"] = lambda x: x.strftime("%d/%m/%Y %H:%M:%S")
     jinja_env.filters["pluralize"] = pluralize
+    jinja_env.filters["rjust"] = rjust
+    jinja_env.filters["ljust"] = ljust
+    jinja_env.filters["ljust_block"] = ljust_block
     template = jinja_env.get_template(
         template_name
     )
-    return template.render(**ctx)
+    rendered = template.render(**ctx)
+    return remove_multiple_new_lines(rendered)
 
 
 def sign_template(note, clinical_advice):
