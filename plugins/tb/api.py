@@ -6,6 +6,7 @@ import datetime
 from collections import defaultdict
 from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
+from opal.models import Tagging
 from plugins.tb.utils import get_tb_summary_information
 from plugins.tb import models
 from plugins.tb import constants
@@ -270,3 +271,15 @@ class TBAppointments(LoginRequiredViewset):
             "next_appointment": next_appointment,
             "last_appointments": last_appointments,
         })
+
+
+class TaggingAPI(LoginRequiredViewset):
+    basename = 'tag'
+
+    def delete(self, request, episode_id):
+        tag_name = request.data["tag"]
+        Tagging.objects.filter(
+            epiosde_id=id, value=tag_name
+        ).update(
+            archived=True
+        )

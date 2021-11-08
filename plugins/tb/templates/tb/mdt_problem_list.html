@@ -21,7 +21,7 @@
     <tr ng-show="tb_mdt_list.hidden.indexOf({{ row.episode.id }}) === -1">
       {% include 'tb/partials/mdt_row.html' with row=row %}
       <td>
-        <button class="btn btn-primary" ng-click="tb_mdt_list.hidden.push({{ row.episode.id }})">
+        <button class="btn btn-primary" ng-click="tb_mdt_list.remove({{ row.episode.id }})">
           <i class="fa fa-remove"></i> Remove
         </button>
       </td>
