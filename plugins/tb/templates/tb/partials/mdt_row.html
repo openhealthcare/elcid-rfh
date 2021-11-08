@@ -1,36 +1,34 @@
-<tr>
-  <td>
-    {% if row.episode %}
-    <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
-      {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
-    </a>
-    {{ row.demographics.date_of_birth }}
-    <br>
-      {{ row.demographics.sex }} {{ row.demographics.get_age }}
+<td>
+  {% if row.episode %}
+  <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
+    {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+  </a>
+  {{ row.demographics.date_of_birth }}
+  <br>
+    {{ row.demographics.sex }} {{ row.demographics.get_age }}
+  {% else %}
+  <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">
+    {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+  </a>
+    {{ row.demographics.sex }} {{ row.demographics.get_age }}
+  {% endif %}
+</td>
+<td>
+  <span style="white-space: nowrap;">
+  <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
+    PACS
+    <i class="fa fa-external-link" aria-hidden="true"></i>
+  </a>
+  </span>
+</td>
+<td class="tb-mdt-row">
+  {% for ts, timeline_type, instance in row.timeline %}
+    {% if timeline_type == "obs" %}
+      {% include "tb/partials/tb_obs.html" with lab_test=instance title=instance.title %}
+    {% elif timeline_type == 'note' %}
+      {% include "tb/partials/note.html" with note=instance %}
     {% else %}
-    <a href="/#/patient/{{ row.demographics.patient_id }}/" class="orange-link">
-      {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
-    </a>
-      {{ row.demographics.sex }} {{ row.demographics.get_age }}
+      {% include "tb/partials/appointment.html" with appointment=instance %}
     {% endif %}
-  </td>
-  <td>
-    <span style="white-space: nowrap;">
-    <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
-      PACS
-      <i class="fa fa-external-link" aria-hidden="true"></i>
-    </a>
-    </span>
-  </td>
-  <td class="tb-mdt-row">
-    {% for ts, timeline_type, instance in row.timeline %}
-      {% if timeline_type == "obs" %}
-        {% include "tb/partials/tb_obs.html" with lab_test=instance title=instance.title %}
-      {% elif timeline_type == 'note' %}
-        {% include "tb/partials/note.html" with note=instance %}
-      {% else %}
-        {% include "tb/partials/appointment.html" with appointment=instance %}
-      {% endif %}
-    {% endfor %}
-  </td>
-</tr>
+  {% endfor %}
+</td>

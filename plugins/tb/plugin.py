@@ -27,6 +27,7 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/mantoux_test.js',
             'js/tb/controllers/add_episode_helper.js',
             'js/tb/controllers/tb_date_helper.js',
+            'js/tb/controllers/mdt_problems_list.js',
             'js/tb/directives.js'
             # 'js/tb/services/larry.js',
         ],

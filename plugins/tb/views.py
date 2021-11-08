@@ -538,7 +538,6 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             return timezone.make_aware(datetime.datetime.min)
 
         # Make sure the list is sorted by the most recent observation
-        # if it exists
         patients = sorted(
             patients,
             key=lambda x: sort_patient(x),

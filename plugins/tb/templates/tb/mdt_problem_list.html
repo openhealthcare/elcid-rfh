@@ -14,10 +14,18 @@
       <tr>
         <th class="col-md-3">Patient</th>
         <th class="col-md-1">Imaging</th>
-        <th class="col-md-8">Timeline</th>
+        <th class="col-md-6">Timeline</th>
+        <th class="col-md-2 pull-left"></th>
       </tr>
     {% for row in rows %}
+    <tr ng-show="tb_mdt_list.hidden.indexOf({{ row.episode.id }}) === -1">
       {% include 'tb/partials/mdt_row.html' with row=row %}
+      <td>
+        <button class="btn btn-primary" ng-click="tb_mdt_list.hidden.push({{ row.episode.id }})">
+          <i class="fa fa-remove"></i> Remove
+        </button>
+      </td>
+    </tr>
     {% endfor %}
     </tbody>
   </table>

@@ -34,7 +34,9 @@
         <th class="col-md-8">Timeline</th>
       </tr>
     {% for row in rows %}
-      {% include 'tb/partials/mdt_row.html' with row=row %}
+      <tr>
+        {% include 'tb/partials/mdt_row.html' with row=row %}
+      </tr>
     {% endfor %}
     </tbody>
   </table>
