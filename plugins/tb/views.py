@@ -494,11 +494,11 @@ class PrintConsultation(LoginRequiredMixin, DetailView):
     template_name = "tb/patient_consultation_print.html"
 
 
-class MDTList(LoginRequiredMixin, TemplateView):
-    template_name = "tb/mdt_list.html"
-    BARNET = "barnet"
-    RFH = "rfh"
-    SITES = [RFH, BARNET]
+class AbstractMDTList(LoginRequiredMixin, TemplateView):
+    """
+    Offers the method patients_to_rows that takes in a bunch of patients and
+    returns a dictionary with the keys, 'episode', 'demographics' and 'timeline'
+    """
     ALL_OBS = [
             models.TBPCR,
             models.AFBSmear,
@@ -548,45 +548,6 @@ class MDTList(LoginRequiredMixin, TemplateView):
                 )
             )
         return result
-
-    @property
-    def end_date(self):
-        today = datetime.date.today()
-        for i in range(7):
-            some_date = today + datetime.timedelta(i)
-            if some_date.isoweekday() == 3:
-                return some_date
-
-    @property
-    def start_date(self):
-        return self.end_date - datetime.timedelta(7)
-
-    def title(self):
-        from_dt = self.start_date.strftime("%-d %b %Y")
-        title = f"Patients with positive, pcrs, cultures and ref lab reports reported after {from_dt}"
-        return title.replace("  ", " ")
-
-    def get_patients(self):
-        filter_args = {
-            "reported_datetime__gte": self.start_date,
-            "positive": True
-        }
-        if self.kwargs["site"] == self.BARNET:
-            filter_args["lab_number__contains"] = "K"
-        else:
-            filter_args["lab_number__contains"] = "L"
-        patient_ids = set()
-        for tb_obs_model in self.ALL_OBS:
-            patient_ids = patient_ids.union(tb_obs_model.objects.filter(
-                **filter_args
-            ).values_list('patient_id', flat=True))
-        return Patient.objects.filter(
-            id__in=patient_ids
-        ).prefetch_related(
-            'demographics_set',
-            'episode_set',
-            'appointments'
-        ).distinct()
 
     def filter_obs(self, obs):
         # The smear, culture and ref lab are all derrived from the same test
@@ -677,6 +638,52 @@ class MDTList(LoginRequiredMixin, TemplateView):
             "demographics": demographics,
             "timeline": timeline,
         }
+
+
+class MDTList(AbstractMDTList):
+    template_name = "tb/mdt_list.html"
+    BARNET = "barnet"
+    RFH = "rfh"
+    SITES = [RFH, BARNET]
+
+    @property
+    def end_date(self):
+        today = datetime.date.today()
+        for i in range(7):
+            some_date = today + datetime.timedelta(i)
+            if some_date.isoweekday() == 3:
+                return some_date
+
+    @property
+    def start_date(self):
+        return self.end_date - datetime.timedelta(117)
+
+    def title(self):
+        from_dt = self.start_date.strftime("%-d %b %Y")
+        title = f"Patients with positive, pcrs, cultures and ref lab reports reported after {from_dt}"
+        return title.replace("  ", " ")
+
+    def get_patients(self):
+        filter_args = {
+            "reported_datetime__gte": self.start_date,
+            "positive": True
+        }
+        if self.kwargs["site"] == self.BARNET:
+            filter_args["lab_number__contains"] = "K"
+        else:
+            filter_args["lab_number__contains"] = "L"
+        patient_ids = set()
+        for tb_obs_model in self.ALL_OBS:
+            patient_ids = patient_ids.union(tb_obs_model.objects.filter(
+                **filter_args
+            ).values_list('patient_id', flat=True))
+        return Patient.objects.filter(
+            id__in=patient_ids
+        ).prefetch_related(
+            'demographics_set',
+            'episode_set',
+            'appointments'
+        ).distinct()
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
