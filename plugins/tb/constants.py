@@ -1,6 +1,7 @@
 TB_ROLE = "tb_professional"
 TB_TAG = "tb_tag"
 
+MDT_PROBLEMS_TAG = "mdt_problems"
 
 RFH_TB_APPOINTMENT_CODES = [
     "Thoracic TB F/Up",

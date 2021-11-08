@@ -1,0 +1,25 @@
+{% extends "tb/base.html" %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-6">
+        <h1>{{ request.GET.site }} TB MDT Problems</h1>
+        <p class="content-offset-below-10">{{ rows | length }} patients</p>
+      </div>
+    </div>
+  </div>
+  <table class="table table-striped">
+    <tbody>
+      <tr>
+        <th class="col-md-3">Patient</th>
+        <th class="col-md-1">Imaging</th>
+        <th class="col-md-8">Timeline</th>
+      </tr>
+    {% for row in rows %}
+      {% include 'tb/partials/mdt_row.html' with row=row %}
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

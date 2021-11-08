@@ -11,7 +11,7 @@ from opal.core.serialization import deserialize_datetime
 from opal.models import PatientConsultationReasonForInteraction
 from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
-from opal.models import Patient
+from opal.models import Patient, Tagging
 from plugins.tb import episode_categories, constants, models
 from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
 from plugins.labtests import models as lab_models
@@ -531,10 +531,17 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
         for pc in patient_consultations:
             patient_id_to_consultations[pc.episode.patient_id].append(pc)
 
+        def sort_patient(a_patient):
+            obs = patient_id_to_obs.get(a_patient.id, [])
+            if obs:
+                return obs[0].reported_datetime
+            return timezone.make_aware(datetime.datetime.min)
+
         # Make sure the list is sorted by the most recent observation
+        # if it exists
         patients = sorted(
             patients,
-            key=lambda x: patient_id_to_obs[x.id][0].reported_datetime,
+            key=lambda x: sort_patient(x),
             reverse=True
         )
 
@@ -543,7 +550,7 @@ class AbstractMDTList(LoginRequiredMixin, TemplateView):
             result.append(
                 self.patient_to_row(
                     patient,
-                    patient_id_to_obs[patient.id],
+                    patient_id_to_obs.get(patient.id, []),
                     patient_id_to_consultations[patient.id]
                 )
             )
@@ -748,4 +755,24 @@ class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
 
         ctx["date_to_rows"] = date_to_rows
         ctx["num_consultations"] = len(patient_consultations)
+        return ctx
+
+
+class MDTProblems(AbstractMDTList):
+    template_name = "tb/mdt_problem_list.html"
+
+    def get_queryset(self):
+        tags = Tagging.objects.filter(
+            value=constants.MDT_PROBLEMS_TAG,
+            archived=False
+        )
+        return Patient.objects.filter(
+            episode__tagging__in=tags
+        )
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx["rows"] = self.patients_to_rows(
+            self.get_queryset()
+        )
         return ctx
