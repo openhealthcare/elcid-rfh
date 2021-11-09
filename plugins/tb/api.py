@@ -12,7 +12,7 @@ from plugins.tb import models
 from plugins.tb import constants
 from plugins.appointments import models as appointment_models
 from plugins.labtests import models as lab_models
-from rest_framework import status, viewsets
+from rest_framework import mixins
 
 
 class TbTestSummary(LoginRequiredViewset):
@@ -274,21 +274,9 @@ class TBAppointments(LoginRequiredViewset):
         })
 
 
-class TagAPI(LoginRequiredViewset, viewsets.ModelViewSet):
+class TagAPI(LoginRequiredViewset, mixins.DestroyModelMixin):
     basename = 'tag'
     queryset = Tagging.objects.all()
-
-    def create(self, request, *args, **kwargs):
-        data = dict(request.data)
-        existing_tag = Tagging.objects.filter(**data).first()
-        if existing_tag and existing_tag.archived:
-            existing_tag.archived = False
-            existing_tag.save()
-            data["id"] = existing_tag.id
-        else:
-            tag = Tagging.objects.create(**data)
-            tag["id"] = tag.id
-        return json_response(tag, status_code=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         instance.archived = True
