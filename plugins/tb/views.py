@@ -774,4 +774,8 @@ class MDTProblems(AbstractMDTList):
         ctx["rows"] = self.patients_to_rows(
             self.get_queryset()
         )
+        for row in ctx["rows"]:
+            row["tag_id"] = row["episode"].tagging_set.filter(
+                value=constants.MDT_PROBLEMS_TAG
+            ).get().id
         return ctx

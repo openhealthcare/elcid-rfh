@@ -28,6 +28,7 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/add_episode_helper.js',
             'js/tb/controllers/tb_date_helper.js',
             'js/tb/controllers/mdt_problems_list.js',
+            'js/tb/controllers/tag_helper.js',
             'js/tb/directives.js'
             # 'js/tb/services/larry.js',
         ],
@@ -41,7 +42,7 @@ class TbPlugin(plugins.OpalPlugin):
     apis = [
         ('tb_test_summary', api.TbTestSummary,),
         (api.TbTests.basename, api.TbTests,),
-        (api.TaggingAPI.basename, api.TaggingAPI,),
+        (api.TagAPI.basename, api.TagAPI,),
         (api.TBAppointments.basename, api.TBAppointments,),
     ]
 

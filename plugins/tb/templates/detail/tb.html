@@ -28,6 +28,29 @@
 
   <div class="col-md-6">
     {% include "partials/tb_appointments.html" %}
+    <div ng-controller="TagHelper as tagHelper" class="panel panel-default">
+      <div class="panel-heading">
+        <h3>
+          <i class="fa fa-list"></i>
+          MDT Problem List
+          <i ng-click="tagHelper.addTag(episode, 'mdt_problems')" ng-hide="episode.tagging[0].mdt_problems" class="fa fa-plus-circle edit pull-right pointer"></i>
+        </h3>
+      </div>
+      <ul ng-show="episode.tagging[0].mdt_problems" class="list-group">
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-md-9">
+              <strong>
+                On the <a class="orange-link" href="/#/tb/mdt-problems/">list</a>
+              </strong>
+            </div>
+            <div class="col-md-3">
+              <i ng-click="tagHelper.removeTag(episode, 'mdt_problems')" class="fa fa-minus-circle edit pull-right pointer"></i>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
     {% include "partials/tb_summary_tests.html" %}
     <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
       <div class="panel-body">

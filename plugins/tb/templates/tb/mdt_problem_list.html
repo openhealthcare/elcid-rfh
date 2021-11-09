@@ -5,7 +5,6 @@
     <div class="row">
       <div class="col-md-6">
         <h1>{{ request.GET.site }} TB MDT Problems</h1>
-        <p class="content-offset-below-10">{{ rows | length }} patients</p>
       </div>
     </div>
   </div>
@@ -18,10 +17,10 @@
         <th class="col-md-2 pull-left"></th>
       </tr>
     {% for row in rows %}
-    <tr ng-show="tb_mdt_list.hidden.indexOf({{ row.episode.id }}) === -1">
+    <tr ng-show="tb_mdt_list.hidden.indexOf({{ row.tag_id }}) === -1">
       {% include 'tb/partials/mdt_row.html' with row=row %}
       <td>
-        <button class="btn btn-primary" ng-click="tb_mdt_list.remove({{ row.episode.id }})">
+        <button class="btn btn-primary" ng-click="tb_mdt_list.remove({{ row.tag_id }})">
           <i class="fa fa-remove"></i> Remove
         </button>
       </td>
