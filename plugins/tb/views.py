@@ -662,7 +662,7 @@ class MDTList(AbstractMDTList):
 
     @property
     def start_date(self):
-        return self.end_date - datetime.timedelta(117)
+        return self.end_date - datetime.timedelta(7)
 
     def title(self):
         from_dt = self.start_date.strftime("%-d %b %Y")
