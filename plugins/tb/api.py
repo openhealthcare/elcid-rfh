@@ -4,8 +4,11 @@ Specific API endpoints for the TB module
 import re
 import datetime
 from collections import defaultdict
+
+from django.utils import timezone
 from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
+
 from plugins.tb.utils import get_tb_summary_information
 from plugins.tb import models
 from plugins.tb import constants
@@ -66,7 +69,7 @@ class TbTests(LoginRequiredViewset):
 
         cultures_by_reported = sorted(
             list(cultures_by_lab_number.values()),
-            key=lambda x: x[0].observation_datetime,
+            key=lambda x: x[0].reported_datetime,
             reverse=True
         )
 
@@ -75,13 +78,16 @@ class TbTests(LoginRequiredViewset):
         for cultures in cultures_by_reported:
             culture_lines = []
             lab_number = cultures[0].lab_number
-            obs_dt = cultures[0].observation_datetime.strftime('%d/%m/%Y %H:%M')
+            obs_dt = cultures[0].observation_datetime.strftime('%d %b %Y')
+            reported_dt = cultures[0].reported_datetime.strftime('%d %b %Y %H:%M')
+
+            recent = (timezone.now() - cultures[0].reported_datetime).days < 8
             site = cultures[0].site
             positive = False
 
             if len(cultures) == 1 and not cultures[0].display_value().startswith("1)"):
                 display_value = cultures[0].display_value()
-                culture_lines = [f"{lab_number} {obs_dt} {site} {display_value}"]
+                culture_lines = [display_value]
                 positive = cultures[0].positive
             else:
                 for culture in cultures:
@@ -129,10 +135,14 @@ class TbTests(LoginRequiredViewset):
                         culture_lines.append(
                             f"{culture.OBSERVATION_NAME} {display_value}"
                         )
-                culture_lines.insert(0, f"{lab_number} {obs_dt} {site}")
             cultures_result.append({
+                "lab_number": lab_number,
+                "obs_dt": obs_dt,
+                "reported_dt": reported_dt,
+                "site": site,
                 "text": culture_lines,
-                "positive": positive
+                "positive": positive,
+                "recent": recent
             })
 
         pcrs = models.TBPCR.objects.filter(patient=patient, pending=False)

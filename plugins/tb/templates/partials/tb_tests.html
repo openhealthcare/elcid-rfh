@@ -1,7 +1,7 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3><i class="fa fa-crosshairs"></i>
-      Cultures, PCRs & IGRAs
+      TB Tests
     </h3>
   </div>
   <div ng-show="tb_tests.culture_count || tb_tests.pcr_count || tb_tests.igra_count" patient-api target='tb_tests' endpoint='tb_tests' class="panel-footer">
@@ -18,11 +18,20 @@
         </div>
       </div>
       <div ng-repeat="culture in tb_tests.cultures">
-        <div ng-class="{'text-muted': !culture.positive, 'left-offset-10': !$first}" ng-repeat="culture_line in culture.text">
-          <div ng-class="{'left-offset-20': !$first && culture_line.indexOf('AFB Smear') !== 0 && culture_line.indexOf('TB: Culture Result') !== 0 && culture_line.indexOf('TB Ref. Lab. Culture result') !== 0}">
-          [[ culture_line ]]
+        <section ng-class="{'text-muted': !culture.positive }">
+          <strong ng-class="{'text-primary': culture.recent && culture.positive}">
+            [[ culture.reported_dt ]] [[ culture.lab_number ]]
+          </strong>
+          ([[ culture.site ]] [[ culture.obs_dt ]])
+          <br />
+          <div class="left-offset-10" ng-repeat="culture_line in culture.text">
+            <div ng-class="{'left-offset-20': !$first && culture_line.indexOf('AFB Smear') !== 0 && culture_line.indexOf('TB: Culture Result') !== 0 && culture_line.indexOf('TB Ref. Lab. Culture result') !== 0}">
+              [[ culture_line ]]
+            </div>
           </div>
-        </div>
+        </section>
+
+
       </div>
     </div>
     <div ng-class="{'content-offset-below-20': tb_tests.igra.length}" ng-if="tb_tests.pcrs.length">
