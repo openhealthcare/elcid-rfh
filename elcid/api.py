@@ -609,12 +609,9 @@ class AddToServiceViewSet(LoginRequiredViewset):
 
 
 class AbstractSendUpstreamViewSet(LoginRequiredViewset):
-
     @item_from_pk
     def update(self, request, item):
-
         epr.write_clinical_advice(item)
-
         return json_response({
             'status_code': status.HTTP_202_ACCEPTED
         })
@@ -622,36 +619,12 @@ class AbstractSendUpstreamViewSet(LoginRequiredViewset):
 
 class SendMicroBiologyUpstream(AbstractSendUpstreamViewSet):
     basename = "send_upstream"
-
     model = emodels.MicrobiologyInput
 
 
 class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
     basename = "send_pc_upstream"
     model = tb_models.PatientConsultation
-
-    def is_allowed(self):
-        if self.request.user.is_superuser:
-            return True
-
-        return self.request.user.profile.roles.filter(
-            name=intrahospital_api_constants.SEND_TO_EPR
-        ).exists()
-
-
-    @item_from_pk
-    def update(self, request, item):
-
-        if not self.is_allowed():
-            return json_response({
-                'status_code': status.HTTP_403_FORBIDDEN
-            })
-
-        epr.write_clinical_advice(item)
-
-        return json_response({
-            'status_code': status.HTTP_202_ACCEPTED
-        })
 
 
 elcid_router = OPALRouter()
