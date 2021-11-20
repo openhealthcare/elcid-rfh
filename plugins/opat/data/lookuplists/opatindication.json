@@ -1,0 +1,292 @@
+{
+  "opatindication": [
+    {
+      "name": "Actinomycosis",
+      "synonyms": []
+    },
+    {
+      "name": "Appendicitis",
+      "synonyms": []
+    },
+    {
+      "name": "Aspergillosis",
+      "synonyms": []
+    },
+    {
+      "name": "Bacteraemia / blood stream infection/ Septicaemia ",
+      "synonyms": []
+    },
+    {
+      "name": "Bacterial meningitis",
+      "synonyms": []
+    },
+    {
+      "name": "Bronchiectasis",
+      "synonyms": []
+    },
+    {
+      "name": "Brucellosis",
+      "synonyms": []
+    },
+    {
+      "name": "Bursitis",
+      "synonyms": []
+    },
+    {
+      "name": "Candidiasis",
+      "synonyms": []
+    },
+    {
+      "name": "Carotid patch infection",
+      "synonyms": []
+    },
+    {
+      "name": "Cellulitis",
+      "synonyms": []
+    },
+    {
+      "name": "Cerebral abscess",
+      "synonyms": []
+    },
+    {
+      "name": "Cholangitis",
+      "synonyms": []
+    },
+    {
+      "name": "Congenital CMV",
+      "synonyms": []
+    },
+    {
+      "name": "Congenital syphilis",
+      "synonyms": []
+    },
+    {
+      "name": "Cystic fibrosis- infective episode",
+      "synonyms": []
+    },
+    {
+      "name": "Cytomegalovirus",
+      "synonyms": []
+    },
+    {
+      "name": "Diabetic foot infection (no osteomyelitis)",
+      "synonyms": []
+    },
+    {
+      "name": "Discitis/vertebral osteomyelitis - metalwork",
+      "synonyms": []
+    },
+    {
+      "name": "Discitis/vertebral osteomyelitis - no metalwork",
+      "synonyms": []
+    },
+    {
+      "name": "Early onset sepsis",
+      "synonyms": []
+    },
+    {
+      "name": "Empyema",
+      "synonyms": []
+    },
+    {
+      "name": "Encephalitis",
+      "synonyms": []
+    },
+    {
+      "name": "Endocarditis",
+      "synonyms": []
+    },
+    {
+      "name": "Epidural abscess",
+      "synonyms": []
+    },
+    {
+      "name": "Fever in early infancy",
+      "synonyms": []
+    },
+    {
+      "name": "Genitourinary",
+      "synonyms": []
+    },
+    {
+      "name": "Hepatic abscess",
+      "synonyms": []
+    },
+    {
+      "name": "Infected Intracerebral stimulators ",
+      "synonyms": []
+    },
+    {
+      "name": "Infected cranioplasty",
+      "synonyms": []
+    },
+    {
+      "name": "Infected pacing box ",
+      "synonyms": []
+    },
+    {
+      "name": "Intraabdominal abscess",
+      "synonyms": []
+    },
+    {
+      "name": "Late onset sepsis",
+      "synonyms": []
+    },
+    {
+      "name": "Line related infection - systemic",
+      "synonyms": []
+    },
+    {
+      "name": "Lyme",
+      "synonyms": []
+    },
+    {
+      "name": "Lyme (Neuro)",
+      "synonyms": []
+    },
+    {
+      "name": "Lymphadenitis",
+      "synonyms": []
+    },
+    {
+      "name": "MAI (Non-tuberculous mycobacteria)",
+      "synonyms": []
+    },
+    {
+      "name": "Malignant otitis externa",
+      "synonyms": []
+    },
+    {
+      "name": "Mastoiditis",
+      "synonyms": []
+    },
+    {
+      "name": "Neonatal HSV",
+      "synonyms": []
+    },
+    {
+      "name": "Nocardiosis ",
+      "synonyms": []
+    },
+    {
+      "name": "Orbital cellulitis",
+      "synonyms": []
+    },
+    {
+      "name": "Osteomyelitis-diabetic foot",
+      "synonyms": []
+    },
+    {
+      "name": "Osteomyelitis-non surgical",
+      "synonyms": []
+    },
+    {
+      "name": "Osteomyelitis-surgically related ",
+      "synonyms": []
+    },
+    {
+      "name": "Otitis media",
+      "synonyms": []
+    },
+    {
+      "name": "Pelvic abscess",
+      "synonyms": []
+    },
+    {
+      "name": "Periorbital cellulitis",
+      "synonyms": []
+    },
+    {
+      "name": "Pneumonia - Community Acquired",
+      "synonyms": []
+    },
+    {
+      "name": "Pneumonia - Hospital Acquired",
+      "synonyms": []
+    },
+    {
+      "name": "Prosthetic joint - knee",
+      "synonyms": []
+    },
+    {
+      "name": "Prosthetic joint - other",
+      "synonyms": []
+    },
+    {
+      "name": "Prosthetic joint- hip",
+      "synonyms": []
+    },
+    {
+      "name": "Psoas abscess",
+      "synonyms": []
+    },
+    {
+      "name": "Pyrexia of unknown origin",
+      "synonyms": []
+    },
+    {
+      "name": "Respiratory tract infection -other",
+      "synonyms": []
+    },
+    {
+      "name": "Salmonella",
+      "synonyms": []
+    },
+    {
+      "name": "Scalded skin syndrome",
+      "synonyms": []
+    },
+    {
+      "name": "Septic arthritis",
+      "synonyms": []
+    },
+    {
+      "name": "Sinusitis",
+      "synonyms": []
+    },
+    {
+      "name": "Skin and soft tissue infection",
+      "synonyms": []
+    },
+    {
+      "name": "Syphilis",
+      "synonyms": []
+    },
+    {
+      "name": "Syphilis (Neuro)",
+      "synonyms": []
+    },
+    {
+      "name": "Tonsillitis",
+      "synonyms": []
+    },
+    {
+      "name": "Toxic shock syndrome",
+      "synonyms": []
+    },
+    {
+      "name": "Tuberculosis",
+      "synonyms": []
+    },
+    {
+      "name": "Urinary tract infection",
+      "synonyms": []
+    },
+    {
+      "name": "VP Shunt Infection ",
+      "synonyms": []
+    },
+    {
+      "name": "Vascular graft infection",
+      "synonyms": []
+    },
+    {
+      "name": "Viral infection ",
+      "synonyms": []
+    },
+    {
+      "name": "Wound Infection-post surgical",
+      "synonyms": []
+    }
+  ]
+}
