@@ -1,4 +1,4 @@
-angular.module('opal.services').factory('LabDetailLoader', function($http) {
+angular.module('opal.services').factory('LabDetailLoader', function($http, $q) {
 	"use strict";
 	var labUrlBase = '/api/v0.1/lab_test/';
 
