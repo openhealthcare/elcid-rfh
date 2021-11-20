@@ -8,22 +8,21 @@ from plugins.labtests import api
 
 
 class LabtestsPlugin(plugins.OpalPlugin):
-    """
-    Main entrypoint to expose this plugin to our Opal application.
-    """
     urls = urlpatterns
+
     javascripts = {
-        # Add your javascripts here!
+        'opal.controllers': [
+            'labtests/js/controllers/lab_detail.js',
+        ],
         'opal.services': [
+            'labtests/js/services/lab_detail_loader.js',
             "labtests/js/services/star_observation.js"
-            # 'js/labtests/app.js',
-            # 'js/labtests/controllers/larry.js',
-            # 'js/labtests/services/larry.js',
         ]
     }
 
     apis = [
         (api.StarObservation.base_name, api.StarObservation,),
+        (api.LabTest.base_name, api.LabTest,),
     ]
 
     def list_schemas(self):

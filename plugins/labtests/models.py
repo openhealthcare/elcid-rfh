@@ -29,8 +29,9 @@ class LabTest(models.Model):
     status = models.CharField(max_length=256, blank=True, null=True)
     test_code = models.CharField(max_length=256, blank=True, null=True)
     test_name = models.CharField(max_length=256, blank=True, null=True)
-    lab_number = models.CharField(max_length=256, blank=True, null=True)
-
+    lab_number = models.CharField(
+        max_length=256, blank=True, null=True, db_index=True
+    )
     accession_number = models.CharField(max_length=256, blank=True, null=True)
     encounter_consultant_name = models.CharField(max_length=256, blank=True, null=True)
     encounter_location_name = models.CharField(max_length=256, blank=True, null=True)

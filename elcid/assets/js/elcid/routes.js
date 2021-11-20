@@ -116,4 +116,22 @@ app.config(
                      referencedata: function(Referencedata) { return Referencedata; },
                  },
              })
+             .when('/lab-test/:lab_number/',      {
+                controller: function($scope, lab_number, lab_data){
+                    $scope.lab_number = lab_number;
+                    $scope.lab_data = lab_data;
+                },
+                templateUrl: function(){
+                    return '/templates/lab_detail.html'
+                },
+                resolve: {
+                    lab_number: function($route){
+                        return $route.current.params.lab_number;
+                    },
+                    lab_data: function($http, $route) {
+                        var url = "/api/v0.1/lab_test/" + $route.current.params.lab_number + "/";
+                        return $http.get(url).then(function(response){ return response.data });
+                    },
+                },
+            })
      }]);
