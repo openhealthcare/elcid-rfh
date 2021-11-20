@@ -113,10 +113,7 @@ app.config(
                  },
              })
              .when('/lab-test/:lab_number/',      {
-                controller: function($scope, lab_number, lab_data){
-                    $scope.lab_number = lab_number;
-                    $scope.lab_data = lab_data;
-                },
+                controller: "LabDetail",
                 templateUrl: function(){
                     return '/templates/lab_detail.html'
                 },
@@ -124,9 +121,8 @@ app.config(
                     lab_number: function($route){
                         return $route.current.params.lab_number;
                     },
-                    lab_data: function($http, $route) {
-                        var url = "/api/v0.1/lab_test/" + $route.current.params.lab_number + "/";
-                        return $http.get(url).then(function(response){ return response.data });
+                    lab_data: function($http, $route, LabDetailLoader) {
+                        return LabDetailLoader.load($route.current.params.lab_number)
                     },
                 },
             })
