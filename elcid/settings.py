@@ -312,6 +312,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'dischargesummary': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'labtests': {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',

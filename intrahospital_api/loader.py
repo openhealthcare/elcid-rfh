@@ -16,7 +16,7 @@ from elcid.utils import timing
 from plugins.admissions.loader import load_encounters
 from plugins.appointments.loader import load_appointments
 from plugins.imaging.loader import load_imaging
-from plugins.dischargesummary.loader import load_dischargesummaries
+from plugins.dischargesummary.loader import load_discharge_summaries
 
 from intrahospital_api import models
 from intrahospital_api import get_api
@@ -399,7 +399,7 @@ def _load_patient(patient, patient_load):
         load_imaging,
         load_encounters,
         load_appointments,
-        load_dischargesummaries
+        load_discharge_summaries,
     ]
 
     for loader in loaders:
