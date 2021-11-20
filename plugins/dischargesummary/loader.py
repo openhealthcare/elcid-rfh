@@ -144,10 +144,16 @@ def save_medications(rows):
 
 def delete_existing_summaries(rows):
     for row in rows:
+        date_of_admission = None
+        if row["DATE_OF_ADMISSION"]:
+            date_of_admission = timezone.make_aware(row["DATE_OF_ADMISSION"])
+        date_of_discharge = None
+        if row["DATE_OF_DISCHARGE"]:
+            date_of_discharge = timezone.make_aware(row["DATE_OF_DISCHARGE"])
         DischargeSummary.objects.filter(
             patient__demographics__hospital_number=row['RF1_NUMBER'],
-            date_of_admission=timezone.make_aware(row["DATE_OF_ADMISSION"]),
-            date_of_discharge=timezone.make_aware(row["DATE_OF_DISCHARGE"]),
+            date_of_admission=date_of_admission,
+            date_of_discharge=date_of_discharge,
         ).delete()
 
 
