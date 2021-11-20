@@ -9,7 +9,7 @@ from plugins.labtests import models
 
 class StarObservation(SubrecordViewSet):
     model = StarredObservation
-    base_name = "star_observation"
+    basename = "star_observation"
 
     def create(self, request):
         model = self.model()
@@ -27,7 +27,7 @@ class StarObservation(SubrecordViewSet):
 
 
 class LabTest(LoginRequiredViewset):
-    base_name = 'lab_test'
+    basename = 'lab_test'
     lookup_field = 'slug'
 
     def serialize_model(self, instance):

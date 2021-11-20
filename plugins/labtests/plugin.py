@@ -21,8 +21,8 @@ class LabtestsPlugin(plugins.OpalPlugin):
     }
 
     apis = [
-        (api.StarObservation.base_name, api.StarObservation,),
-        (api.LabTest.base_name, api.LabTest,),
+        (api.StarObservation.basename, api.StarObservation,),
+        (api.LabTest.basename, api.LabTest,),
     ]
 
     def list_schemas(self):
