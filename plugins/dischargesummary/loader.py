@@ -157,34 +157,10 @@ def delete_existing_summaries(rows):
         ).delete()
 
 
-def delete_existing_medications(rows):
-    DischargeMedication.objects.filter(
-        tta_main_id__in=[row["TTA_Main_ID"] for row in rows]
-    ).delete()
-
-
+@transaction.atomic
 def load_discharge_summaries_since(some_date):
     """
-    Loads discharge summaries from a certain date, deleting the existing
-    and replacing them.
-    """
-    logger.info(f'{LOG_PREFIX} started, loading since {some_date}')
-    start_time = time.time()
-    api = ProdAPI()
-    summary_rows = api.execute_hospital_query(
-        Q_GET_ALL_SUMMARIES_SINCE, params={"some_date": some_date}
-    )
-    end_summary_load_time = time.time()
-    logger.info(
-        f"{LOG_PREFIX} finished the summary load in {end_summary_load_time - start_time}"
-    )
-    load_discharge_summaries_from_query_result(summary_rows)
-
-
-@transaction.atomic
-def load_discharge_summaries_from_query_result(summary_rows):
-    """
-    Saves upstream discharge summaries/medications from an
+    Loads in and saves upstream discharge summaries/medications from an
     upstream result.
 
     Notably the last updated is stored as a string, and
@@ -195,30 +171,44 @@ def load_discharge_summaries_from_query_result(summary_rows):
     with that mrn/date admitted/date discharged. We then create
     these with their attatched discharge medications.
     """
-    # Delete all the summaries, not this deletes the summaries
-    # and any attached medications
-    # Medications do not seem to be updated without the summary
-    # also being updated
-    # (not entirely true, there seem to be medications that
-    # do not have a link to summary, we ignore these.)
+    logger.info(f'{LOG_PREFIX} started, summary loading since {some_date}')
+    start_time = time.time()
     api = ProdAPI()
-    delete_existing_summaries(summary_rows)
-    deleted_time = time.time()
-    logger.info(
-        f"{LOG_PREFIX} deleted summaries in {deleted_time - end_summary_load_time}"
+    summary_rows = api.execute_hospital_query(
+        Q_GET_ALL_SUMMARIES_SINCE, params={"some_date": some_date}
     )
-    # Create our new summaries
-    save_discharge_summaries(summary_rows)
-    created_summary_time = time.time()
+    end_summary_load_time = time.time()
     logger.info(
-        f"{LOG_PREFIX} created summaries in {created_summary_time - deleted_time}"
+        f"{LOG_PREFIX} finished the summary load in {end_summary_load_time - start_time}"
     )
+    logger.info(f'{LOG_PREFIX}, medication loading since {some_date}')
+    api = ProdAPI()
     medication_rows = api.execute_hospital_query(
         Q_GET_ALL_MEDICATIONS_SINCE, params={"some_date": some_date}
     )
-    save_medications(medication_rows)
+    end_medication_load_time = time.time()
+    medication_load_duration = end_medication_load_time - end_summary_load_time
     logger.info(
-        f"{LOG_PREFIX} created medications in {time.time() - created_summary_time}"
+        f"{LOG_PREFIX} finished the medication load in {medication_load_duration}"
+    )
+    logger.info(
+        f"{LOG_PREFIX} starting the summary save"
+    )
+    delete_existing_summaries(summary_rows)
+    save_discharge_summaries(summary_rows)
+    summary_save_time = time.time()
+    summary_save_duration = summary_save_time - end_medication_load_time
+    logger.info(
+        f"{LOG_PREFIX} finished the summary save in {summary_save_duration}"
+    )
+    save_medications(medication_rows)
+    medication_save_time = summary_save_time = time.time()
+    medication_save_duration = medication_save_time - summary_save_time
+    logger.info(
+        f"{LOG_PREFIX} finished the medication save in {medication_save_duration}"
+    )
+    logger.info(
+        f"{LOG_PREFIX} finishing load discharge summaries since {some_date}"
     )
 
 
@@ -240,6 +230,18 @@ def load_discharge_summaries(patient):
         Q_GET_MEDICATIONS_FOR_MRN, params={"mrn": mrn}
     )
     save_medications(discharge_medication_rows)
+    if len(discharge_summary_rows):
+        PatientDischargeSummaryStatus.objects.filter(
+            patient=patient
+        ).update(
+            has_dischargesummaries=True
+        )
+    else:
+        PatientDischargeSummaryStatus.objects.filter(
+            patient=patient
+        ).update(
+            has_dischargesummaries=False
+        )
     logger.info(
         f"{LOG_PREFIX} finishing load discharge summaries for {mrn}"
     )
