@@ -12,7 +12,7 @@ from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
-from plugins.admissions.models import Encounter, TransferHistory
+from plugins.admissions.models import Encounter, TransferHistory, BedStatus
 from plugins.admissions import logger
 
 
