@@ -199,4 +199,4 @@ def load_bed_status():
                     BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
                     v
                 )
-            bed_staus.save()
+            bed_status.save()
