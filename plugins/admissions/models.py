@@ -267,3 +267,87 @@ class TransferHistory(models.Model):
         'TRF_INP_TH_ENCNTR_ALIAS_UPDT_DT_TM'    : 'trf_inp_th_encntr_alias_updt_dt_tm',
         'TRF_INP_TH_ENCNTR_SLICE_ACT_UPDT_DT_TM': 'trf_inp_th_encntr_slice_act_updt_dt_tm',
     }
+
+
+class BedStatus(models.Model):
+    """
+    A snapshot of current bed status
+    Obtained via the data warehousing team
+
+    Here we replicate the upstream table closely
+    """
+    facility                       = models.CharField(blank=True, null=True, max_length=255)
+    building                       = models.CharField(blank=True, null=True, max_length=255)
+    hospital_site_code             = models.CharField(blank=True, null=True, max_length=255)
+    hospital_site_description      = models.CharField(blank=True, null=True, max_length=255)
+    ward_name                      = models.CharField(blank=True, null=True, max_length=255)
+    room                           = models.CharField(blank=True, null=True, max_length=255)
+    room_gender                    = models.CharField(blank=True, null=True, max_length=255)
+    bed                            = models.CharField(blank=True, null=True, max_length=255)
+    bed_status                     = models.CharField(blank=True, null=True, max_length=255)
+    isolation_description          = models.CharField(blank=True, null=True, max_length=255)
+    encounter_id                   = models.CharField(blank=True, null=True, max_length=255)
+    encounter_type_description     = models.CharField(blank=True, null=True, max_length=255)
+    person_id                      = models.CharField(blank=True, null=True, max_length=255)
+    spell_number                   = models.CharField(blank=True, null=True, max_length=255)
+    local_patient_identifier       = models.CharField(blank=True, null=True, max_length=255)
+    nhs_number                     = models.CharField(blank=True, null=True, max_length=255)
+    patient_name                   = models.CharField(blank=True, null=True, max_length=255)
+    date_of_birth                  = models.CharField(blank=True, null=True, max_length=255)
+    gender                         = models.CharField(blank=True, null=True, max_length=255)
+    admission_date_time            = models.CharField(blank=True, null=True, max_length=255)
+    admission_method_code          = models.CharField(blank=True, null=True, max_length=255)
+    admission_method_description   = models.CharField(blank=True, null=True, max_length=255)
+    patient_classification_code    = models.CharField(blank=True, null=True, max_length=255)
+    main_specialty_code            = models.CharField(blank=True, null=True, max_length=255)
+    main_specialty_description     = models.CharField(blank=True, null=True, max_length=255)
+    treatment_function_code        = models.CharField(blank=True, null=True, max_length=255)
+    treatment_function_description = models.CharField(blank=True, null=True, max_length=255)
+    pod                            = models.CharField(blank=True, null=True, max_length=255)
+    pod_description                = models.CharField(blank=True, null=True, max_length=255)
+    division_patient               = models.CharField(blank=True, null=True, max_length=255)
+    division_ward                  = models.CharField(blank=True, null=True, max_length=255)
+    covid19_flag                   = models.CharField(blank=True, null=True, max_length=255)
+    side_room_flag                 = models.CharField(blank=True, null=True, max_length=255)
+    updated_date                   = models.DateTimeField(blank=True, null=True)
+    source                         = models.CharField(blank=True, null=True, max_length=255)
+
+
+
+    UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
+        'Facility'                      : 'facility',
+        'Building'                      : 'building',
+        'Hospital_Site_Code'            : 'hospital_site_code',
+        'Hospital_Site_Description'     : 'hospital_site_description',
+        'Ward_Name'                     : 'ward_name',
+        'Room'                          : 'room',
+        'Room_Gender'                   : 'room_gender',
+        'Bed'                           : 'bed',
+        'Bed_status'                    : 'bed_status',
+        'Isolation_Description'         : 'isolation_description',
+        'Encounter_ID'                  : 'encounter_id',
+        'Encounter_Type_Description'    : 'encounter_type_description',
+        'Person_ID'                     : 'person_id',
+        'Spell_Number'                  : 'spell_number',
+        'Local_Patient_Identifier'      : 'local_patient_identifier',
+        'NHS_Number'                    : 'nhs_number',
+        'Patient_Name'                  : 'patient_name',
+        'Date_Of_Birth'                 : 'date_of_birth',
+        'Gender'                        : 'gender',
+        'Admission_Date_Time'           : 'admission_date_time',
+        'Admission_Method_Code'         : 'admission_method_code',
+        'Admission_Method_Description'  : 'admission_method_description',
+        'Patient_Classification_Code'   : 'patient_classification_code',
+        'Main_Specialty_Code'           : 'main_specialty_code',
+        'Main_Specialty_Description'    : 'main_specialty_description',
+        'Treatment_Function_Code'       : 'treatment_function_code',
+        'Treatment_Function_Description': 'treatment_function_description',
+        'POD'                           : 'pod',
+        'POD_Description'               : 'pod_description',
+        'Division_Patient'              : 'division_patient',
+        'Division_Ward'                 : 'division_ward',
+        'COVID19_Flag'                  : 'covid19_flag',
+        'Side_Room_Flag'                : 'side_room_flag',
+        'Updated_Date'                  : 'updated_date',
+        'SOURCE'                        : 'source',
+    }
