@@ -181,6 +181,8 @@ def load_bed_status():
     """
     Flush and re-load the upstream current_bed_status
     """
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+
     api = ProdAPI()
 
     status = api.execute_warehouse_query(
