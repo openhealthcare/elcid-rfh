@@ -199,4 +199,17 @@ def load_bed_status():
                     BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
                     v
                 )
+
+            if bed_status.local_patient_identifier:
+                patient = Patient.objects.filter(
+                    demographics__hospital_number=bed_status.local_patient_identifier
+                ).first()
+
+                if patient:
+                    bed_status.patient = patient
+                else:
+                    patient = create_rfh_patient_from_hospital_number(
+                        bed_status.local_patient_identifier, InfectionService)
+                    bed_status.patient = patient
+
             bed_status.save()

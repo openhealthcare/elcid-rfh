@@ -13,7 +13,7 @@ from opal.models import (
 
 from elcid.episode_categories import InfectionService
 from elcid.models import MicrobiologyInput
-from plugins.admissions.models import UpstreamLocation
+from plugins.admissions.models import BedStatus
 from plugins.covid.models import CovidPatient
 from plugins.icu import constants
 
@@ -21,41 +21,12 @@ from plugins.icu import constants
 class ICUDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'icu/dashboard.html'
 
-    def get_current_icu_patients(self):
-        """
-        We look at an intersect of all patients who have an upstream
-        location in one of the ICU wards and who have ICU clinical advice.
-
-        This is to fix issues where the patients location may not have been
-        updated.
-        """
-        four_days_ago = timezone.now() - datetime.timedelta(4)
-        icu_locations = UpstreamLocation.objects.filter(ward__in=constants.WARD_NAMES)
-        patient_ids_within_four_days = set(
-            icu_locations.values_list('patient_id', flat=True).distinct()
-        )
-
-        icu_round_reason = Clinical_advice_reason_for_interaction.objects.get(
-            name=MicrobiologyInput.ICU_REASON_FOR_INTERACTION
-        )
-
-        review_within_four_days = set(MicrobiologyInput.objects.filter(
-            when__gte=four_days_ago,
-            reason_for_interaction_fk_id=icu_round_reason.id
-        ).values_list('episode__patient_id', flat=True))
-
-        patient_ids_within_four_days.update(review_within_four_days)
-        return Patient.objects.filter(
-            id__in=patient_ids_within_four_days
-        )
-
     def get_ward_info(self, ward_name):
         """
         Given a WARD_NAME string, return summary info about that ICU ward
         """
-        patients = self.get_current_icu_patients().filter(
-            upstreamlocation__ward=ward_name
-        )
+        patients = Patient.objects.filter(bedstatus__ward_name=ward_name)
+
         covid_patients = CovidPatient.objects.filter(
             patient__in=patients
         ).count()
@@ -80,11 +51,13 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
         for episode in episodes:
             patient = episode.patient
-            bed = UpstreamLocation.objects.filter(
-                    patient=patient, ward=ward
+
+            bed = BedStatus.objects.filter(
+                    patient=patient, ward_name=ward
             ).order_by(
-                '-admitted'
+                '-updated_date'
             ).first().bed
+
             record = {
                 'episode'     : episode,
                 'demographics': patient.demographics(),

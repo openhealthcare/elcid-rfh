@@ -276,6 +276,12 @@ class BedStatus(models.Model):
 
     Here we replicate the upstream table closely
     """
+    # We link the upstream data to our system via a single foreign key to the
+    # Patient object. In practice we take the MRN fields and match them
+    # with patient.demographics().hospital_number
+    patient                        = models.ForeignKey(Patient, on_delete=models.CASCADE,
+                                                       related_name='bedstatus',
+                                                       blank=True, null=True)
     facility                       = models.CharField(blank=True, null=True, max_length=255)
     building                       = models.CharField(blank=True, null=True, max_length=255)
     hospital_site_code             = models.CharField(blank=True, null=True, max_length=255)
