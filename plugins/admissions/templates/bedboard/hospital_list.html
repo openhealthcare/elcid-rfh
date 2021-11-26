@@ -1,0 +1,15 @@
+<div class="panel panel-default content-offset" >
+  <div class="panel-heading">
+    <h1>Hospitals</h1>
+  </div>
+
+  <div class="panel-body">
+    {% for name, code in hospitals %}
+    <p>
+      <a href="/#/admissions/bedboard/hospital/{{code}}/" class="orange-link">
+        {{ code }} {{ name }}
+      </a>
+    </p>
+    {% endfor %}
+  </div>
+</div>

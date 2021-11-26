@@ -11,6 +11,23 @@ urlpatterns = [
         views.UpstreamLocationSnippet.as_view(),
         name='admission_upstream_snippet'
     ),
+
+    path(
+        'admissions/bedboard/hospitals/',
+        views.BedboardHospitalListView.as_view(),
+        name='admission_bedboard_hospital_list'
+    ),
+    path(
+        'admissions/bedboard/hospital/<hospital_code>/',
+        views.BedboardHospitalDetailView.as_view(),
+        name='admission_bedboard_hospital_detail'
+    ),
+    path(
+        'admissions/bedboard/ward/<ward_name>/',
+        views.BedboardWardDetailView.as_view(),
+        name='admission_bedboard_ward_detail'
+    ),
+
     path(
         'templates/admissions/transfer_history/<spell_number>/',
         views.SpellLocationHistoryView.as_view(),
@@ -26,6 +43,5 @@ urlpatterns = [
         views.LocationHistoryView.as_view(),
         name='location_history'
     )
-
 
 ]
