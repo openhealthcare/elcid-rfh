@@ -204,6 +204,10 @@ class TransferHistory(models.Model):
 
     Here we replicate the upstream view closely.
     """
+    # This is the timestamp we create this model in elcid
+    created_in_elcid                = models.DateTimeField(auto_now_add=True)
+
+
     update_datetime                 = models.DateTimeField(blank=True, null=True)
     # Boolean field as 0/1
     active_transfer                 = models.IntegerField(blank=True, null=True)

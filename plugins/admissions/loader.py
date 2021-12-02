@@ -2,6 +2,8 @@
 Load admissions from upsteam
 """
 import datetime
+import time
+from django.db import transaction
 
 from django.db import transaction
 from django.db.models import DateTimeField
@@ -41,6 +43,16 @@ SELECT *
 FROM INP.CURRENT_BED_STATUS
 WITH (NOLOCK)
 """
+
+# UPDATED_DATE is the same as CREATED_DATE if there
+# has not been an update, ie its always set.
+Q_GET_TRANSFERS_SINCE = """
+    SELECT *
+    FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
+    WHERE
+    UPDATED_DATE >= @since
+"""
+
 
 def save_encounter(encounter, patient):
     """
@@ -152,29 +164,53 @@ def load_excounters_since(timestamp):
         )
 
 
-def load_transfer_history():
-    """
-    TEMP ONLY
-    """
+def cast_to_transfer_history(upstream_dict):
+    hist = TransferHistory()
+    for k, v in upstream_dict.items():
+        if v:  # Ignore empty values
+            fieldtype = type(TransferHistory._meta.get_field(
+                TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]
+            ))
+            if fieldtype == DateTimeField:
+                v = timezone.make_aware(v)
+            setattr(
+                hist,
+                TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                v
+            )
+    return hist
+
+
+def load_transfer_history_since(since):
     api = ProdAPI()
-
-    histories = api.execute_warehouse_query(
-        Q_GET_ALL_HISTORY
+    query_start = time.time()
+    query_result = api.execute_warehouse_query(
+        Q_GET_TRANSFERS_SINCE, params={"since": since}
     )
-    for history in histories:
+    query_end = time.time()
+    query_time = query_end - query_start
+    logger.info(
+        f"Transfer histories: queries {len(query_result)} rows in {query_time}s"
+    )
+    created = create_transfer_histories_from_upstream_result(query_result)
+    created_end = time.time()
+    logger.info(f'Transfer histories: created {len(created)} in {created_end - query_end}')
+    return created
 
-        try:
-            hist = TransferHistory()
-            for k, v in history.items():
-                setattr(
-                    hist,
-                    TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
-                    v
-                )
-            hist.save()
-        except:
-            print(history)
-            raise
+
+@transaction.atomic
+def create_transfer_histories_from_upstream_result(some_rows):
+    slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
+    TransferHistory.objects.filter(
+        encounter_slice_id__in=slice_ids
+    ).delete()
+    transfer_histories = []
+    for some_row in some_rows:
+        transfer_histories.append(
+            cast_to_transfer_history(some_row)
+        )
+    TransferHistory.objects.bulk_create(transfer_histories)
+    return transfer_histories
 
 
 def load_bed_status():
