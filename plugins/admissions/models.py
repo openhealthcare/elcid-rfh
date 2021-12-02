@@ -215,7 +215,7 @@ class TransferHistory(models.Model):
     # What is this?
     encounter_id                    = models.IntegerField(blank=True, null=True)
     # What is this?
-    encounter_slice_id              = models.IntegerField(blank=True, null=True)
+    encounter_slice_id              = models.BigIntegerField(blank=True, null=True)
     spell_number                    = models.CharField(blank=True, null=True, max_length=255)
     mrn                             = models.CharField(blank=True, null=True, max_length=255)
     transfer_sequence_number        = models.IntegerField(blank=True, null=True)
