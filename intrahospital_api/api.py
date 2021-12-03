@@ -92,7 +92,7 @@ class PatientViewSet(viewsets.ViewSet):
             patient=patient, user=request.user
         )
         patient_as_dict = patient_to_dict(patient, request.user)
-        patient_as_dict['bed_status'] = [
+        patient_as_dict['bed_statuses'] = [
             i.to_dict() for i in patient.bedstatus.all().order_by('-updated_date')
         ]
         return json_response(patient_as_dict)
