@@ -319,7 +319,6 @@ class BedStatus(models.Model):
     source                         = models.CharField(blank=True, null=True, max_length=255)
 
 
-
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'Facility'                      : 'facility',
         'Building'                      : 'building',
@@ -357,3 +356,6 @@ class BedStatus(models.Model):
         'Updated_Date'                  : 'updated_date',
         'SOURCE'                        : 'source',
     }
+
+    def to_dict(self):
+        return {k: getattr(self, k) for k in self.UPSTREAM_FIELDS_TO_MODEL_FIELDS.values()}

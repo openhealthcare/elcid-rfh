@@ -91,4 +91,8 @@ class PatientViewSet(viewsets.ViewSet):
         omodels.PatientRecordAccess.objects.create(
             patient=patient, user=request.user
         )
-        return json_response(patient_to_dict(patient, request.user))
+        patient_as_dict = patient_to_dict(patient, request.user)
+        patient_as_dict['bed_status'] = [
+            i.to_dict() for i in patient.bedstatus.all().order_by('-updated_date')
+        ]
+        return json_response(patient_as_dict)
