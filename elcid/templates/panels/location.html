@@ -1,0 +1,70 @@
+<div ng-repeat="parent in [episode]">
+  <div class="panel panel-default record-panel">
+    <div class="panel-heading">
+      <h3>
+        <i class="{{ models.Location.get_icon }}"></i> {{ models.Location.get_display_name }}
+        <i class="fa fa-plus-circle edit pull-right pointer" ng-click="parent.recordEditor.newItem('{{ models.Location.get_api_name }}')"></i>
+      </h3>
+    </div>
+    <ul ng-show='location.hospital || location.ward || location.bed || location.provenance' ng-repeat='location in [parent.location[0]]' class="list-group">
+      <li class="list-group-item" ng-repeat="item in parent.{{  models.Location.get_api_name }}">
+        <div class="row">
+          <div class="col-md-9">
+          {% include models.Location.get_detail_template %}
+          </div>
+          <div class="col-md-3">
+            <i class="fa fa-pencil edit pull-right pointer" ng-click="parent.recordEditor.editItem('{{ models.Location.get_api_name }}', item)"></i>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <div ng-show="patient.bed_statuses.length" class="panel-footer">
+      <strong>Current Cerner Location:</strong>
+      <div class="row content-offset-10" ng-repeat="bed_status in patient.bed_statuses">
+        <hr ng-show="$index > 0">
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-4">
+              <b>Hospital</b>
+            </div>
+            <div class="col-md-8">
+              [[bed_status.hospital_site_description]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <b>Ward</b>
+            </div>
+            <div class="col-md-8">
+              [[bed_status.ward_name]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <b>Room</b>
+            </div>
+            <div class="col-md-8">
+              [[bed_status.room]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <b>Bed</b>
+            </div>
+            <div class="col-md-8">
+              [[bed_status.bed]]
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <b>Admission</b>
+            </div>
+            <div class="col-md-8">
+              [[bed_status.admission_date_time]]
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
