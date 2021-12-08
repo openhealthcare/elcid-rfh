@@ -65,11 +65,11 @@ BACKUP_DIR = "{project_root}/var".format(project_root=PROJECT_ROOT)
 GIT_URL = "https://github.com/openhealthcare/elcid-rfh"
 LOG_DIR = "/usr/lib/{}/log/".format(UNIX_USER)
 # the daily back up
-BACKUP_FILE_NAME = "back.{dt}.{db_name}.sql"
+BACKUP_FILE_NAME = "back.{dt}.{db_name}.sql.gz"
 BACKUP_NAME = "{backup_dir}/{backup_file_name}"
 
 # the release back up is take just before the release, and then restored
-RELEASE_BACKUP_NAME = "{backup_dir}/release.{dt}.{db_name}.sql"
+RELEASE_BACKUP_NAME = "{backup_dir}/release.{dt}.{db_name}.sql.gz"
 
 MODULE_NAME = "elcid"
 PROJECT_NAME = MODULE_NAME
@@ -256,9 +256,9 @@ WHERE datname='{}'\"".format(some_env.database_name),
 
 def postgres_load_database(backup_name, new_env):
     print("Loading the database {}".format(new_env.database_name))
-    local("sudo -u postgres psql -d {0} -f {1}".format(
-        new_env.database_name,
-        backup_name
+    local("cat {0} | gunzip | sudo -u postgres psql -d {1}".format(
+        backup_name,
+        new_env.database_name
     ))
 
 
@@ -775,6 +775,7 @@ def write_cron_load_amt_handover(new_env):
         output, cron_file
     ))
 
+
 def write_cron_calculte_amt_dashboard(new_env):
     """
     Creates a cron job that calculates the AMT dashboard
@@ -798,9 +799,6 @@ def write_cron_calculte_amt_dashboard(new_env):
     ))
 
 
-
-
-
 def send_error_email(error, some_env):
     print("Sending error email")
     run_management_command(
@@ -819,9 +817,10 @@ def clean_old_backups():
             (now - datetime.timedelta(i)).strftime(BACKUP_DT_FORMAT)
         )
     for f in os.listdir(BACKUP_DIR):
-        if f.startswith("back") and f.endswith("sql"):
-            if not any(i for i in dates if i in f):
-                os.remove(os.path.join(BACKUP_DIR, f))
+        if f.startswith("back"):
+            if f.endswith("sql") or f.endswith("sql.gz"):
+                if not any(i for i in dates if i in f):
+                    os.remove(os.path.join(BACKUP_DIR, f))
 
 
 def copy_backup(current_env):
@@ -1161,7 +1160,7 @@ def dump_and_copy(branch_name):
 
 
 def dump_database(env, db_name, backup_name):
-    pg = "pg_dump {db_name} -U {db_user} > {bu_name}"
+    pg = "pg_dump {db_name} -U {db_user} | gzip > {bu_name}"
     local(
         pg.format(
             db_name=db_name,

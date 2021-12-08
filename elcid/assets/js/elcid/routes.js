@@ -88,6 +88,11 @@ app.config(
                    param_template_route(
                        '/templates/admissions/location-history/', 'location_code'
                    ))
+             .when('/admissions/bedboard/hospitals/', static_template_route('/admissions/bedboard/hospitals/'))
+             .when('/admissions/bedboard/hospital/:hospital_code/',
+                   param_template_route('/admissions/bedboard/hospital/', 'hospital_code'))
+             .when('/admissions/bedboard/ward/:ward_name/',
+                   param_template_route('/admissions/bedboard/ward/', 'ward_name'))
 
              .when('/ipc/',                         static_template_route('/templates/ipc/home.html'))
              .when('/ipc/wards/',                   static_template_route('/templates/ipc/wards.html'))
@@ -101,6 +106,7 @@ app.config(
              .when('/imaging-load-stats/',             static_template_route(
                  '/templates/monitoring/imaging_load_stats.html'))
               .when('/appointment-load-stats/', static_template_route('/templates/monitoring/appointment_load_stats.html'))
+              .when('/admission-load-stats/', static_template_route('/templates/monitoring/admission_load_stats.html'))
               .when('/nursing-handover/:ward_code/',      {
                  controller: 'WelcomeCtrl',
                  controllerAs: 'welcome',

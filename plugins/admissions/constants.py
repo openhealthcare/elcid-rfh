@@ -53,3 +53,6 @@ BUILDING_CODES = {
 TRANSFER_HISTORY_LOAD_TIME_FACT = "Transfer history load time"
 TRANSFER_HISTORY_CREATED_COUNT_FACT = "Transfer history created count"
 TRANSFER_HISTORY_COUNT_FACT = "Transfer history count fact"
+# Facts for the admissions load times
+ENCOUNTER_LOAD_MINUTES = "Encounter Load Minutes"
+TOTAL_ENCOUNTERS = "Total Encounters"

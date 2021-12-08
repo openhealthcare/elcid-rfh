@@ -1,0 +1,23 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block icon_name %}fa fa-exchange{% endblock %}
+{% block title %}Send Note to EPR{% endblock %}
+
+{% block modal_body%}
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <p class="lead">
+      This will write this clinical note to EPR. <br />
+      This action cannot be undone.
+    </p>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <button class="btn btn-primary btn-save" one-click-only ng-click="send_upstream()">
+      <i class="fa fa-exchange"></i> Write to EPR
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block modal_save %}{% endblock %}

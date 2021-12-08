@@ -127,8 +127,11 @@ directives.directive('fixedHeader', function(){
     restrict: 'A',
     link: function(scope, $elm, attrs) {
       var panelHeader = $(".panel-heading.patient-detail-heading");
+      var counter = 0;
       var adjustHeights = function(){
-        // adjust when the panel body starts
+        if(document.documentElement.scrollTop > 100){
+          return;
+        }
         var panelHeaderHeight = panelHeader.height();
 
         // the nav bar collapses at small sizes, accomdate for this.
@@ -152,6 +155,10 @@ directives.directive('fixedHeader', function(){
         else{
           panelHeader.removeClass('shrunken');
         }
+        counter += 1;
+        if(counter > 20){
+          clearInterval(interval)
+        }
       }
       var shrinkHeader = function(){
         // when we're slightly down the page add the class
@@ -163,7 +170,10 @@ directives.directive('fixedHeader', function(){
         }
       }
 
-      setTimeout(adjustHeights, 0);
+      // Angular occassionally populates the header
+      // after the directive has loaded, so just
+      // keep at it for the firsrt 20 seconds
+      var interval = setInterval(adjustHeights, 100);
       $(window).scroll(shrinkHeader);
       $(window).resize(adjustHeights);
     }
