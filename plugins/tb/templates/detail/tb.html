@@ -130,7 +130,7 @@
                       {% if request.user.is_superuser %}
                       <div ng-hide="item.sent_upstream" class="col-md-12">
                           <i class="fa fa-exchange edit pull-right pointer"
-                          ng-click="open_modal('SendPatientConsultationUpstreamCtrl', '/templates/send_upstream_modal.html', {item:item, callback: refresh})"></i>
+                          ng-click="open_modal('SendPatientConsultationUpstreamCtrl', '/templates/send_upstream_modal.html', {item:item, callback: refresh, patient: patient})"></i>
                       </div>
                       {% endif %}
                     </div>
