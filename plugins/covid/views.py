@@ -243,16 +243,10 @@ class CovidExtractDownloadView(LoginRequiredMixin, View):
                 return response
 
 
-
 class CovidLetter(LoginRequiredMixin, DetailView):
     # accessed at /letters/#/covid/letter/10/
     model         = models.CovidFollowUpCall
     template_name = 'covid/letters/covid.html'
-
-    def get_context_data(self, *a, **k):
-        ctx = super().get_context_data(*a, **k)
-        ctx['today'] = datetime.date.today()
-        return ctx
 
 
 class CovidFollowupLetter(LoginRequiredMixin, DetailView):
