@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.views.generic import DetailView, TemplateView
 from opal.models import Patient
 
-from plugins.admissions.models import Encounter, TransferHistory
+from plugins.admissions.models import Encounter, TransferHistory, BedStatus
 
 
 class UpstreamLocationSnippet(LoginRequiredMixin, DetailView):
@@ -21,6 +21,51 @@ class UpstreamLocationSnippet(LoginRequiredMixin, DetailView):
             context['location'] = location
 
         return context
+
+
+class BedboardHospitalListView(LoginRequiredMixin, TemplateView):
+
+    template_name = 'bedboard/hospital_list.html'
+
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        context['hospitals'] = BedStatus.objects.values_list(
+            'hospital_site_description', 'hospital_site_code').distinct().order_by('hospital_site_code')
+
+        return context
+
+
+class BedboardHospitalDetailView(LoginRequiredMixin, TemplateView):
+
+    template_name = 'bedboard/hospital_detail.html'
+
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        context['hospital'] = BedStatus.objects.filter(
+            hospital_site_code=k['hospital_code']).first().hospital_site_description
+        context['wards'] = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
+            'ward_name', flat=True).distinct().order_by('ward_name')
+
+        return context
+
+
+class BedboardWardDetailView(LoginRequiredMixin, TemplateView):
+
+    template_name = 'bedboard/ward_detail.html'
+
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        context['patients'] = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
+
+        return context
+
+
 
 
 class SpellLocationHistoryView(LoginRequiredMixin, TemplateView):

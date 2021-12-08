@@ -3,6 +3,7 @@ Load admissions from upsteam
 """
 import datetime
 
+from django.db import transaction
 from django.db.models import DateTimeField
 from django.utils import timezone
 from opal.models import Patient
@@ -11,7 +12,7 @@ from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
-from plugins.admissions.models import Encounter, TransferHistory
+from plugins.admissions.models import Encounter, TransferHistory, BedStatus
 from plugins.admissions import logger
 
 
@@ -33,6 +34,12 @@ PID_3_MRN = @mrn
 Q_GET_ALL_HISTORY = """
 SELECT *
 FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
+"""
+
+Q_GET_ALL_BED_STATUS = """
+SELECT *
+FROM INP.CURRENT_BED_STATUS
+WITH (NOLOCK)
 """
 
 def save_encounter(encounter, patient):
@@ -168,3 +175,43 @@ def load_transfer_history():
         except:
             print(history)
             raise
+
+
+def load_bed_status():
+    """
+    Flush and re-load the upstream current_bed_status
+    """
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+
+    api = ProdAPI()
+
+    status = api.execute_warehouse_query(
+        Q_GET_ALL_BED_STATUS
+    )
+
+    with transaction.atomic():
+
+        BedStatus.objects.all().delete()
+
+        for bed_data in status:
+            bed_status = BedStatus()
+            for k, v in bed_data.items():
+                setattr(
+                    bed_status,
+                    BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                    v
+                )
+
+            if bed_status.local_patient_identifier:
+                patient = Patient.objects.filter(
+                    demographics__hospital_number=bed_status.local_patient_identifier
+                ).first()
+
+                if patient:
+                    bed_status.patient = patient
+                else:
+                    patient = create_rfh_patient_from_hospital_number(
+                        bed_status.local_patient_identifier, InfectionService)
+                    bed_status.patient = patient
+
+            bed_status.save()

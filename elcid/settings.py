@@ -146,7 +146,6 @@ TEMPLATES = [
                 'opal.context_processors.settings',
                 'opal.context_processors.models',
                 'elcid.context_processors.permissions',
-                'plugins.upstream_lists.context_processors.upstream_lists',
             ],
         },
     },
@@ -177,7 +176,6 @@ INSTALLED_APPS = (
     'plugins.dischargesummary',
     'plugins.monitoring',
     'plugins.handover',
-    'plugins.upstream_lists',
     'plugins.ipc',
     'intrahospital_api',
     'elcid',
@@ -393,7 +391,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.100'
+VERSION_NUMBER = '0.101'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
