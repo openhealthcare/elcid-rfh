@@ -1,0 +1,61 @@
+The patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when|date }}
+
+{% if diagnosis and diagnosis.condition %}
+{{ "Diagnosis" | rjust }}{{ diagnosis.condition.strip() }}
+{% endif %}
+{% if treatment_commenced %}
+{{ "Treatment Commenced" | rjust }}{{ treatment_commenced | date }}
+{% endif %}
+{% if current_treatments %}
+{{ "Current medication" | rjust }}{{ current_treatments }}
+{% endif %}
+{% if adverse_reaction %}
+{{ "Allergies/Adverse reactions" | rjust }}{{ adverse_reaction }}
+{% endif %}
+{% if observations.bp_systolic or observations.bp_diastolic or observations.pulse or observations.resp_rate or observations.sp02 or observations.temperature or observations.height %}
+{{ "Clinic Observations" | rjust }}
+{% if observations.bp_systolic and observations.bp_diastolic %}
+{{ "BP:"|ljust|rjust(14) }}{{ observations.bp_systolic }}/{{ observations.bp_diastolic }}
+{% endif %}
+{% if observations.pulse %}
+{{ "Pulse:"|ljust|rjust(14) }}{{ observations.pulse }} beats/min
+{% endif %}
+{% if observations.resp_rate %}
+{{ "RR:"|ljust|rjust(14) }}{{ observations.resp_rate }} breaths/min
+{% endif %}
+{% if observations.sp02 %}
+{{ "Sp02:"|ljust|rjust(14) }}{{ observations.sp02 }} %
+{% endif %}
+{% if observations.temperature %}
+{{ "Temperature:"|ljust|rjust(14) }} {{ observations.temperature }} ºC
+{% endif %}
+{% if observations.height %}
+{{ "Height:"|ljust|rjust(14) }}{{ observations.height }} m
+{% endif %}
+
+{% endif %}
+
+{% if object.examination_findings %}
+** Examination Findings **
+
+{{ object.examination_findings }}
+
+{% endif %}
+{% if object.discussion %}
+** Discussion **
+
+{{ object.discussion }}
+
+{% endif %}
+{% if object.progress %}
+** Progress **
+
+{{ object.progress }}
+
+{% endif %}
+{% if object.plan %}
+** Plan **
+
+{{ object.plan }}
+
+{% endif %}
