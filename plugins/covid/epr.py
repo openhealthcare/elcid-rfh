@@ -112,3 +112,26 @@ def render_covid_letter(followup_call):
         section += ["", ""]
         letter += "\n".join(section)
     return letter
+
+
+def render_covid_followup_letter(followup_followup_call):
+    intro = [f"Clinician completing call: {he(followup_followup_call.clinician)}"]
+    reason_for_call = [
+        "** Reason for call **"
+    ]
+
+    for field in ["bloods", "imaging", "symptoms"]:
+        if getattr(followup_followup_call, field):
+            reason_for_call.append(field.title())
+
+    if followup_followup_call.other:
+        reason_for_call.append(followup_followup_call.other)
+
+    if followup_followup_call.details:
+        reason_for_call.extend([
+            "",
+            "",
+            "** Letter Copy **",
+            followup_followup_call.details
+        ])
+    return "\n".join(intro + ["", ""] + reason_for_call)
