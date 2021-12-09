@@ -135,3 +135,45 @@ def render_covid_followup_letter(followup_followup_call):
             followup_followup_call.details
         ])
     return "\n".join(intro + ["", ""] + reason_for_call)
+
+
+def render_covid_six_month_followup_letter(covid_six_month_follow_up):
+    intro = [f"Clinician completing call: {he(covid_six_month_follow_up.clinician)}"]
+    ongoing = [
+        "** Ongoing Covid-19 Symptoms **",
+        f"Fatigue        {he(covid_six_month_follow_up.fatigue_trend)}",
+        f"Breathlessness {he(covid_six_month_follow_up.breathlessness_trend)}",
+        f"Cough          {he(covid_six_month_follow_up.cough_trend)}",
+        f"Sleep Quality  {he(covid_six_month_follow_up.sleep_quality_trend)}",
+    ]
+    if covid_six_month_follow_up.other_symptoms:
+        ongoing.extend([
+            "",
+            "The patient also stated they were experiencing the following symptoms:",
+            ", ".join(covid_six_month_follow_up.other_symptoms())
+        ])
+    recovery = [
+        "** Recovery **"
+    ]
+    if covid_six_month_follow_up.back_to_normal:
+        recovery.append(
+            "The patient stated that they feel back to normal."
+        )
+    else:
+        recovery.append(
+            "The patient stated that they did not feel back to normal."
+        )
+
+    if covid_six_month_follow_up.why_not_back_to_normal:
+        recovery.append(
+            covid_six_month_follow_up.why_not_back_to_normal
+        )
+
+    if covid_six_month_follow_up.other_concerns:
+        recovery.append(
+            covid_six_month_follow_up.other_concerns
+        )
+
+    return "\n".join(
+        intro + ["", ""] + ongoing + ["", ""] + recovery
+    )
