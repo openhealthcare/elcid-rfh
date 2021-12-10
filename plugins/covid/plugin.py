@@ -42,4 +42,10 @@ class CovidPlugin(plugins.OpalPlugin):
     apis = [
         ('covid_service_test_summary', api.CovidServiceTestSummaryAPI),
         ('covid_cxr', api.CovidCXRViewSet),
+        (api.SendCovidFollowUpCallUpstream.basename, api.SendCovidFollowUpCallUpstream),
+        (
+            api.SendCovidFollowUpCallFollowUpCall.basename,
+            api.SendCovidFollowUpCallFollowUpCall
+        ),
+        (api.SendCovidSixMonthFollowUp.basename, api.SendCovidSixMonthFollowUp),
     ]
