@@ -1,0 +1,16 @@
+{% extends 'letters/base.html' %}
+{% block actions %}
+{{ block.super }}
+<div ng-controller="CovidLetterHelper as covidLetterHelper" class="content-offset-10">
+  <span ng-show="covidLetterHelper.isWrittenToEPR('{{ object.get_api_name }}', {{ object.id }}) === true">
+    <button disabled class="btn btn-lg btn-primary">
+      <i class="fa fa-exchange"></i> Written to EPR
+    </button>
+  </span>
+  <span ng-show="covidLetterHelper.isWrittenToEPR('{{ object.get_api_name }}', {{ object.id }}) === false">
+    <button ng-click="open_modal('SendCovidToEPR', '/templates/send_upstream_modal.html', {modelApiName: '{{ object.get_api_name }}', itemId: {{ object.id }}, callBack: covidLetterHelper.markAsWritten})" class="btn btn-lg btn-primary">
+      <i class="fa fa-exchange"></i> Write to EPR
+    </button>
+  </span>
+</div>
+{% endblock %}

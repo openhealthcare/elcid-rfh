@@ -15,6 +15,8 @@ class CovidPlugin(plugins.OpalPlugin):
     javascripts = {
         'opal.controllers': [
             'js/covid/covid_test_summary.controller.js',
+            'js/covid/send_covid_to_epr.controller.js',
+            'js/covid/covid_letter_helper.controller.js',
         ]
     }
 
