@@ -10,9 +10,23 @@ def he(some_str):
     return some_str
 
 
-def render_covid_letter(followup_call):
-    intro = [f"Clinician completing call: {followup_call.clinician}"]
+def sign_template(note, covid_subrecord):
+    """
+    Sign a template and add the end of note flag
+    """
+    user = None
+    if covid_subrecord.created_by:
+        user = covid_subrecord.created_by
+    if covid_subrecord.updated_by:
+        user = covid_subrecord.updated_by
+    if user:
+        user_string = f"{user.get_full_name()} {user.email} {user.username}"
+        note = f"{note.strip()}\n\n** Written by **\n\n{user_string}"
+    final_text = f"\n{note}\n\nEND OF NOTE\n\n"
+    return final_text
 
+
+def render_covid_letter(followup_call):
     admission_objs = followup_call.episode.covidadmission_set.all()
     admissions = []
 
@@ -105,17 +119,17 @@ def render_covid_letter(followup_call):
             followup_call.gp_copy
         ])
 
-    letter = ""
-    for section in [intro, admissions, ongoing_symptoms, recovery]:
+    note_text = ""
+    for section in [admissions, ongoing_symptoms, recovery]:
         if not section:
             continue
         section += ["", ""]
-        letter += "\n".join(section)
-    return letter
+        note_text += "\n".join(section)
+    note_text = sign_template(note_text, followup_call)
+    return note_text
 
 
 def render_covid_followup_letter(followup_followup_call):
-    intro = [f"Clinician completing call: {he(followup_followup_call.clinician)}"]
     reason_for_call = [
         "** Reason for call **"
     ]
@@ -134,11 +148,12 @@ def render_covid_followup_letter(followup_followup_call):
             "** Letter Copy **",
             followup_followup_call.details
         ])
-    return "\n".join(intro + ["", ""] + reason_for_call)
+    note_text = "\n".join(reason_for_call)
+    note_text = sign_template(note_text, followup_followup_call)
+    return note_text
 
 
 def render_covid_six_month_followup_letter(covid_six_month_follow_up):
-    intro = [f"Clinician completing call: {he(covid_six_month_follow_up.clinician)}"]
     ongoing = [
         "** Ongoing Covid-19 Symptoms **",
         f"Fatigue        {he(covid_six_month_follow_up.fatigue_trend)}",
@@ -173,7 +188,6 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
         recovery.append(
             covid_six_month_follow_up.other_concerns
         )
-
-    return "\n".join(
-        intro + ["", ""] + ongoing + ["", ""] + recovery
-    )
+    note_text = "\n".join(ongoing + ["", ""] + recovery)
+    note_text = sign_template(note_text, covid_six_month_follow_up)
+    return note_text
