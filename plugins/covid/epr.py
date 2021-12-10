@@ -5,7 +5,7 @@ from plugins.covid.models import CovidFollowUpCall, CovidFollowUpCallFollowUpCal
 from django.utils import timezone
 
 
-def he(some_str):
+def none_as_empty(some_str):
     """
     If its None then return an empty string
     """
@@ -39,19 +39,19 @@ def render_covid_letter(followup_call):
             date_of_discharge = to_dt(admission.date_of_discharge)
             admissions.extend([
                 f"{date_of_admission} - {date_of_discharge}",
-                f"Predominant symptoms: {he(admission.predominant_symptom)}",
-                f"Smoking status:       {he(followup_call.followup_status)}",
-                f"Pack years:           {he(followup_call.pack_year_history)}",
+                f"Predominant symptoms: {none_as_empty(admission.predominant_symptom)}",
+                f"Smoking status:       {none_as_empty(followup_call.followup_status)}",
+                f"Pack years:           {none_as_empty(followup_call.pack_year_history)}",
                 ""
             ])
 
     # The ongong symptons section
     ongoing_symptoms = [
         "** Ongoing Covid-19 Symptoms **",
-        f"Fatigue:        {he(followup_call.fatigue_trend)}",
-        f"Breathlessness: {he(followup_call.breathlessness_trend)}",
-        f"Cough:          {he(followup_call.cough_trend)}",
-        f"Sleep Quality:  {he(followup_call.sleep_quality_trend)}",
+        f"Fatigue:        {none_as_empty(followup_call.fatigue_trend)}",
+        f"Breathlessness: {none_as_empty(followup_call.breathlessness_trend)}",
+        f"Cough:          {none_as_empty(followup_call.cough_trend)}",
+        f"Sleep Quality:  {none_as_empty(followup_call.sleep_quality_trend)}",
     ]
 
     other_symptoms = followup_call.other_symptoms()
@@ -158,10 +158,10 @@ def render_covid_followup_letter(followup_followup_call):
 def render_covid_six_month_followup_letter(covid_six_month_follow_up):
     ongoing = [
         "** Ongoing Covid-19 Symptoms **",
-        f"Fatigue        {he(covid_six_month_follow_up.fatigue_trend)}",
-        f"Breathlessness {he(covid_six_month_follow_up.breathlessness_trend)}",
-        f"Cough          {he(covid_six_month_follow_up.cough_trend)}",
-        f"Sleep Quality  {he(covid_six_month_follow_up.sleep_quality_trend)}",
+        f"Fatigue        {none_as_empty(covid_six_month_follow_up.fatigue_trend)}",
+        f"Breathlessness {none_as_empty(covid_six_month_follow_up.breathlessness_trend)}",
+        f"Cough          {none_as_empty(covid_six_month_follow_up.cough_trend)}",
+        f"Sleep Quality  {none_as_empty(covid_six_month_follow_up.sleep_quality_trend)}",
     ]
     if covid_six_month_follow_up.other_symptoms:
         ongoing.extend([
