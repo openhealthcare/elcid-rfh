@@ -1,4 +1,8 @@
+from django.db import transaction
 from opal.core.serialization import serialize_date as to_dt
+from intrahospital_api.epr import get_elcid_version, write_note
+from plugins.covid.models import CovidFollowUpCall, CovidFollowUpCallFollowUpCall, CovidSixMonthFollowUp
+from django.utils import timezone
 
 
 def he(some_str):
@@ -14,9 +18,7 @@ def sign_template(note, covid_subrecord):
     """
     Sign a template and add the end of note flag
     """
-    user = None
-    if covid_subrecord.created_by:
-        user = covid_subrecord.created_by
+    user = covid_subrecord.created_by
     if covid_subrecord.updated_by:
         user = covid_subrecord.updated_by
     if user:
@@ -191,3 +193,36 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
     note_text = "\n".join(ongoing + ["", ""] + recovery)
     note_text = sign_template(note_text, covid_six_month_follow_up)
     return note_text
+
+
+@transaction.atomic
+def write_covid_data(obj):
+    note_subject = f"elCID {obj.get_display_name().lower()}"
+    if isinstance(obj, CovidFollowUpCall):
+        note_text = render_covid_letter(obj)
+    elif isinstance(obj, CovidFollowUpCallFollowUpCall):
+        note_text = render_covid_followup_letter(obj)
+    elif isinstance(obj, CovidSixMonthFollowUp):
+        note_text = render_covid_six_month_followup_letter(obj)
+    obj.sent_dt = timezone.now()
+    obj.save()
+    note = create_note(obj, note_subject, note_text)
+    write_note(obj.episode.patient, note)
+
+
+def create_note(obj, note_subject, note_text):
+    demographics = obj.episode.patient.demographics()
+    return {
+        'elcid_version'    : get_elcid_version(),
+        'note_id'          : obj.id,
+        'patient_id'       : obj.episode.patient_id,
+        'written_by'       : obj.clinician,
+        'hospital_number'  : demographics.hospital_number,
+        'patient_forename' : demographics.first_name,
+        'patient_surname'  : demographics.surname,
+        'event_datetime'   : obj.when,
+        'modified_datetime': obj.when,
+        'note_subject'     : note_subject,
+        'note_type'        : 'Covid Note',    # TODO this is probably wrong
+        'note'             : note_text
+    }
