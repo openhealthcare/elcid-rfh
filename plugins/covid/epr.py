@@ -1,8 +1,13 @@
 from django.db import transaction
-from opal.core.serialization import serialize_date as to_dt
+from opal.core.serialization import serialize_date
 from intrahospital_api.epr import get_elcid_version, write_note
 from plugins.covid.models import CovidFollowUpCall, CovidFollowUpCallFollowUpCall, CovidSixMonthFollowUp
 from django.utils import timezone
+
+
+def to_dt(some_date):
+    if some_date:
+        return serialize_date(some_date)
 
 
 def none_as_empty(some_str):
@@ -33,7 +38,7 @@ def render_covid_letter(followup_call):
     admissions = []
 
     if admission_objs:
-        admissions.append("** Admission **")
+        admissions.extend(["** Admission **", ""])
         for admission in admission_objs:
             date_of_admission = to_dt(admission.date_of_admission)
             date_of_discharge = to_dt(admission.date_of_discharge)
@@ -48,6 +53,7 @@ def render_covid_letter(followup_call):
     # The ongong symptons section
     ongoing_symptoms = [
         "** Ongoing Covid-19 Symptoms **",
+        "",
         f"Fatigue:        {none_as_empty(followup_call.fatigue_trend)}",
         f"Breathlessness: {none_as_empty(followup_call.breathlessness_trend)}",
         f"Cough:          {none_as_empty(followup_call.cough_trend)}",
@@ -63,7 +69,7 @@ def render_covid_letter(followup_call):
         ])
 
     # The recovery section
-    recovery = ["** Recovery **"]
+    recovery = ["** Recovery **", ""]
 
     if followup_call.back_to_normal:
         recovery.append("The patient stated that they feel back to normal.")
@@ -79,8 +85,8 @@ def render_covid_letter(followup_call):
     recovery.extend([
         "",
         "Psych Scores",
-        f"The patient scored {followup_call.phq_score()}/6 on the PHQ2.",
-        f"The patient scored {followup_call.tsq_score()}/10 on the TSQ."
+        f"The patient scored {none_as_empty(followup_call.phq_score())}/6 on the PHQ2.",
+        f"The patient scored {none_as_empty(followup_call.tsq_score())}/10 on the TSQ."
     ])
 
     if followup_call.psychology:
@@ -116,7 +122,6 @@ def render_covid_letter(followup_call):
     if followup_call.gp_copy:
         recovery.extend([
             "",
-            "",
             "** GP Letter Copy **",
             followup_call.gp_copy
         ])
@@ -125,15 +130,16 @@ def render_covid_letter(followup_call):
     for section in [admissions, ongoing_symptoms, recovery]:
         if not section:
             continue
-        section += ["", ""]
+        section += [""]
         note_text += "\n".join(section)
+    note_text = note_text.strip()
     note_text = sign_template(note_text, followup_call)
     return note_text
 
 
 def render_covid_followup_letter(followup_followup_call):
     reason_for_call = [
-        "** Reason for call **"
+        "** Reason for call **", ""
     ]
 
     for field in ["bloods", "imaging", "symptoms"]:
@@ -146,11 +152,12 @@ def render_covid_followup_letter(followup_followup_call):
     if followup_followup_call.details:
         reason_for_call.extend([
             "",
-            "",
             "** Letter Copy **",
+            "",
             followup_followup_call.details
         ])
     note_text = "\n".join(reason_for_call)
+    note_text = note_text.strip()
     note_text = sign_template(note_text, followup_followup_call)
     return note_text
 
@@ -158,6 +165,7 @@ def render_covid_followup_letter(followup_followup_call):
 def render_covid_six_month_followup_letter(covid_six_month_follow_up):
     ongoing = [
         "** Ongoing Covid-19 Symptoms **",
+        "",
         f"Fatigue        {none_as_empty(covid_six_month_follow_up.fatigue_trend)}",
         f"Breathlessness {none_as_empty(covid_six_month_follow_up.breathlessness_trend)}",
         f"Cough          {none_as_empty(covid_six_month_follow_up.cough_trend)}",
@@ -170,7 +178,7 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
             ", ".join(covid_six_month_follow_up.other_symptoms())
         ])
     recovery = [
-        "** Recovery **"
+        "** Recovery **", ""
     ]
     if covid_six_month_follow_up.back_to_normal:
         recovery.append(
@@ -190,7 +198,8 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
         recovery.append(
             covid_six_month_follow_up.other_concerns
         )
-    note_text = "\n".join(ongoing + ["", ""] + recovery)
+    note_text = "\n".join(ongoing + [""] + recovery)
+    note_text = note_text.strip()
     note_text = sign_template(note_text, covid_six_month_follow_up)
     return note_text
 
