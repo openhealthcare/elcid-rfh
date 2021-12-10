@@ -27,7 +27,7 @@
         </p>
 
     <p>
-      Date: {{ today }}
+      Date: {% now "DATE_FORMAT" %}
     </p>
     <p>
       MRN: {{ object.episode.patient.demographics.hospital_number }}
