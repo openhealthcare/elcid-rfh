@@ -50,6 +50,12 @@ class AbstractSendCovidToEpr(LoginRequiredViewset):
             'status_code': status.HTTP_202_ACCEPTED
         })
 
+    @item_from_pk
+    def retrieve(self, request, item):
+        return json_response({
+            "sent": bool(item.sent_dt)
+        })
+
 
 class SendCovidFollowUpCallUpstream(AbstractSendCovidToEpr):
     model = CovidFollowUpCall
