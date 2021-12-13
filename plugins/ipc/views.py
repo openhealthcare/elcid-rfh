@@ -7,6 +7,7 @@ import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
+from plugins.admissions.constants import RFH_HOSPITAL_SITE_CDOE
 from plugins.admissions.models import Encounter, UpstreamLocation, BedStatus
 
 from plugins.ipc import lab, models, utils
@@ -39,11 +40,12 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
 
         context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs, vres]
 
-        RFH = 'RAL01'
-
-        context['rfh_patients'] = BedStatus.objects.filter(hospital_site_code=RFH, bed_status='Occupied').count()
-        context['rfh_beds_available'] = BedStatus.objects.filter(hospital_site_code=RFH, bed_status='Available').count()
-        context['rfh_siderooms'] = BedStatus.objects.filter(hospital_site_code=RFH, room__startswith='SR',
+        context['rfh_patients'] = BedStatus.objects.filter(
+            hospital_site_code=RFH_HOSPITAL_SITE_CDOE, bed_status='Occupied').count()
+        context['rfh_beds_available'] = BedStatus.objects.filter(
+            hospital_site_code=RFH_HOSPITAL_SITE_CDOE, bed_status='Available').count()
+        context['rfh_siderooms'] = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+                                                            room__startswith='SR',
                                                             bed_status='Occupied').count()
 
         context['weekly_alerts'] = models.InfectionAlert.objects.filter(
@@ -96,14 +98,17 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        patients = UpstreamLocation.objects.filter(
-            ward__startswith='RAL',
-            room__startswith='SR'
-        ).exclude(
-            ward__startswith='RAL BH'
-        ).order_by('ward', 'bed')
+        locations = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+                                             room__startswith='SR').order_by('ward_name', 'bed')
 
-        context['patients'] = patients
+        context['location_count'] = locations.count()
+
+        wards = collections.defaultdict(list)
+
+        for location in locations:
+            wards[location.ward_name].append(location)
+
+        context['wards'] = dict(wards)
 
         return context
 

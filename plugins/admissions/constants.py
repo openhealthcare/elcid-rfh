@@ -53,3 +53,6 @@ BUILDING_CODES = {
 # Facts for the admissions load times
 ENCOUNTER_LOAD_MINUTES = "Encounter Load Minutes"
 TOTAL_ENCOUNTERS = "Total Encounters"
+
+
+RFH_HOSPITAL_SITE_CDOE = 'RAL01'
