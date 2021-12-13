@@ -23,46 +23,10 @@
       <div class="row content-offset-10" ng-repeat="bed_status in patient.bed_statuses">
         <hr ng-show="$index > 0">
         <div class="col-md-12">
-          <div class="row">
-            <div class="col-md-4">
-              <b>Hospital</b>
-            </div>
-            <div class="col-md-8">
-              [[bed_status.hospital_site_description]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Ward</b>
-            </div>
-            <div class="col-md-8">
-              [[bed_status.ward_name]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Room</b>
-            </div>
-            <div class="col-md-8">
-              [[bed_status.room]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Bed</b>
-            </div>
-            <div class="col-md-8">
-              [[bed_status.bed]]
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4">
-              <b>Admission</b>
-            </div>
-            <div class="col-md-8">
-              [[bed_status.admission_date_time]]
-            </div>
-          </div>
+          [[bed_status.hospital_site_description]]
+          [[bed_status.ward_name]]
+          [[bed_status.room]]
+          [[bed_status.bed]]
         </div>
       </div>
     </div>
