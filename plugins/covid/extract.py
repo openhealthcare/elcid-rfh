@@ -258,9 +258,16 @@ TEST_CODES = [
     ("INR", ["INR"]),
     ("CLOTTING SCREEN", ["Fibrinogen"]),
     ("GLUCOSE", ["Glucose"]),
-    ("CREATINE KINASE", ["Creatine Kinase U/L"]),
-    ("LACTATE DEHYDROGENASE", ["LD U/L"])
+    ("CREATINE KINASE", ["Creatine Kinase"]),
+    ("LACTATE DEHYDROGENASE", ["LD"])
     ]
+
+"""
+PROTHROMBIN TIME and INR can be ordered as
+PT\T\INR # MRN 50092170
+Fibrinogen can be ordered as CLOTING SCREEN
+"""
+
 
 def get_admission_labs(patient, admission_date):
 
@@ -298,7 +305,7 @@ def get_followup_labs(patient, followup_date):
 
     for test_name, observations in TEST_CODES:
         for obs_code in observations:
-
+# TODO 3 months either side but pick the closest one .
             observation = Observation.objects.filter(
                 test__patient=patient,
             ).filter(
@@ -306,9 +313,9 @@ def get_followup_labs(patient, followup_date):
             ).filter(
                 observation_name=obs_code
             ).filter(
-                observation_datetime__gte=followup_date-datetime.timedelta(days=14)
+                observation_datetime__gte=followup_date-datetime.timedelta(days=42)
             ).filter(
-                observation_datetime__lte=followup_date+datetime.timedelta(days=14)
+                observation_datetime__lte=followup_date+datetime.timedelta(days=42)
             ).order_by('observation_datetime').first()
 
             if observation:
