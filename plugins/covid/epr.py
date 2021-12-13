@@ -10,15 +10,6 @@ def to_dt(some_date):
         return serialize_date(some_date)
 
 
-def none_as_empty(some_str):
-    """
-    If its None then return an empty string
-    """
-    if some_str is None:
-        return ""
-    return some_str
-
-
 def sign_template(note, covid_subrecord):
     """
     Sign a template and add the end of note flag
@@ -34,6 +25,7 @@ def sign_template(note, covid_subrecord):
 
 
 def render_covid_letter(followup_call):
+    title = ["**** Covid-19 Follow Up ****"]
     admission_objs = followup_call.episode.covidadmission_set.all()
     admissions = []
 
@@ -42,30 +34,39 @@ def render_covid_letter(followup_call):
         for admission in admission_objs:
             date_of_admission = to_dt(admission.date_of_admission)
             date_of_discharge = to_dt(admission.date_of_discharge)
+            if date_of_admission and date_of_discharge:
+                admissions.append(f"{date_of_admission} - {date_of_discharge}")
+            admission_dict = {
+                "Predominant symptoms: ": admission.predominant_symptom,
+                "Smoking status:       ": followup_call.followup_status,
+                "Pack years:           ": followup_call.pack_year_history,
+            }
             admissions.extend([
-                f"{date_of_admission} - {date_of_discharge}",
-                f"Predominant symptoms: {none_as_empty(admission.predominant_symptom)}",
-                f"Smoking status:       {none_as_empty(followup_call.followup_status)}",
-                f"Pack years:           {none_as_empty(followup_call.pack_year_history)}",
+                f"{i}{v}" for i, v in admission_dict.items() if v
             ])
 
     # The ongong symptons section
-    ongoing_symptoms = [
-        "** Ongoing Covid-19 Symptoms **",
-        "",
-        f"Fatigue:        {none_as_empty(followup_call.fatigue_trend)}",
-        f"Breathlessness: {none_as_empty(followup_call.breathlessness_trend)}",
-        f"Cough:          {none_as_empty(followup_call.cough_trend)}",
-        f"Sleep Quality:  {none_as_empty(followup_call.sleep_quality_trend)}",
-    ]
+    symptoms = {
+        "Fatigue:          ": followup_call.fatigue_trend,
+        "Breathlessness:   ": followup_call.breathlessness_trend,
+        "Cough:            ": followup_call.cough_trend,
+        "Sleep Quality:    ": followup_call.sleep_quality_trend,
+    }
+
+    symptoms = [f"{i}{v}" for i, v in symptoms.items() if v]
 
     other_symptoms = followup_call.other_symptoms()
     if other_symptoms:
-        ongoing_symptoms.extend([
-            "",
-            "The patient also stated they were experiencing the following symptoms:",
-            ", ".join(other_symptoms),
+        symptoms.extend([
+            ""
+            "The patient also stated they were experiencing the following symptoms:"
+            ", ".join(other_symptoms)
         ])
+
+    if symptoms:
+        ongoing_symptoms = ["** Ongoing Covid-19 Symptoms **", ""] + symptoms
+    else:
+        ongoing_symptoms = []
 
     # The recovery section
     recovery = ["** Recovery **", ""]
@@ -79,14 +80,15 @@ def render_covid_letter(followup_call):
         recovery.append(followup_call.why_not_back_to_normal)
 
     if followup_call.other_concerns:
-        recovery.append(followup_call.other_concerns)
+        recovery.append(f"Other concerns: {followup_call.other_concerns}")
 
-    recovery.extend([
-        "",
-        "Psych Scores",
-        f"The patient scored {none_as_empty(followup_call.phq_score())}/6 on the PHQ2.",
-        f"The patient scored {none_as_empty(followup_call.tsq_score())}/10 on the TSQ."
-    ])
+    pysch_scores = []
+    if followup_call.phq_score():
+        pysch_scores.append(f"The patient scored {followup_call.phq_score()}/6 on the PHQ2.")
+    if followup_call.tsq_score():
+        pysch_scores.append(f"The patient scored {followup_call.tsq_score()}/10 on the TSQ.")
+    if pysch_scores:
+        recovery.extend(["", "Psych Scores"] + pysch_scores)
 
     if followup_call.psychology:
         recovery.append('The team felt referral to psychology was needed.')
@@ -122,61 +124,74 @@ def render_covid_letter(followup_call):
         recovery.extend([
             "",
             "** GP Letter Copy **",
+            "",
             followup_call.gp_copy
         ])
 
     note_text = []
-    for section in [admissions, ongoing_symptoms, recovery]:
+    for section in [title, admissions, ongoing_symptoms, recovery]:
         if not section:
             continue
         section += [""]
         note_text.extend(section)
-    print(note_text)
     note_text = "\n".join(note_text).strip()
     note_text = sign_template(note_text, followup_call)
     return note_text
 
 
 def render_covid_followup_letter(followup_followup_call):
-    reason_for_call = [
-        "** Reason for call **", ""
-    ]
+    title = ["**** Covid-19 Subsequent Follow Up ****", ""]
+    reason_for_call = []
 
+    reasons = []
     for field in ["bloods", "imaging", "symptoms"]:
         if getattr(followup_followup_call, field):
-            reason_for_call.append(field.title())
+            reasons.append(field.title())
 
     if followup_followup_call.other:
-        reason_for_call.append(followup_followup_call.other)
+        reasons.append(followup_followup_call.other)
+    if reasons:
+        reason_for_call = ["** Reason For Call **", "", ", ".join(reasons), ""]
 
     if followup_followup_call.details:
         reason_for_call.extend([
-            "",
             "** Letter Copy **",
             "",
             followup_followup_call.details
         ])
-    note_text = "\n".join(reason_for_call)
+    note_text = "\n".join(title + reason_for_call)
     note_text = note_text.strip()
     note_text = sign_template(note_text, followup_followup_call)
     return note_text
 
 
 def render_covid_six_month_followup_letter(covid_six_month_follow_up):
-    ongoing = [
-        "** Ongoing Covid-19 Symptoms **",
-        "",
-        f"Fatigue        {none_as_empty(covid_six_month_follow_up.fatigue_trend)}",
-        f"Breathlessness {none_as_empty(covid_six_month_follow_up.breathlessness_trend)}",
-        f"Cough          {none_as_empty(covid_six_month_follow_up.cough_trend)}",
-        f"Sleep Quality  {none_as_empty(covid_six_month_follow_up.sleep_quality_trend)}",
-    ]
+    title = ["**** Covid-19 Six Month Review ****", ""]
+    ongoing = []
+    symptoms_dict = {
+        "Fatigue:          ": covid_six_month_follow_up.fatigue_trend,
+        "Breathlessness:   ": covid_six_month_follow_up.breathlessness_trend,
+        "Cough:            ": covid_six_month_follow_up.cough_trend,
+        "Sleep Quality:    ": covid_six_month_follow_up.sleep_quality_trend,
+    }
+    symptoms = [f"{i}{v}" for i, v in symptoms_dict.items() if v]
+    other_symptoms = []
+
     if covid_six_month_follow_up.other_symptoms():
-        ongoing.extend([
-            "",
+        other_symptoms = [
             "The patient also stated they were experiencing the following symptoms:",
             ", ".join(covid_six_month_follow_up.other_symptoms())
-        ])
+        ]
+
+    if symptoms or other_symptoms:
+        ongoing = [
+            "** Ongoing Covid-19 Symptoms **",
+        ]
+        if symptoms:
+            ongoing += [""] + symptoms
+        if other_symptoms:
+            ongoing += [""] + other_symptoms
+
     recovery = [
         "** Recovery **", ""
     ]
@@ -198,7 +213,7 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
         recovery.append(
             covid_six_month_follow_up.other_concerns
         )
-    note_text = "\n".join(ongoing + [""] + recovery)
+    note_text = "\n".join(title + ongoing + [""] + recovery)
     note_text = note_text.strip()
     note_text = sign_template(note_text, covid_six_month_follow_up)
     return note_text
