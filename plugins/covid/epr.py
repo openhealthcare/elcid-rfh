@@ -47,7 +47,6 @@ def render_covid_letter(followup_call):
                 f"Predominant symptoms: {none_as_empty(admission.predominant_symptom)}",
                 f"Smoking status:       {none_as_empty(followup_call.followup_status)}",
                 f"Pack years:           {none_as_empty(followup_call.pack_year_history)}",
-                ""
             ])
 
     # The ongong symptons section
@@ -126,13 +125,14 @@ def render_covid_letter(followup_call):
             followup_call.gp_copy
         ])
 
-    note_text = ""
+    note_text = []
     for section in [admissions, ongoing_symptoms, recovery]:
         if not section:
             continue
         section += [""]
-        note_text += "\n".join(section)
-    note_text = note_text.strip()
+        note_text.extend(section)
+    print(note_text)
+    note_text = "\n".join(note_text).strip()
     note_text = sign_template(note_text, followup_call)
     return note_text
 
@@ -171,7 +171,7 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
         f"Cough          {none_as_empty(covid_six_month_follow_up.cough_trend)}",
         f"Sleep Quality  {none_as_empty(covid_six_month_follow_up.sleep_quality_trend)}",
     ]
-    if covid_six_month_follow_up.other_symptoms:
+    if covid_six_month_follow_up.other_symptoms():
         ongoing.extend([
             "",
             "The patient also stated they were experiencing the following symptoms:",
