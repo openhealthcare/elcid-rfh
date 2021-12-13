@@ -7,114 +7,114 @@
 
   <div class="panel-body">
 
-    {% if alerts %}
-      <h2>{{ alerts| length }} New Infection Alerts</h2>
+    <!-- {% if alerts %} -->
+    <!--   <h2>{{ alerts| length }} New Infection Alerts</h2> -->
 
-      <table class="table">
-        <tr>
-          <th>Category</th>
-          <th>Triggered</th>
-          <th>Lab #</th>
-          <th>MRN</th>
-          <th>Name</th>
-          <th>DOB</th>
-          <th>Current Location</th>
-        </tr>
-        {% for alert in alerts %}
-        <tr class="{% if not alert.seen %} bg-danger {% endif %}">
-          <td>{{ alert.category }}</td>
-          <td>{{ alert.trigger_datetime }}</td>
-          <td>{{ alert.lab_test.lab_number }}</td>
+    <!--   <table class="table"> -->
+    <!--     <tr> -->
+    <!--       <th>Category</th> -->
+    <!--       <th>Triggered</th> -->
+    <!--       <th>Lab #</th> -->
+    <!--       <th>MRN</th> -->
+    <!--       <th>Name</th> -->
+    <!--       <th>DOB</th> -->
+    <!--       <th>Current Location</th> -->
+    <!--     </tr> -->
+    <!--     {% for alert in alerts %} -->
+    <!--     <tr class="{% if not alert.seen %} bg-danger {% endif %}"> -->
+    <!--       <td>{{ alert.category }}</td> -->
+    <!--       <td>{{ alert.trigger_datetime }}</td> -->
+    <!--       <td>{{ alert.lab_test.lab_number }}</td> -->
 
-          {% with alert.episode.patient.demographics as demographics %}
-          <td>
-            <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
-              {{ demographics.hospital_number }}
-            </a>
-          </td>
-          <td>
-            <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
-              {{ demographics.name }}
-            </a>
-          </td>
-          <td>
-            <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}">
-              {{ demographics.date_of_birth }}
-            </a>
-          </td>
-          {% endwith %}
-          <td>
-            {% with alert.episode.patient.upstreamlocation.get as location %}
-            <a href="/#/ipc/ward/{{ location.ward | slugify }}/" class="orange-link">
-              {{ location.ward }}
-            </a>
-            {{ location.room }} {{ location.bed }}
-            {% endwith %}
-          </td>
-        </tr>
-        {% endfor %}
-      </table>
+    <!--       {% with alert.episode.patient.demographics as demographics %} -->
+    <!--       <td> -->
+    <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
+    <!--           {{ demographics.hospital_number }} -->
+    <!--         </a> -->
+    <!--       </td> -->
+    <!--       <td> -->
+    <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
+    <!--           {{ demographics.name }} -->
+    <!--         </a> -->
+    <!--       </td> -->
+    <!--       <td> -->
+    <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
+    <!--           {{ demographics.date_of_birth }} -->
+    <!--         </a> -->
+    <!--       </td> -->
+    <!--       {% endwith %} -->
+    <!--       <td> -->
+    <!--         {% with alert.episode.patient.upstreamlocation.get as location %} -->
+    <!--         <a href="/#/ipc/ward/{{ location.ward | slugify }}/" class="orange-link"> -->
+    <!--           {{ location.ward }} -->
+    <!--         </a> -->
+    <!--         {{ location.room }} {{ location.bed }} -->
+    <!--         {% endwith %} -->
+    <!--       </td> -->
+    <!--     </tr> -->
+    <!--     {% endfor %} -->
+    <!--   </table> -->
 
-    {% endif %}
+    <!-- {% endif %} -->
 
-    <h2>Hospital Status</h2>
-    <div class="row text-center">
-      <div class="col-md-4">
-        <h2>Patients</h2>
-        <h1>{{ rfh_patients }}</h1>
-        <p>Total current inpatients</p>
-      </div>
+    <!-- <h2>Hospital Status</h2> -->
+    <!-- <div class="row text-center"> -->
+    <!--   <div class="col-md-4"> -->
+    <!--     <h2>Patients</h2> -->
+    <!--     <h1>{{ rfh_patients }}</h1> -->
+    <!--     <p>Total current inpatients</p> -->
+    <!--   </div> -->
 
-      <div class="col-md-4">
-        <h2>Siderooms</h2>
-        <h1>{{ rfh_siderooms }}</h1>
-        <p>Currently occupied siderooms</p>
-      </div>
+    <!--   <div class="col-md-4"> -->
+    <!--     <h2>Siderooms</h2> -->
+    <!--     <h1>{{ rfh_siderooms }}</h1> -->
+    <!--     <p>Currently occupied siderooms</p> -->
+    <!--   </div> -->
 
-      <div class="col-md-4">
-        <h2>Alerts</h2>
-        <h1>{{ weekly_alerts }}</h1>
-        <p>Alerts in the last 7 days</p>
-      </div>
+      <!-- <div class="col-md-4"> -->
+      <!--   <h2>Available beds</h2> -->
+      <!--   <h1>{{ rfh_beds_available }}</h1> -->
+      <!--   <p>Reported available beds</p> -->
+      <!-- </div> -->
 
 
     </div>
 
-    <h2>12 Month Infections</h2>
-    <div class="row">
-      <div class="col-md-12">
-        <div id="overview"></div>
-      </div>
-    </div>
+    <!-- <h2>12 Month Infections</h2> -->
+    <!-- <div class="row"> -->
+    <!--   <div class="col-md-12"> -->
+    <!--     <div id="overview"></div> -->
+    <!--   </div> -->
+    <!-- </div> -->
 
   </div> <!-- Panel body -->
 
 </div> <!-- Panel -->
 
-<script>
-  c3.generate(
-      {
-          bindto: document.getElementById('overview'),
-          data: {
-              columns: {{ overview_data |safe }},
-              x: 'x',
-              type: 'bar'
-          },
-          axis: {
-              x: {
-                  type: 'timeseries',
-                  tick: { format: '%b %Y', rotate: 45}
-              }
-          },
-          point: {
-              show: false
-          },
-          bar: {
-              width: {
-                  ratio: 0.66
-              }
-          }
-      }
-  )
-</script>
+<!-- <script> -->
+<!--   c3.generate( -->
+<!--       { -->
+<!--           bindto: document.getElementById('overview'), -->
+<!--           data: { -->
+<!--               columns: {{ overview_data |safe }}, -->
+<!--               x: 'x', -->
+<!--               type: 'bar' -->
+<!--           }, -->
+<!--           axis: { -->
+<!--               x: { -->
+<!--                   type: 'timeseries', -->
+<!--                   tick: { format: '%b %Y', rotate: 45} -->
+<!--               } -->
+<!--           }, -->
+<!--           point: { -->
+<!--               show: false -->
+<!--           }, -->
+<!--           bar: { -->
+<!--               width: { -->
+<!--                   ratio: 0.66 -->
+<!--               } -->
+<!--           } -->
+<!--       } -->
+<!--   ) -->
+<!-- </script> -->
 {% endblock %}

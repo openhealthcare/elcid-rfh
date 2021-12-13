@@ -7,7 +7,7 @@ import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from plugins.admissions.models import Encounter, UpstreamLocation
+from plugins.admissions.models import Encounter, UpstreamLocation, BedStatus
 
 from plugins.ipc import lab, models, utils
 
@@ -39,8 +39,13 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
 
         context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs, vres]
 
-        context['rfh_patients'] = UpstreamLocation.objects.filter(building='RFH').count()
-        context['rfh_siderooms'] = UpstreamLocation.objects.filter(building='RFH', room__startswith='SR').count()
+        RFH = 'RAL01'
+
+        context['rfh_patients'] = BedStatus.objects.filter(hospital_site_code=RFH, bed_status='Occupied').count()
+        context['rfh_beds_available'] = BedStatus.objects.filter(hospital_site_code=RFH, bed_status='Available').count()
+        context['rfh_siderooms'] = BedStatus.objects.filter(hospital_site_code=RFH, room__startswith='SR',
+                                                            bed_status='Occupied').count()
+
         context['weekly_alerts'] = models.InfectionAlert.objects.filter(
             trigger_datetime__gte=today-datetime.timedelta(days=7)).count()
 
@@ -59,13 +64,18 @@ class RecentTestsView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class WardListView(LoginRequiredMixin, TemplateView):
+class HospitalWardListView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/ward_list.html'
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        context['all_wards'] = UpstreamLocation.objects.values('ward').order_by('ward').distinct()
+        context['hospital'] = BedStatus.objects.filter(
+            hospital_site_code=k['hospital_code']).first().hospital_site_description
+
+        context['wards'] = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
+            'ward_name', flat=True).distinct().order_by('ward_name')
+
         return context
 
 
@@ -75,13 +85,8 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        patients = UpstreamLocation.objects.filter(
-            ward__iexact=k['ward_code'].replace('-', ' ')).order_by(
-                'bed'
-            )
+        context['patients'] = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
 
-        context['patients'] = patients
-        context['ward_name'] = patients[0].ward
         return context
 
 

@@ -146,6 +146,7 @@ TEMPLATES = [
                 'opal.context_processors.settings',
                 'opal.context_processors.models',
                 'elcid.context_processors.permissions',
+                'plugins.admissions.context_processors.hospitals',
             ],
         },
     },
