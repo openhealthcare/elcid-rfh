@@ -86,7 +86,7 @@ class Command(BaseCommand):
         api = ProdAPI()
 
         updated = timezone.now()
-        updated_by = User.objects.filter(username='OHC').first()
+        updated_by = User.objects.filter(username='ohc').first()
 
         inpatients = BedStatus.objects.filter(bed_status='Occupied').values_list(
             'local_patient_identifier', flat=True)
