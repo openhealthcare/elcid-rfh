@@ -18,7 +18,7 @@
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
-      <!-- <th>Alerts</th> -->
+      <th>IPC Comments</th>
     </tr>
     {% for patient in patients %}
     <tr>
@@ -36,9 +36,9 @@
       </td>
       {% endwith %}
       <td>{{ patient.admitted }}</td>
-      <!-- <td> -->
-      <!--   {% location_alerts patient %} -->
-      <!-- </td> -->
+      <td>
+        {{ patient.ipcstatus_set.get.comments }}
+      </td>
     </tr>
     {% endfor %}
   </table>
