@@ -106,9 +106,7 @@ class Command(BaseCommand):
 
                 update_dict = {v: row[k] for k, v in MAPPING.items()}
 
-                status.updated = updated
-                status.updated_by = updated_by
-                status.created_by = updated_by
+                status.created_by_id = updated_by.id
 
                 for key, value in update_dict.items():
 
