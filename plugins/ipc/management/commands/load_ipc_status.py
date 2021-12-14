@@ -115,8 +115,8 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         api = ProdAPI()
-        created = timezone.now()
-        created_by = User.objects.filter(username='OHC').first()
+        updated = timezone.now()
+        updated_by = User.objects.filter(username='OHC').first()
         missing_nhs = 0
         missing_name = 0
         missing_mrn = 0
@@ -149,17 +149,17 @@ class Command(BaseCommand):
             if not patient_ids:
                 missing += 1
                 continue
-            patients = Patient.objects.filter(id__in=patient_ids)
+            patients = Patient.objects.filter(id__in=patient_ids).prefetch_related(
+                'ipcstatus_set'
+            )
             if not patients:
                 missing += 1
 
             for patient in patients:
                 update_dict = {k: row[k] for k in MAPPING.keys()}
-                status = IPCStatus(
-                    patient=patient,
-                    created=created,
-                    created_by=created_by
-                )
+                status = patient.ipcstatus_set.all()[0]
+                status.updated = updated
+                status.updated_by = updated_by
                 for key, value in update_dict.items():
                     if isinstance(IPCStatus._meta.get_field(key), DateField):
                         if value == '':
@@ -177,7 +177,7 @@ class Command(BaseCommand):
         self.stdout.write("Statuses constructed")
         IPCStatus.objects.bulk_create(statuses)
         ended = timezone.now()
-        self.stdout.write(f"Statuses created in {ended - created}s")
+        self.stdout.write(f"Statuses created in {ended - updated}s")
         self.stdout.write(f"Missing mrn {missing_mrn}")
         self.stdout.write(f"Missing nhs number {missing_nhs}")
         self.stdout.write(f"Missing name {missing_name}")
@@ -190,7 +190,7 @@ class Command(BaseCommand):
         )
         self.stdout.write('Example patients:')
         for _ in range(4):
-            idx = random.randint(len(examples))
+            idx = random.randint(0, len(examples))
             self.stdout.write(
                 examples[idx].demographics().name
             )
