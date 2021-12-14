@@ -91,19 +91,16 @@ class Command(BaseCommand):
         inpatients = BedStatus.objects.filter(bed_status='Occupied').values_list(
             'local_patient_identifier', flat=True)
 
-        statuses = []
-
         upstream_result = api.execute_hospital_query(QUERY)
 
         self.stdout.write("Query complete")
 
         for row in upstream_result:
             if row['Patient_Number'] in inpatients:
+                patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
 
                 if patient.episode_set.filter(category_name='IPC').count() == 0:
                     patient.create_episode(category_name='IPC')
-
-                patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
 
                 status = patient.ipcstatus_set.all()[0]
 
@@ -127,6 +124,4 @@ class Command(BaseCommand):
                             value = True
 
                     setattr(status, MAPPING[key], value)
-                    statuses.append(status)
-
-        IPCStatus.objects.bulk_update(statuses)
+                status.save()
