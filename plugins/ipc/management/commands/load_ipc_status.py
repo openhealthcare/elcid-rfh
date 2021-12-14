@@ -108,7 +108,7 @@ class Command(BaseCommand):
 
                 status.updated = updated
                 status.updated_by = updated_by
-                status.consistency_token = '45678'
+                status.created_by = updated_by
 
                 for key, value in update_dict.items():
 
