@@ -9,6 +9,7 @@ from collections import defaultdict
 import datetime
 import random
 from django.db import transaction
+from django.db.models.fields import BooleanField
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
@@ -91,7 +92,7 @@ def construct_name_cache(upstream_result):
         (i["patient_forename"], i["patient_surname"], i["patient_dob"]) for i in upstream_result
     )
     demos = Demographics.objects.filter(
-        date_of_birth=[i["patient_dob"]]
+        date_of_birth__in=[i["patient_dob"] for i in upstream_result]
     )
     name_to_patient_ids = defaultdict(list)
     for demo in demos:
@@ -115,8 +116,8 @@ class Command(BaseCommand):
         upstream_result = api.execute_hospital_query(QUERY)
         self.stdout.write("Query complete")
 
-        nhs_num_to_patient_ids = construct_nhs_num_cache()
-        name_dob_to_patient_ids = construct_name_cache()
+        nhs_num_to_patient_ids = construct_nhs_num_cache(upstream_result)
+        name_dob_to_patient_ids = construct_name_cache(upstream_result)
         self.stdout.write("Cache constructed")
 
         for row in upstream_result:
@@ -146,6 +147,9 @@ class Command(BaseCommand):
                 for key, value in update_dict.items():
                     if isinstance(value, datetime.datetime):
                         value = timezone.make_aware(value)
+                    if value not in [True, False]:
+                        if isinstance(IPCStatus._meta.get_field(key), BooleanField):
+                            import pdb; pdb.set_trace*()
                     setattr(status, key, value)
                     statuses.append(status)
         self.stdout.write("Statuses constructed")
