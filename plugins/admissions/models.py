@@ -358,8 +358,29 @@ class BedStatus(models.Model):
         'SOURCE'                        : 'source',
     }
 
+    #
+    # Although we maintain consistency with the upstream
+    # data with minimal alterations, there is no real
+    # utility in serializing much of this to the front end
+    # on every patient/episode serialization.
+    #
+    FIELDS_TO_SERIALIZE = {
+        'hospital_site_description': 'hospital',
+        'ward_name'                : 'ward',
+        'room'                     : 'room',
+        'bed'                      : 'bed'
+    }
+
     def to_dict(self):
-        result =  {k: getattr(self, k) for k in self.UPSTREAM_FIELDS_TO_MODEL_FIELDS.values()}
+        """
+        Pluck out the fields relevant to serialization in the context of
+        being a patient subrecord
+        """
+        result =  {v: getattr(self, k) for k, v in self.FIELDS_TO_SERIALIZE.items()}
+
+        if result['hospital'].endswith(' HOSPITAL'):
+            result['hospital'] = result['hospital'][:-9]
+
         if self.admission_date_time:
             try:
                 result['admission_date_time'] = datetime.datetime.strptime(

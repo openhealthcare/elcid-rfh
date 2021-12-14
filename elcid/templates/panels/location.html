@@ -19,12 +19,12 @@
       </li>
     </ul>
     <div ng-show="patient.bed_statuses.length" class="panel-footer">
-      <strong>Current Cerner Location:</strong>
-      <div class="row content-offset-10" ng-repeat="bed_status in patient.bed_statuses">
+      <div class="row" ng-repeat="bed_status in patient.bed_statuses">
         <hr ng-show="$index > 0">
         <div class="col-md-12">
-          [[bed_status.hospital_site_description]]
-          [[bed_status.ward_name]]
+          <strong>EPR:</strong>
+          [[bed_status.hospital]]
+          [[bed_status.ward]]
           [[bed_status.room]]
           [[bed_status.bed]]
         </div>
