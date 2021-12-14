@@ -116,7 +116,7 @@ class Command(BaseCommand):
                         if value == '':
                             value = None
                         elif isinstance(value, str):
-                            value = datetime.datetime.strpdate(value, '%d/%m/%Y').date()
+                            value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
 
                     if isinstance(IPCStatus._meta.get_field(key), BooleanField):
                         if value == '':
