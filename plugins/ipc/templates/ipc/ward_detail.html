@@ -22,7 +22,7 @@
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
-
+      <th>IPC Comments</th>
     </tr>
     {% for patient in patients %}
     <tr>
@@ -48,6 +48,9 @@
         {% if patient.admission_date_time %}
         {{ patient.admission_date_time }}
         {% endif %}
+      </td>
+      <td>
+        {{ patient.ipcstatus_set.get.comments }}
       </td>
     </tr>
     {% endfor %}

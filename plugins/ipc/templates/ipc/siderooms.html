@@ -27,7 +27,7 @@
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
-      <!-- <th>Alerts</th> -->
+      <th>IPC Comments</th>
     </tr>
     {% for patient in ward %}
     <tr>
@@ -54,6 +54,8 @@
         {% if patient.admission_date_time %}
         {{ patient.admission_date_time }}
         {% endif %}
+      <td>
+        {{ patient.ipcstatus_set.get.comments }}
       </td>
     </tr>
     {% endfor %}
