@@ -104,13 +104,15 @@ class Command(BaseCommand):
 
                 status = patient.ipcstatus_set.all()[0]
 
-                update_dict = {k: row[k] for k in MAPPING.keys()}
+                update_dict = {v: row[k] for k, v in MAPPING.items()}
 
                 status.updated = updated
                 status.updated_by = updated_by
 
                 for key, value in update_dict.items():
+
                     if isinstance(IPCStatus._meta.get_field(key), DateField):
+
                         if value == '':
                             value = None
                         elif isinstance(value, str):
