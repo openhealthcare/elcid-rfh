@@ -37,6 +37,7 @@ from plugins.ipc.models import IPCStatus
 MAPPING = {
     "Acinetobacter": "acinetobacter",
     "Acinetobacter_LPS_Date": "acinetobacter_date",
+    "Comment": "comments",
     "CJD": "cjd",
     "CJD_LPS_Date": "cjd_date",
     "C_DIFFICILE": "c_difficile",
@@ -76,59 +77,29 @@ SELECT * FROM ElCid_Infection_Prevention_Control_View
 """
 
 
-def construct_mrn_cache(upstream_result):
-    mrn_to_patient_ids = defaultdict(list)
+def construct_cache(upstream_result):
+    mrn_to_patient_ids = defaultdict(set)
     mrn_and_patient = Demographics.objects.filter(
         hospital_number__in=[i["Patient_Number"] for i in upstream_result if i["Patient_Number"]]
     ).values_list('hospital_number', 'patient_id')
-    for nhs_num, patient_id in mrn_and_patient:
-        mrn_to_patient_ids[nhs_num].append(patient_id)
+    for mrn, patient_id in mrn_and_patient:
+        mrn_to_patient_ids[mrn].add(patient_id)
     return mrn_to_patient_ids
-
-
-def construct_nhs_num_cache(upstream_result):
-    nhs_num_to_patient_ids = defaultdict(list)
-    nhs_num_to_patient = Demographics.objects.filter(
-        nhs_number__in=[i["nhs_number"] for i in upstream_result if i["nhs_number"]]
-    ).values_list('nhs_number', 'patient_id')
-    for nhs_num, patient_id in nhs_num_to_patient:
-        nhs_num_to_patient_ids[nhs_num].append(patient_id)
-    return nhs_num_to_patient_ids
-
-
-def construct_name_cache(upstream_result):
-    upstream = set(
-        (i["patient_forename"], i["patient_surname"], i["patient_dob"]) for i in upstream_result
-    )
-    demos = Demographics.objects.filter(
-        date_of_birth__in=[i["patient_dob"] for i in upstream_result]
-    )
-    name_to_patient_ids = defaultdict(list)
-    for demo in demos:
-        key = (demo.first_name, demo.surname, demo.date_of_birth,)
-        if key in upstream:
-            name_to_patient_ids[key].append(demo.patient_id)
-    return name_to_patient_ids
 
 
 class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         api = ProdAPI()
-        updated = timezone.now()
-        updated_by = User.objects.filter(username='OHC').first()
-        missing_nhs = 0
-        missing_name = 0
-        missing_mrn = 0
+        created = timezone.now()
+        created_by = User.objects.filter(username='OHC').first()
         missing = 0
         IPCStatus.objects.all().delete()
         statuses = []
         upstream_result = api.execute_hospital_query(QUERY)
         self.stdout.write("Query complete")
 
-        nhs_num_to_patient_ids = construct_nhs_num_cache(upstream_result)
-        name_dob_to_patient_ids = construct_name_cache(upstream_result)
-        mrn_to_patient_ids = construct_mrn_cache(upstream_result)
+        mrn_to_patient_ids = construct_cache(upstream_result)
         self.stdout.write("Cache constructed")
 
         for row in upstream_result:
@@ -136,51 +107,41 @@ class Command(BaseCommand):
             mrn_to_patient_ids
             patient_ids = mrn_to_patient_ids.get(row["Patient_Number"], [])
             if not patient_ids:
-                patient_ids = nhs_num_to_patient_ids.get(row["nhs_number"], [])
-                missing_mrn += 1
-
-            if not patient_ids:
-                missing_nhs += 1
-                patient_ids = name_dob_to_patient_ids.get(
-                    (row["patient_forename"], row["patient_surname"], row["patient_dob"],), []
-                )
-                if not patient_ids:
-                    missing_name += 1
-            if not patient_ids:
                 missing += 1
                 continue
-            patients = Patient.objects.filter(id__in=patient_ids).prefetch_related(
-                'ipcstatus_set'
-            )
-            if not patients:
-                missing += 1
+            patients = Patient.objects.filter(id__in=patient_ids)
 
             for patient in patients:
                 update_dict = {k: row[k] for k in MAPPING.keys()}
-                status = patient.ipcstatus_set.all()[0]
-                status.updated = updated
-                status.updated_by = updated_by
+
+                status = IPCStatus(
+                    patient=patient,
+                    created=created,
+                    updated=created,
+                    created_by=created_by,
+                    updated_by=created_by
+                )
                 for key, value in update_dict.items():
-                    if isinstance(IPCStatus._meta.get_field(key), DateField):
+                    if isinstance(IPCStatus._meta.get_field(MAPPING[key]), DateField):
                         if value == '':
                             value = None
                         elif isinstance(value, str):
-                            value = datetime.datetime.strpdate(value, '%d/%m/%Y').date()
-                    if isinstance(IPCStatus._meta.get_field(key), BooleanField):
-                        if value == '':
-                            value = False
-                        # we get rows like MRSA neg as string fields in the mrsa_neg column
-                        if key == value:
-                            value = True
+                            value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
+                    if isinstance(IPCStatus._meta.get_field(MAPPING[key]), BooleanField):
+                        if isinstance(value, str):
+                            if value == '':
+                                value = False
+                            # we get rows like MRSA neg as string fields in the mrsa_neg column
+                            elif key.lower() == value.lower() or key.lower().replace("_", " ") == value.lower():
+                                value = True
+                            elif key == 'Covid19' and value == 'Covid-19':
+                                value = True
                     setattr(status, MAPPING[key], value)
-                    statuses.append(status)
+                statuses.append(status)
         self.stdout.write("Statuses constructed")
-        IPCStatus.objects.bulk_create(statuses)
+        IPCStatus.objects.bulk_create(statuses, batch_size=1000)
         ended = timezone.now()
-        self.stdout.write(f"Statuses created in {ended - updated}s")
-        self.stdout.write(f"Missing mrn {missing_mrn}")
-        self.stdout.write(f"Missing nhs number {missing_nhs}")
-        self.stdout.write(f"Missing name {missing_name}")
+        self.stdout.write(f"Statuses created in {ended - created}s")
         self.stdout.write(f"Missing {missing}")
         self.stdout.write(f"Created {len(statuses)} statuses")
         examples = Patient.objects.filter(
