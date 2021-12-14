@@ -15,7 +15,7 @@
 
   {% for name, ward in wards.items %}
       <tr>
-        <th colspan="8">
+        <th colspan="9">
           <h2>{{ name }}</h2>
         </th>
     <tr>
@@ -29,6 +29,7 @@
       <th>Admitted</th>
       <th>IPC Comments</th>
     </tr>
+
     {% for patient in ward %}
     <tr>
       <td>
@@ -54,8 +55,11 @@
         {% if patient.admission_date_time %}
         {{ patient.admission_date_time }}
         {% endif %}
+      </td>
       <td>
-        {{ patient.ipcstatus_set.get.comments }}
+        {% if patient.patient.ipcstatus_set.get.comments %}
+        {{ patient.patient.ipcstatus_set.get.comments }}
+        {% endif %}
       </td>
     </tr>
     {% endfor %}

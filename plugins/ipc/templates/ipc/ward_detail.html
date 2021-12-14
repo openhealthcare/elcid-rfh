@@ -50,7 +50,9 @@
         {% endif %}
       </td>
       <td>
-        {{ patient.ipcstatus_set.get.comments }}
+        {% if patient.patient.ipcstatus_set.get.comments %}
+        {{ patient.patient.ipcstatus_set.get.comments }}
+        {% endif %}
       </td>
     </tr>
     {% endfor %}
