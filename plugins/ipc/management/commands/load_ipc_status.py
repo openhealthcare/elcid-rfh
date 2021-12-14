@@ -121,9 +121,7 @@ class Command(BaseCommand):
                     if isinstance(IPCStatus._meta.get_field(key), BooleanField):
                         if value == '':
                             value = False
-                        # we get rows like MRSA neg as string fields in the mrsa_neg column
-                        if key == value:
-                            value = True
+                        value = True
 
                     setattr(status, key, value)
                 status.save()
