@@ -125,5 +125,5 @@ class Command(BaseCommand):
                         if key == value:
                             value = True
 
-                    setattr(status, MAPPING[key], value)
+                    setattr(status, key, value)
                 status.save()
