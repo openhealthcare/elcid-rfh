@@ -5,12 +5,15 @@ exist upstream.
 We do not expect this to happen multiple times so the logic
 is just in this management command
 """
+from collections import defaultdict
 import datetime
 import random
+from django.db import transaction
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from opal.models import Patient
+from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from plugins.ipc import episode_categories
 from plugins.ipc.models import IPCStatus
@@ -75,21 +78,29 @@ SELECT * FROM ElCid_Infection_Prevention_Control_View
 
 
 class Command(BaseCommand):
+    @transaction.atomic
     def handle(self, *args, **options):
         api = ProdAPI()
         created = timezone.now()
         created_by = User.objects.filter(username='OHC').first()
-        created_episodes = 0
         missing_nhs = 0
         missing_name = 0
         missing = 0
         IPCStatus.objects.all().delete()
         statuses = []
         upstream_result = api.execute_hospital_query(QUERY)
+        nhs_num_to_patient = Demographics.objects.filter(
+            nhs_number__in=[i["nhs_number"] for i in upstream_result]
+        ).values_list('nhs_number', 'patient_id')
+        nhs_num_to_patient_ids = defaultdict(list)
+        for nhs_num, patient_id in nhs_num_to_patient:
+            nhs_num_to_patient_ids[nhs_num].append(patient_id)
+
         for row in upstream_result:
-            patients = Patient.objects.filter(
-                demographics__nhs_number=row["nhs_number"]
-            )
+            patients = []
+            patient_ids = nhs_num_to_patient_ids.get(row["nhs_number"], [])
+            if patient_ids:
+                patients = Patient.objects.get(id__in=patient_ids)
             if not patients:
                 missing_nhs += 1
                 patients = Patient.objects.filter(
@@ -102,14 +113,9 @@ class Command(BaseCommand):
                 missing += 1
 
             for patient in patients:
-                update_dict = {v: row[k] for k, v in MAPPING}
-                episode, c = patient.episode_set.get_or_create(
-                    category_name=episode_categories.IPCEpisode
-                )
-                if c:
-                    created_episodes += 1
+                update_dict = {v: row[k] for k, v in MAPPING.items()}
                 status = IPCStatus(
-                    episode=episode,
+                    patient=patient,
                     created=created,
                     created_by=created_by
                 )
@@ -120,15 +126,19 @@ class Command(BaseCommand):
                     statuses.append(status)
         IPCStatus.objects.bulk_create(statuses)
         ended = timezone.now()
-        self.stdout(f"Statuses created in {ended - created}s")
-        self.stdout(f"Missing nhs number {missing_nhs}")
-        self.stdout(f"Missing name {missing_name}")
-        self.stdout(f"Missing {missing}")
-        self.stdout(f"Created episodes {created_episodes}")
-        self.stdout(f"Created {len(statuses)} statuses")
-        self.stdout('Example patients:')
+        self.stdout.write(f"Statuses created in {ended - created}s")
+        self.stdout.write(f"Missing nhs number {missing_nhs}")
+        self.stdout.write(f"Missing name {missing_name}")
+        self.stdout.write(f"Missing {missing}")
+        self.stdout.write(f"Created {len(statuses)} statuses")
+        examples = Patient.objects.filter(
+            id__in=[i.patient_id for i in statuses]
+        ).filter(
+            episode__category_name=episode_categories.IPCEpisode.display_name
+        )
+        self.stdout.write('Example patients:')
         for _ in range(4):
-            idx = random.randint(len(statuses))
-            self.stdout(
-                statuses[idx].episode.patient.demographics().name
+            idx = random.randint(len(examples))
+            self.stdout.write(
+                examples[idx].demographics().name
             )
