@@ -89,10 +89,12 @@ class Command(BaseCommand):
         IPCStatus.objects.all().delete()
         statuses = []
         upstream_result = api.execute_hospital_query(QUERY)
+        self.stdout.write("Query complete")
         nhs_num_to_patient = Demographics.objects.filter(
             nhs_number__in=[i["nhs_number"] for i in upstream_result]
         ).values_list('nhs_number', 'patient_id')
         nhs_num_to_patient_ids = defaultdict(list)
+        self.stdout.write("Cache constructed")
         for nhs_num, patient_id in nhs_num_to_patient:
             nhs_num_to_patient_ids[nhs_num].append(patient_id)
 
@@ -100,7 +102,7 @@ class Command(BaseCommand):
             patients = []
             patient_ids = nhs_num_to_patient_ids.get(row["nhs_number"], [])
             if patient_ids:
-                patients = Patient.objects.get(id__in=patient_ids)
+                patients = Patient.objects.filter(id__in=patient_ids)
             if not patients:
                 missing_nhs += 1
                 patients = Patient.objects.filter(
@@ -124,6 +126,7 @@ class Command(BaseCommand):
                         value = timezone.make_aware(value)
                     setattr(status, key, value)
                     statuses.append(status)
+        self.stdout.write(f"Statuses constructed")
         IPCStatus.objects.bulk_create(statuses)
         ended = timezone.now()
         self.stdout.write(f"Statuses created in {ended - created}s")
