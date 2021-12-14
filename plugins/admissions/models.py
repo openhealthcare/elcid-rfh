@@ -1,6 +1,7 @@
 """
 Models for the elCID admissions plugin
 """
+import datetime
 from django.db import models
 from opal.models import Patient, PatientSubrecord
 
@@ -319,7 +320,6 @@ class BedStatus(models.Model):
     source                         = models.CharField(blank=True, null=True, max_length=255)
 
 
-
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'Facility'                      : 'facility',
         'Building'                      : 'building',
@@ -357,3 +357,14 @@ class BedStatus(models.Model):
         'Updated_Date'                  : 'updated_date',
         'SOURCE'                        : 'source',
     }
+
+    def to_dict(self):
+        result =  {k: getattr(self, k) for k in self.UPSTREAM_FIELDS_TO_MODEL_FIELDS.values()}
+        if self.admission_date_time:
+            try:
+                result['admission_date_time'] = datetime.datetime.strptime(
+                    self.admission_date_time, '%Y-%m-%d %H:%M:%S'
+                )
+            except ValueError:
+                result['admission_date_time'] = None
+        return result
