@@ -108,6 +108,7 @@ class Command(BaseCommand):
 
                 status.updated = updated
                 status.updated_by = updated_by
+                status.consistency_token = '45678'
 
                 for key, value in update_dict.items():
 
@@ -119,9 +120,9 @@ class Command(BaseCommand):
                             value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
 
                     if isinstance(IPCStatus._meta.get_field(key), BooleanField):
-                        if value == '':
-                            value = False
-                        value = True
+                        if value:
+                            value = True
+                        value = False
 
                     setattr(status, key, value)
                 status.save()
