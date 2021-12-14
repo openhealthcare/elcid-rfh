@@ -76,6 +76,30 @@ QUERY = """
 SELECT * FROM ElCid_Infection_Prevention_Control_View
 """
 
+def construct_nhs_num_cache(upstream_result):
+    nhs_num_to_patient_ids = defaultdict(list)
+    nhs_num_to_patient = Demographics.objects.filter(
+        nhs_number__in=[i["nhs_number"] for i in upstream_result if i["nhs_number"]]
+    ).values_list('nhs_number', 'patient_id')
+    for nhs_num, patient_id in nhs_num_to_patient:
+        nhs_num_to_patient_ids[nhs_num].append(patient_id)
+    return nhs_num_to_patient_ids
+
+
+def construct_name_cache(upstream_result):
+    upstream = set(
+        (i["patient_forename"], i["patient_surname"], i["patient_dob"]) for i in upstream_result
+    )
+    demos = Demographics.objects.filter(
+        date_of_birth=[i["patient_dob"]]
+    )
+    name_to_patient_ids = defaultdict(list)
+    for demo in demos:
+        key = (demo.first_name, demo.surname, demo.date_of_birth,)
+        if key in upstream:
+            name_to_patient_ids[key].append(demo.patient_id)
+    return name_to_patient_ids
+
 
 class Command(BaseCommand):
     @transaction.atomic
@@ -90,27 +114,25 @@ class Command(BaseCommand):
         statuses = []
         upstream_result = api.execute_hospital_query(QUERY)
         self.stdout.write("Query complete")
-        nhs_num_to_patient = Demographics.objects.filter(
-            nhs_number__in=[i["nhs_number"] for i in upstream_result]
-        ).values_list('nhs_number', 'patient_id')
-        nhs_num_to_patient_ids = defaultdict(list)
+
+        nhs_num_to_patient_ids = construct_nhs_num_cache()
+        name_dob_to_patient_ids = construct_name_cache()
         self.stdout.write("Cache constructed")
-        for nhs_num, patient_id in nhs_num_to_patient:
-            nhs_num_to_patient_ids[nhs_num].append(patient_id)
 
         for row in upstream_result:
             patients = []
             patient_ids = nhs_num_to_patient_ids.get(row["nhs_number"], [])
-            if patient_ids:
-                patients = Patient.objects.filter(id__in=patient_ids)
-            if not patients:
+            if not patient_ids:
                 missing_nhs += 1
-                patients = Patient.objects.filter(
-                    demographics__first_name=row["patient_forename"],
-                    demographics__surname=row["patient_surname"],
-                    demographics__date_of_birth=row["patient_dob"],
+                patient_ids = name_dob_to_patient_ids.get(
+                    (row["patient_forename"], row["patient_surname"], row["patient_dob"],), []
                 )
-                missing_name += 1
+                if not patient_ids:
+                    missing_name += 1
+            if not patient_ids:
+                missing += 1
+                continue
+            patients = Patient.objects.filter(id__in=patient_ids)
             if not patients:
                 missing += 1
 
@@ -126,7 +148,7 @@ class Command(BaseCommand):
                         value = timezone.make_aware(value)
                     setattr(status, key, value)
                     statuses.append(status)
-        self.stdout.write(f"Statuses constructed")
+        self.stdout.write("Statuses constructed")
         IPCStatus.objects.bulk_create(statuses)
         ended = timezone.now()
         self.stdout.write(f"Statuses created in {ended - created}s")
