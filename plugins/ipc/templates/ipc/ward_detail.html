@@ -51,7 +51,7 @@
       </td>
       <td>
         {% if patient.patient.ipcstatus_set.get.comments %}
-        {{ patient.patient.ipcstatus_set.get.comments }}
+        {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}
       </td>
     </tr>
