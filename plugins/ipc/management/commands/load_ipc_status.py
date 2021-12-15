@@ -120,7 +120,8 @@ class Command(BaseCommand):
                     if isinstance(IPCStatus._meta.get_field(key), BooleanField):
                         if value:
                             value = True
-                        value = False
+                        else:
+                            value = False
 
                     setattr(status, key, value)
                 status.save()
