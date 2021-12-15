@@ -6,17 +6,17 @@
     <h1>{{ hospital }} Wards</h1>
   </div>
   <div class="panel-body">
-
+    <div class="row">
     {% for ward in wards %}
+    <div class="col-md-4">
     <p>
       <a href="/#/ipc/bedboard/ward/{{ ward }}/" class="orange-link">
         {{ ward }}
       </a>
     </p>
+    </div>
     {% endfor %}
-
-
-
+    </div class="row">
   </div>
 </div> <!-- Panel -->
 {% endblock %}

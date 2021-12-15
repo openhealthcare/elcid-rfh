@@ -31,17 +31,17 @@
       <td>{{ patient.bed_status }}</td>
       <td>
         {% if patient.local_patient_identifier %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}/">{{ patient.local_patient_identifier }}</a>
+        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.local_patient_identifier }}</a>
         {% endif %}
       </td>
       <td>
         {% if patient.patient_name %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}/">{{ patient.patient_name }}</a>
+        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.patient_name }}</a>
         {% endif %}
       </td>
       <td>
         {% if patient.date_of_birth %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}/">{{ patient.date_of_birth }}</a>
+        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.date_of_birth }}</a>
         {% endif %}
       </td>
       <td>

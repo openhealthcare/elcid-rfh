@@ -42,13 +42,13 @@
       <td> {{ patient.bed_status }}</td>
       {% with patient.patient.demographics as demographics %}
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.hospital_number }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.hospital_number }}</a>
       </td>
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.name }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.name }}</a>
       </td>
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.date_of_birth }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.date_of_birth }}</a>
       </td>
       {% endwith %}
       <td>
