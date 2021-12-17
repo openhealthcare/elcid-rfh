@@ -43,7 +43,7 @@ angular.module('opal.controllers').controller(
 				elem.prop('selectionEnd', pos);
 			}, 1);
 		}
-		this.addMRSNaseptin = function(){
+		this.addMRSANaseptin = function(){
 			self.addText(MRSA_NASEPTIN);
 			self.goToCursor(28);
 		}
