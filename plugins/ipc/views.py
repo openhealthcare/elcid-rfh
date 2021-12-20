@@ -136,8 +136,6 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
                 if ipc:
                     status.ipc_episode = ipc
 
-        context['location_count'] = statuses.count()
-
         wards = collections.defaultdict(list)
 
         for status in statuses:

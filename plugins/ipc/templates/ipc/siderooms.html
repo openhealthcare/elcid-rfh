@@ -5,9 +5,6 @@
   <div class="panel-heading">
     <h1>
       Isolation locations: Royal Free Hospital
-      <span>
-        ({{ location_count }} locations)
-      </span>
     </h1>
   </div>
 
@@ -28,6 +25,7 @@
       <th>DOB</th>
       <th>Admitted</th>
       <th>IPC Comments</th>
+      <th>Isolation</th>
     </tr>
 
     {% for patient in ward %}
@@ -60,6 +58,32 @@
         {% if patient.patient.ipcstatus_set.get.comments %}
         {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}
+      </td>
+      <td ng-controller="IsolationHelper as isolationHelper">
+        <span ng-show="isolationHelper.init(
+          '{{ patient.hospital_site_code }}',
+          '{{ patient.ward_name }}',
+          '{{ patient.room }}',
+          '{{ patient.bed }}',
+          {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
+          {% if patient.isSideRoom %}1{% else %}0{% endif %}
+        )">
+          <span ng-show='isolationHelper.isSideRoom'>
+            Side room
+          </span>
+          <span ng-hide='isolationHelper.isSideRoom'>
+            <span ng-show='isolationHelper.isolated_bed_id'>
+              <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
+                Isolated
+              </button>
+            </span>
+            <span ng-hide='isolationHelper.isolated_bed_id'>
+              <button ng-click="isolationHelper.isolate()" class="btn btn-default">
+                Isolate
+              </button>
+            </span>
+          </span>
+        </span>
       </td>
     </tr>
     {% endfor %}
