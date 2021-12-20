@@ -270,6 +270,16 @@ class TransferHistory(models.Model):
     }
 
 
+class IsolatedBed(models.Model):
+    """
+    Beds marked by users as now in isolation.
+    """
+    hospital_site_code             = models.CharField(blank=True, null=True, max_length=255)
+    ward_name                      = models.CharField(blank=True, null=True, max_length=255)
+    room                           = models.CharField(blank=True, null=True, max_length=255)
+    bed                            = models.CharField(blank=True, null=True, max_length=255)
+
+
 class BedStatus(models.Model):
     """
     A snapshot of current bed status
