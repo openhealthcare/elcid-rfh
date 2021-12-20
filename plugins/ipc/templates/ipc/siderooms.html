@@ -15,7 +15,7 @@
 
   {% for name, ward in wards.items %}
       <tr>
-        <th colspan="8">
+        <th colspan="9">
           <h2>{{ name }}</h2>
         </th>
     <tr>
@@ -27,8 +27,9 @@
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
-      <!-- <th>Alerts</th> -->
+      <th>IPC Comments</th>
     </tr>
+
     {% for patient in ward %}
     <tr>
       <td>
@@ -41,18 +42,23 @@
       <td> {{ patient.bed_status }}</td>
       {% with patient.patient.demographics as demographics %}
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.hospital_number }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.hospital_number }}</a>
       </td>
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.name }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.name }}</a>
       </td>
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.date_of_birth }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.date_of_birth }}</a>
       </td>
       {% endwith %}
       <td>
         {% if patient.admission_date_time %}
         {{ patient.admission_date_time }}
+        {% endif %}
+      </td>
+      <td>
+        {% if patient.patient.ipcstatus_set.get.comments %}
+        {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}
       </td>
     </tr>

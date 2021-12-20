@@ -602,3 +602,14 @@ div.add-isolate:hover{
 .nowrap{
   white-space: nowrap;
 }
+
+.btn-toggles {
+    .btn.btn-primary {
+        background-color: $white;
+        color: #333;
+    }
+    .btn.btn-primary.active {
+        background-color: $primary;
+        color: $white;
+    }
+}

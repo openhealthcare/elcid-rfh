@@ -3,14 +3,9 @@
 <section>
   <div class="row">
     <div class="col-md-6">
-      <div>
-        <ng-include src="'/templates/admissions/upstream_location/' +  patient.id + '/'">
-      </div>
-      {% record_panel models.Location %}
-
+      {% include "panels/location.html" %}
       {% record_panel models.IPCStatus %}
 
-      {% record_panel models.InfectionAlert %}
     </div> <!-- Col 6 -->
     <div class="col-md-6">
       {% include "inline_forms/clinical_timeline.html" %}

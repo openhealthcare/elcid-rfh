@@ -28,12 +28,15 @@ class BedStatusApi(LoginRequiredViewset):
                 instance.bed,
             )
         ]
+        result["comments"] = instance.patient.ipcstatus_set.all()[0].comments
 
     @action(detail=False, methods=["get"], url_path="ward/(?P<ward_name>[^/.]+)")
     def ward_list(self, request, ward_name):
         return json_response(
             [
                 {k: v for k, v in vars(i).items() if not k.startswith("_")}
-                for i in BedStatus.objects.filter(ward_name=ward_name)
+                for i in BedStatus.objects.filter(ward_name=ward_name).prefetch_related(
+                    'patient__ipcstatus_set'
+                )
             ]
         )

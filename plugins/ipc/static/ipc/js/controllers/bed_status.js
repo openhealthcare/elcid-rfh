@@ -1,5 +1,5 @@
 angular.module('opal.controllers').controller('BedStatus', function(
-	$scope, queryResponse
+	$scope, $http, queryResponse
 ){
 	"use strict";
 	$scope.patients = queryResponse.data;

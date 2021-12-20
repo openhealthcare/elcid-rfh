@@ -1,5 +1,7 @@
 {% load forms %}
 {% load ipc %}
+
+{% textarea field="IPCStatus.comments" %}
 {% ipc_check_box_and_date_field 'mrsa' %}
 {% ipc_check_box_and_date_field 'mrsa_neg' %}
 {% ipc_check_box_and_date_field 'reactive' %}

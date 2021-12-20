@@ -22,6 +22,8 @@
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
+      <th>IPC Comments</th>
+      <th>Isolated</th>
     </tr>
     <tr ng-repeat="patient in patients">
       <td>[[ patient.room ]]</td>
@@ -40,6 +42,19 @@
         <span ng-show="patient.admission_date_time">
           [[ patient.admission_date_time | displayDateTime ]]
         </span>
+      </td>
+      <td>
+        <span ng-show="patient.comments">
+          [[ patient.comments | markdown ]]
+        </span>
+      </td>
+      <td>
+        <button ng-click="isolate(patient, true)" ng-hide="patient.in_isolation">
+          Mark as isolation
+        </button>
+        <button ng-click="isolate(patient, false)" ng-show="patient.in_isolation">
+          Mark as isolation
+        </button>
       </td>
     </tr>
   </table>

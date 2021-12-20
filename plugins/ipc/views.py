@@ -7,6 +7,7 @@ import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
+from elcid.utils import natural_keys
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CDOE
 from plugins.admissions.models import Encounter, UpstreamLocation, BedStatus
 
@@ -72,11 +73,15 @@ class HospitalWardListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
+        wards = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
+            'ward_name', flat=True).distinct()
+
+        wards = sorted(wards, key=natural_keys)
+
         context['hospital'] = BedStatus.objects.filter(
             hospital_site_code=k['hospital_code']).first().hospital_site_description
 
-        context['wards'] = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
-            'ward_name', flat=True).distinct().order_by('ward_name')
+        context['wards'] = wards
 
         return context
 
@@ -87,7 +92,15 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        context['patients'] = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
+        locations = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
+
+        for location in locations:
+            if location.patient:
+                ipc = location.patient.episode_set.filter(category_name='IPC').first()
+                if ipc:
+                    location.ipc_episode = ipc
+
+        context['patients'] = locations
 
         return context
 
@@ -100,6 +113,13 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
 
         locations = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
                                              room__startswith='SR').order_by('ward_name', 'bed')
+
+        for location in locations:
+            if location.patient:
+                ipc = location.patient.episode_set.filter(category_name='IPC').first()
+                if ipc:
+                    location.ipc_episode = ipc
+
 
         context['location_count'] = locations.count()
 
