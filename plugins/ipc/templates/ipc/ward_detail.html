@@ -4,12 +4,12 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h1>
-      <a href="/#/admissions/bedboard/hospital/[[ patients[0].hospital_site_description ]]/" class="orange-link">
-        [[ patients[0].hospital_site_description ]]
+      <a href="/#/admissions/bedboard/hospital/[[ data.patients[0].hospital_site_description ]]/" class="orange-link">
+        [[ data.patients[0].hospital_site_description ]]
       </a>
       [[ ward_name ]]
       <span>
-        ([[ patients.length ]] patients)
+        ([[ data.patients.length ]] patients)
       </span>
     </h1>
   </div>
@@ -25,7 +25,7 @@
       <th>IPC Comments</th>
       <th>Isolated</th>
     </tr>
-    <tr ng-repeat="patient in patients">
+    <tr ng-repeat="patient in data.patients">
       <td>[[ patient.room ]]</td>
       <td>[[ patient.bed ]]</td>
       <td>[[ patient.bed_status ]]</td>

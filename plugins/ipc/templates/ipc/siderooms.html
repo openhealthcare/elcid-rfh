@@ -6,72 +6,74 @@
     <h1>
       Isolation locations: Royal Free Hospital
       <span>
-        ({{ location_count }} locations)
+        ([[ data.location_count ]] locations)
       </span>
     </h1>
   </div>
 
+  <div ng-repeat="(name, ward) in data.wards">
+    <h2>[[ name ]]</h2>
     <table class="table table-striped">
-
-  {% for name, ward in wards.items %}
       <tr>
-        <th colspan="9">
-          <h2>{{ name }}</h2>
-        </th>
-    <tr>
-      <th>Ward</th>
-      <th>Room</th>
-      <th>Bed</th>
-      <th>Status</th>
-      <th>MRN</th>
-      <th>Name</th>
-      <th>DOB</th>
-      <th>Admitted</th>
-      <th>IPC Comments</th>
-    </tr>
-
-    {% for patient in ward %}
-    <tr>
-      <td>
-        <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
-          {{ patient.ward_name }}
-        </a>
-      </td>
-      <td>{{ patient.room }}</td>
-      <td>{{ patient.bed }}</td>
-      <td> {{ patient.bed_status }}</td>
-      {% with patient.patient.demographics as demographics %}
-      <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.hospital_number }}</a>
-      </td>
-      <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.name }}</a>
-      </td>
-      <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.date_of_birth }}</a>
-      </td>
-      {% endwith %}
-      <td>
-        {% if patient.admission_date_time %}
-        {{ patient.admission_date_time }}
-        {% endif %}
-      </td>
-      <td>
-        {% if patient.patient.ipcstatus_set.get.comments %}
-        {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-
-
-  {% endfor %}
-  </table>
-
-
-
-
-
-
+        <th>Ward</th>
+        <th>Room</th>
+        <th>Bed</th>
+        <th>Status</th>
+        <th>MRN</th>
+        <th>Name</th>
+        <th>DOB</th>
+        <th>Admitted</th>
+        <th>IPC Comments</th>
+        <th>Isolated</th>
+      </tr>
+      <tr ng-repeat="patient in ward">
+        <td>
+          <a href="/#/ipc/bedboard/ward/[[ patient.ward_name ]]/">
+            [[ patient.ward_name ]]
+          </a>
+        </td>
+        <td>[[ patient.room ]]</td>
+        <td>[[ patient.bed ]]</td>
+        <td>[[ patient.bed_status ]]</td>
+        <td>
+          <span ng-show="patient.episode_id">
+            <a class="orange-link" href="/#/patient/{{ patient.patient_id }}/{{patient.ipc_episode.id}}">{{ patient.local_patient_identifier }}</a>
+          </span>
+          <span ng-hide="patient.episode_id">
+            <a class="orange-link" href="/#/patient/{{ patient.patient_id }}}">{{ patient.local_patient_identifier }}</a>
+          </span>
+        </td>
+        <td>
+          <span ng-show=patient.demographics>[[ patient.demographics.first_name ]] [[ patient.demographics.surname ]]</span>
+        </td>
+        <td>
+          <span ng-show=patient.demographics>[[ patient.demographics.date_of_birth | displayDate ]] [[ patient.demographics.surname ]]</span>
+        </td>
+        <td>
+          <span ng-show="patient.admission_date_time">
+            [[ patient.admission_date_time | displayDateTime ]]
+          </span>
+        </td>
+        <td>
+          <span ng-show="patient.comments">
+            [[ patient.comments | markdown ]]
+          </span>
+        </td>
+        <td>
+          <span ng-hide="patient.room.indexOf('SR') === 0">
+            <button class="btn btn-default" ng-click="isolate(patient, true)" ng-hide="patient.in_isolation">
+              Mark as isolation
+            </button>
+            <button class="btn btn-primary" ng-click="isolate(patient, false)" ng-show="patient.in_isolation">
+              Marked as isolation
+            </button>
+          </span>
+          <span ng-show="patient.room.indexOf('SR') === 0">
+            Side room
+          </span>
+        </td>
+      </tr>
+    </table>
+  </div>
 </div> <!-- Panel -->
 {% endblock %}
