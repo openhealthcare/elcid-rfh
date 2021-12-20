@@ -91,16 +91,21 @@ app.config(
              .when('/admissions/bedboard/hospitals/', static_template_route('/admissions/bedboard/hospitals/'))
              .when('/admissions/bedboard/hospital/:hospital_code/',
                    param_template_route('/admissions/bedboard/hospital/', 'hospital_code'))
-             .when('/admissions/bedboard/ward/:ward_name/',
-                   param_template_route('/admissions/bedboard/ward/', 'ward_name'))
-
+             .when('/ipc/bedboard/ward/:ward_name/', {
+                    controller: 'BedStatus',
+                    templateUrl: function(){
+                        return "/templates/ipc/ward_detail.html"
+                    },
+                    resolve: {
+                        queryResponse: function($http, $route){
+                            return $http.get("/api/v0.1/bed_status/ward/" + $route.current.params.ward_name + '/')
+                        }
+                    }
+             })
              .when('/ipc/',                         static_template_route('/templates/ipc/home.html'))
              .when('/ipc/bedboard/hospitals/',      static_template_route('/templates/ipc/hospitals.html'))
              .when('/ipc/bedboard/hospital/:hospital_code/',
                    param_template_route('/ipc/bedboard/hospital/', 'hospital_code'))
-             .when('/ipc/bedboard/ward/:ward_name/',
-                   param_template_route('/templates/ipc/ward/', 'ward_name'))
-
              .when('/ipc/siderooms/',               static_template_route('/templates/ipc/siderooms.html'))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
 

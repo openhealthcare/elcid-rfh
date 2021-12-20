@@ -4,12 +4,12 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h1>
-      <a href="/#/admissions/bedboard/hospital/{{patients.first.hospital_site_code}}/" class="orange-link">
-        {{ patients.first.hospital_site_description }}
+      <a href="/#/admissions/bedboard/hospital/[[ patients[0].hospital_site_description ]]/" class="orange-link">
+        [[ patients[0].hospital_site_description ]]
       </a>
-      {{ ward_name }}
+      [[ ward_name ]]
       <span>
-        ({{ patients|length }} patients)
+        ([[ patients.length ]] patients)
       </span>
     </h1>
   </div>
@@ -22,35 +22,26 @@
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
-
     </tr>
-    {% for patient in patients %}
-    <tr>
-      <td>{{ patient.room }} </td>
-      <td>{{ patient.bed }}</td>
-      <td>{{ patient.bed_status }}</td>
+    <tr ng-repeat="patient in patients">
+      <td>[[ patient.room ]]</td>
+      <td>[[ patient.bed ]]</td>
+      <td>[[ patient.bed_status ]]</td>
       <td>
-        {% if patient.local_patient_identifier %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}/">{{ patient.local_patient_identifier }}</a>
-        {% endif %}
+        <a ng-show="patient.local_patient_identifier " class="orange-link" href="/#/patient/[[ patient.patient_id ]]/">[[ patient.local_patient_identifier ]]</a>
       </td>
       <td>
-        {% if patient.patient_name %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}/">{{ patient.patient_name }}</a>
-        {% endif %}
+        <a ng-show="patient.patient_name" class="orange-link" href="/#/patient/[[ patient.patient_id ]]/">[[ patient.patient_name ]]</a>
       </td>
       <td>
-        {% if patient.date_of_birth %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}/">{{ patient.date_of_birth }}</a>
-        {% endif %}
+        <a ng-show="patient.date_of_birth" class="orange-link" href="/#/patient/[[ patient.patient_id ]]/">[[ patient.date_of_birth ]]</a>
       </td>
       <td>
-        {% if patient.admission_date_time %}
-        {{ patient.admission_date_time }}
-        {% endif %}
+        <span ng-show="patient.admission_date_time">
+          [[ patient.admission_date_time | displayDateTime ]]
+        </span>
       </td>
     </tr>
-    {% endfor %}
   </table>
 
 </div> <!-- Panel -->
