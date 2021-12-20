@@ -16,6 +16,17 @@ class BedStatusApi(LoginRequiredViewset):
         )
         return set([tuple(i) for i in bed_statuses])
 
+    def in_isolation(self, bed_status):
+        if bed_status.room and bed_status.room.startswith('SR'):
+            return True
+        key = (
+            bed_status.hospital_site_code,
+            bed_status.ward_name,
+            bed_status.room,
+            bed_status.bed,
+        )
+        return key in self.isolated_beds
+
     def serialize_instance(self, instance):
         fields = instance._meta.get_fields()
         result = {}
@@ -23,13 +34,7 @@ class BedStatusApi(LoginRequiredViewset):
             if field.name == "patient":
                 continue
             result[field.name] = getattr(instance, field.name)
-        key = (
-            instance.hospital_site_code,
-            instance.ward_name,
-            instance.room,
-            instance.bed,
-        )
-        result["in_isolation"] = key in self.isolated_beds
+        result["in_isolation"] = self.in_isolation(instance)
         if instance.patient_id:
             result["comments"] = instance.patient.ipcstatus_set.all()[0].comments
         return result
