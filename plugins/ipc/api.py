@@ -1,4 +1,5 @@
 from rest_framework.decorators import action
+from rest_framework import status
 from django.utils.functional import cached_property
 from opal.core.views import json_response
 from plugins.admissions.models import BedStatus, IsolatedBed
@@ -19,24 +20,42 @@ class BedStatusApi(LoginRequiredViewset):
         fields = instance._meta.get_fields()
         result = {}
         for field in fields:
+            if field.name == "patient":
+                continue
             result[field.name] = getattr(instance, field.name)
-        result["in_isolation"] = self.bed_statuses[
-            (
-                instance.hospital_site_code,
-                instance.ward_name,
-                instance.room,
-                instance.bed,
-            )
-        ]
-        result["comments"] = instance.patient.ipcstatus_set.all()[0].comments
+        key = (
+            instance.hospital_site_code,
+            instance.ward_name,
+            instance.room,
+            instance.bed,
+        )
+        result["in_isolation"] = key in self.isolated_beds
+        if instance.patient_id:
+            result["comments"] = instance.patient.ipcstatus_set.all()[0].comments
+        return result
 
     @action(detail=False, methods=["get"], url_path="ward/(?P<ward_name>[^/.]+)")
     def ward_list(self, request, ward_name):
         return json_response(
             [
-                {k: v for k, v in vars(i).items() if not k.startswith("_")}
+                self.serialize_instance(i)
                 for i in BedStatus.objects.filter(ward_name=ward_name).prefetch_related(
-                    'patient__ipcstatus_set'
+                    "patient__ipcstatus_set"
                 )
             ]
         )
+
+    @action(
+        detail=True,
+        methods=["put"],
+        url_path="isolate",
+    )
+    def isolate_bed(self, request, pk):
+        bed_status = BedStatus.objects.get(id=pk)
+        IsolatedBed.objects.create(
+            hospital_site_code=bed_status.hospital_site_code,
+            ward_name=bed_status.ward_name,
+            room=bed_status.room,
+            bed=bed_status.bed,
+        )
+        return json_response({}, status_code=status.HTTP_204_NO_CONTENT)

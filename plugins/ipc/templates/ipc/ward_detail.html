@@ -49,11 +49,11 @@
         </span>
       </td>
       <td>
-        <button ng-click="isolate(patient, true)" ng-hide="patient.in_isolation">
+        <button class="btn btn-default" ng-click="isolate(patient, true)" ng-hide="patient.in_isolation">
           Mark as isolation
         </button>
-        <button ng-click="isolate(patient, false)" ng-show="patient.in_isolation">
-          Mark as isolation
+        <button class="btn btn-primary" ng-click="isolate(patient, false)" ng-show="patient.in_isolation">
+          Marked as isolation
         </button>
       </td>
     </tr>
