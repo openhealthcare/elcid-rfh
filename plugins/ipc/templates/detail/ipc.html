@@ -1,15 +1,19 @@
 {% load panels %}
 {% load forms %}
-<section>
+<section class="container">
   <div class="row">
     <div class="col-md-6">
       {% include "panels/location.html" %}
-      {% record_panel models.IPCStatus %}
-
     </div> <!-- Col 6 -->
     <div class="col-md-6">
-      {% include "inline_forms/clinical_timeline.html" %}
+      {% record_panel models.IPCStatus %}
     </div>
-
   </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      {% include "inline_forms/icu_timeline.html" %}
+      </div>
+  </div>
+
 </section>
