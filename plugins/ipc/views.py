@@ -7,8 +7,9 @@ import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
+from elcid.utils import natural_keys
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CDOE
-from plugins.admissions.models import Encounter, UpstreamLocation, BedStatus
+from plugins.admissions.models import BedStatus, IsolatedBed
 
 from plugins.ipc import lab, models, utils
 
@@ -72,11 +73,15 @@ class HospitalWardListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
+        wards = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
+            'ward_name', flat=True).distinct()
+
+        wards = sorted(wards, key=natural_keys)
+
         context['hospital'] = BedStatus.objects.filter(
             hospital_site_code=k['hospital_code']).first().hospital_site_description
 
-        context['wards'] = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
-            'ward_name', flat=True).distinct().order_by('ward_name')
+        context['wards'] = wards
 
         return context
 
@@ -87,7 +92,15 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        context['patients'] = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
+        locations = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
+
+        for location in locations:
+            if location.patient:
+                ipc = location.patient.episode_set.filter(category_name='IPC').first()
+                if ipc:
+                    location.ipc_episode = ipc
+
+        context['patients'] = locations
 
         return context
 
@@ -98,17 +111,37 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        locations = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
-                                             room__startswith='SR').order_by('ward_name', 'bed')
+        side_rooms_statuses = list(BedStatus.objects.filter(
+            hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+            room__startswith='SR'
+        ))
 
-        context['location_count'] = locations.count()
+        isolation_status = []
+        for isolated_bed in IsolatedBed.objects.all():
+            bed_status = BedStatus.objects.filter(
+                hospital_site_code=isolated_bed.hospital_site_code,
+                ward_name=isolated_bed.ward_name,
+                room=isolated_bed.room,
+                bed=isolated_bed.bed,
+            ).first()
+            if bed_status:
+                isolation_status.append(bed_status)
+        statuses = BedStatus.objects.filter(
+            id__in=[i.id for i in side_rooms_statuses + isolation_status]
+        ).order_by('ward_name', 'bed')
+
+        for status in statuses:
+            if status.patient:
+                ipc = status.patient.episode_set.filter(category_name='IPC').first()
+                if ipc:
+                    status.ipc_episode = ipc
 
         wards = collections.defaultdict(list)
 
-        for location in locations:
-            wards[location.ward_name].append(location)
+        for status in statuses:
+            wards[status.ward_name].append(status)
 
-        context['wards'] = dict(wards)
+        context['wards'] = {name: wards[name] for name in sorted(wards.keys(), key=natural_keys)}
 
         return context
 

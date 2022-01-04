@@ -531,4 +531,17 @@ div.add-isolate:hover {
   white-space: nowrap;
 }
 
+.btn-toggles .btn.btn-primary {
+  background-color: #FFF;
+  color: #333;
+}
+.btn-toggles .btn.btn-primary.active {
+  background-color: #0091C9;
+  color: #FFF;
+}
+
+.whitespacey {
+  white-space: pre;
+}
+
 /*# sourceMappingURL=elcid.css.map */
