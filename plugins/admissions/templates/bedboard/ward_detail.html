@@ -1,0 +1,56 @@
+<div class="panel panel-default content-offset" >
+  <div class="panel-heading">
+    <h1>
+      <a href="/#/admissions/bedboard/hospital/{{patients.first.hospital_site_code}}/" class="orange-link">
+        {{ patients.first.hospital_site_description }}
+      </a>
+      {{ patients.first.ward_name }}
+    </h1>
+  </div>
+
+  <table class="table table-striped">
+    <tr>
+      <th>Room</th>
+      <th>Bed</th>
+      <th>Status</th>
+      <th>MRN</th>
+      <th>Name</th>
+      <th>DOB</th>
+      <th>Admitted</th>
+      <th>Covid</th>
+
+    </tr>
+    {% for patient in patients %}
+    <tr>
+      <td>{{ patient.room }} </td>
+      <td>{{ patient.bed }}</td>
+      <td>{{ patient.bed_status }}</td>
+      <td>
+        {% if patient.local_patient_identifier %}
+        <a class="orange-link" href="/#/patient/{{ patient.patient.patient_id }}">{{ patient.local_patient_identifier }}</a>
+        {% endif %}
+      </td>
+      <td>
+        {% if patient.patient_name %}
+        <a class="orange-link" href="/#/patient/{{ patient.patient.patient_id }}">{{ patient.patient_name }}</a>
+        {% endif %}
+      </td>
+      <td>
+        {% if patient.date_of_birth %}
+        <a class="orange-link" href="/#/patient/{{ patient.patient.patient_id }}">{{ patient.date_of_birth }}</a>
+        {% endif %}
+      </td>
+      <td>
+        {% if patient.admission_date_time %}
+        {{ patient.admission_date_time }}
+        {% endif %}
+      </td>
+      <td>
+        {% if patient.covid19_flag %}
+        {{ patient.covid19_flag }}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>

@@ -28,14 +28,14 @@ angular.module('opal.controllers').controller(
           return false;
         }
 
-        this.getClinicalAdvice = function(){
+        self.getClinicalAdvice = function(){
           var result = [];
           _.each($scope.patient.episodes, function(episode){
             _.each(episode.microbiology_input, function(input){
               result.push(input)
             });
           });
-          this.clinicalAdvice = _.sortBy(result, "when").reverse();
+          self.clinicalAdvice = _.sortBy(result, "when").reverse();
         };
 
         this.getClinicalAdvice();

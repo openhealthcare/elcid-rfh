@@ -146,7 +146,7 @@ TEMPLATES = [
                 'opal.context_processors.settings',
                 'opal.context_processors.models',
                 'elcid.context_processors.permissions',
-                'plugins.upstream_lists.context_processors.upstream_lists',
+                'plugins.admissions.context_processors.hospitals',
             ],
         },
     },
@@ -159,7 +159,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    'axes',
     'reversion',
     'plugins.tb',
     'opal',
@@ -178,13 +177,12 @@ INSTALLED_APPS = (
     'plugins.dischargesummary',
     'plugins.monitoring',
     'plugins.handover',
-    'plugins.upstream_lists',
     'plugins.ipc',
     'intrahospital_api',
     'elcid',
     'passwordreset',
     'django.contrib.admin',
-    'djcelery',
+    'django_celery_results',
     'obs',
 )
 
@@ -198,6 +196,9 @@ API_USER = "needs to be set"
 
 # this needs to be set to true on prod
 ASYNC_API = False
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
 
 # if the intrahospital api is prod
 # there 2 databases
@@ -391,7 +392,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.95'
+VERSION_NUMBER = '0.102'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -439,6 +440,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     )
 }
+
+# When this setting is true, we will only try and send down to EPR
+# if the first name starts with ZZZTEST (case insensitive)
+RESTRICT_EPR = True
 
 if 'test' not in sys.argv:
     try:

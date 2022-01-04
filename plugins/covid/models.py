@@ -665,6 +665,7 @@ class CovidFollowUpCallFollowUpCall(EpisodeSubrecord):
     imaging           = models.NullBooleanField()
     symptoms          = models.NullBooleanField()
     other             = models.CharField(blank=True, null=True, max_length=255)
+    echo_results      = models.TextField(blank=True, null=True)
 
     details           = models.TextField(
         blank=True, null=True, verbose_name="Call Details")

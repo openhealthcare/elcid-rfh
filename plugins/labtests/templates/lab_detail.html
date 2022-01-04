@@ -5,13 +5,13 @@
         <i class="fa fa-flask"></i> [[ lab_number ]]
         {% comment %}
         If there's only one patient related to the lab test
-        ie its not a lab test with a duplicate patient.
+        e.g. it''s not a lab test with a duplicate patient.
         Then put a link back to the patient.
         {% endcomment %}
         <span ng-show="lab_data.demographics.length == 1">
           <small>
           (
-            <a href="#/patient/[[ lab_data.demographics[0].patient_id ]]">
+            <a href="#/patient/[[ lab_data.demographics[0].patient_id ]]" class="orange-link">
               [[ lab_data.demographics[0].first_name ]]
               [[ lab_data.demographics[0].surname ]]
             </a>

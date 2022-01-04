@@ -8,6 +8,8 @@ from django.utils import timezone
 from opal.models import (
     Clinical_advice_reason_for_interaction, Patient, PatientSubrecord
 )
+from plugins.icu import constants
+from plugins.admissions.models import UpstreamLocation
 
 
 def parse_icu_location(location_string):
@@ -22,16 +24,6 @@ def parse_icu_location(location_string):
     bed = bed.split('-')[1]
 
     return (hospital, ward, bed)
-
-
-class ICUWard(models.Model):
-    """
-    Stores metadata about an ICU ward.
-
-    This is used by the dashboard to show ICU occupancy
-    """
-    name = models.CharField(blank=True, null=True, max_length=200)
-    beds = models.IntegerField(blank=True, null=True)
 
 
 class ICUHandoverLocation(models.Model):
@@ -174,34 +166,3 @@ class ICUHandover(PatientSubrecord):
         'DailyProgress_Organ_Resp'               : 'dailyprogress_organ_resp',
         'DailyProgress_Organ_CNS'                : 'dailyprogress_organ_cns',
     }
-
-
-def current_icu_patients():
-    """
-    The upstream Freenet ICU Handover view sometimes leaves patients permanently in
-    an undischarged state when they are on 'ghost' wards - temporary wards that 
-    existed during an ICU surge, and were then removed from the Freenet application 
-    before all patients had been removed on their database.
-
-    We believe a patient is _actually_ on ICU if they either:
-    - Have an ICU admission date within the last 4 days
-    - Received ICU clinical advice within the last 4 days
-    """
-    four_days_ago = timezone.now() - datetime.timedelta(4)
-    patient_ids_within_four_days = set(ICUHandoverLocation.objects.filter(
-        admitted__gte=four_days_ago
-    ).values_list('patient_id', flat=True).distinct())
-
-    icu_round_reason = Clinical_advice_reason_for_interaction.objects.get(
-        name=MicrobiologyInput.ICU_REASON_FOR_INTERACTION
-    )
-
-    review_within_four_days = set(MicrobiologyInput.objects.filter(
-        when__gte=four_days_ago,
-        reason_for_interaction_fk_id=icu_round_reason.id
-    ).values_list('episode__patient_id', flat=True))
-
-    patient_ids_within_four_days.update(review_within_four_days)
-    return Patient.objects.filter(
-        id__in=patient_ids_within_four_days
-    )

@@ -171,6 +171,10 @@ a.list-group-item {
     color: $obsidian;
 }
 
+.empty-list{
+  margin-top: 16px;
+}
+
 .patient-row{
   .label-warning{
     margin-top: 5px;
@@ -605,4 +609,19 @@ div.add-isolate:hover{
 
 .nowrap{
   white-space: nowrap;
+}
+
+.btn-toggles {
+    .btn.btn-primary {
+        background-color: $white;
+        color: #333;
+    }
+    .btn.btn-primary.active {
+        background-color: $primary;
+        color: $white;
+    }
+}
+
+.whitespacey{
+    white-space: pre;
 }

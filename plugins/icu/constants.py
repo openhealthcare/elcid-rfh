@@ -1,13 +1,6 @@
 """
 Constants for the ICU plugin
 """
-ICU_ROLE = 'icu'
+ICU_ROLE = "icu"
 
-WARD_NAMES = [
-    'South',
-    'East',
-    'West',
-    'ICU2',
-    'SHDU',
-    '3NorthA'
-]
+WARD_NAMES = ["RF-ICU 4 WEST", "RF-ICU 4 SOUTH", "RF-ICU 4 EAST", "RF-EPIC"]

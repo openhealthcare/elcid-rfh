@@ -4,50 +4,95 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h1>
-      Side Rooms: Royal Free Hospital
-      <span>
-        ({{ patients|length }} patients)
-      </span>
+      Isolation locations: Royal Free Hospital
     </h1>
   </div>
-  <table class="table table-striped">
+
+    <table class="table table-striped">
+
+  {% for name, ward in wards.items %}
+      <tr>
+        <th colspan="10">
+          <h2>{{ name }}</h2>
+        </th>
     <tr>
       <th>Ward</th>
       <th>Room</th>
       <th>Bed</th>
+      <th>Status</th>
       <th>MRN</th>
       <th>Name</th>
       <th>DOB</th>
       <th>Admitted</th>
-      <!-- <th>Alerts</th> -->
+      <th>IPC Comments</th>
+      <th><!-- Isolation --></th>
     </tr>
-    {% for patient in patients %}
+
+    {% for patient in ward %}
     <tr>
       <td>
-        <a href="/#/ipc/ward/{{ patient.ward | slugify }}/" class="orange-link">
-          {{ patient.ward }}
+        <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
+          {{ patient.ward_name }}
         </a>
       </td>
       <td>{{ patient.room }}</td>
       <td>{{ patient.bed }}</td>
+      <td> {{ patient.bed_status }}</td>
       {% with patient.patient.demographics as demographics %}
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.hospital_number }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.hospital_number }}</a>
       </td>
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.name }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.name }}</a>
       </td>
       <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}">{{ demographics.date_of_birth }}</a>
+        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.date_of_birth }}</a>
       </td>
       {% endwith %}
-      <td>{{ patient.admitted }}</td>
-      <!-- <td> -->
-      <!--   {% location_alerts patient %} -->
-      <!-- </td> -->
+      <td>
+        {% if patient.admission_date_time %}
+        {{ patient.admission_date_time }}
+        {% endif %}
+      </td>
+      <td>
+        {% if patient.patient.ipcstatus_set.get.comments %}
+        {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
+        {% endif %}
+      </td>
+      <td ng-controller="IsolationHelper as isolationHelper">
+        <span ng-show="isolationHelper.init(
+          '{{ patient.hospital_site_code }}',
+          '{{ patient.ward_name }}',
+          '{{ patient.room }}',
+          '{{ patient.bed }}',
+          {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
+          {% if patient.isSideRoom %}1{% else %}0{% endif %}
+        )">
+          <span ng-hide='isolationHelper.isSideRoom'>
+            <span ng-show='isolationHelper.isolated_bed_id'>
+              <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
+                Remove
+              </button>
+            </span>
+            <span ng-hide='isolationHelper.isolated_bed_id'>
+              <button ng-click="isolationHelper.isolate()" class="btn btn-default">
+                Add to Isolation
+              </button>
+            </span>
+          </span>
+        </span>
+      </td>
     </tr>
     {% endfor %}
 
+
+  {% endfor %}
   </table>
+
+
+
+
+
+
 </div> <!-- Panel -->
 {% endblock %}

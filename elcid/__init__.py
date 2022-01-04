@@ -51,6 +51,8 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/general_delete.js',
         'js/elcid/controllers/remove_patient_step.js',
         'js/elcid/controllers/add_to_service.js',
+        'js/elcid/controllers/send_upstream.js',
+        'js/elcid/controllers/send_pc_upstream.js',
         'js/elcid/services/demographics_search.js',
         'js/elcid/controllers/tagging_step.js',
         'js/elcid/controllers/investigations.js',
@@ -106,7 +108,7 @@ class Application(application.OpalApplication):
         if profile.roles.filter(name=IPC_ROLE).exists():
             menu_items.append(
                 menus.MenuItem(
-                    href='/#/ipc/wards/',
+                    href='/#/ipc/',
                     display='IPC',
                     icon='fa fa-warning',
                     activepattern='ipc'
