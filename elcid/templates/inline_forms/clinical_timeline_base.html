@@ -76,7 +76,8 @@
 
                   <div class="content-offset-10" ng-show="clinicalTimeline.hasIcuOrObservation(item)"></div>
                   <span ng-show="item.clinical_discussion">
-                    <b>Clinical Discussion: </b><div markdown="clinical_discussion"></div>
+                    <b>Clinical Discussion: </b>
+                    <div class="whitespacey">[[ item.clinical_discussion ]]</div>
                   </span>
                   <span ng-show="item.infection_control">
                     <b>Infection control: </b><div markdown="infection_control"></div>
