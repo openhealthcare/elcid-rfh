@@ -9,6 +9,11 @@ from plugins.ipc import api
 
 class IPCPlugin(plugins.OpalPlugin):
     urls = urlpatterns
+    javascripts = {
+        'opal.controllers': [
+            'ipc/js/controllers/ipc_form_advice_helper.js'
+        ]
+    }
 
     apis = [
         (api.IsolatedBedApi.basename, api.IsolatedBedApi,),

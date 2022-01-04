@@ -84,7 +84,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         context['icu_patients'] = 0
         if wards:
             context['icu_patients'] = sum(
-                [ward_info["patient_count"] for patients in ward_info]
+                [ward_info["patient_count"] for ward_info in wards]
             )
         context['today'] = datetime.date.today()
         return context
