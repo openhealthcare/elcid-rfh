@@ -330,7 +330,7 @@ class BedStatus(models.Model):
     updated_date                   = models.DateTimeField(blank=True, null=True)
     source                         = models.CharField(blank=True, null=True, max_length=255)
 
-    @cached_property
+    @property
     def isolated_bed(self):
         return IsolatedBed.objects.filter(
             hospital_site_code=self.hospital_site_code,

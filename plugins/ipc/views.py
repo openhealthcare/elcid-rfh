@@ -141,7 +141,7 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         for status in statuses:
             wards[status.ward_name].append(status)
 
-        context['wards'] = dict(wards)
+        context['wards'] = {name: wards[name] for name in sorted(wards.keys(), key=natural_keys)}
 
         return context
 

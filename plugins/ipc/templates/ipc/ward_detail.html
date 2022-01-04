@@ -15,6 +15,7 @@
   </div>
   <table class="table table-striped">
     <tr>
+      <th><!-- Isolation --></th>
       <th>Room</th>
       <th>Bed</th>
       <th>Status</th>
@@ -23,13 +24,38 @@
       <th>DOB</th>
       <th>Admitted</th>
       <th>IPC Comments</th>
-      <th>Isolation</th>
     </tr>
     {% for patient in patients %}
     <tr>
+
+      <td ng-controller="IsolationHelper as isolationHelper">
+        <span ng-show="isolationHelper.init(
+          '{{ patient.hospital_site_code }}',
+          '{{ patient.ward_name }}',
+          '{{ patient.room }}',
+          '{{ patient.bed }}',
+          {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
+          {% if patient.isSideRoom %}1{% else %}0{% endif %}
+        )">
+          <span ng-hide='isolationHelper.isSideRoom'>
+            <span ng-show='isolationHelper.isolated_bed_id'>
+              <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
+                Isolation
+              </button>
+            </span>
+            <span ng-hide='isolationHelper.isolated_bed_id'>
+              <button ng-click="isolationHelper.isolate()" class="btn btn-default">
+                Add to isolation
+              </button>
+            </span>
+          </span>
+        </span>
+      </td>
+
       <td>{{ patient.room }} </td>
       <td>{{ patient.bed }}</td>
       <td>{{ patient.bed_status }}</td>
+
       <td>
         {% if patient.local_patient_identifier %}
         <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.local_patient_identifier }}</a>
@@ -54,32 +80,6 @@
         {% if patient.patient.ipcstatus_set.get.comments %}
         {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}
-      </td>
-      <td ng-controller="IsolationHelper as isolationHelper">
-        <span ng-show="isolationHelper.init(
-          '{{ patient.hospital_site_code }}',
-          '{{ patient.ward_name }}',
-          '{{ patient.room }}',
-          '{{ patient.bed }}',
-          {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
-          {% if patient.isSideRoom %}1{% else %}0{% endif %}
-        )">
-          <span ng-show='isolationHelper.isSideRoom'>
-            Side room
-          </span>
-          <span ng-hide='isolationHelper.isSideRoom'>
-            <span ng-show='isolationHelper.isolated_bed_id'>
-              <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
-                Isolated
-              </button>
-            </span>
-            <span ng-hide='isolationHelper.isolated_bed_id'>
-              <button ng-click="isolationHelper.isolate()" class="btn btn-default">
-                Isolate
-              </button>
-            </span>
-          </span>
-        </span>
       </td>
     </tr>
     {% endfor %}
