@@ -8,18 +8,16 @@ from plugins.ipc import api
 
 
 class IPCPlugin(plugins.OpalPlugin):
+
     urls = urlpatterns
+
     javascripts = {
         'opal.controllers': [
-            'ipc/js/controllers/ipc_form_advice_helper.js'
+            'ipc/js/controllers/ipc_form_advice_helper.js',
+            "ipc/js/controllers/isolationHelper.js"
         ]
     }
 
     apis = [
         (api.IsolatedBedApi.basename, api.IsolatedBedApi,),
     ]
-    javascripts = {
-        'opal.controllers': [
-            "ipc/js/controllers/isolationHelper.js"
-        ]
-    }
