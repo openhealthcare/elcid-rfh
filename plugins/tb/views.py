@@ -24,10 +24,15 @@ class ClinicalAdvicePrintView(LoginRequiredMixin, DetailView):
 
 
 class AbstractLetterView(LoginRequiredMixin, DetailView):
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
+    @classmethod
+    def get_letter_context(cls, patient_consultation):
+        """
+        This generates the contet for the letter, it also
+        generates the context for the note sent to EPR
+        """
+        ctx = {"object": patient_consultation}
+        episode = patient_consultation.episode
+        patient = patient_consultation.episode.patient
         ctx["demographics"] = patient.demographics()
         ctx["primary_diagnosis_list"] = episode.diagnosis_set.filter(
             category=Diagnosis.PRIMARY
@@ -75,11 +80,11 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
 
         # Show the last positive culture and PCR and the last recent resulted if later
         # than the last positive
-        pcr_qs = TBPCR.objects.filter(patient=self.object.episode.patient)
+        pcr_qs = TBPCR.objects.filter(patient=patient_consultation.episode.patient)
         last_positive_pcr = pcr_qs.filter(
             positive=True
         ).filter(
-            patient=self.object.episode.patient
+            patient=patient_consultation.episode.patient
         ).order_by(
             '-observation_datetime'
         ).first()
@@ -96,7 +101,7 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["pcrs"] = [i for i in [last_positive_pcr, last_resulted] if i]
         ctx["pcrs"].reverse()
 
-        afb_qs = AFBRefLab.objects.filter(patient=self.object.episode.patient)
+        afb_qs = AFBRefLab.objects.filter(patient=patient_consultation.episode.patient)
         last_positive_culture = afb_qs.filter(positive=True).order_by(
             '-observation_datetime'
         ).first()
@@ -116,12 +121,12 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
         ctx["travel_list"] = episode.travel_set.all()
         ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
         ctx["past_medication_list"] = episode.antimicrobial_set.all()
-        ctx["allergies_list"] = patient.allergies_set.all()
+        ctx["allergies_list"] = [i for i in patient.allergies_set.all() if i.drug or i.details]
         ctx["imaging_list"] = episode.imaging_set.all()
         ctx["tb_history"] = patient.tbhistory_set.get()
         ctx["index_case_list"] = patient.indexcase_set.all()
         ctx["other_investigation_list"] = episode.otherinvestigation_set.all()
-        consultation_datetime = self.object.when
+        consultation_datetime = patient_consultation.when
         if consultation_datetime:
             obs = episode.observation_set.filter(
                 datetime__date=consultation_datetime.date()
@@ -130,21 +135,25 @@ class AbstractLetterView(LoginRequiredMixin, DetailView):
                 ctx["weight"] = obs.weight
         return ctx
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx.update(self.__class__.get_letter_context(self.object))
+        return ctx
+
 
 class InitialAssessment(AbstractLetterView):
     template_name = "tb/letters/initial_assessment.html"
     model = PatientConsultation
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
+    @classmethod
+    def get_letter_context(cls, patient_consultation):
+        ctx = super().get_letter_context(patient_consultation)
+        episode = patient_consultation.episode
+        patient = patient_consultation.episode.patient
         ctx["referral"] = episode.referralroute_set.get()
         ctx["social_history"] = episode.socialhistory_set.get()
 
-        ctx["symptom_complex_list"] = episode.symptomcomplex_set.all()
-        # TODO this has to change
-
+        ctx["symptom_complex_list"] = [i for i in episode.symptomcomplex_set.all() if i.symptoms.exists()]
         ctx["patient"] = patient
         return ctx
 
@@ -153,19 +162,13 @@ class FollowUp(AbstractLetterView):
     template_name = "tb/letters/follow_up.html"
     model = PatientConsultation
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = self.object.episode
-        patient = self.object.episode.patient
-        ctx["adverse_reaction_list"] = episode.adversereaction_set.all()
-        return ctx
-
 
 class NurseLetter(LoginRequiredMixin, DetailView):
     template_name = "tb/letters/nurse_letter.html"
     model = PatientConsultation
 
-    def get_lab_test_observations(self, patient, clinical_advice, test_name, observation_names):
+    @classmethod
+    def get_lab_test_observations(cls, patient, clinical_advice, test_name, observation_names):
         """
         Return a lab test where at least one of the observations for
         that day are numeric
@@ -192,7 +195,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
             i for i in observations if i.observation_name in observation_names
         ]
 
-    def get_bloods(self, patient, clinical_advice):
+    @classmethod
+    def get_bloods(cls, patient, clinical_advice):
         """
         Returns the most recent observations before the clincial
         advice for liver, urea, CRP, and full blood count observations.
@@ -200,7 +204,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         result = []
 
         # Liver observations
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "LIVER PROFILE",
@@ -208,7 +212,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
 
         # Urea observations
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "UREA AND ELECTROLYTES",
@@ -216,7 +220,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
 
         # CRP
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "C REACTIVE PROTEIN",
@@ -224,7 +228,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
 
         # Full blood count
-        result.extend(self.get_lab_test_observations(
+        result.extend(cls.get_lab_test_observations(
             patient,
             clinical_advice,
             "C FULL BLOOD COUNT",
@@ -232,7 +236,8 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         ))
         return result
 
-    def get_observations(self, patient_consultation):
+    @classmethod
+    def get_observations(cls, patient_consultation):
         """
         These are observations
         as in obs.models, ie weight and temperature
@@ -269,11 +274,17 @@ class NurseLetter(LoginRequiredMixin, DetailView):
                 result[obs_field] = str(obs_val).rsplit('.0', 1)[0]
         return result
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        episode = ctx["object"].episode
+    @classmethod
+    def get_letter_context(cls, patient_consultation):
+        """
+        We declare the get context method in a class method
+        so that we can also use the same context to
+        create the letter that goes up to EPR
+        """
+        episode = patient_consultation.episode
+        ctx = {"object": patient_consultation}
         ctx["patient"] = episode.patient
-        ctx["bloods"] = self.get_bloods(episode.patient, ctx["object"])
+        ctx["bloods"] = cls.get_bloods(episode.patient, patient_consultation)
         if not ctx["bloods"]:
             ctx["bloods_normal"] = False
         else:
@@ -299,7 +310,12 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         adverse_reaction = episode.adversereaction_set.first()
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
-        ctx["observations"] = self.get_observations(ctx["object"])
+        ctx["observations"] = cls.get_observations(patient_consultation)
+        return ctx
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx.update(self.__class__.get_letter_context(self.object))
         return ctx
 
 

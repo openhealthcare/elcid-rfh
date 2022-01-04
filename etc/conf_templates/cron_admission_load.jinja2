@@ -1,1 +1,2 @@
 7 */2 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py fetch_admissions && {{ virtualenv }}/bin/python {{ project_dir }}/manage.py parse_admissions >> /usr/lib/ohc/log/cron.log 2>&1
+9 * * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py fetch_bed_status >> /usr/lib/ohc/log/cron.log 2>&1

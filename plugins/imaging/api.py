@@ -8,7 +8,7 @@ from opal.core.views import json_response
 
 
 class ImagingViewSet(LoginRequiredViewset):
-    base_name = 'upstream_imaging'
+    basename = 'upstream_imaging'
 
     def retrieve(self, request, pk):
         patient = get_object_or_404(Patient.objects.all(), pk=pk)

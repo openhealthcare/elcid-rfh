@@ -1,0 +1,18 @@
+{% extends 'ipc/base.html' %}
+{% block content %}
+<div class="panel panel-default" >
+  <div class="panel-heading">
+    <h1>Hospitals</h1>
+  </div>
+
+  <div class="panel-body">
+    {% for name, code in hospitals %}
+    <p>
+      <a href="/#/ipc/bedboard/hospital/{{code}}/" class="orange-link">
+        {{ code }} {{ name }}
+      </a>
+    </p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

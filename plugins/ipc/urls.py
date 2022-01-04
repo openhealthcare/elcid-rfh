@@ -17,19 +17,19 @@ urlpatterns = [
         name='ipc_recent_tests'
     ),
     path(
-        'templates/ipc/wards.html',
-        views.WardListView.as_view(),
-        name='ipc_wards'
+        'ipc/bedboard/hospital/<hospital_code>/',
+        views.HospitalWardListView.as_view(),
+        name='ipc_hospital_wards'
+    ),
+    path(
+        'templates/ipc/ward/<ward_name>/',
+        views.WardDetailView.as_view(),
+        name='ipc_ward_detail'
     ),
     path(
         'templates/ipc/siderooms.html',
         views.SideRoomView.as_view(),
         name='ipc_siderooms'
-    ),
-    path(
-        'templates/ipc/ward/<ward_code>/',
-        views.WardDetailView.as_view(),
-        name='ipc_ward_detail'
     ),
     path(
         'templates/ipc/alert/<alert_code>/',

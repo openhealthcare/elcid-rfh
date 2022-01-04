@@ -1,0 +1,103 @@
+<span ng-show="item.mrsa || item.mrsa_date">
+     MRSA [[ item.mrsa_date | displayDate ]]
+     <span ng-show="item.mrsa">(<i class="fa fa-check"></i>)</span>
+   <br />
+</span>
+
+<span ng-show="item.mrsa_neg || item.mrsa_neg_date">
+   MRSA Neg [[ item.mrsa_neg_date | displayDate ]]
+   <span ng-show="item.mrsa_neg">(<i class="fa fa-check"></i>)</span>
+ <br />
+</span>
+
+<span ng-show="item.reactive || item.reactive_date">
+   Reactive [[ item.reactive_date | displayDate ]]
+   <span ng-show="item.reactive">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.c_difficile || item.c_difficile_date">
+   C Difficile [[ item.c_difficile_date | displayDate ]]
+   <span ng-show="item.c_difficile">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.vre || item.vre_date">
+   VRE [[ item.vre_date | displayDate ]]
+   <span ng-show="item.vre">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.vre_neg || item.vre_neg_date">
+   VRE Neg [[ item.vre_neg_date | displayDate ]]
+   <span ng-show="item.vre_neg">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.carb_resistance || item.carb_resistance_date">
+   Carb Resistance [[ item.carb_resistance_date | displayDate ]]
+   <span ng-show="item.carb_resistance">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.contact_of_carb_resistance || item.contact_of_carb_resistance_date">
+   Contact Of Carb Resistance [[ item.contact_of_carb_resistance_date | displayDate ]]
+   <span ng-show="item.contact_of_carb_resistance">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.acinetobacter || item.acinetobacter_date">
+   Acinetobacter [[ item.acinetobacter_date | displayDate ]]
+   <span ng-show="item.acinetobacter">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.contact_of_acinetobacter || item.contact_of_acinetobacter_date">
+   Contact Of Acinetobacter [[ item.contact_of_acinetobacter_date | displayDate ]]
+   <span ng-show="item.contact_of_acinetobacter">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.cjd || item.cjd_date">
+   CJD [[ item.cjd_date | displayDate ]]
+   <span ng-show="item.cjd">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.candida_auris || item.candida_auris_date">
+   Candida auris [[ item.candida_auris_date | displayDate ]]
+   <span ng-show="item.candida_auris">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.contact_of_candida_auris || item.contact_of_candida_auris_date">
+   Contact of candida auris [[ item.contact_of_candida_auris_date | displayDate ]]
+   <span ng-show="item.contact_of_candida_auris">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.multi_drug_resistant_organism || item.multi_drug_resistant_organism_date">
+   Multi Drug Resistant Organism [[ item.multi_drug_resistant_organism_date | displayDate ]]
+   <span ng-show="item.multi_drug_resistant_organism">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.covid_19 || item.covid_19_date">
+   Covid-19 [[ item.covid_19_date | displayDate ]]
+   <span ng-show="item.covid_19">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.contact_of_covid_19 || item.contact_of_covid_19_date">
+   Contact of Covid-19 [[ item.contact_of_covid_19_date | displayDate ]]
+   <span ng-show="item.contact_of_covid_19">(<i class="fa fa-check"></i>)</span>
+<br />
+</span>
+
+<span ng-show="item.other || item.other_date">
+    Other: [[ item.other ]] [[ item.other_date | displayDate ]] (<i class="fa fa-check"></i>)
+   <br />
+</span>
+<span ng-show="item.comments">
+  [[ item.comments ]]
+</span>

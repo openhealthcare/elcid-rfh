@@ -258,9 +258,16 @@ TEST_CODES = [
     ("INR", ["INR"]),
     ("CLOTTING SCREEN", ["Fibrinogen"]),
     ("GLUCOSE", ["Glucose"]),
-    ("CREATINE KINASE", ["Creatine Kinase U/L"]),
-    ("LACTATE DEHYDROGENASE", ["LD U/L"])
+    ("CREATINE KINASE", ["Creatine Kinase"]),
+    ("LACTATE DEHYDROGENASE", ["LD"])
     ]
+
+"""
+PROTHROMBIN TIME and INR can be ordered as
+PT\T\INR # MRN 50092170
+Fibrinogen can be ordered as CLOTING SCREEN
+"""
+
 
 def get_admission_labs(patient, admission_date):
 
@@ -290,6 +297,45 @@ def get_admission_labs(patient, admission_date):
 
     return labs
 
+
+def get_closest_observation(patient, test_name, obs_code, followup_date):
+    """
+    Look for the observation with the nearest observation date 90 days
+    either side of the follow up date.
+    """
+    observation_qs = Observation.objects.filter(
+        test__patient=patient,
+    ).filter(
+        test__test_name=test_name
+    ).filter(
+        observation_name=obs_code
+    )
+    # the closest obs that happened before the follow up date
+    earlier_obs = observation_qs.filter(
+        observation_datetime__gte=followup_date-datetime.timedelta(days=90)
+    ).filter(
+        observation_datetime__lte=followup_date
+    ).order_by('-observation_datetime').first()
+
+    # the closest obs that happened after the follow up date
+    later_obs = observation_qs.filter(
+        observation_datetime__gte=followup_date
+    ). filter(
+        observation_datetime__lte=followup_date+datetime.timedelta(days=90)
+    ).order_by('observation_datetime').first()
+
+    # If there is no max obs, or there is no min obs
+    # return the one there is.
+    # If there is neither, return None
+    if not earlier_obs or not later_obs:
+        return earlier_obs or later_obs
+    earlier_diff = abs((followup_date - earlier_obs.observation_datetime.date()).days)
+    later_diff = abs((followup_date - later_obs.observation_datetime.date()).days)
+    if later_diff < earlier_diff:
+        return later_obs
+    return earlier_obs
+
+
 def get_followup_labs(patient, followup_date):
     if followup_date is None:
         return [''] * 48 # empty
@@ -298,19 +344,7 @@ def get_followup_labs(patient, followup_date):
 
     for test_name, observations in TEST_CODES:
         for obs_code in observations:
-
-            observation = Observation.objects.filter(
-                test__patient=patient,
-            ).filter(
-                test__test_name=test_name
-            ).filter(
-                observation_name=obs_code
-            ).filter(
-                observation_datetime__gte=followup_date-datetime.timedelta(days=14)
-            ).filter(
-                observation_datetime__lte=followup_date+datetime.timedelta(days=14)
-            ).order_by('observation_datetime').first()
-
+            observation = get_closest_observation(patient, test_name, obs_code, followup_date)
             if observation:
                 labs.append(observation.observation_value.split('~')[0])
                 labs.append(observation.observation_datetime)

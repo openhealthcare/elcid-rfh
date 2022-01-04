@@ -13,7 +13,7 @@ angular.module('opal.controllers').controller(
                     $scope.detail_refresh().then(
                         function(){
                             $scope.refresh_timeline();
-                            $modalInstance.close()
+                            $modalInstance.close();
                         }
                     )
                 }
@@ -21,7 +21,7 @@ angular.module('opal.controllers').controller(
         }
 
         $scope.cancel = function(){
-            $modalInstance.close('cancel')
+            $modalInstance.close('cancel');
         }
 
     }

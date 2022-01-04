@@ -1,4 +1,4 @@
-{% if not communication_considerations.language == "English" %}
+{% if communication_considerations.language and not communication_considerations.language == "English" %}
 <p>
   <b>Language:</b><br />
     {{ communication_considerations.language }}
