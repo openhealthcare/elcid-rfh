@@ -3,6 +3,7 @@ Models for the elCID admissions plugin
 """
 import datetime
 from django.db import models
+from django.utils.functional import cached_property
 from opal.models import Patient, PatientSubrecord
 
 from plugins.admissions import constants
@@ -270,6 +271,16 @@ class TransferHistory(models.Model):
     }
 
 
+class IsolatedBed(models.Model):
+    """
+    Beds marked by users as now in isolation.
+    """
+    hospital_site_code             = models.CharField(blank=True, null=True, max_length=255)
+    ward_name                      = models.CharField(blank=True, null=True, max_length=255)
+    room                           = models.CharField(blank=True, null=True, max_length=255)
+    bed                            = models.CharField(blank=True, null=True, max_length=255)
+
+
 class BedStatus(models.Model):
     """
     A snapshot of current bed status
@@ -319,6 +330,18 @@ class BedStatus(models.Model):
     updated_date                   = models.DateTimeField(blank=True, null=True)
     source                         = models.CharField(blank=True, null=True, max_length=255)
 
+    @property
+    def isolated_bed(self):
+        return IsolatedBed.objects.filter(
+            hospital_site_code=self.hospital_site_code,
+            ward_name=self.ward_name,
+            room=self.room,
+            bed=self.bed
+        ).first()
+
+    @property
+    def is_side_room(self):
+        return self.room.startwith('SR')
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'Facility'                      : 'facility',

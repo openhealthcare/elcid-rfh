@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 
 from elcid.utils import natural_keys
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CDOE
-from plugins.admissions.models import Encounter, UpstreamLocation, BedStatus
+from plugins.admissions.models import BedStatus, IsolatedBed
 
 from plugins.ipc import lab, models, utils
 
@@ -111,24 +111,37 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        locations = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
-                                             room__startswith='SR').order_by('ward_name', 'bed')
+        side_rooms_statuses = list(BedStatus.objects.filter(
+            hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+            room__startswith='SR'
+        ))
 
-        for location in locations:
-            if location.patient:
-                ipc = location.patient.episode_set.filter(category_name='IPC').first()
+        isolation_status = []
+        for isolated_bed in IsolatedBed.objects.all():
+            bed_status = BedStatus.objects.filter(
+                hospital_site_code=isolated_bed.hospital_site_code,
+                ward_name=isolated_bed.ward_name,
+                room=isolated_bed.room,
+                bed=isolated_bed.bed,
+            ).first()
+            if bed_status:
+                isolation_status.append(bed_status)
+        statuses = BedStatus.objects.filter(
+            id__in=[i.id for i in side_rooms_statuses + isolation_status]
+        ).order_by('ward_name', 'bed')
+
+        for status in statuses:
+            if status.patient:
+                ipc = status.patient.episode_set.filter(category_name='IPC').first()
                 if ipc:
-                    location.ipc_episode = ipc
-
-
-        context['location_count'] = locations.count()
+                    status.ipc_episode = ipc
 
         wards = collections.defaultdict(list)
 
-        for location in locations:
-            wards[location.ward_name].append(location)
+        for status in statuses:
+            wards[status.ward_name].append(status)
 
-        context['wards'] = dict(wards)
+        context['wards'] = {name: wards[name] for name in sorted(wards.keys(), key=natural_keys)}
 
         return context
 
