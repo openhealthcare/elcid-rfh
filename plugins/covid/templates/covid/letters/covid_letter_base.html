@@ -8,7 +8,18 @@
     </button>
   </span>
   <span ng-show="covidLetterHelper.isWrittenToEPR('{{ object.get_api_name }}', {{ object.id }}) === false">
-    <button ng-click="open_modal('SendCovidToEPR', '/templates/send_upstream_modal.html', {modelApiName: '{{ object.get_api_name }}', itemId: {{ object.id }}, callBack: covidLetterHelper.markAsWritten})" class="btn btn-lg btn-primary">
+    <button ng-click="open_modal(
+      'SendCovidToEPR',
+      '/templates/send_upstream_modal.html',
+      {
+        modelApiName: '{{ object.get_api_name }}',
+        itemId: {{ object.id }},
+        callBack: covidLetterHelper.markAsWritten,
+        first_name: '{{ object.episode.patient.demographics.first_name }}',
+        surname: '{{ object.episode.patient.demographics.surname }}',
+        date_of_birth: '{{ object.episode.patient.demographics.date_of_birth | date:DATE_FORMAT }}',
+        hospital_number: '{{ object.episode.patient.demographics.hospital_number }}',
+    })" class="btn btn-lg btn-primary">
       <i class="fa fa-exchange"></i> Write to EPR
     </button>
   </span>
