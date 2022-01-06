@@ -583,6 +583,8 @@ class CovidFollowUpCall(EpisodeSubrecord):
     gp_copy                    = models.TextField(
         blank=True, null=True, verbose_name="Copy for clinic letter"
     )
+    # the timestamp it was sent to epr, null if it hasn't been.
+    sent_to_epr                    = models.DateTimeField(blank=True, null=True)
 
     def other_symptoms(self):
         symptom_fields = [
@@ -670,6 +672,8 @@ class CovidFollowUpCallFollowUpCall(EpisodeSubrecord):
     details           = models.TextField(
         blank=True, null=True, verbose_name="Call Details")
 
+    # the timestamp it was sent to epr, null if it hasn't been.
+    sent_to_epr       = models.DateTimeField(blank=True, null=True)
 
 class CovidSixMonthFollowUp(EpisodeSubrecord):
     """
@@ -874,6 +878,9 @@ class CovidSixMonthFollowUp(EpisodeSubrecord):
     gp_copy = models.TextField(
         blank=True, null=True, verbose_name="Copy for clinic letter"
     )
+
+    # the timestamp it was sent to epr, null if it hasn't been.
+    sent_to_epr = models.DateTimeField(blank=True, null=True)
 
     def other_symptoms(self):
         symptom_fields = [
