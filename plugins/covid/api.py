@@ -53,7 +53,7 @@ class AbstractSendCovidToEpr(LoginRequiredViewset):
     @item_from_pk
     def retrieve(self, request, item):
         return json_response({
-            "sent": bool(item.sent_dt)
+            "sent": bool(item.sent_to_epr)
         })
 
 

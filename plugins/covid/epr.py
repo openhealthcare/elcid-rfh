@@ -228,7 +228,7 @@ def write_covid_data(obj):
         note_text = render_covid_followup_letter(obj)
     elif isinstance(obj, CovidSixMonthFollowUp):
         note_text = render_covid_six_month_followup_letter(obj)
-    obj.sent_dt = timezone.now()
+    obj.sent_to_epr = timezone.now()
     obj.save()
     note = create_note(obj, note_subject, note_text)
     write_note(obj.episode.patient, note)
