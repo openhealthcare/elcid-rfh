@@ -203,7 +203,7 @@ def create_patients(mrns):
     return a dictionary of mrn to a list of patients
     """
     from intrahospital_api.loader import create_rfh_patient_from_hospital_number
-    demographics = Demographics.objects.filter(hospital_number=mrns).select_related(
+    demographics = Demographics.objects.filter(hospital_number__in=mrns).select_related(
         'patient'
     )
     mrn_to_patients = defaultdict(list)
