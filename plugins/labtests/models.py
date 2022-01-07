@@ -135,7 +135,8 @@ class LabTest(models.Model):
                 return site_part
 
 
-class AbstractObserveration(models.Model):
+class Observation(models.Model):
+    test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
     last_updated = models.DateTimeField(blank=True, null=True)
     observation_datetime = models.DateTimeField(blank=True, null=True)
     reported_datetime = models.DateTimeField(blank=True, null=True)
@@ -147,13 +148,6 @@ class AbstractObserveration(models.Model):
 
     # as defined by us
     created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        abstract = True
-
-
-class Observation(AbstractObserveration):
-    test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
 
     def to_float(self, some_val):
         regex = r'^[-+]?[0-9]+(\.[0-9]+)?$'
@@ -258,20 +252,3 @@ class Observation(AbstractObserveration):
         for f in fields:
             setattr(obs, f, observation_dict.get(f))
         return obs
-
-
-class ObservationHistory(AbstractObserveration):
-    # the test_name of the tests that we will archive
-    TEST_NAMES = [
-        'AFB : CULTURE',
-        'AFB : EARLY MORN. URINE',
-        'AFB BLOOD CULTURE',
-        'BLOOD CULTURE',
-    ]
-    test_name = models.CharField(max_length=256, blank=True, null=True)
-    lab_number = models.CharField(max_length=256, blank=True, null=True)
-    patient = models.ForeignKey(
-        omodels.Patient,
-        on_delete=models.CASCADE,
-        related_name="observation_history"
-    )
