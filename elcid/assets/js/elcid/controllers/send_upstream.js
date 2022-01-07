@@ -1,7 +1,6 @@
 angular.module('opal.controllers').controller(
     'SendUpstreamCtrl',
     function($scope, $modalInstance, $http, patient, item, refresh_patient, refresh_timeline){
-
         $scope._patient         = patient;
         $scope.item             = item;
         $scope.detail_refresh   = refresh_patient;

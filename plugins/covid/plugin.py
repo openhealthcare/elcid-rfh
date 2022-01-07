@@ -14,7 +14,9 @@ class CovidPlugin(plugins.OpalPlugin):
 
     javascripts = {
         'opal.controllers': [
-            'js/covid/covid_test_summary.controller.js'
+            'js/covid/covid_test_summary.controller.js',
+            'js/covid/send_covid_to_epr.controller.js',
+            'js/covid/covid_letter_helper.controller.js',
         ]
     }
 
@@ -42,4 +44,10 @@ class CovidPlugin(plugins.OpalPlugin):
     apis = [
         ('covid_service_test_summary', api.CovidServiceTestSummaryAPI),
         ('covid_cxr', api.CovidCXRViewSet),
+        (api.SendCovidFollowUpCallUpstream.basename, api.SendCovidFollowUpCallUpstream),
+        (
+            api.SendCovidFollowUpCallFollowUpCall.basename,
+            api.SendCovidFollowUpCallFollowUpCall
+        ),
+        (api.SendCovidSixMonthFollowUp.basename, api.SendCovidSixMonthFollowUp),
     ]

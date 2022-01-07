@@ -1,7 +1,9 @@
 """
 Models for the elCID admissions plugin
 """
+import datetime
 from django.db import models
+from django.utils.functional import cached_property
 from opal.models import Patient, PatientSubrecord
 
 from plugins.admissions import constants
@@ -273,6 +275,16 @@ class TransferHistory(models.Model):
     }
 
 
+class IsolatedBed(models.Model):
+    """
+    Beds marked by users as now in isolation.
+    """
+    hospital_site_code             = models.CharField(blank=True, null=True, max_length=255)
+    ward_name                      = models.CharField(blank=True, null=True, max_length=255)
+    room                           = models.CharField(blank=True, null=True, max_length=255)
+    bed                            = models.CharField(blank=True, null=True, max_length=255)
+
+
 class BedStatus(models.Model):
     """
     A snapshot of current bed status
@@ -322,7 +334,18 @@ class BedStatus(models.Model):
     updated_date                   = models.DateTimeField(blank=True, null=True)
     source                         = models.CharField(blank=True, null=True, max_length=255)
 
+    @property
+    def isolated_bed(self):
+        return IsolatedBed.objects.filter(
+            hospital_site_code=self.hospital_site_code,
+            ward_name=self.ward_name,
+            room=self.room,
+            bed=self.bed
+        ).first()
 
+    @property
+    def is_side_room(self):
+        return self.room.startwith('SR')
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'Facility'                      : 'facility',
@@ -361,3 +384,35 @@ class BedStatus(models.Model):
         'Updated_Date'                  : 'updated_date',
         'SOURCE'                        : 'source',
     }
+
+    #
+    # Although we maintain consistency with the upstream
+    # data with minimal alterations, there is no real
+    # utility in serializing much of this to the front end
+    # on every patient/episode serialization.
+    #
+    FIELDS_TO_SERIALIZE = {
+        'hospital_site_description': 'hospital',
+        'ward_name'                : 'ward',
+        'room'                     : 'room',
+        'bed'                      : 'bed'
+    }
+
+    def to_dict(self):
+        """
+        Pluck out the fields relevant to serialization in the context of
+        being a patient subrecord
+        """
+        result =  {v: getattr(self, k) for k, v in self.FIELDS_TO_SERIALIZE.items()}
+
+        if result['hospital'].endswith(' HOSPITAL'):
+            result['hospital'] = result['hospital'][:-9]
+
+        if self.admission_date_time:
+            try:
+                result['admission_date_time'] = datetime.datetime.strptime(
+                    self.admission_date_time, '%Y-%m-%d %H:%M:%S'
+                )
+            except ValueError:
+                result['admission_date_time'] = None
+        return result

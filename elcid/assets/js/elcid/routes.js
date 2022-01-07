@@ -95,8 +95,12 @@ app.config(
                    param_template_route('/admissions/bedboard/ward/', 'ward_name'))
 
              .when('/ipc/',                         static_template_route('/templates/ipc/home.html'))
-             .when('/ipc/wards/',                   static_template_route('/templates/ipc/wards.html'))
-             .when('/ipc/ward/:ward_code/',         param_template_route('/templates/ipc/ward/', 'ward_code'))
+             .when('/ipc/bedboard/hospitals/',      static_template_route('/templates/ipc/hospitals.html'))
+             .when('/ipc/bedboard/hospital/:hospital_code/',
+                   param_template_route('/ipc/bedboard/hospital/', 'hospital_code'))
+             .when('/ipc/bedboard/ward/:ward_name/',
+                   param_template_route('/templates/ipc/ward/', 'ward_name'))
+
              .when('/ipc/siderooms/',               static_template_route('/templates/ipc/siderooms.html'))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
 
@@ -117,4 +121,18 @@ app.config(
                      referencedata: function(Referencedata) { return Referencedata; },
                  },
              })
+             .when('/lab-test/:lab_number/',      {
+                controller: "LabDetail",
+                templateUrl: function(){
+                    return '/templates/lab_detail.html'
+                },
+                resolve: {
+                    lab_number: function($route){
+                        return $route.current.params.lab_number;
+                    },
+                    lab_data: function($http, $route, LabDetailLoader) {
+                        return LabDetailLoader.load($route.current.params.lab_number)
+                    },
+                },
+            })
      }]);

@@ -30,6 +30,7 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import logger
 from elcid import models as elcid_models
 from plugins.tb import models as tb_models
+from plugins.tb.epr import render_advice as render_tb_advice
 
 
 Q_NOTE_INSERT = """
@@ -96,7 +97,6 @@ def get_note_text(advice, *fields):
         sections.append(f"\n** Written by **\n")
         sections.append(user_string)
 
-
     text = "\n".join(sections)
     final_text = f"\n{text}\n\nEND OF NOTE\n\n"
     return final_text
@@ -143,14 +143,7 @@ def write_clinical_advice(advice):
         )
     elif isinstance(advice, tb_models.PatientConsultation):
         note_data["note_type"] = 'Respiratory Medicine Consult Note'
-        note_data["note"] = get_note_text(
-            advice,
-            "infection_control",
-            "progress",
-            "discussion",
-            "plan",
-            "initials"
-        )
+        note_data["note"] = render_tb_advice(advice)
     else:
         raise ValueError(
           'Only microbiology input and patient consultations can be sent downstream'
@@ -158,14 +151,16 @@ def write_clinical_advice(advice):
 
     advice.sent_upstream = True
     advice.save()
+    write_note(patient, note_data)
+    return True
 
-    if settings.RESTRICT_EPR and not is_test_patient(demographics):
+
+def write_note(patient, note_data):
+    if settings.RESTRICT_EPR and not is_test_patient(patient.demographics()):
         logger.warn(
             f"EPR: RESTRICT_EPR == True, so not sending patient {patient.id} to EPR"
         )
         return True
-
     api = ProdAPI()
     result = api.execute_hospital_insert(Q_NOTE_INSERT, params=note_data)
     logger.info(result)
-    return True

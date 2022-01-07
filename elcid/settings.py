@@ -146,6 +146,7 @@ TEMPLATES = [
                 'opal.context_processors.settings',
                 'opal.context_processors.models',
                 'elcid.context_processors.permissions',
+                'plugins.admissions.context_processors.hospitals',
             ],
         },
     },
@@ -391,7 +392,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.101'
+VERSION_NUMBER = '0.102'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

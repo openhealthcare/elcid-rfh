@@ -1,0 +1,121 @@
+{% load forms %}
+<div ng-controller="ClinicalTimeline as clinicalTimeline">
+  {% if not user.profile.readonly %}
+  <div  class="panel panel-default hidden-print">
+    <div class="panel-heading"><h3>
+        <i class="fa fa-comments"></i> Clinical Advice
+    </div></h3>
+    <div class="panel-body">
+      <div class="row">
+        <div class="col-md-12">
+          <form class="form-horizontal">
+            <div ng-repeat="formItem in [clinicalTimeline.formItem]">
+              {% block form_template %}{% endblock %}
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 text-right">
+          <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
+            <i class="fa fa-save"></i>
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div ng-show="clinicalTimeline.clinicalAdvice.length" class="panel panel-default hidden-print">
+    <div class="panel-body">
+      <div class="patient-timeline-container">
+        <div class="row">
+          <div class="col-md-3 patient-timeline">
+            <div class="patient-timeline-now">
+              <div class="patient-timeline-now-text bg-secondary">
+                Now
+              </div>
+            </div>
+          </div>
+        </div>
+        <svg class="speech-bubble-timeline-container">
+          <line class="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
+          <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
+        </svg>
+        <div ng-repeat="item in clinicalTimeline.clinicalAdvice" class="row content-offset-20">
+
+          <div class="col-md-3 patient-timeline">
+            <div class="patient-timeline-speech-bubble">
+              <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
+            </div>
+            <div ng-show="item.when">
+              <div class="patient-timeline-date">
+                [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
+              </div>
+            </div>
+          </div>
+          <div class="col-md-9">
+            <div class="patient-timeline-discussion">
+              <div class="row">
+                <div class="col-sm-10 timeline-data-[[ $index ]]">
+                  <span ng-show="item.initials && item.initials.trim().length">
+                    <p>
+                      <b>By: </b> [[item.initials]]
+                      <span ng-show="item.discussed_with">(discussed with [[ item.discussed_with ]])</span>
+                    </p>
+                  </span>
+                  <span ng-show="item.reason_for_interaction">
+                    <p>
+                      <b>Reason For Interaction: </b><br/>[[item.reason_for_interaction]]
+                    </p>
+                  </span>
+
+                  {% block additional_field_display %}{% endblock %}
+
+
+                  <div class="content-offset-10" ng-show="clinicalTimeline.hasIcuOrObservation(item)"></div>
+                  <span ng-show="item.clinical_discussion">
+                    <b>Clinical Discussion: </b>
+                    <div class="whitespacey">[[ item.clinical_discussion ]]</div>
+                  </span>
+                  <span ng-show="item.infection_control">
+                    <b>Infection control: </b><div markdown="infection_control"></div>
+                  </span>
+                  <span ng-show="item.agreed_plan">
+                    <b>Agreed Plan: </b><div markdown="agreed_plan"></div>
+                  </span>
+                  <div class="bg-success" ng-show="item.sent_upstream">
+                    <p><i>Note written to EPR</i><p>
+                  </div>
+                </div>
+                <div class="col-sm-2">
+                  <div class="row" ng-hide="item.sent_upstream">
+                    <div class="col-md-12">
+                      <i class="fa fa-pencil edit pull-right pointer" ng-click="clinicalTimeline.editItem(item)"></i>
+                    </div>
+                  </div>
+                  <div class="row content-offset-10">
+                    <div class="col-md-12">
+                      <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
+                    </div>
+                  </div>
+
+                  <div class="row content-offset-10" ng-hide="item.sent_upstream">
+                    <div class="col-md-12">
+                      {% block send_upstream_button %}{% endblock %}
+                    </div>
+                  </div>
+
+                </div>
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

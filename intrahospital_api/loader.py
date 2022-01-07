@@ -399,7 +399,8 @@ def _load_patient(patient, patient_load):
         load_imaging,
         load_encounters,
         load_appointments,
-        load_dischargesummaries
+        # Discharge summaries are currently inaccurate
+        # load_dischargesummaries
     ]
 
     for loader in loaders:

@@ -36,6 +36,10 @@ body{
     margin-top: 30px;
 }
 
+.content-offset-100{
+  margin-top: 100px;
+}
+
 .content-offset-5{
     margin-top: 5px;
 }
@@ -165,6 +169,10 @@ a.list-group-item {
 }
 .text-muted a:hover {
     color: $obsidian;
+}
+
+.empty-list{
+  margin-top: 16px;
 }
 
 .patient-row{
@@ -601,4 +609,19 @@ div.add-isolate:hover{
 
 .nowrap{
   white-space: nowrap;
+}
+
+.btn-toggles {
+    .btn.btn-primary {
+        background-color: $white;
+        color: #333;
+    }
+    .btn.btn-primary.active {
+        background-color: $primary;
+        color: $white;
+    }
+}
+
+.whitespacey{
+    white-space: pre;
 }

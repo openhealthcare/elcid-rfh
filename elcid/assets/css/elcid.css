@@ -17,6 +17,10 @@ body {
   margin-top: 30px;
 }
 
+.content-offset-100 {
+  margin-top: 100px;
+}
+
 .content-offset-5 {
   margin-top: 5px;
 }
@@ -145,6 +149,10 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 
 .text-muted a:hover {
   color: #343637;
+}
+
+.empty-list {
+  margin-top: 16px;
 }
 
 .patient-row .label-warning {
@@ -529,6 +537,19 @@ div.add-isolate:hover {
 
 .nowrap {
   white-space: nowrap;
+}
+
+.btn-toggles .btn.btn-primary {
+  background-color: #FFF;
+  color: #333;
+}
+.btn-toggles .btn.btn-primary.active {
+  background-color: #0091C9;
+  color: #FFF;
+}
+
+.whitespacey {
+  white-space: pre;
 }
 
 /*# sourceMappingURL=elcid.css.map */
