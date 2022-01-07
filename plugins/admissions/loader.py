@@ -3,8 +3,7 @@ Load admissions from upsteam
 """
 import datetime
 import time
-from django.db import transaction
-
+from collections import defaultdict
 from django.db import transaction
 from django.db.models import DateTimeField
 from django.utils import timezone
@@ -164,8 +163,8 @@ def load_excounters_since(timestamp):
         )
 
 
-def cast_to_transfer_history(upstream_dict):
-    hist = TransferHistory()
+def cast_to_transfer_history(upstream_dict, patient):
+    hist = TransferHistory(patient=patient)
     for k, v in upstream_dict.items():
         if v:  # Ignore empty values
             fieldtype = type(TransferHistory._meta.get_field(
@@ -198,17 +197,44 @@ def load_transfer_history_since(since):
     return created
 
 
+def create_patients(mrns):
+    """
+    For a list of mrns, create patients if they don't exist
+    return a dictionary of mrn to a list of patients
+    """
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+    demographics = Demographics.objects.filter(hospital_number=mrns).select_related(
+        'patient'
+    )
+    mrn_to_patients = defaultdict(list)
+    for demographic in demographics:
+        mrn = demographic.hospital_number
+        mrn_to_patients[mrn].append(demographic.patient)
+    for mrn in mrns:
+        if mrn not in mrn_to_patients:
+            patient = create_rfh_patient_from_hospital_number(
+                mrn, InfectionService
+            )
+            mrn_to_patients[mrn].append(patient)
+    return mrn_to_patients
+
+
 @transaction.atomic
 def create_transfer_histories_from_upstream_result(some_rows):
+    # excluse empty mrns
+    some_rows = [i for i in some_rows if i['LOCAL_PATIENT_IDENTIFIER'].strip()]
+    mrn_to_patients = create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
         encounter_slice_id__in=slice_ids
     ).delete()
     transfer_histories = []
     for some_row in some_rows:
-        transfer_histories.append(
-            cast_to_transfer_history(some_row)
-        )
+        patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
+        for patient in patients:
+            transfer_histories.append(
+                cast_to_transfer_history(some_row, patient)
+            )
     TransferHistory.objects.bulk_create(transfer_histories)
     return transfer_histories
 

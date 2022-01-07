@@ -208,7 +208,12 @@ class TransferHistory(models.Model):
     """
     # This is the timestamp we create this model in elcid
     created_in_elcid                = models.DateTimeField(auto_now_add=True)
-
+    patient                         = models.ForeignKey(
+                                        Patient,
+                                        blank=True,
+                                        null=True,
+                                        on_delete=models.SET_NULL
+                                    )
 
     update_datetime                 = models.DateTimeField(blank=True, null=True)
     # Boolean field as 0/1
