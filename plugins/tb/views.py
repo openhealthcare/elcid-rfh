@@ -4,13 +4,10 @@ Views for the TB Opal Plugin
 import csv
 import json
 import datetime
-import tempfile
-import os
 import io
 import zipfile
-from pathlib import Path
 from collections import defaultdict
-from django.http import HttpResponse
+from django.http.response import StreamingHttpResponse
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
@@ -787,52 +784,34 @@ class OutstandingActionsMDT(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-class ZipCsvWriter:
+def zip_file_response(file_stem, csv_data):
     """
-    Write a list of dicts to a zip file
-    example code
-    with ZipCsvWriter("extract01092020.zip") as z:
-        z.write_csv("allergens.csv", [{"allergen": "flour"}])
-    return z.name
+    Takes in a file_stem and a list of dicts
+    returns an http response with a file called
+    {file_stem}.zip, which unzips to {file_stem}.csv
     """
-    def __init__(self, folder_name):
-        self.folder_name = folder_name
+    csv_buffer = io.StringIO()
+    wr = None
+    if csv_data:
+        headers = csv_data[0].keys()
+        wr = csv.DictWriter(
+            csv_buffer, fieldnames=headers
+        )
+        wr.writeheader()
+        wr.writerows(csv_data)
+    csv_buffer.seek(0)
 
-    def __enter__(self):
-        temp_dir = tempfile.mkdtemp()
-        self.zip_file_name = os.path.join(temp_dir, f'{self.folder_name}')
-        self.zipfile = zipfile.ZipFile(self.zip_file_name, mode='w')
-        return self
+    temp = io.BytesIO()
+    with zipfile.ZipFile(temp, 'w') as archive:
+        archive.writestr(f'{file_stem}.csv', csv_buffer.getvalue())
 
-    def write_csv(self, file_name, list_of_dicts):
-        buffer = io.StringIO()
-        wr = None
-        if list_of_dicts:
-            headers = list_of_dicts[0].keys()
-            wr = csv.DictWriter(
-                buffer, fieldnames=headers
-            )
-            wr.writeheader()
-            wr.writerows(list_of_dicts)
-        self.zipfile.writestr(file_name, buffer.getvalue())
+    response = StreamingHttpResponse(temp, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{file_stem}.zip"'
+    response['Content-Length'] = temp.tell()
 
-    @property
-    def name(self):
-        return self.zip_file_name
+    temp.seek(0)
 
-    def __exit__(self, *args):
-        self.zipfile.close()
-
-
-def zip_file_to_response(file_with_path):
-    with open(file_with_path, 'rb') as download:
-        content = download.read()
-
-    file_name = Path(file_with_path).name
-    resp = HttpResponse(content)
-    disp = f'attachment; filename="{file_name}"'
-    resp['Content-Disposition'] = disp
-    return resp
+    return response
 
 
 class AbstractClinicActivity(LoginRequiredMixin, TemplateView):
@@ -1292,14 +1271,8 @@ class ClinicActivityMDTData(AbstractClinicActivity):
         return result
 
     def post(self, *args, **kwargs):
-        zip_file_name = f"mdt_data_{self.kwargs['year']}.zip"
-        csv_name = f"mdt_data_{self.kwargs['year']}.csv"
         table_data = self.get_mdt_info()
-        with ZipCsvWriter(zip_file_name) as zf:
-            zf.write_csv(
-                csv_name, table_data
-            )
-        return zip_file_to_response(zf.name)
+        return zip_file_response(f"mdt_data_{self.kwargs['year']}", table_data)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -1474,11 +1447,5 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
         return ctx
 
     def post(self, *args, **kwargs):
-        zip_file_name = f"appointments_{self.kwargs['year']}.zip"
-        csv_name = f"appointments_{self.kwargs['year']}.csv"
-        table_data = self.get_appointment_info()
-        with ZipCsvWriter(zip_file_name) as zf:
-            zf.write_csv(
-                csv_name, table_data
-            )
-        return zip_file_to_response(zf.name)
+        c = self.get_appointment_info()
+        return zip_file_response(f"appointments_{self.kwargs['year']}", c)
