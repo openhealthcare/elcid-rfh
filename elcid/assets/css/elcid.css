@@ -612,4 +612,8 @@ div.add-isolate:hover {
   margin-bottom: 2px;
   padding: 0 20px;
 }
+
+.tb-stats td {
+  max-width: 150px;
+}
 /*# sourceMappingURL=elcid.css.map */
