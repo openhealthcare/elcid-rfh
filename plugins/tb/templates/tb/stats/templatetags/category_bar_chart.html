@@ -1,0 +1,28 @@
+{% load tb_stats %}
+<div class="row">
+  <div class="col-md-12 ">
+    {% if subtitle %}
+    <h3>{{ title }}</h3>
+    {% else %}
+    <h1>{{ title }}</h1>
+    {% endif %}
+  </div>
+</div>
+<div class="content-offset-20" id="{{ html_id }}">
+</div>
+<script>
+  c3.generate({
+    bindto: '#{{ html_id }}',
+    data: {
+      columns: {{ graph.field_vals | safe }},
+      type: 'bar',
+      colors: {{ graph.colors | safe }},
+    },
+    axis: {
+      x: {
+        type: 'category',
+        categories: {{ graph.x_axis | safe }}
+      }
+    }
+  });
+</script>
