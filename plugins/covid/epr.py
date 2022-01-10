@@ -247,6 +247,6 @@ def create_note(obj, note_subject, note_text):
         'event_datetime'   : obj.when,
         'modified_datetime': obj.when,
         'note_subject'     : note_subject,
-        'note_type'        : 'Covid Note',    # TODO this is probably wrong
+        'note_type'        : 'Respiratory Medicine Consult Note',
         'note'             : note_text
     }
