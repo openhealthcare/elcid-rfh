@@ -131,7 +131,7 @@ No recorded respiratory or systemic TB symptoms
 {% endif %}
 {{ "Allergies:" | rjust }}{% if allergies_list %}
 {% for allergy in allergies_list %}
-{{ allergy.drug }}{% if allergy.provisional %}?{% endif %} {{ allergy.deltails }}
+{{ allergy.drug }}{% if allergy.provisional %}?{% endif %} {{ allergy.details }}
 {% endfor %}
 {% else %}
 No recorded allergies
@@ -146,6 +146,12 @@ No weight recorded
 **Examination Findings**
 
 {{ object.examination_findings.strip() }}
+
+{% endif %}
+{% if object.progress %}
+** Progress **
+
+{{ object.progress }}
 
 {% endif %}
 {% if object.discussion %}
