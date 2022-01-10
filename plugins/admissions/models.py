@@ -3,9 +3,8 @@ Models for the elCID admissions plugin
 """
 import datetime
 from django.db import models
-from django.utils.functional import cached_property
 from opal.models import Patient, PatientSubrecord
-
+from plugins.admissions import logger
 from plugins.admissions import constants
 
 
