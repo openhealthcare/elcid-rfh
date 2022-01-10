@@ -1352,7 +1352,7 @@ class ClinicActivityAppointmentData(AbstractClinicActivity):
         appointments = self.appointments_qs
         non_mdt_consultations = self.non_mdt_consultations
         initials_by_date = {
-            i.when.date: i.initials for i in non_mdt_consultations
+            i.when.date(): i.initials for i in non_mdt_consultations
         }
         patient_ids = set([i.patient_id for i in appointments])
         episodes = Episode.objects.filter(
