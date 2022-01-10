@@ -1,12 +1,13 @@
 {% load forms %}
-
 {% if is_list %}
 {% for i in value %}
 {{ i }}<br />
 {% endfor %}
 {% elif is_bool %}
   {% if value %}
+  <div class="text-center">
     {% icon "fa-check" %}
+  </div>
   {% endif %}
 {% else %}
   {{ value }}

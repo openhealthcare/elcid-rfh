@@ -24,7 +24,7 @@
         <tr>
           {% for column, val in appointment_info.0.items %}
           {% if not column == 'Link' %}
-          <th {% if val == True or val == False %}class="text-center"{% endif %}>{{ column }}</th>
+          <th>{{ column }}</th>
           {% endif %}
           {% endfor %}
         </tr>
@@ -34,7 +34,7 @@
         <tr>
           {% for key, value in row.items %}
           {% if not key == 'Link' %}
-          <td {% if val == True or val == False %}class="text-center"{% endif %}>
+          <td>
             {% if key == 'Name' %}
             <a class="orange-link" href="{{ row.Link }}">
               {% value_display value %}
