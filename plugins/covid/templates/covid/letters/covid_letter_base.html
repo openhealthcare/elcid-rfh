@@ -1,6 +1,7 @@
 {% extends 'letters/base.html' %}
 {% block actions %}
 {{ block.super }}
+{% comment %}
 <div ng-controller="CovidLetterHelper as covidLetterHelper" class="content-offset-10">
   <span ng-show="covidLetterHelper.isWrittenToEPR('{{ object.get_api_name }}', {{ object.id }}) === true">
     <button disabled class="btn btn-lg btn-primary">
@@ -24,4 +25,5 @@
     </button>
   </span>
 </div>
+{% endcomment %}
 {% endblock %}
