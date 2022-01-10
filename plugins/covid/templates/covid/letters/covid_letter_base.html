@@ -1,6 +1,7 @@
 {% extends 'letters/base.html' %}
 {% block actions %}
 {{ block.super }}
+{# Until this is signed off, don't show the button #}
 {% comment %}
 <div ng-controller="CovidLetterHelper as covidLetterHelper" class="content-offset-10">
   <span ng-show="covidLetterHelper.isWrittenToEPR('{{ object.get_api_name }}', {{ object.id }}) === true">
