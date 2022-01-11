@@ -1,0 +1,52 @@
+<div ng-if="view === 'location_history'">
+  <div class="col-md-12" patient-api target="location_histories" endpoint="location_history">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-md-9">
+            <h3>
+              <i class="fa fa-calendar"></i>
+              Location History
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="row" ng-repeat="location_history in location_histories">
+          <div class="col-md-12">
+            <h4 ng-repeat="title in [location_history.title]">
+              [[ title.transfer_start_datetime | displayDate ]]
+              <span ng-show="title.transfer_end_datetime">- [[ title.transfer_end_datetime | displayDate ]]</span>
+              <small>
+                <span ng-show='title.spell_number'>
+                  Spell number: [[ title.spell_number ]]
+                </span>
+                Encounter ID: [[ title.encounter_id ]]
+              </small>
+            </h4>
+            <table class="table table-bordered table-striped">
+              <tr>
+                <th class="width-150">Transfer seq number</th>
+                <th class="width-150">Start</th>
+                <th class="width-150">End</th>
+                <th class="width-150">Unit</th>
+                <th class="width-150">Room</th>
+                <th class="width-150">Bed</th>
+                <th>Reason</th>
+              </tr>
+              <tr ng-repeat='row in location_history.table_data'>
+                <td>[[ row.transfer_sequence_number ]]</td>
+                <td>[[ row.transfer_start_datetime | displayDate ]]</td>
+                <td>[[ row.transfer_end_datetime | displayDate ]]</td>
+                <td>[[ row.unit ]]</td>
+                <td>[[ row.room ]]</td>
+                <td>[[ row.bed ]]</td>
+                <td>[[ row.transfer_reason ]]</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
