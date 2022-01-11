@@ -219,15 +219,46 @@ def create_patients(mrns):
     return mrn_to_patients
 
 
+def clean_transfer_history_rows(rows):
+    """
+    Exclude rows with no hospital number.
+
+    The upstream table has an issue where mistakenly
+    they have multiple rows for the same
+    LOCAL_PATIENT_IDENTIFIER, TRANS_HIST_SEQ_NBR, SPELL_NUMBER.
+
+    In this situation, make sure we have the most recent one.
+    Sometimes the duplicates updated timestamps are the same
+    so we need to look at created and updated.
+    """
+    rows = [i for i in rows if i['LOCAL_PATIENT_IDENTIFIER'].strip()]
+    rows = sorted(rows, key=lambda x: (x['UPDATED_DATE'], x['CREATED_DATE']))
+    upstream_rows = {}
+    # because we ordered by updated, created, this will remove earlier created updated
+    for row in rows:
+        upstream_rows[(
+            row['LOCAL_PATIENT_IDENTIFIER'],
+            row['TRANS_HIST_SEQ_NBR'],
+            row['SPELL_NUMBER']
+        )] = row
+    return upstream_rows.values()
+
+
 @transaction.atomic
 def create_transfer_histories_from_upstream_result(some_rows):
-    # excluse empty mrns
-    some_rows = [i for i in some_rows if i['LOCAL_PATIENT_IDENTIFIER'].strip()]
+    some_rows = clean_transfer_history_rows(some_rows)
     mrn_to_patients = create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
         encounter_slice_id__in=slice_ids
     ).delete()
+    for row in some_rows:
+        TransferHistory.objects.filter(
+            transfer_sequence_number=row['TRANS_HIST_SEQ_NBR'],
+            spell_number=row['SPELL_NUMBER'],
+            mrn=row['LOCAL_PATIENT_IDENTIFIER']
+        ).delete()
+
     transfer_histories = []
     for some_row in some_rows:
         patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
