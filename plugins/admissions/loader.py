@@ -199,24 +199,20 @@ def load_transfer_history_since(since):
 
 def create_patients(mrns):
     """
-    For a list of mrns, create patients if they don't exist
-    return a dictionary of mrn to a list of patients
+    Create patients for the related MRNs if they do not exist.
+
+    This is done outside a transaction to handle any race conditions
+    that may exist with the transactions it spawns.
     """
     from intrahospital_api.loader import create_rfh_patient_from_hospital_number
-    demographics = Demographics.objects.filter(hospital_number__in=mrns).select_related(
-        'patient'
-    )
-    mrn_to_patients = defaultdict(list)
-    for demographic in demographics:
-        mrn = demographic.hospital_number
-        mrn_to_patients[mrn].append(demographic.patient)
+    existing_mrns = set(Demographics.objects.filter(hospital_number__in=mrns).values_list(
+        'hospital_number', flat=True
+    ))
     for mrn in mrns:
-        if mrn not in mrn_to_patients:
-            patient = create_rfh_patient_from_hospital_number(
+        if mrn not in existing_mrns:
+            create_rfh_patient_from_hospital_number(
                 mrn, InfectionService
             )
-            mrn_to_patients[mrn].append(patient)
-    return mrn_to_patients
 
 
 def clean_transfer_history_rows(rows):
@@ -244,10 +240,14 @@ def clean_transfer_history_rows(rows):
     return upstream_rows.values()
 
 
-@transaction.atomic
 def create_transfer_histories_from_upstream_result(some_rows):
     some_rows = clean_transfer_history_rows(some_rows)
-    mrn_to_patients = create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
+    create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
+    create_transfer_histories(some_rows)
+
+
+@transaction.atomic
+def create_transfer_histories(some_rows):
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
         encounter_slice_id__in=slice_ids
@@ -260,6 +260,12 @@ def create_transfer_histories_from_upstream_result(some_rows):
         ).delete()
 
     transfer_histories = []
+    mrn_to_patients = defaultdict(list)
+    demos = Demographics.objects.filter(hospital_number__in=[
+        i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows
+    ]).select_related('patient')
+    for demo in demos:
+        mrn_to_patients[demo.hospital_number].append(demo.patient)
     for some_row in some_rows:
         patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
         for patient in patients:
