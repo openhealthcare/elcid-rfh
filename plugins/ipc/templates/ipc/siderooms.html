@@ -30,13 +30,13 @@
 
     {% for patient in ward %}
     <tr>
-      <td>
+      <td class='width-120'>
         <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
           {{ patient.ward_name }}
         </a>
       </td>
       <td>{{ patient.room }}</td>
-      <td>{{ patient.bed }}</td>
+      <td class="width-75">{{ patient.bed }}</td>
       <td> {{ patient.bed_status }}</td>
       {% with patient.patient.demographics as demographics %}
       <td>
