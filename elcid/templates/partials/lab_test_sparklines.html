@@ -1,57 +1,46 @@
 {% load forms %}
 {% comment %}Expects either an episode or a patient{% endcomment %}
 <div class="trends-panel" populate-lab-tests="{{ target }}">
-  <div ng-show="patientLoadStatus.isLoading()">
-    <h2 class="text-center no-results">Lab tests loading please wait</h2>
+  <div ng-hide="data.obs_values.length || data.ticker.length">
+    <h2 class="text-center no-results">No results found</h2>
   </div>
-  <div ng-show="patientLoadStatus.isAbsent()">
-    <h2 class="text-center no-results">Unable to get lab tests for this patient</h2>
-  </div>
-  <div ng-show="patientLoadStatus.isFailed()">
-    <h2 class="text-center no-results">Failed To load lab tests for this patient</h2>
-  </div>
-  <div ng-show="patientLoadStatus.isLoaded()">
-    <div ng-hide="data.obs_values.length || data.ticker.length">
-      <h2 class="text-center no-results">No results found</h2>
-    </div>
 
-    <div class="content-offset-below-20" ng-show="data.ticker.length">
-      <div class="row" ng-repeat="test in data.ticker">
-        <div class="col-md-4">[[ test.date_str ]]</div>
-        <div class="col-md-4">[[ test.name ]]</div>
-        <div class="col-md-4">[[ test.value ]]</div>
-      </div>
+  <div class="content-offset-below-20" ng-show="data.ticker.length">
+    <div class="row" ng-repeat="test in data.ticker">
+      <div class="col-md-4">[[ test.date_str ]]</div>
+      <div class="col-md-4">[[ test.name ]]</div>
+      <div class="col-md-4">[[ test.value ]]</div>
     </div>
+  </div>
 
-    <table ng-show="data.obs_values.length" class="col-md-12 table">
-      <thead>
-        <tr>
-          <th></th>
-          <th class="col-md-2"></th>
-          <th class="text-center col-md-2" ng-repeat="date in data.recent_dates track by $index">
-            [[ date | displayDate ]]
+  <table ng-show="data.obs_values.length" class="col-md-12 table">
+    <thead>
+      <tr>
+        <th></th>
+        <th class="col-md-2"></th>
+        <th class="text-center col-md-2" ng-repeat="date in data.recent_dates track by $index">
+          [[ date | displayDate ]]
+        </th>
+        {% comment %}
+          <th class="text-center">
+            3 week trend
           </th>
-          {% comment %}
-            <th class="text-center">
-              3 week trend
-            </th>
-          {% endcomment %}
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="row" ng-repeat="item in data.obs_values">
-          <td class="text-center col-md-2">
-            [[ item.name ]]
-          <td class="text-center col-md-2" ng-repeat="date in data.recent_dates track by $index">
-            [[ item.latest_results[date] ]]
+        {% endcomment %}
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="row" ng-repeat="item in data.obs_values">
+        <td class="text-center col-md-2">
+          [[ item.name ]]
+        <td class="text-center col-md-2" ng-repeat="date in data.recent_dates track by $index">
+          [[ item.latest_results[date] ]]
+        </td>
+        {% comment %}
+          <td class="text-center">
+            <div spark-line="item.graph_values"></div>
           </td>
-          {% comment %}
-            <td class="text-center">
-              <div spark-line="item.graph_values"></div>
-            </td>
-          {% endcomment %}
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        {% endcomment %}
+      </tr>
+    </tbody>
+  </table>
 </div>
