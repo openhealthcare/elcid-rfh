@@ -45,8 +45,10 @@
       <td>
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.name }}</a>
       </td>
-      <td>
+      <td class="width-100">
+        {% if demographics.date_of_birth %}
         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.date_of_birth }}</a>
+        {% endif %}
       </td>
       {% endwith %}
       <td>
