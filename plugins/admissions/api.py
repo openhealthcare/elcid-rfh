@@ -111,7 +111,7 @@ class LocationHistoryViewSet(LoginRequiredViewset):
         hn = patient.demographics().hospital_number
         transfer_histories = TransferHistory.objects.filter(
             mrn=hn
-        ).order_by()
+        )
 
         by_spell_encounter_id = defaultdict(list)
         for transfer_history in transfer_histories:
