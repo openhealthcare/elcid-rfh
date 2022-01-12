@@ -106,13 +106,7 @@ class LocationHistoryViewSet(LoginRequiredViewset):
             ]
         }]
         """
-
-        # TODO Change this to use the linked patient when thats merged
-        hn = patient.demographics().hospital_number
-        transfer_histories = TransferHistory.objects.filter(
-            mrn=hn
-        )
-
+        transfer_histories = patient.transferhistory_set.all()
         by_spell_encounter_id = defaultdict(list)
         for transfer_history in transfer_histories:
             key = (transfer_history.spell_number, transfer_history.encounter_id,)
