@@ -96,7 +96,6 @@ class SliceContactsView(LoginRequiredMixin, TemplateView):
 
         transfer  = TransferHistory.objects.get(encounter_slice_id=k['slice_id'])
         encounter = Encounter.objects.get(pid_18_account_number=transfer.spell_number)
-        now       = timezone.now()
 
         context['source']  = transfer
         context['encounter'] = encounter.to_dict()
@@ -106,12 +105,11 @@ class SliceContactsView(LoginRequiredMixin, TemplateView):
         contact_transfers = TransferHistory.objects.filter(
             transfer_start_datetime__lte=transfer.transfer_end_datetime,
             transfer_end_datetime__gte=transfer.transfer_start_datetime,
-            transfer_end_datetime__lte=now,
             unit=transfer.unit,
             room=transfer.room
         ).exclude(
             mrn=transfer.mrn
-        ).order_by('transfer_start_datetime')
+        ).order_by('bed', 'transfer_start_datetime')
 
         for transfer in contact_transfers:
             transfer.patient = Patient.objects.filter(demographics__hospital_number=transfer.mrn).first()
@@ -119,7 +117,7 @@ class SliceContactsView(LoginRequiredMixin, TemplateView):
             if transfer.patient:
                 transfer.demographics = transfer.patient.demographics()
 
-
+        context['now'] = timezone.now()
         context['transfers'] = contact_transfers
         context['num_contacts'] = len(set(t.mrn for t in contact_transfers))
 
@@ -133,11 +131,8 @@ class LocationHistoryView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        now       = timezone.now()
-
         history = TransferHistory.objects.filter(
             transfer_location_code=k['location_code'],
-            transfer_end_datetime__lte=now
         ).order_by('-transfer_end_datetime')
 
         for transfer in history:
@@ -151,5 +146,6 @@ class LocationHistoryView(LoginRequiredMixin, TemplateView):
 
         frist = history[0]
         context['location'] = f"{frist.unit} {frist.room} {frist.bed}"
+        context['now'] = timezone.now()
 
         return context

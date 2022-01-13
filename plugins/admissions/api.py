@@ -3,12 +3,13 @@ API for admission data
 """
 from collections import defaultdict
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.utils import timezone, timesince
 from opal.core.api import LoginRequiredViewset, patient_from_pk
 from opal.models import Patient
 from opal.core.views import json_response
 
 from plugins.admissions.models import TransferHistory
+from plugins.admissions import constants
 
 EXCLUDE_ADMISSIONS = [
     # We previously excluded these based on eyeballing data for admissions before
@@ -39,17 +40,16 @@ class AdmissionViewSet(LoginRequiredViewset):
 class LocationHistoryViewSet(LoginRequiredViewset):
     basename = 'location_history'
 
+    def get_duration(self, first_datetime, second_datetime):
+        if first_datetime and second_datetime and second_datetime <= timezone.now():
+            return timesince.timesince(first_datetime, second_datetime)
+
     def get_title(self, location_histories):
-        if len(location_histories) == 1:
-            transfer_start_datetime = location_histories[0].transfer_start_datetime
-            transfer_end_datetime = location_histories[0].transfer_end_datetime
-        else:
-            transfer_start_datetime = min([
-                i.transfer_start_datetime for i in location_histories
-            ])
-            transfer_end_datetime = max([
-                i.transfer_end_datetime for i in location_histories
-            ])
+        by_start_datetime = sorted(
+            location_histories, key=lambda x: x.transfer_start_datetime
+        )
+        transfer_start_datetime = by_start_datetime[0].transfer_start_datetime
+        transfer_end_datetime = by_start_datetime[-1].transfer_end_datetime
         if transfer_end_datetime > timezone.now():
             transfer_end_datetime = None
         return {
@@ -57,6 +57,7 @@ class LocationHistoryViewSet(LoginRequiredViewset):
             'encounter_id': location_histories[0].encounter_id,
             'transfer_start_datetime': transfer_start_datetime,
             'transfer_end_datetime': transfer_end_datetime,
+            'duration': self.get_duration(transfer_start_datetime, transfer_end_datetime)
         }
 
     def get_table_data(self, location_histories):
@@ -69,12 +70,21 @@ class LocationHistoryViewSet(LoginRequiredViewset):
                 "transfer_sequence_number",
                 "transfer_start_datetime",
                 "transfer_end_datetime",
+                "transfer_location_code",
                 "unit",
                 "room",
                 "bed",
                 "transfer_reason",
             ]
-            result.append({field: getattr(location_history, field) for field in fields})
+            row = {field: getattr(location_history, field) for field in fields}
+            row['duration'] = self.get_duration(
+                location_history.transfer_start_datetime,
+                location_history.transfer_end_datetime
+            )
+            row['hospital'] = constants.HOSPITAL_CODES_TO_DISPLAY.get(
+                location_history.site_code
+            )
+            result.append(row)
         return result
 
     @patient_from_pk
