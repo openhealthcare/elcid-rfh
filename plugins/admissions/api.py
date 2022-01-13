@@ -3,7 +3,7 @@ API for admission data
 """
 from collections import defaultdict
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
+from django.utils import timezone, timesince
 from opal.core.api import LoginRequiredViewset, patient_from_pk
 from opal.models import Patient
 from opal.core.views import json_response
@@ -39,6 +39,10 @@ class AdmissionViewSet(LoginRequiredViewset):
 class LocationHistoryViewSet(LoginRequiredViewset):
     basename = 'location_history'
 
+    def get_duration(self, first_datetime, second_datetime):
+        if first_datetime and second_datetime and second_datetime <= timezone.now():
+            return timesince.timesince(first_datetime, second_datetime)
+
     def get_title(self, location_histories):
         by_start_datetime = sorted(
             location_histories, key=lambda x: x.transfer_start_datetime
@@ -52,6 +56,7 @@ class LocationHistoryViewSet(LoginRequiredViewset):
             'encounter_id': location_histories[0].encounter_id,
             'transfer_start_datetime': transfer_start_datetime,
             'transfer_end_datetime': transfer_end_datetime,
+            'duration': self.get_duration(transfer_start_datetime, transfer_end_datetime)
         }
 
     def get_table_data(self, location_histories):
@@ -69,7 +74,12 @@ class LocationHistoryViewSet(LoginRequiredViewset):
                 "bed",
                 "transfer_reason",
             ]
-            result.append({field: getattr(location_history, field) for field in fields})
+            row = {field: getattr(location_history, field) for field in fields}
+            row['duration'] = self.get_duration(
+                location_history.transfer_start_datetime,
+                location_history.transfer_end_datetime
+            )
+            result.append(row)
         return result
 
     @patient_from_pk

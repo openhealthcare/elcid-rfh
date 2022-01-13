@@ -17,6 +17,7 @@
             <h4 ng-repeat="title in [location_history.title]">
               [[ title.transfer_start_datetime | displayDate ]]
               <span ng-show="title.transfer_end_datetime">- [[ title.transfer_end_datetime | displayDate ]]</span>
+              <span ng-show="title.duration">([[ title.duration ]])</span>
               <small>
                 <span ng-show='title.spell_number'>
                   Spell number: [[ title.spell_number ]]
@@ -29,6 +30,7 @@
                 <th class="col-xs-1">Seq #</th>
                 <th class="col-xs-2">Start</th>
                 <th class="col-xs-2">End</th>
+                <th class="col-xs-2">Duration</th>
                 <th class="col-xs-2">Unit</th>
                 <th class="col-xs-1">Room</th>
                 <th class="col-xs-1">Bed</th>
@@ -39,6 +41,9 @@
                 <td>[[ row.transfer_start_datetime | displayDateTime  ]]</td>
                 <td ng-class="{'text-warning': row.transfer_end_datetime && !(row.transfer_end_datetime | past:true) }">
                   [[ row.transfer_end_datetime | displayDateTime ]]
+                </td>
+                <td>
+                  <span ng-show='row.duration'>[[ row.duration ]]</span>
                 </td>
                 <td>[[ row.unit ]]</td>
                 <td>[[ row.room ]]</td>
