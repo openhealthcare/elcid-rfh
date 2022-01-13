@@ -5,7 +5,7 @@
         <div class="row">
           <div class="col-md-9">
             <h3>
-              <i class="fa fa-calendar"></i>
+              <i class="fa fa-hospital-o"></i>
               Location History
             </h3>
           </div>
@@ -26,7 +26,7 @@
             </h4>
             <table class="table table-bordered table-striped">
               <tr>
-                <th class="col-xs-2">Transfer seq number</th>
+                <th class="col-xs-1">Seq #</th>
                 <th class="col-xs-2">Start</th>
                 <th class="col-xs-2">End</th>
                 <th class="col-xs-2">Unit</th>
@@ -36,7 +36,7 @@
               </tr>
               <tr ng-repeat='row in location_history.table_data'>
                 <td>[[ row.transfer_sequence_number ]]</td>
-                <td>[[ row.transfer_start_datetime | displayDate ]]</td>
+                <td>[[ row.transfer_start_datetime | displayDate  ]]</td>
                 <td>[[ row.transfer_end_datetime | displayDate ]]</td>
                 <td>[[ row.unit ]]</td>
                 <td>[[ row.room ]]</td>
