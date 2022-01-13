@@ -109,20 +109,15 @@ class SliceContactsView(LoginRequiredMixin, TemplateView):
             room=transfer.room
         ).exclude(
             mrn=transfer.mrn
-        ).order_by('bed', 'transfer_start_datetime')
-
-        for transfer in contact_transfers:
-            transfer.patient = Patient.objects.filter(demographics__hospital_number=transfer.mrn).first()
-
-            if transfer.patient:
-                transfer.demographics = transfer.patient.demographics()
+        ).order_by('bed', 'transfer_start_datetime').prefetch_related(
+            'patient__demographics_set'
+        )
 
         context['now'] = timezone.now()
         context['transfers'] = contact_transfers
         context['num_contacts'] = len(set(t.mrn for t in contact_transfers))
 
         return context
-
 
 
 class LocationHistoryView(LoginRequiredMixin, TemplateView):
@@ -133,15 +128,9 @@ class LocationHistoryView(LoginRequiredMixin, TemplateView):
 
         history = TransferHistory.objects.filter(
             transfer_location_code=k['location_code'],
-        ).order_by('-transfer_end_datetime')
-
-        for transfer in history:
-            transfer.patient = Patient.objects.filter(demographics__hospital_number=transfer.mrn).first()
-
-            if transfer.patient:
-                transfer.demographics = transfer.patient.demographics()
-
-
+        ).order_by('-transfer_start_datetime').prefetch_related(
+            'patient__demographics_set'
+        )
         context['history'] = history
 
         frist = history[0]

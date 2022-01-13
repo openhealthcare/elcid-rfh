@@ -40,8 +40,8 @@
         {% endifchanged %}
         <tr>
           <td>
-            <a href="/#/patient/{{ transfer.patient.id }}" class="orange-link">
-              {{ transfer.demographics.name }}
+            <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
+              {{ transfer.patient.demographics_set.all.0.name }}
             </a>
           </td>
           <td>
