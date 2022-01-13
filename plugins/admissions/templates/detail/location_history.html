@@ -27,16 +27,16 @@
             </h4>
             <table class="table table-bordered table-striped">
               <tr>
-                <th class="col-xs-2">Seq #</th>
+                <th class="col-xs-1">Seq #</th>
                 <th class="col-xs-1">Start</th>
                 <th class="col-xs-1">End</th>
-                <th class="col-xs-1">Duration</th>
-                <th class="col-xs-2">Location code</th>
-                <th class="col-xs-2">Hospital</th>
+                <th class="col-xs-2">Duration</th>
+                <th class="col-xs-1">Location code</th>
+                <th class="col-xs-1">Hospital</th>
                 <th class="col-xs-1">Unit</th>
                 <th class="col-xs-1">Room</th>
                 <th class="col-xs-1">Bed</th>
-                <th>Reason</th>
+                <th class="col-xs-2">Reason</th>
               </tr>
               <tr ng-repeat='row in location_history.table_data'>
                 <td>[[ row.transfer_sequence_number ]]</td>
@@ -47,7 +47,12 @@
                 <td>
                   <span ng-show='row.duration'>[[ row.duration ]]</span>
                 </td>
-                <td>[[ row.transfer_location_code ]]</td>
+                <td>
+                  <span ng-show="row.transfer_location_code">
+                    <a href="/#/admissions/location-history/[[ row.transfer_location_code ]]">
+                      [[ row.transfer_location_code ]]</td>
+                    </a>
+                  </span>
                 <td>[[ row.hospital ]]</td>
                 <td>[[ row.unit ]]</td>
                 <td>[[ row.room ]]</td>
