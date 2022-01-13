@@ -40,16 +40,11 @@ class LocationHistoryViewSet(LoginRequiredViewset):
     basename = 'location_history'
 
     def get_title(self, location_histories):
-        if len(location_histories) == 1:
-            transfer_start_datetime = location_histories[0].transfer_start_datetime
-            transfer_end_datetime = location_histories[0].transfer_end_datetime
-        else:
-            transfer_start_datetime = min([
-                i.transfer_start_datetime for i in location_histories
-            ])
-            transfer_end_datetime = max([
-                i.transfer_end_datetime for i in location_histories
-            ])
+        by_start_datetime = sorted(
+            location_histories, key=lambda x: x.transfer_start_datetime
+        )
+        transfer_start_datetime = by_start_datetime[0].transfer_start_datetime
+        transfer_end_datetime = by_start_datetime[-1].transfer_end_datetime
         if transfer_end_datetime > timezone.now():
             transfer_end_datetime = None
         return {
