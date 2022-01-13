@@ -208,8 +208,11 @@ def create_patients(mrns):
     existing_mrns = set(Demographics.objects.filter(hospital_number__in=mrns).values_list(
         'hospital_number', flat=True
     ))
+    # remove duplicates
+    mrns = list(set(mrns))
     for mrn in mrns:
         if mrn not in existing_mrns:
+            print(f'creating {mrn}')
             create_rfh_patient_from_hospital_number(
                 mrn, InfectionService
             )
@@ -248,24 +251,45 @@ def create_transfer_histories_from_upstream_result(some_rows):
 
 @transaction.atomic
 def create_transfer_histories(some_rows):
-    slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
-    TransferHistory.objects.filter(
-        encounter_slice_id__in=slice_ids
-    ).delete()
-    for row in some_rows:
-        TransferHistory.objects.filter(
-            transfer_sequence_number=row['TRANS_HIST_SEQ_NBR'],
-            spell_number=row['SPELL_NUMBER'],
-            mrn=row['LOCAL_PATIENT_IDENTIFIER']
-        ).delete()
-
-    transfer_histories = []
     mrn_to_patients = defaultdict(list)
     demos = Demographics.objects.filter(hospital_number__in=[
         i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows
     ]).select_related('patient')
     for demo in demos:
         mrn_to_patients[demo.hospital_number].append(demo.patient)
+
+    # This means we are already restricting the query by a index column
+    # ie much faster
+    existing_transfer_histories_qs = TransferHistory.objects.filter(
+        patient_id__in=[demo.patient_id for demo in demos]
+    )
+    slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
+    existing_transfer_histories_qs.objects.filter(
+        encounter_slice_id__in=slice_ids
+    ).delete()
+
+    existing_transfers = existing_transfer_histories_qs.filter(
+        transfer_sequence_number__in=[row['TRANS_HIST_SEQ_NBR'] for row in some_rows],
+        spell_number__in=[row['SPELL_NUMBER'] for row in some_rows],
+        mrn__in=[row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows]
+    )
+
+    others_to_delete = {
+        (i.transfer_sequence_number, i.spell_number, i.mrn): i for i in existing_transfers
+    }
+
+    for row in some_rows:
+        key = (
+            row['TRANS_HIST_SEQ_NBR'],
+            row['SPELL_NUMBER'],
+            row['LOCAL_PATIENT_IDENTIFIER'],
+        )
+        to_delete = others_to_delete.get(key)
+        if to_delete:
+            to_delete.delete()
+
+    transfer_histories = []
+
     for some_row in some_rows:
         patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
         for patient in patients:
