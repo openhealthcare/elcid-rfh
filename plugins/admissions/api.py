@@ -9,6 +9,7 @@ from opal.models import Patient
 from opal.core.views import json_response
 
 from plugins.admissions.models import TransferHistory
+from plugins.admissions import constants
 
 EXCLUDE_ADMISSIONS = [
     # We previously excluded these based on eyeballing data for admissions before
@@ -69,6 +70,7 @@ class LocationHistoryViewSet(LoginRequiredViewset):
                 "transfer_sequence_number",
                 "transfer_start_datetime",
                 "transfer_end_datetime",
+                "transfer_location_code",
                 "unit",
                 "room",
                 "bed",
@@ -78,6 +80,9 @@ class LocationHistoryViewSet(LoginRequiredViewset):
             row['duration'] = self.get_duration(
                 location_history.transfer_start_datetime,
                 location_history.transfer_end_datetime
+            )
+            row['hospital'] = constants.HOSPITAL_CODES_TO_DISPLAY.get(
+                location_history.site_code
             )
             result.append(row)
         return result
