@@ -36,8 +36,10 @@
               </tr>
               <tr ng-repeat='row in location_history.table_data'>
                 <td>[[ row.transfer_sequence_number ]]</td>
-                <td>[[ row.transfer_start_datetime | displayDate  ]]</td>
-                <td>[[ row.transfer_end_datetime | displayDate ]]</td>
+                <td>[[ row.transfer_start_datetime | displayDateTime  ]]</td>
+                <td ng-class="{'text-warning': row.transfer_end_datetime && !(row.transfer_end_datetime | past:true) }">
+                  [[ row.transfer_end_datetime | displayDateTime ]]
+                </td>
                 <td>[[ row.unit ]]</td>
                 <td>[[ row.room ]]</td>
                 <td>[[ row.bed ]]</td>
