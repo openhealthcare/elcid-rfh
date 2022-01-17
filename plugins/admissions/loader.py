@@ -245,7 +245,7 @@ def clean_transfer_history_rows(rows):
 def create_transfer_histories_from_upstream_result(some_rows):
     some_rows = clean_transfer_history_rows(some_rows)
     create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
-    create_transfer_histories(some_rows)
+    return create_transfer_histories(some_rows)
 
 
 @transaction.atomic
@@ -263,7 +263,7 @@ def create_transfer_histories(some_rows):
         patient_id__in=[demo.patient_id for demo in demos]
     )
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
-    existing_transfer_histories_qs.objects.filter(
+    existing_transfer_histories_qs.filter(
         encounter_slice_id__in=slice_ids
     ).delete()
 
