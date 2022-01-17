@@ -212,7 +212,6 @@ def create_patients(mrns):
     mrns = list(set(mrns))
     for mrn in mrns:
         if mrn not in existing_mrns:
-            print(f'creating {mrn}')
             create_rfh_patient_from_hospital_number(
                 mrn, InfectionService
             )
@@ -236,7 +235,7 @@ def clean_transfer_history_rows(rows):
     # because we ordered by updated, created, this will remove earlier created updated
     for row in rows:
         upstream_rows[(
-            row['LOCAL_PATIENT_IDENTIFIER'],
+            row['ENCNTR_ID'],
             row['TRANS_HIST_SEQ_NBR'],
             row['SPELL_NUMBER']
         )] = row
