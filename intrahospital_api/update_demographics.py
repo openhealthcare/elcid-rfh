@@ -170,7 +170,7 @@ def update_if_changed(instance, update_dict):
             if new_val:
                 if isinstance(field_type, DateTimeField):
                     new_val = deserialize_datetime(new_val)
-                    if new_val and not timezone.is_aware(new_val):
+                    if not timezone.is_aware(new_val):
                         new_val = timezone.make_aware(new_val)
                 elif isinstance(field_type, DateField):
                     new_val = deserialize_date(new_val)
