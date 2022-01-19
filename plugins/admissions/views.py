@@ -74,12 +74,14 @@ class SpellLocationHistoryView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        encounter = Encounter.objects.get(pid_18_account_number=k['spell_number'])
+        encounter = Encounter.objects.filter(
+            pid_18_account_number=k['spell_number']
+        ).first()
         history   = TransferHistory.objects.filter(spell_number=k['spell_number'])
 
-        context['patient']      = encounter.patient
-        context['demographics'] = encounter.patient.demographics()
-        context['encounter']    = encounter.to_dict()
+        context['patient']      = history.patient
+        context['demographics'] = history.patient.demographics()
+        context['encounter']    = encounter
         context['history']      = history
 
         return context
