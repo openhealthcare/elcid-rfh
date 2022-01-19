@@ -237,9 +237,14 @@ class LungFunctionTest(EpisodeSubrecord):
     _icon = 'fa fa-crosshairs'
 
     date    = models.DateField(blank=True, null=True)
+    vc      = models.CharField(blank=True, null=True, max_length=244, verbose_name='VC')
     fev1    = models.CharField(blank=True, null=True, max_length=244, verbose_name='FEV1 %')
     fvc     = models.CharField(blank=True, null=True, max_length=244, verbose_name='FVC %')
+    # DLCO is also known as TLCO
     lf_dlco = models.CharField(blank=True, null=True, max_length=244, verbose_name='Lung Function DLCO %')
+    kco = models.CharField(blank=True, null=True, max_length=244, verbose_name='KCO')
+    pef = models.CharField(blank=True, null=True, max_length=244, verbose_name='PEF')
+
 
 
 class CovidComorbidities(EpisodeSubrecord):
