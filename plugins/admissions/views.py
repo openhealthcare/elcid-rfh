@@ -95,11 +95,13 @@ class SliceContactsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(*a, **k)
 
         transfer  = TransferHistory.objects.get(encounter_slice_id=k['slice_id'])
-        encounter = Encounter.objects.get(pid_18_account_number=transfer.spell_number)
+        encounter = Encounter.objects.filter(
+            pid_18_account_number=transfer.spell_number
+        ).first()
 
         context['source']  = transfer
-        context['encounter'] = encounter.to_dict()
-        context['index_patient'] = encounter.patient
+        context['encounter'] = encounter
+        context['index_patient'] = transfer.patient
         context['index_demographics'] = encounter.patient.demographics()
 
         contact_transfers = TransferHistory.objects.filter(
