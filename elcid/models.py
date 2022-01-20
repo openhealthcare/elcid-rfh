@@ -491,6 +491,9 @@ class BloodCultureSet(omodels.PatientSubrecord):
     date_ordered = models.DateField(blank=True, null=True)
     source = ForeignKeyOrFreeText(BloodCultureSource)
     lab_number = models.CharField(blank=True, null=True, max_length=256)
+    contaminant = models.BooleanField(default=False)
+    community = models.BooleanField(default=False, verbose_name='Community Related')
+    hcai = models.BooleanField(default=False, verbose_name='HCAI related')
 
     class Meta:
         verbose_name = "Blood Cultures"
