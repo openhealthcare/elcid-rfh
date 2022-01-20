@@ -2,7 +2,7 @@
 API for production
 """
 from collections import defaultdict
-import datetime
+from contextlib import contextmanager
 from functools import wraps
 import itertools
 import json
@@ -517,6 +517,44 @@ class ProdApi(base_api.BaseApi):
                 result = cur.fetchall()
         logger.debug(result)
         return result
+
+    @contextmanager
+    def warehouse_query_batch_iterator(self, query, params=None, batch_size=None):
+        """
+        A context manager that provides an iterator yeilding the query result
+        in sizes of [[ batch_size ]]
+        By default the default this is the pytds arraysize variable which is 10.
+
+        We use a context manager to make sure the connection is closed.
+
+        Example usage
+
+        query = "SELECT * from some_table
+
+        with api.warehouse_query_batch_iterator(query) as batch_loader:
+            for rows in batch_loader:
+                print(rows)
+        """
+        with pytds.connect(
+            self.warehouse_settings["ip_address"],
+            self.warehouse_settings["database"],
+            self.warehouse_settings["username"],
+            self.warehouse_settings["password"],
+            as_dict=True
+        ) as conn:
+            with conn.cursor() as cur:
+                logger.info(
+                    "Running upstream query {} {}".format(query, params)
+                )
+                yield self._generator(cur, query, params, batch_size)
+
+    def _generator(self, cur, query, params, batch_size):
+        cur.execute(query, params)
+        while True:
+            result = cur.fetchmany(batch_size)
+            if not result:
+                break
+            yield result
 
     def execute_trust_query(self, query, params=None):
         with pytds.connect(

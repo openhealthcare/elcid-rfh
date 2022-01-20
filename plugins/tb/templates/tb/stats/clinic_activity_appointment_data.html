@@ -1,0 +1,66 @@
+{% extends "tb/base.html" %}
+{% load tb_stats %}
+{% block tb_content %}
+{% url 'clinic_activity_appointment_data' year=view.kwargs.year as appointment_data_url %}
+<div class="panel panel-default tb-stats">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-7">
+        <h1>Clinic Activity {{ view.kwargs.year }} - Appointments</h1>
+        <p class="content-offset-below-10">
+          RFH TB appointments between {{ view.start_date }} - {{ view.end_date }}
+        </p>
+      </div>
+      <div class="col-md-5">
+        {% include "tb/stats/stats_menu.html" %}
+      </div>
+    </div>
+  </div>
+  <div class="panel-body">
+    {% for month, appointment_info in appointment_info_by_month.items %}
+    <h3>{{ month }} ({{ appointment_info|length }} appointments)</h1>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          {% for column, val in appointment_info.0.items %}
+          {% if not column == 'Link' %}
+          <th>{{ column }}</th>
+          {% endif %}
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in appointment_info %}
+        <tr>
+          {% for key, value in row.items %}
+          {% if not key == 'Link' %}
+          <td>
+            {% if key == 'Name' %}
+            <a class="orange-link" href="{{ row.Link }}">
+              {% value_display value %}
+            </a>
+            {% else %}
+              {% value_display value %}
+            {% endif %}
+          </td>
+          {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endfor %}
+  </div>
+  <div class="row">
+    <div class="col-md-12 text-center content-offset-20 content-offset-below">
+      <form action="{{ appointment_data_url }}" method="post" target="_blank">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-lg">
+          <i class="glyphicon glyphicon-download"></i>
+          Download this data
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

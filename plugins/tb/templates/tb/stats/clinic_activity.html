@@ -1,0 +1,226 @@
+{% extends "tb/base.html" %}
+{% load tb_stats %}
+{% load humanize %}
+{% block tb_content %}
+<div class="panel panel-default tb-stats">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-7">
+        <h1>Clinic Activity {{ view.kwargs.year }} - Summary</h1>
+        <p class="content-offset-below-10">
+          Patients with appointments in {{ view.start_date.year }}
+        </p>
+      </div>
+      <div class="col-md-5">
+        {% include "tb/stats/stats_menu.html" %}
+      </div>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="row headline">
+      <div class="col-md-4">
+        <h1>{{ summary.number_of_appointments | intcomma }}</h1>
+        <h3>Appointments</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>{{ summary.number_of_patients | intcomma  }}</h1>
+        <h3>Patients</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>{{ summary.number_of_new_patients | intcomma  }}</h1>
+        <h3>New patients</h3>
+      </div>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h1>Appointments</h1>
+        <div class="row">
+          <div class="content-offset-20" id="appointment_overview"></div>
+          <script>
+            c3.generate({
+              bindto: '#appointment_overview',
+              data: {
+                columns: {{ appointments_by_status.graph_vals | safe }},
+                type: 'bar',
+                types: {'No show (%)': 'line'},
+                axes: {
+                  'No show (%)': 'y2'
+                },
+              },
+              legend: {
+                  show: false
+              },
+              axis: {
+                x: {
+                  type: 'category',
+                  categories: {{ appointments_by_status.x | safe }},
+                },
+                y: {
+                  min: 0,
+                  max: {{ appointments_by_status.attendance_max }},
+                  padding: {top:0, bottom:0},
+                  label: {
+                    text: 'Attended appointments',
+                    position: 'outer-middle'
+                  }
+                },
+                y2: {
+                  min: 0,
+                  max: 100,
+                  padding: {top:0, bottom:0},
+                  show: true,
+                  label: {
+                    text: 'No show (%)',
+                    position: 'outer-middle',
+                  }
+                }
+              }
+            });
+          </script>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th></th>
+                  {% for header in appointments_by_status.table_headers %}
+                  <th>
+                    {{ header }}
+                  </th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for table_row in appointments_by_status.table_vals %}
+                  <tr>
+                    {% for td_val in table_row %}
+                      <td>{{ td_val }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        {% three_col_table_with_percent 'Appointments by type' appointments_by_type %}
+      </div>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12">
+        <h1>MDT Review</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="content-offset-20" id="mdt_review"></div>
+      <script>
+        c3.generate({
+          bindto: '#mdt_review',
+          data: {
+            columns: {{ mdt_start_stop.vals | safe }},
+            type: 'line',
+            types: {'count': 'bar'},
+            axes: {
+              'duration': 'y2'
+            },
+          },
+          legend: {
+              show: false
+          },
+          axis: {
+            x: {
+              type: 'category',
+              categories: {{ mdt_start_stop.x_axis | safe }},
+              tick: {
+                culling: 26,
+                rotate: 75,
+                multiline: false
+              },
+            },
+            y: {
+              label: {
+                text: 'Count of patients',
+                position: 'outer-middle'
+              }
+            },
+            y2: {
+              show: true,
+              min: 0,
+              padding: {top:0, bottom:0},
+              label: {
+                text: 'Duration (minutes)',
+                position: 'outer-middle'
+              }
+            }
+          }
+        });
+      </script>
+    </div>
+    <div class="row content-offset">
+      <div class="col-md-12">
+        {% category_bar_chart "Clinic entries" elcid_review.x elcid_review.vals %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+            {% for header in elcid_review.table.headers %}
+              <th>{{ header }}</th>
+            {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row_name, values in elcid_review.table.rows.items %}
+            <tr>
+              <td>{{ row_name }}</td>
+              {% for val in values %}
+              <td {% if not val.2 %}class="text-muted"{% endif %}>{{ val.0 }}/{{ val.1 }} {% if val.2 %}({{ val.2 }}%){% endif %}</td>
+              {% endfor %}
+            </tr>
+
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4">
+        {% table_with_percent "elCID Patient notes by user" users_recorded %}
+      </div>
+      <div class="col-md-4">
+        {% table_with_percent "By reasons for interaction" patient_notes_by_reason_for_interaction %}
+      </div>
+      <div class="col-md-4">
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <h3>Populated Panels</h3>
+          </div>
+        </div>
+        <div class="row content-offset-20">
+          <div class="col-md-12">
+            <table class="table table-striped">
+              {% for row in populated.items %}
+              <tr>
+                <td>
+                  {{ row.0 }}
+                </td>
+                <td>
+                  {{ row.1 }}
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

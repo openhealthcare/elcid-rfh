@@ -30,15 +30,27 @@
         {% for transfer in history %}
         <tr>
           <td>
-            <a href="/#/patient/{{ transfer.patient.id }}" class="orange-link">
-              {{ transfer.demographics.name }}
+            <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
+              {{ transfer.patient.demographics_set.all.0.name }}
             </a>
           </td>
           <td>
             {{ transfer.transfer_start_datetime }}
           </td>
-          <td>{{ transfer.transfer_end_datetime }}</td>
-          <td>{{ transfer.transfer_start_datetime |timesince:transfer.transfer_end_datetime}} </td>
+          <td>
+            {% if transfer.transfer_end_datetime > now %}
+              <span class="text-warning">
+
+            {{ transfer.transfer_end_datetime }}
+              </span>
+            {% else %}
+            {{ transfer.transfer_end_datetime }}
+            {% endif %}
+          </td>
+          <td>
+            {% if transfer.transfer_end_datetime < now %}
+            {{ transfer.transfer_start_datetime |timesince:transfer.transfer_end_datetime}} </td>
+            {% endif %}
           <td>{{ transfer.transfer_location_code }}</td>
           <td>{{ transfer.site_code}}</td>
           <td>{{ transfer.unit }}</td>
@@ -48,9 +60,11 @@
           </td>
           <td>{{ transfer.transfer_reason }}</td>
           <td>
+            {% if transfer.transfer_end_datetime < now %}
             <a href="/#/admissions/slice-contacts/{{ transfer.encounter_slice_id }}/" class="orange-link">
               Contacts
             </a>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
