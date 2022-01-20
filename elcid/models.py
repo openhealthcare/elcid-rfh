@@ -412,21 +412,6 @@ class BloodCultureSource(lookuplists.LookupList):
     pass
 
 
-class FinalDiagnosis(EpisodeSubrecord):
-    _icon = 'fa fa-pencil-square'
-
-    source = models.CharField(max_length=255, blank=True)
-    contaminant = models.BooleanField(default=False)
-    community_related = models.BooleanField(default=False)
-    hcai_related = models.BooleanField(
-        verbose_name="HCAI related", default=False
-    )
-
-    class Meta:
-        verbose_name = "Final Diagnosis"
-        verbose_name_plural = "Final Diagnoses"
-
-
 class ImagingTypes(lookuplists.LookupList):
     pass
 
@@ -641,24 +626,6 @@ def record_positive_blood_culture(sender, instance, **kwargs):
         )
         pbch.when = timezone.now()
         pbch.save()
-
-
-class ICUAdmission(EpisodeSubrecord):
-    _icon = 'fa fa-heartbeat'
-
-    OUTCOMES = enum('Survived', 'Covid-19 Atributable Death', 'Covid-19 Non-attributable Death')
-
-    admission_date = models.DateField(blank=True, null=True)
-    discharge_date = models.DateField(blank=True, null=True)
-    apache2_score   = models.CharField(
-        max_length=200, blank=True, null=True,
-        verbose_name="APACHE II Score")
-    outcome        = models.CharField(
-        max_length=200, blank=True, null=True, choices=OUTCOMES
-    )
-
-    class Meta:
-        verbose_name = 'ICU Admission'
 
 
 class InotropicDrug(lookuplists.LookupList):
