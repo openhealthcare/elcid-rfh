@@ -14,6 +14,7 @@ from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
 from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.covid.models import LungFunctionTest
 from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
 
@@ -344,6 +345,11 @@ class TbMedicationModal(AbstractModalView):
 class OtherMedicationModal(AbstractModalView):
     template_name = "modals/other_medication.html"
     model = Treatment
+
+
+class LungFunctionTestModal(AbstractModalView):
+    template_name = "modals/lung_function_test_modal.html"
+    model = LungFunctionTest
 
 
 class AbstractTBAppointmentList(LoginRequiredMixin, ListView):

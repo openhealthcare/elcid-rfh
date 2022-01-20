@@ -44,6 +44,11 @@ urlpatterns = [
         name="other_medication_modal"
     ),
     url(
+        r'^tb/lung_function_test/$',
+        views.LungFunctionTestModal.as_view(),
+        name="tb_lung_function_test"
+    ),
+    url(
         r'^templates/tb/clinic_list/$',
         views.ClinicList.as_view(),
         name="tb_clinic_list"
