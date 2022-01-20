@@ -1,11 +1,20 @@
 <strong>
-  [[ item.date_ordered | displayDate ]]
+[[ item.date_ordered | displayDate ]]
 [[ item.lab_number ]]
 </strong>
 <span ng-show="item.source">
   <br />
   Source: [[ item.source ]]
 </span>
-
-
-
+<span ng-show="item.contaminant">
+  <br />
+  Contaminant
+</span>
+<span ng-show="item.community">
+  <br />
+  Community Related
+</span>
+<span ng-show="item.hcai">
+  <br />
+  HCAI related
+</span>
