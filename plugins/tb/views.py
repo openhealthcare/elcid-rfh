@@ -1007,23 +1007,13 @@ class ClinicActivity(AbstractClinicActivity):
                 if pc.when.date() >= start_week:
                     if pc.when.date() < end_week:
                         by_week[start_week].append(pc)
-        duration = dict()
         count = dict()
         for start, _ in self.weeks:
             pcs = by_week.get(start, [])
             if not pcs:
-                duration[start] = 0
                 count[start] = 0
             else:
                 whens = [i.when for i in pcs]
-                start_datetime = min(whens)
-                end_datetime = max(whens)
-                if end_datetime == start_datetime:
-                    duration[start] = 0
-                else:
-                    duration[start] = int(
-                        (end_datetime - start_datetime).total_seconds() / 60
-                    )
                 count[start] = len(whens)
         return {
             "x_axis": json.dumps(
@@ -1031,7 +1021,6 @@ class ClinicActivity(AbstractClinicActivity):
             ),
             "vals": json.dumps(
                 [
-                    ["duration"] + list([i or None for i in duration.values()]),
                     ["count"] + list(count.values()),
                 ]
             ),
