@@ -80,8 +80,9 @@ class SpellLocationHistoryView(LoginRequiredMixin, TemplateView):
         history = TransferHistory.objects.filter(spell_number=k['spell_number'])
         patient = None
         demographics = None
-        if history:
-            patient = history[0].patient
+
+        if encounter:
+            patient = encounter.patient
             demographics = patient.demographics()
 
         context['patient']      = patient
