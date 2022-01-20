@@ -92,7 +92,7 @@ directives.directive("sparkLine", function () {
 });
 
 
-directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, LabTestSummaryLoader){
+directives.directive("populateLabTests", function(LabTestSummaryLoader){
   "use strict";
   return {
     restrict: 'A',
@@ -101,23 +101,10 @@ directives.directive("populateLabTests", function(InitialPatientTestLoadStatus, 
       // TODO: this is wrong, well maybe not wrong, but not right
       var episode = scope.row || scope.episode;
       var patientId = episode.demographics[0].patient_id;
-      var patientLoadStatus = new InitialPatientTestLoadStatus(
-          episode
-      );
 
-      // make sure we are using the correct
-      // js object scope(ie this)
-      patientLoadStatus.load();
-      scope.patientLoadStatus = patientLoadStatus;
-
-      if(!scope.patientLoadStatus.isAbsent()){
-        scope.patientLoadStatus.promise.then(function(){
-            // success
-            LabTestSummaryLoader.load(patientId).then(function(result){
-              scope.data = result;
-            });
-        });
-      }
+      LabTestSummaryLoader.load(patientId).then(function(result){
+        scope.data = result;
+      });
     }
   };
 });
