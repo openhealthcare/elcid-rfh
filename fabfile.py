@@ -256,10 +256,10 @@ WHERE datname='{}'\"".format(some_env.database_name),
 
 def postgres_load_database(backup_name, new_env):
     print("Loading the database {}".format(new_env.database_name))
-    local("cat {0} | gunzip | sudo -u postgres psql -d {1}".format(
-        backup_name,
-        new_env.database_name
-    ))
+    # local("cat {0} | gunzip | sudo -u postgres psql -d {1}".format(
+    #     backup_name,
+    #     new_env.database_name
+    # ))
 
 
 def services_symlink_nginx(new_env):
