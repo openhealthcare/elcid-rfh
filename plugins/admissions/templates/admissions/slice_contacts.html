@@ -26,6 +26,8 @@
       <!-- End Panel Header -->
 
       <table class="table table-bordered table-striped">
+        {% for transfer in transfers %}
+        {% ifchanged transfer.bed %}
         <tr>
           <th>Patient</th>
           <th>Start</th>
@@ -37,7 +39,7 @@
           <th>Bed</th>
           <th>Transfer Reason</th>
         </tr>
-        {% for transfer in transfers %}
+        {% endifchanged %}
         <tr>
           <td>
             <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
