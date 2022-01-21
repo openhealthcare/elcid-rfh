@@ -38,7 +38,12 @@ angular.module('opal.controllers').controller(
           self.clinicalAdvice = _.sortBy(result, "when").reverse();
         };
 
-        this.getClinicalAdvice();
+        // if we have clinical advice forms on different episodes
+        // getClinicalAdvice will not be called after you create
+        // a clinical dvice on a different episode detail page
+        // this handles that case to refresh the timeline, whenever the scope
+        // episode changes.
+        $scope.$watch('episode', self.getClinicalAdvice);
 
         this.editItem = function(item){
           var ctrl = "GeneralEditCtrl";
