@@ -15,11 +15,14 @@ def strip_wardname(wardname):
     different prefixes. Stripping these allows us
     to treat them as the same place
     """
+    if wardname is None:
+        return None
     if wardname.startswith('RAL '):
         return wardname.replace('RAL ', '')
     if wardname.startswith('RF-'):
         return wardname.replace('RF-', '')
     return wardname
+
 
 def strip_bedname(bedname):
     """
@@ -28,6 +31,8 @@ def strip_bedname(bedname):
 
     Occasionally ben names come in just as e.g. 14
     """
+    if bedname is None:
+        return None
     name = bedname.upper().replace(' ', '')
 
     if len(name) == 2:
