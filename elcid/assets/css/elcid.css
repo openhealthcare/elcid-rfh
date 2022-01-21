@@ -586,7 +586,7 @@ div.add-isolate:hover {
 }
 
 .whitespacey {
-  white-space: pre;
+  white-space: pre-wrap;
 }
 
 .tb-stats {
