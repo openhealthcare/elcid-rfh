@@ -2,10 +2,7 @@
 API for production
 """
 from collections import defaultdict
-import datetime
 from functools import wraps
-import itertools
-import json
 import time
 
 from django.conf import settings
@@ -26,9 +23,6 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 RETRY_DELAY = 30
 
 PATIENT_MASTERFILE_VIEW = "VIEW_CRS_Patient_Masterfile"
-
-PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
-@hospital_number ORDER BY date_inserted DESC;"
 
 PATIENT_MASTERFILE_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
 @hospital_number ORDER BY last_updated DESC;"
@@ -553,12 +547,6 @@ class ProdApi(base_api.BaseApi):
         return result
 
     @property
-    def pathology_demographics_query(self):
-        return PATHOLOGY_DEMOGRAPHICS_QUERY.format(
-            view=self.trust_settings["view"]
-        )
-
-    @property
     def all_data_for_hospital_number_query(self):
         return ALL_DATA_QUERY_FOR_HOSPITAL_NUMBER.format(
             view=self.trust_settings["view"]
@@ -585,22 +573,6 @@ class ProdApi(base_api.BaseApi):
     @property
     def patient_masterfile_query(self):
         return PATIENT_MASTERFILE_QUERY.format(view=PATIENT_MASTERFILE_VIEW)
-
-    def demographics(self, hospital_number):
-        hospital_number = hospital_number.strip()
-        demographics_result = None
-
-        master_file_result = self.patient_masterfile(hospital_number)
-
-        if master_file_result:
-            demographics_result = master_file_result[Demographics.get_api_name()]
-
-        if not demographics_result:
-            demographics_result = self.pathology_demographics(hospital_number)
-
-        if demographics_result:
-            demographics_result["external_system"] = EXTERNAL_SYSTEM
-            return demographics_result
 
     @timing
     def patient_masterfile_since(self, last_updated):
@@ -642,39 +614,6 @@ class ProdApi(base_api.BaseApi):
             GPDetails.get_api_name(): get_gp_details(rows[0]),
             MasterFileMeta.get_api_name(): get_master_file_meta(rows[0]),
         }
-
-    @timing
-    @db_retry
-    def pathology_demographics(self, hn):
-        hospital_number = hn
-        rows = list(self.execute_trust_query(
-            self.pathology_demographics_query,
-            params=dict(hospital_number=hospital_number)
-        ))
-        if not len(rows):
-            # If the hn begins with leading 0(s)
-            # the data is sometimes empty in the CRS_* fields.
-            # So if we cannot find rows with 0 prefixes
-            # remove the prefix.
-            if not hospital_number.startswith("0"):
-                return
-            hospital_number = hospital_number.lstrip('0')
-
-            # some hns are just 0s, if we've stripped the hn
-            # away don't query again.
-            if not hospital_number:
-                return
-            rows = list(self.execute_trust_query(
-                self.pathology_demographics_query,
-                params=dict(hospital_number=hospital_number)
-            ))
-            if not len(rows):
-                return
-            # If we've stripped off the leading 0, restore it.
-            if not hn == hospital_number:
-                for row in rows:
-                    row["Patient_Number"] = hn
-        return PathologyRow(rows[0]).get_demographics_dict()
 
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
         if lab_number:
