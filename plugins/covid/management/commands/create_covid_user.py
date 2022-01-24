@@ -41,7 +41,7 @@ class Command(BaseCommand):
         profile.force_password_change = True
         profile.save()
 
-        for role_name in ['view_lab_tests_in_list', 'view_lab_tests_in_detail', 'view_lab_test_trends', 'covid19']:
+        for role_name in ['view_lab_tests_in_list', 'view_lab_tests_in_detail', 'covid19']:
             profile.roles.add(Role.objects.get(name=role_name))
 
 
