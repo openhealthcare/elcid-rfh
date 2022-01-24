@@ -18,8 +18,6 @@ class ResultTestCase(OpalTestCase):
         profile, _ = UserProfile.objects.get_or_create(
             user=self.permissioned
         )
-        profile.roles.create(name=constants.VIEW_LAB_TESTS_IN_DETAIL)
-
         self.not_permissioned = User.objects.create(
             username="not_permissioned", password="not_permissioned"
         )

@@ -1,11 +1,7 @@
-# do they see the Lab Tests Patient Detail View
-VIEW_LAB_TESTS_IN_DETAIL = "view_lab_tests_in_detail"
-
 # can they view the reconcile demographics patient list
 UPDATE_DEMOGRAPHICS = "update_demographics"
 
 INTRAHOSPITAL_ROLES = set([
-    VIEW_LAB_TESTS_IN_DETAIL,
     UPDATE_DEMOGRAPHICS,
 ])
 
