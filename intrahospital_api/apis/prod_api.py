@@ -289,6 +289,7 @@ class PathologyRow(object):
         'encounter_location_code',
         'encounter_location_name',
         'accession_number',
+        'department'
     ]
 
     OBSERVATION_FIELDS = [
@@ -369,6 +370,12 @@ class PathologyRow(object):
             return "complete"
         else:
             return "pending"
+
+    # the winpath department, should be 1-9
+    def get_department(self):
+        dep = self.db_row.get("Department")
+        if dep:
+            return int(dep)
 
     def get_site(self):
         site = self.db_row.get('Specimen_Site')
