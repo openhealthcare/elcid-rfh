@@ -80,6 +80,7 @@ class LabTest(models.Model):
         self.site = data["site"]
         self.test_name = data["test_name"]
         self.accession_number = data["accession_number"]
+        self.department = data["department"]
         self.encounter_consultant_name = data["encounter_consultant_name"]
         self.encounter_location_name = data["encounter_location_name"]
         self.encounter_location_code = data["encounter_location_code"]
