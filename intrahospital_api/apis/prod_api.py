@@ -289,11 +289,7 @@ class PathologyRow(object):
         'encounter_location_code',
         'encounter_location_name',
         'accession_number',
-<<<<<<< HEAD
         'department_int'
-=======
-        'department'
->>>>>>> ba67093ef319293b9ea881d868735b461a24ef49
     ]
 
     OBSERVATION_FIELDS = [
@@ -376,11 +372,7 @@ class PathologyRow(object):
             return "pending"
 
     # the winpath department, should be 1-9
-<<<<<<< HEAD
     def get_department_int(self):
-=======
-    def get_department(self):
->>>>>>> ba67093ef319293b9ea881d868735b461a24ef49
         dep = self.db_row.get("Department")
         if dep:
             return int(dep)
