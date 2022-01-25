@@ -240,12 +240,13 @@ class LabTestResultsView(LoginRequiredViewset):
 
         for test_type, instances in by_test.items():
             long_form = self.is_long_form(test_type, instances)
+
             if long_form:
                 serialised = {
                     'long_form'    : True,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
-                    'department'   : instances[0].deparment,
+                    'department'   : instances[0].department,
                     'instances'    : [
                         self.serialise_long_form_instance(i) for i in instances
                     ]
@@ -255,7 +256,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     'long_form'    : False,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
-                    'department'   : instances[0].deparment,
+                    'department'   : instances[0].department,
                     'instances'    : self.serialise_tabular_instances(instances)
                 }
 

@@ -140,7 +140,7 @@ class LabTest(models.Model):
                 return site_part
 
     @property
-    def deparment(self):
+    def department(self):
         return constants.WITHPATH_DEPATMENT_MAPPING.get(
             self.department_int
         )
