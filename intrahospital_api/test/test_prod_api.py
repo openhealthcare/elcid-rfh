@@ -571,6 +571,14 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.call_args[1]["params"], dict(hospital_number="123")
         )
 
+    def test_pathology_demographics_hospital_number_fail(self):
+        api = self.get_api()
+        with mock.patch.object(api, "execute_trust_query") as execute_query:
+            execute_query.return_value = []
+            result = api.pathology_demographics("A1' 23")
+
+        self.assertIsNone(result)
+
     def test_patient_masterfile_success(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_hospital_query") as execute_query:
@@ -615,6 +623,57 @@ class ProdApiTestcase(OpalTestCase):
             execute_query.return_value = []
             result = api.patient_masterfile("A1' 23")
 
+        self.assertIsNone(result)
+
+    def test_demographics_found_in_main(self):
+        api = self.get_api()
+        with mock.patch.object(api, "patient_masterfile") as patient_masterfile:
+            with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
+                patient_masterfile.return_value = dict(demographics=dict(first_name="Wilma"))
+                result = api.demographics("111")
+
+        self.assertEqual(
+            result,
+            dict(first_name="Wilma", external_system=constants.EXTERNAL_SYSTEM)
+        )
+
+        patient_masterfile.assert_called_once_with("111")
+        self.assertFalse(pathology_demographics.called)
+
+    def test_demographics_found_in_pathology(self):
+        api = self.get_api()
+        with mock.patch.object(api, "patient_masterfile") as patient_masterfile:
+            with mock.patch.object(api, "pathology_demographics") as pathology_demographics:
+                patient_masterfile.return_value = None
+                pathology_demographics.return_value = dict(first_name="Wilma")
+                result = api.demographics("111")
+
+        self.assertEqual(
+            result,
+            dict(
+                first_name="Wilma",
+                external_system=constants.EXTERNAL_SYSTEM
+            )
+        )
+
+        patient_masterfile.assert_called_once_with("111")
+        pathology_demographics.assert_called_once_with("111")
+
+    def test_demographics_not_found_in_either(self):
+        api = self.get_api()
+
+        with mock.patch.object(
+            api, "execute_hospital_query"
+        ) as execute_hospital_query:
+            with mock.patch.object(
+                api, "execute_trust_query"
+            ) as execute_trust_query:
+                execute_hospital_query.return_value = []
+                execute_trust_query.return_value = []
+                result = api.demographics("123")
+
+        self.assertTrue(execute_hospital_query.called)
+        self.assertTrue(execute_trust_query.called)
         self.assertIsNone(result)
 
     def test_data_deltas(self):
