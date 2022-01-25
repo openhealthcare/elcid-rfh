@@ -40,10 +40,9 @@ angular.module('opal.controllers').controller('ResultView', function(
 
     this.show = function(name){
         var toShow = true
-        if(vm.filterString && !this.includes(name, vm.filterString)){
+        if(vm.filterString && !this.includes(vm.filterString, name)){
             toShow = false;
         }
-
         if(toShow && _.any(_.values(vm.checkedDepartments))){
             var labTest = vm.lab_tests[name];
             toShow = vm.checkedDepartments[labTest.department]
