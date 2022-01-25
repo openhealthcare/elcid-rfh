@@ -23,7 +23,13 @@ class LabTest(models.Model):
         on_delete=models.CASCADE,
         related_name="lab_tests"
     )
+<<<<<<< HEAD
     department = models.IntegerField(null=True, blank=True)
+=======
+    # the upstream 1-9 mapping that maps to the deparment
+    # that performs this test
+    department_int = models.IntegerField(null=True, blank=True)
+>>>>>>> @{-1}
     clinical_info = models.TextField(null=True, blank=True)
     datetime_ordered = models.DateTimeField(null=True, blank=True)
     site = models.CharField(max_length=256, blank=True, null=True)
@@ -80,7 +86,11 @@ class LabTest(models.Model):
         self.site = data["site"]
         self.test_name = data["test_name"]
         self.accession_number = data["accession_number"]
+<<<<<<< HEAD
         self.department = data["department"]
+=======
+        self.department_int = data["department_int"]
+>>>>>>> @{-1}
         self.encounter_consultant_name = data["encounter_consultant_name"]
         self.encounter_location_name = data["encounter_location_name"]
         self.encounter_location_code = data["encounter_location_code"]
@@ -138,9 +148,15 @@ class LabTest(models.Model):
                 return site_part
 
     @property
+<<<<<<< HEAD
     def winpath_department(self):
         return constants.WITHPATH_DEPATMENT_MAPPING.get(
             self.department
+=======
+    def department(self):
+        return constants.WITHPATH_DEPATMENT_MAPPING.get(
+            self.department_int
+>>>>>>> @{-1}
         )
 
 

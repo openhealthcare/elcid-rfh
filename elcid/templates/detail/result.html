@@ -17,6 +17,15 @@
             <input class="form-control" placeholder="Filter" ng-model="resultView.filterString" />
           </div>
         </div>
+        <div class="row">
+          <form class="form-inline">
+            <div class="form-group">
+              <button ng-repeat='department in resultView.departments' type="button" class="btn btn-default content-offset-right-5 content-offset-left-5 content-offset-10" ng-model="resultView.checkedDepartments[department]" uib-btn-checkbox>
+                [[ department ]]
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
       <!-- End Panel Header -->
 
