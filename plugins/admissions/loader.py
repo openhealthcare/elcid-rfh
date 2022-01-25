@@ -159,10 +159,10 @@ def load_excounters_since(timestamp):
     for encounter in encounters:
         if encounter['PID_3_MRN']:
             encounter['PID_3_MRN'] = encounter['PID_3_MRN'].strip()
-    mrns = [i['PID_3_MRN'] for i in encounters if i['PID_3_MRN']]
+    mrns = list(set([i['PID_3_MRN'] for i in encounters if i['PID_3_MRN']]))
     existing_hns = set(Demographics.objects.filter(
-        hospital_number__in=mrns).values_list('hospital_number', flat=True
-    ))
+        hospital_number__in=mrns).values_list('hospital_number', flat=True)
+    )
     for mrn in mrns:
         if mrn and mrn not in existing_hns:
             create_rfh_patient_from_hospital_number(mrn, InfectionService)
