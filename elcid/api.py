@@ -19,6 +19,7 @@ from intrahospital_api import loader, epr
 from intrahospital_api import constants as intrahospital_api_constants
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
+from plugins.labtests import constants as lab_constants
 
 from elcid import models as emodels
 from plugins.tb import models as tb_models
@@ -207,10 +208,10 @@ class LabTestResultsView(LoginRequiredViewset):
                 )
 
         return {
-            'lab_number'  : instance.lab_number,
-            'date'        : instance.datetime_ordered,
-            'observations': serialised_observations,
-            'site'        : instance.cleaned_site
+            'lab_number'        : instance.lab_number,
+            'date'              : instance.datetime_ordered,
+            'observations'      : serialised_observations,
+            'site'              : instance.cleaned_site,
         }
 
     @patient_from_pk
@@ -238,13 +239,13 @@ class LabTestResultsView(LoginRequiredViewset):
         test_dates       = {}
 
         for test_type, instances in by_test.items():
-
             long_form = self.is_long_form(test_type, instances)
             if long_form:
                 serialised = {
                     'long_form'    : True,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
+                    'department'   : instances[0].deparment,
                     'instances'    : [
                         self.serialise_long_form_instance(i) for i in instances
                     ]
@@ -254,6 +255,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     'long_form'    : False,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
+                    'department'   : instances[0].deparment,
                     'instances'    : self.serialise_tabular_instances(instances)
                 }
 
@@ -262,7 +264,8 @@ class LabTestResultsView(LoginRequiredViewset):
         return json_response(
             {
                 'test_order': test_order,
-                'tests'     : serialised_tests
+                'tests'     : serialised_tests,
+                'departments': list(lab_constants.WITHPATH_DEPATMENT_MAPPING.values())
             }
         )
 

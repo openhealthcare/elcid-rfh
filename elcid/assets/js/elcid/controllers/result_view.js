@@ -5,7 +5,9 @@ angular.module('opal.controllers').controller('ResultView', function(
     var vm = this;
 
     this.labTests = [];
+    this.departments = [];
     this.showAll = {};
+    this.checkedDepartments = {}
 
     this.parseFloat = parseFloat;
     this.Math = window.Math;
@@ -31,11 +33,22 @@ angular.module('opal.controllers').controller('ResultView', function(
         return observation.replace('-', '').trim().length;
     }
 
+    this.includes = function(string1, string2){
+        // case insensitive check, does string1 exist in string2
+        return string2.toLowerCase().indexOf(string1.toLowerCase()) !== -1
+    }
+
     this.show = function(name){
-        if(!vm.filterString){
-            return true
+        var toShow = true
+        if(vm.filterString && !this.includes(name, vm.filterString)){
+            toShow = false;
         }
-        return name.toLowerCase().indexOf(vm.filterString.toLowerCase()) !== -1
+
+        if(toShow && _.any(_.values(vm.checkedDepartments))){
+            var labTest = vm.lab_tests[name];
+            toShow = vm.checkedDepartments[labTest.department]
+        }
+        return toShow;
     }
 
     this.getLabTests = function(patient){
@@ -45,7 +58,8 @@ angular.module('opal.controllers').controller('ResultView', function(
         return LabTestResults.load(patient.id).then(function(result){
 
             vm.test_order = result.test_order;
-            vm.lab_tests   = result.tests
+            vm.lab_tests   = result.tests;
+            vm.departments = result.departments;
             ngProgressLite.done();
 
         });
