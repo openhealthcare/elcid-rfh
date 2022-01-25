@@ -246,7 +246,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     'long_form'    : True,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
-                    'department'   : instances[0].deparment,
+                    'department'   : instances[0].department,
                     'instances'    : [
                         self.serialise_long_form_instance(i) for i in instances
                     ]
@@ -256,7 +256,7 @@ class LabTestResultsView(LoginRequiredViewset):
                     'long_form'    : False,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
-                    'department'   : instances[0].deparment,
+                    'department'   : instances[0].department,
                     'instances'    : self.serialise_tabular_instances(instances)
                 }
 
