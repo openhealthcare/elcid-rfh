@@ -96,7 +96,7 @@ def update_encounters_from_query_result(rows):
     logger.info(f'{existing_encounters_count} existing encounters will be removed')
     mrns = [i['PID_3_MRN'].strip() for i in rows if i['PID_3_MRN'].strip()]
     patients = Patient.objects.filter(
-        hospital_number__in=mrns
+        demographics__hospital_number__in=mrns
     ).prefetch_related('demographics')
 
     mrn_to_patients = defaultdict(list)
