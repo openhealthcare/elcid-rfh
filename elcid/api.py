@@ -240,6 +240,7 @@ class LabTestResultsView(LoginRequiredViewset):
 
         for test_type, instances in by_test.items():
             long_form = self.is_long_form(test_type, instances)
+
             if long_form:
                 serialised = {
                     'long_form'    : True,
