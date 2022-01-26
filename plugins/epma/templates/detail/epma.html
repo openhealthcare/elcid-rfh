@@ -26,19 +26,19 @@
             <div class="col-md-3">
               [[ epmaOrder[orderKeys[1] ] ]]
             </div>
-            <table ng-show="epmaOrder.details.length" class="table table-bordered table-striped">
-              <tr>
-                <th ng-repeat="header in epmaView.detailKeys">
-                  [[ header ]]
-                </th>
-              </tr>
-              <tr ng-repeat="detail in epmaOrder.details">
-                <td ng-repeat="key in epmaView.keys(details)">
-                  [[ key ]]
-                </td>
-              </tr>
-            </table>
           </div>
+          <table ng-show="epmaOrder.details.length" class="table table-bordered table-striped">
+            <tr>
+              <th ng-repeat="header in epmaView.detailKeys">
+                [[ header ]]
+              </th>
+            </tr>
+            <tr ng-repeat="detail in epmaOrder.details">
+              <td ng-repeat="key in epmaView.detailKeys">
+                [[ detail[key] ]]
+              </td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
