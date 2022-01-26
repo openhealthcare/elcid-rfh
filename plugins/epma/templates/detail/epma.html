@@ -1,0 +1,46 @@
+<div ng-controller="EPMAView as epmaView" class="col-md-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-12">
+          <h3>
+            <i class="fa fa-flask"></i>
+            EPMA
+          </h3>
+        </div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="panel panel-default" ng-repeat="epmaOrder in epmaView.epmaOrders">
+        <div class="panel-body">
+          <div ng-repeat="orderKeys in epmaView.chunkedOrderFields" class="row">
+            <div class="col-md-3">
+              <b>[[ orderKeys[0] ]]</b>
+            </div>
+            <div class="col-md-3">
+              [[ epmaOrder[orderKeys[0] ] ]]
+            </div>
+            <div class="col-md-3">
+              <b>[[ orderKeys[1] ]]</b>
+            </div>
+            <div class="col-md-3">
+              [[ epmaOrder[orderKeys[1] ] ]]
+            </div>
+            <table ng-show="epmaOrder.details.length" class="table table-bordered table-striped">
+              <tr>
+                <th ng-repeat="header in epmaView.detailKeys">
+                  [[ header ]]
+                </th>
+              </tr>
+              <tr ng-repeat="detail in epmaOrder.details">
+                <td ng-repeat="key in epmaView.keys(details)">
+                  [[ key ]]
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
