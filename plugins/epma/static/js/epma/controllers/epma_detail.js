@@ -28,13 +28,9 @@ angular.module('opal.controllers').controller('EPMAView', function(
 								var hasDetail = _.findWhere(vm.epmaOrders, function(order){
 									return order.details.length
 								});
-<<<<<<< HEAD
-								vm.detailKeys = _.keys(hasDetail.details[0])
-=======
 								vm.detailKeys = _.without(
 									_.keys(hasDetail.details[0]), "id", "created_in_elcid"
 								)
->>>>>>> @{-1}
 							}
 							ngProgressLite.done();
 					},
