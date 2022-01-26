@@ -177,6 +177,7 @@ INSTALLED_APPS = (
     'plugins.dischargesummary',
     'plugins.monitoring',
     'plugins.handover',
+    'plugins.epma',
     'plugins.ipc',
     'intrahospital_api',
     'elcid',
