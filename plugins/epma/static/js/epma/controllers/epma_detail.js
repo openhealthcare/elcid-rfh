@@ -29,7 +29,7 @@ angular.module('opal.controllers').controller('EPMAView', function(
 									return order.details.length
 								});
 								vm.detailKeys = _.without(
-									_.keys(hasDetail.details[0]), "id", "created_in_elcid"
+									_.keys(hasDetail.details[0]), "id", "created_in_elcid", "order_id"
 								)
 							}
 							ngProgressLite.done();
@@ -46,7 +46,7 @@ angular.module('opal.controllers').controller('EPMAView', function(
 
 	vm.getChunkedOrderFields = function(obj){
 		var keys = _.keys(obj);
-		keys = _.without(keys, 'details', 'id', 'created_in_elcid')
+		keys = _.without(keys, 'details', 'id', 'created_in_elcid', 'o_clinical_display_line')
 		return _.chunk(keys, 2);
 	}
 

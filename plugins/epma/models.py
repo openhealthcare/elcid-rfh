@@ -95,7 +95,9 @@ class EPMAMedOrder(models.Model):
 
     def to_dict(self):
         as_dict = serialize_model(self)
-        order_details = self.epmamedorderdetail_set.all()
+        order_details = self.epmamedorderdetail_set.all().order_by(
+            'action_sequence', 'detail_sequence'
+        )
         as_dict["details"] = [
             serialize_model(i) for i in order_details
         ]
