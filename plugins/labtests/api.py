@@ -15,7 +15,6 @@ class LabTest(LoginRequiredViewset):
         for field in fields:
             if not field.is_relation:
                 result[field.name] = getattr(instance, field.name)
-        result['department'] = instance.department
         return result
 
     def serialize_observation(self, obs):
