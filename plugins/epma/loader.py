@@ -1,4 +1,5 @@
 from collections import defaultdict
+import datetime
 from django.db import transaction
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from django.db.models import DateTimeField
@@ -11,25 +12,27 @@ from plugins.epma.models import (
 )
 
 
-def query_med_orders_since(since):
+def query_med_orders_since(since, to):
     api = ProdAPI()
     query = """
     SELECT * FROM CERNERRFG.EPMA_MedOrder
-    WHERE LOAD_DT_TM > @since
+    WHERE LOAD_DT_TM >= @since
+    AND LOAD_DT_TM < @to
     """
-    return api.execute_epma_query(query, params={"since": since})
+    return api.execute_epma_query(query, params={"since": since, "to": to})
 
 
-def query_med_order_details_since(since):
+def query_med_order_details_since(since, to):
     api = ProdAPI()
     query = """
     SELECT * FROM CERNERRFG.EPMA_MedOrderDetail
     WHERE ORDER_ID IN (
         SELECT O_ORDER_ID FROM CERNERRFG.EPMA_MedOrder
-        WHERE LOAD_DT_TM > @since
+        WHERE LOAD_DT_TM >= @since
+        AND LOAD_DT_TM < @to
     )
     """
-    return api.execute_epma_query(query, params={"since": since})
+    return api.execute_epma_query(query, params={"since": since, "to": to})
 
 
 def cast_to_instance(instance, row):
@@ -47,9 +50,11 @@ def cast_to_instance(instance, row):
 
 
 @transaction.atomic
-def load_med_orders_since(since):
-    query_result = query_med_orders_since(since)
-    details = query_med_order_details_since(since)
+def load_med_orders_since(since, to=None):
+    if to is None:
+        to = datetime.datetime.max
+    query_result = query_med_orders_since(since, to)
+    details = query_med_order_details_since(since, to)
     if not query_result:
         return
     hospital_nunbers = set([
@@ -67,7 +72,7 @@ def load_med_orders_since(since):
         i for i in query_result if i["LOCALPATIENTID"] in our_hospital_number_to_patients
     ]
     EPMAMedOrder.objects.filter(
-        o_order_id__in=[i["ORDER_ID"] for i in query_result]
+        o_order_id__in=[i["O_ORDER_ID"] for i in query_result]
     ).delete()
 
     orders = []
@@ -85,16 +90,16 @@ def load_med_orders_since(since):
     for detail in details:
         details_by_order_id[detail["ORDER_ID"]].append(detail)
 
-    details = []
-    for order_id, details in details_by_order_id.keys():
+    details_to_create = []
+    for order_id, details in details_by_order_id.items():
         epma_orders = EPMAMedOrder.objects.filter(o_order_id=order_id)
         for order in epma_orders:
             for detail in details:
                 order_detail = EPMAMedOrderDetail(epmamedorder=order)
                 order_detail = cast_to_instance(order_detail, detail)
-                details.append(order_detail)
+                details_to_create.append(order_detail)
 
-    EPMAMedOrderDetail.objects.bulk_create(details, batch_size=500)
+    EPMAMedOrderDetail.objects.bulk_create(details_to_create, batch_size=500)
 
 
 def query_epmatherapeuticclasslookup():
