@@ -27,6 +27,7 @@ class LabTest(LoginRequiredViewset):
     def serialize_lab_test(self, lab_test):
         result = self.serialize_model(lab_test)
         result['patient_id'] = lab_test.patient_id
+        result['department'] = lab_test.department
         result['observations'] = []
 
         for obs in lab_test.observation_set.all():
