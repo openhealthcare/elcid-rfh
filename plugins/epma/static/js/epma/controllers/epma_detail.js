@@ -24,7 +24,7 @@ angular.module('opal.controllers').controller('EPMAView', function(
 					function(response){
 							vm.epmaOrders = response.data;
 							if(vm.epmaOrders.length){
-								vm.chunkedOrderFields = vm.getChunkedOrderFields(vm.epmaOrders);
+								vm.chunkedOrderFields = vm.getChunkedOrderFields(vm.epmaOrders[0]);
 								var hasDetail = _.findWhere(vm.epmaOrders, function(order){
 									return order.details.length
 								});
@@ -44,7 +44,7 @@ angular.module('opal.controllers').controller('EPMAView', function(
 
 	vm.getChunkedOrderFields = function(obj){
 		var keys = _.keys(obj);
-		keys = _.without(keys, 'details')
+		keys = _.without(keys, 'details', 'id', 'created_in_elcid')
 		return _.chunk(keys, 2);
 	}
 
