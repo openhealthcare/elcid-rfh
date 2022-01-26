@@ -19,10 +19,10 @@ def query_med_orders_since(since, to):
     WHERE LOAD_DT_TM >= @since
     AND LOAD_DT_TM < @to
     """
-    return api.execute_epma_query(query, params={"since": since})
+    return api.execute_epma_query(query, params={"since": since, "to": to})
 
 
-def query_med_order_details_since(since):
+def query_med_order_details_since(since, to):
     api = ProdAPI()
     query = """
     SELECT * FROM CERNERRFG.EPMA_MedOrderDetail
@@ -32,7 +32,7 @@ def query_med_order_details_since(since):
         AND LOAD_DT_TM < @to
     )
     """
-    return api.execute_epma_query(query, params={"since": since})
+    return api.execute_epma_query(query, params={"since": since, "to": to})
 
 
 def cast_to_instance(instance, row):
@@ -50,7 +50,7 @@ def cast_to_instance(instance, row):
 
 
 @transaction.atomic
-def load_med_orders_since(since, to):
+def load_med_orders_since(since, to=None):
     if to is None:
         to = datetime.datetime.max
     query_result = query_med_orders_since(since, to)
