@@ -2,7 +2,7 @@ from collections import defaultdict
 import datetime
 from django.db import transaction
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from django.db.models import DateTimeField
+from django.db.models import DateTimeField, IntegerField
 from django.utils import timezone
 from elcid.models import Demographics
 from plugins.epma.models import (
@@ -45,6 +45,8 @@ def cast_to_instance(instance, row):
             )
             if fieldtype == DateTimeField:
                 v = timezone.make_aware(v)
+            if fieldtype == IntegerField:
+                v = int(v)
             setattr(instance, instance.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
     return instance
 
