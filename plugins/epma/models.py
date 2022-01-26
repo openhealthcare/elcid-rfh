@@ -2,6 +2,15 @@ from django.db import models
 from opal.models import Patient
 
 
+def serialize_model(instance):
+    result = {}
+    fields = instance._meta.get_fields()
+    for field in fields:
+        if not field.is_relation:
+            result[field.name] = getattr(instance, field.name)
+    return result
+
+
 class EPMAMedOrder(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     created_in_elcid = models.DateTimeField(auto_now_add=True)
@@ -83,6 +92,16 @@ class EPMAMedOrder(models.Model):
         "DOMAIN_NAME":  "domain_name",
         "LOAD_DT_TM":  "load_dt_tm",
     }
+
+    def to_dict(self):
+        as_dict = serialize_model(self)
+        order_details = self.epmamedorderdetail_set.all().order_by(
+            'action_sequence', 'detail_sequence'
+        )
+        as_dict["details"] = [
+            serialize_model(i) for i in order_details
+        ]
+        return as_dict
 
 
 class EPMAMedOrderDetail(models.Model):
