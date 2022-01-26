@@ -72,17 +72,26 @@
                   [[ lab_test.accession_number ]]
                 </div>
                 <div class="col-md-3">
+                  <b>Deparment</b>
+                </div>
+                <div class="col-md-3">
+                  [[ lab_test.department_int ]]
+                  <span ng-show='lab_test.department'>
+                    ([[ lab_test.department ]])
+                  </span>
+                </div>
+              </div>
+              <div class="row content-offset-10 content-offset-below-10">
+                <div class="col-md-3">
                   <b>Encounter consultant name</b>
                 </div>
                 <div class="col-md-3">
                   [[ lab_test.encounter_consultant_name ]]
                 </div>
-              </div>
-              <div ng-show="lab_test.encounter_location_name" class="row content-offset-10 content-offset-below-10">
-                <div class="col-md-3">
+                <div ng-show="lab_test.encounter_location_name"  class="col-md-3">
                   <b>Encounter location</b>
                 </div>
-                <div class="col-md-9">
+                <div ng-show="lab_test.encounter_location_name"  class="col-md-9">
                   [[ lab_test.encounter_location_name ]]
                   <span ng-show="lab_test.encounter_location_code">
                     ([[ lab_test.encounter_location_code ]])
