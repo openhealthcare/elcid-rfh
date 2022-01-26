@@ -4,7 +4,14 @@ angular.module('opal.controllers').controller('EPMAView', function(
 	"use strict";
 	var vm = this;
 
-	vm.imaging = []
+	vm.epmaOrders = []
+
+	// we display all fields coming from the api
+	// chunked into arrays of 2
+	vm.chunkedOrderFields = []
+
+	// all the fields on the detail object
+	vm.detailKeys = []
 
 	var url_base = '/api/v0.1/epma_med_order/';
 
@@ -16,6 +23,13 @@ angular.module('opal.controllers').controller('EPMAView', function(
 			$http({cache: true, url: url, method: 'GET' }).then(
 					function(response){
 							vm.epmaOrders = response.data;
+							if(vm.epmaOrders.length){
+								vm.chunkedOrderFields = vm.getChunkedOrderFields(vm.epmaOrders);
+								var hasDetail = _.findWhere(vm.epmaOrders, function(order){
+									return order.details.length
+								});
+								vm.detailKeys = _.keys(hasDetail.details[0])
+							}
 							ngProgressLite.done();
 					},
 					function(){
@@ -26,7 +40,9 @@ angular.module('opal.controllers').controller('EPMAView', function(
 
 	}
 
-	vm.chunkedOrderFields = function(obj){
+
+
+	vm.getChunkedOrderFields = function(obj){
 		var keys = _.keys(obj);
 		keys = _.without(keys, 'details')
 		return _.chunk(keys, 2);
@@ -34,5 +50,4 @@ angular.module('opal.controllers').controller('EPMAView', function(
 
 	vm.load($scope.patient.id);
 
-	vm.keys = _.keys;
 });

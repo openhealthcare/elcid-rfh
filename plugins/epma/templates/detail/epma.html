@@ -13,7 +13,7 @@
     <div class="panel-body">
       <div class="panel panel-default" ng-repeat="epmaOrder in epmaView.epmaOrders">
         <div class="panel-body">
-          <div ng-repeat="orderKeys in epmaView.chunkedOrderFields(epmaOrder)" class="row">
+          <div ng-repeat="orderKeys in epmaView.chunkedOrderFields" class="row">
             <div class="col-md-3">
               <b>[[ orderKeys[0] ]]</b>
             </div>
@@ -28,7 +28,7 @@
             </div>
             <table ng-show="epmaOrder.details.length" class="table table-bordered table-striped">
               <tr>
-                <th ng-repeat="header in epmaView.keys(epmaOrder.details[0])">
+                <th ng-repeat="header in epmaView.detailKeys">
                   [[ header ]]
                 </th>
               </tr>
