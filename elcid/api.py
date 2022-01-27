@@ -209,7 +209,6 @@ class LabTestResultsView(LoginRequiredViewset):
                         'units': o.units
                     }
                 )
-
         return {
             'lab_number'        : instance.lab_number,
             'date'              : instance.datetime_ordered,

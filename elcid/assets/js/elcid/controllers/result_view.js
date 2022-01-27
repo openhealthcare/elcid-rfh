@@ -49,21 +49,23 @@ angular.module('opal.controllers').controller('ResultView', function(
                 toShow =  _.any(_.map(labTest.instances, vm.showLongFormLabTest))
             }
             else{
-                toShow = _.any(_.map(labTest.instances, vm.showTabularLabTest))
+                toShow = vm.showTabularLabTest(labTest, vm.showTabularLabTest)
             }
-            toShow = vm.checkedDepartments[labTest.department]
         }
         return toShow;
     }
 
     this.showLongFormLabTest = function(labTestInstance){
         if(_.any(_.values(vm.checkedDepartments))){
+            if(!labTestInstance.department){
+                return false;
+            }
             return vm.checkedDepartments[labTestInstance.department]
         }
         return true;
     }
 
-    this.showTabularLabTest = function(labTestInstance){
+    this.showTabularLabTest = function(labTestInstances){
         if(_.any(_.values(vm.checkedDepartments))){
             var checkedDepartments = [];
             _.each(vm.checkedDepartments, function(v, k){
@@ -71,7 +73,7 @@ angular.module('opal.controllers').controller('ResultView', function(
                     checkedDepartments.push(k)
                 }
             });
-            return !!_.intersection(checkedDepartments, labTestInstance.departments).length
+            return !!_.intersection(checkedDepartments, labTestInstances.instances.departments).length
         }
         return true;
     }
