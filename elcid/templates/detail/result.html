@@ -63,11 +63,11 @@
 
             </div>
 
-            <div ng-show="resultView.showLongFormLabTest(instance) && !resultView.showAll[test_name] && resultView.lab_tests[test_name].instances.length > 10">
+            <div ng-show="!resultView.showAll[test_name] && resultView.visibleCount(test_name) > 10">
               <a ng-click="resultView.toggleShowAll(test_name)"
                  class="orange-link pointer"
                  >
-                Show [[ resultView.lab_tests[test_name].instances.length - 10 ]] more
+                Show [[ resultView.visibleCount(test_name) - 10 ]] more
               </a>
             </div>
 

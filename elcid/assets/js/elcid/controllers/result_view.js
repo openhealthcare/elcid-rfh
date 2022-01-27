@@ -57,12 +57,16 @@ angular.module('opal.controllers').controller('ResultView', function(
 
     this.showLongFormLabTest = function(labTestInstance){
         if(_.any(_.values(vm.checkedDepartments))){
-            if(!labTestInstance.department){
+            if(!labTestInstance || !labTestInstance.department){
                 return false;
             }
             return vm.checkedDepartments[labTestInstance.department]
         }
         return true;
+    }
+
+    this.visibleCount = function(test_name){
+        return _.filter(vm.lab_tests[test_name].instances, this.showLongFormLabTest).length
     }
 
     this.showTabularLabTest = function(labTestInstances){
