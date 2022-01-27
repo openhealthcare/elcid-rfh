@@ -560,23 +560,6 @@ class ProdApi(base_api.BaseApi):
         logger.debug(result)
         return result
 
-    def execute_epma_query(self, query, params=None):
-        with pytds.connect(
-            self.epma_settings["ip_address"],
-            self.epma_settings["database"],
-            self.epma_settings["username"],
-            self.epma_settings["password"],
-            as_dict=True
-        ) as conn:
-            with conn.cursor() as cur:
-                logger.info(
-                    "Running EPMA query {} {}".format(query, params)
-                )
-                cur.execute(query, params)
-                result = cur.fetchall()
-        logger.debug(result)
-        return result
-
     @property
     def pathology_demographics_query(self):
         return PATHOLOGY_DEMOGRAPHICS_QUERY.format(
