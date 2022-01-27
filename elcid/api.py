@@ -156,10 +156,12 @@ class LabTestResultsView(LoginRequiredViewset):
         observation_units  = {}
         lab_numbers        = {}
         data               = defaultdict(lambda: defaultdict(lambda: None))
+        departments         = set()
 
         for instance in instances:
             test_datetimes.add(instance.datetime_ordered)
             lab_numbers[serialization.serialize_datetime(instance.datetime_ordered)] = instance.lab_number
+            departments.add(instance.department)
 
             for observation in instance.observation_set.all():
                 name = observation.observation_name.rstrip('.')
@@ -189,7 +191,8 @@ class LabTestResultsView(LoginRequiredViewset):
             'lab_numbers'       : lab_numbers,
             'observation_ranges': observation_ranges,
             'observation_units' : observation_units,
-            'observation_series': data
+            'observation_series': data,
+            'departments'       : list(departments),
         }
 
     def serialise_long_form_instance(self, instance):
@@ -206,12 +209,12 @@ class LabTestResultsView(LoginRequiredViewset):
                         'units': o.units
                     }
                 )
-
         return {
             'lab_number'        : instance.lab_number,
             'date'              : instance.datetime_ordered,
             'observations'      : serialised_observations,
             'site'              : instance.cleaned_site,
+            'department'        : instance.department
         }
 
     @patient_from_pk
@@ -246,7 +249,6 @@ class LabTestResultsView(LoginRequiredViewset):
                     'long_form'    : True,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
-                    'department'   : instances[0].department,
                     'instances'    : [
                         self.serialise_long_form_instance(i) for i in instances
                     ]
@@ -256,7 +258,6 @@ class LabTestResultsView(LoginRequiredViewset):
                     'long_form'    : False,
                     'lab_test_type': test_type,
                     'count'        : len(instances),
-                    'department'   : instances[0].department,
                     'instances'    : self.serialise_tabular_instances(instances)
                 }
 

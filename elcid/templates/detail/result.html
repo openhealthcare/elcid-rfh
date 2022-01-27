@@ -39,7 +39,7 @@
           <div ng-if="resultView.lab_tests[test_name].long_form">
 
             <div ng-repeat="instance in resultView.lab_tests[test_name].instances"
-                 class="row content-offset-below-10" ng-show="resultView.showAll[test_name] || $index < 11">
+                 class="row content-offset-below-10" ng-show="resultView.showLongFormLabTest(instance) && (resultView.showAll[test_name] || $index < 11)">
 
               <div class="col-md-3">
                 <a href="/#/lab-test/[[ instance.lab_number ]]/"class="orange-link" >[[ instance.lab_number ]]</a>
@@ -89,7 +89,7 @@
 
               </tr>
 
-              <tr ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
+              <tr ng-show="resultView.showTabularLabTest(resultView.lab_tests[test_name])" ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
                 <td class="col-xs-3">[[ observation_name ]]</td>
                 <td class="col-xs-1">
                   [[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]
