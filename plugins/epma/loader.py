@@ -88,13 +88,18 @@ def load_med_orders_since(since, to=None):
 
     EPMAMedOrder.objects.bulk_create(orders, batch_size=500)
 
+    order_ids_to_orders = defaultdict(list)
+
+    for order in orders:
+        order_ids_to_orders[order.o_order_id].append(order)
+
     details_by_order_id = defaultdict(list)
     for detail in details:
         details_by_order_id[detail["ORDER_ID"]].append(detail)
 
     details_to_create = []
     for order_id, details in details_by_order_id.items():
-        epma_orders = EPMAMedOrder.objects.filter(o_order_id=order_id)
+        epma_orders = order_ids_to_orders[order_id]
         for order in epma_orders:
             for detail in details:
                 order_detail = EPMAMedOrderDetail(epmamedorder=order)
