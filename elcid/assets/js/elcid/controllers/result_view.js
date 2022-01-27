@@ -45,9 +45,35 @@ angular.module('opal.controllers').controller('ResultView', function(
         }
         if(toShow && _.any(_.values(vm.checkedDepartments))){
             var labTest = vm.lab_tests[name];
+            if(labTest.long_form){
+                toShow =  _.any(_.map(labTest.instances, vm.showLongFormLabTest))
+            }
+            else{
+                toShow = _.any(_.map(labTest.instances, vm.showTabularLabTest))
+            }
             toShow = vm.checkedDepartments[labTest.department]
         }
         return toShow;
+    }
+
+    this.showLongFormLabTest = function(labTestInstance){
+        if(_.any(_.values(vm.checkedDepartments))){
+            return vm.checkedDepartments[labTestInstance.department]
+        }
+        return true;
+    }
+
+    this.showTabularLabTest = function(labTestInstance){
+        if(_.any(_.values(vm.checkedDepartments))){
+            var checkedDepartments = [];
+            _.each(vm.checkedDepartments, function(v, k){
+                if(v){
+                    checkedDepartments.push(k)
+                }
+            });
+            return !!_.intersection(checkedDepartments, labTestInstance.departments).length
+        }
+        return true;
     }
 
     this.getLabTests = function(patient){
