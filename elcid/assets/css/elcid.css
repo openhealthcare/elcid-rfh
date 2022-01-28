@@ -568,7 +568,6 @@ div.add-isolate:hover {
 }
 
 .panel-heading.patient-detail-heading {
-  position: fixed;
   width: 100%;
   z-index: 10;
 }
