@@ -1,5 +1,7 @@
 *~
 *.sqlite
+*.sql
+*.sql.gz
 *.pyc
 .project
 static/*
