@@ -30,7 +30,7 @@
           <div ng-if="resultView.lab_tests[test_name].long_form">
 
             <div ng-repeat="instance in resultView.lab_tests[test_name].instances"
-                 class="row content-offset-below-10" ng-show="resultView.showAll[test_name] || $index < 11">
+                 class="row content-offset-below-10" ng-show="resultView.showAll[test_name] || $index < 10">
 
               <div class="col-md-3">
                 <a href="/#/lab-test/[[ instance.lab_number ]]/"class="orange-link" >[[ instance.lab_number ]]</a>
