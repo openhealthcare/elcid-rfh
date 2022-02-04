@@ -15,6 +15,7 @@ from elcid.models import Demographics
 from intrahospital_api.loader import api
 from intrahospital_api import update_lab_tests
 from plugins.labtests.models import Observation
+from plugins.labtests import logger
 from plugins.monitoring.models import Fact
 
 MAX_AMOUNT = 250000
@@ -39,6 +40,7 @@ def send_too_many_email(since, count):
     Trying to lab tests load since {since}. We found {count} lab tests
     which is over the threshold of {MAX_AMOUNT}. Cancelling the load.
     """
+    logger.info(f"batch_load2: {msg}")
     send_mail(
         f"{settings.OPAL_BRAND_NAME}",
         msg,
