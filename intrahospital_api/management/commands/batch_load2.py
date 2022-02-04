@@ -25,9 +25,8 @@ def update_patient(patient, lab_tests):
     update_lab_tests.update_tests(patient, lab_tests)
 
 
-def get_count(since_dt):
-    str_format = '%d/%m/%Y %H:%M:%S'
-    since = since_dt.strftime(str_format)
+def get_count(since):
+
     query = """
     SELECT count(*)
     FROM tQuest.Pathology_Result_View
@@ -36,7 +35,9 @@ def get_count(since_dt):
     return api.execute_trust_query(query, params={"since": since})[0][0]
 
 
-def send_too_many_email(since, count):
+def send_too_many_email(since_dt, count):
+    str_format = '%d/%m/%Y %H:%M:%S'
+    since = since_dt.strftime(str_format)
     msg = "\n".join([
         f"Trying to lab tests load since {since}.",
         f"We found {count} lab tests which is over the threshold of {MAX_AMOUNT}.",
