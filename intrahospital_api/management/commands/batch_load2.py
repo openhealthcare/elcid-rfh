@@ -42,9 +42,9 @@ def send_too_many_email(since, count):
         f"We found {count} lab tests which is over the threshold of {MAX_AMOUNT}.",
         "Cancelling the load"
     ])
-    logger.info(f"batch_load2: {msg}: Too many labtests")
+    logger.info(f"batch_load2: {msg}")
     send_mail(
-        f"{settings.OPAL_BRAND_NAME}",
+        f"{settings.OPAL_BRAND_NAME}: Too many labtests",
         msg,
         settings.DEFAULT_FROM_EMAIL,
         [i[1] for i in settings.ADMINS]
