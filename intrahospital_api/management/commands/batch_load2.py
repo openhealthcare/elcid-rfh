@@ -3,7 +3,6 @@ A management command that is run by a cron job
 """
 import datetime
 import time
-from tkinter.tix import MAX
 from django.db import transaction
 from django.conf import settings
 from django.core.mail import send_mail
@@ -36,11 +35,12 @@ def get_count(since):
 
 
 def send_too_many_email(since, count):
-    msg = f"""
-    Trying to lab tests load since {since}. We found {count} lab tests
-    which is over the threshold of {MAX_AMOUNT}. Cancelling the load.
-    """
-    logger.info(f"batch_load2: {msg}")
+    msg = " ".join([
+        f"Trying to lab tests load since {since}.",
+        f"We found {count} lab tests which is over the threshold of {MAX_AMOUNT}.",
+        "Cancelling the load"
+    ])
+    logger.info(f"batch_load2: {msg}: Too many labtests")
     send_mail(
         f"{settings.OPAL_BRAND_NAME}",
         msg,
