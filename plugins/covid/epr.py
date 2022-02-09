@@ -83,9 +83,9 @@ def render_covid_letter(followup_call):
         recovery.append(f"Other concerns: {followup_call.other_concerns}")
 
     pysch_scores = []
-    if followup_call.phq_score():
+    if followup_call.phq_score() is not None:
         pysch_scores.append(f"The patient scored {followup_call.phq_score()}/6 on the PHQ2.")
-    if followup_call.tsq_score():
+    if followup_call.tsq_score() is not None:
         pysch_scores.append(f"The patient scored {followup_call.tsq_score()}/10 on the TSQ.")
     if pysch_scores:
         recovery.extend(["", "Psych Scores"] + pysch_scores)
@@ -214,11 +214,13 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
             covid_six_month_follow_up.other_concerns
         )
 
-    if covid_six_month_follow_up.phq_score and covid_six_month_follow_up.tsq_score:
+    phq = covid_six_month_follow_up.phq_score()
+    tsq = covid_six_month_follow_up.tsq_score()
+    if phq is not None or tsq is not None:
         recovery.append("")
         recovery.append("Psych Scores")
-        recovery.append(f"The patient scored { object.phq_score }/6 on the PHQ2.")
-        recovery.append(f"The patient scored { object.tsq_score }/10 on the TSQ.")
+        recovery.append(f"The patient scored { phq }/6 on the PHQ2.")
+        recovery.append(f"The patient scored { tsq }/10 on the TSQ.")
 
     if covid_six_month_follow_up.gp_copy:
         recovery.append("")
