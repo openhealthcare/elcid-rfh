@@ -213,6 +213,17 @@ def render_covid_six_month_followup_letter(covid_six_month_follow_up):
         recovery.append(
             covid_six_month_follow_up.other_concerns
         )
+
+    if covid_six_month_follow_up.phq_score and covid_six_month_follow_up.tsq_score:
+        recovery.append("")
+        recovery.append("Psych Scores")
+        recovery.append(f"The patient scored { object.phq_score }/6 on the PHQ2.")
+        recovery.append(f"The patient scored { object.tsq_score }/10 on the TSQ.")
+
+    if covid_six_month_follow_up.gp_copy:
+        recovery.append("")
+        recovery.append(covid_six_month_follow_up.gp_copy)
+
     note_text = "\n".join(title + ongoing + [""] + recovery)
     note_text = note_text.strip()
     note_text = sign_template(note_text, covid_six_month_follow_up)
