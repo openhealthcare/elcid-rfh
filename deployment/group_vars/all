@@ -1,0 +1,20 @@
+DEPLOYMENT_TYPE: TEST # or PROD
+GIT_REPO: https://github.com/openhealthcare/elcid-rfh
+GIT_BRANCH: deployment-with-ansible
+UNIX_USER: "ohc"
+
+DB_USER: "ohc"
+DB_PASSWORD: "ohc"
+PROJECT_NAME: "elcid"
+DB_NAME: "elcidrfh-{{ GIT_BRANCH | replace('.','_') }}"
+
+
+ENV_NAME: "elcidrfh-{{ GIT_BRANCH }}"
+PROJECT_PATH: "/usr/lib/{{ UNIX_USER }}"
+VIRTUALENV_PATH: "/home/{{ UNIX_USER }}/.virtualenvs/{{ ENV_NAME }}"
+PROJECT_DIR: "/usr/lib/{{ UNIX_USER }}/{{ ENV_NAME }}"
+LOG_DIR: "{{ PROJECT_PATH }}/log"
+BACKUPS_DIR: "{{ PROJECT_PATH }}/var"
+
+
+SERVER_NAME: "{{'elcid-rfh-test.openhealthcare.org.uk' if DEPLOYMENT_TYPE == 'TEST' else 'elcid-rfh.openhealthcare.org.uk' }}"

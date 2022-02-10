@@ -1,0 +1,46 @@
+---
+# This playbook provides basic elements of a server we would like to maintain
+- name: Remove apt lock file
+  file:
+    state: absent
+    path: "/var/lib/dpkg/lock-frontend"
+  become: true
+
+- name: update apt-cache
+  become: true
+  apt: update_cache=yes
+
+- name: install packages for sysadmin
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+    - locales
+    - emacs
+    - git
+    - htop
+    - iotop
+    - tree
+    - ack-grep
+    - vim
+    - zip
+    - screen
+    - python-virtualenv
+    - virtualenvwrapper
+    - python3-dev
+    - build-essential
+    - circus
+    - nginx
+    - python3.7
+    - python3-pip
+    - python-cffi
+    - sudo
+
+- name: generate locale
+  become: true
+  command: /usr/sbin/locale-gen en_GB.UTF-8
+
+- name: Set locale
+  become: true
+  command: /usr/sbin/update-locale LANG=en_GB.UTF-8

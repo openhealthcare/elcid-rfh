@@ -1,0 +1,52 @@
+---
+# This playbook installs and (re)configures Postgres.
+- name: update apt-cache
+  become: true
+  apt: update_cache=yes
+
+- name: Install Postgres, related headers, and psycopg2
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+    - postgresql
+    - postgresql-server-dev-10
+    - python3-psycopg2
+
+- name: Copy in pg_hba.conf
+  template:
+    src: templates/pg_hba.conf.jinja2
+    dest: /etc/postgresql/10/main/pg_hba.conf
+    owner: postgres
+    group: postgres
+    mode: 0640
+  when:
+    ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+- name: Copy in pgpass
+  template:
+    src: templates/pgpass.conf.jinja2
+    dest: "/home/{{ UNIX_USER }}/.pgpass"
+    owner: "{{ UNIX_USER }}"
+    mode: 0600
+
+- name: Restart postgres
+  become: true
+  command: "service postgresql restart"
+
+- name: add a database user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    name={{ DB_USER }}
+    password={{ DB_PASSWORD }}
+
+# - name: create a database
+#   become: true
+#   become_user: postgres
+#   postgresql_db:
+#     name={{ DB_NAME }}
+#     encoding='UTF-8'
+#     owner={{ DB_USER }}
+#     template=template0

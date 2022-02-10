@@ -1,0 +1,9 @@
+[all:vars]
+ansible_connection=ssh
+ansible_user=root
+
+[webserver]
+rfh-ansible
+
+[webserver:vars]
+ansible_python_interpreter=/usr/bin/python3
