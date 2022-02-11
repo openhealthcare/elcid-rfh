@@ -1,19 +1,19 @@
 ---
-- name: Things you want on servers generally
-  become: true
-  user: "{{ UNIX_USER }}"
-  hosts: webserver
-  gather_facts: no
-  roles:
-    - setup_server
+# - name: Things you want on servers generally
+#   become: true
+#   user: "{{ UNIX_USER }}"
+#   hosts: webserver
+#   gather_facts: no
+#   roles:
+#     - setup_server
 
-- name: Make the server capable of running a standard database
-  become: true
-  user: "{{ UNIX_USER }}"
-  hosts: webserver
-  gather_facts: yes
-  roles:
-    - setup_db
+# - name: Make the server capable of running a standard database
+#   become: true
+#   user: "{{ UNIX_USER }}"
+#   hosts: webserver
+#   gather_facts: yes
+#   roles:
+#     - setup_db
 
 - name: Set up the directories for logs, backups etc
   become: true
@@ -23,9 +23,16 @@
   roles:
     - setup_rfh
 
-- name: Deploy the branch to RFH, install requirements
+# - name: Deploy the branch to RFH, install requirements
+#   user: "{{ UNIX_USER }}"
+#   hosts: webserver
+#   gather_facts: yes
+#   roles:
+#     - deploy_rfh
+
+- name: Wire up circus, nginx, gunicorn
   user: "{{ UNIX_USER }}"
   hosts: webserver
   gather_facts: yes
   roles:
-    - deploy_rfh
+    - deploy_server

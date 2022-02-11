@@ -1,0 +1,49 @@
+- name: Stop circus
+  become: yes
+  command: "circusd stop"
+  ignore_errors: True
+
+- name: Restart nginx
+  become: true
+  service:
+    name: nginx
+    state: stopped
+    enabled: yes
+
+- name: Create configs
+  template:
+    src: "templates/{{ item }}.jinja2"
+    dest: "{{ CONF_DIR }}/{{ item }}"
+    mode: 0744
+    owner: "{{ UNIX_USER }}"
+  with_items:
+    - gunicorn_conf.py
+    - nginx_site.conf
+
+- name: Create circus config
+  become: yes
+  template:
+    src: "templates/circus.ini.jinja2"
+    dest: "{{ CONF_DIR }}/circus/circusd.ini"
+
+- name: Remove old nginx default
+  become: true
+  file:
+    state: absent
+    path: "/etc/nginx/sites-available/default"
+
+- name: Symlink nginx
+  become: true
+  file:
+    src: "{{ CONF_DIR }}/nginx_site.conf"
+    dest: "/etc/nginx/sites-available/default"
+    owner: root
+    group: root
+    state: link
+
+- name: Restart nginx
+  become: true
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes

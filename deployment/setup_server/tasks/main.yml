@@ -36,6 +36,7 @@
     - python3-pip
     - python-cffi
     - sudo
+    - rabbitmq-server
 
 - name: generate locale
   become: true
@@ -44,3 +45,6 @@
 - name: Set locale
   become: true
   command: /usr/sbin/update-locale LANG=en_GB.UTF-8
+
+- name: restart rabbitmq
+  service: name=rabbitmq-server state=restarted
