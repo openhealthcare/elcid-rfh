@@ -42,11 +42,11 @@
     name={{ DB_USER }}
     password={{ DB_PASSWORD }}
 
-# - name: create a database
-#   become: true
-#   become_user: postgres
-#   postgresql_db:
-#     name={{ DB_NAME }}
-#     encoding='UTF-8'
-#     owner={{ DB_USER }}
-#     template=template0
+- name: create a database
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name={{ DB_NAME }}
+    encoding='UTF-8'
+    owner={{ DB_USER }}
+    template=template0
