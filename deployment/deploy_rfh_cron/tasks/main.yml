@@ -1,0 +1,50 @@
+---
+# Deletes all cron jobs for UNIX_USER
+# Recreates all cron obs
+- name: Removes all cron jobs for UNIX_USER
+  command: "crontab -r -u {{ UNIX_USER }}"
+
+- name: install cron jobs
+  block:
+    - cron:
+        name: "Admission load"
+        minute: "7"
+        hour: "*/2"
+        job: "{{ management_command }} parse_admissions && {{ management_command }} fetch_admissions {{ output }}"
+    - cron:
+        name: "Fetch_Bed_Status"
+        minute: "7"
+        hour: "*/2"
+        job: "{{ management_command }} fetch_bed_status {{ output }}"
+    - cron:
+        name: "Fetch appointments"
+        minute: "30"
+        job: "{{ management_command }} fetch_appointments {{ output }}"
+      - cron:
+        name: "Calculate amt dashboard"
+        minute: "45"
+        hour: "7"
+        job: "{{ management_command }} calculate_amt_dashboard {{ output }}"
+      - cron:
+        name: "Covid: Classify followup"
+        minute: "12"
+        job: "{{ management_command }} classify_followup {{ output }}"
+      - cron:
+        name: "Covid: Calculate covid dashboard"
+        minute: "12"
+        job: "{{ management_command }} calculate_covid_dashboard {{ output }}"
+      - cron:
+        name: "Covid: Create covid episodes"
+        minute: "5"
+        hour: "*/2"
+        job: "{{ management_command }} create_covid_episodes {{ output }}"
+      - cron:
+        name: "Covid: Generate weekly covid extract"
+        minute: "1"
+        hour: "19"
+        day: "SUN"
+        job: "{{ management_command }} generate_weekly_covid_extract {{ output }}"
+  vars:
+    management_command: "{{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py }}"
+    output: ">> {{ LOG_DIR }}/cron.log 2>&1"
+    user: "{{ UNIX_USER }}"

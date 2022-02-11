@@ -1,0 +1,2 @@
+#3,13,23,33,43,53 * * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py pre_load_covid19 >> {{ LOG_DIR }}/cron.log 2>&1
+53 * * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py pre_load_covid19 >> {{ LOG_DIR }}/cron.log 2>&1

@@ -1,0 +1,1 @@
+35 5 * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py hard_refresh_icu_current >> {{ LOG_DIR }}/cron_sync.log 2>&1

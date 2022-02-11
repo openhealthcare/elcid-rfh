@@ -1,0 +1,7 @@
+0 2 * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py tb_patient_load >> {{ LOG_DIR }}/cron_sync.log 2>&1
+
+12 3 * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py tb_refresh_future_appointments >> {{ LOG_DIR }}/cron_sync.log 2>&1
+# Run every Tuesday every 15 mins in the clinic
+5,20,35,50 12,13,14,15,16,17,18 * * 2 {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py tb_refresh_future_appointments >> {{ LOG_DIR }}/cron_sync.log 2>&1
+
+29 * * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py create_tb_observations >> {{ LOG_DIR }}/cron_sync.log 2>&1

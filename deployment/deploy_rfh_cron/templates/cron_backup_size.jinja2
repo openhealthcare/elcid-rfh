@@ -1,0 +1,1 @@
+36 7 * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py get_backup_size >> {{ LOG_DIR }}/cron.log 2>&1
