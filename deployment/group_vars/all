@@ -14,6 +14,7 @@ PROJECT_PATH: "/usr/lib/{{ UNIX_USER }}"
 VIRTUALENV_PATH: "/home/{{ UNIX_USER }}/.virtualenvs/{{ ENV_NAME }}"
 PROJECT_DIR: "/usr/lib/{{ UNIX_USER }}/{{ ENV_NAME }}"
 LOG_DIR: "{{ PROJECT_PATH }}/log"
+CONF_DIR: "{{ PROJECT_DIR }}/etc"
 BACKUPS_DIR: "{{ PROJECT_PATH }}/var"
 
 

@@ -17,6 +17,8 @@ You can find out the port mapping with `docker port`
 
 for me you run `ssh -v root@localhost -p 55006`
 
+I found it easier to update my ssh config with `rfh-ansible`
+
 password is **mypassword**
 
 ### generating a pem file
