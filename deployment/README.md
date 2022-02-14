@@ -32,8 +32,8 @@ you should not need to do this, we've done it but...
 
 
 ### TODO
-1. Set up the cron jobs - done up to covid
-2. Set up the backups and get backup size
+1. Set up the backups
+2. Set up the restore
 3. Split out the rfh database to deploy to a seperate server
 4. Split out the cron job to split out to a seperate server
 5. Add in ansible vault and the encrypted variables
