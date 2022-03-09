@@ -27,7 +27,7 @@ urlpatterns = [
         name='ipc_ward_detail'
     ),
     path(
-        'templates/ipc/siderooms.html',
+        'templates/ipc/isolation/<hospital_code>/',
         views.SideRoomView.as_view(),
         name='ipc_siderooms'
     ),

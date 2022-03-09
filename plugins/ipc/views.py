@@ -111,8 +111,13 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
+        # side_rooms_statuses = list(BedStatus.objects.filter(
+        #     hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+        #     room__startswith='SR'
+        # ))
+
         side_rooms_statuses = list(BedStatus.objects.filter(
-            hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+            hospital_site_code=k['hospital_code'],
             room__startswith='SR'
         ))
 
