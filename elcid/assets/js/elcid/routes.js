@@ -104,7 +104,7 @@ app.config(
              .when('/ipc/bedboard/ward/:ward_name/',
                    param_template_route('/templates/ipc/ward/', 'ward_name'))
 
-             .when('/ipc/siderooms/',               static_template_route('/templates/ipc/siderooms.html'))
+             .when('/ipc/siderooms/:hospital_code', param_template_route('/templates/ipc/isolation/', 'hospital_code'))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
 
 
