@@ -12,5 +12,5 @@ class RNOHWards(metadata.Metadata):
     @classmethod
     def to_dict(klass, **kwargs):
         return {
-            klass.slug: constants.GROUPED_WARD_NAMES + constants.INDIVIDUAL_WARD_NAMES
+            klass.slug: constants.GROUPED_WARD_NAMES
         }
