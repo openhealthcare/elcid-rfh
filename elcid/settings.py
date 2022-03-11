@@ -178,6 +178,7 @@ INSTALLED_APPS = (
     'plugins.monitoring',
     'plugins.handover',
     'plugins.ipc',
+    'plugins.rnoh',
     'intrahospital_api',
     'elcid',
     'passwordreset',

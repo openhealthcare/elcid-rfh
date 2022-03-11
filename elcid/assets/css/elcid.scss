@@ -601,6 +601,15 @@ div.add-isolate:hover{
 }
 
 
+
+.navbar li .services-dropdown-item a{
+    padding: 16px;
+}
+
+.navbar-nav li.dropdown:hover a {
+    background: transparent;
+
+}
 .panel-heading.patient-detail-heading{
    width: 100%;
    z-index: 10;

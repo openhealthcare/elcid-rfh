@@ -1,0 +1,5 @@
+{% load forms %}
+{% datepicker model="formItem.editing.when" field="MicrobiologyInput.when" %}
+{% select model="formItem.editing.reason_for_interaction" field="MicrobiologyInput.reason_for_interaction" lookuplist="['RNOH Telephone','RNOH Ward review','RNOH ITU','RNOH ID', 'RNOH OPD', 'RNOH Email', 'RNOH IPC advice', 'RNOH Antimicrobial Stewardship Ward Round','RNOH OPAT MDT', 'RNOH JRU MDT', 'RNOH Spinal MDT', 'RNOH LRU MDT', 'RNOH U/L MDT']" %}
+{% textarea model="formItem.editing.clinical_discussion" field="MicrobiologyInput.clinical_discussion" %}
+{% textarea model="formItem.editing.agreed_plan" field="MicrobiologyInput.agreed_plan" %}
