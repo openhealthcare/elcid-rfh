@@ -48,9 +48,14 @@ class RNOHWardListView(RNOHView):
 
         episodes = Episode.objects.filter(
             category_name=RNOHEpisode.display_name
-        ).filter(
-            location__hospital_fk=rnoh_id,
-            location__ward_ft__iexact=k['ward_name'].lower())
+        )
+
+        kwargs={
+            'location__hospital_fk':rnoh_id,
+            "patient__rnohteams__"+k['ward_name'].lower().replace('-', '_'): True
+        }
+        episodes = episodes.filter(**kwargs)
+
 
         context['episodes'] = episodes
 

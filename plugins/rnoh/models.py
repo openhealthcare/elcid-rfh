@@ -23,6 +23,22 @@ class RNOHDemographics(PatientSubrecord):
         verbose_name = 'RNOH Demographics'
 
 
+class RNOHTeams(PatientSubrecord):
+    _is_singleton = True
+    _icon         = 'fa fa-users'
+
+    outstanding    = models.NullBooleanField(blank=True, null=True)
+    mdt_spinal     = models.NullBooleanField(blank=True, null=True, verbose_name="MDT-Spinal")
+    mdt_jru        = models.NullBooleanField(blank=True, null=True, verbose_name="MDT-JRU")
+    mdt_lru        = models.NullBooleanField(blank=True, null=True, verbose_name="MDT-LRU")
+    mdt_upper_limb = models.NullBooleanField(blank=True, null=True, verbose_name="MDT-Upper-Limb")
+    opat           = models.NullBooleanField(blank=True, null=True, verbose_name="OPAT")
+    misc           = models.NullBooleanField(blank=True, null=True, verbose_name="Misc")
+
+    class Meta:
+        verbose_name = "RNOH Teams"
+
+
 class OPATEpisodes(EpisodeSubrecord):
     _icon = 'fa fa-pencil-square'
 
