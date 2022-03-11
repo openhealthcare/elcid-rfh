@@ -3,9 +3,14 @@ Models for plugins.rnoh
 """
 from django.db import models
 from opal.core.fields import enum, ForeignKeyOrFreeText
+from opal.core import lookuplists
 from opal.models import EpisodeSubrecord, PatientSubrecord, Antimicrobial
 
 from elcid.models import MicrobiologyOrganism
+
+
+class RNOHConsultants(lookuplists.LookupList):
+    pass
 
 
 class RNOHDemographics(PatientSubrecord):

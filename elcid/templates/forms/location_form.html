@@ -8,5 +8,12 @@
 </section>
 {% input field="Location.bed" %}
 {% select field="Location.provenance" %}
+
+<section ng-show="editing.location.hospital == 'RNOH'">
+{% input field="Location.consultant" lookuplist="rnohconsultants_list"%}
+</section>
+<section ng-hide="editing.location.hospital == 'RNOH'">
 {% input field="Location.consultant" %}
+</section>
+
 {% input field="Location.unit" %}
