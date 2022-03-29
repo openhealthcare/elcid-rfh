@@ -27,6 +27,13 @@ Q_GET_TRANSFERS_SINCE = """
     UPDATED_DATE >= @since
 """
 
+Q_GET_TRANSFERS_FOR_MRN = """
+    SELECT *
+    FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
+    WHERE
+    LOCAL_PATIENT_IDENTIFIER >= @mrn
+"""
+
 Q_GET_RECENT_ENCOUNTERS = """
 SELECT *
 FROM CRS_ENCOUNTERS
@@ -201,6 +208,16 @@ def load_transfer_history_since(since):
     created = create_transfer_histories_from_upstream_result(query_result)
     created_end = time.time()
     logger.info(f'Transfer histories: created {len(created)} in {created_end - query_end}')
+    return created
+
+
+def load_transfer_history_for_patient(patient):
+    api = ProdAPI()
+    mrn = patient.demographics().hospital_number
+    query_result = api.execute_warehouse_query(
+        Q_GET_TRANSFERS_FOR_MRN, params={"mrn": mrn}
+    )
+    created = create_transfer_histories_from_upstream_result(query_result)
     return created
 
 
