@@ -11,6 +11,8 @@
     </section>
     {% input field="Location.bed" %}
     {% input field="Location.consultant" %}
-    {% include 'partials/_teams_select.html' %}
+    <section ng-hide="editing.location.hospital == 'RNOH'" >
+      {% include 'partials/_teams_select.html' %}
+    </section>
   </div>
 </form>

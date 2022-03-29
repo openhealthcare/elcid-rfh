@@ -2,25 +2,29 @@
 Constants for the RNOH plugin
 """
 GROUPED_WARD_NAMES = [
-    'Clinic',
-    'LIRI',
-    'DOG',
-    'ITU/CHDU',
-    'JBW',
     'SCIC',
-    'TCU',
+    'PNW',
+    'ABU',
+    'CHDU',
     'JUB',
-    'PPU',
-    'COX',
-
+    'RPU',
+    'DOG',
+    'LIRI',
+    'COXON',
+    'RFH',
+    'Other hospital',
+    'Outpatient'
 ]
 
 INDIVIDUAL_WARD_NAMES = [
-    'Outstanding',
-    'MDT-Spinal',
+    'New results',
+    'Pending ref lab results',
+    'Jobs to action',
+    'OPAT',
+    'Clinic',
+    'Misc',
     'MDT-JRU',
     'MDT-LRU',
+    'MDT-Spinal',
     'MDT-Upper-Limb',
-    'OPAT',
-    'Misc'
 ]

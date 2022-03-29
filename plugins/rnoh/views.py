@@ -30,6 +30,10 @@ class RNOHInpatientsView(RNOHView):
         ).filter(
             location__hospital_fk=rnoh_id
         ).exclude(
+            location__ward_ft__isnull=True
+        ).exclude(
+            location__ward_ft=''
+        ).exclude(
             location__ward_ft__in=INDIVIDUAL_WARD_NAMES
         ).order_by('-location__ward_ft', '-location__bed')
 
