@@ -19,7 +19,7 @@ celery==5.0.2
 django-compressor==2.4
 jsonfield==2.0.2
 pycrypto==2.6.1
-paramiko==1.16.0
+paramiko==2.10.1
 pyasn1==0.1.9
 pycparser==2.14
 pytz==2015.7
