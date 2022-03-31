@@ -6,20 +6,15 @@
 </div>
 <div class="panel panel-default panel-container">
   <div class="panel-heading">
-    <h1>{{ list_name }}: {{ total_episodes }} patient{% if episodes.count != 1 %}s{% endif %}</h1>
+    <h1>{{ list_name }}: {{ episodes.count }} patient{% if episodes.count != 1 %}s{% endif %}</h1>
   </div>
-  {% if not total_episodes %}
+  {% if episodes.count == 0 %}
   <div class="panel-body">
     <h5>No patients currently on this list</h5>
   </div>
   {% else %}
 
-  {% for name, episodes in wards %}
-    {% if episodes %}
-      <h3 class="col-md-offset-1">{{ name }}</h3>
-      {% include "rnoh/_ward_list_panel.html" %}
-    {% endif %}
-  {% endfor %}
+  {% include "rnoh/_ward_list_panel.html" %}
 
   {% endif %}
 

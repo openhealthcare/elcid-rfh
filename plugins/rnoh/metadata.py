@@ -14,3 +14,13 @@ class RNOHWards(metadata.Metadata):
         return {
             klass.slug: constants.GROUPED_WARD_NAMES
         }
+
+
+class RNOHUnits(metadata.Metadata):
+    slug = 'rnoh_units'
+
+    @classmethod
+    def to_dict(klass, **kwargs):
+        return {
+            klass.slug: constants.UNIT_NAMES
+        }
