@@ -182,9 +182,7 @@ angular.module('opal.controllers').controller('RfhFindPatientCtrl',
       }, true);
       scope.patientList = [];
       scope.hideFooter = true;
-      scope.searchQuery = {
-        query: undefined
-      };
+      scope.searchQuery = {};
     }
 
     this.initialise = function(scope){
