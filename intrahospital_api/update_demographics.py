@@ -433,9 +433,10 @@ def find_patient_upstream(
         surname=surname
     )
 
+
 @timing
 def demographics_search(
-    *args,
+    *,
     conjunction='AND',
     hospital_number=None,
     nhs_number=None,
@@ -453,7 +454,7 @@ def demographics_search(
     By default its an 'AND' query, but conjunction
     can be changed to 'OR'
     """
-    if any([hospital_number, nhs_number, surname, date_of_birth]):
+    if not any([hospital_number, nhs_number, surname, date_of_birth]):
         raise ValueError('Demographics search expects arguments')
     query_args = []
     params = {}

@@ -3,8 +3,7 @@ API endpoints for the elCID application
 """
 from collections import defaultdict, OrderedDict
 
-from django.conf import settings
-from django.http import HttpResponseBadRequest
+from django.db.models import Q
 from rest_framework import viewsets, status
 from opal.core.api import item_from_pk, router as opal_router
 from opal.core.api import (
@@ -15,7 +14,7 @@ from opal.core import serialization
 from opal.models import Tagging
 
 from elcid import patient_lists
-from intrahospital_api import loader, epr
+from intrahospital_api import loader, epr, update_demographics
 from intrahospital_api import constants as intrahospital_api_constants
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
@@ -554,34 +553,92 @@ class UpstreamBloodCultureApi(viewsets.ViewSet):
 
 class DemographicsSearch(LoginRequiredViewset):
     basename = 'demographics_search'
-    PATIENT_FOUND_IN_ELCID = "patient_found_in_elcid"
-    PATIENT_FOUND_UPSTREAM = "patient_found_upstream"
-    PATIENT_NOT_FOUND = "patient_not_found"
+
+    def get_from_number_local(self, query):
+        """
+        Searches the local demographics for a patient.
+
+        We only look for exact matches by hospital number or nhs number
+        as these should be unique identifiers, however we return
+        an array just in case the patient is duplicated for
+        some reason.
+        """
+        return emodels.Demographics.objects.filter(
+            Q(hospital_number__iexact=query) | Q(nhs_number=query)
+        )
+
+    def clean_punctuation(self, word):
+        if word is None:
+            return None
+        for letter in [".", ",", ";", "/", "\\"]:
+            word = word.replace(letter, "")
+        return word.strip()
+
+    def match_with_locals_where_possible(self, upstream_results):
+        """
+        If we have upstream matches, see if we
+        can match these to local results by nhs number
+        or hospital number.
+
+        If so add send over the serialized demographics.
+
+        If for whatever reason the patient is duplicated in
+        our system we send over both copies and let the
+        user decide.
+        """
+        result = []
+        for upstream_result in upstream_results:
+            local = None
+            if upstream_result["hospital_number"]:
+                local = emodels.Demographics.objects.filter(
+                    hospital_number=upstream_result["hospital_number"]
+                )
+            if not local and upstream_result["nhs_number"]:
+                local = emodels.Demographics.objects.filter(
+                    nhs_number=upstream_result["nhs_number"]
+                )
+            if local:
+                result.extend([i.to_dict(self.request.user) for i in local])
+                continue
+            result.append(upstream_result)
+        return result
 
     def list(self, request, *args, **kwargs):
-        hospital_number = request.query_params.get("hospital_number")
-        if not hospital_number:
-            return HttpResponseBadRequest("Please pass in a hospital number")
-        demographics = emodels.Demographics.objects.filter(
-            hospital_number=hospital_number
-        ).last()
+        """
+        If the query matches a local hospital number
+        or nhs number we don't query further, just
+        return those results.
 
-        # the patient is in elcid
-        if demographics:
-            return json_response(dict(
-                patient=demographics.patient.to_dict(request.user),
-                status=self.PATIENT_FOUND_IN_ELCID
-            ))
-        else:
-            if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                demographics = loader.load_demographics(hospital_number)
+        Otherwise we will query upstream as name is
+        not a unique identifier.
 
-                if demographics:
-                    return json_response(dict(
-                        patient=dict(demographics=[demographics]),
-                        status=self.PATIENT_FOUND_UPSTREAM
-                    ))
-        return json_response(dict(status=self.PATIENT_NOT_FOUND))
+        The results will then be checked if they
+        exist locally we will add the elcid patient_id.
+
+        Otherwise they will not have a patient id.
+        """
+        number = request.query_params.get("number")
+        number = self.clean_punctuation(number)
+        dob = request.query_params.get("date_of_birth")
+        if dob:
+            dob = serialization.deserialize_date(dob)
+        surname = request.query_params.get("surname")
+        surname = self.clean_punctuation(surname)
+        if not any([number, dob, surname]):
+            return json_response({"patient_list": []})
+        if number:
+            local_result = self.get_from_number_local(number)
+            if local_result:
+                return json_response({
+                    "patient_list": [i.to_dict(request.user) for i in local_result]
+                })
+
+        result = update_demographics.find_patient_upstream(
+            number=number, surname=surname, date_of_birth=dob
+        )
+        return json_response({
+            "patient_list": self.match_with_locals_where_possible(result)
+        })
 
 
 class BloodCultureIsolateApi(SubrecordViewSet):
