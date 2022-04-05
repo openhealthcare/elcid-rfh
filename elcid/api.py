@@ -577,10 +577,12 @@ class DemographicsSearch(LoginRequiredViewset):
                 patient=demographics.patient.to_dict(request.user),
                 status=self.PATIENT_FOUND_IN_ELCID
             ))
+        # ignore these hospital numbers as they always belong to a different hospital
+        elif hospital_number.startswith("RAN") and hospital_number.strip("RAN").isnumeric():
+            return json_response(dict(status=self.PATIENT_NOT_FOUND))
         else:
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
                 demographics = loader.load_demographics(hospital_number)
-
                 if demographics:
                     return json_response(dict(
                         patient=dict(demographics=[demographics]),
