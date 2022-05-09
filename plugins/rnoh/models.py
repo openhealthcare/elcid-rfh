@@ -63,7 +63,7 @@ class OPATEpisodes(EpisodeSubrecord):
 
     admission_date         = models.DateField(blank=True, null=True)
     discharge_date         = models.DateField(blank=True, null=True)
-    opat_end_date          = models.DateField(blank=True, null=True)
+    opat_end_date          = models.DateField(blank=True, null=True, verbose_name="OPAT end date")
     administration         = models.CharField(blank=True, null=True, max_length=200, choices=ADMINISTRATION_CHOICES)
     supply                 = models.CharField(blank=True, null=True, max_length=200, choices=SUPPLY_CHOICES)
     outcome_early          = models.CharField(blank=True, null=True, max_length=200, choices=OUTCOME_CHOICES)
@@ -72,6 +72,10 @@ class OPATEpisodes(EpisodeSubrecord):
     outcome_one_year_date  = models.DateField(blank=True, null=True)
     outcome_two_years      = models.CharField(blank=True, null=True, max_length=200, choices=OUTCOME_CHOICES)
     outcome_two_years_date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "OPAT Episodes"
+
 
 
 class RNOHMicrobiology(EpisodeSubrecord):
