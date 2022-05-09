@@ -80,7 +80,7 @@ def load_demographics(hospital_number):
     return result
 
 
-def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
+def create_rfh_patient_from_hospital_number(hospital_number, episode_category, run_async=None):
     """
     Creates a patient programatically and sets up integration.
 
@@ -105,7 +105,10 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
         start=datetime.date.today()
     )
 
-    load_patient(patient)
+    if run_async:
+        load_patient(patient, run_async=run_async)
+    else:
+        load_patient(patient)
     return patient
 
 

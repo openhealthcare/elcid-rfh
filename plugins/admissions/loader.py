@@ -238,7 +238,7 @@ def create_patients(mrns):
         if mrn not in existing_mrns:
             print(f'creating {mrn}')
             create_rfh_patient_from_hospital_number(
-                mrn, InfectionService
+                mrn, InfectionService, run_async=False
             )
 
 
