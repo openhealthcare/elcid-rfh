@@ -13,7 +13,7 @@ from opal.models import Patient
 
 from elcid import models as emodels
 from elcid.utils import timing
-from plugins.admissions.loader import load_encounters
+from plugins.admissions.loader import load_encounters, load_transfer_history_for_patient
 from plugins.appointments.loader import load_appointments
 from plugins.imaging.loader import load_imaging
 from plugins.dischargesummary.loader import load_dischargesummaries
@@ -399,6 +399,7 @@ def _load_patient(patient, patient_load):
         load_imaging,
         load_encounters,
         load_appointments,
+        load_transfer_history_for_patient,
         # Discharge summaries are currently inaccurate
         # load_dischargesummaries
     ]
