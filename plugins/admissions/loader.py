@@ -180,6 +180,9 @@ def load_excounters_since(timestamp):
 def cast_to_transfer_history(upstream_dict, patient):
     hist = TransferHistory(patient=patient)
     for k, v in upstream_dict.items():
+        if not k in TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS:
+            # SOURCE was added later and is not particularly interesting for us
+            continue
         if v:  # Ignore empty values
             fieldtype = type(TransferHistory._meta.get_field(
                 TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]
