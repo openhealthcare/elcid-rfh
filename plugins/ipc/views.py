@@ -104,6 +104,7 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
                     location.ipc_episode = ipc
 
         context['patients'] = locations
+        context['patient_count'] = sum([1 for l in locations if l.patient])
 
         return context
 
