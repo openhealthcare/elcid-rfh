@@ -11,16 +11,27 @@ try:
         'default': dj_database_url.config(default='sqlite:///' + PROJECT_PATH + '/opal.sqlite')
     }
 except ImportError:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(PROJECT_PATH, 'opal.sqlite'),
-            'USER': '',
-            'PASSWORD': '',
-            'HOST': '',
-            'PORT': '',
+    if os.environ.get('GITHUB_WORKFLOW'):
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'ci_db_test',
+                'USER': 'postgres',
+                'PASSWORD': 'postgres',
+                'HOST': 'localhost',
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(PROJECT_PATH, 'opal.sqlite'),
+                'USER': '',
+                'PASSWORD': '',
+                'HOST': '',
+                'PORT': ''
+            }
+        }
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
