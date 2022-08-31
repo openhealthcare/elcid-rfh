@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-        - ubuntu-18.04
+        - ubuntu-20.04
         python-version:
         - 3.6
     steps:
@@ -38,7 +38,6 @@ jobs:
         env:
           OPAL_TEST_USE_POSTGRES: 1
       - run: gem install coveralls-lcov
-      - run: gem install rake
       - name: run tests
         run: opal test --coverage
       - name: flake8
@@ -49,15 +48,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-  coveralls:
-    name: Indicate completion to coveralls.io
-    needs: test
-    runs-on: ubuntu-latest
-    container: python:3-slim
-    steps:
-    - name: Finished
-      run: |
-        pip3 install --upgrade coveralls
-        coveralls --service=github --finish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
