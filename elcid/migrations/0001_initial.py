@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import jsonfield.fields
 import opal.models
 from django.conf import settings
 
@@ -688,7 +687,7 @@ class Migration(migrations.Migration):
                 ('observation_datetime', models.DateTimeField(null=True, blank=True)),
                 ('last_edited', models.DateTimeField(null=True, blank=True)),
                 ('result_status', models.CharField(max_length=255, null=True, blank=True)),
-                ('observations', jsonfield.fields.JSONField(null=True, blank=True)),
+                ('observations', models.JSONField(null=True, blank=True)),
                 ('created_by', models.ForeignKey(related_name='created_elcid_result_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
                 ('patient', models.ForeignKey(to='opal.Patient', on_delete=models.CASCADE)),
                 ('updated_by', models.ForeignKey(related_name='updated_elcid_result_subrecords', blank=True, to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),

@@ -431,6 +431,7 @@ WAREHOUSE_DB = dict(
 
 EXTRACT_ASYNC = False
 WRITEBACK_ON = True
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')
 
