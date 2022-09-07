@@ -21,11 +21,6 @@ class TestMultipleResults(OpalTestCase):
             ("ALT", 29.1, OBS_DATE_TIME),
             ("AST", 38.9, OBS_DATE_TIME),
             ("Total Bilirubin", 37.0, OBS_DATE_TIME)
-        ],
-        "QUANTIFERON TB GOLD IT": [
-            ("QFT IFN gamma result (TB1)", 0.0, OBS_DATE_TIME),
-            ("QFT IFN gamme result (TB2)", 0.0, OBS_DATE_TIME),
-            ("QFT TB interpretation", "INDETERMINATE", OBS_DATE_TIME),
         ]
     }
 
@@ -65,6 +60,7 @@ class TestMultipleResults(OpalTestCase):
         self.assertEqual(result.json(), {"results": []})
 
     def test_get_lab_tests(self):
+        self.maxDiff = None
         self.create_lab_tests()
         result = self.client.get(self.url)
         expected = {
@@ -88,21 +84,6 @@ class TestMultipleResults(OpalTestCase):
                     'date': '05/01/2019 00:00:00',
                     'name': 'Total Bilirubin',
                     'result': '37.0'
-                },
-                {
-                    'date': '05/01/2019 00:00:00',
-                    'name': 'QFT IFN gamma result (TB1)',
-                    'result': '0.0'
-                },
-                {
-                    'date': '05/01/2019 00:00:00',
-                    'name': 'QFT IFN gamme result (TB2)',
-                    'result': '0.0'
-                },
-                {
-                    'date': '05/01/2019 00:00:00',
-                    'name': 'QFT TB interpretation',
-                    'result': 'INDETERMINATE'
                 }
             ]
         }
