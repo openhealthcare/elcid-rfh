@@ -3,8 +3,6 @@ from unittest import mock
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
-from django.utils import timezone
-from django.conf import settings
 from elcid import episode_categories
 
 from opal.core import exceptions

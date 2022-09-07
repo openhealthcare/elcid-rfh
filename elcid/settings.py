@@ -447,12 +447,12 @@ RESTRICT_EPR = True
 
 if 'test' not in sys.argv:
     try:
-        from elcid.local_settings import *
+        from elcid.local_settings import *  # NOQA: F401
     except ImportError:
         pass
 
 if 'test' in sys.argv:
     try:
-        from elcid.local_test_settings import *
+        from elcid.local_test_settings import *   # NOQA: F401
     except ImportError:
         pass

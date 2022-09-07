@@ -2,7 +2,7 @@ from unittest import mock
 import copy
 from django.test import override_settings
 from pytds.tds import OperationalError
-from datetime import datetime, date
+from datetime import datetime
 from opal.core.test import OpalTestCase
 from intrahospital_api.apis import prod_api
 from intrahospital_api import constants
@@ -523,9 +523,7 @@ class ProdApiTestcase(OpalTestCase):
         cursor.execute.assert_called_once_with("some query", None)
         self.assertTrue(cursor.fetchall.called)
 
-    @mock.patch("intrahospital_api.apis.prod_api.datetime.date")
-    def test_raw_data(self, dt):
-        dt.today.return_value = date(2017, 10, 1)
+    def test_raw_data(self):
         api = self.get_api()
         expected = [copy.copy(FAKE_PATHOLOGY_DATA)]
         with mock.patch.object(api, 'execute_trust_query') as execute_query:

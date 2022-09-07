@@ -1,5 +1,3 @@
-import datetime
-from rest_framework.reverse import reverse
 from opal.core.test import OpalTestCase
 from plugins.tb import utils
 

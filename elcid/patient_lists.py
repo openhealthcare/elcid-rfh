@@ -8,7 +8,6 @@ from plugins.labtests.models import Observation
 from opal import models as omodels
 from intrahospital_api.models import InitialPatientLoad
 from elcid.episode_serialization import serialize
-from elcid.episode_categories import InfectionService
 
 PATIENT_LIST_SUBRECORDS = [
     models.PrimaryDiagnosis,
