@@ -65,7 +65,7 @@ class PatientToDict(OpalTestCase):
         )
         result = self.client.get(url)
         self.assertEqual(
-            result.data, {"some_data": "some_data"}
+            result.data, {"some_data": "some_data", 'bed_statuses': []}
         )
 
     @mock.patch("intrahospital_api.api.patient_to_dict")
