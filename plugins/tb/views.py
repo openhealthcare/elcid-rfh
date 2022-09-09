@@ -13,7 +13,7 @@ from elcid.models import Diagnosis, Demographics
 from plugins.appointments.models import Appointment
 from opal.models import Patient
 from plugins.tb import episode_categories, constants, models
-from plugins.tb.models import AFBRefLab, PatientConsultation, AFBCulture, Treatment, TBPCR
+from plugins.tb.models import AFBRefLab, PatientConsultation, Treatment, TBPCR
 from plugins.labtests import models as lab_models
 from plugins.tb.utils import get_tb_summary_information
 

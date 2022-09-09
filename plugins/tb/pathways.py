@@ -2,19 +2,14 @@
 Pathways for the TB service
 """
 from django.db import transaction
-from django.conf import settings
-from opal.core.pathway import pathways, HelpTextStep, WizardPathway
+from opal.core.pathway import pathways, HelpTextStep
 
 from elcid import models
 from elcid.pathways import IgnoreDemographicsMixin
 
 from obs import models as obs_models
-from intrahospital_api import loader
 
 from plugins.tb import models as tb_models
-from plugins.tb import episode_categories
-from intrahospital_api import constants
-from plugins.tb import constants as tb_constants
 
 
 class NewSubrecordStep(HelpTextStep):

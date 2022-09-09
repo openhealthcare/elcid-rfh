@@ -11,7 +11,7 @@ from elcid.utils import natural_keys
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CDOE
 from plugins.admissions.models import BedStatus, IsolatedBed
 
-from plugins.ipc import lab, models, utils
+from plugins.ipc import lab, models
 
 
 class IPCHomeView(LoginRequiredMixin, TemplateView):

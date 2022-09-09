@@ -5,11 +5,11 @@ from django import template
 
 from plugins.admissions.models import UpstreamLocation
 
-from plugins.ipc import constants, models
+from plugins.ipc import models
 from plugins.ipc.episode_categories import IPCEpisode
-from plugins.ipc.models import IPCStatus
 
 register = template.Library()
+
 
 @register.inclusion_tag('templatetags/ward_count.html')
 def ward_count(ward_name, **kwargs):

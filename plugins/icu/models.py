@@ -1,15 +1,8 @@
 """
 Models for the elCID ICU plugin
 """
-import datetime
-from elcid.models import MicrobiologyInput
 from django.db import models
-from django.utils import timezone
-from opal.models import (
-    Clinical_advice_reason_for_interaction, Patient, PatientSubrecord
-)
-from plugins.icu import constants
-from plugins.admissions.models import UpstreamLocation
+from opal.models import Patient, PatientSubrecord
 
 
 def parse_icu_location(location_string):

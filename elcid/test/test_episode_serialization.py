@@ -1,5 +1,3 @@
-import datetime
-from django.utils import timezone
 from opal.core.test import OpalTestCase
 from opal.models import Tagging, Episode
 from elcid import models

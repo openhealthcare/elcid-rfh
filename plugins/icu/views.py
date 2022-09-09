@@ -1,12 +1,10 @@
 """
 Views for the ICU plugin
 """
-import collections
 import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.utils import timezone
 from opal.models import (
     Episode, Clinical_advice_reason_for_interaction, Patient
 )

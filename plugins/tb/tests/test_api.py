@@ -4,10 +4,6 @@ from django.utils import timezone
 from rest_framework.reverse import reverse
 from opal.core.test import OpalTestCase
 
-from plugins.labtests import models
-
-from plugins.tb import utils
-
 
 class TestMultipleResults(OpalTestCase):
     LAB_TEST_DT   = timezone.make_aware(datetime.datetime(2019, 1, 4))
