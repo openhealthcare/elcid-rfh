@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.urls import reverse
 from opal.core.test import OpalTestCase
 from plugins.appointments.models import Appointment
-from plugins.tb import episode_categories, views, constants
+from plugins.tb import episode_categories, constants
 
 
 class AppointmentListTestCase(OpalTestCase):

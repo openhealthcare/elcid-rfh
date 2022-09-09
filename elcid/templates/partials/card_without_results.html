@@ -10,8 +10,12 @@
                 [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
                 <small>
                   [[ row.demographics[0].date_of_birth|displayDate ]]
-                  <span ng-show="row.location[0].ward">
-                    &nbsp; {% icon models.Location.get_icon %} [[ row.location[0].ward ]]
+                  <span ng-show="row.bed_statuses.length">
+                    &nbsp;
+                    [[row.bed_statuses[0].hospital]]
+                    [[row.bed_statuses[0].ward]]
+                    [[row.bed_statuses[0].room]]
+                    [[row.bed_statuses[0].bed]]
                   </span>
                 </small>
               </h3>

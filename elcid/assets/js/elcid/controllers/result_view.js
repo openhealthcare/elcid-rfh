@@ -5,7 +5,9 @@ angular.module('opal.controllers').controller('ResultView', function(
     var vm = this;
 
     this.labTests = [];
+    this.departments = [];
     this.showAll = {};
+    this.checkedDepartments = {}
 
     this.parseFloat = parseFloat;
     this.Math = window.Math;
@@ -31,11 +33,53 @@ angular.module('opal.controllers').controller('ResultView', function(
         return observation.replace('-', '').trim().length;
     }
 
+    this.includes = function(string1, string2){
+        // case insensitive check, does string1 exist in string2
+        return string2.toLowerCase().indexOf(string1.toLowerCase()) !== -1
+    }
+
     this.show = function(name){
-        if(!vm.filterString){
-            return true
+        var toShow = true
+        if(vm.filterString && !this.includes(vm.filterString, name)){
+            toShow = false;
         }
-        return name.toLowerCase().indexOf(vm.filterString.toLowerCase()) !== -1
+        if(toShow && _.any(_.values(vm.checkedDepartments))){
+            var labTest = vm.lab_tests[name];
+            if(labTest.long_form){
+                toShow =  _.any(_.map(labTest.instances, vm.showLongFormLabTest))
+            }
+            else{
+                toShow = vm.showTabularLabTest(labTest, vm.showTabularLabTest)
+            }
+        }
+        return toShow;
+    }
+
+    this.showLongFormLabTest = function(labTestInstance){
+        if(_.any(_.values(vm.checkedDepartments))){
+            if(!labTestInstance || !labTestInstance.department){
+                return false;
+            }
+            return vm.checkedDepartments[labTestInstance.department]
+        }
+        return true;
+    }
+
+    this.visibleCount = function(test_name){
+        return _.filter(vm.lab_tests[test_name].instances, this.showLongFormLabTest).length
+    }
+
+    this.showTabularLabTest = function(labTestInstances){
+        if(_.any(_.values(vm.checkedDepartments))){
+            var checkedDepartments = [];
+            _.each(vm.checkedDepartments, function(v, k){
+                if(v){
+                    checkedDepartments.push(k)
+                }
+            });
+            return !!_.intersection(checkedDepartments, labTestInstances.instances.departments).length
+        }
+        return true;
     }
 
     this.getLabTests = function(patient){
@@ -45,7 +89,8 @@ angular.module('opal.controllers').controller('ResultView', function(
         return LabTestResults.load(patient.id).then(function(result){
 
             vm.test_order = result.test_order;
-            vm.lab_tests   = result.tests
+            vm.lab_tests   = result.tests;
+            vm.departments = result.departments;
             ngProgressLite.done();
 
         });

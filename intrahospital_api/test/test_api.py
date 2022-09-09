@@ -5,7 +5,6 @@ from opal.core.test import OpalTestCase
 from opal import models as omodels
 from elcid import models as emodels
 from intrahospital_api import api
-from intrahospital_api import constants
 
 
 class PatientToDict(OpalTestCase):

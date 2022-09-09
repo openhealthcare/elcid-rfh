@@ -6,6 +6,7 @@ from opal.core import plugins
 from plugins.admissions import api
 from plugins.admissions.urls import urlpatterns
 
+
 class AdmissionsPlugin(plugins.OpalPlugin):
     urls = urlpatterns
 
@@ -16,5 +17,6 @@ class AdmissionsPlugin(plugins.OpalPlugin):
     }
 
     apis = [
-        ('admissions', api.AdmissionViewSet)
+        ('admissions', api.AdmissionViewSet),
+        (api.LocationHistoryViewSet.basename, api.LocationHistoryViewSet)
     ]

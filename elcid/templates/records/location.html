@@ -3,7 +3,10 @@
     <b>Hospital</b>
   </div>
   <div class="col-md-8">
-    [[item.hospital]]
+    <a href="/#/rnoh/inpatients/" ng-show="item.hospital == 'RNOH'" class="orange-link">
+      [[item.hospital]]
+    </a>
+    <span ng-show="item.hospital != 'RNOH'">[[ item.hospital ]]</span>
   </div>
 </div>
 <div class="row">
@@ -22,11 +25,27 @@
     [[item.bed]]
   </div>
 </div>
-<div class="row">
+<div class="row" ng-show="item.provenance">
   <div class="col-md-4">
     <b>Provenance</b>
   </div>
   <div class="col-md-8">
     [[item.provenance]]
+  </div>
+</div>
+<div class="row" ng-show="item.consultant">
+  <div class="col-md-4">
+    <b>Consultant</b>
+  </div>
+  <div class="col-md-8">
+    [[item.consultant]]
+  </div>
+</div>
+<div class="row" ng-show="item.unit">
+  <div class="col-md-4">
+    <b>Unit</b>
+  </div>
+  <div class="col-md-8">
+    [[item.unit]]
   </div>
 </div>

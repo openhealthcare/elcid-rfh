@@ -36,7 +36,8 @@ def patient_to_dict(patient, user):
         'ICU Handover'     : '20',
         'TB'               : '10',
         'COVID-19'         : '15',
-        'IPC'              : '25'
+        'IPC'              : '25',
+        'RNOH'             : '30'
     }
     for s in serialised_episodes:
         if s['category_name'] in category_orders:

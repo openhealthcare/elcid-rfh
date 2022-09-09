@@ -205,6 +205,15 @@ class TransferHistory(models.Model):
 
     Here we replicate the upstream view closely.
     """
+    # This is the timestamp we create this model in elcid
+    created_in_elcid                = models.DateTimeField(auto_now_add=True)
+    patient                         = models.ForeignKey(
+                                        Patient,
+                                        blank=True,
+                                        null=True,
+                                        on_delete=models.SET_NULL
+                                    )
+
     update_datetime                 = models.DateTimeField(blank=True, null=True)
     # Boolean field as 0/1
     active_transfer                 = models.IntegerField(blank=True, null=True)
@@ -213,7 +222,7 @@ class TransferHistory(models.Model):
     # What is this?
     encounter_id                    = models.IntegerField(blank=True, null=True)
     # What is this?
-    encounter_slice_id              = models.IntegerField(blank=True, null=True)
+    encounter_slice_id              = models.BigIntegerField(blank=True, null=True)
     spell_number                    = models.CharField(blank=True, null=True, max_length=255)
     mrn                             = models.CharField(blank=True, null=True, max_length=255)
     transfer_sequence_number        = models.IntegerField(blank=True, null=True)

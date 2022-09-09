@@ -1,14 +1,20 @@
+"""
+Patient lists for the elCID application
+"""
 import datetime
 from collections import defaultdict
+
 from django.utils import timezone
+from opal import models as omodels
 from opal.utils import AbstractBase
 from opal.core.patient_lists import TaggedPatientList, PatientList
+
 from elcid import models
-from plugins.labtests.models import Observation
-from opal import models as omodels
-from intrahospital_api.models import InitialPatientLoad
 from elcid.episode_serialization import serialize
-from elcid.episode_categories import InfectionService
+from intrahospital_api.models import InitialPatientLoad
+from plugins.labtests.models import Observation
+from plugins.admissions.models import BedStatus
+
 
 PATIENT_LIST_SUBRECORDS = [
     models.PrimaryDiagnosis,
@@ -18,7 +24,7 @@ PATIENT_LIST_SUBRECORDS = [
     models.Location,
     models.ChronicAntifungal,
     omodels.Tagging,
-    InitialPatientLoad
+    InitialPatientLoad,
 ]
 
 
@@ -28,7 +34,11 @@ class RfhPatientList(AbstractBase):
 
     def to_dict(self, user):
         qs = super(RfhPatientList, self).get_queryset()
-        return serialize(qs, user, subrecords=PATIENT_LIST_SUBRECORDS)
+        episodes = serialize(qs, user, subrecords=PATIENT_LIST_SUBRECORDS)
+        for episode in episodes:
+            statuses = BedStatus.objects.filter(patient_id=episode['demographics'][0]['patient_id'])
+            episode['bed_statuses'] = [s.to_dict() for s in statuses]
+        return episodes
 
 
 class Hepatology(RfhPatientList, TaggedPatientList):
@@ -68,14 +78,6 @@ class Antifungal(RfhPatientList, TaggedPatientList):
     order = 15
     direct_add = True
     tag = 'antifungal'
-    template_name = 'episode_list.html'
-    schema = []
-
-
-class RnohWardround(RfhPatientList, TaggedPatientList):
-    display_name = 'RNOH Ward Round'
-    direct_add = True
-    tag = "rnoh_wardround"
     template_name = 'episode_list.html'
     schema = []
 
