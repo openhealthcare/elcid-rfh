@@ -13,17 +13,11 @@
     - "{{ LOG_DIR }}"
     - "{{ BACKUPS_DIR }}"
 
-- name: Stop circus
-  become: yes
-  command: "circusctl stop"
-  ignore_errors: True
-
-- name: Restart nginx
+- name: Stop nginx
   become: true
   service:
     name: nginx
     state: stopped
-    enabled: yes
 
 - name: Create configs
   template:
@@ -40,6 +34,16 @@
   template:
     src: "templates/circus.ini.jinja2"
     dest: "/etc/circus/circusd.ini"
+
+- name: Create circus service
+  become: yes
+  template:
+    src: templates/circus.service
+    dest: /etc/systemd/system/circus.service
+
+- name: Enable the circus service
+  become: yes
+  shell: systemctl enable circus
 
 - name: Remove old nginx default
   become: true
@@ -63,7 +67,10 @@
     state: restarted
     enabled: yes
 
-- name: Restart circus
+# we start the service as a shell command
+# as on Ubuntu 18 ansible get's confused
+# about which to service to use
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/service_module.html
+- name: Start circus
   become: yes
-  command: "circusctl restart"
-  ignore_errors: True
+  shell: service circusd restart

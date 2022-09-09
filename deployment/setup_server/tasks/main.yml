@@ -14,6 +14,7 @@
   apt:
     name: "{{ packages }}"
     state: present
+    allow_downgrade: True
   vars:
     packages:
     - locales
@@ -35,8 +36,12 @@
     - python3.7
     - python3-pip
     - python-cffi
-    - sudo
     - rabbitmq-server
+    - sudo
+    # we are downgrading libsystemd0 for a package
+    # that works with systemd
+    - libsystemd0=237-3ubuntu10.53
+    - systemd
 
 - name: generate locale
   become: true
