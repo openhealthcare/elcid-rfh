@@ -1,40 +1,52 @@
-`sudo docker build -t rfh_ansible_image .`
+## Purpose
+At present the steps in this readme should.
 
-`docker run -d -P --name rfh_ansible_container rfh_ansible_image`
+* Create a docker container
+* Create a postgres database
+* Create the application
+* Install and setup nginx and circus
 
-# find the port
-`sudo docker port rfh_ansible_container`
-
-update the ssh config
-
-# find the ip address
-docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' rfh_ansible_container
-
-For whatever reason we can't ssh via the port we need to ssh via the port mapping.
-
-
-You can find out the port mapping with `docker port`
-
-for me you run `ssh -v root@localhost -p 55006`
-
-I found it easier to update my ssh config with `rfh-ansible`
-
-password is **mypassword**
-
-### generating a pem file
-you should not need to do this, we've done it but...
-`ssh-keygen -f rfh.pem -t rsa -b 4096` generates our local pem file
-`ssh-copy-id rfh-ansible`
+It does not
+* Run backups
+* Deploy cron jobs
+* Restore from a backup
 
 
-### deploying
-`ansible-playbook setup_prod.yml`
+## Stages
 
+### 1. Create the docker image
+First install docker by following the instructions here https://docs.docker.com/desktop/install/mac-install/
 
-### TODO
-1. Set up the backups
-2. Set up the restore
-3. Split out the rfh database to deploy to a seperate server
-4. Split out the cron job to split out to a seperate server
-5. Add in ansible vault and the encrypted variables
-6. Add in database restore
+Then run sudo docker build -t rfh_ansible_image .
+This builds you the docker container as laid our by
+the Dockerfile file.
+
+Create your ssh key `ssh-keygen -f rfh.pem -t rsa -b 4096`
+this will be used to access your new container after you create it.
+
+### 3. Create the docker conatiner
+Run `docker run -d -P --name rfh_ansible_container rfh_ansible_image`
+
+This will create you a docker container.
+
+Run `sudo docker port rfh_ansible_container`
+
+This will show you the ports to ssh into the container with.
+
+`ssh-copy-id ohc@0.0.0.0:{{ ssh port }}` to allow access by our pem file the password is *ohc*
+
+### 4. Deployment
+Create a virtualenv pointing to python 3.8.6
+
+Run `pip install -r requirements.txt`
+
+Update *hosts.dev* to point to the *rfh_ansible_container*
+
+Run `ansible-playbook setup_prod.yml`
+
+If you go to *0.0.0.0:{{ http port }}* you should see your application.
+
+## Rerunning deployment
+Run `docker container rm -f rfh_ansible_container`
+
+Run steps 2 onwards.
