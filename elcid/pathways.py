@@ -6,7 +6,6 @@ import datetime
 from django.db import transaction
 from django.conf import settings
 from opal.core.pathway.pathways import (
-    RedirectsToPatientMixin,
     Step,
     PagePathway,
     WizardPathway,

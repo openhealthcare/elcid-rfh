@@ -12,7 +12,7 @@ from elcid.utils import mkdir_p
 from plugins.icu.models import ICUHandover
 from plugins.labtests.models import Observation
 
-from plugins.covid import models, lab
+from plugins.covid import models
 
 EXTRACT_FILE_PATH = os.path.join(
     settings.COVID_EXTRACT_LOCATION, 'covid.extract.csv')

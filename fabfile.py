@@ -42,7 +42,6 @@ from __future__ import print_function
 import datetime
 import json
 import copy
-import time
 import random
 from jinja2 import Environment, FileSystemLoader
 

@@ -5,7 +5,6 @@ import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models, transaction
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from opal.utils import camelcase_to_underscore

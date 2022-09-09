@@ -11,7 +11,6 @@ from opal.core.patient_lists import TaggedPatientList, PatientList
 
 from elcid import models
 from elcid.episode_serialization import serialize
-from elcid.episode_categories import InfectionService
 from intrahospital_api.models import InitialPatientLoad
 from plugins.labtests.models import Observation
 from plugins.admissions.models import BedStatus

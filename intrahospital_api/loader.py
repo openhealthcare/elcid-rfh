@@ -16,7 +16,6 @@ from elcid.utils import timing
 from plugins.admissions.loader import load_encounters, load_transfer_history_for_patient
 from plugins.appointments.loader import load_appointments
 from plugins.imaging.loader import load_imaging
-from plugins.dischargesummary.loader import load_dischargesummaries
 
 from intrahospital_api import models
 from intrahospital_api import get_api

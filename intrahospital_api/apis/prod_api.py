@@ -2,10 +2,7 @@
 API for production
 """
 from collections import defaultdict
-import datetime
 from functools import wraps
-import itertools
-import json
 import time
 
 from django.conf import settings

@@ -3,11 +3,8 @@ Admin for elcid fields
 """
 from django.contrib import admin
 from reversion import models as rmodels
-from django.utils.html import format_html
 from opal import models as omodels
-from opal.admin import PatientAdmin as OldPatientAdmin, PatientSubrecordAdmin
-from django.urls import reverse
-from intrahospital_api import loader
+from opal.admin import PatientSubrecordAdmin
 from intrahospital_api import models as imodels
 
 

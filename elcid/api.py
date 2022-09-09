@@ -16,7 +16,6 @@ from opal.models import Tagging
 
 from elcid import patient_lists
 from intrahospital_api import loader, epr
-from intrahospital_api import constants as intrahospital_api_constants
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
 from plugins.labtests import constants as lab_constants
