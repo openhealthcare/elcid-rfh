@@ -5,7 +5,6 @@ import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db import models, transaction
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from opal.utils import camelcase_to_underscore
@@ -39,6 +38,11 @@ class Demographics(omodels.Demographics, ExternallySourcedModel):
     religion = models.CharField(blank=True, null=True, max_length=100)
     main_language = models.CharField(blank=True, null=True, max_length=100)
     nationality = models.CharField(blank=True, null=True, max_length=100)
+
+    @property
+    def age(self):
+        if self.date_of_birth:
+            return datetime.date.today().year - self.date_of_birth.year
 
     class Meta:
         verbose_name_plural = "Demographics"
@@ -170,9 +174,11 @@ class Location(EpisodeSubrecord):
     _icon = 'fa fa-map-marker'
 
     provenance = ForeignKeyOrFreeText(Provenance)
-    hospital = ForeignKeyOrFreeText(omodels.Hospital)
-    ward = ForeignKeyOrFreeText(omodels.Ward)
-    bed = models.CharField(max_length=255, blank=True, null=True)
+    hospital   = ForeignKeyOrFreeText(omodels.Hospital)
+    ward       = ForeignKeyOrFreeText(omodels.Ward)
+    bed        = models.CharField(max_length=255, blank=True, null=True)
+    consultant = models.CharField(max_length=255, blank=True, null=True)
+    unit       = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         try:
@@ -207,8 +213,38 @@ class Infection(EpisodeSubrecord):
 
 class Procedure(EpisodeSubrecord):
     _icon = 'fa fa-sitemap'
-    date = models.DateField(blank=True, null=True)
-    details = models.TextField(blank=True, null=True)
+
+    STAGE_CHOICES = enum(
+        'Partial',
+        '1st stage',
+        'Re-do 1st stage',
+        '2nd stage'
+    )
+
+    OPERATION_CHOICES = enum(
+        'Prmary',
+        'Revision',
+        'Decompression',
+        'Fixation'
+    )
+    SITE_CHOICES = enum(
+        'THR',
+        'TKR',
+        'TSR',
+        'TER',
+        'TAR'
+
+    )
+
+    date      = models.DateField(blank=True, null=True)
+    hospital  = ForeignKeyOrFreeText(omodels.Hospital)
+    stage     = models.CharField(blank=True, null=True, max_length=100, choices=STAGE_CHOICES)
+    operation = models.CharField(blank=True, null=True, max_length=100, choices=OPERATION_CHOICES)
+    side      = models.CharField(blank=True, null=True, max_length=100, choices=enum('R', 'L'))
+    site      = models.CharField(blank=True, null=True, max_length=100, choices=SITE_CHOICES)
+    findings  = models.TextField(blank=True, null=True)
+    details   = models.TextField(blank=True, null=True)
+
 
     class Meta:
         verbose_name = "Operation / Procedures"
@@ -419,10 +455,11 @@ class ImagingTypes(lookuplists.LookupList):
 class Imaging(EpisodeSubrecord):
     _icon = 'fa fa-eye'
 
-    date = models.DateField(blank=True, null=True)
+    date         = models.DateField(blank=True, null=True)
     imaging_type = ForeignKeyOrFreeText(ImagingTypes)
-    site = models.CharField(max_length=200, blank=True, null=True)
-    details = models.TextField(blank=True, null=True)
+    site         = models.CharField(max_length=200, blank=True, null=True)
+    hospital     = ForeignKeyOrFreeText(omodels.Hospital)
+    details      = models.TextField(blank=True, null=True)
 
 
 class PositiveBloodCultureHistory(PatientSubrecord):

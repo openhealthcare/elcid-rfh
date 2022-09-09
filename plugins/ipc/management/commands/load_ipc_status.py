@@ -5,20 +5,16 @@ exist upstream.
 We do not expect this to happen multiple times so the logic
 is just in this management command
 """
-from collections import defaultdict
 import datetime
-import random
 from django.db import transaction
 from django.db.models.fields import BooleanField, DateField
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from opal.models import Patient
-from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
 from plugins.admissions.models import BedStatus
-from plugins.ipc import episode_categories
 from plugins.ipc.models import IPCStatus
 
 

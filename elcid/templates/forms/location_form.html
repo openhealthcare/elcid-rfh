@@ -1,5 +1,19 @@
 {% load forms %}
 {% select field="Location.hospital" %}
-{% input field="Location.ward" %}
+<section ng-show="editing.location.hospital != 'RNOH' ">
+  {% input field="Location.ward" %}
+</section>
+<section ng-show="editing.location.hospital == 'RNOH'">
+  {% select field="Location.ward" lookuplist="metadata.rnoh_wards" %}
+</section>
 {% input field="Location.bed" %}
 {% select field="Location.provenance" %}
+
+<section ng-show="editing.location.hospital == 'RNOH'">
+{% input field="Location.consultant" lookuplist="rnohconsultants_list"%}
+</section>
+<section ng-hide="editing.location.hospital == 'RNOH'">
+{% input field="Location.consultant" %}
+</section>
+
+{% input field="Location.unit" %}

@@ -3,7 +3,6 @@ Models for tb
 """
 import datetime
 from django.db import models as fields
-from plugins.labtests import models as lab
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
 from opal import models

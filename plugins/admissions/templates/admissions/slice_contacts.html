@@ -17,13 +17,17 @@
               {{ source.transfer_start_datetime }} - {{ source.transfer_end_datetime }}
               ({{ source.transfer_start_datetime|timesince:source.transfer_end_datetime  }})
             </p>
+            {% if encounter %}
             <p class="content-offset-10">{{ encounter.speciality_name }} {{ encounter.consultant_name }}</p>
+            {% endif %}
           </div>
         </div>
       </div>
       <!-- End Panel Header -->
 
       <table class="table table-bordered table-striped">
+        {% for transfer in transfers %}
+        {% ifchanged transfer.bed %}
         <tr>
           <th>Patient</th>
           <th>Start</th>
@@ -35,17 +39,25 @@
           <th>Bed</th>
           <th>Transfer Reason</th>
         </tr>
-        {% for transfer in transfers %}
+        {% endifchanged %}
         <tr>
           <td>
-            <a href="/#/patient/{{ transfer.patient.id }}" class="orange-link">
-              {{ transfer.demographics.name }}
+            <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
+              {{ transfer.patient.demographics_set.all.0.name }}
             </a>
           </td>
           <td>
             {{ transfer.transfer_start_datetime }}
           </td>
-          <td>{{ transfer.transfer_end_datetime }}</td>
+          <td>
+            {% if transfer.transfer_end_datetime > now %}
+            <span class="text-warning">
+            {{ transfer.transfer_end_datetime }}
+            </span>
+            {% else %}
+            {{ transfer.transfer_end_datetime }}
+            {% endif %}
+          </td>
           <td>{{ transfer.transfer_location_code }}</td>
           <td>{{ transfer.site_code}}</td>
           <td>{{ transfer.unit }}</td>

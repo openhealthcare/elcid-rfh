@@ -5,7 +5,7 @@ import csv
 import random
 import datetime
 import json
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 
 from django.apps import apps
 from django.contrib.auth.models import User
@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import timezone
 from django.views.generic import (
-    TemplateView, FormView, View, ListView
+    TemplateView, FormView, View
 )
 
 

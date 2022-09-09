@@ -11,7 +11,6 @@
 import json
 import tempfile
 import os
-import sys
 import mock
 import datetime
 import unittest
