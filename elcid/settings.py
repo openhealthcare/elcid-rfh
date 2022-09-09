@@ -221,6 +221,15 @@ TRUST_DB = dict(
     view=None
 )
 
+# electronic prescribing DB
+EPMA_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
+
 
 # search with external demographics when adding a patient
 ADD_PATIENT_DEMOGRAPHICS = True

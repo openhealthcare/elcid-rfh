@@ -11,6 +11,7 @@ class TestGetOrCreateLabTest(OpalTestCase):
             "clinical_info":  'testing',
             "accession_number": "123456",
             "datetime_ordered": "17/07/2015 04:15:10",
+            "department_int": 9,
             "encounter_consultant_name": "DR. M. SMITH",
             "encounter_location_name": "RAL 6 NORTH",
             "encounter_location_code": "6N",

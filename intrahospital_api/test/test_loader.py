@@ -145,6 +145,7 @@ class _LoadPatientTestCase(OpalTestCase):
             "load_imaging",
             "load_encounters",
             "load_appointments",
+            "load_transfer_history_for_patient",
         ])
         logger.error.assert_called_once_with(
             f"Initial patient load for patient id {self.patient.id} failed on {methods_names}"

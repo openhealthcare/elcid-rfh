@@ -137,10 +137,6 @@ class TestPatientList(AbstractPatientListTestCase):
             "EpisodeAddedComparator"
         )
         self.assertEqual(
-            patient_lists.RnohWardround.comparator_service,
-            "EpisodeAddedComparator"
-        )
-        self.assertEqual(
             patient_lists.CDIFF.comparator_service, "EpisodeAddedComparator"
         )
         self.assertEqual(
