@@ -56,6 +56,14 @@ body{
     margin-top: 25px;
 }
 
+.content-offset-right-5{
+    margin-right: 5px;
+}
+
+.content-offset-left-5{
+    margin-left: 5px;
+}
+
 .bg-primary { background-color: $primary;}
 .bg-secondary{ background-color: $secondary; }
 
@@ -593,11 +601,20 @@ div.add-isolate:hover{
 }
 
 
+
+.navbar li .services-dropdown-item a{
+    padding: 16px;
+}
+
+.navbar-nav li.dropdown:hover a {
+    background: transparent;
+
+}
 .panel-heading.patient-detail-heading{
-   position: fixed;
    width: 100%;
    z-index: 10;
 }
+
 
 .patient-detail-heading.shrunken  {
   h1{
@@ -624,4 +641,32 @@ div.add-isolate:hover{
 
 .whitespacey{
     white-space: pre-wrap;
+}
+
+.tb-stats{
+  background-color: $white;
+
+  .headline{
+    h1{
+      font-size: 68px;
+      text-align: center;
+    }
+    h3{
+      margin-top: 0;
+      text-align: center;
+    }
+  }
+
+  .view-switcher{
+    margin-top: 10px;
+    h4{
+      margin-top: 2px;
+      margin-bottom: 2px;
+      padding: 0 20px;
+    }
+  }
+
+  td{
+    max-width: 150px;
+  }
 }

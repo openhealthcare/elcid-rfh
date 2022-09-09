@@ -7,11 +7,11 @@ import traceback
 
 from django.core.management import BaseCommand
 from django.utils import timezone
-from opal.models import Patient
 
 from plugins.monitoring.models import Fact
 
 from plugins.admissions import loader, logger, models, constants
+
 
 class Command(BaseCommand):
 

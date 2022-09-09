@@ -2,10 +2,7 @@
 API for production
 """
 from collections import defaultdict
-import datetime
 from functools import wraps
-import itertools
-import json
 import time
 
 from django.conf import settings
@@ -289,6 +286,7 @@ class PathologyRow(object):
         'encounter_location_code',
         'encounter_location_name',
         'accession_number',
+        'department_int'
     ]
 
     OBSERVATION_FIELDS = [
@@ -369,6 +367,12 @@ class PathologyRow(object):
             return "complete"
         else:
             return "pending"
+
+    # the winpath department, should be 1-9
+    def get_department_int(self):
+        dep = self.db_row.get("Department")
+        if dep:
+            return int(dep)
 
     def get_site(self):
         site = self.db_row.get('Specimen_Site')
@@ -466,6 +470,7 @@ class ProdApi(base_api.BaseApi):
         self.hospital_settings = settings.HOSPITAL_DB
         self.trust_settings = settings.TRUST_DB
         self.warehouse_settings = settings.WAREHOUSE_DB
+        self.epma_settings = settings.EPMA_DB
         if not all([
             self.hospital_settings.get("ip_address"),
             self.hospital_settings.get("database"),

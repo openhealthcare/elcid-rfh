@@ -3,12 +3,18 @@ elCID Royal Free Hospital implementation
 """
 
 from opal.core import application
+
 from opal.core import menus
 from plugins.ipc.constants import IPC_ROLE
+from opal.core.menus import MenuItem
+from plugins.tb import constants as tb_constants
+
+
 from elcid import episode_categories
+from elcid.menus import ServicesMenuItem
 
 
-class StandardAddPatientMenuItem(menus.MenuItem):
+class StandardAddPatientMenuItem(MenuItem):
     def for_user(self, user):
         if not user:
             return False
@@ -62,7 +68,6 @@ class Application(application.OpalApplication):
         'js/elcid/services/clinical_advice.js',
         'js/elcid/services/blood_culture_loader.js',
         'js/elcid/services/lab_test_results.js',
-        'js/elcid/services/demographics_search.js',
         'js/elcid/services/lab_test_summary_loader.js',
         'js/elcid/services/lab_test_json_dump.js',
         'js/elcid/services/episode_added_comparator.js',
@@ -94,7 +99,7 @@ class Application(application.OpalApplication):
 
         if user.is_superuser:
             menu_items.append(
-                menus.MenuItem(
+                MenuItem(
                     href='/#/beta/',
                     display='Beta',
                     icon='fa fa-bath',
@@ -105,14 +110,8 @@ class Application(application.OpalApplication):
         from opal.models import UserProfile
         profile = UserProfile.objects.get(user=user)
 
-        if profile.roles.filter(name=IPC_ROLE).exists():
-            menu_items.append(
-                menus.MenuItem(
-                    href='/#/ipc/',
-                    display='IPC',
-                    icon='fa fa-warning',
-                    activepattern='ipc'
-                )
-            )
+
+        menu_items.append(ServicesMenuItem(user=user))
+
 
         return menu_items

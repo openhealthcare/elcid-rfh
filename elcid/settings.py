@@ -178,6 +178,7 @@ INSTALLED_APPS = (
     'plugins.monitoring',
     'plugins.handover',
     'plugins.ipc',
+    'plugins.rnoh',
     'intrahospital_api',
     'elcid',
     'passwordreset',
@@ -392,7 +393,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.104'
+VERSION_NUMBER = '0.107'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -447,12 +448,12 @@ RESTRICT_EPR = True
 
 if 'test' not in sys.argv:
     try:
-        from elcid.local_settings import *
+        from elcid.local_settings import *  # NOQA: F401
     except ImportError:
         pass
 
 if 'test' in sys.argv:
     try:
-        from elcid.local_test_settings import *
+        from elcid.local_test_settings import *   # NOQA: F401
     except ImportError:
         pass

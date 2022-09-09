@@ -1,0 +1,43 @@
+{% load tb_stats %}
+{% if title %}
+<div class="row">
+  <div class="col-md-12 ">
+    <h3>{{ title }}</h3>
+  </div>
+</div>
+{% endif %}
+<div class="row content-offset-20">
+{% for table in tables %}
+  <div class="col-md-4">
+    <table class="table table-striped">
+      {% for field_name, values in table.items %}
+      <tr>
+        <td>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="pull-left">
+                {{ field_name }}
+              </div>
+              <div class="pull-right">
+                {{ values.val }}
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="progress" style="margin-bottom: 0">
+                <div class="progress-bar" role="progressbar" aria-valuenow="{{ values.percent }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ values.percent }}%;">
+                  {% if  values.percent > 3 %}
+                    {{ values.percent }}%
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+{% endfor %}
+</div>

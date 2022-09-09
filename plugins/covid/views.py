@@ -1,24 +1,17 @@
 """
 Views for our covid plugin
 """
-import collections
 import csv
 import datetime
 
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.generic import TemplateView, View, DetailView
 
-from opal import models as opal_models
-from elcid import patient_lists
-from plugins.admissions import constants as admission_constants
 from plugins.admissions.models import Encounter
 from plugins.appointments.models import Appointment
-from plugins.icu.models import ICUHandover
-from plugins.labtests.models import Observation
 
 from plugins.covid import models, constants, lab, extract
 from plugins.covid.episode_categories import CovidEpisode

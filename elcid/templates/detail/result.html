@@ -17,6 +17,15 @@
             <input class="form-control" placeholder="Filter" ng-model="resultView.filterString" />
           </div>
         </div>
+        <div class="row">
+          <form class="form-inline">
+            <div class="form-group">
+              <button ng-repeat='department in resultView.departments' type="button" class="btn btn-default content-offset-right-5 content-offset-left-5 content-offset-10" ng-model="resultView.checkedDepartments[department]" uib-btn-checkbox>
+                [[ department ]]
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
       <!-- End Panel Header -->
 
@@ -30,7 +39,7 @@
           <div ng-if="resultView.lab_tests[test_name].long_form">
 
             <div ng-repeat="instance in resultView.lab_tests[test_name].instances"
-                 class="row content-offset-below-10" ng-show="resultView.showAll[test_name] || $index < 11">
+                 class="row content-offset-below-10" ng-show="resultView.showLongFormLabTest(instance) && (resultView.showAll[test_name] || $index < 11)">
 
               <div class="col-md-3">
                 <a href="/#/lab-test/[[ instance.lab_number ]]/"class="orange-link" >[[ instance.lab_number ]]</a>
@@ -54,11 +63,11 @@
 
             </div>
 
-            <div ng-show="!resultView.showAll[test_name] && resultView.lab_tests[test_name].instances.length > 10">
+            <div ng-show="!resultView.showAll[test_name] && resultView.visibleCount(test_name) > 10">
               <a ng-click="resultView.toggleShowAll(test_name)"
                  class="orange-link pointer"
                  >
-                Show [[ resultView.lab_tests[test_name].instances.length - 10 ]] more
+                Show [[ resultView.visibleCount(test_name) - 10 ]] more
               </a>
             </div>
 
@@ -80,7 +89,7 @@
 
               </tr>
 
-              <tr ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
+              <tr ng-show="resultView.showTabularLabTest(resultView.lab_tests[test_name])" ng-repeat="observation_name in resultView.lab_tests[test_name].instances.observation_names">
                 <td class="col-xs-3">[[ observation_name ]]</td>
                 <td class="col-xs-1">
                   [[ resultView.lab_tests[test_name].instances.observation_ranges[observation_name] ]]

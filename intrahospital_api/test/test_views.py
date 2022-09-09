@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 
 from opal.core.test import OpalTestCase
-from opal.models import UserProfile
 
 from intrahospital_api import views
 

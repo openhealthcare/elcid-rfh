@@ -36,6 +36,7 @@
           [[ demographics.hospital_number ]]
         </label>
       </div>
+      {% input field="Demographics.nhs_number" model="demographics.nhs_number" %}
       {% input "autofocus" field="Demographics.first_name" model="demographics.first_name" %}
       {% input field="Demographics.surname" model="demographics.surname" %}
       {% date_of_birth_field model_name="demographics.date_of_birth" %}
