@@ -19,3 +19,9 @@ BACKUPS_DIR: "{{ PROJECT_PATH }}/var"
 
 
 SERVER_NAME: "{{'elcid-rfh-test.openhealthcare.org.uk' if DEPLOYMENT_TYPE == 'TEST' else 'elcid-rfh.openhealthcare.org.uk' }}"
+
+# this needs to be randomised
+SECRET_KEY: "123123adsfasdfaf2341qqjoijouu8"
+
+# dev only
+SERVER_NAME: 0.0.0.0

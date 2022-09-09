@@ -2,7 +2,17 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': '{{ DB_NAME }}',
-        'HOST': 'localhost',
+        'USER': '{{ DB_USER }}',
+        'PASSWORD': '{{ DB_PASSWORD }}',
+        'HOST': '',
         'PORT': '',
     }
 }
+
+SECRET_KEY = "{{ SECRET_KEY }}"
+
+ALLOWED_HOSTS = [
+    '{{ SERVER_NAME }}'
+]
+
+DEBUG = False
