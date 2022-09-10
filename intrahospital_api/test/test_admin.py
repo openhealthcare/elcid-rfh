@@ -67,24 +67,3 @@ class TaggingListFilterTestCase(OpalTestCase):
         self.assertEqual(
             set(qs), set([self.patient_1])
         )
-
-
-class PatientAdminTestCase(OpalTestCase):
-    def setUp(self):
-        self.patient, self.episode = self.new_patient_and_episode_please()
-        self.patient.demographics_set.update(hospital_number="123")
-        self.site = AdminSite()
-        self.admin = admin.PatientAdmin(omodels.Patient, self.site)
-
-    def test_upstream_lab_results(self):
-        r = "<a href='/intrahospital_api/raw/results/123'>/intrahospital_api/\
-raw/results/123</a>"
-        self.assertEqual(self.admin.upstream_lab_results(self.patient), r)
-
-    def test_upstream_blood_culture_results(self):
-        r = "<a href='/intrahospital_api/raw/results/123/test/BLOOD%20CULTURE'\
->/intrahospital_api/raw/results/123/test/BLOOD%20CULTURE</a>"
-        self.assertEqual(
-            self.admin.upstream_blood_culture_results(self.patient),
-            r
-        )

@@ -334,6 +334,7 @@ class PathologyRowTestCase(OpalTestCase):
             'datetime_ordered': '18/07/2015 16:18:00',
             'external_identifier': u'0013I245895',
             'last_updated': '18/07/2015 17:00:02',
+            'department_int': 9,
             'observation_datetime': '18/07/2015 16:18:00',
             'reported_datetime': '18/07/2015 16:26:00',
             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -366,6 +367,7 @@ class PathologyRowTestCase(OpalTestCase):
             'date_of_birth': '10/10/1980',
             'ethnicity': 'Mixed - White and Black Caribbean',
             'clinical_info': u'testing',
+            'department_int': 9,
             'datetime_ordered': '18/07/2015 16:18:00',
             'last_updated': '18/07/2015 17:00:02',
             'observation_datetime': '18/07/2015 16:18:00',
@@ -696,6 +698,7 @@ class ProdApiTestcase(OpalTestCase):
                 'external_identifier': u'0013I245895',
                 'site': u'^&                              ^',
                 'test_code': u'ANNR',
+                'department_int': 9,
                 'observations': [
                     {
                         'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -796,6 +799,7 @@ class ProdApiTestcase(OpalTestCase):
                 {
                     'status': 'complete',
                     'external_identifier': u'122',
+                    'department_int': 9,
                     'site': u'^&                              ^',
                     'test_code': u'ANNR',
                     'observations': [
@@ -822,6 +826,7 @@ class ProdApiTestcase(OpalTestCase):
                 {
                     'status': 'complete',
                     'external_identifier': u'123',
+                    'department_int': 9,
                     'site': u'^&                              ^',
                     'test_code': u'ANNR',
                     'observations': [
@@ -892,6 +897,7 @@ class ProdApiTestcase(OpalTestCase):
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
                     'test_code': u'ANNR',
+                    'department_int': 9,
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -917,6 +923,7 @@ class ProdApiTestcase(OpalTestCase):
                     'status': 'complete',
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
+                    'department_int': 9,
                     'test_code': u'ANNR',
                     'observations': [
                         {
@@ -990,6 +997,7 @@ class ProdApiTestcase(OpalTestCase):
                     'external_identifier': u'122',
                     'site': u'^&                              ^',
                     'test_code': u'ANNR',
+                    'department_int': 9,
                     'observations': [
                         {
                             'observation_name': u'Anti-CV2 (CRMP-5) antibodies',
@@ -1062,6 +1070,7 @@ class ProdApiTestcase(OpalTestCase):
                     {
                         'status': 'complete',
                         'external_identifier': u'124',
+                        'department_int': 9,
                         'accession_number': '73151060487',
                         'encounter_consultant_name': 'DR. M. SMITH',
                         'encounter_location_name': 'RAL 6 NORTH',
@@ -1103,6 +1112,7 @@ class ProdApiTestcase(OpalTestCase):
                     {
                         'status': 'complete',
                         'external_identifier': u'126',
+                        'department_int': 9,
                         'accession_number': '73151060487',
                         'encounter_consultant_name': 'DR. M. SMITH',
                         'encounter_location_name': 'RAL 6 NORTH',
