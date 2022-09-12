@@ -29,11 +29,11 @@ Run `docker run -d -P --name rfh_ansible_container rfh_ansible_image`
 
 This will create you a docker container.
 
-Run `sudo docker port rfh_ansible_container`
+Run `docker port rfh_ansible_container`
 
 This will show you the ports to ssh into the container with.
 
-`ssh-copy-id ohc@0.0.0.0:{{ ssh port }}` to allow access by our pem file the password is *ohc*
+`ssh-copy-id -p {{ ssh port }} ohc@0.0.0.0` to allow access by our pem file the password is *ohc*
 
 ### 4. Deployment
 Create a virtualenv pointing to python 3.8.6
