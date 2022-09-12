@@ -1,7 +1,7 @@
 ---
-# Deploys the current branch sets up gunicorn etc
-# deletes existing cron jobs, copies in our cron jobs
-# set up the project itself
+# Deploys the current branch to a virtual env
+# sets up local settings and runs
+# migrate/load_lookup_lists/create_singletons
 - name: Creates directories
   become: true
   file:
