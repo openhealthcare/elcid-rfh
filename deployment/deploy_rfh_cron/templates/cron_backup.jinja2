@@ -1,1 +1,0 @@
-0 3 * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/fab -f {{ fabric_file }} dump_and_copy:{{ branch }} >> {{ LOG_DIR }}/cron.log 2>&1

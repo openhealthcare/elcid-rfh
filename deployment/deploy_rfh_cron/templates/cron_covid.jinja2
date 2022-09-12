@@ -1,4 +1,0 @@
-12 * * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py classify_followup >> {{ LOG_DIR }}/cron.log 2>&1
-12 * * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py calculate_covid_dashboard >> {{ LOG_DIR }}/cron.log 2>&1
-5 */2 * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py create_covid_episodes >> {{ LOG_DIR }}/cron.log 2>&1
-1 19 * * SUN {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py generate_weekly_covid_extract >> {{ LOG_DIR }}/cron.log 2>&1

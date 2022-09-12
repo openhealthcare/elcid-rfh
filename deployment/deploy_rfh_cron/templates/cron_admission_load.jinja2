@@ -1,2 +1,0 @@
-7 */2 * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py fetch_admissions && {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py parse_admissions >> {{ LOG_DIR }}/cron.log 2>&1
-9 * * * * {{ UNIX_USER }} {{ VIRTUALENV_PATH }}/bin/python {{ PROJECT_DIR }}/manage.py fetch_bed_status >> {{ LOG_DIR }}/cron.log 2>&1
