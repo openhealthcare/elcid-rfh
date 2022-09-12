@@ -55,8 +55,10 @@ class AppointmentListTestCase(OpalTestCase):
         self.assertEqual(len(ctx["rows_by_date"]), 1)
         dt, rows = list(ctx["rows_by_date"].items())[0]
         self.assertEqual(dt, now.date())
-        self.assertEqual(len(rows), 1)
-        row = rows[0]
+        not_canceled = rows['not_canceled']
+        self.assertEqual(len(not_canceled), 1)
+        row = not_canceled[0]
+
         self.assertEqual(
             row[0], appointment
         )
@@ -69,6 +71,8 @@ class AppointmentListTestCase(OpalTestCase):
         self.assertEqual(
             row[3], consultation
         )
+        stats = rows['stats']
+        self.assertEqual(stats, {'on_elcid': 1})
 
     def test_context_data_yesterday(self):
         patient, episode = self.new_patient_and_episode_please()

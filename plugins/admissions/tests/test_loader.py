@@ -13,8 +13,8 @@ class CleanTransferHistoryRows(OpalTestCase):
             'TRANS_HIST_SEQ_NBR': 234,
             'SPELL_NUMBER': 345,
             'LOCAL_PATIENT_IDENTIFIER': 'ZZZ',
-            'created_datetime': created,
-            'updated_datetime': updated
+            'CREATED_DATE': created,
+            'UPDATED_DATE': updated
         }
 
     def test_clean_transfer_history_rows_no_mrn(self):
@@ -26,7 +26,8 @@ class CleanTransferHistoryRows(OpalTestCase):
     def test_clean_transfer_history_rows_dups(self):
         row_1 = copy.copy(self.fake_row)
         row_2 = copy.copy(self.fake_row)
-        row_2['created_datetime'] = self.now - datetime.timedelta(4)
+        row_2['CREATED_DATE'] = self.now - datetime.timedelta(4)
+        row_2['UPDATED_DATE'] = row_2['CREATED_DATE']
         result = list(loader.clean_transfer_history_rows([row_1, row_2]))
         self.assertEqual(result, [row_1])
 

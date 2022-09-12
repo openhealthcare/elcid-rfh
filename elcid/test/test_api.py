@@ -550,10 +550,13 @@ class BloodCultureSetTestCase(OpalTestCase):
             response.status_code, 200
         )
         expected = {
+            'community': False,
             'consistency_token': '',
+            'contaminant': False,
             'created': None,
             'created_by_id': None,
             'date_ordered': datetime.date(2019, 5, 8),
+            'hcai': False,
             'id': 1,
             'isolates': [{
                 'aerobic_or_anaerobic': 'Aerobic',
@@ -594,10 +597,13 @@ class BloodCultureSetTestCase(OpalTestCase):
             response.status_code, 200
         )
         expected = {
+            'community': False,
             'consistency_token': '',
+            'contaminant': False,
             'created': None,
             'created_by_id': None,
             'date_ordered': datetime.date(2019, 5, 8),
+            'hcai': False,
             'id': 1,
             'isolates': [],
             'lab_number': '111',

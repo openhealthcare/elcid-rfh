@@ -122,10 +122,6 @@ class _InitialLoadTestCase(ApiTestCase):
     __name__="load_appointments"
 )
 @mock.patch(
-    "intrahospital_api.loader.load_dischargesummaries",
-    __name__="load_dischargesummaries"
-)
-@mock.patch(
     "intrahospital_api.loader.logger",
 )
 class _LoadPatientTestCase(OpalTestCase):
@@ -149,7 +145,7 @@ class _LoadPatientTestCase(OpalTestCase):
             "load_imaging",
             "load_encounters",
             "load_appointments",
-            "load_dischargesummaries"
+            "load_transfer_history_for_patient",
         ])
         logger.error.assert_called_once_with(
             f"Initial patient load for patient id {self.patient.id} failed on {methods_names}"
@@ -167,7 +163,6 @@ class _LoadPatientTestCase(OpalTestCase):
             f'Completed load_imaging for patient id {self.patient.id}',
             f'Completed load_encounters for patient id {self.patient.id}',
             f'Completed load_appointments for patient id {self.patient.id}',
-            f'Completed load_dischargesummaries for patient id {self.patient.id}'
         ]
         self.assertEqual(
             call_args_list, expected
