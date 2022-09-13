@@ -280,6 +280,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'elcid': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'error_emailer': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
