@@ -7,7 +7,7 @@ UNIX_USER: "ohc"
 DB_USER: "ohc"
 DB_PASSWORD: "ohc"
 PROJECT_NAME: "elcid"
-DB_NAME: "elcidrfh-test-{{ GIT_BRANCH | replace('.','_') }}  if DEPLOYMENT_TYPE == 'TEST' else elcidrfh-{{ GIT_BRANCH | replace('.','_') }}"
+DB_NAME: "{% if DEPLOYMENT_TYPE == 'TEST' %}elcidrfh-test-{{ GIT_BRANCH | replace('.','_') }}{% else %}elcidrfh-{{ GIT_BRANCH | replace('.','_') }}{% endif %}"
 
 # Application
 ENV_NAME: "elcidrfh-{{ GIT_BRANCH }}"
@@ -27,7 +27,7 @@ BACKUP_STORAGE_DIRECTORY: "fake"
 
 
 
-SERVER_NAME: "{{'elcid-rfh-test.openhealthcare.org.uk' if DEPLOYMENT_TYPE == 'TEST' else 'elcid-rfh.openhealthcare.org.uk' }}"
+SERVER_NAME: "{% if DEPLOYMENT_TYPE == 'TEST' %}elcid-rfh-test.openhealthcare.org.uk{% else %}elcid-rfh.openhealthcare.org.uk{% endif %}"
 
 # this needs to be randomised
 SECRET_KEY: "123123adsfasdfaf2341qqjoijouu8"
