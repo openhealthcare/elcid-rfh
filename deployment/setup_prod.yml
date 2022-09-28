@@ -29,9 +29,9 @@
   roles:
     - deploy_server
 
-# - name: Deploy the cron jobs
-#   user: "{{ UNIX_USER }}"
-#   hosts: webserver
-#   gather_facts: yes
-#   roles:
-#     - deploy_rfh_cron
+- name: Wire up circus, nginx, gunicorn
+  user: "{{ UNIX_USER }}"
+  hosts: webserver
+  gather_facts: yes
+  roles:
+    - deploy_backups_cron
