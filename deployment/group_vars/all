@@ -29,8 +29,8 @@ BACKUP_STORAGE_DIRECTORY: "fake"
 
 SERVER_NAME: "{% if DEPLOYMENT_TYPE == 'TEST' %}elcid-rfh-test.openhealthcare.org.uk{% else %}elcid-rfh.openhealthcare.org.uk{% endif %}"
 
+# dev only, to be deleted
+SERVER_NAME: 0.0.0.0
+
 # this needs to be randomised
 SECRET_KEY: "123123adsfasdfaf2341qqjoijouu8"
-
-# dev only
-SERVER_NAME: 0.0.0.0
