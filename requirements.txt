@@ -5,7 +5,7 @@ django==2.2.16
 django-reversion==3.0.8
 djangorestframework==3.12.2
 
-cffi
+cffi==1.7.0
 coverage==5.1
 dj-database-url==0.2.1
 gunicorn==0.17.4
