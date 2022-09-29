@@ -1,0 +1,4 @@
+---
+# This playbook runs the setup for test
+- name: Run setup
+  import_playbook: _setup.yml

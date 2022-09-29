@@ -42,7 +42,8 @@ Run `pip install -r requirements.txt`
 
 Update *hosts.dev* to point to the *rfh_ansible_container*
 
-Run `ansible-playbook setup_prod.yml`
+Run `ansible-playbook setup_prod.yml` to setup a prod server
+Run `ansible-playbook setup_test.yml` to setup a test server
 
 If you go to *0.0.0.0:{{ http port }}* you should see your application.
 
