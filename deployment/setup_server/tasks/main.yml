@@ -36,7 +36,6 @@
     - python3.7
     - python3-pip
     - python-cffi
-    - rabbitmq-server
     - sudo
     # we are downgrading libsystemd0 for a package
     # that works with systemd
@@ -50,6 +49,3 @@
 - name: Set locale
   become: true
   command: /usr/sbin/update-locale LANG=en_GB.UTF-8
-
-- name: restart rabbitmq
-  service: name=rabbitmq-server state=restarted
