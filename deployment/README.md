@@ -24,7 +24,7 @@ the Dockerfile file.
 Create your ssh key `ssh-keygen -f rfh.pem -t rsa -b 4096`
 this will be used to access your new container after you create it.
 
-### 3. Create the docker conatiner
+### 2. Create the docker conatiner
 Run `docker run -d -P --name rfh_ansible_container rfh_ansible_image`
 
 This will create you a docker container.
@@ -35,7 +35,7 @@ This will show you the ports to ssh into the container with.
 
 `ssh-copy-id -p {{ ssh port }} ohc@0.0.0.0` to allow access by our pem file the password is *ohc*
 
-### 4. Deployment
+### 3. Deployment
 Create a virtualenv pointing to python 3.8.6
 
 Run `pip install -r requirements.txt`
