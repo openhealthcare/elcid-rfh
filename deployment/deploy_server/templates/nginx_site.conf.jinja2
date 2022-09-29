@@ -6,7 +6,7 @@ log_format timed_combined escape=json '$remote_addr - $remote_user [$time_local]
 server {
     listen 80;
     server_name "";
-    server_name elcid-rfh-test.openhealthcare.org.uk;
+    server_name {{ SERVER_NAME }};
     access_log /usr/lib/ohc/log/nginx.log timed_combined;
 
     location /himunin {
