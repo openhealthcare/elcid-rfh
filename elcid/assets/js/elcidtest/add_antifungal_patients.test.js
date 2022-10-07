@@ -229,7 +229,7 @@ describe('AddAntifungalPatients', function() {
 
     it('should be false if some forms are not found', function(){
       patientForm.state = $scope.states.SEARCHING;
-      expect($scope.canSave()).toBeFalse();
+      expect($scope.canSave()).toBe(false);
     });
 
     it('should be false even if one of the forms is found', function(){
@@ -242,11 +242,11 @@ describe('AddAntifungalPatients', function() {
       };
 
       $scope.patientForms.push(otherPatientForm);
-      expect($scope.canSave()).toBeFalse();
+      expect($scope.canSave()).toBe(false);
     });
 
     it('should be true, if all the forms are found', function(){
-      expect($scope.canSave()).toBeTrue();
+      expect($scope.canSave()).toBe(true);
     });
   });
 
