@@ -21,9 +21,6 @@ Then run sudo docker build -t rfh_ansible_image .
 This builds you the docker container as laid our by
 the Dockerfile file.
 
-Create your ssh key `ssh-keygen -f rfh.pem -t rsa -b 4096`
-this will be used to access your new container after you create it.
-
 ### 2. Create the docker conatiner
 Run `docker run -d -P --name rfh_ansible_container rfh_ansible_image`
 
