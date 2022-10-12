@@ -6,15 +6,15 @@
   hosts: webserver
   gather_facts: no
   roles:
-    - setup_server
+    - setup_app_server
 
 - name: Make the server capable of running a standard database
   become: true
   user: "{{ UNIX_USER }}"
-  hosts: webserver
+  hosts: dbserver
   gather_facts: yes
   roles:
-    - setup_db
+    - setup_db_server
 
 - name: Deploy the branch to RFH, install requirements
   user: "{{ UNIX_USER }}"

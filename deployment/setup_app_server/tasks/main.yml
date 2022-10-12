@@ -42,6 +42,9 @@
     - libsystemd0=237-3ubuntu10.53
     - systemd
 
+    # required by psycopg
+    - postgresql-server-dev-10
+
 - name: generate locale
   become: true
   command: /usr/sbin/locale-gen en_GB.UTF-8

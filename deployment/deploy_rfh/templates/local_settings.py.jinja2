@@ -4,8 +4,8 @@ DATABASES = {
         'NAME': '{{ DB_NAME }}',
         'USER': '{{ DB_USER }}',
         'PASSWORD': '{{ DB_PASSWORD }}',
-        'HOST': '',
-        'PORT': '',
+        'HOST': '{% if DB_ADDRESS %}{{ DB_ADDRESS }}{% else %}{{ groups["dbserver"]["ansible_host"] }}{% endif %}',
+        'PORT': '{{ DB_PORT }}',
     }
 }
 
