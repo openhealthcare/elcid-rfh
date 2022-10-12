@@ -38,7 +38,8 @@ This will show you the ports to ssh into the container with.
 `ssh-copy-id -p {{ ssh port }} ohc@0.0.0.0` to allow access by our pem file the password is *ohc*
 
 ### 3. Deployment
-Create a virtualenv pointing to python 3.8.6
+
+Create a python 3 virtualenv 
 
 Run `pip install -r requirements.txt`
 
