@@ -32,18 +32,31 @@ Run `docker run -d -P --name rfh_ansible_container rfh_ansible_image`
 This will create you a docker container.
 
 Run `docker port rfh_ansible_container`
+This will show you the port forwarding configuration for http and ssh for this container 
 
-This will show you the ports to ssh into the container with.
+Add an entry to your `./ssh/config` file for the container e.g. 
 
-`ssh-copy-id -p {{ ssh port }} ohc@0.0.0.0` to allow access by our pem file the password is *ohc*
+```
+Host elcidwebserver
+HostName 0.0.0.0
+User ohc
+Port 55003
+```
+
+Run `ssh-copy-id elcidwebserver` to allow passwordless ssh in future - the password is *ohc*
 
 ### 3. Deployment
 
 Create a python 3 virtualenv 
 
-Run `pip install -r requirements.txt`
+Run `pip install -r requirements.txt` - this should be the requirements file located at ./deployment/requirements.txt
 
-Update *hosts.dev* to point to the *rfh_ansible_container*
+Update *hosts.dev* to point to the container, as configured by your `.ssh/config` e.g. 
+
+```
+[webserver]
+elcidwebserver
+```
 
 Run `ansible-playbook setup_prod.yml` to setup a prod server
 Run `ansible-playbook setup_test.yml` to setup a test server
