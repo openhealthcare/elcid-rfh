@@ -22,7 +22,7 @@ First install docker by following the instructions here https://docs.docker.com/
 
 Then run 
 
-`sudo docker build -t rfh_ansible_image . `
+`docker build -t rfh_ansible_image . `
 
 This builds you the docker container as laid our by the Dockerfile file.
 
