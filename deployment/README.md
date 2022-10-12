@@ -1,5 +1,5 @@
 ## Purpose
-At present the steps in this readme should.
+At present the steps in this readme should:
 
 * Create a docker container
 * Create a postgres database
