@@ -15,7 +15,10 @@ It does not
 ## Stages
 
 ### 1. Create the docker image
+
 First install docker by following the instructions here https://docs.docker.com/desktop/install/mac-install/
+
+`cd deployment`
 
 Then run sudo docker build -t rfh_ansible_image .
 This builds you the docker container as laid our by
