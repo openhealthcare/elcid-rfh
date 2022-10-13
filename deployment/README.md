@@ -1,5 +1,5 @@
 ## Purpose
-At present the steps in this readme should.
+At present the steps in this readme should:
 
 * Create a docker container
 * Create a postgres database
@@ -17,12 +17,13 @@ It does not
 ### 1. Create the docker images
 First install docker by following the instructions here https://docs.docker.com/desktop/install/mac-install/
 
-Then run sudo docker build -t rfh_ansible_image .
-This builds you the docker container as laid our by
-the Dockerfile file.
+`cd deployment`
 
-Create your ssh key `ssh-keygen -f rfh.pem -t rsa -b 4096`
-this will be used to access your new container after you create it.
+Then run
+
+`docker build -t rfh_ansible_image . `
+
+This builds you the docker container as laid our by the Dockerfile file.
 
 ### 2. Create the docker conatiner
 Run `docker run -d -P --name rfh_app_container rfh_ansible_image`
@@ -34,9 +35,18 @@ This will create you a docker container.
 Run `docker port rfh_app_container`
 and `docker port rfh_db_container`
 
-This will show you the ports to ssh into the container with.
+This will show you the port forwarding configurations for http (80), ssh (22) and postgres (5432) for this container
 
-`ssh-copy-id -p {{ ssh port }} ohc@0.0.0.0` to allow access by our pem file the password is *ohc*
+Add an entry to your `./ssh/config` file for the container e.g.
+
+```
+Host elcidwebserver
+HostName 0.0.0.0
+User ohc
+Port 55003
+```
+
+Run `ssh-copy-id elcidwebserver` to allow passwordless ssh in future - the password is *ohc*
 
 You need to wire the db container to the app container. This is done using the bridge that docker sets up by default.
 
@@ -44,10 +54,19 @@ Run `docker inspect rfh_db_container`, put the value of `Networks.bridge.IPAddre
 
 
 ### 3. Deployment
-Create a virtualenv pointing to python 3.8.6
 
-Run `pip install -r requirements.txt`
-Create an ansible.cfg that looks someting like
+Create a python 3 virtualenv
+
+Run `pip install -r requirements.txt` - this should be the requirements file located at ./deployment/requirements.txt
+
+Update *hosts.dev* to point to the container, as configured by your `.ssh/config` e.g.
+
+```
+[webserver]
+elcidwebserver
+```
+
+Create an ansible.cfg that looks something like
 
 ```
 [defaults]
