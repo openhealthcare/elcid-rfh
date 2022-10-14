@@ -1,5 +1,5 @@
 ---
-# This playbook runs the setup for test
+# This playbook runs the setup for prod
 - name: Run setup
   import_playbook: _setup.yml
 

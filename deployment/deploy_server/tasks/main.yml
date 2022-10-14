@@ -3,7 +3,7 @@
 # we have a log directory, a backups directory and conf directory
 # it then creates the configs for circus/nginx
 # it then starts all of these services
-- name: Creates directories
+- name: Create the backup/log directories
   become: true
   file:
     path: "{{ item }}"
@@ -19,7 +19,7 @@
     name: nginx
     state: stopped
 
-- name: Create configs
+- name: Create gunicorn/nginx configs
   template:
     src: "templates/{{ item }}.jinja2"
     dest: "{{ CONF_DIR }}/{{ item }}"

@@ -2,7 +2,7 @@
 # Deploys the current branch to a virtual env
 # sets up local settings and runs
 # migrate/load_lookup_lists/create_singletons
-- name: Creates directories
+- name: Create the project directorie
   become: true
   file:
     path: "{{ PROJECT_PATH }}"
