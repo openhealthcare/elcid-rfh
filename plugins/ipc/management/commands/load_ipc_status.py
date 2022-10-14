@@ -1,5 +1,5 @@
 """
-A one of command to load the ipc status models that currently
+A one off command to load the ipc status models that currently
 exist upstream.
 
 We do not expect this to happen multiple times so the logic
