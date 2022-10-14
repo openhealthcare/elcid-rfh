@@ -14,13 +14,6 @@
     - postgresql-server-dev-10
     - python3-psycopg2
 
-- name: Copy in pgpass
-  template:
-    src: templates/pgpass.conf.jinja2
-    dest: "/home/{{ UNIX_USER }}/.pgpass"
-    owner: "{{ UNIX_USER }}"
-    mode: 0600
-
 - name: Restart postgres
   become: true
   command: "service postgresql restart"
