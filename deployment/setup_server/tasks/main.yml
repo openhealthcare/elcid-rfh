@@ -37,9 +37,6 @@
     - python3-pip
     - python-cffi
     - sudo
-    # we are downgrading libsystemd0 for a package
-    # that works with systemd
-    - libsystemd0=237-3ubuntu10.53
     - systemd
 
 - name: generate locale
