@@ -32,7 +32,6 @@ HOST_NAME: "{% if DEPLOYMENT_TYPE == 'TEST' %}elcid-test{% else %}elcid-prod{% e
 
 # dev only, to be deleted
 SERVER_NAME: 0.0.0.0
-HOST_NAME: elcid-dev
 
 # this needs to be randomised
 SECRET_KEY: "123123adsfasdfaf2341qqjoijouu8"

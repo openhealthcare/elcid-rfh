@@ -73,4 +73,8 @@
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/service_module.html
 - name: Start circus
   become: yes
-  shell: service circusd restart
+  become: true
+  service:
+    name: circusd
+    state: started
+    enabled: yes
