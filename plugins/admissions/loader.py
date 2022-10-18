@@ -257,7 +257,7 @@ def clean_transfer_history_rows(rows):
     Sometimes the duplicates updated timestamps are the same
     so we need to look at created and updated.
     """
-    rows = [i for i in rows if i['LOCAL_PATIENT_IDENTIFIER'].strip()]
+    rows = [i for i in rows if i['LOCAL_PATIENT_IDENTIFIER'] and i['LOCAL_PATIENT_IDENTIFIER'].strip()]
     rows = sorted(rows, key=lambda x: (x['UPDATED_DATE'], x['CREATED_DATE']))
     upstream_rows = {}
     # because we ordered by updated, created, this will remove earlier created updated
