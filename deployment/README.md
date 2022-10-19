@@ -20,21 +20,21 @@ First install docker by following the instructions here https://docs.docker.com/
 
 `cd deployment`
 
-Then run 
+Then run
 
 `docker build -t rfh_ansible_image . `
 
 This builds you the docker container as laid our by the Dockerfile file.
 
 ### 2. Create the docker conatiner
-Run `docker run -d -P --name rfh_ansible_container rfh_ansible_image`
+Run `docker run -h elcid-dev -d -P --name rfh_ansible_container rfh_ansible_image`
 
 This will create you a docker container.
 
 Run `docker port rfh_ansible_container`
-This will show you the port forwarding configuration for http and ssh for this container 
+This will show you the port forwarding configuration for http and ssh for this container
 
-Add an entry to your `./ssh/config` file for the container e.g. 
+Add an entry to your `./ssh/config` file for the container e.g.
 
 ```
 Host elcidwebserver
@@ -47,11 +47,11 @@ Run `ssh-copy-id elcidwebserver` to allow passwordless ssh in future - the passw
 
 ### 3. Deployment
 
-Create a python 3 virtualenv 
+Create a python 3 virtualenv
 
 Run `pip install -r requirements.txt` - this should be the requirements file located at ./deployment/requirements.txt
 
-Update *hosts.dev* to point to the container, as configured by your `.ssh/config` e.g. 
+Update *hosts.dev* to point to the container, as configured by your `.ssh/config` e.g.
 
 ```
 [webserver]
