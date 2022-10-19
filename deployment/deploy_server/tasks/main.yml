@@ -35,16 +35,6 @@
     src: "templates/circus.ini.jinja2"
     dest: "/etc/circus/circusd.ini"
 
-- name: Create circus service
-  become: yes
-  template:
-    src: templates/circus.service
-    dest: /etc/systemd/system/circus.service
-
-- name: Enable the circus service
-  become: yes
-  shell: systemctl enable circus
-
 - name: Remove old nginx default
   become: true
   file:
@@ -67,10 +57,8 @@
     state: restarted
     enabled: yes
 
-# we start the service as a shell command
-# as on Ubuntu 18 ansible get's confused
-# about which to service to use
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/service_module.html
+
+# Note this will not work with ansibles service command
 - name: Start circus
   become: yes
   shell: service circusd restart
