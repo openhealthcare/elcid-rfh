@@ -2,7 +2,7 @@
 # Deploys the current branch to a virtual env
 # sets up local settings and runs
 # migrate/load_lookup_lists/create_singletons
-- name: Creates directories
+- name: Create the project directorie
   become: true
   file:
     path: "{{ PROJECT_PATH }}"
@@ -42,7 +42,7 @@
 
 - name: Create the virtualenv
   become: yes
-  become_user: ohc
+  become_user: "{{ UNIX_USER }}"
   shell: . /usr/share/virtualenvwrapper/virtualenvwrapper.sh && mkvirtualenv -p /usr/bin/python3 {{ ENV_NAME }}
   args:
     executable: /bin/bash
@@ -52,7 +52,7 @@
     src: templates/project.jinja2
     dest: "{{ VIRTUALENV_PATH }}/.project"
     mode: 0744
-    owner: ohc
+    owner: "{{ UNIX_USER }}"
 
 - name: Install packages required by the Django app inside virtualenv
   pip:

@@ -14,23 +14,6 @@
     - postgresql-server-dev-10
     - python3-psycopg2
 
-- name: Copy in pg_hba.conf
-  template:
-    src: templates/pg_hba.conf.jinja2
-    dest: /etc/postgresql/10/main/pg_hba.conf
-    owner: postgres
-    group: postgres
-    mode: 0640
-  when:
-    ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
-
-- name: Copy in pgpass
-  template:
-    src: templates/pgpass.conf.jinja2
-    dest: "/home/{{ UNIX_USER }}/.pgpass"
-    owner: "{{ UNIX_USER }}"
-    mode: 0600
-
 - name: Restart postgres
   become: true
   command: "service postgresql restart"

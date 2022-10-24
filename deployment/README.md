@@ -1,5 +1,5 @@
 ## Purpose
-At present the steps in this readme should.
+At present the steps in this readme should:
 
 * Create a docker container
 * Create a postgres database
@@ -15,32 +15,48 @@ It does not
 ## Stages
 
 ### 1. Create the docker image
+
 First install docker by following the instructions here https://docs.docker.com/desktop/install/mac-install/
 
-Then run sudo docker build -t rfh_ansible_image .
-This builds you the docker container as laid our by
-the Dockerfile file.
+`cd deployment`
 
-Create your ssh key `ssh-keygen -f rfh.pem -t rsa -b 4096`
-this will be used to access your new container after you create it.
+Then run
+
+`docker build -t rfh_ansible_image . `
+
+This builds you the docker container as laid our by the Dockerfile file.
 
 ### 2. Create the docker conatiner
-Run `docker run -d -P --name rfh_ansible_container rfh_ansible_image`
+Run `docker run -h elcid-dev -d -P --name rfh_ansible_container rfh_ansible_image`
 
 This will create you a docker container.
 
 Run `docker port rfh_ansible_container`
+This will show you the port forwarding configuration for http and ssh for this container
 
-This will show you the ports to ssh into the container with.
+Add an entry to your `./ssh/config` file for the container e.g.
 
-`ssh-copy-id -p {{ ssh port }} ohc@0.0.0.0` to allow access by our pem file the password is *ohc*
+```
+Host elcidwebserver
+HostName 0.0.0.0
+User ohc
+Port 55003
+```
+
+Run `ssh-copy-id elcidwebserver` to allow passwordless ssh in future - the password is *ohc*
 
 ### 3. Deployment
-Create a virtualenv pointing to python 3.8.6
 
-Run `pip install -r requirements.txt`
+Create a python 3 virtualenv
 
-Update *hosts.dev* to point to the *rfh_ansible_container*
+Run `pip install -r requirements.txt` - this should be the requirements file located at ./deployment/requirements.txt
+
+Update *hosts.dev* to point to the container, as configured by your `.ssh/config` e.g.
+
+```
+[webserver]
+elcidwebserver
+```
 
 Run `ansible-playbook setup_prod.yml` to setup a prod server
 Run `ansible-playbook setup_test.yml` to setup a test server
