@@ -37,7 +37,6 @@
     - python3-pip
     - python-cffi
     - sudo
-    - systemd
 
 - name: generate locale
   become: true
@@ -47,8 +46,7 @@
   become: true
   command: /usr/sbin/update-locale LANG=en_GB.UTF-8
 
-
-# Note this will not work on docker
+# Note this will not work in docker
 - name: Set the hostname
   hostname:
     name: "{{ HOST_NAME }}"
