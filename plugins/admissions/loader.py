@@ -245,33 +245,7 @@ def create_patients(mrns):
             )
 
 
-def clean_transfer_history_rows(rows):
-    """
-    Exclude rows with no hospital number.
-
-    The upstream table has an issue where mistakenly
-    they have multiple rows for the same
-    LOCAL_PATIENT_IDENTIFIER, TRANS_HIST_SEQ_NBR, SPELL_NUMBER.
-
-    In this situation, make sure we have the most recent one.
-    Sometimes the duplicates updated timestamps are the same
-    so we need to look at created and updated.
-    """
-    rows = [i for i in rows if i['LOCAL_PATIENT_IDENTIFIER'].strip()]
-    rows = sorted(rows, key=lambda x: (x['UPDATED_DATE'], x['CREATED_DATE']))
-    upstream_rows = {}
-    # because we ordered by updated, created, this will remove earlier created updated
-    for row in rows:
-        upstream_rows[(
-            row['LOCAL_PATIENT_IDENTIFIER'],
-            row['TRANS_HIST_SEQ_NBR'],
-            row['SPELL_NUMBER']
-        )] = row
-    return upstream_rows.values()
-
-
 def create_transfer_histories_from_upstream_result(some_rows):
-    some_rows = clean_transfer_history_rows(some_rows)
     create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
     return create_transfer_histories(some_rows)
 
@@ -294,26 +268,6 @@ def create_transfer_histories(some_rows):
     existing_transfer_histories_qs.filter(
         encounter_slice_id__in=slice_ids
     ).delete()
-
-    existing_transfers = existing_transfer_histories_qs.filter(
-        transfer_sequence_number__in=[row['TRANS_HIST_SEQ_NBR'] for row in some_rows],
-        spell_number__in=[row['SPELL_NUMBER'] for row in some_rows],
-        mrn__in=[row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows]
-    )
-
-    others_to_delete = {
-        (i.transfer_sequence_number, i.spell_number, i.mrn): i for i in existing_transfers
-    }
-
-    for row in some_rows:
-        key = (
-            row['TRANS_HIST_SEQ_NBR'],
-            row['SPELL_NUMBER'],
-            row['LOCAL_PATIENT_IDENTIFIER'],
-        )
-        to_delete = others_to_delete.get(key)
-        if to_delete:
-            to_delete.delete()
 
     transfer_histories = []
 
