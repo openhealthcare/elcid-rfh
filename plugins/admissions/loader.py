@@ -274,11 +274,14 @@ def create_transfer_histories(some_rows):
     transfer_histories = []
 
     for some_row in some_rows:
-        patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
-        for patient in patients:
-            transfer_histories.append(
-                cast_to_transfer_history(some_row, patient)
-            )
+        # if In_TransHist = 0 then the transmission has been deleted
+        # if In_Spells = 0 then the whole spell has been deleted
+        if some_row['In_TransHist'] and some_row['In_Spells']:
+            patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
+            for patient in patients:
+                transfer_histories.append(
+                    cast_to_transfer_history(some_row, patient)
+                )
     TransferHistory.objects.bulk_create(transfer_histories)
     return transfer_histories
 
