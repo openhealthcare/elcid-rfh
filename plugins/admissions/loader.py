@@ -261,13 +261,8 @@ def create_transfer_histories(some_rows):
     for demo in demos:
         mrn_to_patients[demo.hospital_number].append(demo.patient)
 
-    # This means we are already restricting the query by a index column
-    # ie much faster
-    existing_transfer_histories_qs = TransferHistory.objects.filter(
-        patient_id__in=[demo.patient_id for demo in demos]
-    )
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
-    existing_transfer_histories_qs.filter(
+    TransferHistory.objects.filter(
         encounter_slice_id__in=slice_ids
     ).delete()
 
