@@ -190,6 +190,7 @@ INSTALLED_APPS = (
     'plugins.handover',
     'plugins.ipc',
     'plugins.rnoh',
+    'plugins.data_quality',
     'intrahospital_api',
     'elcid',
     'passwordreset',
@@ -341,6 +342,11 @@ LOGGING = {
             'propagate': True,
         },
         'tb': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'data_quality': {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
             'propagate': True,
