@@ -27,8 +27,10 @@ BACKUP_STORAGE_DIRECTORY: "fake"
 
 
 
-SERVER_NAME: "{% if DEPLOYMENT_TYPE == 'TEST' %}elcid-rfh-test.openhealthcare.org.uk{% else %}elcid-rfh.openhealthcare.org.uk{% endif %}"
+
+SERVER_NAME: "{% if DEPLOYMENT_TYPE == 'TEST' %}elcid-rfh-test{% else %}elcid-rfh{% endif %}"
 HOST_NAME: "{% if DEPLOYMENT_TYPE == 'TEST' %}elcid-test{% else %}elcid-prod{% endif %}"
+
 
 # dev only, to be deleted
 SERVER_NAME: 0.0.0.0
