@@ -373,6 +373,7 @@ if 'test' in sys.argv:
     LOGGING['loggers']['admissions']          = blank_logger
     LOGGING['loggers']['imaging']             = blank_logger
     LOGGING['loggers']['appointments']        = blank_logger
+    LOGGING['loggers']['data_quality']        = blank_logger
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 # (Heroku requirement)
