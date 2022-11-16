@@ -78,7 +78,7 @@ def check_feeds():
         title = ", ".join(errors)
         utils.send_email(
             title,
-            "email/feed_alert.html",
+            "emails/feed_alert.html",
             {
                 "title": title,
                 "table_context": table_ctx,
