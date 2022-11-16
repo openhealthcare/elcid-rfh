@@ -43,8 +43,7 @@ def find_exact_duplicates():
             # something unexpected has happened.
             raise ValueError(f'We have found {len(patients)} for hn {duplicate_hn}')
         dup_patients.append(patients)
-    cleanable_duplicates, uncleanable_duplicates = calculate_deletable_undeletable()
-    cleanable_duplicates, uncleanable_duplicates = calculate_deletable_undeletable()
+    cleanable_duplicates, uncleanable_duplicates = calculate_deletable_undeletable(dup_patients)
     email_title = f'{len(cleanable_duplicates) + len (uncleanable_duplicates)} Exact hospital number duplicates'
     email_context = {
         "title": email_title,
@@ -75,15 +74,18 @@ def find_zero_leading_duplicates():
         without_zero_patients = list(Patient.objects.filter(
             demographics__hospital_number=without_zero
         ))
-        if len(with_zero_patients) > 1 or len(without_zero_patient) > 1:
+        if len(with_zero_patients) > 1 or len(without_zero_patients) > 1:
             # we expect these patients to be covered by the find_exact_duplicates
             # check
             continue
-        if without_zero_patients == 0:
+        if len(without_zero_patients) == 0:
             # we have no patients with the zero stripped so lets continue
             continue
-        dup_patients.append(with_zero[0], without_zero_patients[0])
-    cleanable_duplicates, uncleanable_duplicates = calculate_deletable_undeletable()
+        dup_patients.append((with_zero_patients[0], without_zero_patients[0],))
+    if len(dup_patients) == 0:
+        # if there are no duplicate patients, return
+        return
+    cleanable_duplicates, uncleanable_duplicates = calculate_deletable_undeletable(dup_patients)
     email_title = f'{len(cleanable_duplicates) + len (uncleanable_duplicates)} Exact hospital number duplicates'
     email_context = {
         "title": email_title,
@@ -141,10 +143,12 @@ def calculate_deletable_undeletable(patient_tuples):
     for patients in patient_tuples:
         patient_1 = patients[0]
         patient_1_native_records = has_records(patient_1)
+        patient_1_hn = patient_1.demographics_set.get().hospital_number
         patient_2 = patients[1]
         patient_2_native_records = has_records(patient_2)
+        patient_2_hn = patient_2.demographics_set.get().hospital_number
         if len(patient_1_native_records) and len(patient_2_native_records):
-            logger.info(f'====== Unable to merge hn {duplicate_hn} as they both have duplicate records')
+            logger.info(f'====== Unable to merge hn {patient_1_hn}/{patient_2_hn} as they both have duplicate records')
             logger.info(f'=== Patient 1 ({patient_1.id}) has:')
             for record in patient_1_native_records:
                 logger.info(f'{record.__class__.__name__} {record.id}')
