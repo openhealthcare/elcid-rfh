@@ -3,8 +3,7 @@ from django.db.models import Count
 from opal.core import subrecords
 from opal.models import Patient
 from elcid.models import Demographics
-from . import utils
-from plugins.data_quality import logger
+from plugins.data_quality import logger, utils
 
 
 SUBRECORDS_TO_IGNORE = set([
