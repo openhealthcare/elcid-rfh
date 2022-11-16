@@ -6,6 +6,7 @@ import datetime
 import time
 from django.utils import timezone
 from django.core.management import BaseCommand
+from django.core.management import call_command
 from plugins.monitoring.models import Fact
 from plugins.admissions import loader, logger, constants, models
 
@@ -32,6 +33,8 @@ class Command(BaseCommand):
                 label=constants.TRANSFER_HISTORY_COUNT_FACT,
                 value_int=models.TransferHistory.objects.all().count()
             )
+            if datetime.datetime.now().hour == 0:
+                call_command('check_transfer_histories')
         except Exception:
             msg = "Failed to load transfer histories"
             msg += "Last exception \n{}".format(traceback.format_exc())
