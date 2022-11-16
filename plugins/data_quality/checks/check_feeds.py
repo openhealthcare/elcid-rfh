@@ -1,13 +1,11 @@
 import datetime
 from django.db.models import Max
-from django.conf import settings
 from plugins.appointments.models import Appointment
 from plugins.labtests.models import Observation
 from plugins.imaging.models import Imaging
 from plugins.admissions.models import Encounter
 from plugins.data_quality import utils
 from elcid.models import MasterFileMeta
-from intrahospital_api import logger
 
 
 def check_feeds():
