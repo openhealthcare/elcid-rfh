@@ -1,33 +1,13 @@
 import datetime
 from django.db.models import Max
-from django.core.management.base import BaseCommand
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 from django.conf import settings
 from plugins.appointments.models import Appointment
 from plugins.labtests.models import Observation
 from plugins.imaging.models import Imaging
 from plugins.admissions.models import Encounter
+from plugins.data_quality import utils
 from elcid.models import MasterFileMeta
 from intrahospital_api import logger
-
-
-def send_email(title, context):
-    template_name = "email/feed_alert.html"
-    html_message = render_to_string(template_name, {
-        "title": title,
-        "table_context": context,
-        "today": datetime.date.today()
-    })
-    plain_message = strip_tags(html_message)
-    send_mail(
-        title,
-        plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        settings.ADMINS,
-        html_message=html_message,
-    )
 
 
 def check_feeds():
@@ -84,10 +64,6 @@ def check_feeds():
         )
         errors.append(f"No patient information loaded since {crs_last_updated_str}")
     table_ctx["Last CRS masterfile updated"] = crs_master_file_last_updated
-    if len(errors):
-        title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
-        send_email(title, table_ctx)
-
     # Check Admissions
     encounter_last_updated = Encounter.objects.aggregate(
         last_updated=Max("last_updated")
@@ -101,5 +77,13 @@ def check_feeds():
         )
     table_ctx["Last encounter updated"] = encounter_last_updated
     if len(errors):
-        title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
-        send_email(title, table_ctx)
+        title = ", ".join(errors)
+        utils.send_email(
+            title,
+            "email/feed_alert.html",
+            {
+                "title": title,
+                "table_context": table_ctx,
+                "today": datetime.date.today()
+            }
+        )
