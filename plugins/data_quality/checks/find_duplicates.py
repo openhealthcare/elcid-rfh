@@ -13,6 +13,7 @@ SUBRECORDS_TO_IGNORE = set([
     'NextOfKinDetails',
     'GPDetails',
     'ExternalDemographics',
+    'ICUHandover'
 ])
 
 
