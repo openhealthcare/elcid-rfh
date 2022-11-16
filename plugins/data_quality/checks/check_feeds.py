@@ -1,10 +1,4 @@
-"""
-A management command run by a cron job on week days
-that sends an email if one of the feeds has not loaded
-that day.
-"""
 import datetime
-import traceback
 from django.db.models import Max
 from django.core.management.base import BaseCommand
 from django.core.mail import send_mail
@@ -109,12 +103,3 @@ def check_feeds():
     if len(errors):
         title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
         send_email(title, table_ctx)
-
-
-class Command(BaseCommand):
-    def handle(self, *args, **options):
-        try:
-            check_feeds()
-        except Exception:
-            msg = f'Exception running the feed_alert_email \n {traceback.format_exc()}'
-            logger.error(msg)

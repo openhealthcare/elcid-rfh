@@ -606,27 +606,6 @@ def write_cron_admission_load(new_env):
     ))
 
 
-def write_cron_intrahospital_api(new_env):
-    """
-    Creates a cron job that runs intrahospital_api jobs
-    """
-    print("Writing cron {}_intrahospital_api".format(PROJECT_NAME))
-    template = jinja_env.get_template(
-        'etc/conf_templates/cron_intrahospital_api.jinja2'
-    )
-    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
-    output = template.render(
-        fabric_file=fabfile,
-        virtualenv=new_env.virtual_env_path,
-        unix_user=UNIX_USER,
-        project_dir=new_env.project_directory
-    )
-    cron_file = "/etc/cron.d/{0}_intrahospital_api".format(PROJECT_NAME)
-    local("echo '{0}' | sudo tee {1}".format(
-        output, cron_file
-    ))
-
-
 def write_cron_appointment_load(new_env):
     """
     Creates a cron job that runs the appointment loader
