@@ -22,3 +22,4 @@ opal.sqlite.*
 node_modules
 .vscode
 prepared_downloads
+deployment/*.retry

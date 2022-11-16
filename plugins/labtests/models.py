@@ -1,5 +1,6 @@
 import datetime
 import re
+from plugins.labtests import constants
 from django.utils.dateformat import format as dt_format
 from django.db import models
 from django.conf import settings
@@ -22,6 +23,9 @@ class LabTest(models.Model):
         on_delete=models.CASCADE,
         related_name="lab_tests"
     )
+    # the upstream 1-9 mapping that maps to the deparment
+    # that performs this test
+    department_int = models.IntegerField(null=True, blank=True)
     clinical_info = models.TextField(null=True, blank=True)
     datetime_ordered = models.DateTimeField(null=True, blank=True)
     site = models.CharField(max_length=256, blank=True, null=True)
@@ -78,6 +82,7 @@ class LabTest(models.Model):
         self.site = data["site"]
         self.test_name = data["test_name"]
         self.accession_number = data["accession_number"]
+        self.department_int = data["department_int"]
         self.encounter_consultant_name = data["encounter_consultant_name"]
         self.encounter_location_name = data["encounter_location_name"]
         self.encounter_location_code = data["encounter_location_code"]
@@ -133,6 +138,12 @@ class LabTest(models.Model):
         for site_part in site_parts:
             if site_part.isupper():
                 return site_part
+
+    @property
+    def department(self):
+        return constants.WITHPATH_DEPATMENT_MAPPING.get(
+            self.department_int
+        )
 
 
 class AbstractObserveration(models.Model):

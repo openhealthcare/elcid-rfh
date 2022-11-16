@@ -1,0 +1,11 @@
+---
+# This playbook runs the setup for production
+- name: Run setup
+  import_playbook: _setup.yml
+
+- name: Wire up circus, nginx, gunicorn
+  user: "{{ UNIX_USER }}"
+  hosts: webserver
+  gather_facts: yes
+  roles:
+    - deploy_backups_cron

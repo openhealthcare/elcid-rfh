@@ -13,10 +13,9 @@ from opal.models import Patient
 
 from elcid import models as emodels
 from elcid.utils import timing
-from plugins.admissions.loader import load_encounters
+from plugins.admissions.loader import load_encounters, load_transfer_history_for_patient
 from plugins.appointments.loader import load_appointments
 from plugins.imaging.loader import load_imaging
-from plugins.dischargesummary.loader import load_dischargesummaries
 
 from intrahospital_api import models
 from intrahospital_api import get_api
@@ -80,7 +79,7 @@ def load_demographics(hospital_number):
     return result
 
 
-def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
+def create_rfh_patient_from_hospital_number(hospital_number, episode_category, run_async=None):
     """
     Creates a patient programatically and sets up integration.
 
@@ -105,7 +104,10 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category):
         start=datetime.date.today()
     )
 
-    load_patient(patient)
+    if run_async is None:
+        load_patient(patient, run_async=run_async)
+    else:
+        load_patient(patient)
     return patient
 
 
@@ -399,6 +401,7 @@ def _load_patient(patient, patient_load):
         load_imaging,
         load_encounters,
         load_appointments,
+        load_transfer_history_for_patient,
         # Discharge summaries are currently inaccurate
         # load_dischargesummaries
     ]

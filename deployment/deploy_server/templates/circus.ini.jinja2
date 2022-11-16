@@ -1,0 +1,23 @@
+[watcher:app]
+cmd = {{ VIRTUALENV_PATH }}/bin/gunicorn
+args = {{ PROJECT_NAME }}.wsgi -c etc/gunicorn_conf.py
+working_dir = {{ PROJECT_DIR }}
+uid = {{ UNIX_USER }}
+numprocesses = 1
+autostart = true
+stdout_stream.class = FileStream
+stdout_stream.filename = {{ LOG_DIR }}/gunicorn.stdout.log
+stderr_stream.class = FileStream
+stderr_stream.filename = {{ LOG_DIR }}/gunicorn.stderr.log
+copy_env = true
+
+
+[watcher:celery]
+working_dir = {{ PROJECT_DIR }}
+cmd = {{ VIRTUALENV_PATH }}/bin/celery
+uid = {{ UNIX_USER }}
+args = -A opal.core worker -l INFO
+stdout_stream.filename = {{ LOG_DIR }}/celery.stdout.log
+stderr_stream.class = FileStream
+stderr_stream.filename = {{ LOG_DIR }}/celery.stderr.log
+copy_env = True

@@ -1,0 +1,8 @@
+---
+
+- name: Install cron jobs
+  cron:
+    name: Backup the database
+    minute: 1
+    hour: 1
+    job: "{{ VIRTUALENV_PATH }}/python {{ PROJECT_DIR }}/manage.py backup"

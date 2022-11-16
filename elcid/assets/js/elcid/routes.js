@@ -71,8 +71,12 @@ app.config(
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list/'))
              .when('/tb/clinic-list/:date_stamp',  param_template_route('/templates/tb/clinic_list/', 'date_stamp'))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
+             .when('/tb/clinic-activity/:year/', param_template_route('/tb/clinic_activity/', 'year'))
+             .when('/tb/clinic-activity/appointment_data/:year/', param_template_route('/tb/clinic_activity/appointment_data/', 'year'))
+             .when('/tb/clinic-activity/mdt_data/:year/', param_template_route('/tb/clinic_activity/mdt_data/', 'year'))
              .when('/tb/mdt-outstanding/',  static_template_route('/templates/tb/outstanding_mdt_list/'))
              .when('/tb/mdt/:site/', param_template_route('/tb/mdt/', 'site'))
+
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
              .when('/beta/',                 static_template_route('/templates/elcid/beta.html'))
@@ -101,9 +105,12 @@ app.config(
              .when('/ipc/bedboard/ward/:ward_name/',
                    param_template_route('/templates/ipc/ward/', 'ward_name'))
 
-             .when('/ipc/siderooms/',               static_template_route('/templates/ipc/siderooms.html'))
+             .when('/ipc/siderooms/:hospital_code', param_template_route('/templates/ipc/isolation/', 'hospital_code'))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
 
+             .when('/rnoh/inpatients/',             static_template_route('/templates/rnoh/inpatients.html'))
+             .when('/rnoh/numbers/',                static_template_route('/templates/rnoh/numbers.html'))
+             .when('/rnoh/ward/:ward_name/',        param_template_route('/templates/rnoh/ward_list/', 'ward_name'))
 
              .when('/patient-information-load-stats/', static_template_route(
                  '/templates/monitoring/patient_information_load_stats.html'))

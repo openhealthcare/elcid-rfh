@@ -16,9 +16,9 @@ from opal.models import Tagging
 
 from elcid import patient_lists
 from intrahospital_api import loader, epr
-from intrahospital_api import constants as intrahospital_api_constants
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
+from plugins.labtests import constants as lab_constants
 
 from elcid import models as emodels
 from plugins.tb import models as tb_models
@@ -155,10 +155,12 @@ class LabTestResultsView(LoginRequiredViewset):
         observation_units  = {}
         lab_numbers        = {}
         data               = defaultdict(lambda: defaultdict(lambda: None))
+        departments         = set()
 
         for instance in instances:
             test_datetimes.add(instance.datetime_ordered)
             lab_numbers[serialization.serialize_datetime(instance.datetime_ordered)] = instance.lab_number
+            departments.add(instance.department)
 
             for observation in instance.observation_set.all():
                 name = observation.observation_name.rstrip('.')
@@ -188,7 +190,8 @@ class LabTestResultsView(LoginRequiredViewset):
             'lab_numbers'       : lab_numbers,
             'observation_ranges': observation_ranges,
             'observation_units' : observation_units,
-            'observation_series': data
+            'observation_series': data,
+            'departments'       : list(departments),
         }
 
     def serialise_long_form_instance(self, instance):
@@ -205,12 +208,12 @@ class LabTestResultsView(LoginRequiredViewset):
                         'units': o.units
                     }
                 )
-
         return {
-            'lab_number'  : instance.lab_number,
-            'date'        : instance.datetime_ordered,
-            'observations': serialised_observations,
-            'site'        : instance.cleaned_site
+            'lab_number'        : instance.lab_number,
+            'date'              : instance.datetime_ordered,
+            'observations'      : serialised_observations,
+            'site'              : instance.cleaned_site,
+            'department'        : instance.department
         }
 
     @patient_from_pk
@@ -238,8 +241,8 @@ class LabTestResultsView(LoginRequiredViewset):
         test_dates       = {}
 
         for test_type, instances in by_test.items():
-
             long_form = self.is_long_form(test_type, instances)
+
             if long_form:
                 serialised = {
                     'long_form'    : True,
@@ -262,7 +265,8 @@ class LabTestResultsView(LoginRequiredViewset):
         return json_response(
             {
                 'test_order': test_order,
-                'tests'     : serialised_tests
+                'tests'     : serialised_tests,
+                'departments': list(lab_constants.WITHPATH_DEPATMENT_MAPPING.values())
             }
         )
 
@@ -572,10 +576,12 @@ class DemographicsSearch(LoginRequiredViewset):
                 patient=demographics.patient.to_dict(request.user),
                 status=self.PATIENT_FOUND_IN_ELCID
             ))
+        # ignore these hospital numbers as they always belong to a different hospital
+        elif hospital_number.startswith("RAN") and hospital_number.strip("RAN").isnumeric():
+            return json_response(dict(status=self.PATIENT_NOT_FOUND))
         else:
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
                 demographics = loader.load_demographics(hospital_number)
-
                 if demographics:
                     return json_response(dict(
                         patient=dict(demographics=[demographics]),

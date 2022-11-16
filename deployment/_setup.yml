@@ -1,0 +1,31 @@
+---
+# This playbook runs the tasks required for setup by prod and test
+- name: Sets up the server
+  become: true
+  user: "{{ UNIX_USER }}"
+  hosts: webserver
+  gather_facts: no
+  roles:
+    - setup_server
+
+- name: Sets up the database
+  become: true
+  user: "{{ UNIX_USER }}"
+  hosts: webserver
+  gather_facts: yes
+  roles:
+    - setup_db
+
+- name: Deploy the branch to RFH, install requirements
+  user: "{{ UNIX_USER }}"
+  hosts: webserver
+  gather_facts: yes
+  roles:
+    - deploy_rfh
+
+- name: Wire up circus, nginx, gunicorn
+  user: "{{ UNIX_USER }}"
+  hosts: webserver
+  gather_facts: yes
+  roles:
+    - deploy_server

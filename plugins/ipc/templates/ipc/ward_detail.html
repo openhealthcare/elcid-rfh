@@ -4,12 +4,12 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h1>
-      <a href="/#/admissions/bedboard/hospital/{{patients.first.hospital_site_code}}/" class="orange-link">
+      <a href="/#/ipc/bedboard/hospital/{{patients.first.hospital_site_code}}/" class="orange-link">
         {{ patients.first.hospital_site_description }}
       </a>
       {{ ward_name }}
       <span>
-        ({{ patients|length }} patients)
+        ({{patient_count}}/{{ patients|length }} occupied)
       </span>
     </h1>
   </div>

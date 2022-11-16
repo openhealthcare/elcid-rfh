@@ -1,0 +1,68 @@
+---
+# This playbook sets up the directory we will deploy to and makes sure
+# we have a log directory, a backups directory and conf directory
+# it then creates the configs for circus/nginx
+# it then starts all of these services
+- name: Create the backup/log directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0777
+  with_items:
+    - "{{ LOG_DIR }}"
+    - "{{ BACKUPS_DIR }}"
+
+- name: Stop nginx
+  become: true
+  service:
+    name: nginx
+    state: stopped
+
+- name: Create gunicorn/nginx configs
+  template:
+    src: "templates/{{ item }}.jinja2"
+    dest: "{{ CONF_DIR }}/{{ item }}"
+    mode: 0744
+    owner: "{{ UNIX_USER }}"
+  with_items:
+    - gunicorn_conf.py
+    - nginx_site.conf
+
+- name: Create circus config
+  become: yes
+  template:
+    src: "templates/circus.ini.jinja2"
+    dest: "/etc/circus/circusd.ini"
+
+- name: Remove old nginx default
+  become: true
+  file:
+    state: absent
+    path: "/etc/nginx/sites-available/default"
+
+- name: Symlink nginx
+  become: true
+  file:
+    src: "{{ CONF_DIR }}/nginx_site.conf"
+    dest: "/etc/nginx/sites-available/default"
+    owner: root
+    group: root
+    state: link
+
+- name: Restart nginx
+  become: true
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+
+
+# Note this will not work with ansibles service command
+- name: Start circus
+  become: yes
+  become: true
+  service:
+    name: circusd
+    state: started
+    enabled: yes
