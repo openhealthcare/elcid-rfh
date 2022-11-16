@@ -22,6 +22,9 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 # if we fail in a query, the amount of seconds we wait before retrying
 RETRY_DELAY = 30
 
+# pytds does not by default have a connection timeout
+DEFAULT_TIMEOUT = 360
+
 PATIENT_MASTERFILE_VIEW = "VIEW_CRS_Patient_Masterfile"
 
 PATHOLOGY_DEMOGRAPHICS_QUERY = "SELECT top(1) * FROM {view} WHERE Patient_Number = \
@@ -487,7 +490,7 @@ class ProdApi(base_api.BaseApi):
                 "You need to set proper credentials to use the prod api"
             )
 
-    def execute_hospital_insert(self, insert, params=None):
+    def execute_hospital_insert(self, insert, params=None, timeout=DEFAULT_TIMEOUT):
         """
         Given an INSERT query, and optional PARAMS, execute and commit
         an insert on the upstream hospital database.
@@ -497,6 +500,7 @@ class ProdApi(base_api.BaseApi):
             self.hospital_settings["database"],
             self.hospital_settings["username"],
             self.hospital_settings["password"],
+            timeout=timeout,
             as_dict=True
         ) as conn:
             with conn.cursor() as cur:
@@ -506,12 +510,13 @@ class ProdApi(base_api.BaseApi):
                 cur.execute(insert, params)
                 conn.commit()
 
-    def execute_hospital_query(self, query, params=None):
+    def execute_hospital_query(self, query, params=None, timeout=DEFAULT_TIMEOUT):
         with pytds.connect(
             self.hospital_settings["ip_address"],
             self.hospital_settings["database"],
             self.hospital_settings["username"],
             self.hospital_settings["password"],
+            timeout=timeout,
             as_dict=True
         ) as conn:
             with conn.cursor() as cur:
@@ -523,12 +528,13 @@ class ProdApi(base_api.BaseApi):
         logger.debug(result)
         return result
 
-    def execute_trust_query(self, query, params=None):
+    def execute_trust_query(self, query, params=None, timeout=DEFAULT_TIMEOUT):
         with pytds.connect(
             self.trust_settings["ip_address"],
             self.trust_settings["database"],
             self.trust_settings["username"],
             self.trust_settings["password"],
+            timeout=timeout,
             as_dict=True
         ) as conn:
             with conn.cursor() as cur:
@@ -540,12 +546,13 @@ class ProdApi(base_api.BaseApi):
         logger.debug(result)
         return result
 
-    def execute_warehouse_query(self, query, params=None):
+    def execute_warehouse_query(self, query, params=None, timeout=DEFAULT_TIMEOUT):
         with pytds.connect(
             self.warehouse_settings["ip_address"],
             self.warehouse_settings["database"],
             self.warehouse_settings["username"],
             self.warehouse_settings["password"],
+            timeout=timeout,
             as_dict=True
         ) as conn:
             with conn.cursor() as cur:
