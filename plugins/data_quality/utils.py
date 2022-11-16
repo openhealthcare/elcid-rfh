@@ -7,6 +7,7 @@ from django.conf import settings
 def send_email(title, template_name, context):
     html_message = render_to_string(template_name, context)
     plain_message = strip_tags(html_message)
+    title = f"ALERT {settings.OPAL_BRAND_NAME}: {title}"
     send_mail(
         title,
         plain_message,
