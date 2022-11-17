@@ -250,6 +250,11 @@ def update_patient_information(patient):
     demographics = patient.demographics_set.all()[0]
     hospital_number = demographics.hospital_number
 
+    # We have Patients that have leading 0s in their
+    # hospital numbers. The CRS master file
+    # have these zeros stripped out so remove them.
+    hospital_number = hospital_number.lstrip('0')
+
     if not hospital_number:
         msg = " ".join([
             f"Patient {patient.id} has not hospital number",
@@ -261,15 +266,6 @@ def update_patient_information(patient):
     upstream_patient_information = api.patient_masterfile(
         hospital_number
     )
-
-    if upstream_patient_information is None:
-        # If the hn begins with leading 0(s)
-        # the data is sometimes empty in the CRS_* fields.
-        # So if we cannot find rows with 0 prefixes
-        # remove the prefix
-        upstream_patient_information = api.patient_masterfile(
-            hospital_number.lstrip("0")
-        )
 
     # this should never really happen but has..
     # It happens in the case of a patient who has previously
