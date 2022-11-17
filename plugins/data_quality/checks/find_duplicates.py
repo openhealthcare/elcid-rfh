@@ -49,7 +49,8 @@ def find_exact_duplicates():
     email_context = {
         "title": email_title,
         "cleanable_duplicates": cleanable_duplicates,
-        "uncleanable_duplicates": uncleanable_duplicates
+        "uncleanable_duplicates": uncleanable_duplicates,
+        "host": "http://192.168.21.203",
     }
     utils.send_email(
         email_title,
@@ -91,7 +92,8 @@ def find_zero_leading_duplicates():
     email_context = {
         "title": email_title,
         "cleanable_duplicates": cleanable_duplicates,
-        "uncleanable_duplicates": uncleanable_duplicates
+        "uncleanable_duplicates": uncleanable_duplicates,
+        "host": "http://192.168.21.203",
     }
     utils.send_email(
         email_title,
