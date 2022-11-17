@@ -49,7 +49,8 @@ def find_exact_duplicates():
     email_context = {
         "title": email_title,
         "cleanable_duplicates": cleanable_duplicates,
-        "uncleanable_duplicates": uncleanable_duplicates
+        "uncleanable_duplicates": uncleanable_duplicates,
+        "host": "http://192.168.21.203",
     }
     utils.send_email(
         email_title,
@@ -87,11 +88,12 @@ def find_zero_leading_duplicates():
         # if there are no duplicate patients, return
         return
     cleanable_duplicates, uncleanable_duplicates = calculate_deletable_undeletable(dup_patients)
-    email_title = f'{len(cleanable_duplicates) + len (uncleanable_duplicates)} Exact hospital number duplicates'
+    email_title = f'{len(cleanable_duplicates) + len (uncleanable_duplicates)} hospital number duplicates where there are leading zeros'
     email_context = {
         "title": email_title,
         "cleanable_duplicates": cleanable_duplicates,
-        "uncleanable_duplicates": uncleanable_duplicates
+        "uncleanable_duplicates": uncleanable_duplicates,
+        "host": "http://192.168.21.203",
     }
     utils.send_email(
         email_title,
