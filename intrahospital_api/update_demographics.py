@@ -307,6 +307,7 @@ def get_patients_from_master_file_rows(rows):
     to handle the fact that on some occastion
     0 prefixes on hns are stripped off.
     """
+    from intrahospital_api.loader import hospital_numbers_to_patients
     logger.info('starting patient query')
     hns = []
     for row in rows:
@@ -314,30 +315,7 @@ def get_patients_from_master_file_rows(rows):
         if hn:
             hns.append(hn)
 
-    patients = Patient.objects.filter(
-        demographics__hospital_number__in=hns
-    ).prefetch_related(
-        'demographics_set',
-        'gpdetails_set',
-        'contactinformation_set',
-        'nextofkindetails_set',
-        'masterfilemeta_set'
-    )
-    hn_to_patients = defaultdict(list)
-    for patient in patients:
-        hn_to_patients[patient.demographics_set.all()[0].hospital_number].append(
-            patient
-        )
-
-    for hn in hns:
-        hn = row["demographics"]["hospital_number"]
-        if len(hn) < 7:
-            for i in range(1, 3):
-                new_hn = hn.zfill(i)
-                patients = Patient.objects.filter(
-                    demographics__hospital_number=new_hn
-                )
-                hn_to_patients[hn].extend(list(patients))
+    hn_to_patients = hospital_numbers_to_patients(hns)
     logger.info('ending patient query')
     return hn_to_patients
 
