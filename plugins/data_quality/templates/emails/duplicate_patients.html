@@ -1,0 +1,27 @@
+<html>
+<body>
+  <h1>{{ title }}</h1>
+  <h4>Cleanable patients</h4>
+  <table width="600" cellpadding="0" cellspacing="0" border="0">
+    <th>Patient to delete</th><th>Patient to keep</th>
+    {% for patient_to_delete, patient_to_keep in cleanable_duplicates %}
+    <tr>
+      <td style="text-align: center;">{{ host }}/#/patient/{{ patient_to_delete.id }}</td>
+      <td style="text-align: center;">{{ host }}/#/patient/{{ patient_to_keep.id }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h4>Unmergable patients</h4>
+  <table width="600" cellpadding="0" cellspacing="0" border="0">
+    <th>Patient 1</th><th>Patient 2</th>
+    {% for patient_1, patient_2 in uncleanable_duplicates %}
+    <tr>
+      <td style="text-align: center;">{{ host }}/#/patient/{{ patient_1.id }}</td>
+      <td style="text-align: center;">{{ host }}/#/patient/{{ patient_2.id }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+</body>
+</html>
