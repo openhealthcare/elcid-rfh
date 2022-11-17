@@ -342,28 +342,31 @@ def load_bed_status():
     )
 
     with transaction.atomic():
+        hns = [
+            i["Local_Patient_Identifier"] for i in status if i["Local_Patient_Identifier"]
+        ]
+        hn_to_patient = hospital_numbers_to_patients(hns)
+        for hn in hns:
+            if hn not in hn_to_patient:
+                # if the ptient does not exist, create them
+                hn_to_patient[hn].append(
+                    create_rfh_patient_from_hospital_number(
+                        hn, InfectionService
+                    )
+                )
 
         BedStatus.objects.all().delete()
 
         for bed_data in status:
-            bed_status = BedStatus()
-            for k, v in bed_data.items():
-                setattr(
-                    bed_status,
-                    BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
-                    v
-                )
-
-            if bed_status.local_patient_identifier:
-                patient = Patient.objects.filter(
-                    demographics__hospital_number=bed_status.local_patient_identifier
-                ).first()
-
-                if patient:
+            if not bed_data[bed_data["Local_Patient_Identifier"]]:
+                continue
+            for patient in hn_to_patient[bed_data["Local_Patient_Identifier"]]:
+                bed_status = BedStatus()
+                for k, v in bed_data.items():
+                    setattr(
+                        bed_status,
+                        BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                        v
+                    )
                     bed_status.patient = patient
-                else:
-                    patient = create_rfh_patient_from_hospital_number(
-                        bed_status.local_patient_identifier, InfectionService)
-                    bed_status.patient = patient
-
-            bed_status.save()
+                bed_status.save()
