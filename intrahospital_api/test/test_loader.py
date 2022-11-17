@@ -663,3 +663,59 @@ class SynchPatientTestCase(ApiTestCase):
             info.call_args_list[2][0][0],
             "patient information synced for {}".format(patient.id)
         )
+
+
+class HospitalNumberToPatientTestCase(OpalTestCase):
+    def setUp(self):
+        super().setUp()
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def test_does_not_match(self):
+        self.patient.demographics_set.update(
+            hospital_number='123'
+        )
+        result = loader.hospital_numbers_to_patients(['234'])
+        self.assertEqual(len(result), 0)
+
+    def test_singuler_match(self):
+        self.patient.demographics_set.update(
+            hospital_number='123'
+        )
+        result = loader.hospital_numbers_to_patients(['123'])
+        self.assertEqual(result['123'], [self.patient])
+
+    def test_matches_duplicate_match(self):
+        self.patient.demographics_set.update(
+            hospital_number='123'
+        )
+        patient_2, _ = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(
+            hospital_number='123'
+        )
+        result = loader.hospital_numbers_to_patients(['123'])
+        self.assertEqual(result['123'], [self.patient, patient_2])
+
+    def test_matches_with_zero(self):
+        self.patient.demographics_set.update(
+            hospital_number='0123'
+        )
+        result = loader.hospital_numbers_to_patients(['123'])
+        self.assertEqual(result['123'], [self.patient])
+
+    def test_matches_with_three_zeros(self):
+        self.patient.demographics_set.update(
+            hospital_number='000123'
+        )
+        result = loader.hospital_numbers_to_patients(['123'])
+        self.assertEqual(result['123'], [self.patient])
+
+    def test_duplicate_prefix(self):
+        self.patient.demographics_set.update(
+            hospital_number='000123'
+        )
+        patient_2, _ = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(
+            hospital_number='123'
+        )
+        result = loader.hospital_numbers_to_patients(['123'])
+        self.assertEqual(result['123'], [self.patient, patient_2])

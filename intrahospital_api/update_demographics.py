@@ -250,6 +250,11 @@ def update_patient_information(patient):
     demographics = patient.demographics_set.all()[0]
     hospital_number = demographics.hospital_number
 
+    # We have Patients that have leading 0s in their
+    # hospital numbers. The CRS master file
+    # have these zeros stripped out so remove them.
+    hospital_number = hospital_number.lstrip('0')
+
     if not hospital_number:
         msg = " ".join([
             f"Patient {patient.id} has not hospital number",
@@ -261,15 +266,6 @@ def update_patient_information(patient):
     upstream_patient_information = api.patient_masterfile(
         hospital_number
     )
-
-    if upstream_patient_information is None:
-        # If the hn begins with leading 0(s)
-        # the data is sometimes empty in the CRS_* fields.
-        # So if we cannot find rows with 0 prefixes
-        # remove the prefix
-        upstream_patient_information = api.patient_masterfile(
-            hospital_number.lstrip("0")
-        )
 
     # this should never really happen but has..
     # It happens in the case of a patient who has previously
@@ -307,6 +303,7 @@ def get_patients_from_master_file_rows(rows):
     to handle the fact that on some occastion
     0 prefixes on hns are stripped off.
     """
+    from intrahospital_api.loader import hospital_numbers_to_patients
     logger.info('starting patient query')
     hns = []
     for row in rows:
@@ -314,30 +311,7 @@ def get_patients_from_master_file_rows(rows):
         if hn:
             hns.append(hn)
 
-    patients = Patient.objects.filter(
-        demographics__hospital_number__in=hns
-    ).prefetch_related(
-        'demographics_set',
-        'gpdetails_set',
-        'contactinformation_set',
-        'nextofkindetails_set',
-        'masterfilemeta_set'
-    )
-    hn_to_patients = defaultdict(list)
-    for patient in patients:
-        hn_to_patients[patient.demographics_set.all()[0].hospital_number].append(
-            patient
-        )
-
-    for hn in hns:
-        hn = row["demographics"]["hospital_number"]
-        if len(hn) < 7:
-            for i in range(1, 3):
-                new_hn = hn.zfill(i)
-                patients = Patient.objects.filter(
-                    demographics__hospital_number=new_hn
-                )
-                hn_to_patients[hn].extend(list(patients))
+    hn_to_patients = hospital_numbers_to_patients(hns)
     logger.info('ending patient query')
     return hn_to_patients
 
