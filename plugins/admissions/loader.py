@@ -13,6 +13,7 @@ from opal.models import Patient
 from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api.loader import hospital_numbers_to_patients
 
 from plugins.admissions.models import Encounter, PatientEncounterStatus, TransferHistory, BedStatus
 from plugins.admissions import logger
@@ -217,6 +218,10 @@ def load_transfer_history_since(since):
 def load_transfer_history_for_patient(patient):
     api = ProdAPI()
     mrn = patient.demographics().hospital_number
+
+    # The transfer history service does not use leading zeros.
+    # An mrn with leading zeros considered the same as if it did not.
+    mrn = mrn.lstrip('0')
     query_result = api.execute_warehouse_query(
         Q_GET_TRANSFERS_FOR_MRN, params={"mrn": mrn}
     )
@@ -279,11 +284,8 @@ def create_transfer_histories_from_upstream_result(some_rows):
 @transaction.atomic
 def create_transfer_histories(some_rows):
     mrn_to_patients = defaultdict(list)
-    demos = Demographics.objects.filter(hospital_number__in=[
-        i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows
-    ]).select_related('patient')
-    for demo in demos:
-        mrn_to_patients[demo.hospital_number].append(demo.patient)
+    hns = [i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows]
+    mrn_to_patients = hospital_numbers_to_patients(hns)
 
     # This means we are already restricting the query by a index column
     # ie much faster
