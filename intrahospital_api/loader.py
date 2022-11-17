@@ -4,6 +4,7 @@ Functions for loading data from upstream.
 import datetime
 import traceback
 import json
+from collections import defaultdict
 
 from django.db import transaction
 from django.utils import timezone
@@ -61,6 +62,28 @@ def _initial_load():
 def log_errors(name):
     error = "unable to run {} \n {}".format(name, traceback.format_exc())
     logger.error(error)
+
+
+def hospital_numbers_to_patients(hns):
+    """
+    Takes ina list of hns
+    Return a defaultdict of hospital number to a list of patients.
+
+    The patients returned may have the hospital number
+    or a hospital number with at least 1-3 0s prefixed.
+    """
+    hn_to_patients = defaultdict(list)
+    with_zeros = []
+    for i in range(4):
+        with_zeros.extend(["0" * i + hn for hn in hns])
+    demographics = emodels.Demographics.objects.filter(
+        hospital_number__in=with_zeros
+    ).select_related('patient')
+    for demographic in demographics:
+        hn_to_patients[demographic.hospital_number.lstrip('0')].append(
+            demographic.patient
+        )
+    return hn_to_patients
 
 
 @timing
