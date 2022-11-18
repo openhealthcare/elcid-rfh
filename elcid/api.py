@@ -563,12 +563,41 @@ class DemographicsSearch(LoginRequiredViewset):
     PATIENT_NOT_FOUND = "patient_not_found"
 
     def list(self, request, *args, **kwargs):
-        hospital_number = request.query_params.get("hospital_number")
+        """
+        Search elcid demographics with the hn without prefixed zeros
+        but also with uptto 3 prefixes zeros.
+
+        Then search upstream demographics without the zero prefixed zeros
+        as upstream demographics strips these out.
+
+        e.g. if we are given 045678 we will search elcid demographics
+        for 45678, 045678, 0045678, 00045678.
+
+        If we do not find the patient we will search the demographics
+        table with 45678
+        """
+        # Within elcid we search for the hn without prefixed zeros
+        # or upto 4 prefixes zeros
+        hospital_number = request.query_params.get("hospital_number", "")
+        hospital_number = hospital_number.lstrip('0')
+
         if not hospital_number:
             return HttpResponseBadRequest("Please pass in a hospital number")
-        demographics = emodels.Demographics.objects.filter(
-            hospital_number=hospital_number
-        ).last()
+
+        possible_hns = [f"{'0'*i}{hospital_number}" for i in range(4)]
+
+        possible_demographics = list(emodels.Demographics.objects.filter(
+            hospital_number__in=possible_hns
+        ))
+
+        demographics = None
+
+        if len(possible_demographics) == 1:
+            demographics = possible_demographics[0]
+        elif len(possible_demographics) > 1:
+            demographics = sorted(
+                possible_demographics, key=lambda x: len(x.hospital_number)
+            )[0]
 
         # the patient is in elcid
         if demographics:
