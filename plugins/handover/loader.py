@@ -8,7 +8,9 @@ from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.apis.prod_api import db_retry
-from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+from intrahospital_api.loader import (
+    create_rfh_patient_from_hospital_number, hospital_numbers_to_patients
+)
 
 from plugins.icu import logger
 from plugins.handover.models import AMTHandover, NursingHandover
@@ -88,16 +90,14 @@ WHERE
 id = @id
 """
 
-def create_handover_from_upstream(data):
+def create_handover_from_upstream(data, patient):
     """
     Given an upstream data dictionary returned by the API,
     create a new AMTHandover record.
     """
     handover = AMTHandover()
 
-    handover.patient = Patient.objects.filter(
-        demographics__hospital_number=data['MRN']).first()
-
+    handover.patient = patient
     for k, v in data.items():
         setattr(
             handover,
@@ -128,25 +128,39 @@ def sync_amt_handover():
     current_patients = get_current()
 
     current_ids = [h['id'] for h in current_patients]
+    current_hns = [h['MRN'] for h in current_patients if h['MRN']]
+
+    mrn_to_patients = hospital_numbers_to_patients(current_hns)
+
+    for hn in current_hns:
+        if hn not in mrn_to_patients:
+            logger.info('Created patient for {}'.format(mrn))
+            mrn_to_patients[hn].append(
+                create_rfh_patient_from_hospital_number(
+                    mrn, InfectionService
+                )
+            )
+
 
     for handover in current_patients:
-
         mrn = handover['MRN']
+        if not mrn:
+            continue
 
-        if AMTHandover.objects.filter(sqlserver_id=handover['id']).exists():
-            AMTHandover.objects.get(sqlserver_id=handover['id']).delete()
+        for patient in mrn_to_patients[mrn]:
+            if AMTHandover.objects.filter(
+                sqlserver_id=handover['id'], patient=patient
+            ).exists():
+                AMTHandover.objects.filter(
+                    sqlserver_id=handover['id'], patient=patient
+                ).delete()
 
-        if not Demographics.objects.filter(hospital_number=mrn).exists():
-            create_rfh_patient_from_hospital_number(mrn, InfectionService)
+            handover = create_handover_from_upstream(handover, patient)
 
-            logger.info('Created patient for {}'.format(mrn))
-
-        handover = create_handover_from_upstream(handover)
-
-        amt_status = handover.patient.patientamthandoverstatus_set.get()
-        if not amt_status.has_handover:
-            amt_status.has_handover = True
-            amt_status.save()
+            amt_status = patient.patientamthandoverstatus_set.get()
+            if not amt_status.has_handover:
+                amt_status.has_handover = True
+                amt_status.save()
 
     discharged = AMTHandover.objects.exclude(
         sqlserver_id__in=current_ids
