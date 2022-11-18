@@ -165,6 +165,24 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
+    def test_does_not_error_if_hospital_is_not_set(self):
+        test_data = dict(
+            demographics=[dict(hospital_number="234", nhs_number="12312")],
+            location=[dict(ward="9W")]
+        )
+        self.post_json(self.url, test_data)
+        patient = models.Patient.objects.get()
+        self.assertEqual(
+            patient.demographics_set.first().hospital_number,
+            "234"
+        )
+        episode = patient.episode_set.get()
+        self.assertEqual(
+            list(episode.get_tag_names(None)),
+            []
+        )
+
+
     @patch("elcid.pathways.datetime")
     def test_episode_start(self, datetime):
         patient, episode = self.new_patient_and_episode_please()
