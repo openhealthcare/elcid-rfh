@@ -13,6 +13,7 @@ from opal.models import Patient
 from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api.loader import hospital_numbers_to_patients
 
 from plugins.admissions.models import Encounter, PatientEncounterStatus, TransferHistory, BedStatus
 from plugins.admissions import logger
@@ -219,6 +220,10 @@ def load_transfer_history_since(since):
 def load_transfer_history_for_patient(patient):
     api = ProdAPI()
     mrn = patient.demographics().hospital_number
+
+    # The transfer history service does not use leading zeros.
+    # An mrn with leading zeros considered the same as if it did not.
+    mrn = mrn.lstrip('0')
     query_result = api.execute_warehouse_query(
         Q_GET_TRANSFERS_FOR_MRN, params={"mrn": mrn}
     )
@@ -255,11 +260,8 @@ def create_transfer_histories_from_upstream_result(some_rows):
 @transaction.atomic
 def create_transfer_histories(some_rows):
     mrn_to_patients = defaultdict(list)
-    demos = Demographics.objects.filter(hospital_number__in=[
-        i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows
-    ]).select_related('patient')
-    for demo in demos:
-        mrn_to_patients[demo.hospital_number].append(demo.patient)
+    hns = [i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows]
+    mrn_to_patients = hospital_numbers_to_patients(hns)
 
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
@@ -294,28 +296,31 @@ def load_bed_status():
     )
 
     with transaction.atomic():
+        hns = [
+            i["Local_Patient_Identifier"] for i in status if i["Local_Patient_Identifier"]
+        ]
+        hn_to_patient = hospital_numbers_to_patients(hns)
+        for hn in hns:
+            if hn not in hn_to_patient:
+                # if the ptient does not exist, create them
+                hn_to_patient[hn].append(
+                    create_rfh_patient_from_hospital_number(
+                        hn, InfectionService
+                    )
+                )
 
         BedStatus.objects.all().delete()
 
         for bed_data in status:
-            bed_status = BedStatus()
-            for k, v in bed_data.items():
-                setattr(
-                    bed_status,
-                    BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
-                    v
-                )
-
-            if bed_status.local_patient_identifier:
-                patient = Patient.objects.filter(
-                    demographics__hospital_number=bed_status.local_patient_identifier
-                ).first()
-
-                if patient:
+            if not bed_data[bed_data["Local_Patient_Identifier"]]:
+                continue
+            for patient in hn_to_patient[bed_data["Local_Patient_Identifier"]]:
+                bed_status = BedStatus()
+                for k, v in bed_data.items():
+                    setattr(
+                        bed_status,
+                        BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                        v
+                    )
                     bed_status.patient = patient
-                else:
-                    patient = create_rfh_patient_from_hospital_number(
-                        bed_status.local_patient_identifier, InfectionService)
-                    bed_status.patient = patient
-
-            bed_status.save()
+                bed_status.save()
