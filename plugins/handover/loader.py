@@ -165,6 +165,7 @@ def sync_amt_handover():
     discharged = AMTHandover.objects.exclude(
         sqlserver_id__in=current_ids
     ).filter(discharged='N')
+    api = ProdAPI()
 
     for handover in discharged:
         upstream = api.execute_hospital_query(
