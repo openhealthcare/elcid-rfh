@@ -61,7 +61,10 @@ def load_icu_handover():
 
     for result in results:
 
-        mrn = result['Patient_MRN']
+        mrn = result['Patient_MRN'].lstrip('0')
+
+        if not mrn:
+            continue
 
         if not Demographics.objects.filter(hospital_number=mrn).exists():
             create_rfh_patient_from_hospital_number(mrn, InfectionService)

@@ -53,7 +53,7 @@ def create_patients_from_tb_tests():
             hns = hns.union([i["Patient_Number"] for i in query_result])
 
     for hn in list(hns):
-        hn = hn.strip()
+        hn = hn.lstrip('0')
         # don't process empty hospital numbers
         if not hn:
             continue
