@@ -563,7 +563,10 @@ class DemographicsSearch(LoginRequiredViewset):
     PATIENT_NOT_FOUND = "patient_not_found"
 
     def list(self, request, *args, **kwargs):
-        hospital_number = request.query_params.get("hospital_number")
+        hospital_number = request.query_params.get("hospital_number", "")
+        # We should never have hospital numbers prefixed with 0
+        # as VIEW_CRS_Patient_Masterfile does not.
+        hospital_number = hospital_number.lstrip('0')
         if not hospital_number:
             return HttpResponseBadRequest("Please pass in a hospital number")
         demographics = emodels.Demographics.objects.filter(
