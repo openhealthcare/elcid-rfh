@@ -10,6 +10,7 @@ from elcid.pathways import (
     AddPatientPathway, IgnoreDemographicsMixin
 )
 from elcid import episode_categories
+from elcid import models as emodels
 
 
 @override_settings(
@@ -199,4 +200,15 @@ class TestAddPatientPathway(OpalTestCase):
         self.assertEqual(
             list(episode.get_tag_names(None)),
             ['antifungal']
+        )
+
+    def test_create_new_patient_with_stripped_zeros(self):
+        url = AddPatientPathway().save_url()
+        test_data = dict(
+            demographics=[dict(hospital_number="00234", nhs_number="12312")],
+            tagging=[{u'antifungal': True}]
+        )
+        self.post_json(url, test_data)
+        self.assertTrue(
+            emodels.Demographics.objects.filter(hospital_number="234").exists()
         )
