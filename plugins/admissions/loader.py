@@ -316,7 +316,7 @@ def load_bed_status():
         BedStatus.objects.all().delete()
 
         for bed_data in status:
-            if not bed_data[bed_data["Local_Patient_Identifier"]]:
+            if not bed_data["Local_Patient_Identifier"]:
                 continue
             for patient in hn_to_patient[bed_data["Local_Patient_Identifier"]]:
                 bed_status = BedStatus()
