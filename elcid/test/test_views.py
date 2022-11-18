@@ -429,7 +429,7 @@ class AddAntifungalPatientsTestCase(OpalTestCase):
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
             first_name="Jane",
-            surname="Doe"
+            surname="Doe",
         )
         demographics_dict = patient.demographics().to_dict(self.user)
         demographics_dict.pop("patient_id")
@@ -445,6 +445,36 @@ class AddAntifungalPatientsTestCase(OpalTestCase):
         patient = Patient.objects.get()
         self.assertEqual(
             patient.demographics().first_name, "Jane"
+        )
+        self.assertTrue(load_patient.called_once_with(patient))
+        self.assertEqual(
+            patient.chronicantifungal_set.get().reason,
+            models.ChronicAntifungal.DISPENSARY_REPORT
+        )
+
+
+    @mock.patch('elcid.views.loader.load_patient')
+    def test_strips_zero_when_adding_patients(self, load_patient):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            first_name="Jane",
+            surname="Doe",
+        )
+        demographics_dict = patient.demographics().to_dict(self.user)
+        demographics_dict.pop("patient_id")
+        demographics_dict.pop("id")
+        demographics_dict["hospital_number"] = '0111'
+        patient.delete()
+        self.login()
+        result = self.client.post(
+            self.url,
+            {"demographics": json.dumps([demographics_dict])},
+            follow=True
+        )
+        self.assertEqual(result.status_code, 200)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "111"
         )
         self.assertTrue(load_patient.called_once_with(patient))
         self.assertEqual(
