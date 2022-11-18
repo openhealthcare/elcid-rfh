@@ -13,7 +13,7 @@ from opal.models import Patient
 from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from intrahospital_api.loader import hospital_numbers_to_patients
+
 
 from plugins.admissions.models import Encounter, PatientEncounterStatus, TransferHistory, BedStatus
 from plugins.admissions import logger
@@ -236,7 +236,9 @@ def create_patients(mrns):
     This is done outside a transaction to handle any race conditions
     that may exist with the transactions it spawns.
     """
-    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+    from intrahospital_api.loader import (
+        create_rfh_patient_from_hospital_number, hospital_numbers_to_patients
+    )
     existing_mrns = set(Demographics.objects.filter(hospital_number__in=mrns).values_list(
         'hospital_number', flat=True
     ))
@@ -333,7 +335,9 @@ def load_bed_status():
     """
     Flush and re-load the upstream current_bed_status
     """
-    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+    from intrahospital_api.loader import (
+        create_rfh_patient_from_hospital_number, hospital_numbers_to_patients
+    )
 
     api = ProdAPI()
 
