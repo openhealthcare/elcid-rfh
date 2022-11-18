@@ -5,6 +5,7 @@ from django.test import override_settings
 from django.utils import timezone
 from opal.core.test import OpalTestCase
 from elcid import models as emodels
+from elcid import episode_categories
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
 from intrahospital_api.exceptions import BatchLoadError
@@ -663,3 +664,28 @@ class SynchPatientTestCase(ApiTestCase):
             info.call_args_list[2][0][0],
             "patient information synced for {}".format(patient.id)
         )
+
+
+class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
+    def test_creates_patient_and_episode(self):
+        patient = loader.create_rfh_patient_from_hospital_number(
+            '111', episode_categories.InfectionService
+        )
+        self.assertEqual(
+            patient.demographics_set.get().hospital_number, '111'
+        )
+        self.assertEqual(
+            patient.episode_set.get().category_name,
+            episode_categories.InfectionService.display_name
+        )
+
+    def test_errors_if_the_hospital_number_starts_with_a_zero(self):
+        with self.assertRaises(ValueError) as v:
+            loader.create_rfh_patient_from_hospital_number(
+                '0111', episode_categories.InfectionService
+            )
+        expected = " ".join([
+            "Unable to create a patient 0111.",
+            "Hospital numbers within elcid should never start with a zero"
+        ])
+        self.assertEqual(str(v.exception), expected)

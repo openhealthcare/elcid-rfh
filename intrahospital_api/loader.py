@@ -90,6 +90,11 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
 
     If a patient with this hospital number already exists raise ValueError
     """
+    if hospital_number.startswith('0'):
+        raise ValueError(
+            f'Unable to create a patient {hospital_number}. Hospital numbers within elcid should never start with a zero'
+        )
+
     if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
         raise ValueError('Patient with this hospital number already exists')
 
