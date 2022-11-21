@@ -799,10 +799,16 @@ class ProdApi(base_api.BaseApi):
 
     @timing
     def results_for_hospital_number_2(self, hospital_number):
+        query = """
+        SELECT * FROM tQuest.Pathology_Result_View
+        WHERE Patient_Number IN (
+            @mrn_0, @mrn_1, @mrn_2, @mrn_3, @mrn_4
+        )
+        """
         hn = hospital_number.strip('0')
         hns = [f"{'0' * i}{hn}" for i in range(5)]
-        self.execute_trust_query(
-            self.all_data_query_for_lab_number,
+        raw_rows = self.execute_trust_query(
+            query,
             params=dict(
                 mrn_0=hns[0],
                 mrn_1=hns[1],
@@ -811,6 +817,5 @@ class ProdApi(base_api.BaseApi):
                 mrn_4=hns[4],
             )
         )
-        raw_rows = self.raw_data(hospital_number)
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
