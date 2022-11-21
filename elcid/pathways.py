@@ -101,7 +101,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
         hospital = ""
         if "location" in data:
-            hospital = data['location'][0]['hospital']
+            hospital = data['location'][0].get('hospital', "")
 
         if patient:
             if hospital == 'RNOH':
