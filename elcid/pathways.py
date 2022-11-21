@@ -120,6 +120,13 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
                 return super(AddPatientPathway, self).save(
                     data, user=user, patient=patient, episode=infectious_episode
                 )
+        else:
+            # strip off leading zeros, we do not create patients
+            # who have leading zeros.
+            hn = data["demographics"][0].get("hospital_number")
+            if hn:
+                hn = data["demographics"][0]["hospital_number"].lstrip('0')
+                data["demographics"][0]["hospital_number"] = hn
 
         saved_patient, saved_episode = super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
