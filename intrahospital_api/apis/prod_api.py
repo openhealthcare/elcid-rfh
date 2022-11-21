@@ -322,7 +322,10 @@ class PathologyRow(object):
 
     # Demographics Fields
     def get_hospital_number(self):
-        return self.db_row.get("Patient_Number")
+        # The lab test table has patients with preceding zeros
+        # elcid matches the master file table and strips these
+        # off.
+        return self.db_row.get("Patient_Number").lstrip('0')
 
     def get_nhs_number(self):
         return self.get_or_fallback(
@@ -789,7 +792,6 @@ class ProdApi(base_api.BaseApi):
 
             aggregated into labtest: observations([])
         """
-
         raw_rows = self.raw_data(hospital_number)
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)

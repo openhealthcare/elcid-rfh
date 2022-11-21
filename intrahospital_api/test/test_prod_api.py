@@ -180,6 +180,13 @@ class PathologyRowTestCase(OpalTestCase):
         )
         self.assertEqual(row.get_hospital_number(), "1232")
 
+    def test_get_hospital_number_with_leading_zeros(self):
+        row = self.get_row(
+            Patient_Number="01232",
+        )
+        self.assertEqual(row.get_hospital_number(), "1232")
+
+
     def test_get_nhs_number(self):
         row = self.get_row(
             CRS_NHS_Number="1232",
