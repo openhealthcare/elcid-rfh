@@ -787,11 +787,23 @@ class ProdApi(base_api.BaseApi):
 
     @timing
     def results_for_hospital_number(self, hospital_number):
+        query = """
+        SELECT * FROM tQuest.Pathology_Result_view
+        WHERE Patient_Number IN (
+            @mrn_0, @mrn_1, @mrn_2, @mrn_3, @mrn_4
+        )
         """
-            returns all the results for a particular person
-
-            aggregated into labtest: observations([])
-        """
-        raw_rows = self.raw_data(hospital_number)
+        hn = hospital_number.strip('0')
+        hns = [f"{'0' * i}{hn}" for i in range(5)]
+        raw_rows = self.execute_trust_query(
+            query,
+            params=dict(
+                mrn_0=hns[0],
+                mrn_1=hns[1],
+                mrn_2=hns[2],
+                mrn_3=hns[3],
+                mrn_4=hns[4],
+            )
+        )
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
