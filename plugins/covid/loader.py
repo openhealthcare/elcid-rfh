@@ -40,8 +40,8 @@ def pre_load_covid_patients():
             params={'test_name': test_name, 'since': last_90_days}
         )
 
-        # lab tests can have preceding zeros, elcid does not user zero
-        # prefixes as we match the masterfile table
+        # lab test mrns can have preceding zeros, elCID does not use zero
+        # prefixes as we match the upstream masterfile table
         mrns = [
             r['Patient_Number'].lstrip('0') for r in results if r['Patient_Number'].lstrip('0')
         ]
