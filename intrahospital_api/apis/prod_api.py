@@ -789,11 +789,7 @@ class ProdApi(base_api.BaseApi):
 
             aggregated into labtest: observations([])
         """
-        hn = hospital_number.strip('0')
-        hns = [f"{'0' * i}{hospital_number}" for i in range(5)]
-        raw_rows = []
-        for hn in hns:
-            raw_rows.extend(self.raw_data(hn))
+        raw_rows = self.raw_data(hospital_number)
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
 
@@ -817,5 +813,21 @@ class ProdApi(base_api.BaseApi):
                 mrn_4=hns[4],
             )
         )
+        rows = (PathologyRow(raw_row) for raw_row in raw_rows)
+        return self.cast_rows_to_lab_test(rows)
+
+
+    @timing
+    def results_for_hospital_number_3(self, hospital_number):
+        query = """
+        SELECT DISTINCT Patient_Number FROM tQuest.Pathology_Result_View
+        WHERE Patient_Number LIKE '%0@hospital_number'
+        """
+        other_hns = self.execute_trust_query(
+            query, params={"hospital_number": hospital_number}
+        )
+        raw_rows = self.raw_data(hospital_number)
+        for other_hn in other_hns:
+            raw_rows.extend(self.raw_data(other_hn))
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
