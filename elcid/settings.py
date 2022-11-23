@@ -178,6 +178,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'compressor',
     'opal.core.search',
+    'lab',
     'plugins.letters',
     'plugins.labtests',
     'plugins.admissions',
