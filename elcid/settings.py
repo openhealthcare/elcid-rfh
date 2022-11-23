@@ -190,6 +190,7 @@ INSTALLED_APPS = (
     'plugins.handover',
     'plugins.ipc',
     'plugins.rnoh',
+    'plugins.elcid_search',
     'intrahospital_api',
     'elcid',
     'passwordreset',
@@ -451,6 +452,7 @@ WAREHOUSE_DB = dict(
 )
 
 EXTRACT_ASYNC = False
+OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
 WRITEBACK_ON = True
 
 COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')
