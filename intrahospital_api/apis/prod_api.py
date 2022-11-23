@@ -821,13 +821,20 @@ class ProdApi(base_api.BaseApi):
     def results_for_hospital_number_3(self, hospital_number):
         query = """
         SELECT DISTINCT Patient_Number FROM tQuest.Pathology_Result_View
-        WHERE Patient_Number LIKE '%0@hospital_number'
+        WHERE Patient_Number LIKE '%%0' + @hospital_number
         """
         other_hns = self.execute_trust_query(
             query, params={"hospital_number": hospital_number}
         )
+        # we know the above query returns us false positives
+        # e.g. if we look for 0234 it will return 20234
+        other_hns = [
+            i["Patient_Number"] for i in other_hns if i.lstrip('0') == hospital_number
+        ]
         raw_rows = self.raw_data(hospital_number)
         for other_hn in other_hns:
+            rows = self.raw_data(other_hn)
+            rows = [i[""]]
             raw_rows.extend(self.raw_data(other_hn))
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
