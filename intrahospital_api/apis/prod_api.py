@@ -790,9 +790,12 @@ class ProdApi(base_api.BaseApi):
 
             aggregated into labtest: observations([])
         """
-        raw_rows = self.raw_data(hospital_number)
-        rows = (PathologyRow(raw_row) for raw_row in raw_rows)
-        return self.cast_rows_to_lab_test(rows)
+        hn = hospital_number.strip('0')
+        hns = [f"{'0' * i}{hospital_number}" for i in range(5)]
+        raw_rows = []
+        for hn in hns:
+            raw_rows.extend(self.raw_data(hn))
+        return self.cast_rows_to_lab_test(raw_rows)
 
     @timing
     def results_for_hospital_number_2(self, hospital_number):
@@ -831,6 +834,7 @@ class ProdApi(base_api.BaseApi):
         return [
             i["Patient_Number"] for i in other_hns if i["Patient_Number"].lstrip('0') == hospital_number
         ]
+
 
     @timing
     def results_for_hospital_number_3(self, hospital_number):
