@@ -681,6 +681,7 @@ class ProdApi(base_api.BaseApi):
                     row["Patient_Number"] = hn
         return PathologyRow(rows[0]).get_demographics_dict()
 
+    @timing
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
         if lab_number:
             return self.execute_trust_query(
@@ -816,9 +817,8 @@ class ProdApi(base_api.BaseApi):
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
 
-
     @timing
-    def results_for_hospital_number_3(self, hospital_number):
+    def query_for_distinct_hns(self, hospital_number):
         query = """
         SELECT DISTINCT Patient_Number FROM tQuest.Pathology_Result_View
         WHERE Patient_Number LIKE '%%0' + @hospital_number
@@ -829,12 +829,14 @@ class ProdApi(base_api.BaseApi):
         # we know the above query returns us false positives
         # e.g. if we look for 0234 it will return 20234
         other_hns = [
-            i["Patient_Number"] for i in other_hns if i.lstrip('0') == hospital_number
+            i["Patient_Number"] for i in other_hns if i["Patient_Number"].lstrip('0') == hospital_number
         ]
+
+    @timing
+    def results_for_hospital_number_3(self, hospital_number):
+        other_hns = self.query_for_distinct_hns(hospital_number)
         raw_rows = self.raw_data(hospital_number)
         for other_hn in other_hns:
-            rows = self.raw_data(other_hn)
-            rows = [i[""]]
             raw_rows.extend(self.raw_data(other_hn))
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
