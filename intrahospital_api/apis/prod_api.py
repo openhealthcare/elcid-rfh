@@ -828,7 +828,7 @@ class ProdApi(base_api.BaseApi):
         )
         # we know the above query returns us false positives
         # e.g. if we look for 0234 it will return 20234
-        other_hns = [
+        return [
             i["Patient_Number"] for i in other_hns if i["Patient_Number"].lstrip('0') == hospital_number
         ]
 
