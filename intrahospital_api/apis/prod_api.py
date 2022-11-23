@@ -795,6 +795,7 @@ class ProdApi(base_api.BaseApi):
         raw_rows = []
         for hn in hns:
             raw_rows.extend(self.raw_data(hn))
+        rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(raw_rows)
 
     @timing
