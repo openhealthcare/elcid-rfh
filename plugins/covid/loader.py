@@ -40,7 +40,12 @@ def pre_load_covid_patients():
             params={'test_name': test_name, 'since': last_90_days}
         )
 
-        patient_mrns.update([r['Patient_Number'] for r in results])
+        # lab test MRNs can have preceding zeros, elCID does not use zero
+        # prefixes as we match the upstream masterfile table
+        mrns = [
+            r['Patient_Number'].lstrip('0') for r in results if r['Patient_Number'].lstrip('0')
+        ]
+        patient_mrns.update(mrns)
 
     all_mrns = set(
         Demographics.objects.values_list('hospital_number', flat=True)

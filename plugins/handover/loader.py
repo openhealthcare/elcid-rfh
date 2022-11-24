@@ -184,8 +184,13 @@ def sync_nursing_handover():
 
     for handover in handovers:
 
-        mrn    = handover['Patient_MRN']
+        # nursing handover MRNs can have preceding zeros, elCID does not use zero
+        # prefixes as we match the upstream masterfile table
+        mrn    = handover['Patient_MRN'].lstrip('0')
         sql_id = handover['SQLserver_UniqueID']
+
+        if not mrn:
+            continue
 
         if not Demographics.objects.filter(hospital_number=mrn).exists():
             create_rfh_patient_from_hospital_number(mrn, InfectionService)
