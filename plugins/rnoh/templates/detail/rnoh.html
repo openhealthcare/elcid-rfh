@@ -171,30 +171,34 @@
 
 
       {% if not user.profile.readonly %}
-      <div  class="panel panel-default hidden-print">
-        <div class="panel-heading"><h3>
-            <i class="fa fa-comments"></i> Clinical Advice
-        </div></h3>
-        <div class="panel-body">
-          <div class="row">
-            <div class="col-md-12">
-              <form class="form-horizontal">
+      <form name="form" ng-submit="" class="form-horizontal" novalidate>
+        <div  class="panel panel-default hidden-print">
+          <div class="panel-heading"><h3>
+              <i class="fa fa-comments"></i> Clinical Advice
+          </div></h3>
+          <div class="panel-body">
+            <div class="row">
+              <div class="col-md-12">
                 <div ng-repeat="formItem in [clinicalTimeline.formItem]">
                   {% include 'rnoh/narrative_form.html' %}
                 </div>
-              </form>
+              </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12 text-right">
-              <button ng-disabled="!clinicalTimeline.changed" class="btn btn-primary" ng-click="clinicalTimeline.save('save')">
-                <i class="fa fa-save"></i>
-                Save
-              </button>
+            <div class="row">
+              <div class="col-md-12 text-right">
+                <button ng-show="clinicalTimeline.changed" check-form="form" class="btn btn-primary" ng-click="form.$valid && clinicalTimeline.save(form)">
+                  <i class="fa fa-save"></i>
+                  Save
+                </button>
+                <button disabled ng-show="!clinicalTimeline.changed" class="btn btn-primary">
+                  <i class="fa fa-save"></i>
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </form>
       {% endif %}
 
 
