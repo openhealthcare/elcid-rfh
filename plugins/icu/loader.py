@@ -61,7 +61,7 @@ def load_icu_handover():
 
     for result in results:
 
-        # lab test mrns can have preceding zeros, elCID does not use zero
+        # ICU handover MRNs can have preceding zeros, elCID does not use zero
         # prefixes as we match the upstream masterfile table
         mrn = result['Patient_MRN'].lstrip('0')
 
