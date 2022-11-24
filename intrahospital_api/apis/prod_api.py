@@ -799,7 +799,7 @@ class ProdApi(base_api.BaseApi):
         other_hns = self.execute_trust_query(
             query, params={"hospital_number": hospital_number}
         )
-        # we know the above query returns us false positives
+        # we know the above query may return false positives
         # e.g. if we look for 0234 it will return 20234
         return [
             i["Patient_Number"] for i in other_hns if i["Patient_Number"].lstrip('0') == hospital_number
