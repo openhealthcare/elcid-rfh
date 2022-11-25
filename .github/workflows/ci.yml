@@ -40,8 +40,11 @@ jobs:
       - name: run tests
         run: opal test --coverage
       - name: combine coveralls
-        run: find coverage -name "lcov.info" -exec coveralls-lcov -v -n {} \; > coverage/coverage.json
+        run: find coverage -name "lcov.info" -exec mv {} coverage/js_lcov.info \;
+      - name: debug
+        run: ls coverage
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          base-path: 'coverage'
