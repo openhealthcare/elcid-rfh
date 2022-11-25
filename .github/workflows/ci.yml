@@ -5,6 +5,9 @@ jobs:
   test:
     name: python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     services:
       postgres:
         image: postgres:11
@@ -42,6 +45,3 @@ jobs:
       - name: combine coveralls
         run: find coverage -name "lcov.info" -exec coveralls-lcov -v -n {} \; > coverage/coverage.json
       - run: coveralls --service=github --merge=coverage/coverage.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
