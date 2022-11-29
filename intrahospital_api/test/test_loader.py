@@ -702,6 +702,6 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             )
         expected = " ".join([
             "Unable to create a patient 0111.",
-            "Hospital numbers within elcid should never start with a zero"
+            "Hospital numbers within elCID should never start with a zero"
         ])
         self.assertEqual(str(v.exception), expected)

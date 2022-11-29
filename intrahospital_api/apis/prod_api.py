@@ -783,46 +783,16 @@ class ProdApi(base_api.BaseApi):
             result.append(lab_test)
         return result
 
-    @timing
-    def results_for_hospital_number(self, hospital_number):
+    def query_for_zero_prefixed(self, hospital_number):
         """
-            returns all the results for a particular person
+        Returns zero prefixed versions of the hospital
+        number if they exist in the results table.
 
-            aggregated into labtest: observations([])
+        We do not use prefixed zeros for MRNs as we match
+        the master file but the results table does, so get
+        any zero prefixed MRNs included in the table for
+        the MRN.
         """
-        hn = hospital_number.strip('0')
-        hns = [f"{'0' * i}{hospital_number}" for i in range(5)]
-        raw_rows = []
-        for hn in hns:
-            raw_rows.extend(self.raw_data(hn))
-        rows = (PathologyRow(raw_row) for raw_row in raw_rows)
-        return self.cast_rows_to_lab_test(raw_rows)
-
-    @timing
-    def results_for_hospital_number_2(self, hospital_number):
-        query = """
-        SELECT * FROM tQuest.Pathology_Result_View
-        WHERE Patient_Number IN (
-            @mrn_0, @mrn_1, @mrn_2, @mrn_3, @mrn_4
-        )
-        """
-        hn = hospital_number.strip('0')
-        hns = [f"{'0' * i}{hn}" for i in range(5)]
-        raw_rows = self.execute_trust_query(
-            query,
-            params=dict(
-                mrn_0=hns[0],
-                mrn_1=hns[1],
-                mrn_2=hns[2],
-                mrn_3=hns[3],
-                mrn_4=hns[4],
-            )
-        )
-        rows = (PathologyRow(raw_row) for raw_row in raw_rows)
-        return self.cast_rows_to_lab_test(rows)
-
-    @timing
-    def query_for_distinct_hns(self, hospital_number):
         query = """
         SELECT DISTINCT Patient_Number FROM tQuest.Pathology_Result_View
         WHERE Patient_Number LIKE '%%0' + @hospital_number
@@ -830,16 +800,19 @@ class ProdApi(base_api.BaseApi):
         other_hns = self.execute_trust_query(
             query, params={"hospital_number": hospital_number}
         )
-        # we know the above query returns us false positives
+        # we know the above query may return false positives
         # e.g. if we look for 0234 it will return 20234
         return [
             i["Patient_Number"] for i in other_hns if i["Patient_Number"].lstrip('0') == hospital_number
         ]
 
-
     @timing
-    def results_for_hospital_number_3(self, hospital_number):
-        other_hns = self.query_for_distinct_hns(hospital_number)
+    def results_for_hospital_number(self, hospital_number):
+        """
+        returns all the results for an MRN
+        aggregated into labtest: observations([])
+        """
+        other_hns = self.query_for_zero_prefixed(hospital_number)
         raw_rows = self.raw_data(hospital_number)
         for other_hn in other_hns:
             raw_rows.extend(self.raw_data(other_hn))

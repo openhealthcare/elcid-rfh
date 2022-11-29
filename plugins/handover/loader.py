@@ -184,6 +184,8 @@ def sync_nursing_handover():
 
     for handover in handovers:
 
+        # nursing handover MRNs can have preceding zeros, elCID does not use zero
+        # prefixes as we match the upstream masterfile table
         mrn    = handover['Patient_MRN'].lstrip('0')
         sql_id = handover['SQLserver_UniqueID']
 
