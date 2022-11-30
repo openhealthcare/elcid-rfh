@@ -12,7 +12,7 @@ import opal.models as omodels
 from obs import models as obs_models
 
 from opal.models import (
-    EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel
+    EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel, Patient
 )
 from opal.core.fields import ForeignKeyOrFreeText, enum
 from opal.core import lookuplists
@@ -27,7 +27,34 @@ def get_for_lookup_list(model, values):
     )
 
 
-class Demographics(omodels.Demographics, ExternallySourcedModel):
+class MergedMRN(models.Model):
+    """
+    Represents each time this patient has had another MRN merged into it.
+
+    i.e. if patient 123 was merged into patient 456
+    patient 456 would have a patient merge object with MRN 123
+    """
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    mrn = models.CharField(max_length=256)
+    merge_comments = models.TextField(blank=True, null=True, default="")
+    upstream_merge_datetime = models.DateTimeField(blank=True, null=True)
+    our_merge_datetime = models.DateTimeField(blank=True, null=True)
+
+
+class PreviousMRN(models.Model):
+    """
+    A mixin for subrecords with a single field which is the MRN
+    that the subrecord was last created/edited with if that MRN
+    is different from the patients current MRN.
+    """
+    previous_mrn = models.CharField(blank=True, null=True, max_length=256)
+
+    class Meta:
+        abstract = True
+
+
+
+class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
     _is_singleton = True
     _icon = 'fa fa-user'
 
@@ -169,7 +196,7 @@ class LineRemovalReason(lookuplists.LookupList):
     pass
 
 
-class Location(EpisodeSubrecord):
+class Location(PreviousMRN, EpisodeSubrecord):
     _is_singleton = True
     _icon = 'fa fa-map-marker'
 
@@ -198,7 +225,7 @@ class InfectionSource(lookuplists.LookupList):
     pass
 
 
-class Infection(EpisodeSubrecord):
+class Infection(PreviousMRN, EpisodeSubrecord):
     """
     This model is deprecated
     """
@@ -211,7 +238,7 @@ class Infection(EpisodeSubrecord):
         verbose_name = "Infection Related Issues"
 
 
-class Procedure(EpisodeSubrecord):
+class Procedure(PreviousMRN, EpisodeSubrecord):
     _icon = 'fa fa-sitemap'
 
     STAGE_CHOICES = enum(
@@ -253,7 +280,7 @@ class Procedure(EpisodeSubrecord):
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass
 
 
-class PrimaryDiagnosis(EpisodeSubrecord):
+class PrimaryDiagnosis(PreviousMRN, EpisodeSubrecord):
     """
     This is the confirmed primary diagnosisa
     """
@@ -272,7 +299,7 @@ class Consultant(lookuplists.LookupList):
     pass
 
 
-class Diagnosis(omodels.Diagnosis):
+class Diagnosis(PreviousMRN, omodels.Diagnosis):
     category = models.CharField(max_length=256, blank=True, null=True)
 
     PRIMARY = "primary"
@@ -288,7 +315,7 @@ class Drug_delivered(lookuplists.LookupList):
         verbose_name_plural = "Drugs delivered"
 
 
-class Antimicrobial(EpisodeSubrecord):
+class Antimicrobial(PreviousMRN, EpisodeSubrecord):
     _sort = 'start_date'
     _icon = 'fa fa-flask'
     _modal = 'lg'
@@ -336,7 +363,7 @@ class LiverFunction(lookuplists.LookupList):
     pass
 
 
-class MicrobiologyInput(EpisodeSubrecord):
+class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
     _sort = 'when'
     _icon = 'fa fa-comments'
     _modal = 'lg'
@@ -425,7 +452,7 @@ def update_chronic_antifungal_reason_for_interaction(
         )
 
 
-class Line(EpisodeSubrecord):
+class Line(PreviousMRN, EpisodeSubrecord):
     _sort = 'insertion_datetime'
     _icon = 'fa fa-bolt'
 
@@ -452,7 +479,7 @@ class ImagingTypes(lookuplists.LookupList):
     pass
 
 
-class Imaging(EpisodeSubrecord):
+class Imaging(PreviousMRN, EpisodeSubrecord):
     _icon = 'fa fa-eye'
 
     date         = models.DateField(blank=True, null=True)
@@ -462,7 +489,7 @@ class Imaging(EpisodeSubrecord):
     details      = models.TextField(blank=True, null=True)
 
 
-class PositiveBloodCultureHistory(PatientSubrecord):
+class PositiveBloodCultureHistory(PreviousMRN, PatientSubrecord):
     when = models.DateTimeField(default=timezone.now)
 
     @classmethod
@@ -475,7 +502,7 @@ class ReferralReason(lookuplists.LookupList):
     pass
 
 
-class ReferralRoute(omodels.EpisodeSubrecord):
+class ReferralRoute(PreviousMRN, omodels.EpisodeSubrecord):
     _icon = 'fa fa-level-up'
     _is_singleton = True
 
@@ -491,23 +518,23 @@ class ReferralRoute(omodels.EpisodeSubrecord):
         verbose_name = "Referral Route"
 
 
-class SymptomComplex(omodels.SymptomComplex):
+class SymptomComplex(PreviousMRN, omodels.SymptomComplex):
     class Meta:
         verbose_name = "Presenting Symptoms"
 
 
-class PastMedicalHistory(omodels.PastMedicalHistory):
+class PastMedicalHistory(PreviousMRN, omodels.PastMedicalHistory):
     pass
 
 
-class GP(omodels.PatientSubrecord):
+class GP(PreviousMRN, omodels.PatientSubrecord):
     name = models.CharField(
         max_length=256
     )
     contact_details = models.TextField()
 
 
-class BloodCultureSet(omodels.PatientSubrecord):
+class BloodCultureSet(PreviousMRN, omodels.PatientSubrecord):
     _icon = "fa fa-crosshairs"
 
     date_ordered = models.DateField(blank=True, null=True)
@@ -564,7 +591,7 @@ class PatientRiskFactor(lookuplists.LookupList):
     pass
 
 
-class RiskFactor(omodels.PatientSubrecord):
+class RiskFactor(PreviousMRN, omodels.PatientSubrecord):
     _icon = 'fa fa-exclamation-triangle'
 
     risk_factor = ForeignKeyOrFreeText(PatientRiskFactor)
@@ -676,7 +703,7 @@ class Vasopressor(lookuplists.LookupList):
     pass
 
 
-class ICURound(EpisodeSubrecord):
+class ICURound(PreviousMRN, EpisodeSubrecord):
     NIV       = 'NIV'
     INTUBATED = "Intubated"
 
@@ -769,7 +796,7 @@ class MicroInputICURoundRelation(models.Model):
         self.delete()
 
 
-class InfectionServiceNote(EpisodeSubrecord):
+class InfectionServiceNote(PreviousMRN, EpisodeSubrecord):
     _is_singleton = True
     _icon = 'fa fa-sticky-note'
 
