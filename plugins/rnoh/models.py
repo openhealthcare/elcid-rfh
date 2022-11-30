@@ -12,7 +12,7 @@ class RNOHConsultants(lookuplists.LookupList):
     pass
 
 
-class RNOHDemographics(PatientSubrecord, OriginalMRN):
+class RNOHDemographics(OriginalMRN, PatientSubrecord):
     _is_singleton = True
     _icon         = 'fa fa-user'
 
@@ -22,7 +22,7 @@ class RNOHDemographics(PatientSubrecord, OriginalMRN):
         verbose_name = 'RNOH Demographics'
 
 
-class RNOHTeams(PatientSubrecord, OriginalMRN):
+class RNOHTeams(OriginalMRN, PatientSubrecord):
     _is_singleton = True
     _icon         = 'fa fa-users'
 
@@ -41,7 +41,7 @@ class RNOHTeams(PatientSubrecord, OriginalMRN):
         verbose_name = "RNOH Teams"
 
 
-class OPATEpisodes(EpisodeSubrecord, OriginalMRN):
+class OPATEpisodes(OriginalMRN, EpisodeSubrecord):
     _icon = 'fa fa-pencil-square'
 
     OUTCOME_CHOICES = enum(
@@ -77,7 +77,7 @@ class OPATEpisodes(EpisodeSubrecord, OriginalMRN):
 
 
 
-class RNOHMicrobiology(EpisodeSubrecord, OriginalMRN):
+class RNOHMicrobiology(OriginalMRN, EpisodeSubrecord):
 
     _icon = "fa fa-crosshairs"
 
@@ -152,7 +152,7 @@ class RNOHMicrobiology(EpisodeSubrecord, OriginalMRN):
         verbose_name = 'Microbiology'
 
 
-class RNOHActions(EpisodeSubrecord, OriginalMRN):
+class RNOHActions(OriginalMRN, EpisodeSubrecord):
 
     _icon = 'fa fa-list'
 
