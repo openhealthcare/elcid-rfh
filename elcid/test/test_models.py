@@ -100,6 +100,33 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             )
 
 
+class OriginalMRNTestCase(OpalTestCase):
+    def setUp(self):
+        _, self.episode = self.new_patient_and_episode_please()
+        self.procedure = self.episode.procedure_set.create()
+
+    def test_nones_original_mrn_on_update(self):
+        self.procedure.original_mrn = "123"
+        self.procedure.stage = "Stage 1"
+        self.procedure.save()
+        self.procedure.update_from_dict({'stage': 'Stage 2'}, None)
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.original_mrn)
+
+    def test_does_not_error_if_original_mrn_is_none(self):
+        self.procedure.stage = "Stage 1"
+        self.procedure.save()
+        self.procedure.update_from_dict({'stage': 'Stage 2'}, None)
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.original_mrn)
+
+
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 
     def setUp(self):
@@ -254,6 +281,29 @@ class MicrobiologyInputTestCase(OpalTestCase):
             saved_input.microinputicuroundrelation.icu_round.id,
             emodels.ICURound.objects.get().id
         )
+
+    def test_update_from_dict_zeros_original_mrn(self):
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'ICU round',
+            'micro_input_icu_round_relation': {
+                'observation': {'temperature': 1111},
+                'icu_round': {}
+            },
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(
+            episode=self.episode, original_mrn="123"
+        )
+        micro_input.update_from_dict(update_dict, self.user)
+        saved_input = self.episode.microbiologyinput_set.get()
+        self.assertEqual(
+            saved_input.original_mrn, None
+        )
+
 
     def test_update_from_dict_without_when(self):
         update_dict = {

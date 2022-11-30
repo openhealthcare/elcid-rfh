@@ -54,6 +54,22 @@ class OriginalMRN(models.Model):
     class Meta:
         abstract = True
 
+    def update_from_dict(self, *args, **kwargs):
+        """
+        The original MRN is set when a patient is merged and the subrecord
+        exists on the previous patient object.
+
+        When this happens the previous patient is deleted. If the
+        subrecord is subsequently editted then we can remove
+        this value as the user is updating the subrecord
+        in the context of the merged patient.
+        """
+        if self.original_mrn is not None:
+            if 'original_mrn' in args:
+                args.pop('original_mrn')
+            self.original_mrn = None
+        return super().update_from_dict(*args, **kwargs)
+
 
 class Demographics(omodels.Demographics, ExternallySourcedModel):
     _is_singleton = True
