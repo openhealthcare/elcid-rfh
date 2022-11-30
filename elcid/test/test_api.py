@@ -594,6 +594,7 @@ class BloodCultureSetTestCase(OpalTestCase):
             'date_ordered': datetime.date(2019, 5, 8),
             'hcai': False,
             'id': 1,
+            'original_mrn': None,
             'isolates': [{
                 'aerobic_or_anaerobic': 'Aerobic',
                 'date_positive': datetime.date(2019, 5, 9),
@@ -645,6 +646,7 @@ class BloodCultureSetTestCase(OpalTestCase):
             'lab_number': '111',
             'patient_id': 1,
             'source': 'Hickman',
+            'original_mrn': None,
             'updated': None,
             'updated_by_id': None
         }

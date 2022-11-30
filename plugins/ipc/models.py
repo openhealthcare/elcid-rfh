@@ -7,11 +7,12 @@ from django.db import models
 from django.utils import timezone
 from opal.core.fields import enum
 from opal.models import EpisodeSubrecord, PatientSubrecord
+from elcid.models import OriginalMRN
 
 from plugins.labtests import models as lab_test_models
 
 
-class InfectionAlert(EpisodeSubrecord):
+class InfectionAlert(EpisodeSubrecord, OriginalMRN):
     """
     An individual alert concerning a case of an infection managed
     by the Infection Prevention & Control team.
@@ -55,7 +56,7 @@ class InfectionAlert(EpisodeSubrecord):
         return False
 
 
-class IPCStatus(PatientSubrecord):
+class IPCStatus(PatientSubrecord, OriginalMRN):
 
     _is_singleton = True
     _icon = 'fa fa-list-ul'
