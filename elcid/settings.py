@@ -453,6 +453,17 @@ WAREHOUSE_DB = dict(
 
 EXTRACT_ASYNC = False
 OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
+
+OPAL_DEFAULT_SEARCH_FIELDS = [
+    "demographics__hospital_number",
+    "demographics__first_name",
+    "demographics__surname",
+    # Search the normal fields but also
+    # include models that have been merged upstream
+    "patientmerge__mrn"
+]
+
+
 WRITEBACK_ON = True
 
 COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')
