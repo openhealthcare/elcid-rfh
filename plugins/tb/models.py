@@ -487,7 +487,7 @@ class IndexCase(models.PatientSubrecord, OriginalMRN):
     )
 
 
-class Allergies(models.Allergies):
+class Allergies(models.Allergies, OriginalMRN):
     pass
 
 
