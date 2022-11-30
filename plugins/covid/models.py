@@ -102,7 +102,7 @@ class CovidAcuteMedicalDashboardReportingDay(models.Model):
     non_covid         = models.IntegerField()
 
 
-class CovidVaccination(PatientSubrecord, OriginalMRN):
+class CovidVaccination(OriginalMRN, PatientSubrecord):
     """
     Vaccination details for this patient
     """
@@ -116,7 +116,7 @@ class CovidVaccination(PatientSubrecord, OriginalMRN):
     dose_2_date = models.DateField(blank=True, null=True)
 
 
-class CovidAdmission(EpisodeSubrecord, OriginalMRN):
+class CovidAdmission(OriginalMRN, EpisodeSubrecord):
     """
     An admission to hospital and associated details
     """
@@ -231,7 +231,7 @@ class CovidAdmission(EpisodeSubrecord, OriginalMRN):
     other_drugs      = models.TextField(blank=True, null=True)
 
 
-class LungFunctionTest(EpisodeSubrecord, OriginalMRN):
+class LungFunctionTest(OriginalMRN, EpisodeSubrecord):
     """
     Lung function test results for this patient
     """
@@ -243,7 +243,7 @@ class LungFunctionTest(EpisodeSubrecord, OriginalMRN):
     lf_dlco = models.CharField(blank=True, null=True, max_length=244, verbose_name='Lung Function DLCO %')
 
 
-class CovidComorbidities(EpisodeSubrecord, OriginalMRN):
+class CovidComorbidities(OriginalMRN, EpisodeSubrecord):
     """
     (Potentially) Relevant conditions and comorbidities
     """
@@ -285,7 +285,7 @@ class CovidComorbidities(EpisodeSubrecord, OriginalMRN):
     anaemia                                = models.NullBooleanField()
 
 
-class CovidFollowUpCall(EpisodeSubrecord, OriginalMRN):
+class CovidFollowUpCall(OriginalMRN, EpisodeSubrecord):
     """
     A phone call to a patient seeking follow up on their COVID-19 admission
     """
@@ -648,7 +648,7 @@ class CovidFollowUpCall(EpisodeSubrecord, OriginalMRN):
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
 
 
-class CovidFollowUpCallFollowUpCall(EpisodeSubrecord, OriginalMRN):
+class CovidFollowUpCallFollowUpCall(OriginalMRN, EpisodeSubrecord):
     """
     A phone call to a patient seeking follow up on their COVID-19 admission Follow up Call
     """

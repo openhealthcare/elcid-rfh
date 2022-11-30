@@ -12,7 +12,7 @@ from elcid.models import OriginalMRN
 from plugins.labtests import models as lab_test_models
 
 
-class InfectionAlert(EpisodeSubrecord, OriginalMRN):
+class InfectionAlert(OriginalMRN, EpisodeSubrecord):
     """
     An individual alert concerning a case of an infection managed
     by the Infection Prevention & Control team.
@@ -56,7 +56,7 @@ class InfectionAlert(EpisodeSubrecord, OriginalMRN):
         return False
 
 
-class IPCStatus(PatientSubrecord, OriginalMRN):
+class IPCStatus(OriginalMRN, PatientSubrecord):
 
     _is_singleton = True
     _icon = 'fa fa-list-ul'
