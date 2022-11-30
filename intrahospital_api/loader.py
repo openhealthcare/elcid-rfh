@@ -400,6 +400,8 @@ def _load_patient(patient, patient_load):
                 f"Tests updated for patient id {patient.id}"
             )
     except Exception:
+        msg = f"Initial patient load for patient id {patient.id} failed on results"
+        logger.error(f"{msg}\n{traceback.format_exc()}")
         failed.append('results')
 
     loaders = [
@@ -418,12 +420,11 @@ def _load_patient(patient, patient_load):
             with transaction.atomic():
                 loader(patient)
                 logger.info(f'Completed {loader_name} for patient id {patient.id}')
-        except:
+        except Exception as ex:
+            msg = f"Initial patient load for patient id {patient.id} failed on {loader_name}"
+            logger.error(f"{msg}\n{traceback.format_exc()}")
             failed.append(loader_name)
-
     if failed:
-        failed_loaders = ", ".join(failed)
-        logger.error(f"Initial patient load for patient id {patient.id} failed on {failed_loaders}")
         patient_load.failed()
     else:
         patient_load.complete()

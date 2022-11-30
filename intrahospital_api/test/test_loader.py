@@ -119,6 +119,10 @@ class _InitialLoadTestCase(ApiTestCase):
     __name__="load_encounters"
 )
 @mock.patch(
+    "intrahospital_api.loader.load_transfer_history_for_patient",
+    __name__="load_transfer_history_for_patient"
+)
+@mock.patch(
     "intrahospital_api.loader.load_appointments",
     __name__="load_appointments"
 )
@@ -137,21 +141,32 @@ class _LoadPatientTestCase(OpalTestCase):
         logger,
         *args
     ):
-        for i in args:
-            i.side_effect = ValueError('failed')
+        args[0].side_effect = ValueError('failed')
         loader._load_patient(self.patient, self.initial_patient_load)
-        methods_names = ", ".join([
-            "results",
-            "update_patient_information",
-            "load_imaging",
-            "load_encounters",
-            "load_appointments",
-            "load_transfer_history_for_patient",
-        ])
-        logger.error.assert_called_once_with(
-            f"Initial patient load for patient id {self.patient.id} failed on {methods_names}"
+        call_args = logger.error.call_args_list
+        self.assertEqual(len(call_args), 1)
+        err_msg = logger.error.call_args[0][0]
+        self.assertIn(f'Initial patient load for patient id {self.patient.id} failed on load_appointments', err_msg)
+        self.assertIn(f'ValueError: failed', err_msg)
+        self.assertEqual(
+            self.initial_patient_load.state, self.initial_patient_load.FAILURE
         )
-        self.initial_patient_load.state = self.initial_patient_load.FAILURE
+
+    def test_results_fail(
+        self,
+        logger,
+        *args
+    ):
+        args[-1].side_effect = ValueError('failed')
+        loader._load_patient(self.patient, self.initial_patient_load)
+        call_args = logger.error.call_args_list
+        self.assertEqual(len(call_args), 1)
+        err_msg = logger.error.call_args[0][0]
+        self.assertIn(f'Initial patient load for patient id {self.patient.id} failed on results', err_msg)
+        self.assertIn(f'ValueError: failed', err_msg)
+        self.assertEqual(
+            self.initial_patient_load.state, self.initial_patient_load.FAILURE
+        )
 
     def test_success(self, logger, *args):
         loader._load_patient(self.patient, self.initial_patient_load)
@@ -164,6 +179,7 @@ class _LoadPatientTestCase(OpalTestCase):
             f'Completed load_imaging for patient id {self.patient.id}',
             f'Completed load_encounters for patient id {self.patient.id}',
             f'Completed load_appointments for patient id {self.patient.id}',
+            f'Completed load_transfer_history_for_patient for patient id {self.patient.id}',
         ]
         self.assertEqual(
             call_args_list, expected
