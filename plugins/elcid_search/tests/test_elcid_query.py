@@ -21,7 +21,7 @@ class ElcidQueryTestCase(OpalTestCase):
 
 class FuzzySearchIncludesMergedPatientsTestCase(OpalTestCase):
     """
-    When we do a fuzzy search we should also search merged patients
+    When we do a fuzzy search we should also search merged MRNs
     """
     def test_fuzzy_search_includes_merged_patients(self):
         patient, _ = self.new_patient_and_episode_please()

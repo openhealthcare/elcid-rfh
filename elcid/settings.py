@@ -460,7 +460,7 @@ OPAL_DEFAULT_SEARCH_FIELDS = [
     "demographics__first_name",
     "demographics__surname",
     # Search the normal fields but also
-    # include models that have been merged upstream
+    # include mrns that have been merged
     "mergedmrn__mrn"
 ]
 
