@@ -29,10 +29,10 @@ def get_for_lookup_list(model, values):
 
 class MergedMRN(models.Model):
     """
-    Represents each time this patient has had another MRN merged into it.
+    Represents each time this patient has had a duplicate MRN merged.
 
-    i.e. if patient 123 was merged into patient 456
-    patient 456 would have a patient merge object with MRN 123
+    e.g. if MRN 77456 was merged into patient 123
+    Patient 123 would have a patient merge object with MRN 77456
     """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     mrn = models.CharField(max_length=256)
@@ -43,9 +43,12 @@ class MergedMRN(models.Model):
 
 class PreviousMRN(models.Model):
     """
-    A mixin for subrecords with a single field which is the MRN
-    that the subrecord was last created/edited with if that MRN
-    is different from the patients current MRN.
+    A mixin for subrecords to maintain an audit trail for occasions 
+    when an upstream MRN merge occurs and the merged MRN has elCID entries.
+    
+    `previous_mrn` is the MRN in use at the time that this subrecord instance
+    was last created/edited with if that MRN is different from the current 
+    value of `Demographics.hospital_number` attached to this instance.
     """
     previous_mrn = models.CharField(blank=True, null=True, max_length=256)
 
