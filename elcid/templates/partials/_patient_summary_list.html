@@ -15,7 +15,7 @@
             <a class="orange-link" ng-href="[[ result.link ]]">
               [[ result.first_name ]] [[ result.surname ]] [[ result.hospitalNumber ]]
               <span ng-repeat="previousMRN in result.previous_mrns">
-                ([[ previousMRN ]])<span ng-show="!$last">,</span>
+                ([[ previousMRN ]])<span ng-show="!$last">;</span>
               </span>
             </a>
           </h4>
