@@ -238,7 +238,7 @@ class AccessConsiderations(PreviousMRN, models.PatientSubrecord):
     )
 
 
-class PatientConsultation(models.PatientConsultation, PreviousMRN):
+class PatientConsultation(PreviousMRN, models.PatientConsultation):
     plan = fields.TextField(blank=True, default="")
     examination_findings = fields.TextField(
         blank=True, default=""
