@@ -53,6 +53,7 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'main_language': None,
             'nationality': None,
             'religion': None,
+            'previous_mrn': None,
             'created': None,
             'updated': None,
             'created_by_id': None,
