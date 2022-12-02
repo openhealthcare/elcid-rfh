@@ -325,9 +325,9 @@ class ReconcilePatientDemographicsTestCase(ApiTestCase):
 
 
 @mock.patch.object(update_demographics.api, 'patient_masterfile')
-class UpdatePatientDemographicsTestCase(ApiTestCase):
+class UpdatePatientInformationTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
-        super(UpdatePatientDemographicsTestCase, self).setUp(*args, **kwargs)
+        super(UpdatePatientInformationTestCase, self).setUp(*args, **kwargs)
         self.patient, _ = self.new_patient_and_episode_please()
         demographics = self.patient.demographics_set.first()
         demographics.first_name = "Jane"
@@ -345,7 +345,7 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
                 hospital_number="111"
             ),
             gp_details={},
-            master_file_meta={"last_updated": upstream},
+            master_file_meta={"last_updated": upstream, "merge_comments": ""},
             next_of_kin_details={},
             contact_information={}
         )
@@ -382,6 +382,28 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         self.patient.masterfilemeta_set.create(last_updated=updated)
         update_demographics.update_patient_information(self.patient)
         self.assertIsNone(self.patient.demographics_set.first().updated)
+
+    def test_update_merged_mrns(self, patient_masterfile):
+        updated = timezone.make_aware(datetime.datetime(2020, 1, 1))
+        patient_masterfile.return_value = dict(
+            demographics=dict(first_name="Janey"),
+            gp_details={},
+            master_file_meta={
+                "last_updated": updated,
+                "merge_comments": "Merged with MRN 123456 on Dec  2 2015  9:55AM"
+            },
+            next_of_kin_details={},
+            contact_information={}
+        )
+        update_demographics.update_patient_information(self.patient)
+        self.assertTrue(
+            self.patient.mergedmrn_set.filter(
+                mrn="123456",
+                upstream_merge_datetime=timezone.make_aware(
+                    datetime.datetime(2015, 12, 2, 9, 55)
+                )
+            ).exists()
+        )
 
 
 class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):

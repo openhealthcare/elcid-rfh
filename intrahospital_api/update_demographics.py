@@ -233,6 +233,16 @@ def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_infor
     update_if_changed(contact_information, upstream_contact_information)
     update_if_changed(next_of_kin_details, upstream_next_of_kin_details)
 
+    # create any upstream merges if they exist
+    merge_comments = upstream_patient_information[models.MasterFileMeta.get_api_name()]["merge_comments"]
+    if merge_comments:
+        processed_merge_comments = get_mrn_and_date_from_merge_comment(merge_comments)
+        for mrn, merged_dt in processed_merge_comments:
+            patient.mergedmrn_set.get_or_create(
+                mrn=mrn,
+                upstream_merge_datetime=merged_dt
+            )
+
 
 def update_patient_information(patient):
     """
