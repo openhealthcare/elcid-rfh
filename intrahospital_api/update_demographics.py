@@ -2,6 +2,7 @@
 Handles updating demographics pulled in by the loader
 """
 import datetime
+import re
 from plugins.monitoring.models import Fact
 from time import time
 from collections import defaultdict
@@ -356,6 +357,23 @@ def sync_recent_patient_information():
         label=constants.PATIENT_INFORMATION_UPDATE_COUNT,
         value_int=changed_count
     )
+
+
+def get_mrn_and_date_from_merge_comment(merge_comment):
+    """
+    Takes in a merge comment
+    returns a list of tuples of the MRN and the date it was merged
+    """
+    regex = r'Merged with MRN (?P<mrn>\w*\d*) on (?P<month>\w\w\w)\s(?P<day>[\s|\d]\d) (?P<year>\d\d\d\d)\s(?P<HHMM>[\s|\d]\d:\d\d)(?P<AMPM>[A|P]M)'
+    found = list(set(re.findall(regex, merge_comment)))
+    result = []
+    for match in found:
+        mrn = match[0]
+        date_str = f"{match[2]} {match[1]} {match[3]} {match[4]}{match[5]}"
+        merge_dt = datetime.datetime.strptime(date_str, "%d %b %Y %I:%M%p")
+        result.append((mrn, timezone.make_aware(merge_dt),))
+    # return by merged date
+    return sorted(result, key=lambda x: x[1])
 
 
 @transaction.atomic
