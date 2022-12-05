@@ -311,11 +311,16 @@ def load_bed_status():
                     demographics__hospital_number=bed_status.local_patient_identifier
                 ).first()
 
+                if not patient:
+                    patient = Patient.objects.filter(
+                        mergedmrn__mrn=bed_status.local_patient_identifier
+                    ).first()
                 if patient:
                     bed_status.patient = patient
                 else:
                     patient = create_rfh_patient_from_hospital_number(
-                        bed_status.local_patient_identifier, InfectionService)
+                        bed_status.local_patient_identifier, InfectionService
+                    )
                     bed_status.patient = patient
 
             bed_status.save()
