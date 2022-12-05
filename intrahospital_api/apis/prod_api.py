@@ -12,7 +12,7 @@ from pytds.tds import OperationalError
 
 from elcid.models import (
     Demographics, ContactInformation, NextOfKinDetails, GPDetails,
-    MasterFileMeta
+    MasterFileMeta, MergedMRN
 )
 from elcid.utils import timing
 from intrahospital_api.apis import base_api
@@ -811,9 +811,14 @@ class ProdApi(base_api.BaseApi):
         returns all the results for an MRN
         aggregated into labtest: observations([])
         """
-        other_hns = self.query_for_zero_prefixed(hospital_number)
+        zero_prefixed_mrns = self.query_for_zero_prefixed(hospital_number)
         raw_rows = self.raw_data(hospital_number)
-        for other_hn in other_hns:
-            raw_rows.extend(self.raw_data(other_hn))
+        for zero_prefixed_mrn in zero_prefixed_mrns:
+            raw_rows.extend(self.raw_data(zero_prefixed_mrn))
+        merged_mrns = list(set(MergedMRN.objects.filter(
+            patient__demographics__hospital_number=hospital_number
+        ).values_list('mrn', flat=True)))
+        for merged_mrn in merged_mrns:
+            raw_rows.extend(self.raw_data(merged_mrn))
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
