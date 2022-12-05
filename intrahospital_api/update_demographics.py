@@ -2,6 +2,7 @@
 Handles updating demographics pulled in by the loader
 """
 import datetime
+import re
 from plugins.monitoring.models import Fact
 from time import time
 from collections import defaultdict
@@ -193,6 +194,61 @@ def update_if_changed(instance, update_dict):
         instance.external_system = EXTERNAL_SYSTEM
         instance.save()
 
+def get_mrn_and_date_from_merge_comment(merge_comment):
+    """
+    Takes in an merge comment e.g.
+    " Merged with MRN 123456 Oct 18 2014 11:03AM  Merged with MRN 234567 on Oct 22 2013  4:44PM"
+    returns a list of (MRN, datetime_merged,)
+    """
+    regex = r'Merged with MRN (?P<mrn>\w*\d*) on (?P<month>\w\w\w)\s(?P<day>[\s|\d]\d) (?P<year>\d\d\d\d)\s(?P<HHMM>[\s|\d]\d:\d\d)(?P<AMPM>[A|P]M)'
+    found = list(set(re.findall(regex, merge_comment)))
+    result = []
+    for match in found:
+        mrn = match[0]
+        date_str = f"{match[2]} {match[1]} {match[3]} {match[4]}{match[5]}"
+        merge_dt = datetime.datetime.strptime(date_str, "%d %b %Y %I:%M%p")
+        result.append((mrn, timezone.make_aware(merge_dt),))
+    # return by merged date
+    return sorted(result, key=lambda x: x[1])
+
+def upstream_merged_mrn(mrn):
+    """
+    Takes an MRN
+    Returns the MRN its merged into if it exists.
+
+    If there are multiple upstream active MRNs (a rare edge case)
+    return None as we do not know who to merge into.
+
+    Also if there is no merge comment, or no active MRN we can match
+    in the comment return None
+    """
+    query = """
+    SELECT Patient_Number, MERGED, MERGE_COMMENTS, ACTIVE_INACTIVE
+    FROM CRS_Patient_Masterfile
+    WHERE Patient_Number = @mrn
+    AND MERGED = 'Y'
+    AND ACTIVE_INACTIVE = @active_flag
+    AND MERGE_COMMENTS <> ''
+    AND MERGE_COMMENTS is not null
+    """
+    result = api.execute_hospital_query(
+        query, {"mrn": mrn, "active_flag": models.MasterFileMeta.INACTIVE}
+    )
+    if len(result) == 0:
+        return
+    merges = get_mrn_and_date_from_merge_comment(result["MERGE_COMMENTS"])
+
+    active_upstream_merged_mrns_and_dts = []
+
+    for merged_mrn, merged_dt in merges:
+        upstream_active = api.execute_hospital_query(
+            query, {"mrn": merged_mrn, "active_flag": models.MasterFileMeta.ACTIVE}
+        )
+        if len(upstream_active) == 1:
+            active_upstream_merged_mrns_and_dts.append((merged_mrn, merged_dt,))
+    if len(active_upstream_merged_mrns_and_dts) == 1:
+        return active_upstream_merged_mrns_and_dts[0]
+
 
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
     """
@@ -275,6 +331,7 @@ def update_patient_information(patient):
         return
     if not has_master_file_timestamp_changed(patient, upstream_patient_information):
         return
+
     update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information)
     master_file_dict = upstream_patient_information[models.MasterFileMeta.get_api_name()]
     master_file_metas = patient.masterfilemeta_set.all()

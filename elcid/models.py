@@ -43,11 +43,11 @@ class MergedMRN(models.Model):
 
 class PreviousMRN(models.Model):
     """
-    A mixin for subrecords to maintain an audit trail for occasions 
+    A mixin for subrecords to maintain an audit trail for occasions
     when an upstream MRN merge occurs and the merged MRN has elCID entries.
-    
+
     `previous_mrn` is the MRN in use at the time that this subrecord instance
-    was last created/edited with if that MRN is different from the current 
+    was last created/edited with if that MRN is different from the current
     value of `Demographics.hospital_number` attached to this instance.
     """
     previous_mrn = models.CharField(blank=True, null=True, max_length=256)
@@ -168,6 +168,11 @@ class MasterFileMeta(models.Model):
     """
     Meta data about the Patient_Masterfile upstream table
     """
+
+    # active_inactive is ACTIVE or INACTIVE
+    INACTIVE = "INACTIVE"
+    ACTIVE = "ACTIVE"
+
     patient = models.ForeignKey(omodels.Patient, on_delete=models.CASCADE)
     insert_date = models.DateTimeField(blank=True, null=True)
     last_updated = models.DateTimeField(blank=True, null=True)
