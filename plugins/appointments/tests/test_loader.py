@@ -20,7 +20,7 @@ class LoadAppointmentTestCase(OpalTestCase):
         )
         self.patient = p
 
-    def test_load_apppointment(self):
+    def test_load_appointment(self):
         now = datetime.datetime.now()
         appointment_data = {
             'vPatient_Number'           : '2345',
@@ -34,15 +34,12 @@ class LoadAppointmentTestCase(OpalTestCase):
 
         with mock.patch.object(loader, 'ProdAPI') as mock_api:
             mock_api.return_value.execute_hospital_query.return_value = [appointment_data]
-
             loader.load_appointments(self.patient)
-
-
         self.assertEqual('CONFIRMED', self.patient.appointments.get().status_code)
 
 
     @mock.patch('plugins.appointments.loader.get_changed_appointment_fields')
-    def test_load_apppointment_some_exist(self, get_changed_appointment_fields):
+    def test_load_appointment_some_exist(self, get_changed_appointment_fields):
         now = datetime.datetime.now()
         then = now - datetime.timedelta(days=2)
 
