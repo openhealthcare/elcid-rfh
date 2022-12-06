@@ -218,7 +218,7 @@ def update_appointments_from_query_result(upstream_rows):
 
 def load_appointments(patient):
     """
-    Load any upstream appointment data we may not have for PATIENT
+    Load any upstream appointment data for PATIENT
     """
     api = ProdAPI()
     demographic = patient.demographics()
@@ -226,4 +226,9 @@ def load_appointments(patient):
         Q_GET_ALL_PATIENT_APPOINTMENTS,
         params={'mrn': demographic.hospital_number}
     )
+    for merged_mrn_obj in patient.mergedmrn_set.all():
+        appointments.extend(api.execute_hospital_query(
+            Q_GET_ALL_PATIENT_APPOINTMENTS,
+            params={'mrn': merged_mrn_obj.mrn}
+        ))
     update_appointments_from_query_result(appointments)
