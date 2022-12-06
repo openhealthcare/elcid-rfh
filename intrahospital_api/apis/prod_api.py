@@ -681,7 +681,6 @@ class ProdApi(base_api.BaseApi):
                     row["Patient_Number"] = hn
         return PathologyRow(rows[0]).get_demographics_dict()
 
-    @timing
     def raw_data(self, hospital_number, lab_number=None, test_type=None):
         if lab_number:
             return self.execute_trust_query(
@@ -812,14 +811,15 @@ class ProdApi(base_api.BaseApi):
         returns all the results for an MRN
         aggregated into labtest: observations([])
         """
-        zero_prefixed_mrns = self.query_for_zero_prefixed(hospital_number)
-        raw_rows = self.raw_data(hospital_number)
-        for zero_prefixed_mrn in zero_prefixed_mrns:
-            raw_rows.extend(self.raw_data(zero_prefixed_mrn))
+        raw_rows = []
         merged_mrns = list(set(MergedMRN.objects.filter(
             patient__demographics__hospital_number=hospital_number
         ).values_list('mrn', flat=True)))
-        for merged_mrn in merged_mrns:
-            raw_rows.extend(self.raw_data(merged_mrn))
+        all_mrns = [hospital_number] + merged_mrns
+        for mrn in all_mrns:
+            raw_rows.extend(self.raw_data(mrn))
+            zero_prefixed_mrns = self.query_for_zero_prefixed(mrn)
+            for zero_prefixed_mrn in zero_prefixed_mrns:
+                raw_rows.extend(self.raw_data(zero_prefixed_mrn))
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
