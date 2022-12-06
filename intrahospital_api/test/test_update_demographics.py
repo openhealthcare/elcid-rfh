@@ -382,3 +382,91 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         self.patient.masterfilemeta_set.create(last_updated=updated)
         update_demographics.update_patient_information(self.patient)
         self.assertIsNone(self.patient.demographics_set.first().updated)
+
+
+class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
+    def test_no_result(self):
+        test_comment = "GP Practice Reset for Dr Madeup GP Practice Reset for Dr Madeup"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 0)
+
+    def test_single_result(self):
+        test_comment = "Merged with MRN 123456 on Dec  2 2015  9:55AM"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 1)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2015, 12, 2, 9, 55)
+            )
+        )
+
+    def test_messy_result(self):
+        """
+        Sometimes the comment is prefixed with MIGRATED Data
+        """
+        test_comment = "MIGRATED DATA Merged with MRN 123456 on Mar  2 2022  2:56PM"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 1)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2022, 3, 2, 14, 56)
+            )
+        )
+
+    def test_ignores_other_information(self):
+        """
+        Sometimes the comment has other data
+        """
+        test_comment = " ".join(
+            [
+                "MIGRATED DATA - GP PRACTICE ADDED",
+                "Merged with MRN 123456 on Mar  2 2022  2:57PM"
+            ]
+        )
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 1)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2022, 3, 2, 14, 57)
+            )
+        )
+
+    def test_multiple_results(self):
+        test_comment = "Merged with MRN 123456 on Dec  5 2016  3:49PM Merged with MRN 789 on Mar  2 2022  2:56PM"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 2)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2016, 12, 5, 15, 49)
+            )
+        )
+        mrn, merge_dt = result[1]
+        self.assertEqual(mrn, "789")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2022, 3, 2, 14, 56)
+            )
+        )

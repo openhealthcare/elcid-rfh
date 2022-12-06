@@ -90,6 +90,7 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
 
     If a patient with this hospital number already exists raise ValueError
     If a hospital number prefixed with zero is passed in raise ValueError
+    If the hospital number has already been merged into another raise ValueError
     """
     if hospital_number.startswith('0'):
         raise ValueError(
@@ -98,6 +99,9 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
 
     if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
         raise ValueError('Patient with this hospital number already exists')
+
+    if emodels.MergedMRN.objects.filter(mrn=hospital_number):
+        raise ValueError('MRN has already been merged into another MRN')
 
     patient = Patient.objects.create()
 

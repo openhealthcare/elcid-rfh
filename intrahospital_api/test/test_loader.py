@@ -705,3 +705,17 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             "Hospital numbers within elCID should never start with a zero"
         ])
         self.assertEqual(str(v.exception), expected)
+
+    def test_errors_if_the_hospital_number_has_already_been_merged(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.mergedmrn_set.create(
+            mrn="111"
+        )
+        with self.assertRaises(ValueError) as v:
+            loader.create_rfh_patient_from_hospital_number(
+                '111', episode_categories.InfectionService
+            )
+        self.assertEqual(
+            str(v.exception),
+            "MRN has already been merged into another MRN"
+        )
