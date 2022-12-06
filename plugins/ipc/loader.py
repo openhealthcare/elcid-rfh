@@ -26,7 +26,11 @@ def load_all_extra_ipc_patients():
             Q_GET_DISTINCT_MRNS_FOR_TEST,
             params={'test_name': test.TEST_NAME}
         )
-        all_tested_mrns.update([r['Patient_Number'] for r in tested_mrns])
+        # elcid does not use zero prefixed MRNs but the lab test
+        # system does so strip off any zeros.
+        all_tested_mrns.update([
+            r['Patient_Number'].lstrip('0') for r in tested_mrns
+        ])
 
     demographics_mrns = list(
         Demographics.objects.values_list('hospital_number', flat=True)
