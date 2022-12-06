@@ -35,6 +35,22 @@ class ModelMethodLoggingTestCase(OpalTestCase):
             result, "some_var"
         )
 
+class GetPatientTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def test_get_existing_patient(self):
+        self.patient.demographics_set.update(hospital_number="123")
+        patient = utils.get_patient('123')
+        self.assertEqual(self.patient, patient)
+
+    def test_get_existing_merged_patient(self):
+        self.patient.demographics_set.update(hospital_number="123")
+        self.patient.mergedmrn_set.create(
+            mrn="234"
+        )
+        patient = utils.get_patient('234')
+        self.assertEqual(self.patient, patient)
 
 class GetOrCreatePatientTestCase(OpalTestCase):
     def setUp(self):
@@ -43,16 +59,6 @@ class GetOrCreatePatientTestCase(OpalTestCase):
     def test_get_existing_patient(self):
         self.patient.demographics_set.update(hospital_number="123")
         patient, created = utils.get_or_create_patient('123')
-        self.assertEqual(self.patient, patient)
-        self.assertFalse(created)
-
-
-    def test_get_existing_merged_patient(self):
-        self.patient.demographics_set.update(hospital_number="123")
-        self.patient.mergedmrn_set.create(
-            mrn="234"
-        )
-        patient, created = utils.get_or_create_patient('234')
         self.assertEqual(self.patient, patient)
         self.assertFalse(created)
 
