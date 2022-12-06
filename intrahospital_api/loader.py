@@ -296,28 +296,31 @@ def _batch_load():
 @transaction.atomic
 def update_patient_from_batch(demographics_set, data_delta):
     upstream_demographics = data_delta["demographics"]
-    patient_demographics_set = demographics_set.filter(
-        hospital_number=upstream_demographics["hospital_number"]
+    mrn = upstream_demographics["hospital_number"]
+    patients = Patient.objects.filter(
+        demographics__hospital_number=mrn
     )
-    if not patient_demographics_set.exists():
+    patients.extend(list(Patient.objects.filter(
+        mergedmrn__mrn=mrn
+    )))
+
+    if not len(patients):
         # this patient is not in our reconcile list,
         # move on, nothing to see here.
         logger.info("unable to find a patient for {}".format(
             upstream_demographics["hospital_number"]
         ))
         return
-
-    patient = patient_demographics_set.first().patient
-
-    logger.info("updating patient results for {}".format(
-        patient.id
-    ))
-    logger.info(json.dumps(data_delta["lab_tests"], indent=2))
-    update_lab_tests.update_tests(
-        patient,
-        data_delta["lab_tests"],
-    )
-    logger.info("batch patient {} update complete".format(patient.id))
+    for patient in patients:
+        logger.info("updating patient results for {}".format(
+            patient.id
+        ))
+        logger.info(json.dumps(data_delta["lab_tests"], indent=2))
+        update_lab_tests.update_tests(
+            patient,
+            data_delta["lab_tests"],
+        )
+        logger.info("batch patient {} update complete".format(patient.id))
 
 
 @timing
