@@ -325,18 +325,9 @@ def update_patient_from_batch(demographics_set, data_delta):
 
 @timing
 def update_from_batch(data_deltas):
-    # only look at patients that have been reconciled
-    demographics_set = emodels.Demographics.objects.filter(
-        external_system=EXTERNAL_SYSTEM
-    )
-
-    # ignore patients that have not had an existing patient load
-    demographics_set = demographics_set.filter(
-        patient__initialpatientload__state=models.InitialPatientLoad.SUCCESS
-    )
     for data_delta in data_deltas:
         logger.info("batch updating with {}".format(data_delta))
-        update_patient_from_batch(demographics_set, data_delta)
+        update_patient_from_batch(data_delta)
 
 
 def async_load_patient(patient_id, patient_load_id):

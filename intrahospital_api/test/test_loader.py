@@ -524,64 +524,6 @@ class _BatchLoadTestCase(ApiTestCase):
         update_from_batch.assert_called_once_with("something")
 
 
-@mock.patch('intrahospital_api.loader.update_patient_from_batch')
-class UpdateFromBatchTestCase(ApiTestCase):
-    def setUp(self, *args, **kwargs):
-        super(UpdateFromBatchTestCase, self).setUp(*args, **kwargs)
-        self.patient, _ = self.new_patient_and_episode_please()
-        self.demographics = self.patient.demographics_set.first()
-        self.demographics.external_system = EXTERNAL_SYSTEM
-        self.demographics.save()
-        self.initial_load = imodels.InitialPatientLoad.objects.create(
-            patient=self.patient,
-            started=timezone.now(),
-            stopped=timezone.now(),
-            state=imodels.InitialPatientLoad.SUCCESS
-        )
-        self.data_delta = dict(some="data")
-        self.data_deltas = [self.data_delta]
-
-    def test_update_from_batch_ignore_non_reconciled(
-        self, update_patient_from_batch
-    ):
-        self.demographics.external_system = "asdfasfd"
-        self.demographics.save()
-        loader.update_from_batch(self.data_deltas)
-        call_args = update_patient_from_batch.call_args
-        self.assertEqual(
-            list(call_args[0][0]), list()
-        )
-        self.assertEqual(
-            call_args[0][1], self.data_delta
-        )
-
-    def test_update_from_batch_ignore_failed_loads(
-        self, update_patient_from_batch
-    ):
-        self.initial_load.state = imodels.InitialPatientLoad.FAILURE
-        self.initial_load.save()
-        loader.update_from_batch(self.data_deltas)
-        call_args = update_patient_from_batch.call_args
-        self.assertEqual(
-            list(call_args[0][0]), list()
-        )
-        self.assertEqual(
-            call_args[0][1], self.data_delta
-        )
-
-    def test_update_from_batch_pass_through(
-        self, update_patient_from_batch
-    ):
-        loader.update_from_batch(self.data_deltas)
-        call_args = update_patient_from_batch.call_args
-        self.assertEqual(
-            list(call_args[0][0]), [self.demographics]
-        )
-        self.assertEqual(
-            call_args[0][1], self.data_delta
-        )
-
-
 class UpdatePatientFromBatchTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(UpdatePatientFromBatchTestCase, self).setUp(*args, **kwargs)
