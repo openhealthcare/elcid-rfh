@@ -72,3 +72,20 @@ class LoadAppointmentTestCase(OpalTestCase):
 
 
         self.assertEqual('CONFIRMED', self.patient.appointments.get().status_code)
+
+    def test_update_appointments_from_query_result(self):
+        row = {i: None for i in Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS.keys()}
+        row["vPatient_Number"] = "123"
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number="123")
+        loader.update_appointments_from_query_result([row])
+        self.assertTrue(patient.appointments.exists())
+
+    def test_update_merged_patient_from_query_results(self):
+        row = {i: None for i in Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS.keys()}
+        row["vPatient_Number"] = "123"
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number="456")
+        patient.mergedmrn_set.create(mrn="123")
+        loader.update_appointments_from_query_result([row])
+        self.assertTrue(patient.appointments.exists())
