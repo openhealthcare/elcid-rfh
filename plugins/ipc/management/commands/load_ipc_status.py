@@ -93,7 +93,14 @@ class Command(BaseCommand):
 
         for row in upstream_result:
             if row['Patient_Number'] in inpatients:
-                patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
+                patient = Patient.objects.filter(
+                    demographics__hospital_number=row['Patient_Number']
+                ).first()
+
+                if not patient:
+                    patient = Patient.objects.filter(
+                        mergedmrn__mrn=row['Patient_Number']
+                    ).get()
 
                 if patient.episode_set.filter(category_name='IPC').count() == 0:
                     patient.create_episode(category_name='IPC')
