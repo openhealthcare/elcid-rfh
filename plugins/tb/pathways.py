@@ -73,6 +73,19 @@ class NationalityAndLanguage(pathways.PagePathway):
             client_demographics = data.pop("demographics")
             our_demographics.birth_place = client_demographics[0]["birth_place"]
             our_demographics.save()
-        return super().save(
+
+            # We don't necessarily call update_from_dict on
+            # pathway subrecords, only if they are editted,
+            # so force removal of previous_mrn if we hit
+            # the save method.
+            patient.communinicationconsiderations_set.update(
+                previous_mrn=None
+            )
+            patient.nationality_set.update(
+                previous_mrn=None
+            )
+
+        result = super().save(
             data, user=user, episode=episode, patient=patient
         )
+        return result

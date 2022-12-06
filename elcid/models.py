@@ -43,11 +43,11 @@ class MergedMRN(models.Model):
 
 class PreviousMRN(models.Model):
     """
-    A mixin for subrecords to maintain an audit trail for occasions 
+    A mixin for subrecords to maintain an audit trail for occasions
     when an upstream MRN merge occurs and the merged MRN has elCID entries.
-    
+
     `previous_mrn` is the MRN in use at the time that this subrecord instance
-    was last created/edited with if that MRN is different from the current 
+    was last created/edited with if that MRN is different from the current
     value of `Demographics.hospital_number` attached to this instance.
     """
     previous_mrn = models.CharField(blank=True, null=True, max_length=256)
@@ -65,10 +65,9 @@ class PreviousMRN(models.Model):
         this value as the user is updating the subrecord
         in the context of the merged patient.
         """
-        if self.previous_mrn is not None:
-            if 'previous_mrn' in data:
-                data.pop('previous_mrn')
-            self.previous_mrn = None
+        if 'previous_mrn' in data:
+            data.pop('previous_mrn')
+        self.previous_mrn = None
         return super().update_from_dict(data, *args, **kwargs)
 
 

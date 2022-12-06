@@ -133,6 +133,19 @@ class PreviousMRNTestCase(OpalTestCase):
         )
         self.assertIsNone(procedure.previous_mrn)
 
+    def test_never_updates_from_the_front_end(self):
+        self.procedure.previous_mrn = None
+        self.procedure.save()
+        self.procedure.update_from_dict(
+            {'stage': 'Stage 2', 'previous_mrn': "234"},
+            None
+        )
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.previous_mrn)
+
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 
