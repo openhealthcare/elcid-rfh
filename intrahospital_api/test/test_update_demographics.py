@@ -455,18 +455,18 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
         )
         self.assertEqual(len(result), 2)
         mrn, merge_dt = result[0]
-        self.assertEqual(mrn, "123456")
-        self.assertEqual(
-            merge_dt,
-            timezone.make_aware(
-                datetime.datetime(2016, 12, 5, 15, 49)
-            )
-        )
-        mrn, merge_dt = result[1]
         self.assertEqual(mrn, "789")
         self.assertEqual(
             merge_dt,
             timezone.make_aware(
                 datetime.datetime(2022, 3, 2, 14, 56)
+            )
+        )
+        mrn, merge_dt = result[1]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2016, 12, 5, 15, 49)
             )
         )

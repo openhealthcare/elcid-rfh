@@ -209,7 +209,7 @@ def get_mrn_and_date_from_merge_comment(merge_comment):
         merge_dt = datetime.datetime.strptime(date_str, "%d %b %Y %I:%M%p")
         result.append((mrn, timezone.make_aware(merge_dt),))
     # return by merged date
-    return sorted(result, key=lambda x: x[1])
+    return sorted(result, key=lambda x: x[1], reverse=True)
 
 def upstream_merged_mrn(mrn):
     """
