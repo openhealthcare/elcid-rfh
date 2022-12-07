@@ -808,18 +808,27 @@ class ProdApi(base_api.BaseApi):
     @timing
     def results_for_hospital_number(self, hospital_number):
         """
-        returns all the results for an MRN
+        Returns all the results for an MRN
         aggregated into labtest: observations([])
+
+        Also checks for alternative MRNs to fetch, due to
+        upstream 0 prefixing or Cerner merges.
         """
-        raw_rows = []
         merged_mrns = list(set(MergedMRN.objects.filter(
             patient__demographics__hospital_number=hospital_number
         ).values_list('mrn', flat=True)))
+
         all_mrns = [hospital_number] + merged_mrns
+        zero_prexixed_mrns = []
+
         for mrn in all_mrns:
-            raw_rows.extend(self.raw_data(mrn))
-            zero_prefixed_mrns = self.query_for_zero_prefixed(mrn)
-            for zero_prefixed_mrn in zero_prefixed_mrns:
-                raw_rows.extend(self.raw_data(zero_prefixed_mrn))
+            zero_prexixed_mrns += self.query_for_zero_prefixed(mrn)
+
+        all_mrns = all_mrns + zero_prexixed_mrns
+        raw_rows = []
+
+        for mrn in all_mrns:
+            raw_rows += self.raw_data(mrn)
+
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)
