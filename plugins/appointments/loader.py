@@ -137,15 +137,7 @@ def update_appointments_from_query_result(upstream_rows):
     to_create = []
     to_delete = []
     hospital_numbers = {row["vPatient_Number"] for row in upstream_rows}
-
-    demographics = Demographics.objects.filter(
-        hospital_number__in=hospital_numbers
-    ).select_related('patient')
-    hospital_number_to_patient = defaultdict(list)
-    for demo in demographics:
-        hospital_number_to_patient[demo.hospital_number].append(
-            demo.patient
-        )
+    hospital_number_to_patient = utils.get_patients_from_mrns(hospital_numbers)
     cleaned_rows = list(appointment_id_to_upstream_row.values())
     for row in cleaned_rows:
         hn = row["vPatient_Number"]
