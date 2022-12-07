@@ -25,47 +25,6 @@ class ConditionalHelpStep(HelpTextStep):
         super(ConditionalHelpStep, self).__init__(*args, **kwargs)
 
 
-class ActiveTBTreatmentPathway(pathways.PagePathway):
-    display_name = "Active TB Treatment"
-    slug = "activate_tb_treatment"
-    template = "pathway/consultation_base.html"
-
-    steps = [
-        HelpTextStep(
-            template="pathway/steps/demographics_panel.html",
-            icon="fa fa-user",
-            display_name="Demographics",
-            model=models.Demographics
-        ),
-        HelpTextStep(
-            model=models.Diagnosis,
-            template="pathway/steps/tb_diagnosis.html",
-            step_controller="TBDiagnosis",
-            help_text_template="pathway/steps/help_text/diagnosis.html"
-        ),
-
-        HelpTextStep(
-            display_name="Treatment Plan",
-            icon="fa fa-medkit",
-            # base_template="pathway/steps/treatment_plan_base.html",
-            # we use the base template instead
-            template="pathway/steps/tb_treatment.html",
-            step_controller="TBTreatmentCtrl",
-            help_text_template="pathway/steps/help_text/tb_treatment.html",
-        ),
-    ]
-
-    @transaction.atomic
-    def save(self, data, user=None, **kwargs):
-        stage = data.pop('stage')[0]
-        patient, episode = super(ActiveTBTreatmentPathway, self).save(
-            data, user=user, **kwargs
-        )
-        episode.set_stage(stage, user, data)
-        episode.save()
-        return patient, episode
-
-
 class SymptomsPathway(IgnoreDemographicsMixin, pathways.PagePathway):
     """
     This pathway is used as a modal to edit symptoms for TB episodes.
@@ -114,6 +73,19 @@ class NationalityAndLanguage(pathways.PagePathway):
             client_demographics = data.pop("demographics")
             our_demographics.birth_place = client_demographics[0]["birth_place"]
             our_demographics.save()
-        return super().save(
+
+            # We don't necessarily call update_from_dict on
+            # pathway subrecords, only if they are editted,
+            # so force removal of previous_mrn if we hit
+            # the save method.
+            patient.communinicationconsiderations_set.update(
+                previous_mrn=None
+            )
+            patient.nationality_set.update(
+                previous_mrn=None
+            )
+
+        result = super().save(
             data, user=user, episode=episode, patient=patient
         )
+        return result

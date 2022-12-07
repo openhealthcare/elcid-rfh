@@ -3,6 +3,9 @@ Utils for the elCID project
 """
 import errno
 from functools import wraps
+from django.db.models import Q
+from opal.models import Patient
+from elcid import models
 import logging
 import os
 import re
@@ -77,3 +80,34 @@ def natural_keys(text):
     (See Toothy's implementation in the comments)
     '''
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+
+
+def get_patients_from_mrns(mrns):
+    """
+    Takes in a list of MRNs.
+    Strips leading zeros.
+    Looks up the MRNs vs Demographics and MergedMRNs.
+    Returns a map of {mrn: patient}
+    """
+    cleaned_mrn_to_mrn = {
+        i.strip().lstrip('0'): i for i in mrns if i.strip().lstrip('0')
+    }
+    result = {}
+    demos = models.Demographics.objects.filter(
+        hospital_number__in=cleaned_mrn_to_mrn.keys()
+    ).select_related('patient')
+
+    for demo in demos:
+        upstream_mrn = cleaned_mrn_to_mrn[demo.hospital_number]
+        result[upstream_mrn] = demo.patient
+
+    merged_mrns = models.MergedMRN.objects.filter(
+        mrn__in=cleaned_mrn_to_mrn.keys()
+    ).select_related('patient')
+    for merged_mrn in merged_mrns:
+        upstream_mrn = cleaned_mrn_to_mrn[merged_mrn.mrn]
+        if upstream_mrn not in result:
+            # It should never be the case that a merged MRN
+            # but just in case
+            result[upstream_mrn] = merged_mrn.patient
+    return result
