@@ -81,30 +81,20 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-def get_patient(mrn):
+def get_or_create_patient(mrn, episode_category, run_async=None):
+    from intrahospital_api import loader
     patient = opal_models.Patient.objects.filter(
         demographics__hospital_number=mrn
     ).first()
-    if patient:
-        return patient
-    return opal_models.Patient.objects.filter(
+    if not patient:
+        patient = opal_models.Patient.objects.filter(
         mergedmrn__mrn=mrn
     ).first()
 
-
-def get_or_create_patient(mrn, run_async=None):
-    from intrahospital_api import loader
-    from intrahospital_api import update_demographics
-    patient = get_patient(mrn)
     if patient:
+        patient.episode_set.get_or_create(
+            category_name=episode_category.display_name
+        )
         return (patient, False)
-    merged_mrn = update_demographics.upstream_merged_mrn(mrn)
-    if merged_mrn:
-        patient = loader.create_rfh_patient_from_hospital_number(
-            merged_mrn, run_async=run_async
-        )
-    else:
-        patient = loader.create_rfh_patient_from_hospital_number(
-            mrn, run_async=run_async
-        )
+    patient = loader.create_rfh_patient_from_hospital_number(mrn, episode_category, run_async=run_async)
     return patient, True

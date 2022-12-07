@@ -470,3 +470,55 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
                 datetime.datetime(2016, 12, 5, 15, 49)
             )
         )
+
+@mock.patch('intrahospital_api.update_demographics.api')
+class GetRelatedRowsForMRNTestCase(OpalTestCase):
+    """
+    Tests a real world case (with dates and MRNs changed)
+    to make sure we crawl the tree of Merged MRNs correctly.
+    """
+    MAPPING = {
+        "123": {
+            "PATIENT_NUMBER": "123",
+            "MERGE_COMMENTS": " ".join([
+                "Merged with MRN 234 on Oct 21 2014  4:44PM",
+            ]),
+            "ACTIVE_INACTIVE": "INACTIVE"
+        },
+        "234": {
+            "PATIENT_NUMBER": "234",
+            "MERGE_COMMENTS": " ".join([
+                "Merged with MRN 123 Oct 17 2014 11:03AM",
+                "Merged with MRN 123 on Oct 21 2014  4:44PM",
+                "Merged with MRN 456 on Apr 14 2018  1:40PM"
+            ]),
+            "ACTIVE_INACTIVE": "INACTIVE"
+        },
+        "456": {
+            "PATIENT_NUMBER": "456",
+            "MERGE_COMMENTS": " ".join([
+                "Merged with MRN 234 on Apr 14 2018  1:40PM",
+            ]),
+            "ACTIVE_INACTIVE": "ACTIVE"
+        }
+    }
+
+    def test_crawls_nested_rows_from_branch(self, api):
+        api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
+        result = update_demographics.get_related_rows_for_mrn("123")
+        self.assertEqual(
+            sorted(list(self.MAPPING.values()), key=lambda x: x["PATIENT_NUMBER"]),
+            sorted(result, key=lambda x: x["PATIENT_NUMBER"]),
+        )
+
+    def test_crawls_nested_rows_from_trunk(self, api):
+        api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
+        result = update_demographics.get_related_rows_for_mrn("234")
+        self.assertEqual(
+            sorted(list(self.MAPPING.values()), key=lambda x: x["PATIENT_NUMBER"]),
+            sorted(result, key=lambda x: x["PATIENT_NUMBER"]),
+        )
+
+    def test_no_results(self, api):
+        api.execute_hospital_query.return_value = []
+        self.assertIsNone(update_demographics.get_related_rows_for_mrn("234"))

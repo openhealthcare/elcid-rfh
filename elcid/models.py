@@ -34,6 +34,9 @@ class MergedMRN(models.Model):
     e.g. if MRN 77456 was merged into patient 123
     Patient 123 would have a patient merge object with MRN 77456
     """
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     mrn = models.CharField(max_length=256)
     merge_comments = models.TextField(blank=True, null=True, default="")

@@ -682,8 +682,14 @@ class SynchPatientTestCase(ApiTestCase):
         )
 
 
+@mock.patch('intrahospital_api.loader.update_demographics.get_related_rows_for_mrn')
 class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
-    def test_creates_patient_and_episode(self):
+    def test_creates_patient_and_episode(self, get_related_rows_for_mrn):
+        """
+        A patient has no merged MRNs. Create the patient with
+        the episode category and return it.
+        """
+        get_related_rows_for_mrn.return_value = None
         patient = loader.create_rfh_patient_from_hospital_number(
             '111', episode_categories.InfectionService
         )
@@ -695,7 +701,10 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             episode_categories.InfectionService.display_name
         )
 
-    def test_errors_if_the_hospital_number_starts_with_a_zero(self):
+    def test_errors_if_the_hospital_number_starts_with_a_zero(self, get_related_rows_for_mrn):
+        """
+        The MRN starts with a zero, raise a ValueError
+        """
         with self.assertRaises(ValueError) as v:
             loader.create_rfh_patient_from_hospital_number(
                 '0111', episode_categories.InfectionService
@@ -706,7 +715,10 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
         ])
         self.assertEqual(str(v.exception), expected)
 
-    def test_errors_if_the_hospital_number_has_already_been_merged(self):
+    def test_errors_if_the_hospital_number_has_already_been_merged(self, get_related_rows_for_mrn):
+        """
+        The MRN has already been merged, raise a Value Error
+        """
         patient, _ = self.new_patient_and_episode_please()
         patient.mergedmrn_set.create(
             mrn="111"
@@ -718,4 +730,123 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
         self.assertEqual(
             str(v.exception),
             "MRN has already been merged into another MRN"
+        )
+
+    def test_create_rfh_patient_from_hospital_number(self, get_related_rows_for_mrn):
+        """
+        The MRN passed in is inactive and has
+        an associated active MRN. Create a patient with the
+        active MRN and the associated mergedMRNs for the
+        MRN passed in.
+        """
+        RETURN_VALUE = [
+            {
+                "PATIENT_NUMBER": "123",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 234 on Oct 21 2014  4:44PM",
+                ]),
+                "ACTIVE_INACTIVE": "INACTIVE"
+            },
+            {
+                "PATIENT_NUMBER": "234",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 123 Oct 17 2014 11:03AM",
+                    "Merged with MRN 123 on Oct 21 2014  4:44PM",
+                    "Merged with MRN 456 on Apr 14 2018  1:40PM"
+                ]),
+                "ACTIVE_INACTIVE": "INACTIVE",
+            },
+            {
+                "PATIENT_NUMBER": "456",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 234 on Apr 14 2018  1:40PM",
+                ]),
+                "ACTIVE_INACTIVE": "ACTIVE"
+            }
+        ]
+        get_related_rows_for_mrn.return_value = RETURN_VALUE
+        patient = loader.create_rfh_patient_from_hospital_number(
+            '123', episode_category=episode_categories.InfectionService
+        )
+        self.assertEqual(
+            patient.demographics_set.get().hospital_number, "456"
+        )
+        self.assertEqual(patient.mergedmrn_set.count(), 2)
+
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="123",
+                merge_comments=RETURN_VALUE[0]["MERGE_COMMENTS"],
+                upstream_merge_datetime=timezone.make_aware(
+                    datetime.datetime(2014, 10, 21, 16, 44)
+                )
+            ).exists()
+        )
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="234",
+                merge_comments=RETURN_VALUE[1]["MERGE_COMMENTS"],
+                upstream_merge_datetime=timezone.make_aware(
+                    datetime.datetime(2018, 4, 14, 13, 40)
+                )
+            ).exists()
+        )
+
+    def test_active_mrn_with_inactive_associated_mrns(self, get_related_rows_for_mrn):
+        """
+        The MRN passed in is active and has an associated inactive MRN.
+        Create a patient with the active MRN and the associated mergedMRNs for the
+        other MRNs
+        """
+        RETURN_VALUE = [
+            {
+                "PATIENT_NUMBER": "123",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 234 on Oct 21 2014  4:44PM",
+                ]),
+                "ACTIVE_INACTIVE": "INACTIVE"
+            },
+            {
+                "PATIENT_NUMBER": "234",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 123 Oct 17 2014 11:03AM",
+                    "Merged with MRN 123 on Oct 21 2014  4:44PM",
+                    "Merged with MRN 456 on Apr 14 2018  1:40PM"
+                ]),
+                "ACTIVE_INACTIVE": "INACTIVE",
+            },
+            {
+                "PATIENT_NUMBER": "456",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 234 on Apr 14 2018  1:40PM",
+                ]),
+                "ACTIVE_INACTIVE": "ACTIVE"
+            }
+        ]
+        get_related_rows_for_mrn.return_value = RETURN_VALUE
+        patient = loader.create_rfh_patient_from_hospital_number(
+            '456', episode_category=episode_categories.InfectionService
+        )
+        self.assertEqual(
+            patient.demographics_set.get().hospital_number, "456"
+        )
+        self.assertEqual(patient.mergedmrn_set.count(), 2)
+
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="123",
+                merge_comments=RETURN_VALUE[0]["MERGE_COMMENTS"],
+                upstream_merge_datetime=timezone.make_aware(
+                    datetime.datetime(2014, 10, 21, 16, 44)
+                )
+            ).exists()
+        )
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="234",
+                merge_comments=RETURN_VALUE[1]["MERGE_COMMENTS"],
+                upstream_merge_datetime=timezone.make_aware(
+                    datetime.datetime(2018, 4, 14, 13, 40)
+                )
+            ).exists()
         )

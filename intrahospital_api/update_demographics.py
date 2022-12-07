@@ -194,6 +194,7 @@ def update_if_changed(instance, update_dict):
         instance.external_system = EXTERNAL_SYSTEM
         instance.save()
 
+
 def get_mrn_and_date_from_merge_comment(merge_comment):
     """
     Takes in an merge comment e.g.
@@ -211,43 +212,50 @@ def get_mrn_and_date_from_merge_comment(merge_comment):
     # return by merged date
     return sorted(result, key=lambda x: x[1], reverse=True)
 
-def upstream_merged_mrn(mrn):
+
+def get_related_rows_for_mrn(mrn):
     """
-    Takes an MRN
-    Returns the MRN its merged into if it exists.
+    Returns all merged MRNs related to the MRN including the row
+    for the MRN from the CRS_Patient_Masterfile.
 
-    If there are multiple upstream active MRNs (a rare edge case)
-    return None as we do not know who to merge into.
+    The merged comments can be nested for for MRN x
+    we can have MERGE_COMMENT "Merged with y on 21 Jan"
+    Then for y we can have the merge comment "Merged with z on 30 Mar"
+    This will return the rows for x, y and z
 
-    Also if there is no merge comment, or no active MRN we can match
-    in the comment return None
+    If there are no related rows, ie the patient
+    is not merged, return None.
     """
     query = """
-    SELECT Patient_Number, MERGED, MERGE_COMMENTS, ACTIVE_INACTIVE
+    SELECT *
     FROM CRS_Patient_Masterfile
     WHERE Patient_Number = @mrn
     AND MERGED = 'Y'
-    AND ACTIVE_INACTIVE = @active_flag
     AND MERGE_COMMENTS <> ''
     AND MERGE_COMMENTS is not null
     """
-    result = api.execute_hospital_query(
-        query, {"mrn": mrn, "active_flag": models.MasterFileMeta.INACTIVE}
+    query_result = api.execute_hospital_query(
+        query, {"mrn": mrn}
     )
-    if len(result) == 0:
-        return
-    merges = get_mrn_and_date_from_merge_comment(result["MERGE_COMMENTS"])
-
-    active_upstream_merged_mrns_and_dts = []
-
-    for merged_mrn, merged_dt in merges:
-        upstream_active = api.execute_hospital_query(
-            query, {"mrn": merged_mrn, "active_flag": models.MasterFileMeta.ACTIVE}
+    if not query_result:
+        return None
+    mrn_to_row = {mrn: query_result}
+    related_mrns = [i[0] for i in get_mrn_and_date_from_merge_comment(query_result["MERGE_COMMENTS"])]
+    for related_mrn in related_mrns:
+        related_result = api.execute_hospital_query(
+            query, {"mrn": related_mrn}
         )
-        if len(upstream_active) == 1:
-            active_upstream_merged_mrns_and_dts.append((merged_mrn, merged_dt,))
-    if len(active_upstream_merged_mrns_and_dts) == 1:
-        return active_upstream_merged_mrns_and_dts[0]
+        mrn_to_row[related_mrn] = related_result
+        related_related_mrns = [
+            i[0] for i in get_mrn_and_date_from_merge_comment(related_result["MERGE_COMMENTS"])
+        ]
+        for related_related_mrn in related_related_mrns:
+            if related_related_mrn not in mrn_to_row:
+                mrn_to_row[related_related_mrn] = api.execute_hospital_query(
+                    query, {"mrn": related_related_mrn}
+                )
+    return list(mrn_to_row.values())
+
 
 
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
