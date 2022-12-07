@@ -819,12 +819,12 @@ class ProdApi(base_api.BaseApi):
         ).values_list('mrn', flat=True)))
 
         all_mrns = [hospital_number] + merged_mrns
-        zero_prexixed_mrns = []
+        zero_prefixed_mrns = []
 
         for mrn in all_mrns:
-            zero_prexixed_mrns += self.query_for_zero_prefixed(mrn)
+            zero_prefixed_mrns += self.query_for_zero_prefixed(mrn)
 
-        all_mrns = all_mrns + zero_prexixed_mrns
+        all_mrns = all_mrns + zero_prefixed_mrns
         raw_rows = []
 
         for mrn in all_mrns:
