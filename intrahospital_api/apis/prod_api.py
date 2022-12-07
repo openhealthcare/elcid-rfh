@@ -825,7 +825,6 @@ class ProdApi(base_api.BaseApi):
             zero_prexixed_mrns += self.query_for_zero_prefixed(mrn)
 
         all_mrns = all_mrns + zero_prexixed_mrns
-
         raw_rows = []
 
         for mrn in all_mrns:
