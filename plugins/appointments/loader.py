@@ -8,7 +8,6 @@ from opal.core import serialization
 from django.db.models import DateTimeField
 from django.utils import timezone
 from elcid.models import Demographics
-from elcid import utils
 
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
@@ -136,58 +135,68 @@ def update_appointments_from_query_result(upstream_rows):
     }
     to_create = []
     to_delete = []
-    hospital_numbers = {row["vPatient_Number"] for row in upstream_rows}
-    hospital_number_to_patient = utils.get_patients_from_mrns(hospital_numbers)
+    hospital_numbers = {row["vPatient_Number"].strip() for row in upstream_rows}
+    demographics = Demographics.objects.filter(
+        hospital_number__in=hospital_numbers
+    ).select_related('patient')
+    hospital_number_to_patients = defaultdict(list)
+    for demo in demographics:
+        hospital_number_to_patients[demo.hospital_number].append(
+            demo.patient
+        )
     cleaned_rows = list(appointment_id_to_upstream_row.values())
     for row in cleaned_rows:
-        hn = row["vPatient_Number"]
-        if hn not in hospital_number_to_patient:
+        hn = row["vPatient_Number"].strip()
+        # if hn is empty, skip it
+        if hn == "":
             continue
-        patient = hospital_number_to_patient[hn]
-        appointment_id = row["Appointment_ID"]
-        # If it's a new appointment, add it to the to_create list
-        if appointment_id not in appointment_id_to_existing_appointments:
-            new_instance = cast_to_instance(patient, row)
-            to_create.append(new_instance)
-        else:
-            # If it's an existing appointment and it needs updating
-            # delete the existing and create a new one,
-            # logging the difference between them
-            existing_appointment = appointment_id_to_existing_appointments[
-                appointment_id
-            ]
-            last_updated = None
-            if row["last_updated"]:
-                last_updated = timezone.make_aware(row["last_updated"])
-            insert_date = None
-            if row["insert_date"]:
-                insert_date = timezone.make_aware(row["insert_date"])
-            existing_updated = existing_appointment.last_updated
-            existing_insert_date = existing_appointment.insert_date
-
-            # get the appointment id with the most recent update date
-            # failing that use the insert date
-            existing_date = existing_updated or existing_insert_date
-            upstream_date = last_updated or insert_date
-
-            if upstream_date > existing_date:
-                patient_id = existing_appointment.patient_id
-                logger.debug(" ".join([
-                    "Appointments: checking to see if we need to update",
-                    f"appointment id {appointment_id} for patient id",
-                    f"{patient_id}",
-                ]))
-                changed_fields = get_changed_appointment_fields(
-                    existing_appointment, row
-                )
-                for k, v in changed_fields.items():
-                    logger.debug(" ".join([
-                        f'Appointments: updating {k} was {v["old_val"]}',
-                        f'now {v["new_val"]}'
-                    ]))
-                to_delete.append(existing_appointment)
+        if hn not in hospital_number_to_patients:
+            continue
+        for patient in hospital_number_to_patients[hn]:
+            appointment_id = row["Appointment_ID"]
+            # If it's a new appointment, add it to the to_create list
+            if appointment_id not in appointment_id_to_existing_appointments:
                 new_instance = cast_to_instance(patient, row)
                 to_create.append(new_instance)
+            else:
+                # If it's an existing appointment and it needs updating
+                # delete the existing and create a new one,
+                # logging the difference between them
+                existing_appointment = appointment_id_to_existing_appointments[
+                    appointment_id
+                ]
+                last_updated = None
+                if row["last_updated"]:
+                    last_updated = timezone.make_aware(row["last_updated"])
+                insert_date = None
+                if row["insert_date"]:
+                    insert_date = timezone.make_aware(row["insert_date"])
+                existing_updated = existing_appointment.last_updated
+                existing_insert_date = existing_appointment.insert_date
+
+                # get the appointment id with the most recent update date
+                # failing that use the insert date
+                existing_date = existing_updated or existing_insert_date
+                upstream_date = last_updated or insert_date
+
+                if upstream_date > existing_date:
+                    patient_id = existing_appointment.patient_id
+                    logger.debug(" ".join([
+                        "Appointments: checking to see if we need to update",
+                        f"appointment id {appointment_id} for patient id",
+                        f"{patient_id}",
+                    ]))
+                    changed_fields = get_changed_appointment_fields(
+                        existing_appointment, row
+                    )
+                    for k, v in changed_fields.items():
+                        logger.debug(" ".join([
+                            f'Appointments: updating {k} was {v["old_val"]}',
+                            f'now {v["new_val"]}'
+                        ]))
+                    to_delete.append(existing_appointment)
+                    new_instance = cast_to_instance(patient, row)
+                    to_create.append(new_instance)
     Appointment.objects.filter(
         id__in=[i.id for i in to_delete]
     ).delete()
@@ -205,7 +214,7 @@ def load_appointments(patient):
     Load any upstream appointment data we may not have for PATIENT
     """
     api = ProdAPI()
-    mrn = patient.demographics().mrn
+    mrn = patient.demographics().hospital_number
     other_mrns = list(
         patient.mergedmrn_set.values_list('mrn', flat=True)
     )
