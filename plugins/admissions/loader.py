@@ -131,11 +131,18 @@ def load_encounters(patient):
     """
     api = ProdAPI()
 
-    demographic     = patient.demographics()
-    encounters = api.execute_hospital_query(
-        Q_GET_ALL_PATIENT_ENCOUNTERS,
-        params={'mrn': demographic.hospital_number}
+    mrn = patient.demographics().hospital_number
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
+    all_mrns = [mrn] + other_mrns
+    encounters = []
+    for mrn in all_mrns:
+        query_result = api.execute_hospital_query(
+            Q_GET_ALL_PATIENT_ENCOUNTERS,
+            params={'mrn': mrn}
+        )
+        encounters.extend(query_result)
     update_encounters_from_query_result(encounters)
 
 
@@ -217,10 +224,18 @@ def load_transfer_history_since(since):
 def load_transfer_history_for_patient(patient):
     api = ProdAPI()
     mrn = patient.demographics().hospital_number
-    query_result = api.execute_warehouse_query(
-        Q_GET_TRANSFERS_FOR_MRN, params={"mrn": mrn}
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
-    created = create_transfer_histories_from_upstream_result(query_result)
+    all_mrns = [mrn] + other_mrns
+    transfers = []
+    for mrn in all_mrns:
+        query_result = api.execute_hospital_query(
+            Q_GET_TRANSFERS_FOR_MRN,
+            params={'mrn': mrn}
+        )
+        transfers.extend(query_result)
+    created = create_transfer_histories_from_upstream_result(transfers)
     return created
 
 
