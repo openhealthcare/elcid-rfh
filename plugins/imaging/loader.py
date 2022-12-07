@@ -6,6 +6,7 @@ from opal.core import serialization
 from collections import defaultdict
 from django.db import transaction
 from elcid.models import Demographics
+from elcid import utils
 from django.db.models import DateTimeField
 from django.utils import timezone
 
@@ -122,50 +123,41 @@ def update_imaging_from_query_result(imaging_rows):
     }
     to_create = []
     to_delete = []
-    hospital_numbers = {row["patient_number"].strip() for row in imaging_rows}
-    demographics = Demographics.objects.filter(
-        hospital_number__in=hospital_numbers
-    ).select_related('patient')
-    hospital_number_to_patients = defaultdict(list)
-    for demo in demographics:
-        hospital_number_to_patients[demo.hospital_number].append(
-            demo.patient
-        )
+    hospital_numbers = {row["patient_number"] for row in imaging_rows}
+    hospital_number_to_patient = utils.get_patients_from_mrns(hospital_numbers)
 
     for row in imaging_rows:
-        hn = row["patient_number"].strip()
-        # if hn is empty, skip it
-        if hn == "":
-            continue
-        if hn not in hospital_number_to_patients:
+        hn = row["patient_number"]
+
+        if hn not in hospital_number_to_patient:
             continue
 
-        for patient in hospital_number_to_patients[hn]:
-            sql_id = row["SQL_Id"]
+        patient = hospital_number_to_patient[hn]
+        sql_id = row["SQL_Id"]
 
-            # If its a new imaging record, add it to the to_create list
-            if sql_id not in sql_id_to_existing_imaging:
+        # If its a new imaging record, add it to the to_create list
+        if sql_id not in sql_id_to_existing_imaging:
+            new_instance = cast_to_instance(patient, row)
+            to_create.append(new_instance)
+        else:
+            existing_imaging = sql_id_to_existing_imaging[sql_id]
+            # If its an existing image record and its newer then
+            # our current image record, delete the existing
+            # and create a new one, logging the difference between them.
+            date_reported = timezone.make_aware(row["date_reported"])
+            if date_reported > existing_imaging.date_reported:
+                patient_id = existing_imaging.patient_id
+                logger.debug(
+                    f"Imaging: checking for patient id {patient_id} sql id {sql_id}"
+                )
+                changed = get_changed_imaging_fields(existing_imaging, row)
+                for k, v in changed.items():
+                    logger.debug(
+                        f'Imaging: updating {k} was {v["old_val"]} now {v["new_val"]}'
+                    )
+                to_delete.append(existing_imaging)
                 new_instance = cast_to_instance(patient, row)
                 to_create.append(new_instance)
-            else:
-                existing_imaging = sql_id_to_existing_imaging[sql_id]
-                # If its an existing image record and its newer then
-                # our current image record, delete the existing
-                # and create a new one, logging the difference between them.
-                date_reported = timezone.make_aware(row["date_reported"])
-                if date_reported > existing_imaging.date_reported:
-                    patient_id = existing_imaging.patient_id
-                    logger.debug(
-                        f"Imaging: checking for patient id {patient_id} sql id {sql_id}"
-                    )
-                    changed = get_changed_imaging_fields(existing_imaging, row)
-                    for k, v in changed.items():
-                        logger.debug(
-                            f'Imaging: updating {k} was {v["old_val"]} now {v["new_val"]}'
-                        )
-                    to_delete.append(existing_imaging)
-                    new_instance = cast_to_instance(patient, row)
-                    to_create.append(new_instance)
 
     Imaging.objects.filter(
         id__in=[i.id for i in to_delete]
