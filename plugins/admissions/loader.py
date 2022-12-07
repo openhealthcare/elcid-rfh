@@ -230,7 +230,7 @@ def load_transfer_history_for_patient(patient):
     all_mrns = [mrn] + other_mrns
     transfers = []
     for mrn in all_mrns:
-        query_result = api.execute_hospital_query(
+        query_result = api.execute_warehouse_query(
             Q_GET_TRANSFERS_FOR_MRN,
             params={'mrn': mrn}
         )
