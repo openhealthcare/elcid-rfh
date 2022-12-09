@@ -75,7 +75,7 @@ def load_icu_handover():
                 logger.info('Created patient for {}'.format(mrn))
                 mrn_to_patients[upstream_mrn] = patient
 
-    with transaction.atomic:
+    with transaction.atomic():
         for result in results:
             patient = mrn_to_patients.get(result['Patient_MRN'])
 
