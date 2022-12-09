@@ -13,6 +13,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from elcid.utils import get_patients_from_mrns
 
 from plugins.admissions.models import BedStatus
 from plugins.ipc.models import IPCStatus
@@ -84,17 +85,23 @@ class Command(BaseCommand):
         updated = timezone.now()
         updated_by = User.objects.filter(username='ohc').first()
 
-        inpatients = BedStatus.objects.filter(bed_status='Occupied').values_list(
-            'local_patient_identifier', flat=True)
-
+        inpatient_ids = set(BedStatus.objects.filter(bed_status='Occupied').values_list(
+            'patient_id', flat=True
+        ))
         upstream_result = api.execute_hospital_query(QUERY)
-
         self.stdout.write("Query complete")
 
-        for row in upstream_result:
-            if row['Patient_Number'] in inpatients:
-                patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
+        mrn_to_ipc_patients = get_patients_from_mrns(
+            i['Patient_Number'] for i in upstream_result
+        )
 
+        for row in upstream_result:
+            patient = mrn_to_ipc_patients.get(row['Patient_Number'])
+
+            if not patient:
+                continue
+
+            if patient.id in inpatient_ids:
                 if patient.episode_set.filter(category_name='IPC').count() == 0:
                     patient.create_episode(category_name='IPC')
 
