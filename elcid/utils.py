@@ -84,10 +84,14 @@ def natural_keys(text):
 
 def get_patients_from_mrns(mrns):
     """
-    Takes in a list of MRNs.
-    Strips leading zeros.
-    Looks up the MRNs vs Demographics and MergedMRNs.
-    Returns a map of {mrn: patient}
+    Takes in an iterable of MRNs and returns
+    a dictionary of {mrn: patient}.
+
+    When matching MRN to patient:
+    * It looks for patients with those MRNs without any
+    leading zeros the MRN may have.
+    * It removes empty MRNs or MRNs that are only zeros.
+    e.g. 000 will be removed.
     """
     cleaned_mrn_to_mrn = {
         i.strip().lstrip('0'): i for i in mrns if i.strip().lstrip('0')
@@ -107,7 +111,8 @@ def get_patients_from_mrns(mrns):
     for merged_mrn in merged_mrns:
         upstream_mrn = cleaned_mrn_to_mrn[merged_mrn.mrn]
         if upstream_mrn not in result:
-            # It should never be the case that a merged MRN
-            # but just in case
+            # If we have a demographics match
+            # do not used an MergedMRN match
+            # (this should never be the case)
             result[upstream_mrn] = merged_mrn.patient
     return result
