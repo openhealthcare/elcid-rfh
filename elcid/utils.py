@@ -91,7 +91,8 @@ def get_patients_from_mrns(mrns):
     * It looks for patients with those MRNs without any
     leading zeros the MRN may have.
     * It removes empty MRNs or MRNs that are only zeros.
-    e.g. 000
+
+    e.g. 000 will be removed.
     """
     cleaned_mrn_to_mrn = {
         i.strip().lstrip('0'): i for i in mrns if i.strip().lstrip('0')
@@ -113,6 +114,5 @@ def get_patients_from_mrns(mrns):
     ).select_related('patient')
     for merged_mrn in merged_mrns:
         upstream_mrn = cleaned_mrn_to_mrn[merged_mrn.mrn]
-        if upstream_mrn not in result:
-            result[upstream_mrn] = merged_mrn.patient
+        result[upstream_mrn] = merged_mrn.patient
     return result
