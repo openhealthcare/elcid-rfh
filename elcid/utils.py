@@ -91,6 +91,7 @@ def get_patients_from_mrns(mrns):
     * It looks for patients with those MRNs without any
     leading zeros the MRN may have.
     * It removes empty MRNs or MRNs that are only zeros.
+
     e.g. 000 will be removed.
     """
     cleaned_mrn_to_mrn = {
@@ -105,14 +106,13 @@ def get_patients_from_mrns(mrns):
         upstream_mrn = cleaned_mrn_to_mrn[demo.hospital_number]
         result[upstream_mrn] = demo.patient
 
+    # If we can't find the cleaned MRN in Demographics, check
+    # the MergedMRN table.
+    other_mrns = set(cleaned_mrn_to_mrn.keys()) - set(result.keys())
     merged_mrns = models.MergedMRN.objects.filter(
-        mrn__in=cleaned_mrn_to_mrn.keys()
+        mrn__in=other_mrns
     ).select_related('patient')
     for merged_mrn in merged_mrns:
         upstream_mrn = cleaned_mrn_to_mrn[merged_mrn.mrn]
-        if upstream_mrn not in result:
-            # If we have a demographics match
-            # do not used an MergedMRN match
-            # (this should never be the case)
-            result[upstream_mrn] = merged_mrn.patient
+        result[upstream_mrn] = merged_mrn.patient
     return result
