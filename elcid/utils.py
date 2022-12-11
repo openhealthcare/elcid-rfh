@@ -3,7 +3,6 @@ Utils for the elCID project
 """
 import errno
 from functools import wraps
-from django.db.models import Q
 from opal.models import Patient
 from elcid import models
 import logging
