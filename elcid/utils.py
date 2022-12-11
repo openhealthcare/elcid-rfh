@@ -85,6 +85,8 @@ def get_patients_from_mrns(mrns):
     """
     Takes in an iterable of MRNs and returns
     a dictionary of {mrn: patient}.
+    
+    MRNs that do not match to a patient are silently ignored.
 
     When matching MRN to patient:
     * It looks for patients with those MRNs without any
