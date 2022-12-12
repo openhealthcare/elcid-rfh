@@ -109,11 +109,7 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
         category_name=episode_category.display_name,
         start=datetime.date.today()
     )
-
-    if run_async is None:
-        load_patient(patient, run_async=run_async)
-    else:
-        load_patient(patient)
+    load_patient(patient, run_async=run_async)
     return patient
 
 
