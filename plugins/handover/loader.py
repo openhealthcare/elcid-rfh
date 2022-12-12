@@ -6,6 +6,7 @@ from opal.models import Patient
 
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
+from elcid.utils import get_patients_from_mrns
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.apis.prod_api import db_retry
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
@@ -88,16 +89,14 @@ WHERE
 id = @id
 """
 
-def create_handover_from_upstream(data):
+def create_handover_from_upstream(patient, data):
     """
     Given an upstream data dictionary returned by the API,
     create a new AMTHandover record.
     """
     handover = AMTHandover()
 
-    handover.patient = Patient.objects.filter(
-        demographics__hospital_number=data['MRN']).first()
-
+    handover.patient = patient
     for k, v in data.items():
         setattr(
             handover,
@@ -129,19 +128,26 @@ def sync_amt_handover():
 
     current_ids = [h['id'] for h in current_patients]
 
-    for handover in current_patients:
+    mrns = [i["MRN"] for i in current_patients]
+    mrn_to_patient = get_patients_from_mrns(mrns)
+    for mrn in mrns:
+        if mrn not in mrn_to_patient:
+            mrn_to_patient[mrn] = create_rfh_patient_from_hospital_number(
+                mrn, InfectionService
+            )
+            logger.info('Created patient for {}'.format(mrn))
 
+
+    for handover in current_patients:
         mrn = handover['MRN']
 
         if AMTHandover.objects.filter(sqlserver_id=handover['id']).exists():
             AMTHandover.objects.get(sqlserver_id=handover['id']).delete()
 
-        if not Demographics.objects.filter(hospital_number=mrn).exists():
-            create_rfh_patient_from_hospital_number(mrn, InfectionService)
-
-            logger.info('Created patient for {}'.format(mrn))
-
-        handover = create_handover_from_upstream(handover)
+        handover_patient= mrn_to_patient.get(mrn)
+        if not handover_patient:
+            continue
+        handover = create_handover_from_upstream(handover_patient, handover)
 
         amt_status = handover.patient.patientamthandoverstatus_set.get()
         if not amt_status.has_handover:
@@ -181,28 +187,25 @@ def sync_nursing_handover():
     )
 
     handovers = api.execute_hospital_query(Q_GET_ALL_NURSING_HANDOVER)
+    mrns = set([i["Patient_MRN"] for i in handovers])
+    mrn_to_patients = get_patients_from_mrns(mrns)
+    for mrn in mrns:
+        if mrn not in mrn_to_patients:
+            our_mrn = mrn.lstrip('0')
+            if our_mrn:
+                logger.info('Created patient for {}'.format(our_mrn))
+                mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(
+                    our_mrn, InfectionService
+                )
 
     for handover in handovers:
-
-        # nursing handover MRNs can have preceding zeros, elCID does not use zero
-        # prefixes as we match the upstream masterfile table
-        mrn    = handover['Patient_MRN'].lstrip('0')
-        sql_id = handover['SQLserver_UniqueID']
-
-        if not mrn:
+        our_handover_patient = mrn_to_patients.get(handover["Patient_MRN"])
+        if not our_handover_patient:
             continue
 
-        if not Demographics.objects.filter(hospital_number=mrn).exists():
-            create_rfh_patient_from_hospital_number(mrn, InfectionService)
+        sql_id = handover['SQLserver_UniqueID']
 
-            logger.info('Created patient for {}'.format(mrn))
-
-
-        our_handover_patient = Patient.objects.filter(
-            demographics__hospital_number=mrn
-        ).first()
-
-        our_handover, created = NursingHandover.objects.get_or_create(
+        our_handover, _ = NursingHandover.objects.get_or_create(
             sqlserver_uniqueid=sql_id,
             patient=our_handover_patient
         )
