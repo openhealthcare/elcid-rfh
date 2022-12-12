@@ -12,7 +12,7 @@ from opal.models import Patient
 
 from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
-from elcid.utils import get_patients_from_mrns
+from elcid.utils import find_patients_from_mrns
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
 from plugins.admissions.models import Encounter, PatientEncounterStatus, TransferHistory, BedStatus
@@ -356,7 +356,7 @@ def load_bed_status():
     )
 
     mrns = [i["Local_Patient_Identifier"] for i in status]
-    mrn_to_patient = get_patients_from_mrns(mrns)
+    mrn_to_patient = find_patients_from_mrns(mrns)
 
     for mrn in mrns:
         if mrn not in mrn_to_patient:
