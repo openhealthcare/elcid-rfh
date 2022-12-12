@@ -5,8 +5,9 @@ import time
 from opal.core import serialization
 from collections import defaultdict
 from django.db import transaction
-from elcid.models import Demographics
+from elcid.models import Demographics, MergedMRN
 from elcid import utils
+
 from django.db.models import DateTimeField
 from django.utils import timezone
 
@@ -34,10 +35,16 @@ def load_imaging(patient):
     Given a PATIENT, load any upstream imaging reports we do not have
     """
     api = ProdAPI()
-    imaging_rows = api.execute_hospital_query(
-        Q_GET_IMAGING,
-        params={'mrn': patient.demographics().hospital_number}
+    mrn = patient.demographics().hospital_number
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
+    mrns = [mrn] + other_mrns
+    imaging_rows = []
+    for mrn in mrns:
+        imaging_rows.extend(api.execute_hospital_query(
+            Q_GET_IMAGING, params={'mrn': mrn}
+        ))
     created = update_imaging_from_query_result(imaging_rows)
     logger.info(
         f'Imaging patient load:Saved {len(created)} for Patient {patient.id}'
@@ -124,7 +131,7 @@ def update_imaging_from_query_result(imaging_rows):
     to_create = []
     to_delete = []
     hospital_numbers = {row["patient_number"] for row in imaging_rows}
-    hospital_number_to_patient = utils.get_patients_from_mrns(hospital_numbers)
+    hospital_number_to_patient = utils.find_patients_from_mrns(hospital_numbers)
 
     for row in imaging_rows:
         hn = row["patient_number"]

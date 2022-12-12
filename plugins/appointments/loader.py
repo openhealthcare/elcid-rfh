@@ -137,7 +137,7 @@ def update_appointments_from_query_result(upstream_rows):
     to_create = []
     to_delete = []
     hospital_numbers = {row["vPatient_Number"] for row in upstream_rows}
-    hospital_number_to_patient = utils.get_patients_from_mrns(hospital_numbers)
+    hospital_number_to_patient = utils.find_patients_from_mrns(hospital_numbers)
     cleaned_rows = list(appointment_id_to_upstream_row.values())
     for row in cleaned_rows:
         hn = row["vPatient_Number"]
@@ -205,9 +205,15 @@ def load_appointments(patient):
     Load any upstream appointment data we may not have for PATIENT
     """
     api = ProdAPI()
-    demographic = patient.demographics()
-    appointments = api.execute_hospital_query(
-        Q_GET_ALL_PATIENT_APPOINTMENTS,
-        params={'mrn': demographic.hospital_number}
+    mrn = patient.demographics().hospital_number
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
+    all_mrns = [mrn] + other_mrns
+    appointments = []
+    for mrn in all_mrns:
+        appointments.extend(api.execute_hospital_query(
+            Q_GET_ALL_PATIENT_APPOINTMENTS,
+            params={'mrn': mrn}
+        ))
     update_appointments_from_query_result(appointments)
