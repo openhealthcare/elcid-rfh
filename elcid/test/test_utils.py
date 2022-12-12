@@ -36,7 +36,7 @@ class ModelMethodLoggingTestCase(OpalTestCase):
         )
 
 
-class GetPatientsFromMRNsTestCase(OpalTestCase):
+class FindPatientsFromMRNsTestCase(OpalTestCase):
     def setUp(self):
         self.patient, _ = self.new_patient_and_episode_please()
 
