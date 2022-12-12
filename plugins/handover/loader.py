@@ -114,7 +114,6 @@ def get_current():
     return api.execute_hospital_query(Q_GET_CURRENT)
 
 
-@transaction.atomic
 def sync_amt_handover():
     """
     The sync includes two operations:
@@ -138,33 +137,33 @@ def sync_amt_handover():
             )
             logger.info('Created patient for {}'.format(mrn))
 
+    with transaction.atomic():
+        for handover in current_patients:
+            mrn = handover['MRN']
 
-    for handover in current_patients:
-        mrn = handover['MRN']
+            if AMTHandover.objects.filter(sqlserver_id=handover['id']).exists():
+                AMTHandover.objects.get(sqlserver_id=handover['id']).delete()
 
-        if AMTHandover.objects.filter(sqlserver_id=handover['id']).exists():
-            AMTHandover.objects.get(sqlserver_id=handover['id']).delete()
+            handover_patient= mrn_to_patient.get(mrn)
+            if not handover_patient:
+                continue
+            handover = create_handover_from_upstream(handover_patient, handover)
 
-        handover_patient= mrn_to_patient.get(mrn)
-        if not handover_patient:
-            continue
-        handover = create_handover_from_upstream(handover_patient, handover)
+            amt_status = handover.patient.patientamthandoverstatus_set.get()
+            if not amt_status.has_handover:
+                amt_status.has_handover = True
+                amt_status.save()
 
-        amt_status = handover.patient.patientamthandoverstatus_set.get()
-        if not amt_status.has_handover:
-            amt_status.has_handover = True
-            amt_status.save()
+        discharged = AMTHandover.objects.exclude(
+            sqlserver_id__in=current_ids
+        ).filter(discharged='N')
 
-    discharged = AMTHandover.objects.exclude(
-        sqlserver_id__in=current_ids
-    ).filter(discharged='N')
+        for handover in discharged:
+            upstream = api.execute_hospital_query(
+                Q_GET_HANDOVER_BY_ID, params={'id': handover.sqlserver_id})[0]
 
-    for handover in discharged:
-        upstream = api.execute_hospital_query(
-            Q_GET_HANDOVER_BY_ID, params={'id': handover.sqlserver_id})[0]
-
-        handover.delete()
-        create_handover_from_upstream(upstream)
+            handover.delete()
+            create_handover_from_upstream(upstream)
 
 
 Q_GET_ALL_NURSING_HANDOVER = """
@@ -174,7 +173,6 @@ VIEW_ElCid_Nursing_Handover
 """
 
 
-@transaction.atomic
 def sync_nursing_handover():
     """
     Load patients from the upstream handover database
@@ -199,36 +197,37 @@ def sync_nursing_handover():
                     our_mrn, InfectionService
                 )
 
-    for handover in handovers:
-        our_handover_patient = mrn_to_patients.get(handover["Patient_MRN"])
-        if not our_handover_patient:
-            continue
+    with transaction.atomic():
+        for handover in handovers:
+            our_handover_patient = mrn_to_patients.get(handover["Patient_MRN"])
+            if not our_handover_patient:
+                continue
 
-        sql_id = handover['SQLserver_UniqueID']
+            sql_id = handover['SQLserver_UniqueID']
 
-        our_handover, _ = NursingHandover.objects.get_or_create(
-            sqlserver_uniqueid=sql_id,
-            patient=our_handover_patient
-        )
-
-        for k, v in handover.items():
-            setattr(
-                our_handover,
-                NursingHandover.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
-                v
+            our_handover, _ = NursingHandover.objects.get_or_create(
+                sqlserver_uniqueid=sql_id,
+                patient=our_handover_patient
             )
 
-        our_handover.save()
+            for k, v in handover.items():
+                setattr(
+                    our_handover,
+                    NursingHandover.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
+                    v
+                )
 
-        previously_active.remove(sql_id)
+            our_handover.save()
 
-        status = our_handover.patient.patientnursinghandoverstatus_set.get()
+            previously_active.remove(sql_id)
 
-        if not status.has_handover:
-            status.has_handover = True
-            status.save()
+            status = our_handover.patient.patientnursinghandoverstatus_set.get()
 
-    for sql_id in previously_active:
-        handover = NursingHandover.objects.get(sqlserver_uniqueid=sql_id)
-        handover.active = False
-        handover.save()
+            if not status.has_handover:
+                status.has_handover = True
+                status.save()
+
+        for sql_id in previously_active:
+            handover = NursingHandover.objects.get(sqlserver_uniqueid=sql_id)
+            handover.active = False
+            handover.save()
