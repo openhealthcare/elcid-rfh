@@ -61,7 +61,7 @@ def load_icu_handover():
     ICUHandoverLocation.objects.all().delete()
 
     upstream_mrns = [result['Patient_MRN'] for result in results]
-    mrn_to_patients = utils.get_patients_from_mrns(upstream_mrns)
+    mrn_to_patients = utils.find_patients_from_mrns(upstream_mrns)
 
     for upstream_mrn in upstream_mrns:
         if upstream_mrn not in mrn_to_patients:
@@ -127,6 +127,6 @@ def load_icu_handover():
                     timestamp=timezone.make_aware(datetime.datetime.now())
                 )
 
-
-
-            logger.info('Stored ICU Handover record for {}'.format(mrn))
+            logger.info('Stored ICU Handover record for {}'.format(
+                result['Patient_MRN'])
+            )
