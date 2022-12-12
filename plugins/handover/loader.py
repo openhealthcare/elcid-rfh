@@ -201,7 +201,7 @@ def sync_nursing_handover():
 
     for handover in handovers:
         our_handover_patient = mrn_to_patients.get(handover["Patient_MRN"])
-        if not our_handover:
+        if not our_handover_patient:
             continue
 
         sql_id = handover['SQLserver_UniqueID']
