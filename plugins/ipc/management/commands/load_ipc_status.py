@@ -13,7 +13,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from elcid.utils import get_patients_from_mrns
+from elcid.utils import find_patients_from_mrns
 
 from plugins.admissions.models import BedStatus
 from plugins.ipc.models import IPCStatus
@@ -91,7 +91,7 @@ class Command(BaseCommand):
         upstream_result = api.execute_hospital_query(QUERY)
         self.stdout.write("Query complete")
 
-        mrn_to_ipc_patients = get_patients_from_mrns(
+        mrn_to_ipc_patients = find_patients_from_mrns(
             i['Patient_Number'] for i in upstream_result
         )
 
