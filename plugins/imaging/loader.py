@@ -124,7 +124,7 @@ def update_imaging_from_query_result(imaging_rows):
     to_create = []
     to_delete = []
     hospital_numbers = {row["patient_number"] for row in imaging_rows}
-    hospital_number_to_patient = utils.get_patients_from_mrns(hospital_numbers)
+    hospital_number_to_patient = utils.find_patients_from_mrns(hospital_numbers)
 
     for row in imaging_rows:
         hn = row["patient_number"]

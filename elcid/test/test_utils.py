@@ -44,14 +44,14 @@ class GetPatientsFromMRNsTestCase(OpalTestCase):
         self.patient.demographics_set.update(
             hospital_number="123"
         )
-        result = utils.get_patients_from_mrns(["123"])
+        result = utils.find_patients_from_mrns(["123"])
         self.assertEqual(result["123"], self.patient)
 
     def test_demographics_zero_match(self):
         self.patient.demographics_set.update(
             hospital_number="123"
         )
-        result = utils.get_patients_from_mrns(["0123"])
+        result = utils.find_patients_from_mrns(["0123"])
         self.assertEqual(result["0123"], self.patient)
 
     def test_ignore_empties(self):
@@ -60,9 +60,9 @@ class GetPatientsFromMRNsTestCase(OpalTestCase):
         self.patient.demographics_set.update(
             hospital_number=""
         )
-        result = utils.get_patients_from_mrns([""])
+        result = utils.find_patients_from_mrns([""])
         self.assertEqual(result, {})
-        result = utils.get_patients_from_mrns(["000"])
+        result = utils.find_patients_from_mrns(["000"])
         self.assertEqual(result, {})
 
     def test_merged_mrn_match(self):
@@ -72,7 +72,7 @@ class GetPatientsFromMRNsTestCase(OpalTestCase):
         self.patient.mergedmrn_set.create(
             mrn="123"
         )
-        result = utils.get_patients_from_mrns(["123"])
+        result = utils.find_patients_from_mrns(["123"])
         self.assertEqual(result["123"], self.patient)
 
     def test_merged_mrn_zero_match(self):
@@ -82,9 +82,9 @@ class GetPatientsFromMRNsTestCase(OpalTestCase):
         self.patient.mergedmrn_set.create(
             mrn="123"
         )
-        result = utils.get_patients_from_mrns(["0123"])
+        result = utils.find_patients_from_mrns(["0123"])
         self.assertEqual(result["0123"], self.patient)
 
     def test_no_match(self):
-        result = utils.get_patients_from_mrns(["123"])
+        result = utils.find_patients_from_mrns(["123"])
         self.assertEqual(result, {})

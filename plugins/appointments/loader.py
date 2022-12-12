@@ -137,7 +137,7 @@ def update_appointments_from_query_result(upstream_rows):
     to_create = []
     to_delete = []
     hospital_numbers = {row["vPatient_Number"] for row in upstream_rows}
-    hospital_number_to_patient = utils.get_patients_from_mrns(hospital_numbers)
+    hospital_number_to_patient = utils.find_patients_from_mrns(hospital_numbers)
     cleaned_rows = list(appointment_id_to_upstream_row.values())
     for row in cleaned_rows:
         hn = row["vPatient_Number"]

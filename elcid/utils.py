@@ -82,7 +82,7 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-def get_patients_from_mrns(mrns):
+def find_patients_from_mrns(mrns):
     """
     Takes in an iterable of MRNs and returns
     a dictionary of {mrn: patient}.
