@@ -124,6 +124,7 @@ def sync_amt_handover():
 
     This function is called from a management command + cron job
     """
+    api = ProdAPI()
     current_patients = get_current()
 
     current_ids = [h['id'] for h in current_patients]
