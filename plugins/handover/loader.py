@@ -6,7 +6,7 @@ from opal.models import Patient
 
 from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
-from elcid.utils import get_patients_from_mrns
+from elcid.utils import find_patients_from_mrns
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.apis.prod_api import db_retry
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
@@ -130,7 +130,7 @@ def sync_amt_handover():
     current_ids = [h['id'] for h in current_patients]
 
     mrns = [i["MRN"] for i in current_patients]
-    mrn_to_patient = get_patients_from_mrns(mrns)
+    mrn_to_patient = find_patients_from_mrns(mrns)
     for mrn in mrns:
         if mrn not in mrn_to_patient:
             mrn_to_patient[mrn] = create_rfh_patient_from_hospital_number(
@@ -189,7 +189,7 @@ def sync_nursing_handover():
 
     handovers = api.execute_hospital_query(Q_GET_ALL_NURSING_HANDOVER)
     mrns = set([i["Patient_MRN"] for i in handovers])
-    mrn_to_patients = get_patients_from_mrns(mrns)
+    mrn_to_patients = find_patients_from_mrns(mrns)
     for mrn in mrns:
         if mrn not in mrn_to_patients:
             our_mrn = mrn.lstrip('0')
