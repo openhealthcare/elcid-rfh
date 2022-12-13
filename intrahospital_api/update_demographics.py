@@ -151,7 +151,6 @@ def update_if_changed(instance, update_dict):
 
     If a field has changed, update it and save the instance.
     """
-    time_start = time()
     changed = False
     for field, new_val in update_dict.items():
         old_val = getattr(instance, field)
@@ -187,13 +186,8 @@ def update_if_changed(instance, update_dict):
             changed = True
 
         if changed:
-            logger.info(
-                f"for {instance} {field} has changed was {old_val} now {new_val}"
-            )
             setattr(instance, field, new_val)
     if changed:
-        time_end = time()
-        logger.info(f"updated {instance.__class__.__name__} in {time_end-time_start}")
         instance.updated_by = api.user
         instance.updated = timezone.now()
         instance.external_system = EXTERNAL_SYSTEM
@@ -233,9 +227,6 @@ def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_infor
     # we should never update the hospital_number, so restore it here
     hn = demographics.hospital_number
     upstream_demographics_dict["hospital_number"] = hn
-    logger.info(
-        f"patient information: checking {patient.id}, hn: {hn}"
-    )
     update_if_changed(demographics, upstream_demographics_dict)
     update_if_changed(gp_details, upstream_gp_details)
     update_if_changed(contact_information, upstream_contact_information)

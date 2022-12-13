@@ -5,6 +5,7 @@ from django.test import override_settings
 from django.utils import timezone
 from opal.core.test import OpalTestCase
 from elcid import models as emodels
+from elcid import episode_categories
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
 from intrahospital_api.exceptions import BatchLoadError
@@ -118,6 +119,10 @@ class _InitialLoadTestCase(ApiTestCase):
     __name__="load_encounters"
 )
 @mock.patch(
+    "intrahospital_api.loader.load_transfer_history_for_patient",
+    __name__="load_transfer_history_for_patient"
+)
+@mock.patch(
     "intrahospital_api.loader.load_appointments",
     __name__="load_appointments"
 )
@@ -136,21 +141,32 @@ class _LoadPatientTestCase(OpalTestCase):
         logger,
         *args
     ):
-        for i in args:
-            i.side_effect = ValueError('failed')
+        args[0].side_effect = ValueError('failed')
         loader._load_patient(self.patient, self.initial_patient_load)
-        methods_names = ", ".join([
-            "results",
-            "update_patient_information",
-            "load_imaging",
-            "load_encounters",
-            "load_appointments",
-            "load_transfer_history_for_patient",
-        ])
-        logger.error.assert_called_once_with(
-            f"Initial patient load for patient id {self.patient.id} failed on {methods_names}"
+        call_args = logger.error.call_args_list
+        self.assertEqual(len(call_args), 1)
+        err_msg = logger.error.call_args[0][0]
+        self.assertIn(f'Initial patient load for patient id {self.patient.id} failed on load_appointments', err_msg)
+        self.assertIn(f'ValueError: failed', err_msg)
+        self.assertEqual(
+            self.initial_patient_load.state, self.initial_patient_load.FAILURE
         )
-        self.initial_patient_load.state = self.initial_patient_load.FAILURE
+
+    def test_results_fail(
+        self,
+        logger,
+        *args
+    ):
+        args[-1].side_effect = ValueError('failed')
+        loader._load_patient(self.patient, self.initial_patient_load)
+        call_args = logger.error.call_args_list
+        self.assertEqual(len(call_args), 1)
+        err_msg = logger.error.call_args[0][0]
+        self.assertIn(f'Initial patient load for patient id {self.patient.id} failed on results', err_msg)
+        self.assertIn(f'ValueError: failed', err_msg)
+        self.assertEqual(
+            self.initial_patient_load.state, self.initial_patient_load.FAILURE
+        )
 
     def test_success(self, logger, *args):
         loader._load_patient(self.patient, self.initial_patient_load)
@@ -163,6 +179,7 @@ class _LoadPatientTestCase(OpalTestCase):
             f'Completed load_imaging for patient id {self.patient.id}',
             f'Completed load_encounters for patient id {self.patient.id}',
             f'Completed load_appointments for patient id {self.patient.id}',
+            f'Completed load_transfer_history_for_patient for patient id {self.patient.id}',
         ]
         self.assertEqual(
             call_args_list, expected
@@ -663,3 +680,28 @@ class SynchPatientTestCase(ApiTestCase):
             info.call_args_list[2][0][0],
             "patient information synced for {}".format(patient.id)
         )
+
+
+class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
+    def test_creates_patient_and_episode(self):
+        patient = loader.create_rfh_patient_from_hospital_number(
+            '111', episode_categories.InfectionService
+        )
+        self.assertEqual(
+            patient.demographics_set.get().hospital_number, '111'
+        )
+        self.assertEqual(
+            patient.episode_set.get().category_name,
+            episode_categories.InfectionService.display_name
+        )
+
+    def test_errors_if_the_hospital_number_starts_with_a_zero(self):
+        with self.assertRaises(ValueError) as v:
+            loader.create_rfh_patient_from_hospital_number(
+                '0111', episode_categories.InfectionService
+            )
+        expected = " ".join([
+            "Unable to create a patient 0111.",
+            "Hospital numbers within elCID should never start with a zero"
+        ])
+        self.assertEqual(str(v.exception), expected)

@@ -89,7 +89,13 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
     It will create an episode of category EPISODE_CATEGORY for the patient.
 
     If a patient with this hospital number already exists raise ValueError
+    If a hospital number prefixed with zero is passed in raise ValueError
     """
+    if hospital_number.startswith('0'):
+        raise ValueError(
+            f'Unable to create a patient {hospital_number}. Hospital numbers within elCID should never start with a zero'
+        )
+
     if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
         raise ValueError('Patient with this hospital number already exists')
 
@@ -103,11 +109,7 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
         category_name=episode_category.display_name,
         start=datetime.date.today()
     )
-
-    if run_async is None:
-        load_patient(patient, run_async=run_async)
-    else:
-        load_patient(patient)
+    load_patient(patient, run_async=run_async)
     return patient
 
 
@@ -394,6 +396,8 @@ def _load_patient(patient, patient_load):
                 f"Tests updated for patient id {patient.id}"
             )
     except Exception:
+        msg = f"Initial patient load for patient id {patient.id} failed on results"
+        logger.error(f"{msg}\n{traceback.format_exc()}")
         failed.append('results')
 
     loaders = [
@@ -412,12 +416,11 @@ def _load_patient(patient, patient_load):
             with transaction.atomic():
                 loader(patient)
                 logger.info(f'Completed {loader_name} for patient id {patient.id}')
-        except:
+        except Exception as ex:
+            msg = f"Initial patient load for patient id {patient.id} failed on {loader_name}"
+            logger.error(f"{msg}\n{traceback.format_exc()}")
             failed.append(loader_name)
-
     if failed:
-        failed_loaders = ", ".join(failed)
-        logger.error(f"Initial patient load for patient id {patient.id} failed on {failed_loaders}")
         patient_load.failed()
     else:
         patient_load.complete()

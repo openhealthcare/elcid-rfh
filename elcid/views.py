@@ -249,6 +249,10 @@ class AddAntifungalPatients(LoginRequiredMixin, TemplateView):
                 patient.create_episode(
                     category_name=InfectionService.display_name
                 )
+                if 'hospital_number' in demographics_dict:
+                    hn = demographics_dict['hospital_number'].lstrip('0')
+                    demographics_dict['hospital_number'] = hn
+
                 demos = patient.demographics_set.get()
                 demos.update_from_dict(
                     demographics_dict,

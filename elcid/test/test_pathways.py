@@ -10,6 +10,7 @@ from elcid.pathways import (
     AddPatientPathway, IgnoreDemographicsMixin
 )
 from elcid import episode_categories
+from elcid import models as emodels
 
 
 @override_settings(
@@ -165,6 +166,24 @@ class TestAddPatientPathway(OpalTestCase):
             []
         )
 
+    def test_does_not_error_if_hospital_is_not_set(self):
+        test_data = dict(
+            demographics=[dict(hospital_number="234", nhs_number="12312")],
+            location=[dict(ward="9W")]
+        )
+        self.post_json(self.url, test_data)
+        patient = models.Patient.objects.get()
+        self.assertEqual(
+            patient.demographics_set.first().hospital_number,
+            "234"
+        )
+        episode = patient.episode_set.get()
+        self.assertEqual(
+            list(episode.get_tag_names(None)),
+            []
+        )
+
+
     @patch("elcid.pathways.datetime")
     def test_episode_start(self, datetime):
         patient, episode = self.new_patient_and_episode_please()
@@ -199,4 +218,15 @@ class TestAddPatientPathway(OpalTestCase):
         self.assertEqual(
             list(episode.get_tag_names(None)),
             ['antifungal']
+        )
+
+    def test_create_new_patient_with_stripped_zeros(self):
+        url = AddPatientPathway().save_url()
+        test_data = dict(
+            demographics=[dict(hospital_number="00234", nhs_number="12312")],
+            tagging=[{u'antifungal': True}]
+        )
+        self.post_json(url, test_data)
+        self.assertTrue(
+            emodels.Demographics.objects.filter(hospital_number="234").exists()
         )
