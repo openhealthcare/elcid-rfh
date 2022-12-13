@@ -47,14 +47,19 @@ def load_dischargesummaries(patient):
     """
     api = ProdAPI()
 
-    demographic = patient.demographics()
-
     summary_count = patient.dischargesummaries.count()
 
-    summaries = api.execute_hospital_query(
-        Q_GET_SUMMARIES,
-        params={'mrn': demographic.hospital_number}
+    mrn = patient.demographics().hospital_number
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
+    mrns = [mrn] + other_mrns
+    summaries = []
+    for mrn in mrns:
+        summaries.extend(api.execute_hospital_query(
+            Q_GET_SUMMARIES,
+            params={'mrn': mrn}
+        ))
 
     for summary in summaries:
 
@@ -62,7 +67,6 @@ def load_dischargesummaries(patient):
             Q_GET_MEDS_FOR_SUMMARY,
             params={'tta_id': summary['SQL_Internal_ID']}
         )
-
 
         parsed = {}
         for k, v in summary.items():
