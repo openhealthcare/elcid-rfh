@@ -72,6 +72,6 @@
 {% endblock %}
 
 {% block send_upstream_button %}
-<i ng-show="item.reason_for_interaction && item.reason_for_interaction.indexOf('RNOH') !== 0" class="fa fa-exchange edit pull-right pointer"
+<i ng-show="item.reason_for_interaction && item.reason_for_interaction.indexOf('RNOH') === -1" class="fa fa-exchange edit pull-right pointer"
    ng-click="open_modal('SendUpstreamCtrl', '/templates/send_upstream_modal.html', {patient:patient, item:item, refresh_patient:refresh, refresh_timeline:clinicalTimeline.getClinicalAdvice})"></i>
 {% endblock %}
