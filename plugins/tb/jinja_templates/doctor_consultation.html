@@ -31,15 +31,12 @@ TB Medications:{% if tb_medication_list %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
 {% endfor %}
-{% if tb_medication_list|length > 0 %}
-
-{% endif %}
 {% else %}
+
 No recorded medications
 {% endif %}
-{% if other_medication_list|length > 0 %}
 
-{% endif %}
+
 Other Medications:{% if other_medication_list %}
 
 {% for treatment in other_medication_list %}
@@ -48,12 +45,12 @@ Other Medications:{% if other_medication_list %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
 {% endfor %}
-{% if other_medication_list|length > 0 %}
-
-{% endif %}
 {% else %}
+
 No recorded medications
 {% endif %}
+
+
 {% if communication_considerations.language and not communication_considerations.language == "English" %}
 {{ "Language:" | rjust }}{{ communication_considerations.language }} {% if communication_considerations.needs_an_interpreter %}(needs an interpreter){% endif %}
 
