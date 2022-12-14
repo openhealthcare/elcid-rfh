@@ -14,7 +14,7 @@ from plugins.monitoring.models import Fact
 
 class Command(BaseCommand):
     def handle(self, *a, **k):
-        fmt = '/usr/lib/ohc/var/back.{}.elcidrfh_v{}.sql'
+        fmt = '/usr/lib/ohc/var/back.{}.elcidrfh_v{}.sql.gz'
         size_bytes = os.path.getsize(
             fmt.format(
                 datetime.date.today().strftime('%d.%m.%Y'),
