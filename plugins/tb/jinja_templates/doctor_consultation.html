@@ -25,7 +25,7 @@ No recorded secondary diagnoses
 {% endif %}
 {{ "TB Medications:" | rjust }}{% if tb_medication_list %}
 {% for treatment in tb_medication_list %}
-{{ treatment.drug.strip()|ljust_block(loop.index0)|rjust(14) }} {{ treatment.dose.strip()|rjust(14) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
+{{ treatment.drug.strip()|ljust_block(loop.index0) }} {{ treatment.dose.strip() }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
 {% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
@@ -41,7 +41,7 @@ No recorded medications
 {% endif %}
 {{ "Other Medications:" | rjust }}{% if other_medication_list %}
 {% for treatment in other_medication_list %}
-{{ treatment.drug|ljust_block(loop.index0)|rjust(14) }} {{ treatment.dose|rjust(14) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
+{{ treatment.drug|ljust_block(loop.index0) }} {{ treatment.dose }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
 {% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
