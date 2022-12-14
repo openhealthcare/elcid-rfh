@@ -999,8 +999,8 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     create_pg_pass(new_env, private_settings)
 
     # load in a backup
-    if backup_name:
-        postgres_load_database(backup_name, new_env)
+    # if backup_name:
+        # postgres_load_database(backup_name, new_env)
 
     # create the local settings used by the django app
     services_create_local_settings(new_env, private_settings)
