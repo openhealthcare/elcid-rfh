@@ -29,6 +29,7 @@
   <div class="col-md-6">
     {% include "partials/tb_appointments.html" %}
     {% include "partials/tb_summary_tests.html" %}
+    {% include "inline_forms/patient_consultation.html" %}
     <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
       <div class="panel-body">
         <div class="patient-timeline-container">
@@ -113,7 +114,7 @@
                     </div>
                     <div class="row content-offset-10">
                       <div ng-show="item.reason_for_interaction.indexOf('initial assessment') != -1" class="col-md-12">
-                        <a target="_blank" href="/letters/#/tb/initial_assessment/[[ item.id ]]/">
+                      <a target="_blank" href="/letters/#/tb/initial_assessment/[[ item.id ]]/">
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
@@ -140,7 +141,6 @@
         </div>
       </div>
     </div>
-    {% include "inline_forms/patient_consultation.html" %}
 
   </div>
 </div>
