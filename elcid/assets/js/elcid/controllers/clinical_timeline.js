@@ -73,7 +73,7 @@ angular.module('opal.controllers').controller(
             self.formItem = self.getClinicalAdviceFormObject();
 
             $scope.$watch("clinicalTimeline.formItem.editing", self.watchMicroFields, true);
-            self.save = function(){
+            self.save = function(form){
               ngProgressLite.set(0);
               ngProgressLite.start();
               self.formItem.save($scope.episode).then(function() {
@@ -81,6 +81,7 @@ angular.module('opal.controllers').controller(
                   self.changed = false;
                   self.formItem = self.getClinicalAdviceFormObject();
                   self.getClinicalAdvice();
+                  form.$setPristine()
               });
             };
         });

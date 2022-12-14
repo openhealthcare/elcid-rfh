@@ -1,5 +1,5 @@
 {% load forms %}
-{% input field="PatientConsultation.initials" %}
+{% input required=True field="PatientConsultation.initials" %}
 {% select field="PatientConsultation.reason_for_interaction" %}
 {% datetimepicker field="PatientConsultation.when" %}
 {% textarea field="PatientConsultation.examination_findings" %}
