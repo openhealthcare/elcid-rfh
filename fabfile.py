@@ -995,7 +995,7 @@ def _deploy(new_branch, backup_name=None, remove_existing=False):
     pip_install_requirements(new_env)
 
     # create a database
-    postgres_create_database(new_env, remove_existing)
+    # postgres_create_database(new_env, remove_existing)
     create_pg_pass(new_env, private_settings)
 
     # load in a backup
