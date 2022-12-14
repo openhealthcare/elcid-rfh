@@ -1,0 +1,29 @@
+{% extends "rnoh/base.html" %}
+{% block rnoh_content %}
+<section class="rnoh-list">
+<div class="print-only">
+  {% include 'rnoh/_numbers_content.html' %}
+</div>
+<div class="panel panel-default panel-container">
+  <div class="panel-heading">
+    <h1>{{ list_name }}: {{ total_episodes }} patient{% if episodes.count != 1 %}s{% endif %}</h1>
+  </div>
+  {% if not total_episodes %}
+  <div class="panel-body">
+    <h5>No patients currently on this list</h5>
+  </div>
+  {% else %}
+
+  {% for name, episodes in wards %}
+    {% if episodes %}
+      <h3 class="col-md-offset-1">{{ name }}</h3>
+      {% include "rnoh/_ward_list_panel.html" %}
+    {% endif %}
+  {% endfor %}
+
+  {% endif %}
+
+
+</div> <!--  Panel -->
+<section>
+{% endblock %}

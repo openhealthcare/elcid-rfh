@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
 from elcid.utils import natural_keys
-from plugins.admissions.constants import RFH_HOSPITAL_SITE_CDOE
+from plugins.admissions.constants import RFH_HOSPITAL_SITE_CODE, BARNET_HOSPITAL_SITE_CODE
 from plugins.admissions.models import BedStatus, IsolatedBed
 
 from plugins.ipc import lab, models
@@ -28,29 +28,32 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
         today = datetime.date.today()
         start = datetime.date(today.year-2, today.month, 1)
 
-        for alert in models.InfectionAlert.objects.filter(trigger_datetime__gte=start):
-            key = datetime.date(alert.trigger_datetime.year, alert.trigger_datetime.month, 1)
-            monthly[key][alert.category] += 1
+        # for alert in models.InfectionAlert.objects.filter(trigger_datetime__gte=start):
+        #     key = datetime.date(alert.trigger_datetime.year, alert.trigger_datetime.month, 1)
+        #     monthly[key][alert.category] += 1
 
-        ticks  = ['x'] + ['{0}-{1:02d}-01'.format(d.year, d.month) for d in sorted(monthly.keys())[-12:]]
-        cdiffs = ['C. Diff'] + [monthly[k][models.InfectionAlert.CDIFF] for k in sorted(monthly.keys())[-12:]]
-        cpes   = ['CPE'] + [monthly[k][models.InfectionAlert.CPE] for k in sorted(monthly.keys())[-12:]]
-        mrsas  = ['MRSA'] + [monthly[k][models.InfectionAlert.MRSA] for k in sorted(monthly.keys())[-12:]]
-        tbs    = ['TB'] + [monthly[k][models.InfectionAlert.TB] for k in sorted(monthly.keys())[-12:]]
-        vres   = ['VRE'] + [monthly[k][models.InfectionAlert.VRE] for k in sorted(monthly.keys())[-12:]]
+        # ticks  = ['x'] + ['{0}-{1:02d}-01'.format(d.year, d.month) for d in sorted(monthly.keys())[-12:]]
+        # cdiffs = ['C. Diff'] + [monthly[k][models.InfectionAlert.CDIFF] for k in sorted(monthly.keys())[-12:]]
+        # cpes   = ['CPE'] + [monthly[k][models.InfectionAlert.CPE] for k in sorted(monthly.keys())[-12:]]
+        # mrsas  = ['MRSA'] + [monthly[k][models.InfectionAlert.MRSA] for k in sorted(monthly.keys())[-12:]]
+        # tbs    = ['TB'] + [monthly[k][models.InfectionAlert.TB] for k in sorted(monthly.keys())[-12:]]
+        # vres   = ['VRE'] + [monthly[k][models.InfectionAlert.VRE] for k in sorted(monthly.keys())[-12:]]
 
-        context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs, vres]
+        # context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs, vres]
 
         context['rfh_patients'] = BedStatus.objects.filter(
-            hospital_site_code=RFH_HOSPITAL_SITE_CDOE, bed_status='Occupied').count()
+            hospital_site_code=RFH_HOSPITAL_SITE_CODE, bed_status='Occupied').count()
         context['rfh_beds_available'] = BedStatus.objects.filter(
-            hospital_site_code=RFH_HOSPITAL_SITE_CDOE, bed_status='Available').count()
-        context['rfh_siderooms'] = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+            hospital_site_code=RFH_HOSPITAL_SITE_CODE, bed_status='Available').count()
+        context['rfh_siderooms'] = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CODE,
                                                             room__startswith='SR',
                                                             bed_status='Occupied').count()
 
-        context['weekly_alerts'] = models.InfectionAlert.objects.filter(
-            trigger_datetime__gte=today-datetime.timedelta(days=7)).count()
+        context['barnet_patients'] = BedStatus.objects.filter(
+            hospital_site_code=BARNET_HOSPITAL_SITE_CODE, bed_status='Occupied').count()
+
+        # context['weekly_alerts'] = models.InfectionAlert.objects.filter(
+        #     trigger_datetime__gte=today-datetime.timedelta(days=7)).count()
 
         return context
 
@@ -101,6 +104,7 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
                     location.ipc_episode = ipc
 
         context['patients'] = locations
+        context['patient_count'] = sum([1 for l in locations if l.patient])
 
         return context
 
@@ -111,8 +115,13 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
+        # side_rooms_statuses = list(BedStatus.objects.filter(
+        #     hospital_site_code=RFH_HOSPITAL_SITE_CODE,
+        #     room__startswith='SR'
+        # ))
+
         side_rooms_statuses = list(BedStatus.objects.filter(
-            hospital_site_code=RFH_HOSPITAL_SITE_CDOE,
+            hospital_site_code=k['hospital_code'],
             room__startswith='SR'
         ))
 

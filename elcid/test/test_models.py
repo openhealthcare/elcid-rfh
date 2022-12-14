@@ -116,6 +116,7 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
     def test_to_dict(self):
         expected_data = {
             'consistency_token': '12345678',
+            'consultant': None,
             'episode_id': self.episode.id,
             'id': self.location.id,
             'hospital': 'UCH',
@@ -126,6 +127,7 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'updated_by_id': None,
             'created_by_id': None,
             'provenance': '',
+            'unit': None,
             }
         result = {str(k): v for k, v in self.location.to_dict(self.user).items()}
         self.assertEqual(expected_data, result)

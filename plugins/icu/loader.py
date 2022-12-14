@@ -61,7 +61,12 @@ def load_icu_handover():
 
     for result in results:
 
-        mrn = result['Patient_MRN']
+        # ICU handover MRNs can have preceding zeros, elCID does not use zero
+        # prefixes as we match the upstream masterfile table
+        mrn = result['Patient_MRN'].lstrip('0')
+
+        if not mrn:
+            continue
 
         if not Demographics.objects.filter(hospital_number=mrn).exists():
             create_rfh_patient_from_hospital_number(mrn, InfectionService)

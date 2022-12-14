@@ -1,7 +1,20 @@
-  {% load forms %}
+{% load forms %}
 <form class="form-horizontal">
   <div class="form-group">
-    {% include models.Location.get_form_template %}
-    {% include 'partials/_teams_select.html' %}
+    {% select field="Location.hospital" %}
+    <section ng-show="editing.location.hospital != 'RNOH' ">
+      {% input field="Location.ward" %}
+    </section>
+    <section ng-show="editing.location.hospital == 'RNOH'">
+      {% select field="Location.ward" lookuplist="metadata.rnoh_wards" %}
+      {% select field="Location.unit" lookuplist="metadata.rnoh_units" %}
+    </section>
+    {% input field="Location.bed" %}
+    <section ng-show="editing.location.hospital == 'RNOH'">
+      {% input field="Location.consultant" lookuplist="rnohconsultants_list" %}
+    </section>
+    <section ng-hide="editing.location.hospital == 'RNOH'" >
+      {% include 'partials/_teams_select.html' %}
+    </section>
   </div>
 </form>

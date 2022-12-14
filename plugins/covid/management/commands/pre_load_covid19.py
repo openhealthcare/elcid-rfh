@@ -2,6 +2,7 @@
 Management command to pre-load Covid-19 patients
 """
 from django.core.management.base import BaseCommand
+import traceback
 
 from plugins.covid import logger, loader
 

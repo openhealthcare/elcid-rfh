@@ -11,16 +11,27 @@ try:
         'default': dj_database_url.config(default='sqlite:///' + PROJECT_PATH + '/opal.sqlite')
     }
 except ImportError:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(PROJECT_PATH, 'opal.sqlite'),
-            'USER': '',
-            'PASSWORD': '',
-            'HOST': '',
-            'PORT': '',
+    if os.environ.get('GITHUB_WORKFLOW'):
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'ci_db_test',
+                'USER': 'postgres',
+                'PASSWORD': 'postgres',
+                'HOST': 'localhost',
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(PROJECT_PATH, 'opal.sqlite'),
+                'USER': '',
+                'PASSWORD': '',
+                'HOST': '',
+                'PORT': ''
+            }
+        }
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -178,6 +189,8 @@ INSTALLED_APPS = (
     'plugins.monitoring',
     'plugins.handover',
     'plugins.ipc',
+    'plugins.rnoh',
+    'plugins.elcid_search',
     'intrahospital_api',
     'elcid',
     'passwordreset',
@@ -213,6 +226,15 @@ HOSPITAL_DB = dict(
 
 # the trust DB does lab tests
 TRUST_DB = dict(
+    ip_address=None,
+    database=None,
+    username=None,
+    password=None,
+    view=None
+)
+
+# electronic prescribing DB
+EPMA_DB = dict(
     ip_address=None,
     database=None,
     username=None,
@@ -430,6 +452,7 @@ WAREHOUSE_DB = dict(
 )
 
 EXTRACT_ASYNC = False
+OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
 WRITEBACK_ON = True
 
 COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')

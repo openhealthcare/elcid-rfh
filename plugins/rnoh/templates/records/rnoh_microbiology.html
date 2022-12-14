@@ -1,0 +1,44 @@
+<span ng-show="item.sample_date">
+    [[ item.sample_date | displayDate ]]
+</span>
+<span ng-show="item.test_name">
+    [[ item.test_name ]]
+</span>
+<span ng-show="item.hospital">
+    [[ item.hospital ]]
+</span>
+<span ng-show="item.number_positive && item.number_samples">
+    [[ item.number_positive ]] / [[ item.number_samples ]]
+</span>
+<span ng-show="item.sample_type">
+    [[ item.sample_type ]]
+</span>
+<span ng-show="item.side">
+    [[ item.side ]]
+</span>
+<span ng-show="item.site">
+    [[ item.site ]]
+</span>
+<span ng-show="item.bottle">
+    [[ item.bottle ]]
+</span>
+<span ng-show="item.day_positive">
+    [[ item.day_positive ]]
+</span>
+<span ng-show="item.result">
+    [[ item.result ]]
+</span>
+<span ng-show="item.notes">
+  [[ item.notes ]]
+</span>
+<span ng-show="item.organism">
+    [[ item.organism ]]
+</span>
+<span ng-show="item.sensitivities.length > 0">
+<br />
+  S: <span ng-repeat="s in item.sensitivities">[[ s ]] </span>
+</span>
+<span ng-show="item.resistances.length > 0">
+  <br />
+  R: <span ng-repeat="r in item.resistances">[[ r ]] </span>
+</span>

@@ -11,6 +11,8 @@ from intrahospital_api.constants import EXTERNAL_SYSTEM
 class UpdateIfChangedTestCase(OpalTestCase):
     def setUp(self):
         patient, _ = self.new_patient_and_episode_please()
+        # Initialise the user
+        self.user
         self.demographics = patient.demographics()
         self.gp_details = patient.gpdetails_set.get()
         self.update_dict = {}

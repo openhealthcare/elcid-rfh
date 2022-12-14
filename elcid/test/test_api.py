@@ -452,7 +452,7 @@ class DemographicsSearchTestCase(OpalTestCase):
     ):
         load_demographics.return_value = dict(first_name="Wilma")
         response = json.loads(
-            self.client.get(self.url).content.decode('utf-8')
+            self.client.get(self.get_url('01')).content.decode('utf-8')
         )
         self.assertEqual(
             response["status"], "patient_found_upstream"
@@ -460,10 +460,46 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
+        load_demographics.assert_called_once_with('1')
+
+    @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
+    @mock.patch("elcid.api.loader.load_demographics")
+    def test_with_demographics_add_patient_found_upstream_without_zeros(
+        self, load_demographics
+    ):
+        """
+        When we query upstream demographics, query should use
+        the hn without preceding zeros.
+        """
+        load_demographics.return_value = dict(first_name="Wilma")
+        response = json.loads(
+            self.client.get(self.get_url('01')).content.decode('utf-8')
+        )
+        self.assertEqual(
+            response["status"], "patient_found_upstream"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+        load_demographics.assert_called_once_with('1')
 
     def test_patient_found(self):
         self.get_patient("Wilma", "1")
         response = json.loads(self.client.get(self.url).content.decode('utf-8'))
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
+    def test_with_demographics_add_patient_in_elcid_without_zeros(self):
+        """
+        When we querying within elcid, query should use
+        the hn without preceding zeros.
+        """
+        self.get_patient("Wilma", "1")
+        response = json.loads(self.client.get(self.get_url('01')).content.decode('utf-8'))
         self.assertEqual(
             response["status"], "patient_found_in_elcid"
         )
@@ -550,10 +586,13 @@ class BloodCultureSetTestCase(OpalTestCase):
             response.status_code, 200
         )
         expected = {
+            'community': False,
             'consistency_token': '',
+            'contaminant': False,
             'created': None,
             'created_by_id': None,
             'date_ordered': datetime.date(2019, 5, 8),
+            'hcai': False,
             'id': 1,
             'isolates': [{
                 'aerobic_or_anaerobic': 'Aerobic',
@@ -594,10 +633,13 @@ class BloodCultureSetTestCase(OpalTestCase):
             response.status_code, 200
         )
         expected = {
+            'community': False,
             'consistency_token': '',
+            'contaminant': False,
             'created': None,
             'created_by_id': None,
             'date_ordered': datetime.date(2019, 5, 8),
+            'hcai': False,
             'id': 1,
             'isolates': [],
             'lab_number': '111',

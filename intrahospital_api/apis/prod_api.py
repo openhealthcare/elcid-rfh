@@ -286,6 +286,7 @@ class PathologyRow(object):
         'encounter_location_code',
         'encounter_location_name',
         'accession_number',
+        'department_int'
     ]
 
     OBSERVATION_FIELDS = [
@@ -366,6 +367,12 @@ class PathologyRow(object):
             return "complete"
         else:
             return "pending"
+
+    # the winpath department, should be 1-9
+    def get_department_int(self):
+        dep = self.db_row.get("Department")
+        if dep:
+            return int(dep)
 
     def get_site(self):
         site = self.db_row.get('Specimen_Site')
@@ -463,6 +470,7 @@ class ProdApi(base_api.BaseApi):
         self.hospital_settings = settings.HOSPITAL_DB
         self.trust_settings = settings.TRUST_DB
         self.warehouse_settings = settings.WAREHOUSE_DB
+        self.epma_settings = settings.EPMA_DB
         if not all([
             self.hospital_settings.get("ip_address"),
             self.hospital_settings.get("database"),
@@ -774,14 +782,38 @@ class ProdApi(base_api.BaseApi):
             result.append(lab_test)
         return result
 
+    def query_for_zero_prefixed(self, hospital_number):
+        """
+        Returns zero prefixed versions of the hospital
+        number if they exist in the results table.
+
+        We do not use prefixed zeros for MRNs as we match
+        the master file but the results table does, so get
+        any zero prefixed MRNs included in the table for
+        the MRN.
+        """
+        query = """
+        SELECT DISTINCT Patient_Number FROM tQuest.Pathology_Result_View
+        WHERE Patient_Number LIKE '%%0' + @hospital_number
+        """
+        other_hns = self.execute_trust_query(
+            query, params={"hospital_number": hospital_number}
+        )
+        # we know the above query may return false positives
+        # e.g. if we look for 0234 it will return 20234
+        return [
+            i["Patient_Number"] for i in other_hns if i["Patient_Number"].lstrip('0') == hospital_number
+        ]
+
     @timing
     def results_for_hospital_number(self, hospital_number):
         """
-            returns all the results for a particular person
-
-            aggregated into labtest: observations([])
+        returns all the results for an MRN
+        aggregated into labtest: observations([])
         """
-
+        other_hns = self.query_for_zero_prefixed(hospital_number)
         raw_rows = self.raw_data(hospital_number)
+        for other_hn in other_hns:
+            raw_rows.extend(self.raw_data(other_hn))
         rows = (PathologyRow(raw_row) for raw_row in raw_rows)
         return self.cast_rows_to_lab_test(rows)

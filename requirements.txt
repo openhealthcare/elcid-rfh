@@ -7,6 +7,7 @@ djangorestframework==3.12.2
 
 cffi==1.7.0
 coverage==5.1
+coveralls==3.3.1
 dj-database-url==0.2.1
 gunicorn==0.17.4
 psycopg2==2.8.6
@@ -31,7 +32,7 @@ python-tds==1.8.2
 
 # Open Health Care
 opal-observations==0.5.0
-opal==0.21.0
+-e git+https://github.com/openhealthcare/opal@change-to-url-in-patient-detail#egg=opal
 
 # Open Health Care repositories on GitHub
 -e git+https://github.com/openhealthcare/opal-passwordreset@v0.1#egg=opal_passwordreset

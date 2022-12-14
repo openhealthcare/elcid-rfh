@@ -29,7 +29,7 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
             return patient
 
         create_rfh_patient_from_hospital_number.side_effect = create_episode
-        loader.create_tb_episodes()
+        loader.create_tb_episodes_for_appointments()
         create_rfh_patient_from_hospital_number.assert_called_once_with(
             "111", InfectionService
         )
@@ -51,7 +51,7 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
         ProdAPI.return_value.execute_hospital_query.return_value = [
             {"vPatient_Number": "111"}
         ]
-        loader.create_tb_episodes()
+        loader.create_tb_episodes_for_appointments()
         patient = Patient.objects.get()
         self.assertEqual(
             patient.episode_set.count(), 2
@@ -79,7 +79,7 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
         patient.demographics_set.update(hospital_number="111")
         episode.category_name = episode_categories.TbEpisode.display_name
         episode.save()
-        loader.create_tb_episodes()
+        loader.create_tb_episodes_for_appointments()
 
         covid_episode = Episode.objects.get(
             category_name=episode_categories.TbEpisode.display_name

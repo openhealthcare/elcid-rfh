@@ -114,53 +114,37 @@ directives.directive('fixedHeader', function(){
     restrict: 'A',
     link: function(scope, $elm, attrs) {
       var panelHeader = $(".panel-heading.patient-detail-heading");
-      var counter = 0;
+      var panelBody = $(".panel.panel-primary.panel-container.patient-detail > .panel-body");
+
+      var modifier = 0;
       var adjustHeights = function(){
-        if(document.documentElement.scrollTop > 100){
-          return;
-        }
-        var panelHeaderHeight = panelHeader.height();
-
-        // the nav bar collapses at small sizes, accomdate for this.
-        var navBar = $("#main-navbar:visible");
-        var navBarHeight = 0;
+        var navBar = $(".navbar.navbar-default.navbar-primary.navbar-fixed-top");
         if(navBar.length){
-          navBarHeight = navBar.height();
-          panelHeader.css('top', navBarHeight);
+          navBarHeight = $(navBar[0]).height()
+          if(navBarHeight > 52){
+            modifier = navBarHeight - 52;
+          }
+          else{
+            modifier = 0;
+          }
         }
-        else{
-          navBarHeight = $($(".navbar-header")[0]).height();
-          panelHeader.css('top', navBarHeight);
-        }
-        var modifier = panelHeaderHeight + navBarHeight - 30;
-        $elm.css('margin-top', modifier);
-
-        // when we're not at the top of the scoll bar
-        if(document.documentElement.scrollTop){
-          panelHeader.addClass('shrunken');
-        }
-        else{
-          panelHeader.removeClass('shrunken');
-        }
-        counter += 1;
-        if(counter > 20){
-          clearInterval(interval)
-        }
+        panelHeader.css("margin-top", modifier);
+        shrinkHeader();
       }
+
       var shrinkHeader = function(){
+        var panelHeaderHeight = panelHeader.height() + 22 + modifier;
+        panelHeader.css("position", "fixed");
+        panelBody.css('margin-top', panelHeaderHeight)
         // when we're slightly down the page add the class
-        if(document.documentElement.scrollTop> 100){
+        if(document.documentElement.scrollTop > 150){
           panelHeader.addClass('shrunken');
         }
         else{
           panelHeader.removeClass('shrunken');
         }
       }
-
-      // Angular occassionally populates the header
-      // after the directive has loaded, so just
-      // keep at it for the firsrt 20 seconds
-      var interval = setInterval(adjustHeights, 100);
+      setTimeout(adjustHeights, 20);
       $(window).scroll(shrinkHeader);
       $(window).resize(adjustHeights);
     }
