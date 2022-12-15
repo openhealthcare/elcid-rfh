@@ -18,8 +18,8 @@ from plugins.admissions.models import Encounter, PatientEncounterStatus, Transfe
 from plugins.admissions import logger
 
 
-# UPDATED_DATE is the same as CREATED_DATE if there
-# has not been an update, ie its always set.
+# UPDATED_DATE is the max of TRANS_UPDATED
+# and SPELL_UPDATED
 Q_GET_TRANSFERS_SINCE = """
     SELECT *
     FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
