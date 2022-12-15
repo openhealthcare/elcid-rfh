@@ -41,6 +41,27 @@ def save_summary_meds(summary, data):
         our_med.save()
 
 
+def query_for_zero_prefixed(mrn):
+    """
+    Given a hospital number return all mrns in the upstream
+    table which are the hospital number with additional
+    zeros prefixed.
+
+    e.g. for hospital number 123, if 00123 is in the upstream
+    table return 00123.
+    """
+    query = """
+    SELECT DISTINCT RF1_NUMBER FROM VIEW_ElCid_Freenet_TTA_Main
+    WHERE RF1_NUMBER LIKE '%%0' + @mrn
+    """
+    api = ProdAPI()
+    other_mrns_result = api.execute_hospital_query(
+        query, params={"mrn": mrn}
+    )
+    other_mrns = [i["RF1_NUMBER"] for i in other_mrns_result]
+    return [i for i in other_mrns if i.lstrip('0') == mrn]
+
+
 def load_dischargesummaries(patient):
     """
     Given a PATIENT load upstream discharge summary data and save it.
@@ -55,7 +76,14 @@ def load_dischargesummaries(patient):
         Q_GET_SUMMARIES,
         params={'mrn': demographic.hospital_number}
     )
-
+    other_mrns = query_for_zero_prefixed(
+        demographic.hospital_number
+    )
+    for other_mrn in other_mrns:
+        summaries.extend(api.execute_hospital_query(
+            Q_GET_SUMMARIES,
+            params={'mrn': other_mrn}
+        ))
     for summary in summaries:
 
         meds = api.execute_hospital_query(
