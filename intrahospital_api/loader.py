@@ -136,19 +136,17 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
     patient.demographics_set.update(
         hospital_number=active_row["PATIENT_NUMBER"]
     )
-    merged_mrns = []
     for row in rows:
         if row["ACTIVE_INACTIVE"] == emodels.MergedMRN.INACTIVE:
             _, merge_dt = update_demographics.get_mrn_and_date_from_merge_comment(
                 row["MERGE_COMMENTS"]
             )[0]
-            merged_mrns.append(emodels.MergedMRN(
-                patient = patient,
+            emodels.MergedMRN.objects.create(
+                patient=patient,
                 mrn=row["PATIENT_NUMBER"],
                 upstream_merge_datetime=merge_dt,
                 merge_comments=row["MERGE_COMMENTS"]
-            ))
-    emodels.MergedMRN.objects.bulk_create(merged_mrns)
+            )
     load_patient(patient, run_async=run_async)
     return patient
 
