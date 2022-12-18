@@ -2,8 +2,6 @@ import datetime
 from unittest.mock import patch
 from opal.core.test import OpalTestCase
 from elcid import utils
-from elcid import episode_categories
-from plugins.tb import episode_categories as tb_episode_categories
 
 
 class ModelMethodLoggingTestCase(OpalTestCase):
@@ -36,65 +34,6 @@ class ModelMethodLoggingTestCase(OpalTestCase):
         self.assertEqual(
             result, "some_var"
         )
-
-
-class GetOrCreatePatientTestCase(OpalTestCase):
-    def setUp(self):
-        self.patient, _ = self.new_patient_and_episode_please()
-
-    def test_get_existing_patient(self):
-        self.patient.demographics_set.update(hospital_number="123")
-        self.patient.episode_set.update(
-            category_name=episode_categories.InfectionService.display_name
-        )
-        patient, created = utils.get_or_create_patient(
-            '123', episode_categories.InfectionService
-        )
-        self.assertEqual(self.patient, patient)
-        episode = self.patient.episode_set.get()
-        self.assertEqual(
-            episode.category_name,
-            episode_categories.InfectionService.display_name
-        )
-        self.assertFalse(created)
-
-    def test_create_new_episode_on_existing_patient(self):
-        self.patient.demographics_set.update(hospital_number="123")
-        patient, created = utils.get_or_create_patient(
-            '123', tb_episode_categories.TbEpisode
-        )
-        self.assertEqual(self.patient, patient)
-        self.assertTrue(self.patient.episode_set.filter(
-            category_name=tb_episode_categories.TbEpisode.display_name
-        ).exists())
-        self.assertFalse(created)
-
-    @patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
-    def test_get_merged_patient(self, create_rfh_patient_from_hospital_number):
-        self.patient.demographics_set.update(hospital_number="234")
-        self.patient.mergedmrn_set.create(mrn="123")
-        patient, created = utils.get_or_create_patient(
-            '123', episode_categories.InfectionService
-        )
-        self.assertEqual(
-            patient.id, self.patient.id
-        )
-        self.assertFalse(create_rfh_patient_from_hospital_number.called)
-        self.assertFalse(created)
-
-    @patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
-    def test_create_new_patient(self, create_rfh_patient_from_hospital_number):
-        create_rfh_patient_from_hospital_number.return_value = self.patient
-        patient, created = utils.get_or_create_patient(
-            '123', episode_categories.InfectionService
-        )
-        create_rfh_patient_from_hospital_number.assert_called_once_with(
-            '123',
-            episode_categories.InfectionService,
-            run_async=None
-        )
-        self.assertEqual(self.patient, patient)
-        self.assertTrue(created)
 
 
 class FindPatientsFromMRNsTestCase(OpalTestCase):

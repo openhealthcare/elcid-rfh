@@ -82,25 +82,6 @@ def natural_keys(text):
     return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 
-def get_or_create_patient(mrn, episode_category, run_async=None):
-    from intrahospital_api import loader
-    patient = opal_models.Patient.objects.filter(
-        demographics__hospital_number=mrn
-    ).first()
-    if not patient:
-        patient = opal_models.Patient.objects.filter(
-        mergedmrn__mrn=mrn
-    ).first()
-
-    if patient:
-        patient.episode_set.get_or_create(
-            category_name=episode_category.display_name
-        )
-        return (patient, False)
-    patient = loader.create_rfh_patient_from_hospital_number(mrn, episode_category, run_async=run_async)
-    return patient, True
-
-
 def find_patients_from_mrns(mrns):
     """
     Takes in an iterable of MRNs and returns
