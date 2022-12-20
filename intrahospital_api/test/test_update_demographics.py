@@ -472,7 +472,7 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
         )
 
 @mock.patch('intrahospital_api.update_demographics.api')
-class GetRelatedRowsForMRNTestCase(OpalTestCase):
+class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
     """
     Tests a real world case (with dates and MRNs changed)
     to make sure we crawl the tree of Merged MRNs correctly.
@@ -504,21 +504,106 @@ class GetRelatedRowsForMRNTestCase(OpalTestCase):
     }
 
     def test_crawls_nested_rows_from_branch(self, api):
+        """
+        We pass in an inactive MRN not directly connected to the active MRN.
+
+        We expect it to crawl the across the the MRNs it is connected with
+        and to return the active MRN and merged data.
+        """
         api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
-        result = update_demographics.get_related_rows_for_mrn("123")
-        self.assertEqual(
-            sorted(list(self.MAPPING.values()), key=lambda x: x["PATIENT_NUMBER"]),
-            sorted(result, key=lambda x: x["PATIENT_NUMBER"]),
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "123"
         )
+        self.assertEqual(
+            active_mrn, "456"
+        )
+        expected = [
+            {
+                "mrn": "123",
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2014, 10, 21, 16, 44
+                )),
+                "merge_comments": self.MAPPING["123"]["MERGE_COMMENTS"]
+            },
+            {
+                "mrn": "234",
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2018, 4, 14, 13, 40
+                )),
+                "merge_comments": self.MAPPING["234"]["MERGE_COMMENTS"]
+            },
+        ]
+        self.assertEqual(expected, merged_data)
 
     def test_crawls_nested_rows_from_trunk(self, api):
+        """
+        We pass in an inactive MRN linked to an inactive MRN and an active MRN.
+
+        We expect it to correctly decide which is the active MRN, and to return
+        all inactive MRNs in the merged_mrn_data.
+        """
         api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
-        result = update_demographics.get_related_rows_for_mrn("234")
-        self.assertEqual(
-            sorted(list(self.MAPPING.values()), key=lambda x: x["PATIENT_NUMBER"]),
-            sorted(result, key=lambda x: x["PATIENT_NUMBER"]),
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "234"
         )
+        self.assertEqual(
+            active_mrn, "456"
+        )
+        expected = [
+            {
+                "mrn": "123",
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2014, 10, 21, 16, 44
+                )),
+                "merge_comments": self.MAPPING["123"]["MERGE_COMMENTS"]
+            },
+            {
+                "mrn": "234",
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2018, 4, 14, 13, 40
+                )),
+                "merge_comments": self.MAPPING["234"]["MERGE_COMMENTS"]
+            },
+        ]
+        self.assertEqual(expected, sorted(merged_data, key=lambda x: x["mrn"]))
+
+    def test_handles_active_mrns(self, api):
+        """
+        We pass in an active MRN linked to an inactive MRN that is linked to an inactive
+        MRN.
+
+        We expect it to correctly recognise it is an inactive MRN and return
+        all related MRNs as merged_mrn_data.
+        """
+        api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "456"
+        )
+        self.assertEqual(
+            active_mrn, "456"
+        )
+        expected = [
+            {
+                "mrn": "123",
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2014, 10, 21, 16, 44
+                )),
+                "merge_comments": self.MAPPING["123"]["MERGE_COMMENTS"]
+            },
+            {
+                "mrn": "234",
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2018, 4, 14, 13, 40
+                )),
+                "merge_comments": self.MAPPING["234"]["MERGE_COMMENTS"]
+            },
+        ]
+        self.assertEqual(expected, sorted(merged_data, key=lambda x: x["mrn"]))
 
     def test_no_results(self, api):
         api.execute_hospital_query.return_value = []
-        self.assertIsNone(update_demographics.get_related_rows_for_mrn("234"))
+        active_mrn, merged_mrn_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "234"
+        )
+        self.assertEqual(active_mrn, "234")
+        self.assertEqual(merged_mrn_data, [])

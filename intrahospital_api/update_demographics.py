@@ -213,8 +213,14 @@ def get_mrn_and_date_from_merge_comment(merge_comment):
     return sorted(result, key=lambda x: x[1], reverse=True)
 
 
-def get_related_rows_for_mrn(mrn):
+def get_active_mrn_and_merged_mrn_data(mrn):
     """
+    For an MRN return the active MRN related to it (which could be itself)
+    and a list of inactive MRNs that are associated with it.
+
+    If there are no inactive MRNs or we are to say which is the
+    active mrn return the MRN passed in and an empty list.
+
     Returns all merged MRNs related to the MRN including the row
     for the MRN from the CRS_Patient_Masterfile.
 
@@ -238,7 +244,13 @@ def get_related_rows_for_mrn(mrn):
         query, {"mrn": mrn}
     )
     if not query_result:
-        return None
+        return mrn, []
+
+    # The merged comments can be nested for for MRN x
+    # we can have MERGE_COMMENT "Merged with y on 21 Jan"
+    # then for y we can have the merge comment "Merged with z on 30 Mar".
+    # So we traverse the merge comments and create a dictionary of MRN: row
+    # for every MRN related to the one passed in.
     mrn_to_row = {mrn: query_result}
     related_mrns = [i[0] for i in get_mrn_and_date_from_merge_comment(query_result["MERGE_COMMENTS"])]
     for related_mrn in related_mrns:
@@ -254,8 +266,30 @@ def get_related_rows_for_mrn(mrn):
                 mrn_to_row[related_related_mrn] = api.execute_hospital_query(
                     query, {"mrn": related_related_mrn}
                 )
-    return list(mrn_to_row.values())
 
+    active_rows = [
+        i for i in mrn_to_row.values()
+        if i["ACTIVE_INACTIVE"] == models.MergedMRN.ACTIVE
+    ]
+
+    # if there is not exactly 1 active row, we don't know what to merge
+    # so do nothing.
+    if not len(active_rows) == 1:
+        return mrn, []
+
+    active_mrn = active_rows[0]["PATIENT_NUMBER"]
+
+    merged_mrns = []
+    for row in mrn_to_row.values():
+        if row["ACTIVE_INACTIVE"] == models.MergedMRN.INACTIVE:
+            parsed_comments = get_mrn_and_date_from_merge_comment(row["MERGE_COMMENTS"])
+            most_recent_merge_datetime = parsed_comments[0][1]
+            merged_mrns.append({
+                "mrn": row["PATIENT_NUMBER"],
+                "merge_comments": row["MERGE_COMMENTS"],
+                "upstream_merge_datetime": most_recent_merge_datetime
+            })
+    return active_mrn, merged_mrns
 
 
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
