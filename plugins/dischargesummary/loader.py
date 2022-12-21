@@ -52,7 +52,7 @@ def query_for_zero_prefixed(mrn):
     """
     query = """
     SELECT DISTINCT RF1_NUMBER FROM VIEW_ElCid_Freenet_TTA_Main
-    WHERE RF1_NUMBER LIKE '%%0' + @hospital_number
+    WHERE RF1_NUMBER LIKE '%%0' + @mrn
     """
     api = ProdAPI()
     other_mrns_result = api.execute_hospital_query(
@@ -106,7 +106,12 @@ def load_dischargesummaries(patient):
                         v = timezone.make_aware(v)
                     except AttributeError:
                         # Only some of the "DateTime" fields are typed as such
-                        v = datetime.datetime.strptime(v, '%d/%m/%Y %H:%M:%S')
+                        try:
+                            v = datetime.datetime.strptime(v, '%d/%m/%Y %H:%M:%S')
+                        except ValueError:
+                            # LAST_UPDATED is sometimes stored in a different format
+                            # e.g. Sep 20 2021 12:55PM
+                            v = datetime.datetime.strptime(v, '%b %d %Y %I:%M%p')
                         v = timezone.make_aware(v)
 
                 parsed[DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v

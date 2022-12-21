@@ -23,35 +23,34 @@ No recorded secondary diagnoses
 {% if tb_medication_list|length > 1 %}
 
 {% endif %}
-{{ "TB Medications:" | rjust }}{% if tb_medication_list %}
+TB Medications:{% if tb_medication_list %}
+
 {% for treatment in tb_medication_list %}
-{{ treatment.drug.strip()|ljust_block(loop.index0)|rjust(14) }} {{ treatment.dose.strip()|rjust(14) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
+{{ treatment.drug.strip()|rjust(14) }} {{ treatment.dose.strip()|rjust(14) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
 {% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
 {% endfor %}
-{% if tb_medication_list|length > 1 %}
-
-{% endif %}
 {% else %}
+
 No recorded medications
 {% endif %}
-{% if other_medication_list|length > 1 %}
 
-{% endif %}
-{{ "Other Medications:" | rjust }}{% if other_medication_list %}
+
+Other Medications:{% if other_medication_list %}
+
 {% for treatment in other_medication_list %}
 {{ treatment.drug|ljust_block(loop.index0)|rjust(14) }} {{ treatment.dose|rjust(14) }} {% if treatment.start_date %}{{ treatment.start_date | date }}{% endif %}
 {% if treatment.end_date %} - {{ treatment.end_date | date }}{% endif %}
 {% if treatment.planned_end_date %}, planned end: {{ treatment.planned_end_date | date }}{% endif %}
 
 {% endfor %}
-{% if other_medication_list|length > 1 %}
-
-{% endif %}
 {% else %}
+
 No recorded medications
 {% endif %}
+
+
 {% if communication_considerations.language and not communication_considerations.language == "English" %}
 {{ "Language:" | rjust }}{{ communication_considerations.language }} {% if communication_considerations.needs_an_interpreter %}(needs an interpreter){% endif %}
 
