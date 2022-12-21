@@ -1,10 +1,7 @@
 <span ng-class="{'text-muted': (item.end_date && (item.end_date | past)) || (item.planned_end_date && (item.planned_end_date | past)) }">
   <span ng-show="item.start_date">[[item.start_date | displayDate]]</span>
   <span ng-show="item.stoppedDate && item.start_date">-[[item.stoppedDate | displayDate]]</span>
-  [[item.drug]]
-  <span ng-show="item.dose"> [[item.dose]]</span>
-  <span ng-show="item.route"> [[ item.route ]]</span>
-  <span ng-show="item.ongoing || item.completed || item.stoppedEarly">,
+  <span ng-show="item.ongoing || item.completed || item.stoppedEarly">
     <span ng-show="item.ongoing">
       day [[ item.start_date | daysSince:1:true]]/[[ item.start_date | daysTo:item.planned_end_date:true ]]
     </span>
@@ -15,4 +12,9 @@
       stopped on day [[ item | totalDays ]]/[[ item.start_date | daysTo:item.planned_end_date:true ]]
     </span>
   </span>
+  <br ng-show="item.start_date && (item.stoppedDate || item.planned_end_date)">
+  [[item.drug]]
+  <span ng-show="item.dose"> [[item.dose]]</span>
+  <span ng-show="item.route"> [[ item.route ]]</span>
+  <span ng-show="item.frequency">[[ item.frequency ]]</span>
 </span>
