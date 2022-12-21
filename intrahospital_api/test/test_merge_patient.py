@@ -332,7 +332,9 @@ class MergePatientTestCase(OpalTestCase):
         old_nationality.arrival_in_the_uk = "2020"
         old_nationality.updated = timezone.now()
         old_nationality.save()
-        merge_patient.merge_patient(self.old_patient, self.new_patient)
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
         new_nationality = self.new_patient.nationality_set.get()
         self.assertEqual(
             new_nationality.arrival_in_the_uk, "2020"
@@ -355,7 +357,9 @@ class MergePatientTestCase(OpalTestCase):
         self.old_episode.microbiologyinput_set.create(
             clinical_discussion="treatment options"
         )
-        merge_patient.merge_patient(self.old_patient, self.new_patient)
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
         # make sure we haven't created a new episode
         self.assertEqual(self.new_patient.episode_set.count(), 1)
         micro_input = self.new_episode.microbiologyinput_set.get()
@@ -369,7 +373,9 @@ class MergePatientTestCase(OpalTestCase):
         tb_category = tb_episode_categories.TbEpisode.display_name
         old_tb_episode = self.old_patient.episode_set.create(category_name=tb_category)
         old_tb_episode.patientconsultation_set.create(plan="treatment options")
-        merge_patient.merge_patient(self.old_patient, self.new_patient)
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
         new_tb_episode = self.new_patient.episode_set.get(category_name=tb_category)
         new_patient_consultation = new_tb_episode.patientconsultation_set.get()
         self.assertEqual(new_patient_consultation.plan, "treatment options")

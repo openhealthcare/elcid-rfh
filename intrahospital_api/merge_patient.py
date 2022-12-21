@@ -93,7 +93,7 @@ def copy_subrecord(subrecord_cls, old_parent, new_parent, old_mrn, new_mrn, is_e
 
 
 @transaction.atomic
-def merge_patient(old_patient, new_patient):
+def merge_patient(*, old_patient, new_patient):
     """
     All elcid native non-singleton entries to be converted to
     the equivalent episode category on the wining MRN, with a reference
