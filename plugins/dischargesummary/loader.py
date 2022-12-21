@@ -109,7 +109,7 @@ def load_dischargesummaries(patient):
                         try:
                             v = datetime.datetime.strptime(v, '%d/%m/%Y %H:%M:%S')
                         except ValueError:
-                            # datetime fields are sometimes stored in a different format
+                            # LAST_UPDATED is sometimes stored in a different format
                             # e.g. Sep 20 2021 12:55PM
                             v = datetime.datetime.strptime(v, '%b %d %Y %I:%M%p')
                         v = timezone.make_aware(v)
