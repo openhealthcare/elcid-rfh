@@ -142,7 +142,6 @@ class UpdateSingletonTestCase(OpalTestCase):
         )
         self.assertIsNone(previous_version.field_dict["previous_mrn"])
 
-
     def test_newer_is_more_recent_than_old(self):
         """
         The active MRNs data is more recent
@@ -246,6 +245,7 @@ class CopyNonSingletonsTestCase(OpalTestCase):
         self.assertEqual(risk_factor.risk_factor, "On immunosupressants")
         self.assertTrue(risk_factor.previous_mrn, self.old_mrn)
 
+
 class CopySubrecordTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
@@ -283,7 +283,6 @@ class CopySubrecordTestCase(OpalTestCase):
             new_nationality.previous_mrn, self.old_mrn
         )
 
-
     def test_episode_non_singleton(self):
         """
         Test copy_subrecord copys over non-singleton episode subrecords
@@ -302,6 +301,7 @@ class CopySubrecordTestCase(OpalTestCase):
         new_antimicobiral = self.new_episode.antimicrobial_set.get()
         self.assertTrue(new_antimicobiral.no_antimicrobials)
         self.assertTrue(new_antimicobiral.previous_mrn, self.old_mrn)
+
 
 class MergePatientTestCase(OpalTestCase):
     def setUp(self):
@@ -379,3 +379,23 @@ class MergePatientTestCase(OpalTestCase):
         new_tb_episode = self.new_patient.episode_set.get(category_name=tb_category)
         new_patient_consultation = new_tb_episode.patientconsultation_set.get()
         self.assertEqual(new_patient_consultation.plan, "treatment options")
+
+    def test_blood_cultures(self):
+        """
+        Blood cultures have related foreign keys, make sure that
+        these are copied over
+        """
+        blood_culture = self.old_patient.bloodcultureset_set.create(
+            lab_number="111"
+        )
+        blood_culture.isolates.create(
+            date_positive=datetime.date.today()
+        )
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
+        blood_culture = self.new_patient.bloodcultureset_set.get()
+        self.assertEqual(blood_culture.lab_number, "111")
+        self.assertEqual(
+            blood_culture.isolates.get().date_positive, datetime.date.today()
+        )
