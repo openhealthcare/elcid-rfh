@@ -133,7 +133,6 @@ class UpdateSingletonTestCase(OpalTestCase):
             old_location,
             self.new_episode,
             self.old_mrn,
-            self.new_mrn,
             is_episode_subrecord=True
         )
         new_location = self.new_episode.location_set.get()
@@ -160,7 +159,6 @@ class UpdateSingletonTestCase(OpalTestCase):
             old_nationality,
             self.new_patient,
             self.old_mrn,
-            self.new_mrn,
             is_episode_subrecord=False
         )
         new_nationality = self.new_patient.nationality_set.get()
@@ -189,7 +187,6 @@ class UpdateSingletonTestCase(OpalTestCase):
             old_location,
             self.new_episode,
             self.old_mrn,
-            self.new_mrn,
             is_episode_subrecord=True
         )
         self.assertIsNone(old_location.previous_mrn)
@@ -222,7 +219,6 @@ class UpdateSingletonTestCase(OpalTestCase):
             old_nationality,
             self.new_patient,
             self.old_mrn,
-            self.new_mrn,
             is_episode_subrecord=False
         )
         new_nationality.refresh_from_db()
@@ -259,7 +255,6 @@ class UpdateSingletonTestCase(OpalTestCase):
             old_nationality,
             self.new_patient,
             self.old_mrn,
-            self.new_mrn,
             is_episode_subrecord=False
         )
         new_nationality.refresh_from_db()
@@ -290,6 +285,7 @@ class UpdateSingletonTestCase(OpalTestCase):
         self.assertEqual(
             previous_versions[2].field_dict["previous_mrn"], None
         )
+
 
 class CopyNonSingletonsTestCase(OpalTestCase):
     def setUp(self):
@@ -365,7 +361,6 @@ class CopyRelatedRecordTestCase(OpalTestCase):
             self.old_patient,
             self.new_patient,
             self.old_mrn,
-            self.new_mrn,
             is_episode_subrecord=False
         )
         new_nationality = self.new_patient.nationality_set.get()
@@ -388,7 +383,6 @@ class CopyRelatedRecordTestCase(OpalTestCase):
             self.old_episode,
             self.new_episode,
             self.old_mrn,
-            self.new_mrn,
             is_episode_subrecord=True
         )
         new_antimicobiral = self.new_episode.antimicrobial_set.get()

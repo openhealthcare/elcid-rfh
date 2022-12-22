@@ -88,7 +88,7 @@ def copy_tagging(old_episode, new_episode):
             old_tag.save()
 
 
-def update_singleton(old_singleton, new_parent, old_mrn, new_mrn, is_episode_subrecord):
+def update_singleton(old_singleton, new_parent, old_mrn, is_episode_subrecord):
     """
     If the old singleton was updated more recently than the new singleton then
     move the old singleton onto the new singleton.
@@ -161,7 +161,7 @@ def copy_non_singletons(old_subrecords, new_parent, old_mrn, is_episode_subrecor
             old_subrecord.save()
 
 
-def copy_record(subrecord_cls, old_parent, new_parent, old_mrn, new_mrn, is_episode_subrecord):
+def copy_record(subrecord_cls, old_parent, new_parent, old_mrn, is_episode_subrecord):
     """
     Copies a subrecord_cl from an old parent (a patient or an episode)
     to a new one.
@@ -171,7 +171,7 @@ def copy_record(subrecord_cls, old_parent, new_parent, old_mrn, new_mrn, is_epis
     else:
         qs = subrecord_cls.objects.filter(patient=old_parent)
     if getattr(subrecord_cls, "_is_singleton", False):
-        update_singleton(qs[0], new_parent, old_mrn, new_mrn, is_episode_subrecord)
+        update_singleton(qs[0], new_parent, old_mrn, is_episode_subrecord)
     else:
         copy_non_singletons(qs, new_parent, old_mrn, is_episode_subrecord)
 
@@ -211,7 +211,6 @@ def merge_patient(*, old_patient, new_patient):
     Elcid native singleton entries to pick the latest but create a reversion history entry for the non-oldest, with a reference to the original_mrn
     """
     old_mrn = old_patient.demographics().hospital_number
-    new_mrn = new_patient.demographics().hospital_number
 
     patient_related_models = get_patient_related_models_to_copy()
     episode_related_models = get_episode_related_models_to_copy()
@@ -222,7 +221,6 @@ def merge_patient(*, old_patient, new_patient):
             old_patient,
             new_patient,
             old_mrn,
-            new_mrn,
             is_episode_subrecord=False
         )
     for old_episode in old_patient.episode_set.all():
@@ -239,7 +237,6 @@ def merge_patient(*, old_patient, new_patient):
                 old_episode,
                 new_episode,
                 old_mrn,
-                new_mrn,
                 is_episode_subrecord=True
             )
     old_patient.delete()
