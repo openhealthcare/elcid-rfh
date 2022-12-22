@@ -3,11 +3,56 @@ from elcid import models
 from intrahospital_api import loader
 from opal.core import subrecords
 from django.db import transaction
+from plugins.admissions import models as admission_models
+from plugins.covid import models as covid_models
+from plugins.dischargesummary import models as discharge_models
+from plugins.handover import models as handover_models
+from plugins.icu import models as icu_models
+from plugins.tb import models as tb_models
+from obs import models as obs_models
+from opal import models as opal_models
 import reversion
 
 IGNORED_FIELDS = {
     'id', 'episode', 'patient', 'previous_mrn'
 }
+
+
+def get_patient_related_models_to_copy():
+    patient_subrecords = list(subrecords.patient_subrecords())
+    # by default copy all models that are subclasses of previous MRN
+    to_copy = [
+        i for i in patient_subrecords if issubclass(i, models.PreviousMRN)
+    ]
+    to_copy.extend([
+        admission_models.BedStatus,
+        admission_models.TransferHistory,
+        admission_models.UpstreamLocation,
+        covid_models.CovidPatient,
+        discharge_models.DischargeSummary,
+        models.ChronicAntifungal,
+        handover_models.AMTHandover,
+        handover_models.NursingHandover,
+        icu_models.ICUHandoverLocation,
+        icu_models.ICUHandoverLocationHistory,
+        icu_models.ICUHandover,
+        opal_models.PatientRecordAccess,
+        tb_models.AFBSmear,
+        tb_models.AFBCulture,
+        tb_models.AFBRefLab,
+        tb_models.TBPCR,
+    ])
+    return to_copy
+
+
+def get_episode_related_models_to_copy():
+    episode_subrecords = list(subrecords.episode_subrecords())
+    to_copy = [
+        i for i in episode_subrecords if issubclass(i, models.PreviousMRN)
+    ]
+    to_copy.append(obs_models.Observation)
+    return to_copy
+
 
 def update_singleton(old_singleton, new_parent, old_mrn, new_mrn, is_episode_subrecord):
     if is_episode_subrecord:
@@ -62,6 +107,7 @@ def update_singleton(old_singleton, new_parent, old_mrn, new_mrn, is_episode_sub
             with reversion.create_revision():
                 new_singleton.save()
 
+
 def copy_non_singletons(old_subrecords, new_parent, old_mrn, is_episode_subrecord):
     """
     Copies the old_subrecords query set onto the new parent (a patient or episode).
@@ -77,7 +123,7 @@ def copy_non_singletons(old_subrecords, new_parent, old_mrn, is_episode_subrecor
             old_subrecord.save()
 
 
-def copy_subrecord(subrecord_cls, old_parent, new_parent, old_mrn, new_mrn, is_episode_subrecord):
+def copy_record(subrecord_cls, old_parent, new_parent, old_mrn, new_mrn, is_episode_subrecord):
     """
     Copies a subrecord_cl from an old parent (a patient or an episode)
     to a new one.
@@ -86,10 +132,29 @@ def copy_subrecord(subrecord_cls, old_parent, new_parent, old_mrn, new_mrn, is_e
         qs = subrecord_cls.objects.filter(episode=old_parent)
     else:
         qs = subrecord_cls.objects.filter(patient=old_parent)
-    if subrecord_cls._is_singleton:
+    if getattr(subrecord_cls, "_is_singleton", False):
         update_singleton(qs[0], new_parent, old_mrn, new_mrn, is_episode_subrecord)
     else:
         copy_non_singletons(qs, new_parent, old_mrn, is_episode_subrecord)
+
+
+def updates_statuses(new_patient):
+    """
+    If the patient now has upstream models, make sure
+    we update the corresponding status objects.
+    """
+    # Make sure we update the patient status.
+    new_patient.patientdischargesummarystatus_set.update(
+        has_dischargesummaries=new_patient.dischargesummaries.exists()
+    )
+
+    new_patient.patientamthandoverstatus_set.update(
+        has_handover=new_patient.amt_handover.exists()
+    )
+
+    new_patient.patientnursinghandoverstatus_set.update(
+        has_handover=new_patient.nursing_handover.exists()
+    )
 
 
 @transaction.atomic
@@ -110,11 +175,12 @@ def merge_patient(*, old_patient, new_patient):
     old_mrn = old_patient.demographics().hospital_number
     new_mrn = new_patient.demographics().hospital_number
 
-    for patient_subrecord in subrecords.patient_subrecords():
-        if not issubclass(patient_subrecord, models.PreviousMRN):
-            continue
-        copy_subrecord(
-            patient_subrecord,
+    patient_related_models = get_patient_related_models_to_copy()
+    episode_related_models = get_episode_related_models_to_copy()
+
+    for patient_related_model in patient_related_models:
+        copy_record(
+            patient_related_model,
             old_patient,
             new_patient,
             old_mrn,
@@ -128,11 +194,9 @@ def merge_patient(*, old_patient, new_patient):
         new_episode, _ = new_patient.episode_set.get_or_create(
             category_name=old_episode.category_name
         )
-        for episode_subrecord in subrecords.episode_subrecords():
-            if not issubclass(episode_subrecord, models.PreviousMRN):
-                continue
-            copy_subrecord(
-                episode_subrecord,
+        for episode_related_model in episode_related_models:
+            copy_record(
+                episode_related_model,
                 old_episode,
                 new_episode,
                 old_mrn,
@@ -143,4 +207,5 @@ def merge_patient(*, old_patient, new_patient):
     new_patient.mergedmrn_set.filter(mrn=old_mrn).update(
         our_merge_datetime=timezone.now()
     )
+    updates_statuses(new_patient)
     loader.load_patient(new_patient, run_async=False)

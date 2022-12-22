@@ -211,7 +211,7 @@ class CopyNonSingletonsTestCase(OpalTestCase):
             hospital_number=self.new_mrn
         )
 
-    def test_copies_episode_subrecords(self):
+    def test_copies_episode_related_records(self):
         """
         Test copy_non_singletons copys over non singleton episode subrecords
         """
@@ -228,7 +228,7 @@ class CopyNonSingletonsTestCase(OpalTestCase):
         self.assertTrue(new_antimicobiral.no_antimicrobials)
         self.assertTrue(new_antimicobiral.previous_mrn, self.old_mrn)
 
-    def test_copies_patient_subrecords(self):
+    def test_copies_patient_related_records(self):
         """
         Test copy_non_singletons copys over non singleton patient subrecords
         """
@@ -246,7 +246,7 @@ class CopyNonSingletonsTestCase(OpalTestCase):
         self.assertTrue(risk_factor.previous_mrn, self.old_mrn)
 
 
-class CopySubrecordTestCase(OpalTestCase):
+class CopyRelatedRecordTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
         self.old_mrn = "123"
@@ -267,7 +267,7 @@ class CopySubrecordTestCase(OpalTestCase):
         old_nationality.arrival_in_the_uk = "2020"
         old_nationality.updated = timezone.now()
         old_nationality.save()
-        merge_patient.copy_subrecord(
+        merge_patient.copy_record(
             tb_models.Nationality,
             self.old_patient,
             self.new_patient,
@@ -290,7 +290,7 @@ class CopySubrecordTestCase(OpalTestCase):
         self.old_episode.antimicrobial_set.create(
             no_antimicrobials=True
         )
-        merge_patient.copy_subrecord(
+        merge_patient.copy_record(
             models.Antimicrobial,
             self.old_episode,
             self.new_episode,
@@ -301,6 +301,43 @@ class CopySubrecordTestCase(OpalTestCase):
         new_antimicobiral = self.new_episode.antimicrobial_set.get()
         self.assertTrue(new_antimicobiral.no_antimicrobials)
         self.assertTrue(new_antimicobiral.previous_mrn, self.old_mrn)
+
+
+class UpdateStatusesTestCase(OpalTestCase):
+    def setUp(self):
+        self.new_patient, _ = self.new_patient_and_episode_please()
+
+    def test_discharge_summary_status(self):
+        self.new_patient.dischargesummaries.create()
+        merge_patient.updates_statuses(self.new_patient)
+        summary_status = self.new_patient.patientdischargesummarystatus_set.get()
+        self.assertTrue(summary_status.has_dischargesummaries)
+        amt_handover_status = self.new_patient.patientamthandoverstatus_set.get()
+        self.assertFalse(amt_handover_status.has_handover)
+        nursing_status = self.new_patient.patientnursinghandoverstatus_set.get()
+        self.assertFalse(nursing_status.has_handover)
+
+    def test_amt_handover_status(self):
+        self.new_patient.amt_handover.create(sqlserver_id=1, handover_version=1)
+        merge_patient.updates_statuses(self.new_patient)
+        summary_status = self.new_patient.patientdischargesummarystatus_set.get()
+        self.assertFalse(summary_status.has_dischargesummaries)
+        amt_handover_status = self.new_patient.patientamthandoverstatus_set.get()
+        self.assertTrue(amt_handover_status.has_handover)
+        nursing_status = self.new_patient.patientnursinghandoverstatus_set.get()
+        self.assertFalse(nursing_status.has_handover)
+
+    def test_nursing_handover_status(self):
+        self.new_patient.nursing_handover.create(
+            sqlserver_uniqueid=1, database_version=1
+        )
+        merge_patient.updates_statuses(self.new_patient)
+        summary_status = self.new_patient.patientdischargesummarystatus_set.get()
+        self.assertFalse(summary_status.has_dischargesummaries)
+        amt_handover_status = self.new_patient.patientamthandoverstatus_set.get()
+        self.assertFalse(amt_handover_status.has_handover)
+        nursing_status = self.new_patient.patientnursinghandoverstatus_set.get()
+        self.assertTrue(nursing_status.has_handover)
 
 
 class MergePatientTestCase(OpalTestCase):
@@ -399,3 +436,14 @@ class MergePatientTestCase(OpalTestCase):
         self.assertEqual(
             blood_culture.isolates.get().date_positive, datetime.date.today()
         )
+
+    def test_updates_status(self):
+        self.old_patient.dischargesummaries.create()
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
+        self.assertTrue(
+            self.new_patient.dischargesummaries.exists()
+        )
+        summary_status = self.new_patient.patientdischargesummarystatus_set.get()
+        self.assertTrue(summary_status.has_dischargesummaries)
