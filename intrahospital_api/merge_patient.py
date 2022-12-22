@@ -54,6 +54,29 @@ def get_episode_related_models_to_copy():
     return to_copy
 
 
+def copy_tagging(old_episode, new_episode):
+    """
+    Copy over the tagging from the old episode to the new episode.
+
+    We have no updated timestamp so consider the unarchived tag to be
+    more important than the unarchived tag.
+    """
+    for old_tag in old_episode.tagging_set.all():
+        new_tag = new_episode.tagging_set.filter(
+            value=old_tag.value
+        ).first()
+        if new_tag:
+            if new_tag.archived and not old_tag.archived:
+                # if old_tag is not archived consider it the primary
+                new_tag.archived = False
+                new_tag.user = old_tag.user
+                new_tag.save()
+        else:
+            old_tag.episode_id = new_episode.id
+            old_tag.id = None
+            old_tag.save()
+
+
 def update_singleton(old_singleton, new_parent, old_mrn, new_mrn, is_episode_subrecord):
     if is_episode_subrecord:
         new_singleton = old_singleton.__class__.objects.get(episode=new_parent)
@@ -194,6 +217,7 @@ def merge_patient(*, old_patient, new_patient):
         new_episode, _ = new_patient.episode_set.get_or_create(
             category_name=old_episode.category_name
         )
+        copy_tagging(old_episode, new_episode)
         for episode_related_model in episode_related_models:
             copy_record(
                 episode_related_model,

@@ -7,7 +7,101 @@ from plugins.tb import models as tb_models
 from opal.core.test import OpalTestCase
 from intrahospital_api import merge_patient
 from django.utils import timezone
+from django.contrib.auth.models import User
 from reversion.models import Version
+
+
+class CopyTaggingTestCase(OpalTestCase):
+    def setUp(self):
+        _, self.old_episode = self.new_patient_and_episode_please()
+        _, self.new_episode = self.new_patient_and_episode_please()
+        self.old_user = User.objects.create(username='old_user')
+        self.new_user = User.objects.create(username='new_user')
+
+    def test_copy_archived_tag(self):
+        self.old_episode.tagging_set.create(
+            archived=True,
+            user=self.old_user,
+            value="some list"
+        )
+        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        self.assertTrue(
+            self.new_episode.tagging_set.filter(
+                archived=True, user=self.old_user, value="some list"
+            ).exists()
+        )
+
+    def test_copy_active_tag(self):
+        self.old_episode.tagging_set.create(
+            archived=False,
+            user=self.old_user,
+            value="some list"
+        )
+        self.new_episode.tagging_set.create(
+            archived=True,
+            user=self.new_user,
+            value="some list"
+        )
+        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        self.assertTrue(
+            self.new_episode.tagging_set.filter(
+                archived=False, user=self.old_user, value="some list"
+            ).exists()
+        )
+
+    def test_does_not_copy_archived_tag_if_active_tag_exists(self):
+        self.old_episode.tagging_set.create(
+            archived=True,
+            user=self.old_user,
+            value="some list"
+        )
+        self.new_episode.tagging_set.create(
+            archived=False,
+            user=self.new_user,
+            value="some list"
+        )
+        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        self.assertTrue(
+            self.new_episode.tagging_set.filter(
+                archived=False, user=self.new_user, value="some list"
+            ).exists()
+        )
+
+    def test_does_not_copy_archived_tag_if_archived_tag_exists(self):
+        self.old_episode.tagging_set.create(
+            archived=True,
+            user=self.old_user,
+            value="some list"
+        )
+        self.new_episode.tagging_set.create(
+            archived=True,
+            user=self.new_user,
+            value="some list"
+        )
+        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        self.assertTrue(
+            self.new_episode.tagging_set.filter(
+                archived=True, user=self.new_user, value="some list"
+            ).exists()
+        )
+
+    def test_does_not_copy_active_tag_if_active_tag_exists(self):
+        self.old_episode.tagging_set.create(
+            archived=False,
+            user=self.old_user,
+            value="some list"
+        )
+        self.new_episode.tagging_set.create(
+            archived=False,
+            user=self.new_user,
+            value="some list"
+        )
+        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        self.assertTrue(
+            self.new_episode.tagging_set.filter(
+                archived=False, user=self.new_user, value="some list"
+            ).exists()
+        )
 
 
 class UpdateSingletonTestCase(OpalTestCase):
@@ -49,7 +143,6 @@ class UpdateSingletonTestCase(OpalTestCase):
         self.assertEqual(
             new_location.previous_mrn, self.old_mrn
         )
-
 
     def test_simple_update_patient_singleton(self):
         """
@@ -447,3 +540,12 @@ class MergePatientTestCase(OpalTestCase):
         )
         summary_status = self.new_patient.patientdischargesummarystatus_set.get()
         self.assertTrue(summary_status.has_dischargesummaries)
+
+    def test_copies_tags(self):
+        self.old_episode.tagging_set.create(archived=False, value='some list')
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
+        self.assertTrue(
+            self.new_episode.tagging_set.filter(archived=False, value='some list').exists()
+        )
