@@ -495,6 +495,13 @@ class MergePatientTestCase(OpalTestCase):
         micro_input = self.new_episode.microbiologyinput_set.get()
         self.assertEqual(micro_input.clinical_discussion, "treatment options")
 
+    def test_copies_over_observations(self):
+        self.old_episode.observation_set.create()
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
+        self.assertTrue(self.new_episode.observation_set.exists())
+
     def test_copies_over_episode_subrecords_where_the_episode_does_not_exist(self):
         """
         Test merge_patient creates episode categories if they
