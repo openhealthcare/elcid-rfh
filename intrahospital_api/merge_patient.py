@@ -19,8 +19,13 @@ IGNORED_FIELDS = {
 
 
 def get_patient_related_models_to_copy():
+    """
+    Return the models with a relation to patient that we need
+    copy over.
+    """
     patient_subrecords = list(subrecords.patient_subrecords())
     # by default copy all models that are subclasses of previous MRN
+    # as these are subrecords that are editable in the front end.
     to_copy = [
         i for i in patient_subrecords if issubclass(i, models.PreviousMRN)
     ]
@@ -46,7 +51,13 @@ def get_patient_related_models_to_copy():
 
 
 def get_episode_related_models_to_copy():
+    """
+    Return the models with a relation to episode that we need
+    copy over.
+    """
     episode_subrecords = list(subrecords.episode_subrecords())
+    # by default copy all models that are subclasses of previous MRN
+    # as these are subrecords that are editable in the front end.
     to_copy = [
         i for i in episode_subrecords if issubclass(i, models.PreviousMRN)
     ]
@@ -78,6 +89,10 @@ def copy_tagging(old_episode, new_episode):
 
 
 def update_singleton(old_singleton, new_parent, old_mrn, new_mrn, is_episode_subrecord):
+    """
+    If the old singleton was updated more recently than the new singleton then
+    move the old singleton onto the new singleton.
+    """
     if is_episode_subrecord:
         new_singleton = old_singleton.__class__.objects.get(episode=new_parent)
     else:
