@@ -213,6 +213,109 @@ def get_mrn_and_date_from_merge_comment(merge_comment):
     return sorted(result, key=lambda x: x[1], reverse=True)
 
 
+class MergeException(Exception):
+    pass
+
+
+class MergeResult:
+    """
+    An object that stores the merge results of the
+    graph crawl.
+
+    The initial MRN is the MRN that we used to start the crawl
+    The active MRN is that active MRN related to the initial MRN.
+    The merged_mrn_dicts is a list of dictionaries to make merged MRNs from
+    """
+    initial_mrn = None
+    active_mrn = None
+    merged_mrn_dicts = None
+
+    def __init__(self, initial_mrn):
+        self.initial_mrn = initial_mrn
+        self.merged_mrn_dicts = []
+
+
+def get_masterfile_row(mrn):
+    """
+    Takes in an MRN and returns the row from the master file
+    for that MRN.
+
+    If there is more than row for the MRN one we raise a MergeException.
+    If there is no row for the MRN we raise a MergeException.
+    """
+    query = """
+    SELECT *
+    FROM CRS_Patient_Masterfile
+    WHERE Patient_Number = @mrn
+    AND MERGED = 'Y'
+    AND MERGE_COMMENTS <> ''
+    AND MERGE_COMMENTS is not null
+    """
+    query_results = api.execute_hospital_query(
+        query, {"mrn": mrn}
+    )
+    if not query_results:
+        raise MergeException(f'Unable to find a row for {mrn}')
+    if len(query_results) > 1:
+        raise MergeException(f'Multiple rows founnd for {mrn}')
+    query_result = query_results[0]
+    return query_result
+
+
+def crawl_merge_comments(mrn, visited, merge_result):
+    """
+    Takes in an MRN, a list of the MRNs that have already been crawled
+    and the current merge_result.
+
+    Stores in to merge_results, what the active MRN related to this MRN is.
+    Also stores
+
+    gets the master file for the current MRN, looks up the MRNs mentioned in its
+    merged comment and then calls crawl_merge_comments
+
+    All results of the crawl are stored in the merge_result
+    object ie the active MRN and the list of dicts to be turned into
+    elcid.models.MergedMRN objects.
+    """
+    visited.append(mrn)
+    row = get_masterfile_row(mrn)
+    merge_comments = row["MERGE_COMMENTS"]
+    is_active = False
+    if row["ACTIVE_INACTIVE"] == models.MergedMRN.ACTIVE:
+        is_active = True
+    if is_active:
+        if merge_result.active_mrn:
+            # if its active and we already have an active MRN then
+            # there are two actie MRNs, raise an exception.
+            raise MergeException(
+                f'Multiple active results found for {merge_result.initial_mrn}'
+            )
+        else:
+            merge_result.active_mrn = mrn
+    merged_mrn_and_dates = get_mrn_and_date_from_merge_comment(merge_comments)
+    if not merged_mrn_and_dates:
+        raise MergeException(f'Unable to get merge details for {mrn}')
+    if not is_active:
+        # upstream merge date time is complicated. We know there are
+        # flaws in upstream merge data, e.g. we can have a merge comment
+        # of Merged with 123 on 10 Oct Merged with 123 11 Oct
+        # we just take the highest as the upstream merge datetime
+        if len(merged_mrn_and_dates) > 1:
+            upstream_merge_datetime = merged_mrn_and_dates[0][1]
+        else:
+            upstream_merge_datetime = max([i[1] for i in merged_mrn_and_dates])
+        merge_result.merged_mrn_dicts.append({
+                "mrn": mrn,
+                "merge_comments": merge_comments,
+                "upstream_merge_datetime": upstream_merge_datetime
+        })
+
+    for merged_mrn, _ in merged_mrn_and_dates:
+        if merged_mrn in visited:
+            continue
+        crawl_merge_comments(merged_mrn, visited.copy(), merge_result)
+
+
 def get_active_mrn_and_merged_mrn_data(mrn):
     """
     For an MRN return the active MRN related to it (which could be itself)
@@ -232,64 +335,11 @@ def get_active_mrn_and_merged_mrn_data(mrn):
     If there are no related rows, ie the patient
     is not merged, return None.
     """
-    query = """
-    SELECT *
-    FROM CRS_Patient_Masterfile
-    WHERE Patient_Number = @mrn
-    AND MERGED = 'Y'
-    AND MERGE_COMMENTS <> ''
-    AND MERGE_COMMENTS is not null
-    """
-    query_result = api.execute_hospital_query(
-        query, {"mrn": mrn}
-    )
-    if not query_result:
-        return mrn, []
-
-    # The merged comments can be nested for for MRN x
-    # we can have MERGE_COMMENT "Merged with y on 21 Jan"
-    # then for y we can have the merge comment "Merged with z on 30 Mar".
-    # So we traverse the merge comments and create a dictionary of MRN: row
-    # for every MRN related to the one passed in.
-    mrn_to_row = {mrn: query_result}
-    related_mrns = [i[0] for i in get_mrn_and_date_from_merge_comment(query_result["MERGE_COMMENTS"])]
-    for related_mrn in related_mrns:
-        related_result = api.execute_hospital_query(
-            query, {"mrn": related_mrn}
-        )
-        mrn_to_row[related_mrn] = related_result
-        related_related_mrns = [
-            i[0] for i in get_mrn_and_date_from_merge_comment(related_result["MERGE_COMMENTS"])
-        ]
-        for related_related_mrn in related_related_mrns:
-            if related_related_mrn not in mrn_to_row:
-                mrn_to_row[related_related_mrn] = api.execute_hospital_query(
-                    query, {"mrn": related_related_mrn}
-                )
-
-    active_rows = [
-        i for i in mrn_to_row.values()
-        if i["ACTIVE_INACTIVE"] == models.MergedMRN.ACTIVE
-    ]
-
-    # if there is not exactly 1 active row, we don't know what to merge
-    # so do nothing.
-    if not len(active_rows) == 1:
-        return mrn, []
-
-    active_mrn = active_rows[0]["PATIENT_NUMBER"]
-
-    merged_mrns = []
-    for row in mrn_to_row.values():
-        if row["ACTIVE_INACTIVE"] == models.MergedMRN.INACTIVE:
-            parsed_comments = get_mrn_and_date_from_merge_comment(row["MERGE_COMMENTS"])
-            most_recent_merge_datetime = parsed_comments[0][1]
-            merged_mrns.append({
-                "mrn": row["PATIENT_NUMBER"],
-                "merge_comments": row["MERGE_COMMENTS"],
-                "upstream_merge_datetime": most_recent_merge_datetime
-            })
-    return active_mrn, merged_mrns
+    merge_result = MergeResult(mrn)
+    crawl_merge_comments(mrn, [], merge_result)
+    if not merge_result.active_mrn:
+        raise MergeException(f'Unable to find an active MRN for {mrn}')
+    return merge_result.active_mrn, merge_result.merged_mrn_dicts
 
 
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):

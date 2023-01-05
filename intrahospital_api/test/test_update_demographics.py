@@ -471,103 +471,146 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
             )
         )
 
-@mock.patch('intrahospital_api.update_demographics.api')
+
+@mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
 class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
-    """
-    Tests a real world case (with dates and MRNs changed)
-    to make sure we crawl the tree of Merged MRNs correctly.
-    """
-    MAPPING = {
+    BASIC_MAPPING = {
         "123": {
-            "PATIENT_NUMBER": "123",
-            "MERGE_COMMENTS": " ".join([
-                "Merged with MRN 234 on Oct 21 2014  4:44PM",
-            ]),
+            "MERGE_COMMENTS": "Merged with MRN 234 on Oct 20 2014  4:44PM",
             "ACTIVE_INACTIVE": "INACTIVE"
         },
         "234": {
-            "PATIENT_NUMBER": "234",
+            "MERGE_COMMENTS": "Merged with MRN 123 on Oct 21 2014  4:44PM",
+            "ACTIVE_INACTIVE": "ACTIVE"
+        }
+
+    }
+
+    COMPLEX_MAPPING = {
+        "345": {
             "MERGE_COMMENTS": " ".join([
-                "Merged with MRN 123 Oct 17 2014 11:03AM",
-                "Merged with MRN 123 on Oct 21 2014  4:44PM",
-                "Merged with MRN 456 on Apr 14 2018  1:40PM"
+                "Merged with MRN 456 on Oct 21 2014  4:44PM",
             ]),
             "ACTIVE_INACTIVE": "INACTIVE"
         },
         "456": {
-            "PATIENT_NUMBER": "456",
             "MERGE_COMMENTS": " ".join([
-                "Merged with MRN 234 on Apr 14 2018  1:40PM",
+                "Merged with MRN 345 Oct 17 2014 11:03AM",
+                "Merged with MRN 345 on Oct 21 2014  4:44PM",
+                "Merged with MRN 567 on Apr 14 2018  1:40PM"
+            ]),
+            "ACTIVE_INACTIVE": "INACTIVE"
+        },
+        "567": {
+            "MERGE_COMMENTS": " ".join([
+                "Merged with MRN 456 on Apr 14 2018  1:40PM",
             ]),
             "ACTIVE_INACTIVE": "ACTIVE"
         }
     }
 
-    def test_crawls_nested_rows_from_branch(self, api):
+    def test_basic_inactive_case(self, get_masterfile_row):
+        """
+        Pass in an inactive MRN, return the active MRN and the date it was merged.
+        """
+        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('123')
+        self.assertEqual(active_mrn, "234")
+        self.assertEqual(
+            merged_mrn_and_dates,
+            [{
+                "mrn": "123",
+                "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2014, 10, 20, 16, 44
+                ))
+            }]
+        )
+
+    def test_basic_active_case(self, get_masterfile_row):
+        """
+        Pass in an active MRN, return the active MRN and the date it was merged.
+        """
+        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('234')
+        self.assertEqual(active_mrn, "234")
+        self.assertEqual(
+            merged_mrn_and_dates,
+            [{
+                "mrn": "123",
+                "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
+                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
+                    2014, 10, 20, 16, 44
+                ))
+            }]
+        )
+
+    def test_crawls_nested_rows_from_branch(self, get_masterfile_row):
         """
         We pass in an inactive MRN not directly connected to the active MRN.
 
         We expect it to crawl the across the the MRNs it is connected with
         and to return the active MRN and merged data.
         """
-        api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
+        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
-            "123"
+            "345"
         )
         self.assertEqual(
-            active_mrn, "456"
+            active_mrn, "567"
         )
         expected = [
             {
-                "mrn": "123",
+                "mrn": "345",
                 "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
                     2014, 10, 21, 16, 44
                 )),
-                "merge_comments": self.MAPPING["123"]["MERGE_COMMENTS"]
+                "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
             },
             {
-                "mrn": "234",
+                "mrn": "456",
                 "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
                     2018, 4, 14, 13, 40
                 )),
-                "merge_comments": self.MAPPING["234"]["MERGE_COMMENTS"]
+                "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
             },
         ]
         self.assertEqual(expected, merged_data)
 
-    def test_crawls_nested_rows_from_trunk(self, api):
+    def test_crawls_nested_rows_from_trunk(self, get_masterfile_row):
         """
         We pass in an inactive MRN linked to an inactive MRN and an active MRN.
 
         We expect it to correctly decide which is the active MRN, and to return
         all inactive MRNs in the merged_mrn_data.
         """
-        api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
+        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
-            "234"
+            "456"
         )
         self.assertEqual(
-            active_mrn, "456"
+            active_mrn, "567"
         )
         expected = [
             {
-                "mrn": "123",
+                "mrn": "345",
                 "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
                     2014, 10, 21, 16, 44
                 )),
-                "merge_comments": self.MAPPING["123"]["MERGE_COMMENTS"]
+                "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
             },
             {
-                "mrn": "234",
+                "mrn": "456",
                 "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
                     2018, 4, 14, 13, 40
                 )),
-                "merge_comments": self.MAPPING["234"]["MERGE_COMMENTS"]
+                "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
             },
         ]
-        self.assertEqual(expected, sorted(merged_data, key=lambda x: x["mrn"]))
+        merged_data = sorted(merged_data, key=lambda x: x["mrn"])
+        self.assertEqual(expected, merged_data)
 
-    def test_handles_active_mrns(self, api):
+    def test_handles_active_mrns(self, get_masterfile_row):
         """
         We pass in an active MRN linked to an inactive MRN that is linked to an inactive
         MRN.
@@ -575,35 +618,28 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         We expect it to correctly recognise it is an inactive MRN and return
         all related MRNs as merged_mrn_data.
         """
-        api.execute_hospital_query.side_effect = lambda x, y: self.MAPPING[y["mrn"]]
+        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
-            "456"
+            "567"
         )
         self.assertEqual(
-            active_mrn, "456"
+            active_mrn, "567"
         )
         expected = [
             {
-                "mrn": "123",
+                "mrn": "345",
                 "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
                     2014, 10, 21, 16, 44
                 )),
-                "merge_comments": self.MAPPING["123"]["MERGE_COMMENTS"]
+                "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
             },
             {
-                "mrn": "234",
+                "mrn": "456",
                 "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
                     2018, 4, 14, 13, 40
                 )),
-                "merge_comments": self.MAPPING["234"]["MERGE_COMMENTS"]
+                "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
             },
         ]
-        self.assertEqual(expected, sorted(merged_data, key=lambda x: x["mrn"]))
-
-    def test_no_results(self, api):
-        api.execute_hospital_query.return_value = []
-        active_mrn, merged_mrn_data = update_demographics.get_active_mrn_and_merged_mrn_data(
-            "234"
-        )
-        self.assertEqual(active_mrn, "234")
-        self.assertEqual(merged_mrn_data, [])
+        merged_data = sorted(merged_data, key=lambda x: x["mrn"])
+        self.assertEqual(expected, merged_data)
