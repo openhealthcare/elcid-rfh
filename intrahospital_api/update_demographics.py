@@ -24,6 +24,16 @@ from elcid import constants, models
 api = get_api()
 
 
+GET_MASTERFILE_DATA_FOR_MERGED_MRN = """
+    SELECT *
+    FROM CRS_Patient_Masterfile
+    WHERE Patient_Number = @mrn
+    AND MERGED = 'Y'
+    AND MERGE_COMMENTS <> ''
+    AND MERGE_COMMENTS is not null
+"""
+
+
 def update_external_demographics(
     external_demographics,
     demographics_dict,
@@ -243,16 +253,8 @@ def get_masterfile_row(mrn):
     If there is more than row for the MRN one we raise a MergeException.
     If there is no row for the MRN we raise a MergeException.
     """
-    query = """
-    SELECT *
-    FROM CRS_Patient_Masterfile
-    WHERE Patient_Number = @mrn
-    AND MERGED = 'Y'
-    AND MERGE_COMMENTS <> ''
-    AND MERGE_COMMENTS is not null
-    """
     query_results = api.execute_hospital_query(
-        query, {"mrn": mrn}
+        GET_MASTERFILE_DATA_FOR_MERGED_MRN, {"mrn": mrn}
     )
     if not query_results:
         raise MergeException(f'Unable to find a row for {mrn}')
