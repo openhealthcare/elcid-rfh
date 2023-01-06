@@ -370,6 +370,10 @@ def load_bed_status():
 
         for bed_data in status:
             patient = mrn_to_patient.get(bed_data["Local_Patient_Identifier"])
+            # find_patients_from_mrns excludes invalid MRNs,
+            # if the patient identifier is not present it means
+            # it is either Nones, an empty string, only made up of zeros or empty spaces
+            # in this case, skip it.
             if not patient:
                 continue
             bed_status = BedStatus(patient=patient)
