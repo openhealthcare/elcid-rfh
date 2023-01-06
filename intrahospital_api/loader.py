@@ -25,24 +25,7 @@ from intrahospital_api import logger
 api = get_api()
 
 
-@timing
 def initial_load():
-    models.InitialPatientLoad.objects.all().delete()
-    models.BatchPatientLoad.objects.all().delete()
-    batch = models.BatchPatientLoad()
-    batch.start()
-
-    try:
-        _initial_load()
-    except:
-        batch.failed()
-        log_errors("initial_load")
-        raise
-    else:
-        batch.complete()
-
-
-def _initial_load():
     update_demographics.reconcile_all_demographics()
     # only run for reconciled patients
     patients = Patient.objects.filter(

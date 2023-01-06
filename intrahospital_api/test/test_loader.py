@@ -18,48 +18,9 @@ class ApiTestCase(OpalTestCase):
         User.objects.create(username="ohc", password="fake_password")
 
 
-@mock.patch("intrahospital_api.loader._initial_load")
-@mock.patch("intrahospital_api.loader.log_errors")
 class InitialLoadTestCase(ApiTestCase):
-    def test_successful_load(self, log_errors, _initial_load):
-        loader.initial_load()
-        _initial_load.assert_called_once_with()
-        self.assertFalse(log_errors.called)
-        batch_load = imodels.BatchPatientLoad.objects.get()
-        self.assertEqual(batch_load.state, batch_load.SUCCESS)
-        self.assertTrue(batch_load.started < batch_load.stopped)
-
-    def test_failed_load(self, log_errors, _initial_load):
-        _initial_load.side_effect = ValueError("Boom")
-        with self.assertRaises(ValueError):
-            loader.initial_load()
-        _initial_load.assert_called_once_with()
-        log_errors.assert_called_once_with("initial_load")
-        batch_load = imodels.BatchPatientLoad.objects.get()
-        self.assertEqual(batch_load.state, batch_load.FAILURE)
-        self.assertTrue(batch_load.started < batch_load.stopped)
-
-    def test_deletes_existing(self, log_errors, _initial_load):
-        patient, _ = self.new_patient_and_episode_please()
-        imodels.InitialPatientLoad.objects.create(
-            patient=patient, started=timezone.now()
-        )
-        previous_load = imodels.BatchPatientLoad.objects.create(
-            started=timezone.now()
-        )
-        loader.initial_load()
-        self.assertNotEqual(
-            previous_load.id, imodels.BatchPatientLoad.objects.first().id
-        )
-
-        self.assertFalse(
-            imodels.InitialPatientLoad.objects.exists()
-        )
-
-
-class _InitialLoadTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
-        super(_InitialLoadTestCase, self).setUp(*args, **kwargs)
+        super().setUp(*args, **kwargs)
 
         # the first two patients should be updated, but not the last
         self.patient_1, _ = self.new_patient_and_episode_please()
@@ -77,7 +38,7 @@ class _InitialLoadTestCase(ApiTestCase):
     )
     def test_flow(self, load_patient, reconcile_all_demographics):
         with mock.patch.object(loader.logger, "info") as info:
-            loader._initial_load()
+            loader.initial_load()
             reconcile_all_demographics.assert_called_once_with()
             call_args_list = load_patient.call_args_list
             self.assertEqual(
