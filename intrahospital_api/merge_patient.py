@@ -78,7 +78,8 @@ def copy_tagging(old_episode, new_episode):
         ).first()
         if new_tag:
             if new_tag.archived and not old_tag.archived:
-                # if old_tag is not archived consider it the primary
+                # if tag on the old episode is not archived consider
+                # then unarchive it then unarchive it on the new one
                 new_tag.archived = False
                 new_tag.user = old_tag.user
                 new_tag.save()
