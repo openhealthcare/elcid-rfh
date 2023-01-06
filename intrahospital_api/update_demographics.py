@@ -253,14 +253,15 @@ def get_merged_masterfile_row(mrn):
     This can still be the active MRN and have had inactive MRNs
     merged into it.
 
+    If there is no merged row, return None
+
     If there is more than row for the MRN one we raise a MergeException.
-    If there is no row for the MRN we raise a MergeException.
     """
     query_results = api.execute_hospital_query(
         GET_MASTERFILE_DATA_FOR_MERGED_MRN, {"mrn": mrn}
     )
     if not query_results:
-        raise MergeException(f'Unable to find a row for {mrn}')
+        return
     if len(query_results) > 1:
         raise MergeException(f'Multiple rows founnd for {mrn}')
     query_result = query_results[0]
@@ -288,6 +289,8 @@ def crawl_merge_comments(mrn, visited, merge_result):
     """
     visited.append(mrn)
     row = get_merged_masterfile_row(mrn)
+    if not row:
+        raise MergeException(f'Unable to find a merged row for {mrn}')
     merge_comments = row["MERGE_COMMENTS"]
     is_active = False
     if row["ACTIVE_INACTIVE"] == "ACTIVE":
@@ -305,7 +308,9 @@ def crawl_merge_comments(mrn, visited, merge_result):
     if not merged_mrn_and_dates:
         raise MergeException(f'Unable to get merge details for {mrn}')
     if not is_active:
-        # upstream merge date time is complicated. We know there are
+        # upstream merge date time is complicated.
+        #
+        # We know there are
         # flaws in upstream merge data, e.g. we can have a merge comment
         # of Merged with 123 on 10 Oct Merged with 123 11 Oct
         # we just take the highest as the upstream merge datetime
@@ -346,6 +351,12 @@ def get_active_mrn_and_merged_mrn_data(mrn):
     If there are no related rows, ie the patient
     is not merged, return None.
     """
+    row = get_merged_masterfile_row(mrn)
+
+    # If it is not merged the we will not get a row back
+    if not row:
+        return mrn, []
+
     merge_result = MergeResult(mrn)
     crawl_merge_comments(mrn, [], merge_result)
     if not merge_result.active_mrn:
