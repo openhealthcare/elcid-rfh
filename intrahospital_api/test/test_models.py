@@ -28,23 +28,3 @@ class InitialPatientLoadTestCase(OpalTestCase):
     def test_update_from_dict(self):
         self.ipl.update_from_dict(dict(state=self.ipl.SUCCESS))
         self.assertEqual(self.ipl.state, self.ipl.RUNNING)
-
-
-class BatchPatientLoadTestCase(OpalTestCase):
-    def setUp(self):
-        self.patient, _ = self.new_patient_and_episode_please()
-        self.bpl = models.BatchPatientLoad()
-        self.bpl.start()
-
-    def test_str_running(self):
-        self.assertIn(self.bpl.RUNNING, str(self.bpl))
-
-    def test_str_stopped(self):
-        self.bpl.complete()
-        self.assertIn(self.bpl.SUCCESS, str(self.bpl))
-        with patch.object(
-            models.BatchPatientLoad, 'duration', new_callable=PropertyMock
-        ) as m:
-            m.return_value = ""
-            str(self.bpl)
-            self.assertTrue(m.called)
