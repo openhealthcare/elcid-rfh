@@ -358,9 +358,15 @@ def get_active_mrn_and_merged_mrn_data(mrn):
         return mrn, []
 
     merge_result = MergeResult(mrn)
-    crawl_merge_comments(mrn, [], merge_result)
+    try:
+        crawl_merge_comments(mrn, [], merge_result)
+    except MergeException as err:
+        logger.error(f"Merge exception raised for {mrn} with '{err}'")
+        return mrn, []
+
     if not merge_result.active_mrn:
-        raise MergeException(f'Unable to find an active MRN for {mrn}')
+        logger.error(f"Unable to find an active MRN for {mrn}")
+        return mrn, []
     return merge_result.active_mrn, merge_result.merged_mrn_dicts
 
 

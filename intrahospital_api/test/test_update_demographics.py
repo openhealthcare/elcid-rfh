@@ -472,7 +472,6 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
         )
 
 
-@mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
 class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
     BASIC_MAPPING = {
         "123": {
@@ -509,6 +508,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         }
     }
 
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
     def test_basic_inactive_case(self, get_merged_masterfile_row):
         """
         Pass in an inactive MRN, return the active MRN and the date it was merged.
@@ -527,6 +527,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             }]
         )
 
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
     def test_basic_active_case(self, get_merged_masterfile_row):
         """
         Pass in an active MRN, return the active MRN and the date it was merged.
@@ -545,6 +546,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             }]
         )
 
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
     def test_crawls_nested_rows_from_branch(self, get_merged_masterfile_row):
         """
         We pass in an inactive MRN not directly connected to the active MRN.
@@ -577,6 +579,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         ]
         self.assertEqual(expected, merged_data)
 
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
     def test_crawls_nested_rows_from_trunk(self, get_merged_masterfile_row):
         """
         We pass in an inactive MRN linked to an inactive MRN and an active MRN.
@@ -610,6 +613,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         merged_data = sorted(merged_data, key=lambda x: x["mrn"])
         self.assertEqual(expected, merged_data)
 
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
     def test_handles_active_mrns(self, get_merged_masterfile_row):
         """
         We pass in an active MRN linked to an inactive MRN that is linked to an inactive
@@ -643,3 +647,39 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         ]
         merged_data = sorted(merged_data, key=lambda x: x["mrn"])
         self.assertEqual(expected, merged_data)
+
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    @mock.patch('intrahospital_api.update_demographics.logger')
+    @mock.patch('intrahospital_api.update_demographics.crawl_merge_comments')
+    def test_error_handling(
+        self, crawl_merge_comments, logger, get_merged_masterfile_row
+    ):
+        get_merged_masterfile_row.return_value = 1
+        crawl_merge_comments.side_effect = update_demographics.MergeException(
+            'Unable to find a merged row for 123'
+        )
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "123"
+        )
+        self.assertEqual(active_mrn, "123")
+        self.assertEqual(merged_data, [])
+        logger.error.assert_called_once_with(
+            "Merge exception raised for 123 with 'Unable to find a merged row for 123'"
+        )
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    @mock.patch('intrahospital_api.update_demographics.logger')
+    @mock.patch('intrahospital_api.update_demographics.crawl_merge_comments')
+    def test_no_active_mrn(
+        self, crawl_merge_comments, logger, get_merged_masterfile_row
+    ):
+        get_merged_masterfile_row.return_value = 1
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "123"
+        )
+        self.assertEqual(active_mrn, "123")
+        self.assertEqual(merged_data, [])
+        logger.error.assert_called_once_with(
+            "Unable to find an active MRN for 123"
+        )
