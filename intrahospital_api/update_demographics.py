@@ -350,6 +350,10 @@ def get_active_mrn_and_merged_mrn_data(mrn):
 
     If there are no related rows, ie the patient
     is not merged, return None.
+
+    If we are unable to calculate the MergedMRNs, log
+    an error message and then continue as the MRN passed in is
+    an active MRN with no related inactive MRNs.
     """
     row = get_merged_masterfile_row(mrn)
 
