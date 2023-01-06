@@ -245,10 +245,13 @@ class MergeResult:
         self.merged_mrn_dicts = []
 
 
-def get_masterfile_row(mrn):
+def get_merged_masterfile_row(mrn):
     """
     Takes in an MRN and returns the row from the master file
-    for that MRN.
+    for that MRN if it has been merged.
+
+    This can still be the active MRN and have had inactive MRNs
+    merged into it.
 
     If there is more than row for the MRN one we raise a MergeException.
     If there is no row for the MRN we raise a MergeException.
@@ -280,7 +283,7 @@ def crawl_merge_comments(mrn, visited, merge_result):
     elcid.models.MergedMRN objects.
     """
     visited.append(mrn)
-    row = get_masterfile_row(mrn)
+    row = get_merged_masterfile_row(mrn)
     merge_comments = row["MERGE_COMMENTS"]
     is_active = False
     if row["ACTIVE_INACTIVE"] == "ACTIVE":

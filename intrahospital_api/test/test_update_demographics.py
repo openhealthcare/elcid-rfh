@@ -472,7 +472,7 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
         )
 
 
-@mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+@mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
 class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
     BASIC_MAPPING = {
         "123": {
@@ -509,11 +509,11 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         }
     }
 
-    def test_basic_inactive_case(self, get_masterfile_row):
+    def test_basic_inactive_case(self, get_merged_masterfile_row):
         """
         Pass in an inactive MRN, return the active MRN and the date it was merged.
         """
-        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        get_merged_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
         active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('123')
         self.assertEqual(active_mrn, "234")
         self.assertEqual(
@@ -527,11 +527,11 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             }]
         )
 
-    def test_basic_active_case(self, get_masterfile_row):
+    def test_basic_active_case(self, get_merged_masterfile_row):
         """
         Pass in an active MRN, return the active MRN and the date it was merged.
         """
-        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        get_merged_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
         active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('234')
         self.assertEqual(active_mrn, "234")
         self.assertEqual(
@@ -545,14 +545,14 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             }]
         )
 
-    def test_crawls_nested_rows_from_branch(self, get_masterfile_row):
+    def test_crawls_nested_rows_from_branch(self, get_merged_masterfile_row):
         """
         We pass in an inactive MRN not directly connected to the active MRN.
 
         We expect it to crawl the across the the MRNs it is connected with
         and to return the active MRN and merged data.
         """
-        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "345"
         )
@@ -577,14 +577,14 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         ]
         self.assertEqual(expected, merged_data)
 
-    def test_crawls_nested_rows_from_trunk(self, get_masterfile_row):
+    def test_crawls_nested_rows_from_trunk(self, get_merged_masterfile_row):
         """
         We pass in an inactive MRN linked to an inactive MRN and an active MRN.
 
         We expect it to correctly decide which is the active MRN, and to return
         all inactive MRNs in the merged_mrn_data.
         """
-        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "456"
         )
@@ -610,7 +610,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         merged_data = sorted(merged_data, key=lambda x: x["mrn"])
         self.assertEqual(expected, merged_data)
 
-    def test_handles_active_mrns(self, get_masterfile_row):
+    def test_handles_active_mrns(self, get_merged_masterfile_row):
         """
         We pass in an active MRN linked to an inactive MRN that is linked to an inactive
         MRN.
@@ -618,7 +618,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         We expect it to correctly recognise it is an inactive MRN and return
         all related MRNs as merged_mrn_data.
         """
-        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "567"
         )
