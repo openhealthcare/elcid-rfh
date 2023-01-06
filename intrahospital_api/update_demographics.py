@@ -309,6 +309,8 @@ def crawl_merge_comments(mrn, visited, merge_result):
         # flaws in upstream merge data, e.g. we can have a merge comment
         # of Merged with 123 on 10 Oct Merged with 123 11 Oct
         # we just take the highest as the upstream merge datetime
+        # this is just an indicator of time order and should
+        # not be concretely relied on.
         if len(merged_mrn_and_dates) > 1:
             upstream_merge_datetime = merged_mrn_and_dates[0][1]
         else:
