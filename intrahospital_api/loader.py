@@ -25,19 +25,6 @@ from intrahospital_api import logger
 api = get_api()
 
 
-def initial_load():
-    update_demographics.reconcile_all_demographics()
-    # only run for reconciled patients
-    patients = Patient.objects.filter(
-        demographics__external_system=EXTERNAL_SYSTEM
-    )
-    total = patients.count()
-
-    for iterator, patient in enumerate(patients.all()):
-        logger.info("running {}/{}".format(iterator+1, total))
-        load_patient(patient, run_async=False)
-
-
 def log_errors(name):
     error = "unable to run {} \n {}".format(name, traceback.format_exc())
     logger.error(error)

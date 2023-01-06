@@ -3,11 +3,9 @@ from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
 from opal.core.test import OpalTestCase
-from elcid import models as emodels
 from elcid import episode_categories
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
-from intrahospital_api.constants import EXTERNAL_SYSTEM
 from plugins.labtests import models as lab_test_models
 
 
@@ -16,50 +14,6 @@ class ApiTestCase(OpalTestCase):
     def setUp(self):
         super(ApiTestCase, self).setUp()
         User.objects.create(username="ohc", password="fake_password")
-
-
-class InitialLoadTestCase(ApiTestCase):
-    def setUp(self, *args, **kwargs):
-        super().setUp(*args, **kwargs)
-
-        # the first two patients should be updated, but not the last
-        self.patient_1, _ = self.new_patient_and_episode_please()
-        self.patient_2, _ = self.new_patient_and_episode_please()
-        self.patient_3, _ = self.new_patient_and_episode_please()
-        emodels.Demographics.objects.filter(
-            patient__in=[self.patient_1, self.patient_2]
-        ).update(external_system=EXTERNAL_SYSTEM)
-
-    @mock.patch(
-        "intrahospital_api.loader.update_demographics.reconcile_all_demographics",
-    )
-    @mock.patch(
-        "intrahospital_api.loader.load_patient",
-    )
-    def test_flow(self, load_patient, reconcile_all_demographics):
-        with mock.patch.object(loader.logger, "info") as info:
-            loader.initial_load()
-            reconcile_all_demographics.assert_called_once_with()
-            call_args_list = load_patient.call_args_list
-            self.assertEqual(
-                call_args_list[0][0], (self.patient_1,)
-            )
-            self.assertEqual(
-                call_args_list[0][1], dict(run_async=False)
-            )
-            self.assertEqual(
-                call_args_list[1][0], (self.patient_2,)
-            )
-            self.assertEqual(
-                call_args_list[1][1], dict(run_async=False)
-            )
-            call_args_list = info.call_args_list
-            self.assertEqual(
-                call_args_list[0][0], ("running 1/2",)
-            )
-            self.assertEqual(
-                call_args_list[1][0], ("running 2/2",)
-            )
 
 @mock.patch(
     "intrahospital_api.loader.api.results_for_hospital_number",
