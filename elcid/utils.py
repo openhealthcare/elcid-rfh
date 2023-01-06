@@ -3,14 +3,13 @@ Utils for the elCID project
 """
 import errno
 from functools import wraps
-from opal import models as opal_models
+from opal.models import Patient
 from elcid import models
 import logging
 import os
 import re
 import sys
 from time import time
-
 
 from django.utils import timezone
 
@@ -86,7 +85,7 @@ def find_patients_from_mrns(mrns):
     """
     Takes in an iterable of MRNs and returns
     a dictionary of {mrn: patient}.
-
+    
     MRNs that do not match to a patient are silently ignored.
 
     When matching MRN to patient:
