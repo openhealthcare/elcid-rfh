@@ -275,12 +275,16 @@ def crawl_merge_comments(mrn, visited, merge_result):
     Stores in to merge_results, what the active MRN related to this MRN is.
     Also stores
 
-    gets the master file for the current MRN, looks up the MRNs mentioned in its
-    merged comment and then calls crawl_merge_comments
+    Gets the master file for the passed in MRN, looks up the MRNs mentioned in its
+    merged comment and then calls crawl_merge_comments on those MRNs.
 
     All results of the crawl are stored in the merge_result
-    object ie the active MRN and the list of dicts to be turned into
+    object.
+
+    These are the active MRN and a list of dicts to be turned into
     elcid.models.MergedMRN objects.
+
+    It raises a MergeException if there are multiple active results.
     """
     visited.append(mrn)
     row = get_merged_masterfile_row(mrn)
