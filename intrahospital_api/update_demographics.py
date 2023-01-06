@@ -281,7 +281,7 @@ def crawl_merge_comments(mrn, visited, merge_result):
     row = get_masterfile_row(mrn)
     merge_comments = row["MERGE_COMMENTS"]
     is_active = False
-    if row["ACTIVE_INACTIVE"] == models.MergedMRN.ACTIVE:
+    if row["ACTIVE_INACTIVE"] == "ACTIVE":
         is_active = True
     if is_active:
         if merge_result.active_mrn:
