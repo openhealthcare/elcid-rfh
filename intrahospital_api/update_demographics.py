@@ -308,22 +308,9 @@ def crawl_merge_comments(mrn, visited, merge_result):
     if not merged_mrn_and_dates:
         raise MergeException(f'Unable to get merge details for {mrn}')
     if not is_active:
-        # upstream merge date time is complicated.
-        #
-        # We know there are
-        # flaws in upstream merge data, e.g. we can have a merge comment
-        # of Merged with 123 on 10 Oct Merged with 123 11 Oct
-        # we just take the highest as the upstream merge datetime
-        # this is just an indicator of time order and should
-        # not be concretely relied on.
-        if len(merged_mrn_and_dates) > 1:
-            upstream_merge_datetime = merged_mrn_and_dates[0][1]
-        else:
-            upstream_merge_datetime = max([i[1] for i in merged_mrn_and_dates])
         merge_result.merged_mrn_dicts.append({
                 "mrn": mrn,
                 "merge_comments": merge_comments,
-                "upstream_merge_datetime": upstream_merge_datetime
         })
 
     for merged_mrn, _ in merged_mrn_and_dates:

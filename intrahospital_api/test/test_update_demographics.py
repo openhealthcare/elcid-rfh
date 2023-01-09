@@ -521,9 +521,6 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             [{
                 "mrn": "123",
                 "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2014, 10, 20, 16, 44
-                ))
             }]
         )
 
@@ -540,9 +537,6 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             [{
                 "mrn": "123",
                 "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2014, 10, 20, 16, 44
-                ))
             }]
         )
 
@@ -564,16 +558,10 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         expected = [
             {
                 "mrn": "345",
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2014, 10, 21, 16, 44
-                )),
                 "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
             },
             {
                 "mrn": "456",
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2018, 4, 14, 13, 40
-                )),
                 "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
             },
         ]
@@ -597,16 +585,10 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         expected = [
             {
                 "mrn": "345",
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2014, 10, 21, 16, 44
-                )),
                 "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
             },
             {
                 "mrn": "456",
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2018, 4, 14, 13, 40
-                )),
                 "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
             },
         ]
@@ -632,16 +614,10 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         expected = [
             {
                 "mrn": "345",
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2014, 10, 21, 16, 44
-                )),
                 "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
             },
             {
                 "mrn": "456",
-                "upstream_merge_datetime": timezone.make_aware(datetime.datetime(
-                    2018, 4, 14, 13, 40
-                )),
                 "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
             },
         ]

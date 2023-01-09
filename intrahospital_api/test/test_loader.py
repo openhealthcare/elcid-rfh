@@ -685,7 +685,10 @@ class SynchPatientTestCase(ApiTestCase):
 
 class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
     @mock.patch(
-        'intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data'
+        '.'.join([
+            'intrahospital_api.loader.update_demographics',
+            'get_active_mrn_and_merged_mrn_data'
+        ])
     )
     def test_creates_patient_and_episode(self, get_active_mrn_and_merged_mrn_data):
         """
@@ -753,9 +756,6 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
                 "merge_comments": " ".join([
                     "Merged with MRN 234 on Oct 21 2014  4:44PM",
                 ]),
-                "upstream_merge_datetime": timezone.make_aware(
-                    datetime.datetime(2014, 10, 21, 16, 44)
-                )
             },
             {
                 "mrn": "234",
@@ -764,9 +764,6 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
                     "Merged with MRN 123 on Oct 21 2014  4:44PM",
                     "Merged with MRN 456 on Apr 14 2018  1:40PM"
                 ]),
-                "upstream_merge_datetime": timezone.make_aware(
-                    datetime.datetime(2018, 4, 4, 13, 40)
-                )
             }
         ]
         get_active_mrn_and_merged_mrn_data.return_value = ("456", MERGED_MRN_DATA)
@@ -782,18 +779,12 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             patient.mergedmrn_set.filter(
                 mrn="123",
                 merge_comments=MERGED_MRN_DATA[0]["merge_comments"],
-                upstream_merge_datetime=timezone.make_aware(
-                    datetime.datetime(2014, 10, 21, 16, 44)
-                )
             ).exists()
         )
         self.assertTrue(
             patient.mergedmrn_set.filter(
                 mrn="234",
                 merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
-                upstream_merge_datetime=timezone.make_aware(
-                    datetime.datetime(2018, 4, 4, 13, 40)
-                )
             ).exists()
         )
 
@@ -814,9 +805,6 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
                 "merge_comments": " ".join([
                     "Merged with MRN 234 on Oct 21 2014  4:44PM",
                 ]),
-                "upstream_merge_datetime": timezone.make_aware(
-                    datetime.datetime(2014, 10, 21, 16, 44)
-                )
             },
             {
                 "mrn": "234",
@@ -825,9 +813,6 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
                     "Merged with MRN 123 on Oct 21 2014  4:44PM",
                     "Merged with MRN 456 on Apr 14 2018  1:40PM"
                 ]),
-                "upstream_merge_datetime": timezone.make_aware(
-                    datetime.datetime(2018, 4, 4, 13, 40)
-                )
             }
         ]
         get_active_mrn_and_merged_mrn_data.return_value = ("456", MERGED_MRN_DATA)
@@ -843,18 +828,12 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             patient.mergedmrn_set.filter(
                 mrn="123",
                 merge_comments=MERGED_MRN_DATA[0]["merge_comments"],
-                upstream_merge_datetime=timezone.make_aware(
-                    datetime.datetime(2014, 10, 21, 16, 44)
-                )
             ).exists()
         )
         self.assertTrue(
             patient.mergedmrn_set.filter(
                 mrn="234",
                 merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
-                upstream_merge_datetime=timezone.make_aware(
-                    datetime.datetime(2018, 4, 4, 13, 40)
-                )
             ).exists()
         )
 
