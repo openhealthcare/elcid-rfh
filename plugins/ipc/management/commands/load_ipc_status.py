@@ -8,14 +8,10 @@ is just in this management command
 import datetime
 from django.db import transaction
 from django.db.models.fields import BooleanField, DateField
-from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from elcid.utils import find_patients_from_mrns
-
-from plugins.admissions.models import BedStatus
 from plugins.ipc.models import IPCStatus
 
 
@@ -84,9 +80,6 @@ class Command(BaseCommand):
 
         updated_by = User.objects.filter(username='ohc').first()
 
-        inpatient_ids = set(BedStatus.objects.filter(bed_status='Occupied').values_list(
-            'patient_id', flat=True
-        ))
         upstream_result = api.execute_hospital_query(QUERY)
         self.stdout.write("Query complete")
 
@@ -100,30 +93,29 @@ class Command(BaseCommand):
             if not patient:
                 continue
 
-            if patient.id in inpatient_ids:
-                if patient.episode_set.filter(category_name='IPC').count() == 0:
-                    patient.create_episode(category_name='IPC')
+            if patient.episode_set.filter(category_name='IPC').count() == 0:
+                patient.create_episode(category_name='IPC')
 
-                status = patient.ipcstatus_set.all()[0]
+            status = patient.ipcstatus_set.all()[0]
 
-                update_dict = {v: row[k] for k, v in MAPPING.items()}
+            update_dict = {v: row[k] for k, v in MAPPING.items()}
 
-                status.created_by_id = updated_by.id
+            status.created_by_id = updated_by.id
 
-                for key, value in update_dict.items():
+            for key, value in update_dict.items():
 
-                    if isinstance(IPCStatus._meta.get_field(key), DateField):
+                if isinstance(IPCStatus._meta.get_field(key), DateField):
 
-                        if value == '':
-                            value = None
-                        elif isinstance(value, str):
-                            value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
+                    if value == '':
+                        value = None
+                    elif isinstance(value, str):
+                        value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
 
-                    if isinstance(IPCStatus._meta.get_field(key), BooleanField):
-                        if value:
-                            value = True
-                        else:
-                            value = False
+                if isinstance(IPCStatus._meta.get_field(key), BooleanField):
+                    if value:
+                        value = True
+                    else:
+                        value = False
 
-                    setattr(status, key, value)
-                status.save()
+                setattr(status, key, value)
+            status.save()
