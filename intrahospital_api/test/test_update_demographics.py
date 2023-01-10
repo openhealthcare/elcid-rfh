@@ -627,12 +627,12 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
 
     @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
     @mock.patch('intrahospital_api.update_demographics.logger')
-    @mock.patch('intrahospital_api.update_demographics.crawl_merge_comments')
+    @mock.patch('intrahospital_api.update_demographics.recursively_parse_merge_comments')
     def test_error_handling(
-        self, crawl_merge_comments, logger, get_merged_masterfile_row
+        self, recursively_parse_merge_comments, logger, get_merged_masterfile_row
     ):
         get_merged_masterfile_row.return_value = 1
-        crawl_merge_comments.side_effect = update_demographics.MergeException(
+        recursively_parse_merge_comments.side_effect = update_demographics.MergeException(
             'Unable to find a merged row for 123'
         )
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
@@ -646,9 +646,9 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
 
     @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
     @mock.patch('intrahospital_api.update_demographics.logger')
-    @mock.patch('intrahospital_api.update_demographics.crawl_merge_comments')
+    @mock.patch('intrahospital_api.update_demographics.recursively_parse_merge_comments')
     def test_no_active_mrn(
-        self, crawl_merge_comments, logger, get_merged_masterfile_row
+        self, recursively_parse_merge_comments, logger, get_merged_masterfile_row
     ):
         get_merged_masterfile_row.return_value = 1
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(

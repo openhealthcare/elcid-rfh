@@ -229,12 +229,11 @@ class MergeException(Exception):
 
 class MergeResult:
     """
-    An object that stores the merge results of the
-    graph crawl.
+    An object that stores the merge results from recursively_parse_merge_comments.
 
-    The initial MRN is the MRN that we used to start the crawl
+    The initial MRN is the MRN that we started with.
     The active MRN is that active MRN related to the initial MRN.
-    The merged_mrn_dicts is a list of dictionaries to make merged MRNs from
+    The merged_mrn_dicts is a list of dictionaries to make merged MRNs from.
     """
     initial_mrn = None
     active_mrn = None
@@ -268,16 +267,16 @@ def get_merged_masterfile_row(mrn):
     return query_result
 
 
-def crawl_merge_comments(mrn, visited, merge_result):
+def recursively_parse_merge_comments(mrn, visited, merge_result):
     """
-    Takes in an MRN, a list of the MRNs that have already been crawled
+    Takes in an MRN, a list of the MRNs that have already been parsed
     and the current merge_result.
 
     Stores in to merge_results, what the active MRN related to this MRN is.
     Also stores
 
     Gets the master file for the passed in MRN, looks up the MRNs mentioned in its
-    merged comment and then calls crawl_merge_comments on those MRNs.
+    merged comment and then calls recursively_parse_merge_comments on those MRNs.
 
     All results of the crawl are stored in the merge_result
     object.
@@ -316,7 +315,7 @@ def crawl_merge_comments(mrn, visited, merge_result):
     for merged_mrn, _ in merged_mrn_and_dates:
         if merged_mrn in visited:
             continue
-        crawl_merge_comments(merged_mrn, visited.copy(), merge_result)
+        recursively_parse_merge_comments(merged_mrn, visited.copy(), merge_result)
 
 
 def get_active_mrn_and_merged_mrn_data(mrn):
@@ -350,7 +349,7 @@ def get_active_mrn_and_merged_mrn_data(mrn):
 
     merge_result = MergeResult(mrn)
     try:
-        crawl_merge_comments(mrn, [], merge_result)
+        recursively_parse_merge_comments(mrn, [], merge_result)
     except MergeException as err:
         logger.error(f"Merge exception raised for {mrn} with '{err}'")
         return mrn, []
