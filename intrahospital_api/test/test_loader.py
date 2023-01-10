@@ -683,6 +683,7 @@ class SynchPatientTestCase(ApiTestCase):
         )
 
 
+@mock.patch('intrahospital_api.loader.load_patient')
 class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
     @mock.patch(
         '.'.join([
@@ -690,7 +691,7 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             'get_active_mrn_and_merged_mrn_data'
         ])
     )
-    def test_creates_patient_and_episode(self, get_active_mrn_and_merged_mrn_data):
+    def test_creates_patient_and_episode(self, get_active_mrn_and_merged_mrn_data, load_patient):
         """
         A patient has no merged MRNs. Create the patient with
         the episode category and return it.
@@ -706,8 +707,9 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             patient.episode_set.get().category_name,
             episode_categories.InfectionService.display_name
         )
+        self.assertTrue(load_patient.called)
 
-    def test_errors_if_the_hospital_number_starts_with_a_zero(self):
+    def test_errors_if_the_hospital_number_starts_with_a_zero(self, load_patient):
         """
         The MRN starts with a zero, raise a ValueError
         """
@@ -720,8 +722,9 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             "Hospital numbers within elCID should never start with a zero"
         ])
         self.assertEqual(str(v.exception), expected)
+        self.assertFalse(load_patient.called)
 
-    def test_errors_if_the_hospital_number_has_already_been_merged(self):
+    def test_errors_if_the_hospital_number_has_already_been_merged(self, load_patient):
         """
         The MRN has already been merged, raise a Value Error
         """
@@ -737,12 +740,13 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             str(v.exception),
             "MRN has already been merged into another MRN"
         )
+        self.assertFalse(load_patient.called)
 
     @mock.patch(
         'intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data'
     )
     def test_create_rfh_patient_from_hospital_number(
-        self, get_active_mrn_and_merged_mrn_data
+        self, get_active_mrn_and_merged_mrn_data, load_patient
     ):
         """
         The MRN passed in is inactive and has
@@ -787,12 +791,13 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
                 merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
             ).exists()
         )
+        self.assertTrue(load_patient.called)
 
     @mock.patch(
         'intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data'
     )
     def test_active_mrn_with_inactive_associated_mrns(
-        self, get_active_mrn_and_merged_mrn_data
+        self, get_active_mrn_and_merged_mrn_data, load_patient
     ):
         """
         The MRN passed in is active and has an associated inactive MRN.
@@ -836,6 +841,7 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
                 merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
             ).exists()
         )
+        self.assertTrue(load_patient.called)
 
 
 class GetOrCreatePatientTestCase(OpalTestCase):
