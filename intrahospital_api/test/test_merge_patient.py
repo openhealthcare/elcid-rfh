@@ -130,10 +130,10 @@ class UpdateSingletonTestCase(OpalTestCase):
         old_location.updated = timezone.now()
         old_location.save()
         merge_patient.update_singleton(
-            old_location,
+            models.Location,
+            self.old_episode,
             self.new_episode,
-            self.old_mrn,
-            is_episode_subrecord=True
+            self.old_mrn
         )
         new_location = self.new_episode.location_set.get()
         self.assertEqual(
@@ -156,10 +156,10 @@ class UpdateSingletonTestCase(OpalTestCase):
         old_nationality.updated = timezone.now()
         old_nationality.save()
         merge_patient.update_singleton(
-            old_nationality,
+            tb_models.Nationality,
+            self.old_patient,
             self.new_patient,
             self.old_mrn,
-            is_episode_subrecord=False
         )
         new_nationality = self.new_patient.nationality_set.get()
         self.assertEqual(
@@ -168,7 +168,6 @@ class UpdateSingletonTestCase(OpalTestCase):
         self.assertEqual(
             new_nationality.previous_mrn, self.old_mrn
         )
-
 
     def test_update_singleton_only_new_updated(self):
         """
@@ -184,10 +183,10 @@ class UpdateSingletonTestCase(OpalTestCase):
             new_location.save()
         old_location = self.old_episode.location_set.get()
         merge_patient.update_singleton(
-            old_location,
+            models.Location,
+            self.old_episode,
             self.new_episode,
             self.old_mrn,
-            is_episode_subrecord=True
         )
         self.assertIsNone(old_location.previous_mrn)
         version = Version.objects.get_for_object(new_location).get()
@@ -216,10 +215,10 @@ class UpdateSingletonTestCase(OpalTestCase):
         old_nationality.updated = timezone.now()
         old_nationality.save()
         merge_patient.update_singleton(
-            old_nationality,
+            tb_models.Nationality,
+            self.old_patient,
             self.new_patient,
-            self.old_mrn,
-            is_episode_subrecord=False
+            self.old_mrn
         )
         new_nationality.refresh_from_db()
         self.assertEqual(new_nationality.previous_mrn, self.old_mrn)
@@ -252,10 +251,10 @@ class UpdateSingletonTestCase(OpalTestCase):
         old_nationality.updated = timezone.now() - datetime.timedelta(1)
         old_nationality.save()
         merge_patient.update_singleton(
-            old_nationality,
+            tb_models.Nationality,
+            self.old_patient,
             self.new_patient,
             self.old_mrn,
-            is_episode_subrecord=False
         )
         new_nationality.refresh_from_db()
         self.assertIsNone(new_nationality.previous_mrn)
@@ -308,10 +307,10 @@ class CopyNonSingletonsTestCase(OpalTestCase):
             no_antimicrobials=True
         )
         merge_patient.copy_non_singletons(
-            self.old_episode.antimicrobial_set.all(),
+            models.Antimicrobial,
+            self.old_episode,
             self.new_episode,
             self.old_mrn,
-            is_episode_subrecord=True
         )
         new_antimicobiral = self.new_episode.antimicrobial_set.get()
         self.assertTrue(new_antimicobiral.no_antimicrobials)
@@ -325,10 +324,10 @@ class CopyNonSingletonsTestCase(OpalTestCase):
         risk_factor.risk_factor = "On immunosupressants"
         risk_factor.save()
         merge_patient.copy_non_singletons(
-            self.old_patient.riskfactor_set.all(),
+            models.RiskFactor,
+            self.old_patient,
             self.new_patient,
             self.old_mrn,
-            is_episode_subrecord=False
         )
         risk_factor = self.new_patient.riskfactor_set.get()
         self.assertEqual(risk_factor.risk_factor, "On immunosupressants")
@@ -361,7 +360,6 @@ class CopyRelatedRecordTestCase(OpalTestCase):
             self.old_patient,
             self.new_patient,
             self.old_mrn,
-            is_episode_subrecord=False
         )
         new_nationality = self.new_patient.nationality_set.get()
         self.assertEqual(
@@ -383,7 +381,6 @@ class CopyRelatedRecordTestCase(OpalTestCase):
             self.old_episode,
             self.new_episode,
             self.old_mrn,
-            is_episode_subrecord=True
         )
         new_antimicobiral = self.new_episode.antimicrobial_set.get()
         self.assertTrue(new_antimicobiral.no_antimicrobials)

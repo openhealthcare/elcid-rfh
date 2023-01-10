@@ -89,15 +89,22 @@ def copy_tagging(old_episode, new_episode):
             old_tag.save()
 
 
-def update_singleton(old_singleton, new_parent, old_mrn, is_episode_subrecord):
+def update_singleton(subrecord_cls, old_parent, new_parent, old_mrn):
     """
     If the old singleton was updated more recently than the new singleton then
     move the old singleton onto the new singleton.
     """
-    if is_episode_subrecord:
-        new_singleton = old_singleton.__class__.objects.get(episode=new_parent)
+    if new_parent.__class__ == opal_models.Episode:
+        is_episode_subrecord = True
     else:
-        new_singleton = old_singleton.__class__.objects.get(patient=new_parent)
+        is_episode_subrecord = False
+
+    if is_episode_subrecord:
+        old_singleton = subrecord_cls.objects.get(episode=old_parent)
+        new_singleton = subrecord_cls.objects.get(episode=new_parent)
+    else:
+        old_singleton = subrecord_cls.objects.get(patient=old_parent)
+        new_singleton = subrecord_cls.objects.get(patient=new_parent)
     if not old_singleton.updated:
         # the old singleton was never editted, we can skip
         return
@@ -147,11 +154,21 @@ def update_singleton(old_singleton, new_parent, old_mrn, is_episode_subrecord):
                 new_singleton.save()
 
 
-def copy_non_singletons(old_subrecords, new_parent, old_mrn, is_episode_subrecord):
+def copy_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn):
     """
     Copies the old_subrecords query set onto the new parent (a patient or episode).
     In doing so it updates the previous_mrn field to be that of the old_mrn
     """
+    if new_parent.__class__ == opal_models.Episode:
+        is_episode_subrecord = True
+    else:
+        is_episode_subrecord = False
+
+    if is_episode_subrecord:
+        old_subrecords = subrecord_cls.objects.filter(episode=old_parent)
+    else:
+        old_subrecords = subrecord_cls.objects.filter(patient=old_parent)
+
     for old_subrecord in old_subrecords:
         if is_episode_subrecord:
             old_subrecord.episode = new_parent
@@ -162,19 +179,15 @@ def copy_non_singletons(old_subrecords, new_parent, old_mrn, is_episode_subrecor
             old_subrecord.save()
 
 
-def copy_record(subrecord_cls, old_parent, new_parent, old_mrn, is_episode_subrecord):
+def copy_record(subrecord_cls, old_parent, new_parent, old_mrn):
     """
     Copies a subrecord_cl from an old parent (a patient or an episode)
     to a new one.
     """
-    if is_episode_subrecord:
-        qs = subrecord_cls.objects.filter(episode=old_parent)
-    else:
-        qs = subrecord_cls.objects.filter(patient=old_parent)
     if getattr(subrecord_cls, "_is_singleton", False):
-        update_singleton(qs[0], new_parent, old_mrn, is_episode_subrecord)
+        update_singleton(subrecord_cls, old_parent, new_parent, old_mrn)
     else:
-        copy_non_singletons(qs, new_parent, old_mrn, is_episode_subrecord)
+        copy_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn)
 
 
 def updates_statuses(new_patient):
@@ -222,7 +235,6 @@ def merge_patient(*, old_patient, new_patient):
             old_patient,
             new_patient,
             old_mrn,
-            is_episode_subrecord=False
         )
     for old_episode in old_patient.episode_set.all():
         # Note: if the old episode has multiple episode
@@ -238,7 +250,6 @@ def merge_patient(*, old_patient, new_patient):
                 old_episode,
                 new_episode,
                 old_mrn,
-                is_episode_subrecord=True
             )
     old_patient.delete()
     new_patient.mergedmrn_set.filter(mrn=old_mrn).update(
