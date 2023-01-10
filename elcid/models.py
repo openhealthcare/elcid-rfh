@@ -29,18 +29,15 @@ def get_for_lookup_list(model, values):
 
 class MergedMRN(models.Model):
     """
-    Represents a row in the CRS Master file for a patient that
-    has been merged
+    Represents each time this patient has had a duplicate MRN merged.
 
-    e.g. if MRN 123 was merged into patient 234
-    there would be a MergedMRN for the masterfile where the MRN is 123
-    Patient 123 would have a patient merge object with MRN 77456
+    e.g. if MRN 123 was merged into MRN234
+    The patient object with MRN 234 would have a merged MRN with an mrn
+    of 123 and the merge_comment attachecd to 123 in the masterfile
     """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    mrn = models.CharField(max_length=256)
+    mrn = models.CharField(max_length=256, unique=True, db_index=True)
     merge_comments = models.TextField(blank=True, null=True, default="")
-
-    # The highest datetime mentioned in the merge comment
     upstream_merge_datetime = models.DateTimeField(blank=True, null=True)
     our_merge_datetime = models.DateTimeField(blank=True, null=True)
 
@@ -73,7 +70,6 @@ class PreviousMRN(models.Model):
             data.pop('previous_mrn')
         self.previous_mrn = None
         return super().update_from_dict(data, *args, **kwargs)
-
 
 
 class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
