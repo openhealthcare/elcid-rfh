@@ -90,6 +90,9 @@ class Command(BaseCommand):
         for row in upstream_result:
             patient = mrn_to_ipc_patients.get(row['Patient_Number'])
 
+            # There will not be a patient if the patient is
+            # not in elcid or if the MRN is invalid
+            # ie empty or only made up of spaces and zeros
             if not patient:
                 continue
 
