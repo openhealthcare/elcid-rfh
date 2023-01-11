@@ -38,7 +38,6 @@ class MergedMRN(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     mrn = models.CharField(max_length=256, unique=True, db_index=True)
     merge_comments = models.TextField(blank=True, null=True, default="")
-    upstream_merge_datetime = models.DateTimeField(blank=True, null=True)
     our_merge_datetime = models.DateTimeField(blank=True, null=True)
 
 

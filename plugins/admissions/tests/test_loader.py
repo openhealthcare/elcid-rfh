@@ -1,7 +1,10 @@
 import copy
 import datetime
+from unittest.mock import patch
 from opal.core.test import OpalTestCase
 from plugins.admissions import loader
+from plugins.admissions import models
+from elcid import episode_categories
 
 
 class CleanTransferHistoryRows(OpalTestCase):
@@ -37,3 +40,44 @@ class CleanTransferHistoryRows(OpalTestCase):
         row_2 = copy.copy(self.fake_row)
         result = list(loader.clean_transfer_history_rows([row_1, row_2]))
         self.assertEqual(result, [row_1, row_2])
+
+
+@patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+@patch('plugins.admissions.loader.ProdAPI')
+class LoadBedStatusTestCase(OpalTestCase):
+    def setUp(self):
+        self.bed_status_row = {
+            i: None for i in models.BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS.keys()
+        }
+
+    def test_load_bed_status_new_patient(self, prod_api, create_rfh_patient_from_hospital_number):
+        self.bed_status_row["Local_Patient_Identifier"] = "123"
+        patient, _ = self.new_patient_and_episode_please()
+        prod_api.return_value.execute_warehouse_query.return_value =[
+            self.bed_status_row
+        ]
+        create_rfh_patient_from_hospital_number.return_value = patient
+        loader.load_bed_status()
+        bed_status = models.BedStatus.objects.get()
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            "123", episode_categories.InfectionService
+        )
+        self.assertEqual(
+            bed_status.patient, patient
+        )
+
+    def test_load_bed_status_existing_patient(self, prod_api, create_rfh_patient_from_hospital_number):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number= "123"
+        )
+        self.bed_status_row["Local_Patient_Identifier"] = "123"
+        prod_api.return_value.execute_warehouse_query.return_value =[
+            self.bed_status_row
+        ]
+        loader.load_bed_status()
+        bed_status = models.BedStatus.objects.get()
+        self.assertFalse(create_rfh_patient_from_hospital_number.called)
+        self.assertEqual(
+            bed_status.patient, patient
+        )
