@@ -12,7 +12,7 @@ class ElcidPatientSummary(PatientSummary):
         previous_merges = models.MergedMRN.objects.filter(
             patient_id=self.patient_id
         ).order_by(
-            '-upstream_merge_datetime'
+            '-id'
         )
         result["previous_mrns"] = list(previous_merges.values_list('mrn', flat=True))
         return result
