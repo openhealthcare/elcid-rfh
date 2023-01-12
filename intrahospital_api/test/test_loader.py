@@ -897,7 +897,23 @@ class GetOrCreatePatientTestCase(OpalTestCase):
         create_rfh_patient_from_hospital_number.assert_called_once_with(
             '123',
             episode_categories.InfectionService,
-            run_async=None
+            run_async=None,
+            rfh_patient=True
+        )
+        self.assertEqual(self.patient, patient)
+        self.assertTrue(created)
+
+    @mock.patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+    def test_create_new_non_patient(self, create_rfh_patient_from_hospital_number):
+        create_rfh_patient_from_hospital_number.return_value = self.patient
+        patient, created = loader.get_or_create_patient(
+            '123', episode_categories.InfectionService, rfh_patient=False
+        )
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            '123',
+            episode_categories.InfectionService,
+            run_async=None,
+            rfh_patient=False
         )
         self.assertEqual(self.patient, patient)
         self.assertTrue(created)
