@@ -79,7 +79,9 @@ def load_demographics(hospital_number):
     return result
 
 
-def create_rfh_patient_from_hospital_number(hospital_number, episode_category, run_async=None):
+def create_rfh_patient_from_hospital_number(
+    hospital_number, episode_category, run_async=None
+):
     """
     Creates a patient programatically and sets up integration.
 
@@ -441,13 +443,15 @@ def get_or_create_patient(mrn, episode_category, run_async=None):
     ).first()
     if not patient:
         patient = Patient.objects.filter(
-        mergedmrn__mrn=mrn
-    ).first()
+            mergedmrn__mrn=mrn
+        ).first()
 
     if patient:
         patient.episode_set.get_or_create(
             category_name=episode_category.display_name
         )
         return (patient, False)
-    patient = create_rfh_patient_from_hospital_number(mrn, episode_category, run_async=run_async)
+    patient = create_rfh_patient_from_hospital_number(
+        mrn, episode_category, run_async=run_async
+    )
     return patient, True
