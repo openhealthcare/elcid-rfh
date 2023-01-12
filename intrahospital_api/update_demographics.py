@@ -28,9 +28,6 @@ GET_MASTERFILE_DATA_FOR_MERGED_MRN = """
     SELECT *
     FROM CRS_Patient_Masterfile
     WHERE Patient_Number = @mrn
-    AND MERGED = 'Y'
-    AND MERGE_COMMENTS <> ''
-    AND MERGE_COMMENTS is not null
 """
 
 
@@ -227,6 +224,10 @@ class MergeException(Exception):
     pass
 
 
+class CernerPatientNotFoundException(Exception):
+    pass
+
+
 class MergeResult:
     """
     An object that stores the merge results from recursively_parse_merge_comments.
@@ -246,25 +247,18 @@ class MergeResult:
 
 def get_merged_masterfile_row(mrn):
     """
-    Takes in an MRN and returns the row from the master file
-    for that MRN if it has been merged.
+    Takes in an MRN and returns the row from the master file.
 
-    This can still be the active MRN and have had inactive MRNs
-    merged into it.
-
-    If there is no merged row, return None
-
-    If there is more than row for the MRN one we raise a MergeException.
+    If there a multiple rows raise a ValueError as this
+    should never be the case.
     """
-    query_results = api.execute_hospital_query(
+    rows = api.execute_hospital_query(
         GET_MASTERFILE_DATA_FOR_MERGED_MRN, {"mrn": mrn}
     )
-    if not query_results:
-        return
-    if len(query_results) > 1:
-        raise MergeException(f'Multiple rows founnd for {mrn}')
-    query_result = query_results[0]
-    return query_result
+    if len(rows) > 1:
+        raise ValueError(f'Multiple results found for MRN {mrn}')
+    if rows:
+        return rows[0]
 
 
 def recursively_parse_merge_comments(mrn, visited, merge_result):
@@ -272,24 +266,23 @@ def recursively_parse_merge_comments(mrn, visited, merge_result):
     Takes in an MRN, a list of the MRNs that have already been parsed
     and the current merge_result.
 
-    Stores in to merge_results, what the active MRN related to this MRN is.
-    Also stores
+    Stores into merge_results:
+        What the active MRN is.
+        Dictionaries of inactive MRNs that will be turned into mergedMRNs.
 
-    Gets the master file for the passed in MRN, looks up the MRNs mentioned in its
-    merged comment and then calls recursively_parse_merge_comments on those MRNs.
-
-    All results of the crawl are stored in the merge_result
-    object.
-
-    These are the active MRN and a list of dicts to be turned into
-    elcid.models.MergedMRN objects.
-
-    It raises a MergeException if there are multiple active results.
+    It raises a MergeException if:
+        There are multiple active MRNs
+        We are searching for an MRN that does not exist in the Masterfile table.
     """
     visited.append(mrn)
     row = get_merged_masterfile_row(mrn)
-    if not row:
-        raise MergeException(f'Unable to find a merged row for {mrn}')
+
+    if row is None:
+        # If there is no row it suggests someone has typoed an MRN
+        # into a merge comment, this does happen.
+        raise MergeException(
+            f'Unable to find a related MRN {mrn} for {merge_result.initial_mrn}'
+        )
     merge_comments = row["MERGE_COMMENTS"]
     is_active = False
     if row["ACTIVE_INACTIVE"] == "ACTIVE":
@@ -324,29 +317,41 @@ def get_active_mrn_and_merged_mrn_data(mrn):
     and a list of inactive MRNs that are associated with it.
 
     If there are no inactive MRNs or we are to say which is the
-    active mrn return the MRN passed in and an empty list.
+    active MRN return the MRN passed in and an empty list.
 
     Returns all merged MRNs related to the MRN including the row
     for the MRN from the CRS_Patient_Masterfile.
 
     The merged comments can be nested for for MRN x
-    we can have MERGE_COMMENT "Merged with y on 21 Jan"
+    we can have MERGE_COMMENTS "Merged with y on 21 Jan"
     Then for y we can have the merge comment "Merged with z on 30 Mar"
     This will return the rows for x, y and z
 
-    If there are no related rows, ie the patient
-    is not merged, return None.
+    If the MRN is not marked as merged, return the MRN and an empty list
+    If we are unable to process the merge comment, log an error
+    return the MRN and an empty list.
 
-    If we are unable to calculate the MergedMRNs, log
-    an error message and then continue as the MRN passed in is
-    an active MRN with no related inactive MRNs.
+    If we are unable to find the MRN in the master file return
+    a CernerPatientNotFoundException. This should not happen.
+
+    If the masterfile has multiple rows for an MRN a value
+    error is raised by `get_merged_masterfile_row` this
+    suggests is something that we expect should never happen
+    in the upstream system.
     """
     row = get_merged_masterfile_row(mrn)
 
-    # If it is not merged the we will not get a row back
-    if not row:
+    if row is None:
+        raise CernerPatientNotFoundException(
+            f'Unable to find a masterfile row for {mrn}'
+        )
+    if not row["MERGED"] == 'Y':
+        # The patient is not merged
         return mrn, []
-
+    if not row["MERGE_COMMENTS"]:
+        logger.error(
+            f"MRN {mrn} is marked as merged but there is not merge comment"
+        )
     merge_result = MergeResult(mrn)
     try:
         recursively_parse_merge_comments(mrn, [], merge_result)
