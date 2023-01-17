@@ -123,28 +123,6 @@ STATUS_MODELS_TO_RELATED_MODEL = {
 }
 
 
-def get_patient_related_models_to_copy():
-    """
-    Return the models with a relation to patient that we need
-    copy over.
-    """
-    return
-
-
-def get_episode_related_models_to_copy():
-    """
-    Return the models with a relation to episode that we need
-    copy over.
-    """
-    return []
-    episode_subrecords = list(subrecords.episode_subrecords())
-    # by default copy all models that are subclasses of previous MRN
-    # as these are subrecords that are editable in the front end.
-    to_copy = [i for i in episode_subrecords if issubclass(i, models.PreviousMRN)]
-    to_copy.append(obs_models.Observation)
-    return to_copy
-
-
 def move_tagging(old_episode, new_episode):
     """
     Moves the tagging from the old episode to the new episode.
