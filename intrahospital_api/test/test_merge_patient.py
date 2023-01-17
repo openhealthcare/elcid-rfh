@@ -63,7 +63,7 @@ EPISODE_RELATED_IGNORE_LIST = set([
 ])
 
 
-class ModelCopyTestCase(OpalTestCase):
+class ModelMergeTestCase(OpalTestCase):
     def get_patient_episode_related_models(self):
         our_models = []
         for app_name, models in apps.all_models.items():
@@ -81,6 +81,11 @@ class ModelCopyTestCase(OpalTestCase):
         return patient_related_models, episode_related_models
 
     def test_episode_subrecords(self):
+        """
+        Checks that all models with an episode foreign key
+        are either explicitly included by merge_patient.EPISODE_RELATED_MODELS
+        or are explicitly excluded by EPISODE_RELATED_IGNORE_LIST
+        """
         _, episode_related_models = self.get_patient_episode_related_models()
         for episode_related_model in episode_related_models:
             if episode_related_model not in EPISODE_RELATED_IGNORE_LIST:
@@ -89,6 +94,12 @@ class ModelCopyTestCase(OpalTestCase):
                 )
 
     def test_patient_subrecords(self):
+        """
+        Checks that all models with an episode foreign key
+        are either explicitly included in merge_patient.PATIENT_RELATED_MODELS
+        or merge_patient.STATUS_MODELS_TO_RELATED_MODEL
+        or are explicitly excluded by PATIENT_RELATED_IGNORE_LIST
+        """
         patient_related_models, _ = self.get_patient_episode_related_models()
         status_models = list(merge_patient.STATUS_MODELS_TO_RELATED_MODEL.keys())
         copied_patient_models = merge_patient.PATIENT_RELATED_MODELS + status_models
@@ -99,74 +110,74 @@ class ModelCopyTestCase(OpalTestCase):
                 )
 
 
-class CopyTaggingTestCase(OpalTestCase):
+class MoveTaggingTestCase(OpalTestCase):
     def setUp(self):
         _, self.old_episode = self.new_patient_and_episode_please()
         _, self.new_episode = self.new_patient_and_episode_please()
         self.old_user = User.objects.create(username="old_user")
         self.new_user = User.objects.create(username="new_user")
 
-    def test_copy_archived_tag(self):
+    def test_move_archived_tag(self):
         self.old_episode.tagging_set.create(
             archived=True, user=self.old_user, value="some list"
         )
-        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        merge_patient.move_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=True, user=self.old_user, value="some list"
             ).exists()
         )
 
-    def test_copy_active_tag(self):
+    def test_move_active_tag(self):
         self.old_episode.tagging_set.create(
             archived=False, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
             archived=True, user=self.new_user, value="some list"
         )
-        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        merge_patient.move_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.old_user, value="some list"
             ).exists()
         )
 
-    def test_does_not_copy_archived_tag_if_active_tag_exists(self):
+    def test_does_not_move_archived_tag_if_active_tag_exists(self):
         self.old_episode.tagging_set.create(
             archived=True, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
             archived=False, user=self.new_user, value="some list"
         )
-        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        merge_patient.move_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.new_user, value="some list"
             ).exists()
         )
 
-    def test_does_not_copy_archived_tag_if_archived_tag_exists(self):
+    def test_does_not_move_archived_tag_if_archived_tag_exists(self):
         self.old_episode.tagging_set.create(
             archived=True, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
             archived=True, user=self.new_user, value="some list"
         )
-        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        merge_patient.move_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=True, user=self.new_user, value="some list"
             ).exists()
         )
 
-    def test_does_not_copy_active_tag_if_active_tag_exists(self):
+    def test_does_not_move_active_tag_if_active_tag_exists(self):
         self.old_episode.tagging_set.create(
             archived=False, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
             archived=False, user=self.new_user, value="some list"
         )
-        merge_patient.copy_tagging(self.old_episode, self.new_episode)
+        merge_patient.move_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.new_user, value="some list"
@@ -326,7 +337,7 @@ class UpdateSingletonTestCase(OpalTestCase):
         self.assertEqual(previous_versions[2].field_dict["previous_mrn"], None)
 
 
-class CopyNonSingletonsTestCase(OpalTestCase):
+class MoveNonSingletonsTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
         self.old_mrn = "123"
@@ -337,10 +348,10 @@ class CopyNonSingletonsTestCase(OpalTestCase):
 
     def test_copies_episode_related_records(self):
         """
-        Test copy_non_singletons copys over non singleton episode subrecords
+        Test move_non_singletons copys over non singleton episode subrecords
         """
         self.old_episode.antimicrobial_set.create(no_antimicrobials=True)
-        merge_patient.copy_non_singletons(
+        merge_patient.move_non_singletons(
             elcid_models.Antimicrobial,
             self.old_episode,
             self.new_episode,
@@ -352,12 +363,12 @@ class CopyNonSingletonsTestCase(OpalTestCase):
 
     def test_copies_patient_related_records(self):
         """
-        Test copy_non_singletons copys over non singleton patient subrecords
+        Test move_non_singletons copys over non singleton patient subrecords
         """
         risk_factor = self.old_patient.riskfactor_set.create()
         risk_factor.risk_factor = "On immunosupressants"
         risk_factor.save()
-        merge_patient.copy_non_singletons(
+        merge_patient.move_non_singletons(
             elcid_models.RiskFactor,
             self.old_patient,
             self.new_patient,
@@ -368,7 +379,7 @@ class CopyNonSingletonsTestCase(OpalTestCase):
         self.assertTrue(risk_factor.previous_mrn, self.old_mrn)
 
 
-class CopyRelatedRecordTestCase(OpalTestCase):
+class MoveRelatedRecordTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
         self.old_mrn = "123"
@@ -385,7 +396,7 @@ class CopyRelatedRecordTestCase(OpalTestCase):
         old_nationality.arrival_in_the_uk = "2020"
         old_nationality.updated = timezone.now()
         old_nationality.save()
-        merge_patient.copy_record(
+        merge_patient.move_record(
             tb_models.Nationality,
             self.old_patient,
             self.new_patient,
@@ -400,7 +411,7 @@ class CopyRelatedRecordTestCase(OpalTestCase):
         Test copy_subrecord copys over non-singleton episode subrecords
         """
         self.old_episode.antimicrobial_set.create(no_antimicrobials=True)
-        merge_patient.copy_record(
+        merge_patient.move_record(
             elcid_models.Antimicrobial,
             self.old_episode,
             self.new_episode,

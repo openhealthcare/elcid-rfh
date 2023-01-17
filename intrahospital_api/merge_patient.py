@@ -21,7 +21,7 @@ import reversion
 
 IGNORED_FIELDS = {"id", "episode", "patient", "previous_mrn"}
 
-# All models with a foriegn key to Patient that should be copied over
+# All models with a foriegn key to Patient that should be moved over
 PATIENT_RELATED_MODELS = [
     admission_models.BedStatus,
     admission_models.TransferHistory,
@@ -65,7 +65,7 @@ PATIENT_RELATED_MODELS = [
 ]
 
 
-# All models with a foriegn key to Episode that should be copied over
+# All models with a foriegn key to Episode that should be moved over
 EPISODE_RELATED_MODELS = [
     elcid_models.Antimicrobial,
     elcid_models.Diagnosis,
@@ -145,12 +145,15 @@ def get_episode_related_models_to_copy():
     return to_copy
 
 
-def copy_tagging(old_episode, new_episode):
+def move_tagging(old_episode, new_episode):
     """
-    Copy over the tagging from the old episode to the new episode.
+    Moves the tagging from the old episode to the new episode.
 
     We have no updated timestamp so consider the unarchived tag to be
     more important than the unarchived tag.
+
+    If the old episode has an archived tag which is not
+    on the new episdoe we move this over.
     """
     for old_tag in old_episode.tagging_set.all():
         new_tag = new_episode.tagging_set.filter(value=old_tag.value).first()
@@ -169,8 +172,18 @@ def copy_tagging(old_episode, new_episode):
 
 def update_singleton(subrecord_cls, old_parent, new_parent, old_mrn):
     """
-    If the old singleton was updated more recently than the new singleton then
-    move the old singleton onto the new singleton.
+    If the new singleton has never been edited, delete it
+    and replace it with the old singleton keeping the revision history
+    and updating the previous MRN. It creates a new revision entry for
+    this change.
+
+    If they have both been updated, but the new singleton is more
+    recent do nothing.
+
+    If they have both been updated, but the old singleton is more recent
+    copy over the fields from the old singleton onto the new singleton and
+    updagte the previous MRN on the subrecord. It creates a new revision entry for
+    this change.
     """
     if new_parent.__class__ == opal_models.Episode:
         is_episode_subrecord = True
@@ -232,9 +245,9 @@ def update_singleton(subrecord_cls, old_parent, new_parent, old_mrn):
                 new_singleton.save()
 
 
-def copy_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn):
+def move_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn):
     """
-    Copies the old_subrecords query set onto the new parent (a patient or episode).
+    Moves the old_subrecords query set onto the new parent (a patient or episode).
     In doing so it updates the previous_mrn field to be that of the old_mrn
     """
     if new_parent.__class__ == opal_models.Episode:
@@ -257,15 +270,15 @@ def copy_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn):
             old_subrecord.save()
 
 
-def copy_record(subrecord_cls, old_parent, new_parent, old_mrn):
+def move_record(subrecord_cls, old_parent, new_parent, old_mrn):
     """
-    Copies a subrecord_cl from an old parent (a patient or an episode)
+    Moves a subrecord_cl from an old parent (a patient or an episode)
     to a new one.
     """
     if getattr(subrecord_cls, "_is_singleton", False):
         update_singleton(subrecord_cls, old_parent, new_parent, old_mrn)
     else:
-        copy_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn)
+        move_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn)
 
 
 def updates_statuses(new_patient):
@@ -292,11 +305,15 @@ def merge_patient(*, old_patient, new_patient):
     Copy over any episode categories that do not exist, iterate
     over subrecord attached to these and add the PreviousMRN
 
-    Elcid native singleton entries to pick the latest but create a reversion history entry for the non-oldest, with a reference to the original_mrn
+    Singleton entries to pick the latest but create a reversion
+    history entry for the non-oldest, with a reference to the original_mrn
+
+    Non-singletons entries are moved from the old parent to the
+    new parent.
     """
     old_mrn = old_patient.demographics().hospital_number
     for patient_related_model in PATIENT_RELATED_MODELS:
-        copy_record(
+        move_record(
             patient_related_model,
             old_patient,
             new_patient,
@@ -309,9 +326,9 @@ def merge_patient(*, old_patient, new_patient):
         new_episode, _ = new_patient.episode_set.get_or_create(
             category_name=old_episode.category_name
         )
-        copy_tagging(old_episode, new_episode)
+        move_tagging(old_episode, new_episode)
         for episode_related_model in EPISODE_RELATED_MODELS:
-            copy_record(
+            move_record(
                 episode_related_model,
                 old_episode,
                 new_episode,
