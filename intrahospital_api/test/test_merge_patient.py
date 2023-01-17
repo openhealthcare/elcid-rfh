@@ -1,14 +1,102 @@
 import datetime
 import reversion
-from elcid import models
+from django.apps import apps
+from django.db import models as django_models
+from django.utils import timezone
+from django.contrib.auth.models import User
+from elcid import models as elcid_models
 from elcid import episode_categories
+from plugins.admissions import models as admission_models
+from plugins.appointments import models as appointment_models
+from plugins.labtests import models as lab_models
+from plugins.imaging import models as imaging_models
 from plugins.tb import episode_categories as tb_episode_categories
 from plugins.tb import models as tb_models
 from opal.core.test import OpalTestCase
+from opal import models as opal_models
 from intrahospital_api import merge_patient
-from django.utils import timezone
-from django.contrib.auth.models import User
 from reversion.models import Version
+
+
+IGNORED_APPS = {
+    "auth",
+    "contenttypes",
+    "sessions",
+    "messages",
+    "staticfiles",
+    "humanize",
+    "reversion",
+    "rest_framework",
+    "authtoken",
+    "compressor",
+    "admin",
+    "django_celery_results",
+}
+
+PATIENT_RELATED_IGNORE_LIST = set([
+    opal_models.Episode,
+    # populated by load patient
+    admission_models.Encounter,
+    admission_models.PatientEncounterStatus,
+    admission_models.TransferHistory,
+    appointment_models.Appointment,
+    appointment_models.PatientAppointmentStatus,
+    imaging_models.Imaging,
+    imaging_models.PatientImagingStatus,
+    lab_models.LabTest,
+    elcid_models.Demographics,
+    elcid_models.MasterFileMeta,
+    elcid_models.ContactInformation,
+    elcid_models.GPDetails,
+    elcid_models.NextOfKinDetails,
+
+    # not used
+    elcid_models.DuplicatePatient,
+    lab_models.ObservationHistory,
+
+    # part of the merge functionality
+    elcid_models.MergedMRN,
+])
+
+EPISODE_RELATED_IGNORE_LIST = set([
+    opal_models.Tagging,
+])
+
+
+class ModelCopyTestCase(OpalTestCase):
+    def get_patient_episode_related_models(self):
+        our_models = []
+        for app_name, models in apps.all_models.items():
+            if app_name not in IGNORED_APPS:
+                our_models.extend(models.values())
+        patient_related_models = set()
+        episode_related_models = set()
+        for model in our_models:
+            for field in model._meta.fields:
+                if isinstance(field, django_models.ForeignKey):
+                    if field.related_model == opal_models.Patient:
+                        patient_related_models.add(model)
+                    elif field.related_model == opal_models.Episode:
+                        episode_related_models.add(model)
+        return patient_related_models, episode_related_models
+
+    def test_episode_subrecords(self):
+        _, episode_related_models = self.get_patient_episode_related_models()
+        for episode_related_model in episode_related_models:
+            if episode_related_model not in EPISODE_RELATED_IGNORE_LIST:
+                self.assertIn(
+                    episode_related_model, merge_patient.EPISODE_RELATED_MODELS
+                )
+
+    def test_patient_subrecords(self):
+        patient_related_models, _ = self.get_patient_episode_related_models()
+        status_models = list(merge_patient.STATUS_MODELS_TO_RELATED_MODEL.keys())
+        copied_patient_models = merge_patient.PATIENT_RELATED_MODELS + status_models
+        for patient_related_model in patient_related_models:
+            if patient_related_model not in PATIENT_RELATED_IGNORE_LIST:
+                self.assertIn(
+                    patient_related_model, copied_patient_models
+                )
 
 
 class CopyTaggingTestCase(OpalTestCase):
@@ -108,7 +196,7 @@ class UpdateSingletonTestCase(OpalTestCase):
         old_location.updated = timezone.now()
         old_location.save()
         merge_patient.update_singleton(
-            models.Location, self.old_episode, self.new_episode, self.old_mrn
+            elcid_models.Location, self.old_episode, self.new_episode, self.old_mrn
         )
         new_location = self.new_episode.location_set.get()
         self.assertEqual(new_location.hospital, "Some hospital")
@@ -150,7 +238,7 @@ class UpdateSingletonTestCase(OpalTestCase):
             new_location.save()
         old_location = self.old_episode.location_set.get()
         merge_patient.update_singleton(
-            models.Location,
+            elcid_models.Location,
             self.old_episode,
             self.new_episode,
             self.old_mrn,
@@ -253,7 +341,7 @@ class CopyNonSingletonsTestCase(OpalTestCase):
         """
         self.old_episode.antimicrobial_set.create(no_antimicrobials=True)
         merge_patient.copy_non_singletons(
-            models.Antimicrobial,
+            elcid_models.Antimicrobial,
             self.old_episode,
             self.new_episode,
             self.old_mrn,
@@ -270,7 +358,7 @@ class CopyNonSingletonsTestCase(OpalTestCase):
         risk_factor.risk_factor = "On immunosupressants"
         risk_factor.save()
         merge_patient.copy_non_singletons(
-            models.RiskFactor,
+            elcid_models.RiskFactor,
             self.old_patient,
             self.new_patient,
             self.old_mrn,
@@ -313,7 +401,7 @@ class CopyRelatedRecordTestCase(OpalTestCase):
         """
         self.old_episode.antimicrobial_set.create(no_antimicrobials=True)
         merge_patient.copy_record(
-            models.Antimicrobial,
+            elcid_models.Antimicrobial,
             self.old_episode,
             self.new_episode,
             self.old_mrn,

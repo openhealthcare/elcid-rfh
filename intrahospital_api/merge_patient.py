@@ -1,19 +1,126 @@
 from django.utils import timezone
-from elcid import models
 from intrahospital_api import loader
 from opal.core import subrecords
 from django.db import transaction
+from elcid import models as elcid_models
 from plugins.admissions import models as admission_models
+from plugins.appointments import models as appointment_models
 from plugins.covid import models as covid_models
 from plugins.dischargesummary import models as discharge_models
 from plugins.handover import models as handover_models
+from plugins.ipc import models as ipc_models
+from plugins.imaging import models as imaging_models
+from intrahospital_api import models as intrahospital_api_models
 from plugins.icu import models as icu_models
+from plugins.rnoh import models as rnoh_models
 from plugins.tb import models as tb_models
 from obs import models as obs_models
 from opal import models as opal_models
 import reversion
 
+
 IGNORED_FIELDS = {"id", "episode", "patient", "previous_mrn"}
+
+# All models with a foriegn key to Patient that should be copied over
+PATIENT_RELATED_MODELS = [
+    admission_models.BedStatus,
+    admission_models.TransferHistory,
+    admission_models.UpstreamLocation,
+    covid_models.CovidVaccination,
+    covid_models.CovidPatient,
+    discharge_models.DischargeSummary,
+    elcid_models.BloodCultureSet,
+    elcid_models.ChronicAntifungal,
+    elcid_models.GP,
+    elcid_models.PositiveBloodCultureHistory,
+    elcid_models.RiskFactor,
+    handover_models.AMTHandover,
+    handover_models.NursingHandover,
+    icu_models.ICUHandover,
+    icu_models.ICUHandoverLocation,
+    icu_models.ICUHandoverLocationHistory,
+    intrahospital_api_models.ExternalDemographics,
+    intrahospital_api_models.InitialPatientLoad,
+    ipc_models.IPCStatus,
+    opal_models.InpatientAdmission,
+    opal_models.PatientRecordAccess,
+    rnoh_models.RNOHDemographics,
+    rnoh_models.RNOHTeams,
+    tb_models.AFBCulture,
+    tb_models.AFBRefLab,
+    tb_models.AFBSmear,
+    tb_models.AccessConsiderations,
+    tb_models.Allergies,
+    tb_models.BCG,
+    tb_models.CommuninicationConsiderations,
+    tb_models.ContactDetails,
+    tb_models.Employment,
+    tb_models.IndexCase,
+    tb_models.MantouxTest,
+    tb_models.Nationality,
+    tb_models.NextOfKin,
+    tb_models.Pregnancy,
+    tb_models.TBHistory,
+    tb_models.TBPCR,
+]
+
+
+# All models with a foriegn key to Episode that should be copied over
+EPISODE_RELATED_MODELS = [
+    elcid_models.Antimicrobial,
+    elcid_models.Diagnosis,
+    elcid_models.ICURound,
+    elcid_models.Imaging,
+    elcid_models.Infection,
+    elcid_models.InfectionServiceNote,
+    elcid_models.Line,
+    elcid_models.Location,
+    elcid_models.MicrobiologyInput,
+    elcid_models.PastMedicalHistory,
+    elcid_models.PrimaryDiagnosis,
+    elcid_models.Procedure,
+    elcid_models.ReferralRoute,
+    elcid_models.SymptomComplex,
+    obs_models.Observation,
+    covid_models.CovidAdmission,
+    covid_models.CovidComorbidities,
+    covid_models.CovidFollowUpCall,
+    covid_models.CovidFollowUpCallFollowUpCall,
+    covid_models.CovidSixMonthFollowUp,
+    covid_models.LungFunctionTest,
+    ipc_models.InfectionAlert,
+    rnoh_models.OPATEpisodes,
+    rnoh_models.RNOHActions,
+    rnoh_models.RNOHMicrobiology,
+    tb_models.AdverseReaction,
+    tb_models.LymphNodeSwellingSite,
+    tb_models.OtherInvestigation,
+    tb_models.PatientConsultation,
+    tb_models.SocialHistory,
+    tb_models.TBLocation,
+    tb_models.TBManagement,
+    tb_models.TBMeta,
+    tb_models.Travel,
+    tb_models.Treatment,
+]
+
+# Statuses that hold information in a field about the existence of
+# another model. We do this for statuses that are not
+# loaded in by _load_patient
+STATUS_MODELS_TO_RELATED_MODEL = {
+    discharge_models.PatientDischargeSummaryStatus: (
+        "has_dischargesummaries",
+        discharge_models.DischargeSummary,
+    ),
+    handover_models.PatientAMTHandoverStatus: (
+        "has_handover",
+        handover_models.AMTHandover,
+    ),
+    handover_models.PatientNursingHandoverStatus: (
+        "has_handover",
+        handover_models.NursingHandover,
+    ),
+}
 
 
 def get_patient_related_models_to_copy():
@@ -21,31 +128,7 @@ def get_patient_related_models_to_copy():
     Return the models with a relation to patient that we need
     copy over.
     """
-    patient_subrecords = list(subrecords.patient_subrecords())
-    # by default copy all models that are subclasses of previous MRN
-    # as these are subrecords that are editable in the front end.
-    to_copy = [i for i in patient_subrecords if issubclass(i, models.PreviousMRN)]
-    to_copy.extend(
-        [
-            admission_models.BedStatus,
-            admission_models.TransferHistory,
-            admission_models.UpstreamLocation,
-            covid_models.CovidPatient,
-            discharge_models.DischargeSummary,
-            models.ChronicAntifungal,
-            handover_models.AMTHandover,
-            handover_models.NursingHandover,
-            icu_models.ICUHandoverLocation,
-            icu_models.ICUHandoverLocationHistory,
-            icu_models.ICUHandover,
-            opal_models.PatientRecordAccess,
-            tb_models.AFBSmear,
-            tb_models.AFBCulture,
-            tb_models.AFBRefLab,
-            tb_models.TBPCR,
-        ]
-    )
-    return to_copy
+    return
 
 
 def get_episode_related_models_to_copy():
@@ -53,6 +136,7 @@ def get_episode_related_models_to_copy():
     Return the models with a relation to episode that we need
     copy over.
     """
+    return []
     episode_subrecords = list(subrecords.episode_subrecords())
     # by default copy all models that are subclasses of previous MRN
     # as these are subrecords that are editable in the front end.
@@ -189,18 +273,10 @@ def updates_statuses(new_patient):
     If the patient now has upstream models, make sure
     we update the corresponding status objects.
     """
-    # Make sure we update the patient status.
-    new_patient.patientdischargesummarystatus_set.update(
-        has_dischargesummaries=new_patient.dischargesummaries.exists()
-    )
-
-    new_patient.patientamthandoverstatus_set.update(
-        has_handover=new_patient.amt_handover.exists()
-    )
-
-    new_patient.patientnursinghandoverstatus_set.update(
-        has_handover=new_patient.nursing_handover.exists()
-    )
+    for status, related_field_and_model in STATUS_MODELS_TO_RELATED_MODEL.items():
+        related_field, related_model = related_field_and_model
+        exists = related_model.objects.filter(patient=new_patient).exists()
+        status.objects.filter(patient=new_patient).update(**{related_field: exists})
 
 
 @transaction.atomic
@@ -219,11 +295,7 @@ def merge_patient(*, old_patient, new_patient):
     Elcid native singleton entries to pick the latest but create a reversion history entry for the non-oldest, with a reference to the original_mrn
     """
     old_mrn = old_patient.demographics().hospital_number
-
-    patient_related_models = get_patient_related_models_to_copy()
-    episode_related_models = get_episode_related_models_to_copy()
-
-    for patient_related_model in patient_related_models:
+    for patient_related_model in PATIENT_RELATED_MODELS:
         copy_record(
             patient_related_model,
             old_patient,
@@ -238,7 +310,7 @@ def merge_patient(*, old_patient, new_patient):
             category_name=old_episode.category_name
         )
         copy_tagging(old_episode, new_episode)
-        for episode_related_model in episode_related_models:
+        for episode_related_model in EPISODE_RELATED_MODELS:
             copy_record(
                 episode_related_model,
                 old_episode,
