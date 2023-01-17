@@ -13,9 +13,7 @@ from obs import models as obs_models
 from opal import models as opal_models
 import reversion
 
-IGNORED_FIELDS = {
-    'id', 'episode', 'patient', 'previous_mrn'
-}
+IGNORED_FIELDS = {"id", "episode", "patient", "previous_mrn"}
 
 
 def get_patient_related_models_to_copy():
@@ -26,27 +24,27 @@ def get_patient_related_models_to_copy():
     patient_subrecords = list(subrecords.patient_subrecords())
     # by default copy all models that are subclasses of previous MRN
     # as these are subrecords that are editable in the front end.
-    to_copy = [
-        i for i in patient_subrecords if issubclass(i, models.PreviousMRN)
-    ]
-    to_copy.extend([
-        admission_models.BedStatus,
-        admission_models.TransferHistory,
-        admission_models.UpstreamLocation,
-        covid_models.CovidPatient,
-        discharge_models.DischargeSummary,
-        models.ChronicAntifungal,
-        handover_models.AMTHandover,
-        handover_models.NursingHandover,
-        icu_models.ICUHandoverLocation,
-        icu_models.ICUHandoverLocationHistory,
-        icu_models.ICUHandover,
-        opal_models.PatientRecordAccess,
-        tb_models.AFBSmear,
-        tb_models.AFBCulture,
-        tb_models.AFBRefLab,
-        tb_models.TBPCR,
-    ])
+    to_copy = [i for i in patient_subrecords if issubclass(i, models.PreviousMRN)]
+    to_copy.extend(
+        [
+            admission_models.BedStatus,
+            admission_models.TransferHistory,
+            admission_models.UpstreamLocation,
+            covid_models.CovidPatient,
+            discharge_models.DischargeSummary,
+            models.ChronicAntifungal,
+            handover_models.AMTHandover,
+            handover_models.NursingHandover,
+            icu_models.ICUHandoverLocation,
+            icu_models.ICUHandoverLocationHistory,
+            icu_models.ICUHandover,
+            opal_models.PatientRecordAccess,
+            tb_models.AFBSmear,
+            tb_models.AFBCulture,
+            tb_models.AFBRefLab,
+            tb_models.TBPCR,
+        ]
+    )
     return to_copy
 
 
@@ -58,9 +56,7 @@ def get_episode_related_models_to_copy():
     episode_subrecords = list(subrecords.episode_subrecords())
     # by default copy all models that are subclasses of previous MRN
     # as these are subrecords that are editable in the front end.
-    to_copy = [
-        i for i in episode_subrecords if issubclass(i, models.PreviousMRN)
-    ]
+    to_copy = [i for i in episode_subrecords if issubclass(i, models.PreviousMRN)]
     to_copy.append(obs_models.Observation)
     return to_copy
 
@@ -73,9 +69,7 @@ def copy_tagging(old_episode, new_episode):
     more important than the unarchived tag.
     """
     for old_tag in old_episode.tagging_set.all():
-        new_tag = new_episode.tagging_set.filter(
-            value=old_tag.value
-        ).first()
+        new_tag = new_episode.tagging_set.filter(value=old_tag.value).first()
         if new_tag:
             if new_tag.archived and not old_tag.archived:
                 # if tag on the old episode is not archived consider

@@ -15,14 +15,12 @@ class CopyTaggingTestCase(OpalTestCase):
     def setUp(self):
         _, self.old_episode = self.new_patient_and_episode_please()
         _, self.new_episode = self.new_patient_and_episode_please()
-        self.old_user = User.objects.create(username='old_user')
-        self.new_user = User.objects.create(username='new_user')
+        self.old_user = User.objects.create(username="old_user")
+        self.new_user = User.objects.create(username="new_user")
 
     def test_copy_archived_tag(self):
         self.old_episode.tagging_set.create(
-            archived=True,
-            user=self.old_user,
-            value="some list"
+            archived=True, user=self.old_user, value="some list"
         )
         merge_patient.copy_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
@@ -33,14 +31,10 @@ class CopyTaggingTestCase(OpalTestCase):
 
     def test_copy_active_tag(self):
         self.old_episode.tagging_set.create(
-            archived=False,
-            user=self.old_user,
-            value="some list"
+            archived=False, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
-            archived=True,
-            user=self.new_user,
-            value="some list"
+            archived=True, user=self.new_user, value="some list"
         )
         merge_patient.copy_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
@@ -51,14 +45,10 @@ class CopyTaggingTestCase(OpalTestCase):
 
     def test_does_not_copy_archived_tag_if_active_tag_exists(self):
         self.old_episode.tagging_set.create(
-            archived=True,
-            user=self.old_user,
-            value="some list"
+            archived=True, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
-            archived=False,
-            user=self.new_user,
-            value="some list"
+            archived=False, user=self.new_user, value="some list"
         )
         merge_patient.copy_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
@@ -69,14 +59,10 @@ class CopyTaggingTestCase(OpalTestCase):
 
     def test_does_not_copy_archived_tag_if_archived_tag_exists(self):
         self.old_episode.tagging_set.create(
-            archived=True,
-            user=self.old_user,
-            value="some list"
+            archived=True, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
-            archived=True,
-            user=self.new_user,
-            value="some list"
+            archived=True, user=self.new_user, value="some list"
         )
         merge_patient.copy_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
@@ -87,14 +73,10 @@ class CopyTaggingTestCase(OpalTestCase):
 
     def test_does_not_copy_active_tag_if_active_tag_exists(self):
         self.old_episode.tagging_set.create(
-            archived=False,
-            user=self.old_user,
-            value="some list"
+            archived=False, user=self.old_user, value="some list"
         )
         self.new_episode.tagging_set.create(
-            archived=False,
-            user=self.new_user,
-            value="some list"
+            archived=False, user=self.new_user, value="some list"
         )
         merge_patient.copy_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
@@ -108,14 +90,10 @@ class UpdateSingletonTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
         self.old_mrn = "123"
-        self.old_patient.demographics_set.update(
-            hospital_number=self.old_mrn
-        )
+        self.old_patient.demographics_set.update(hospital_number=self.old_mrn)
         self.new_patient, self.new_episode = self.new_patient_and_episode_please()
         self.new_mrn = "456"
-        self.new_patient.demographics_set.update(
-            hospital_number=self.new_mrn
-        )
+        self.new_patient.demographics_set.update(hospital_number=self.new_mrn)
 
     def test_simple_update_episode_singleton(self):
         """
@@ -130,18 +108,11 @@ class UpdateSingletonTestCase(OpalTestCase):
         old_location.updated = timezone.now()
         old_location.save()
         merge_patient.update_singleton(
-            models.Location,
-            self.old_episode,
-            self.new_episode,
-            self.old_mrn
+            models.Location, self.old_episode, self.new_episode, self.old_mrn
         )
         new_location = self.new_episode.location_set.get()
-        self.assertEqual(
-            new_location.hospital, "Some hospital"
-        )
-        self.assertEqual(
-            new_location.previous_mrn, self.old_mrn
-        )
+        self.assertEqual(new_location.hospital, "Some hospital")
+        self.assertEqual(new_location.previous_mrn, self.old_mrn)
 
     def test_simple_update_patient_singleton(self):
         """
@@ -162,12 +133,8 @@ class UpdateSingletonTestCase(OpalTestCase):
             self.old_mrn,
         )
         new_nationality = self.new_patient.nationality_set.get()
-        self.assertEqual(
-            new_nationality.arrival_in_the_uk, "2020"
-        )
-        self.assertEqual(
-            new_nationality.previous_mrn, self.old_mrn
-        )
+        self.assertEqual(new_nationality.arrival_in_the_uk, "2020")
+        self.assertEqual(new_nationality.previous_mrn, self.old_mrn)
 
     def test_update_singleton_only_new_updated(self):
         """
@@ -190,9 +157,7 @@ class UpdateSingletonTestCase(OpalTestCase):
         )
         self.assertIsNone(old_location.previous_mrn)
         version = Version.objects.get_for_object(new_location).get()
-        self.assertEqual(
-            version.field_dict["hospital_ft"], "Some hospital"
-        )
+        self.assertEqual(version.field_dict["hospital_ft"], "Some hospital")
 
     def test_older_is_more_recent_than_new(self):
         """
@@ -215,19 +180,16 @@ class UpdateSingletonTestCase(OpalTestCase):
         old_nationality.updated = timezone.now()
         old_nationality.save()
         merge_patient.update_singleton(
-            tb_models.Nationality,
-            self.old_patient,
-            self.new_patient,
-            self.old_mrn
+            tb_models.Nationality, self.old_patient, self.new_patient, self.old_mrn
         )
         new_nationality.refresh_from_db()
         self.assertEqual(new_nationality.previous_mrn, self.old_mrn)
         self.assertEqual(new_nationality.arrival_in_the_uk, "2021")
         # Version is by default ordered by -id
-        previous_version = Version.objects.get_for_object(new_nationality).order_by('id').first()
-        self.assertEqual(
-            previous_version.field_dict["arrival_in_the_uk"], "2020"
+        previous_version = (
+            Version.objects.get_for_object(new_nationality).order_by("id").first()
         )
+        self.assertEqual(previous_version.field_dict["arrival_in_the_uk"], "2020")
         self.assertIsNone(previous_version.field_dict["previous_mrn"])
 
     def test_newer_is_more_recent_than_old(self):
@@ -265,47 +227,31 @@ class UpdateSingletonTestCase(OpalTestCase):
         # 1. The initial creation
         # 2. The updated with the old values and the previous MRN
         # 3. The current version
-        previous_versions = Version.objects.get_for_object(new_nationality).order_by('id')
-        self.assertEqual(
-            previous_versions[0].field_dict["arrival_in_the_uk"], "2020"
+        previous_versions = Version.objects.get_for_object(new_nationality).order_by(
+            "id"
         )
-        self.assertEqual(
-            previous_versions[0].field_dict["previous_mrn"], None
-        )
-        self.assertEqual(
-            previous_versions[1].field_dict["arrival_in_the_uk"], "2021"
-        )
-        self.assertEqual(
-            previous_versions[1].field_dict["previous_mrn"], self.old_mrn
-        )
-        self.assertEqual(
-            previous_versions[2].field_dict["arrival_in_the_uk"], "2020"
-        )
-        self.assertEqual(
-            previous_versions[2].field_dict["previous_mrn"], None
-        )
+        self.assertEqual(previous_versions[0].field_dict["arrival_in_the_uk"], "2020")
+        self.assertEqual(previous_versions[0].field_dict["previous_mrn"], None)
+        self.assertEqual(previous_versions[1].field_dict["arrival_in_the_uk"], "2021")
+        self.assertEqual(previous_versions[1].field_dict["previous_mrn"], self.old_mrn)
+        self.assertEqual(previous_versions[2].field_dict["arrival_in_the_uk"], "2020")
+        self.assertEqual(previous_versions[2].field_dict["previous_mrn"], None)
 
 
 class CopyNonSingletonsTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
         self.old_mrn = "123"
-        self.old_patient.demographics_set.update(
-            hospital_number=self.old_mrn
-        )
+        self.old_patient.demographics_set.update(hospital_number=self.old_mrn)
         self.new_patient, self.new_episode = self.new_patient_and_episode_please()
         self.new_mrn = "456"
-        self.new_patient.demographics_set.update(
-            hospital_number=self.new_mrn
-        )
+        self.new_patient.demographics_set.update(hospital_number=self.new_mrn)
 
     def test_copies_episode_related_records(self):
         """
         Test copy_non_singletons copys over non singleton episode subrecords
         """
-        self.old_episode.antimicrobial_set.create(
-            no_antimicrobials=True
-        )
+        self.old_episode.antimicrobial_set.create(no_antimicrobials=True)
         merge_patient.copy_non_singletons(
             models.Antimicrobial,
             self.old_episode,
@@ -338,14 +284,10 @@ class CopyRelatedRecordTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
         self.old_mrn = "123"
-        self.old_patient.demographics_set.update(
-            hospital_number=self.old_mrn
-        )
+        self.old_patient.demographics_set.update(hospital_number=self.old_mrn)
         self.new_patient, self.new_episode = self.new_patient_and_episode_please()
         self.new_mrn = "456"
-        self.new_patient.demographics_set.update(
-            hospital_number=self.new_mrn
-        )
+        self.new_patient.demographics_set.update(hospital_number=self.new_mrn)
 
     def test_patient_singleton(self):
         """
@@ -362,20 +304,14 @@ class CopyRelatedRecordTestCase(OpalTestCase):
             self.old_mrn,
         )
         new_nationality = self.new_patient.nationality_set.get()
-        self.assertEqual(
-            new_nationality.arrival_in_the_uk, "2020"
-        )
-        self.assertEqual(
-            new_nationality.previous_mrn, self.old_mrn
-        )
+        self.assertEqual(new_nationality.arrival_in_the_uk, "2020")
+        self.assertEqual(new_nationality.previous_mrn, self.old_mrn)
 
     def test_episode_non_singleton(self):
         """
         Test copy_subrecord copys over non-singleton episode subrecords
         """
-        self.old_episode.antimicrobial_set.create(
-            no_antimicrobials=True
-        )
+        self.old_episode.antimicrobial_set.create(no_antimicrobials=True)
         merge_patient.copy_record(
             models.Antimicrobial,
             self.old_episode,
@@ -428,27 +364,25 @@ class MergePatientTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
         self.old_mrn = "123"
-        self.old_patient.demographics_set.update(
-            hospital_number=self.old_mrn
+        self.old_patient.demographics_set.update(hospital_number=self.old_mrn)
+        self.old_episode.category_name = (
+            episode_categories.InfectionService.display_name
         )
-        self.old_episode.category_name = episode_categories.InfectionService.display_name
         self.old_episode.save()
         self.new_patient, self.new_episode = self.new_patient_and_episode_please()
-        self.new_episode.category_name = episode_categories.InfectionService.display_name
+        self.new_episode.category_name = (
+            episode_categories.InfectionService.display_name
+        )
         self.new_episode.save()
         self.new_mrn = "456"
-        self.new_patient.demographics_set.update(
-            hospital_number=self.new_mrn
-        )
+        self.new_patient.demographics_set.update(hospital_number=self.new_mrn)
 
     def test_copies_over_patient_subrecords(self):
         """
         Test merge_patient copies over patient subrecords to
         the new patient
         """
-        self.new_patient.mergedmrn_set.create(
-            mrn=self.old_mrn
-        )
+        self.new_patient.mergedmrn_set.create(mrn=self.old_mrn)
         old_nationality = self.old_patient.nationality_set.get()
         old_nationality.arrival_in_the_uk = "2020"
         old_nationality.updated = timezone.now()
@@ -457,15 +391,9 @@ class MergePatientTestCase(OpalTestCase):
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         new_nationality = self.new_patient.nationality_set.get()
-        self.assertEqual(
-            new_nationality.arrival_in_the_uk, "2020"
-        )
-        self.assertEqual(
-            new_nationality.previous_mrn, self.old_mrn
-        )
-        self.assertEqual(
-            self.new_patient.mergedmrn_set.count(), 1
-        )
+        self.assertEqual(new_nationality.arrival_in_the_uk, "2020")
+        self.assertEqual(new_nationality.previous_mrn, self.old_mrn)
+        self.assertEqual(self.new_patient.mergedmrn_set.count(), 1)
         self.assertIsNotNone(
             self.new_patient.mergedmrn_set.get(mrn=self.old_mrn).our_merge_datetime
         )
@@ -513,12 +441,8 @@ class MergePatientTestCase(OpalTestCase):
         Blood cultures have related foreign keys, make sure that
         these are copied over
         """
-        blood_culture = self.old_patient.bloodcultureset_set.create(
-            lab_number="111"
-        )
-        blood_culture.isolates.create(
-            date_positive=datetime.date.today()
-        )
+        blood_culture = self.old_patient.bloodcultureset_set.create(lab_number="111")
+        blood_culture.isolates.create(date_positive=datetime.date.today())
         merge_patient.merge_patient(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
@@ -533,17 +457,17 @@ class MergePatientTestCase(OpalTestCase):
         merge_patient.merge_patient(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
-        self.assertTrue(
-            self.new_patient.dischargesummaries.exists()
-        )
+        self.assertTrue(self.new_patient.dischargesummaries.exists())
         summary_status = self.new_patient.patientdischargesummarystatus_set.get()
         self.assertTrue(summary_status.has_dischargesummaries)
 
     def test_copies_tags(self):
-        self.old_episode.tagging_set.create(archived=False, value='some list')
+        self.old_episode.tagging_set.create(archived=False, value="some list")
         merge_patient.merge_patient(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         self.assertTrue(
-            self.new_episode.tagging_set.filter(archived=False, value='some list').exists()
+            self.new_episode.tagging_set.filter(
+                archived=False, value="some list"
+            ).exists()
         )
