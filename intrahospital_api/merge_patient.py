@@ -123,7 +123,7 @@ STATUS_MODELS_TO_RELATED_MODEL = {
 }
 
 
-def move_tagging(old_episode, new_episode):
+def update_tagging(old_episode, new_episode):
     """
     Moves the tagging from the old episode to the new episode.
 
@@ -304,7 +304,7 @@ def merge_patient(*, old_patient, new_patient):
         new_episode, _ = new_patient.episode_set.get_or_create(
             category_name=old_episode.category_name
         )
-        move_tagging(old_episode, new_episode)
+        update_tagging(old_episode, new_episode)
         for episode_related_model in EPISODE_RELATED_MODELS:
             move_record(
                 episode_related_model,

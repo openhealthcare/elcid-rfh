@@ -110,7 +110,7 @@ class ModelMergeTestCase(OpalTestCase):
                 )
 
 
-class MoveTaggingTestCase(OpalTestCase):
+class UpdateTaggingTestCase(OpalTestCase):
     def setUp(self):
         _, self.old_episode = self.new_patient_and_episode_please()
         _, self.new_episode = self.new_patient_and_episode_please()
@@ -121,7 +121,7 @@ class MoveTaggingTestCase(OpalTestCase):
         self.old_episode.tagging_set.create(
             archived=True, user=self.old_user, value="some list"
         )
-        merge_patient.move_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=True, user=self.old_user, value="some list"
@@ -135,7 +135,7 @@ class MoveTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=True, user=self.new_user, value="some list"
         )
-        merge_patient.move_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.old_user, value="some list"
@@ -149,7 +149,7 @@ class MoveTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=False, user=self.new_user, value="some list"
         )
-        merge_patient.move_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.new_user, value="some list"
@@ -163,7 +163,7 @@ class MoveTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=True, user=self.new_user, value="some list"
         )
-        merge_patient.move_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=True, user=self.new_user, value="some list"
@@ -177,7 +177,7 @@ class MoveTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=False, user=self.new_user, value="some list"
         )
-        merge_patient.move_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(self.old_episode, self.new_episode)
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.new_user, value="some list"
