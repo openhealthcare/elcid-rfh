@@ -5,7 +5,7 @@
   </h3>
   <ul class="patientlist-list">
     {% for list in lists|dictsort:'display_name' %}
-    {% if list.get_slug != list_slug %}
+    {% if list.get_slug != list_slug and list.show_in_main_patient_list %}
     <li>
       <a href="#/list/{{ list.get_slug }}">
         {{ list.display_name }}
