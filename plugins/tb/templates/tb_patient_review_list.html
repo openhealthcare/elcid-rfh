@@ -1,0 +1,109 @@
+{% extends "tb/base.html" %} {% load forms %} {% load elcid_panels %}
+{% block tb_content %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-6">
+        <h1>TB Patient Review List</h1>
+      </div>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-11">
+        <div
+          ng-repeat="row in rows"
+          class="panel panel-default patient-row"
+          ng-class="{'collapsed': isCardCollapsed}"
+        >
+          <a
+            class="panel-link"
+            href="[[ '/#/patient/' + row.demographics[0].patient_id + '/' + row.id ]]"
+          >
+            <div class="panel-heading">
+              <div class="row">
+                <div class="col-md-10">
+                  <h3>
+                    <i class="fa fa-user"></i>
+                    [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
+                    <small>
+                      [[ row.demographics[0].date_of_birth|displayDate ]]
+                      <span ng-show="row.bed_statuses.length">
+                        &nbsp; [[row.bed_statuses[0].hospital]]
+                        [[row.bed_statuses[0].ward]]
+                        [[row.bed_statuses[0].room]] [[row.bed_statuses[0].bed]]
+                      </span>
+                    </small>
+                  </h3>
+                </div>
+                <div class="col-md-2 text-right">
+                  <button
+                    class="btn btn-primary"
+                    pathway-episode="row"
+                    open-pathway="remove"
+                    pathway-callback="removeFromList(row.id)"
+                  >
+                    {% icon 'fa-sign-out' %} Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div uib-collapse="isCardCollapsed" class="panel-body">
+              <div class="col-md-5">
+                <h4>
+                  <strong>
+                    {% icon models.Diagnosis.get_icon %} Primary Diagnosis
+                  </strong>
+                </h4>
+                <p ng-repeat="item in row.diagnosis">
+                  {% include models.Diagnosis.get_display_template %}
+                </p>
+              </div>
+              <div class="col-md-7 overflow-x-auto">
+                <h4><strong>{% icon 'fa fa-comments' %} Most Recent Clinical Note</strong></h4>
+                <div ng-if="row.recent_patient_consultation">
+                  <p>
+                    <span ng-show="row.recent_patient_consultation.initials && row.recent_patient_consultation.initials.trim().length">
+                      <p>
+                        <b>By: </b> [[row.recent_patient_consultation.initials]]
+                      </p>
+                    </span>
+                    <span ng-show="row.recent_patient_consultation.reason_for_interaction">
+                      <p>
+                        <b>Reason For Interaction: </b>[[row.recent_patient_consultation.reason_for_interaction]]
+                      </p>
+                    </span>
+                    <span ng-show="row.recent_patient_consultation.examination_findings">
+                      <b>Examination Findings: </b>
+                      <div markdown="examination_findings"></div>
+                    </span>
+                    <span ng-show="row.recent_patient_consultation.discussion">
+                      <b>Discussion: </b>
+                      <div markdown="discussion"></div>
+                    </span>
+                    <span ng-show="row.recent_patient_consultation.progress">
+                      <b>Progress: </b>
+                      <div markdown="progress"></div>
+                    </span>
+                    <span ng-show="row.recent_patient_consultation.infection_control">
+                      <b>Infection Control: </b>
+                      <div markdown="infection_control"></div>
+                    </span>
+                    <span ng-show="row.recent_patient_consultation.plan">
+                      <b>Plan: </b>
+                      <div markdown="plan"></div>
+                    </span>
+                    <div class="bg-success" ng-show="row.recent_patient_consultation.sent_upstream">
+                      <p><i>Note written to EPR</i><p>
+                    </div>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -68,6 +68,15 @@ app.config(
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
 
+             .when('/tb/lists/:slug/', {
+                controller: 'PatientListCtrl',
+                resolve: {
+                    episodedata : function(patientListLoader) { return patientListLoader(); },
+                    metadata   : function(Metadata){ return Metadata.load(); },
+                    profile    : function(UserProfile){ return UserProfile.load(); }
+                },
+                templateUrl: "/templates/tb_patient_review_list.html"
+             })
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list/'))
              .when('/tb/clinic-list/:date_stamp',  param_template_route('/templates/tb/clinic_list/', 'date_stamp'))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
