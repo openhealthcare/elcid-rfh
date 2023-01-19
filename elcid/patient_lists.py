@@ -31,8 +31,6 @@ PATIENT_LIST_SUBRECORDS = [
 class RfhPatientList(AbstractBase):
     comparator_service = "EpisodeAddedComparator"
     order = 50
-    # This attribute means it shows up in the main patient list navigation
-    show_in_main_patient_list = True
 
     def to_dict(self, user):
         qs = super(RfhPatientList, self).get_queryset()
