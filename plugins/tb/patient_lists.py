@@ -31,7 +31,7 @@ class TBPatientReview(TaggedPatientList):
         episode_dicts = []
         for episode in episode_qs:
             episode_id = episode.id
-            episode_dict = {}
+            episode_dict = {"id": episode_id}
             demographics = episode.patient.demographics_set.all()
             episode_dict['demographics'] = [d.to_dict(user) for d in demographics]
             statuses = episode.patient.bedstatus.all()
