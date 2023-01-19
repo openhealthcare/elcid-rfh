@@ -67,7 +67,8 @@ app.config(
 
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
-
+             // Although there is only one tb opal patient list route.params.slug is what is
+             // used by the patient list move tag modal, so we can't hard code it.
              .when('/tb/lists/:slug/', {
                 controller: 'PatientListCtrl',
                 resolve: {
