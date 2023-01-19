@@ -25,7 +25,9 @@
                 <div class="col-md-10">
                   <h3>
                     <i class="fa fa-user"></i>
-                    [[ row.demographics[0].first_name ]] [[ row.demographics[0].surname ]] [[ row.demographics[0].hospital_number ]]
+                    [[ row.demographics[0].first_name ]] [[
+                    row.demographics[0].surname ]] [[
+                    row.demographics[0].hospital_number ]]
                     <small>
                       [[ row.demographics[0].date_of_birth|displayDate ]]
                       <span ng-show="row.bed_statuses.length">
@@ -55,25 +57,41 @@
                     {% icon models.Diagnosis.get_icon %} Primary Diagnosis
                   </strong>
                 </h4>
-                <p ng-repeat="item in row.diagnosis">
-                  {% include models.Diagnosis.get_display_template %}
-                </p>
+                <div ng-repeat="item in row.diagnosis">
+                  <span ng-show="item.condition">
+                    <p><b>Condition:</b> [[ item.condition ]]</p>
+                    <p><b>Date:</b> [[ item.date_of_diagnosis | displayDate ]]</p>
+                    <p>[[ item.details ]]</p>
+                  </span>
+                </div>
               </div>
               <div class="col-md-7 overflow-x-auto">
-                <h4><strong>{% icon 'fa fa-comments' %} Most Recent Clinical Note</strong></h4>
+                <h4>
+                  <strong
+                    >{% icon 'fa fa-comments' %} Most Recent Clinical
+                    Note</strong
+                  >
+                </h4>
                 <div ng-if="row.recent_patient_consultation">
                   <p>
-                    <span ng-show="row.recent_patient_consultation.initials && row.recent_patient_consultation.initials.trim().length">
+                    <span
+                      ng-show="row.recent_patient_consultation.initials && row.recent_patient_consultation.initials.trim().length"
+                    >
                       <p>
                         <b>By: </b> [[row.recent_patient_consultation.initials]]
                       </p>
                     </span>
-                    <span ng-show="row.recent_patient_consultation.reason_for_interaction">
+                    <span
+                      ng-show="row.recent_patient_consultation.reason_for_interaction"
+                    >
                       <p>
-                        <b>Reason For Interaction: </b>[[row.recent_patient_consultation.reason_for_interaction]]
+                        <b>Reason For Interaction: </b
+                        >[[row.recent_patient_consultation.reason_for_interaction]]
                       </p>
                     </span>
-                    <span ng-show="row.recent_patient_consultation.examination_findings">
+                    <span
+                      ng-show="row.recent_patient_consultation.examination_findings"
+                    >
                       <b>Examination Findings: </b>
                       <div markdown="examination_findings"></div>
                     </span>
@@ -85,7 +103,9 @@
                       <b>Progress: </b>
                       <div markdown="progress"></div>
                     </span>
-                    <span ng-show="row.recent_patient_consultation.infection_control">
+                    <span
+                      ng-show="row.recent_patient_consultation.infection_control"
+                    >
                       <b>Infection Control: </b>
                       <div markdown="infection_control"></div>
                     </span>
@@ -93,9 +113,10 @@
                       <b>Plan: </b>
                       <div markdown="plan"></div>
                     </span>
-                    <div class="bg-success" ng-show="row.recent_patient_consultation.sent_upstream">
-                      <p><i>Note written to EPR</i><p>
-                    </div>
+                    <span class="bg-success" ng-show="row.recent_patient_consultation.sent_upstream">
+                      <br>
+                      Note written to EPR
+                    </span>
                   </p>
                 </div>
               </div>
