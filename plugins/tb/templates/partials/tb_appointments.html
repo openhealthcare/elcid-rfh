@@ -49,5 +49,23 @@
         </div>
       </span>
     </div>
+    <div class="row">
+      <div class="col-md-12">
+        <a
+          href=""
+          ng-hide="episode.tagging[0].tb_patient_review"
+          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_patient_review', tagDisplayName: 'patient review list', addTag: true})"
+        >
+          Add to patient review
+        </a>
+        <a
+          href=""
+          ng-show="episode.tagging[0].tb_patient_review"
+          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_patient_review', tagDisplayName: 'patient review list', addTag: false})"
+        >
+          Patient under review
+        </a>
+      </div>
+    </div>
   </div>
 </div>

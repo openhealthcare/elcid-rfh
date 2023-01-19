@@ -20,6 +20,7 @@ class TbPlugin(plugins.OpalPlugin):
             # 'js/tb/app.js',
             'js/tb/filters.js',
             'js/tb/controllers/tb_symptom_complex.js',
+            'js/tb/controllers/add_remove_tag_modal.js',
             'js/tb/controllers/patient_consultation.js',
             'js/tb/controllers/new_subrecord_step.js',
             'js/tb/controllers/tb_diagnosis.js',
