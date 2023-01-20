@@ -10,8 +10,11 @@ class TBReviewPatients(TaggedPatientList):
     direct_add = False
     tag = "tb_review_patients"
 
-    # template name is not actually used
-    template_name = "tb_review_patients_list.html"
+    # template name is to display the patient lists
+    # in the patient lists menu item.
+    # for the patient list display in the TB
+    # menu item see tb_list_tb_review_patients.html
+    template_name = "patient_list_tb_review_patients.html"
 
     # schema is not used
     schema = []

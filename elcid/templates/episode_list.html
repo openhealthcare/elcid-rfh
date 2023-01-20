@@ -42,6 +42,7 @@
     </div>
 
     <div class="panel-body">
+      {% block patient_list_body %}
       <div class="row screen-only">
         <form class="form-inline">
           <div class="col-md-12">
@@ -82,7 +83,7 @@
         </p>
         {% endif %}
       </div>
-
+      {% endblock patient_list_body %}
     </div>
   </div>
 
