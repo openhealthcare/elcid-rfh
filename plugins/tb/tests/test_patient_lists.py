@@ -9,7 +9,7 @@ class TBPatientReviewTestCase(OpalTestCase):
             first_name="Sally", surname="Wilson"
         )
         episode.tagging_set.create(
-            value=patient_lists.TBPatientReview.tag,
+            value=patient_lists.TBReviewPatients.tag,
             archived=False
         )
         episode.patientconsultation_set.create(
@@ -20,7 +20,7 @@ class TBPatientReviewTestCase(OpalTestCase):
             # required so that bed status serializes
             hospital_site_description=""
         )
-        results = patient_lists.TBPatientReview().to_dict(self.user)
+        results = patient_lists.TBReviewPatients().to_dict(self.user)
         self.assertEqual(len(results), 1)
         result = results[0]
         self.assertEqual(
@@ -39,13 +39,13 @@ class TBPatientReviewTestCase(OpalTestCase):
     def test_does_not_serialize_archived_tags(self):
         _, episode = self.new_patient_and_episode_please()
         episode.tagging_set.create(
-            value=patient_lists.TBPatientReview.tag,
+            value=patient_lists.TBReviewPatients.tag,
             archived=True
         )
-        results = patient_lists.TBPatientReview().to_dict(self.user)
+        results = patient_lists.TBReviewPatients().to_dict(self.user)
         self.assertEqual(len(results), 0)
 
     def test_does_not_missing_tags(self):
         self.new_patient_and_episode_please()
-        results = patient_lists.TBPatientReview().to_dict(self.user)
+        results = patient_lists.TBReviewPatients().to_dict(self.user)
         self.assertEqual(len(results), 0)
