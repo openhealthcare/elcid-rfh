@@ -38,7 +38,7 @@ class TBReviewPatients(TaggedPatientList):
             demographics = episode.patient.demographics_set.all()
             episode_dict['demographics'] = [d.to_dict(user) for d in demographics]
             statuses = episode.patient.bedstatus.all()
-            episode_dict["bed_status"] = [s.to_dict() for s in statuses]
+            episode_dict["bed_statuses"] = [s.to_dict() for s in statuses]
             primary_diagnosis = elcid_models.Diagnosis.objects.filter(
                 episode_id=episode_id
             ).filter(category=elcid_models.Diagnosis.PRIMARY)
@@ -56,7 +56,7 @@ class TBReviewPatients(TaggedPatientList):
                 episode_dict[
                     "recent_patient_consultation"
                 ] = recent_patient_consultation.to_dict(user)
-            # this is required to remove the episode tag
+            # this is required to be able to remove the episode tag
             episode_dict["tagging"] = {
                 self.tag: True
             }

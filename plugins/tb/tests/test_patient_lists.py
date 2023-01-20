@@ -33,7 +33,7 @@ class TBPatientReviewTestCase(OpalTestCase):
             result["recent_patient_consultation"]["plan"], "New Regimen"
         )
         self.assertEqual(
-            result["bed_status"][0]["bed"], "12"
+            result["bed_statuses"][0]["bed"], "12"
         )
 
     def test_does_not_serialize_archived_tags(self):
