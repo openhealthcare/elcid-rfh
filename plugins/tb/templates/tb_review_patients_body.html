@@ -1,10 +1,32 @@
 {% load forms %}
 <div class="panel panel-default tb-clinic-list">
   <div class="panel-heading">
+    {% if on_patient_list %}
+    <h2>
+      <i class="fa fa-user-md"></i>
+      {{ patient_list.display_name }}
+      <span class="pull-right">
+        <div class="btn-group pull-right left-offset-10">
+          <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
+          <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+        </div>
+      </span>
+    </h2>
+    {% else %}
     <div class="row">
       <div class="col-md-6">
-        <h1>TB Patient Review List</h1>
+        <h1>TB Patient Review</h1>
       </div>
+      <div class="col-md-5">
+        <span class="pull-right">
+          <div class="btn-group text-right content-offset-25">
+            <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
+            <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+          </div>
+        </span>
+      </div>
+    </div>
+    {% endif %}
     </div>
   </div>
   <div class="panel-body">

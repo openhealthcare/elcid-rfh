@@ -17,6 +17,7 @@
 </div>
 
 <div class="content-offset right-viewport">
+{% block patient_list_body %}
   <div class="panel panel-default">
     <div class="panel-heading">
       <h2>
@@ -40,9 +41,7 @@
             </span>
       </h2>
     </div>
-
     <div class="panel-body">
-      {% block patient_list_body %}
       <div class="row screen-only">
         <form class="form-inline">
           <div class="col-md-12">
@@ -83,10 +82,10 @@
         </p>
         {% endif %}
       </div>
-      {% endblock patient_list_body %}
     </div>
   </div>
 
+{% endblock patient_list_body %}
 </div>   <!-- Col 11 -->
 
 
