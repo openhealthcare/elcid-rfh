@@ -52,20 +52,28 @@
     <div class="row">
       <div class="col-md-12">
         <a
-          href=""
+          class="inline-with-btn"
+          href="/#/tb/lists/tb_review_patients/"
+          ng-show="episode.tagging[0].tb_review_patients"
+        >
+          Review Patients
+        </a>
+        <button
           ng-hide="episode.tagging[0].tb_review_patients"
           ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'Review Patients list', addTag: true})"
+          class="pull-right btn btn-primary"
         >
-          Add to review patients list <a href="/#/tb/lists/tb_review_patients/">
-        </a>
-        <a
-          href=""
+          <i class="fa fa-plus"></i>
+          Add to review patients
+        </button>
+        <button
           ng-show="episode.tagging[0].tb_review_patients"
           ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'Review Patients list', addTag: false})"
+          class="pull-right btn btn-primary"
         >
-          Patient on the review list
-        </a>
-        <a href="/#/tb/lists/tb_review_patients/"><i class="fa fa-external-link"></i></a>
+          <i class="fa fa-sign-out"></i>
+          Remove from review patients
+        </button>
       </div>
     </div>
   </div>
