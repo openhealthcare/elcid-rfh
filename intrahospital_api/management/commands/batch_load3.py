@@ -1,5 +1,6 @@
 """
-A management command that is run by a cron job
+Batch load 3 is 2-3x faster than batch load 2 because
+it speeds batches things together
 """
 import datetime
 import time
@@ -56,46 +57,17 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         pre_obs = Observation.objects.all().count()
-        kw = {
-            'patients': Patient.objects.all().count(),
-        }
-
         t1 = time.time()
-        obs_count = 0
 
         since = datetime.datetime.now() - datetime.timedelta(hours=48)
 
         tquery1 = time.time()
-
-        # Loading too many rows at once causes memory issues.
-        # The max amount is significantly more than we expect
-        # so if we receive more, email admins and return.
-        count = get_count(since)
-        if count > MAX_AMOUNT:
-            send_too_many_email(since, count)
-            return
         data = api.data_deltas(since)
         tquery2 = time.time()
-
-        demographics_set = Demographics.objects.all()
-
-        for item in data:
-            obs_count += len(item['lab_tests'])
-
-            patient_demographics_set = demographics_set.filter(
-                hospital_number=item['demographics']["hospital_number"]
-            )
-
-            if not item['demographics']["hospital_number"]:
-                continue
-
-            if not patient_demographics_set.exists():
-                continue  # Not in our cohort
-
-            update_patient(patient_demographics_set.first().patient,  item["lab_tests"])
-
+        update_lab_tests.update_lab_tests_from_query(data)
         t2 = time.time()
-        print(f"Total Observations {Observation.objects.all().count()}")
-        print(f"Obs diff {kw['total_obs'] - pre_obs}")
-        print(f"Time {int(t2-t1)}")
+        obs_count = Observation.objects.all().count()
+        print(f"Total Observations {obs_count}")
+        print(f"Obs diff {obs_count - pre_obs}")
+        print(f"Update time {int(t2-t1)}")
         print(f"Upstream query time {int(tquery2 - tquery1)}")
