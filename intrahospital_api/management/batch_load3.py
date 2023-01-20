@@ -61,7 +61,6 @@ class Command(BaseCommand):
         }
 
         t1 = time.time()
-        obs_count = 0
 
         since = datetime.datetime.now() - datetime.timedelta(hours=48)
 
@@ -76,24 +75,7 @@ class Command(BaseCommand):
             return
         data = api.data_deltas(since)
         tquery2 = time.time()
-
-        demographics_set = Demographics.objects.all()
-
-        for item in data:
-            obs_count += len(item['lab_tests'])
-
-            patient_demographics_set = demographics_set.filter(
-                hospital_number=item['demographics']["hospital_number"]
-            )
-
-            if not item['demographics']["hospital_number"]:
-                continue
-
-            if not patient_demographics_set.exists():
-                continue  # Not in our cohort
-
-            update_patient(patient_demographics_set.first().patient,  item["lab_tests"])
-
+        update_lab_tests.update_lab_tests_from_query(data)
         t2 = time.time()
         print(f"Total Observations {Observation.objects.all().count()}")
         print(f"Obs diff {kw['total_obs'] - pre_obs}")
