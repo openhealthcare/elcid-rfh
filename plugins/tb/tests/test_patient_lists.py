@@ -49,3 +49,13 @@ class TBPatientReviewTestCase(OpalTestCase):
         self.new_patient_and_episode_please()
         results = patient_lists.TBReviewPatients().to_dict(self.user)
         self.assertEqual(len(results), 0)
+
+    def test_get(self):
+        # A sanity check to make sure that we can get the template with a 200
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+        response = self.client.get('/templates/tb_list_tb_review_patients.html')
+        self.assertEqual(response.status_code, 200)
