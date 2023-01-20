@@ -53,19 +53,19 @@
       <div class="col-md-12">
         <a
           href=""
-          ng-hide="episode.tagging[0].tb_patient_review"
-          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_patient_review', tagDisplayName: 'patient review list', addTag: true})"
+          ng-hide="episode.tagging[0].tb_review_patients"
+          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'Review Patients list', addTag: true})"
         >
-          Add to patient review <a href="/#/tb/lists/tb_patient_review/">
+          Add to review patients list <a href="/#/tb/lists/tb_review_patients/">
         </a>
         <a
           href=""
-          ng-show="episode.tagging[0].tb_patient_review"
-          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_patient_review', tagDisplayName: 'patient review list', addTag: false})"
+          ng-show="episode.tagging[0].tb_review_patients"
+          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'Review Patients list', addTag: false})"
         >
-          Patient under review
+          Patient on the review list
         </a>
-        <a href="/#/tb/lists/tb_patient_review/"><i class="fa fa-external-link"></i></a>
+        <a href="/#/tb/lists/tb_review_patients/"><i class="fa fa-external-link"></i></a>
       </div>
     </div>
   </div>

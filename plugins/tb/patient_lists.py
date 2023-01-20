@@ -4,14 +4,14 @@ from opal import models as opal_models
 from plugins.tb import models as tb_models
 
 
-class TBPatientReview(TaggedPatientList):
-    display_name = "Patient Review"
+class TBReviewPatients(TaggedPatientList):
+    display_name = "TB Review Patients"
 
     direct_add = False
-    tag = "tb_patient_review"
+    tag = "tb_review_patients"
 
     # template name is not actually used
-    template_name = "tb_patient_review_list.html"
+    template_name = "tb_review_patients_list.html"
 
     # schema is not used
     schema = []

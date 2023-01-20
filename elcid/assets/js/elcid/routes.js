@@ -76,7 +76,7 @@ app.config(
                     metadata   : function(Metadata){ return Metadata.load(); },
                     profile    : function(UserProfile){ return UserProfile.load(); }
                 },
-                templateUrl: "/templates/tb_patient_review_list.html"
+                templateUrl: "/templates/tb_review_patients_list.html"
              })
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list/'))
              .when('/tb/clinic-list/:date_stamp',  param_template_route('/templates/tb/clinic_list/', 'date_stamp'))
