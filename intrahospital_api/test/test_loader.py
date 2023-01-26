@@ -652,7 +652,7 @@ class SynchAllPatientsTestCase(ApiTestCase):
 class SynchPatientTestCase(ApiTestCase):
     @mock.patch.object(loader.logger, 'info')
     @mock.patch.object(loader.api, 'results_for_hospital_number')
-    @mock.patch('intrahospital_api.loader.update_lab_tests.update_tests')
+    @mock.patch('intrahospital_api.loader.update_tests')
     @mock.patch(
         'intrahospital_api.loader.update_demographics.update_patient_information'
     )

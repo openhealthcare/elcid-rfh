@@ -16,13 +16,13 @@ from elcid.utils import timing
 from plugins.admissions.loader import load_encounters, load_transfer_history_for_patient
 from plugins.appointments.loader import load_appointments
 from plugins.imaging.loader import load_imaging
+from plugins.labtests.loader import update_tests
 
 from intrahospital_api import models
 from intrahospital_api import get_api
 from intrahospital_api.exceptions import BatchLoadError
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from intrahospital_api import update_demographics
-from intrahospital_api import update_lab_tests
 from intrahospital_api import logger
 
 api = get_api()
@@ -309,7 +309,7 @@ def update_patient_from_batch(demographics_set, data_delta):
         patient.id
     ))
     logger.info(json.dumps(data_delta["lab_tests"], indent=2))
-    update_lab_tests.update_tests(
+    update_tests(
         patient,
         data_delta["lab_tests"],
     )
@@ -369,7 +369,7 @@ def sync_patient(patient):
     logger.info(
         "fetched results for patient {}".format(patient.id)
     )
-    update_lab_tests.update_tests(patient, results)
+    update_tests(patient, results)
     logger.info(
         "tests synced for {}".format(patient.id)
     )
@@ -391,7 +391,7 @@ def _load_patient(patient, patient_load):
             logger.info(
                 f"Loaded results for patient id {patient.id}"
             )
-            update_lab_tests.update_tests(patient, results)
+            update_tests(patient, results)
             logger.info(
                 f"Tests updated for patient id {patient.id}"
             )

@@ -1,8 +1,8 @@
 import datetime
 from django.utils import timezone
 from opal.core.test import OpalTestCase
-from intrahospital_api import update_lab_tests
 from plugins.labtests import models as lab_test_models
+from plugins.labtests import loader
 
 
 class TestGetOrCreateLabTest(OpalTestCase):
@@ -34,7 +34,7 @@ class TestGetOrCreateLabTest(OpalTestCase):
         self.patient, _ = self.new_patient_and_episode_please()
 
     def test_creates_lab_test(self):
-        lt = update_lab_tests.delete_and_create_lab_test(
+        lt = loader.delete_and_create_lab_test(
             self.patient, self.api_dict
         )
 
@@ -130,7 +130,7 @@ class TestGetOrCreateLabTest(OpalTestCase):
             "test_name": "Anti-CV2 (CRMP-5) antibodies",
         })
 
-        lt = update_lab_tests.delete_and_create_lab_test(
+        lt = loader.delete_and_create_lab_test(
             self.patient, self.api_dict
         )
         self.assertEqual(lt.status, "Success")
