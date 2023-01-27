@@ -12,9 +12,8 @@ from opal.models import Patient
 
 from elcid.models import Demographics
 from intrahospital_api.loader import api
-from intrahospital_api import update_lab_tests
 from plugins.labtests.models import Observation
-from plugins.labtests import logger
+from plugins.labtests import logger, loader
 from plugins.monitoring.models import Fact
 
 MAX_AMOUNT = 250000
@@ -22,7 +21,7 @@ MAX_AMOUNT = 250000
 
 @transaction.atomic
 def update_patient(patient, lab_tests):
-    update_lab_tests.update_tests(patient, lab_tests)
+    loader.update_tests(patient, lab_tests)
 
 
 def get_count(since):

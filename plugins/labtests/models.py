@@ -46,6 +46,23 @@ class LabTest(models.Model):
     class Meta:
         ordering = ['-datetime_ordered']
 
+    UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
+        'Relevant_Clinical_Info': 'clinical_info',
+        'Observation_date': 'datetime_ordered',
+        'Result_ID': 'lab_number',
+        # some manipulation is done on site on load
+        'Specimen_Site': 'site',
+        # If OBX_Status == 'F' then status = 'complete'
+        'OBX_Status': 'status',
+        'OBR_exam_code_ID': 'test_code',
+        'OBR_exam_code_Text': 'test_name',
+        'Encounter_Consultant_Name': 'encounter_consultant_name',
+        'Encounter_Location_Code': 'encounter_location_code',
+        'Encounter_Location_Name': 'encounter_location_name',
+        'Accession_number': 'accession_number',
+        'Department': 'department_int',
+    }
+
     def create_from_api_dict(self, patient, data):
         """
             This is the updateFromDict of the the UpstreamLabTest
@@ -165,6 +182,18 @@ class AbstractObserveration(models.Model):
 
 class Observation(AbstractObserveration):
     test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
+
+    UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
+        "last_updated": "last_updated",
+        # observation_date is Request_Date if Observation_date is None
+        "Observation_date": "observation_datetime",
+        "Reported_date": "reported_datetime",
+        "Result_Range": "reference_range",
+        "OBX_id": "observation_number",
+        "OBX_exam_code_Text": "observation_name",
+        "Result_Value": "observation_value",
+        "Result_Units": "units"
+    }
 
     def to_float(self, some_val):
         regex = r'^[-+]?[0-9]+(\.[0-9]+)?$'

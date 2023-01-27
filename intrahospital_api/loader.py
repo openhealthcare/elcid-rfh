@@ -16,7 +16,7 @@ from elcid.utils import timing
 from plugins.admissions.loader import load_encounters, load_transfer_history_for_patient
 from plugins.appointments.loader import load_appointments
 from plugins.imaging.loader import load_imaging
-from plugins.labtests.loader import update_tests
+from plugins.labtests.loader import load_lab_tests
 
 from intrahospital_api import models
 from intrahospital_api import get_api
@@ -369,7 +369,7 @@ def sync_patient(patient):
     logger.info(
         "fetched results for patient {}".format(patient.id)
     )
-    update_tests(patient, results)
+    load_lab_tests(patient, results)
     logger.info(
         "tests synced for {}".format(patient.id)
     )
@@ -384,24 +384,9 @@ def _load_patient(patient, patient_load):
         "Started patient {} Initial Load {}".format(patient.id, patient_load.id)
     )
     failed = []
-    try:
-        with transaction.atomic():
-            hospital_number = patient.demographics_set.first().hospital_number
-            results = api.results_for_hospital_number(hospital_number)
-            logger.info(
-                f"Loaded results for patient id {patient.id}"
-            )
-            update_tests(patient, results)
-            logger.info(
-                f"Tests updated for patient id {patient.id}"
-            )
-    except Exception:
-        msg = f"Initial patient load for patient id {patient.id} failed on results"
-        logger.error(f"{msg}\n{traceback.format_exc()}")
-        failed.append('results')
-
     loaders = [
         update_demographics.update_patient_information,
+        load_lab_tests,
         load_imaging,
         load_encounters,
         load_appointments,
@@ -416,7 +401,7 @@ def _load_patient(patient, patient_load):
             with transaction.atomic():
                 loader(patient)
                 logger.info(f'Completed {loader_name} for patient id {patient.id}')
-        except Exception as ex:
+        except Exception:
             msg = f"Initial patient load for patient id {patient.id} failed on {loader_name}"
             logger.error(f"{msg}\n{traceback.format_exc()}")
             failed.append(loader_name)

@@ -17,7 +17,7 @@ from plugins.labtests import models as lab_test_models
 class ApiTestCase(OpalTestCase):
     def setUp(self):
         super(ApiTestCase, self).setUp()
-        User.objects.create(username="ohc", password="fake_password")
+    User.objects.create(username="ohc", password="fake_password")
 
 
 @mock.patch("intrahospital_api.loader._initial_load")

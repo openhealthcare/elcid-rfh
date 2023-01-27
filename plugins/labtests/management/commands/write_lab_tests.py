@@ -1,3 +1,4 @@
+from functools import lru_cache
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 import datetime
@@ -70,8 +71,6 @@ def write_results():
     )
     query = """
     SELECT * FROM tQuest.Pathology_Result_View
-    WHERE date_inserted >= @since
-    AND date_inserted < @until
     ORDER BY Patient_Number, Result_ID, OBR_exam_code_Text
     """
     params = {"since": START_DATE, "until": END_DATE}
@@ -164,6 +163,15 @@ def get_key(row):
     )
 
 
+@lru_cache(maxsize=5096)
+def get_lab_test_id(hospital_number, lab_number, test_name):
+    return lab_models.LabTest.objects.get(
+        patient__demographics__hospital_number=hospital_number,
+        lab_number=lab_number,
+        test_name=test_name,
+    ).id
+
+
 @timing
 def write_observation_csv():
     with open(RESULTS_CSV) as m:
@@ -175,13 +183,11 @@ def write_observation_csv():
         with open(OBSERVATIONS_CSV, "w") as a:
             writer = csv.DictWriter(a, fieldnames=headers)
             writer.writeheader()
-            for row in reader:
+            for idx, row in enumerate(reader):
+                if idx % 10000 == 0:
+                    print(f'written {idx} rows to {OBSERVATIONS_CSV}')
                 key = get_key(row)
-                lt_id = lab_models.LabTest.objects.get(
-                    patient__demographics__hospital_number=key[0],
-                    lab_number=key[1],
-                    test_name=key[2],
-                ).id
+                lt_id = get_lab_test_id(*key)
                 obs_dict = cast_to_observation_dict(row, lt_id)
                 writer.writerow(obs_dict)
 
@@ -212,13 +218,15 @@ def write_lab_test_csv():
         with open(LABTEST_CSV, "w") as a:
             writer = csv.DictWriter(a, fieldnames=headers)
             writer.writeheader()
-            for row in reader:
+            for idx, row in enumerate(reader):
                 key = get_key(row)
                 if key in seen:
                     continue
                 seen.add(key)
                 patient_id = hospital_number_to_patient_id[row["Patient_Number"]]
                 our_row = cast_to_lab_test_dict(row, patient_id)
+                if idx % 10000 == 0:
+                    print(f'written {idx} row to {LABTEST_CSV}')
                 writer.writerow(our_row)
 
 
@@ -226,8 +234,11 @@ def call_db_command(sql):
     subprocess.call(f"psql --echo-all -d {settings.DATABASES['default']['NAME']} -c '{sql}'", shell=True)
 
 
-def delete_existing_lab_tests_and_observations():
+def delete_existing_lab_tests():
     call_db_command("truncate table labtests_labtest cascade;")
+
+
+def delete_existing_observations():
     # TODO check this is necessary
     call_db_command("truncate table labtests_observation;")
 
@@ -254,14 +265,15 @@ def check_db_command():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        check_db_command()
+        # check_db_command()
 
         # write_results()
-        write_lab_test_csv()
+        # write_lab_test_csv()
 
-        delete_existing_lab_tests_and_observations()
+        # delete_existing_lab_tests()
 
-        copy_lab_tests()
+        # copy_lab_tests()
+        delete_existing_observations()
         write_observation_csv()
         copy_observations()
 
