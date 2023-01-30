@@ -1,4 +1,3 @@
-from functools import lru_cache
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from elcid import models as elcid_models
@@ -175,19 +174,6 @@ def get_key(row):
     )
 
 
-@lru_cache()
-def get_lab_test_id(hospital_number, lab_number, test_name):
-    """
-    Get the lab test for a hospital number, lab number and test name.
-    It caches it so that we don't do repeated lookups.
-    """
-    return lab_models.LabTest.objects.get(
-        patient__demographics__hospital_number=hospital_number,
-        lab_number=lab_number,
-        test_name=test_name,
-    ).id
-
-
 def get_csv_fields(file_name):
     """
     Gets the column names from a csv file.
@@ -196,6 +182,19 @@ def get_csv_fields(file_name):
         reader = csv.DictReader(m)
         headers = next(reader).keys()
     return list(headers)
+
+
+def get_mrn_lab_number_test_name_to_test_id():
+    values = lab_models.LabTest.objects.values_list(
+        'patient__demographics__hospital_number',
+        'test_name',
+        'lab_number',
+        'id'
+    )
+    result = {}
+    for mrn, test_name, lab_number, test_id in values:
+        result[(mrn, test_name, lab_number,)] = test_id
+    return result
 
 
 @timing
@@ -208,6 +207,7 @@ def write_observation_csv():
     and the data is formatted into what we would save to our observation.
     It also adds the test_id column with the elcid lab test id in it.
     """
+    mrn_lab_number_test_name_to_test_id = get_mrn_lab_number_test_name_to_test_id()
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
         headers = cast_to_observation_dict(next(reader), 1).keys()
@@ -219,7 +219,7 @@ def write_observation_csv():
             writer.writeheader()
             for idx, row in enumerate(reader):
                 key = get_key(row)
-                lt_id = get_lab_test_id(*key)
+                lt_id = mrn_lab_number_test_name_to_test_id[key]
                 obs_dict = cast_to_observation_dict(row, lt_id)
                 writer.writerow(obs_dict)
 
