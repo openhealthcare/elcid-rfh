@@ -16,13 +16,30 @@ angular.module('opal.controllers').controller(
           })).length;
         };
 
+        this.getEditing = function(){
+          // The patient consultation service uses the users initials.
+          //
+          // The users initials are first_name + " " + surname
+          // i.e. if there is no first name or surname initals is set
+          // to " "
+          //
+          // so strip the initials to make sure they are empty if not
+          // populated and this means that the required will work
+          // on the template tag.
+          var item = $scope.episode.newItem("patient_consultation");
+          var editing = {patient_consultation: item.makeCopy()};
+          if(editing.patient_consultation.initials){
+            editing.patient_consultation.initials = editing.patient_consultation.initials.trim();
+          }
+          return editing;
+        }
+
         $q.all([Referencedata.load(), recordLoader.load()]).then(function(datasets){
             angular.extend($scope, datasets[0].toLookuplists());
             var item = $scope.episode.newItem("patient_consultation");
-
-            self.editing = {patient_consultation: item.makeCopy()};
+            self.editing = self.getEditing();
             $scope.$watch("patientConsultationForm.editing.patient_consultation", self.watchMicroFields, true);
-            self.save = function(){
+            self.save = function(form){
               ngProgressLite.set(0);
               ngProgressLite.start();
               // reset the item so that we are definitely saving
@@ -31,8 +48,9 @@ angular.module('opal.controllers').controller(
               resetItem.save(self.editing.patient_consultation).then(function() {
                   ngProgressLite.done();
                   item = $scope.episode.newItem('patient_consultation');
-                  self.editing.patient_consultation = item.makeCopy();
+                  self.editing = self.getEditing();
                   self.changed = false;
+                  form.$setPristine()
               });
             };
         });
