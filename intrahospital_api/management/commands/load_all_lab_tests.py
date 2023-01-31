@@ -16,7 +16,6 @@ import os
 # observations we can cache the call to lab tests
 GET_ALL_RESULTS = """
     SELECT * FROM tQuest.Pathology_Result_View
-    ORDER BY Patient_Number, Result_ID, OBR_exam_code_Text
 """
 
 RESULTS_CSV = "results.csv"
