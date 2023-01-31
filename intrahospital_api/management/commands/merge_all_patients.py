@@ -1,6 +1,7 @@
 """
 A management command that will be called once to create all
 """
+from django.db import transaction
 from django.core.management.base import BaseCommand
 from intrahospital_api import update_demographics
 from elcid import models as elcid_models
@@ -15,6 +16,7 @@ def get_queryset():
 
 
 class Command(BaseCommand):
+    @transaction.atomic
     def handle(self, *args, **options):
         qs = get_queryset()
         merged_mrns = []
