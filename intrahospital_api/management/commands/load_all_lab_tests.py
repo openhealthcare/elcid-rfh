@@ -187,13 +187,13 @@ def get_csv_fields(file_name):
 def get_mrn_lab_number_test_name_to_test_id():
     values = lab_models.LabTest.objects.values_list(
         'patient__demographics__hospital_number',
-        'test_name',
         'lab_number',
+        'test_name',
         'id'
     )
     result = {}
-    for mrn, test_name, lab_number, test_id in values:
-        result[(mrn, test_name, lab_number,)] = test_id
+    for mrn, lab_number, test_name, test_id in values:
+        result[(mrn, lab_number, test_name,)] = test_id
     return result
 
 
@@ -215,12 +215,14 @@ def write_observation_csv():
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
         with open(OBSERVATIONS_CSV, "w") as a:
-            writer = csv.DictWriter(a, fieldnames=headers)
-            writer.writeheader()
+            writer = None
             for idx, row in enumerate(reader):
                 key = get_key(row)
                 lt_id = mrn_lab_number_test_name_to_test_id[key]
                 obs_dict = cast_to_observation_dict(row, lt_id)
+                if idx == 0:
+                    writer = csv.DictWriter(a, fieldnames=headers)
+                    writer.writeheader()
                 writer.writerow(obs_dict)
 
 
@@ -239,22 +241,22 @@ def write_lab_test_csv():
         "hospital_number", "patient_id"
     )
     hospital_number_to_patient_id = {i: v for i, v in hns_and_patient_ids}
-    with open(RESULTS_CSV) as m:
-        reader = csv.DictReader(m)
-        headers = cast_to_lab_test_dict(next(reader), 1).keys()
-        m.seek(0)
+    writer = None
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
         with open(LABTEST_CSV, "w") as a:
-            writer = csv.DictWriter(a, fieldnames=headers)
-            writer.writeheader()
             for idx, row in enumerate(reader):
                 key = get_key(row)
                 if key in seen:
                     continue
                 seen.add(key)
                 patient_id = hospital_number_to_patient_id[row["Patient_Number"]]
+
                 our_row = cast_to_lab_test_dict(row, patient_id)
+                if idx == 0:
+                    headers = our_row.keys()
+                    writer = csv.DictWriter(a, fieldnames=headers)
+                    writer.writeheader()
                 writer.writerow(our_row)
 
 
