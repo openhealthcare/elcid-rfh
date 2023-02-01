@@ -95,6 +95,21 @@ FAKE_PATHOLOGY_DATA = {
 }
 
 
+class GetAllHospitalNumbersTestCase(OpalTestCase):
+    def test_get_all_hospital_numbers(self):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="123"
+        )
+        patient.mergedmrn_set.create(
+            mrn='234'
+        )
+        self.assertEqual(
+            load_all_lab_tests.get_all_hospital_numbers(),
+            set(["123", "234"])
+        )
+
+
 class CastToLabTestDictTestCase(OpalTestCase):
     @mock.patch(
         'intrahospital_api.management.commands.load_all_lab_tests.timezone.now'

@@ -64,18 +64,29 @@ OBSERVATION_COLUMNS = [
 COLUMNS = ["Patient_Number"] + LAB_TEST_COLUMNS + OBSERVATION_COLUMNS
 
 
-@timing
-def write_results():
-    """
-    Get all lab test data for MRNs that are within elcid
-    """
-    hns = set(
+def get_all_hospital_numbers():
+    mrns = set(
         elcid_models.Demographics.objects.exclude(
             hospital_number=None,
         )
         .exclude(hospital_number="")
         .values_list("hospital_number", flat=True)
     )
+    merged_mrns = set(
+        elcid_models.MergedMRN.objects.values_list(
+            'mrn', flat=True
+        )
+    )
+    all_mrns = mrns.union(merged_mrns)
+    return all_mrns
+
+
+@timing
+def write_results():
+    """
+    Get all lab test data for MRNs that are within elcid.
+    """
+    hns = get_all_hospital_numbers()
     with open(RESULTS_CSV, "w") as m:
         writer = csv.DictWriter(m, fieldnames=COLUMNS)
         columns = set(COLUMNS)
