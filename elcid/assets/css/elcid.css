@@ -590,4 +590,16 @@ div.add-isolate:hover {
   max-width: 150px;
 }
 
+.scrollable-table-container {
+  overflow-y: scroll;
+  height: 75%;
+  position: fixed;
+  width: 100%;
+}
+
+.border-bottom-secondary,
+.table-bordered th.border-bottom-secondary {
+  border-bottom: #D36C08 2px solid;
+}
+
 /*# sourceMappingURL=elcid.css.map */

@@ -110,7 +110,7 @@ class SliceContactsView(LoginRequiredMixin, TemplateView):
         context['source']  = transfer
         context['encounter'] = encounter
         context['index_patient'] = transfer.patient
-        context['index_demographics'] = encounter.patient.demographics()
+        context['index_demographics'] = transfer.patient.demographics()
 
         contact_transfers = TransferHistory.objects.filter(
             transfer_start_datetime__lte=transfer.transfer_end_datetime,
@@ -130,21 +130,61 @@ class SliceContactsView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class LocationHistoryEncounterContactsView(LoginRequiredMixin, TemplateView):
+    template_name = 'admissions/encounter_contacts.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['now'] = timezone.now()
+
+        encounter_id = k['encounter_id']
+        context['encounter_id'] = encounter_id
+
+        slices = TransferHistory.objects.filter(
+            encounter_id=encounter_id
+        ).order_by('-transfer_start_datetime').prefetch_related(
+            'patient__demographics_set'
+        )
+
+        for transfer in slices:
+            contact_transfers = TransferHistory.objects.filter(
+                transfer_start_datetime__lte=transfer.transfer_end_datetime,
+                transfer_end_datetime__gte=transfer.transfer_start_datetime,
+                unit=transfer.unit,
+                room=transfer.room
+            ).exclude(
+                mrn=transfer.mrn
+            ).order_by('bed', 'transfer_start_datetime').prefetch_related(
+                'patient__demographics_set'
+            )
+            transfer.contact_transfers = contact_transfers
+
+        context['slices'] = slices
+
+        context['index_patient'] = slices[0].patient
+        context['index_demographics'] = slices[0].patient.demographics()
+
+        return context
+
+
 class LocationHistoryView(LoginRequiredMixin, TemplateView):
     template_name = 'admissions/location_history.html'
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
+        location_code = k['location_code']
+
         history = TransferHistory.objects.filter(
-            transfer_location_code=k['location_code'],
+            transfer_location_code=location_code,
         ).order_by('-transfer_start_datetime').prefetch_related(
             'patient__demographics_set'
         )
-        context['history'] = history
-
         frist = history[0]
-        context['location'] = f"{frist.unit} {frist.room} {frist.bed}"
+        context['location'] = f"{frist.site_code} {frist.unit} {frist.room} {frist.bed}"
+
+        context['history'] = history
+        context['location_code'] = location_code
         context['now'] = timezone.now()
 
         return context
