@@ -4,6 +4,7 @@ Models for the Covid plugin
 from django.db import models
 from opal.core.fields import enum
 from opal.models import Patient, PatientSubrecord, EpisodeSubrecord
+from elcid.models import PreviousMRN
 
 
 def calculate_phq_score(interest, depressed):
@@ -101,7 +102,7 @@ class CovidAcuteMedicalDashboardReportingDay(models.Model):
     non_covid         = models.IntegerField()
 
 
-class CovidVaccination(PatientSubrecord):
+class CovidVaccination(PreviousMRN, PatientSubrecord):
     """
     Vaccination details for this patient
     """
@@ -115,7 +116,7 @@ class CovidVaccination(PatientSubrecord):
     dose_2_date = models.DateField(blank=True, null=True)
 
 
-class CovidAdmission(EpisodeSubrecord):
+class CovidAdmission(PreviousMRN, EpisodeSubrecord):
     """
     An admission to hospital and associated details
     """
@@ -230,7 +231,7 @@ class CovidAdmission(EpisodeSubrecord):
     other_drugs      = models.TextField(blank=True, null=True)
 
 
-class LungFunctionTest(EpisodeSubrecord):
+class LungFunctionTest(PreviousMRN, EpisodeSubrecord):
     """
     Lung function test results for this patient
     """
@@ -242,7 +243,7 @@ class LungFunctionTest(EpisodeSubrecord):
     lf_dlco = models.CharField(blank=True, null=True, max_length=244, verbose_name='Lung Function DLCO %')
 
 
-class CovidComorbidities(EpisodeSubrecord):
+class CovidComorbidities(PreviousMRN, EpisodeSubrecord):
     """
     (Potentially) Relevant conditions and comorbidities
     """
@@ -284,7 +285,7 @@ class CovidComorbidities(EpisodeSubrecord):
     anaemia                                = models.NullBooleanField()
 
 
-class CovidFollowUpCall(EpisodeSubrecord):
+class CovidFollowUpCall(PreviousMRN, EpisodeSubrecord):
     """
     A phone call to a patient seeking follow up on their COVID-19 admission
     """
@@ -647,7 +648,7 @@ class CovidFollowUpCall(EpisodeSubrecord):
         return len([i for i in range(1, 11) if getattr(self, 'tsq{}'.format(i))])
 
 
-class CovidFollowUpCallFollowUpCall(EpisodeSubrecord):
+class CovidFollowUpCallFollowUpCall(PreviousMRN, EpisodeSubrecord):
     """
     A phone call to a patient seeking follow up on their COVID-19 admission Follow up Call
     """
@@ -675,7 +676,7 @@ class CovidFollowUpCallFollowUpCall(EpisodeSubrecord):
     # the timestamp it was sent to epr, null if it hasn't been.
     sent_to_epr       = models.DateTimeField(blank=True, null=True)
 
-class CovidSixMonthFollowUp(EpisodeSubrecord):
+class CovidSixMonthFollowUp(PreviousMRN, EpisodeSubrecord):
     """
     A call made after six months to check on the follow up status of a
     patient.

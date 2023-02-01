@@ -1,4 +1,5 @@
 import datetime
+from django.utils import timezone
 from opal.core.test import OpalTestCase
 from plugins.covid import extract
 
@@ -24,9 +25,13 @@ class GetClosestObservationTestCase(OpalTestCase):
         )
 
     def test_multiple_later_dates(self):
-        self.obs_1.observation_datetime = datetime.datetime(2021, 11, 16)
+        self.obs_1.observation_datetime = timezone.make_aware(
+            datetime.datetime(2021, 11, 16)
+        )
         self.obs_1.save()
-        self.obs_2.observation_datetime = datetime.datetime(2021, 11, 17)
+        self.obs_2.observation_datetime = timezone.make_aware(
+            datetime.datetime(2021, 11, 17)
+        )
         self.obs_2.save()
         found_obs = extract.get_closest_observation(
             self.patient, 'test_name', 'obs_name', self.followup_date
@@ -34,9 +39,13 @@ class GetClosestObservationTestCase(OpalTestCase):
         self.assertEqual(found_obs.id, self.obs_1.id)
 
     def test_multiple_ealier_dates(self):
-        self.obs_1.observation_datetime = datetime.datetime(2021, 11, 13)
+        self.obs_1.observation_datetime = timezone.make_aware(
+            datetime.datetime(2021, 11, 13)
+        )
         self.obs_1.save()
-        self.obs_2.observation_datetime = datetime.datetime(2021, 11, 14)
+        self.obs_2.observation_datetime = timezone.make_aware(
+            datetime.datetime(2021, 11, 14)
+        )
         self.obs_2.save()
         found_obs = extract.get_closest_observation(
             self.patient, 'test_name', 'obs_name', self.followup_date
@@ -44,9 +53,13 @@ class GetClosestObservationTestCase(OpalTestCase):
         self.assertEqual(found_obs.id, self.obs_2.id)
 
     def test_later_date_vs_earlier_date(self):
-        self.obs_1.observation_datetime = datetime.datetime(2021, 11, 13)
+        self.obs_1.observation_datetime = timezone.make_aware(
+            datetime.datetime(2021, 11, 13)
+        )
         self.obs_1.save()
-        self.obs_2.observation_datetime = datetime.datetime(2021, 11, 16)
+        self.obs_2.observation_datetime = timezone.make_aware(
+            datetime.datetime(2021, 11, 16)
+        )
         self.obs_2.save()
         found_obs = extract.get_closest_observation(
             self.patient, 'test_name', 'obs_name', self.followup_date
@@ -54,7 +67,9 @@ class GetClosestObservationTestCase(OpalTestCase):
         self.assertEqual(found_obs.id, self.obs_2.id)
 
     def test_on_the_follow_up_date(self):
-        self.obs_1.observation_datetime = datetime.datetime(2021, 11, 15)
+        self.obs_1.observation_datetime = timezone.make_aware(
+            datetime.datetime(2021, 11, 15)
+        )
         self.obs_1.save()
         found_obs = extract.get_closest_observation(
             self.patient, 'test_name', 'obs_name', self.followup_date

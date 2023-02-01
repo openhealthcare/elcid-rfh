@@ -382,3 +382,280 @@ class UpdatePatientDemographicsTestCase(ApiTestCase):
         self.patient.masterfilemeta_set.create(last_updated=updated)
         update_demographics.update_patient_information(self.patient)
         self.assertIsNone(self.patient.demographics_set.first().updated)
+
+
+class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
+    def test_no_result(self):
+        test_comment = "GP Practice Reset for Dr Madeup GP Practice Reset for Dr Madeup"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 0)
+
+    def test_single_result(self):
+        test_comment = "Merged with MRN 123456 on Dec  2 2015  9:55AM"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 1)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2015, 12, 2, 9, 55)
+            )
+        )
+
+    def test_messy_result(self):
+        """
+        Sometimes the comment is prefixed with MIGRATED Data
+        """
+        test_comment = "MIGRATED DATA Merged with MRN 123456 on Mar  2 2022  2:56PM"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 1)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2022, 3, 2, 14, 56)
+            )
+        )
+
+    def test_ignores_other_information(self):
+        """
+        Sometimes the comment has other data
+        """
+        test_comment = " ".join(
+            [
+                "MIGRATED DATA - GP PRACTICE ADDED",
+                "Merged with MRN 123456 on Mar  2 2022  2:57PM"
+            ]
+        )
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 1)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2022, 3, 2, 14, 57)
+            )
+        )
+
+    def test_multiple_results(self):
+        test_comment = "Merged with MRN 123456 on Dec  5 2016  3:49PM Merged with MRN 789 on Mar  2 2022  2:56PM"
+        result = update_demographics.get_mrn_and_date_from_merge_comment(
+            test_comment
+        )
+        self.assertEqual(len(result), 2)
+        mrn, merge_dt = result[0]
+        self.assertEqual(mrn, "789")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2022, 3, 2, 14, 56)
+            )
+        )
+        mrn, merge_dt = result[1]
+        self.assertEqual(mrn, "123456")
+        self.assertEqual(
+            merge_dt,
+            timezone.make_aware(
+                datetime.datetime(2016, 12, 5, 15, 49)
+            )
+        )
+
+
+class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
+    BASIC_MAPPING = {
+        "123": {
+            "MERGE_COMMENTS": "Merged with MRN 234 on Oct 20 2014  4:44PM",
+            "ACTIVE_INACTIVE": "INACTIVE"
+        },
+        "234": {
+            "MERGE_COMMENTS": "Merged with MRN 123 on Oct 21 2014  4:44PM",
+            "ACTIVE_INACTIVE": "ACTIVE"
+        }
+
+    }
+
+    COMPLEX_MAPPING = {
+        "345": {
+            "MERGE_COMMENTS": " ".join([
+                "Merged with MRN 456 on Oct 21 2014  4:44PM",
+            ]),
+            "ACTIVE_INACTIVE": "INACTIVE"
+        },
+        "456": {
+            "MERGE_COMMENTS": " ".join([
+                "Merged with MRN 345 Oct 17 2014 11:03AM",
+                "Merged with MRN 345 on Oct 21 2014  4:44PM",
+                "Merged with MRN 567 on Apr 14 2018  1:40PM"
+            ]),
+            "ACTIVE_INACTIVE": "INACTIVE"
+        },
+        "567": {
+            "MERGE_COMMENTS": " ".join([
+                "Merged with MRN 456 on Apr 14 2018  1:40PM",
+            ]),
+            "ACTIVE_INACTIVE": "ACTIVE"
+        }
+    }
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    def test_basic_inactive_case(self, get_merged_masterfile_row):
+        """
+        Pass in an inactive MRN, return the active MRN and the date it was merged.
+        """
+        get_merged_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('123')
+        self.assertEqual(active_mrn, "234")
+        self.assertEqual(
+            merged_mrn_and_dates,
+            [{
+                "mrn": "123",
+                "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
+            }]
+        )
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    def test_basic_active_case(self, get_merged_masterfile_row):
+        """
+        Pass in an active MRN, return the active MRN and the date it was merged.
+        """
+        get_merged_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('234')
+        self.assertEqual(active_mrn, "234")
+        self.assertEqual(
+            merged_mrn_and_dates,
+            [{
+                "mrn": "123",
+                "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
+            }]
+        )
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    def test_crawls_nested_rows_from_branch(self, get_merged_masterfile_row):
+        """
+        We pass in an inactive MRN not directly connected to the active MRN.
+
+        We expect it to crawl the across the the MRNs it is connected with
+        and to return the active MRN and merged data.
+        """
+        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "345"
+        )
+        self.assertEqual(
+            active_mrn, "567"
+        )
+        expected = [
+            {
+                "mrn": "345",
+                "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
+            },
+            {
+                "mrn": "456",
+                "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
+            },
+        ]
+        self.assertEqual(expected, merged_data)
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    def test_crawls_nested_rows_from_trunk(self, get_merged_masterfile_row):
+        """
+        We pass in an inactive MRN linked to an inactive MRN and an active MRN.
+
+        We expect it to correctly decide which is the active MRN, and to return
+        all inactive MRNs in the merged_mrn_data.
+        """
+        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "456"
+        )
+        self.assertEqual(
+            active_mrn, "567"
+        )
+        expected = [
+            {
+                "mrn": "345",
+                "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
+            },
+            {
+                "mrn": "456",
+                "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
+            },
+        ]
+        merged_data = sorted(merged_data, key=lambda x: x["mrn"])
+        self.assertEqual(expected, merged_data)
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    def test_handles_active_mrns(self, get_merged_masterfile_row):
+        """
+        We pass in an active MRN linked to an inactive MRN that is linked to an inactive
+        MRN.
+
+        We expect it to correctly recognise it is an inactive MRN and return
+        all related MRNs as merged_mrn_data.
+        """
+        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "567"
+        )
+        self.assertEqual(
+            active_mrn, "567"
+        )
+        expected = [
+            {
+                "mrn": "345",
+                "merge_comments": self.COMPLEX_MAPPING["345"]["MERGE_COMMENTS"]
+            },
+            {
+                "mrn": "456",
+                "merge_comments": self.COMPLEX_MAPPING["456"]["MERGE_COMMENTS"]
+            },
+        ]
+        merged_data = sorted(merged_data, key=lambda x: x["mrn"])
+        self.assertEqual(expected, merged_data)
+
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    @mock.patch('intrahospital_api.update_demographics.logger')
+    @mock.patch('intrahospital_api.update_demographics.recursively_parse_merge_comments')
+    def test_error_handling(
+        self, recursively_parse_merge_comments, logger, get_merged_masterfile_row
+    ):
+        get_merged_masterfile_row.return_value = 1
+        recursively_parse_merge_comments.side_effect = update_demographics.MergeException(
+            'Unable to find a merged row for 123'
+        )
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "123"
+        )
+        self.assertEqual(active_mrn, "123")
+        self.assertEqual(merged_data, [])
+        logger.error.assert_called_once_with(
+            "Merge exception raised for 123 with 'Unable to find a merged row for 123'"
+        )
+
+    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    @mock.patch('intrahospital_api.update_demographics.logger')
+    @mock.patch('intrahospital_api.update_demographics.recursively_parse_merge_comments')
+    def test_no_active_mrn(
+        self, recursively_parse_merge_comments, logger, get_merged_masterfile_row
+    ):
+        get_merged_masterfile_row.return_value = 1
+        active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
+            "123"
+        )
+        self.assertEqual(active_mrn, "123")
+        self.assertEqual(merged_data, [])
+        logger.error.assert_called_once_with(
+            "Unable to find an active MRN for 123"
+        )

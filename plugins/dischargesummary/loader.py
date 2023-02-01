@@ -62,35 +62,49 @@ def query_for_zero_prefixed(mrn):
     return [i for i in other_mrns if i.lstrip('0') == mrn]
 
 
+def get_mrns_to_query_for_patient(patient):
+    """
+    Returns all MRNs to use when we query for summaries.
+
+    This includes active and inactive MRNs.
+
+    It checks if zero-prefixed versions of the MRNs exist
+    in the upstream table and if so, returns these aswell.
+    """
+    inactive_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
+    )
+    mrns = [patient.demographics().hospital_number] + inactive_mrns
+    zero_prefixed_mrns = []
+    for mrn in mrns:
+        zero_prefixed_mrns.extend(
+            query_for_zero_prefixed(mrn)
+        )
+    return mrns + zero_prefixed_mrns
+
+
 def load_dischargesummaries(patient):
     """
     Given a PATIENT load upstream discharge summary data and save it.
     """
     api = ProdAPI()
 
-    demographic = patient.demographics()
-
     summary_count = patient.dischargesummaries.count()
 
-    summaries = api.execute_hospital_query(
-        Q_GET_SUMMARIES,
-        params={'mrn': demographic.hospital_number}
-    )
-    other_mrns = query_for_zero_prefixed(
-        demographic.hospital_number
-    )
-    for other_mrn in other_mrns:
+    summaries = []
+    mrns = get_mrns_to_query_for_patient(patient)
+
+    for mrn in mrns:
         summaries.extend(api.execute_hospital_query(
             Q_GET_SUMMARIES,
-            params={'mrn': other_mrn}
+            params={'mrn': mrn}
         ))
-    for summary in summaries:
 
+    for summary in summaries:
         meds = api.execute_hospital_query(
             Q_GET_MEDS_FOR_SUMMARY,
             params={'tta_id': summary['SQL_Internal_ID']}
         )
-
 
         parsed = {}
         for k, v in summary.items():
@@ -115,7 +129,6 @@ def load_dischargesummaries(patient):
                         v = timezone.make_aware(v)
 
                 parsed[DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v
-
 
         our_summary, _ = DischargeSummary.objects.get_or_create(
             patient=patient,

@@ -53,6 +53,7 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             'main_language': None,
             'nationality': None,
             'religion': None,
+            'previous_mrn': None,
             'created': None,
             'updated': None,
             'created_by_id': None,
@@ -100,6 +101,52 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             )
 
 
+class PreviousMRNTestCase(OpalTestCase):
+    def setUp(self):
+        _, self.episode = self.new_patient_and_episode_please()
+        self.procedure = self.episode.procedure_set.create()
+
+    def test_nones_previous_mrn_on_update(self):
+        self.procedure.previous_mrn = "123"
+        self.procedure.stage = "Stage 1"
+        self.procedure.save()
+        self.procedure.update_from_dict(
+            {
+                'stage': 'Stage 2',
+                'previous_mrn': '123'
+            },
+            None
+        )
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.previous_mrn)
+
+    def test_does_not_error_if_previous_mrn_is_none(self):
+        self.procedure.stage = "Stage 1"
+        self.procedure.save()
+        self.procedure.update_from_dict({'stage': 'Stage 2'}, None)
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.previous_mrn)
+
+    def test_never_updates_from_the_front_end(self):
+        self.procedure.previous_mrn = None
+        self.procedure.save()
+        self.procedure.update_from_dict(
+            {'stage': 'Stage 2', 'previous_mrn': "234"},
+            None
+        )
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.previous_mrn)
+
+
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
 
     def setUp(self):
@@ -122,6 +169,7 @@ class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
             'hospital': 'UCH',
             'ward': 'T10',
             'bed': '13',
+            'previous_mrn': None,
             'created': None,
             'updated': None,
             'updated_by_id': None,
@@ -253,6 +301,29 @@ class MicrobiologyInputTestCase(OpalTestCase):
             saved_input.microinputicuroundrelation.icu_round.id,
             emodels.ICURound.objects.get().id
         )
+
+    def test_update_from_dict_zeros_previous_mrn(self):
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'ICU round',
+            'micro_input_icu_round_relation': {
+                'observation': {'temperature': 1111},
+                'icu_round': {}
+            },
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(
+            episode=self.episode, previous_mrn="123"
+        )
+        micro_input.update_from_dict(update_dict, self.user)
+        saved_input = self.episode.microbiologyinput_set.get()
+        self.assertEqual(
+            saved_input.previous_mrn, None
+        )
+
 
     def test_update_from_dict_without_when(self):
         update_dict = {
@@ -528,6 +599,7 @@ class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
             'consistency_token': u'12345678',
             'updated': None,
             'created': None,
+            'previous_mrn': None,
             'category': None,
             'updated_by_id': None,
             'created_by_id': None,
