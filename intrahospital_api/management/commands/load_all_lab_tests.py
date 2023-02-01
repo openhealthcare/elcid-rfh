@@ -85,6 +85,8 @@ def get_all_hospital_numbers():
 def write_results():
     """
     Get all lab test data for MRNs that are within elcid.
+
+    Strip the MRN of leading zeros before writing it to the file
     """
     hns = get_all_hospital_numbers()
     with open(RESULTS_CSV, "w") as m:
@@ -108,7 +110,10 @@ def write_results():
                         key = get_key(row)
                         if not all(key):
                             continue
-                        if key[0] not in hns:
+                        # lab tests sometimes have leading zeros
+                        # we emulate the cerner master file and
+                        # remove them.
+                        if key[0].lstrip('0') not in hns:
                             continue
                         writer.writerow({k: v for k, v in row.items() if k in columns})
 
