@@ -67,7 +67,17 @@ app.config(
 
              .when('/lab-sync-performance/', static_template_route('/templates/monitoring/lab_timings.html'))
              .when('/system-stats/',         static_template_route('/templates/monitoring/system_stats.html'))
-
+             // Although there is only one tb opal patient list route.params.slug is what is
+             // used by the patient list move tag modal, so we can't hard code it.
+             .when('/tb/lists/:slug/', {
+                controller: 'PatientListCtrl',
+                resolve: {
+                    episodedata : function(patientListLoader) { return patientListLoader(); },
+                    metadata   : function(Metadata){ return Metadata.load(); },
+                    profile    : function(UserProfile){ return UserProfile.load(); }
+                },
+                templateUrl: "/templates/tb_list_tb_review_patients.html"
+             })
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list/'))
              .when('/tb/clinic-list/:date_stamp',  param_template_route('/templates/tb/clinic_list/', 'date_stamp'))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))

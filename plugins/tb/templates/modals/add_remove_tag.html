@@ -1,0 +1,46 @@
+{% extends "base_templates/form_modal_base.html" %}
+{% block title %}
+  <span ng-show="addTag">Add ([[ editingName ]])</span>
+  <span ng-hide="addTag">Remove ([[ editingName ]])</span>
+{% endblock %}
+
+{% block modal_body%}
+{# Add the patient to the list #}
+<div ng-show="addTag">
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2 text-center">
+      <p class="lead">
+        Add [[ editingName ]] to the <strong>[[ tagDisplayName ]]</strong>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 text-center">
+      <button class="btn btn-primary btn-save" one-click-only ng-click="save()">
+        <i class="fa fa-plus"></i> Add to list
+      </button>
+    </div>
+  </div>
+</div>
+
+
+{# Remove the patient from the list #}
+<div ng-hide="addTag">
+  <div class="row">
+    <div class="col-md-8 col-md-offset-2 text-center">
+      <p class="lead">
+        Remove [[ editingName ]] from the <strong>[[ tagDisplayName ]]</strong>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 col-md-offset-3 text-center">
+      <button class="btn btn-primary btn-save" one-click-only ng-click="save()">
+        <i class="fa fa-sign-out"></i> Remove from list
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block modal_save %}{% endblock %}

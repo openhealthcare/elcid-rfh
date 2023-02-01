@@ -17,6 +17,11 @@ body {
   margin-top: 30px;
 }
 
+.inline-with-btn {
+  margin-top: 8px;
+  display: inline-block;
+}
+
 .content-offset-100 {
   margin-top: 100px;
 }
@@ -67,11 +72,12 @@ body {
   border-color: #0091C9;
 }
 
-.radio-vertical.radio input[type=radio] {
+.radio-vertical.radio input[type="radio"] {
   opacity: 1;
   z-index: 0;
   margin-top: 2px;
 }
+
 .radio-vertical.radio label::before {
   content: none;
 }
@@ -134,7 +140,8 @@ h5 {
 /* ngProgress overrides */
 .ngProgressLiteBar {
   background-color: #D36C08;
-  box-shadow: 0 0 10px 0;
+  -webkit-box-shadow: 0 0 10px 0;
+          box-shadow: 0 0 10px 0;
   /* Inherits the font color */
 }
 
@@ -147,6 +154,7 @@ a.list-group-item:hover, a.list-group-item:focus {
   background-color: #4d5051;
   color: #FFF;
 }
+
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
   background-color: #343637;
 }
@@ -168,6 +176,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   display: inline-block;
   padding-top: 4px;
 }
+
 .patient-row .label-danger {
   margin-top: 5px;
   display: inline-block;
@@ -187,8 +196,6 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   padding-left: 8px;
   font-size: 1.1em;
 }
-
-/*# sourceMappingURL=elcid.css.map */
 .label-warning {
   background-color: #A03110;
 }
@@ -211,9 +218,15 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   * the same height whether the ext is on 2 lines or not
   * and to vertically/horizontally centre the text
   */
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
   width: 100%;
   min-height: 64px;
 }
@@ -225,20 +238,25 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .patient-timeline-discussion {
   min-height: 120px;
 }
+
 .patient-timeline-discussion ul {
   padding-left: 40px;
 }
+
 .patient-timeline-discussion ul li {
   list-style-type: disc;
 }
+
 .patient-timeline-discussion i {
   color: #333;
 }
+
 .patient-timeline-discussion ol li {
   list-style-type: decimal;
 }
 
-.no-touchevents .patient-timeline-discussion i.edit {
+.no-touchevents
+.patient-timeline-discussion i.edit {
   display: none;
 }
 
@@ -261,28 +279,35 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   margin-left: 10px;
   margin-right: 10px;
 }
+
 .lab-tests .lab-test-row {
   padding-top: 10px;
   margin-left: 10px;
   margin-right: 10px;
   padding-bottom: 10px;
 }
+
 .lab-tests .lab-test-row.selectable:hover {
   background-color: #f5f5f5;
 }
+
 .lab-tests .observation-graph-pane {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
 .lab-tests .c3-region.too-high {
   fill: rgba(224, 47, 3, 0.5);
 }
+
 .lab-tests .c3-region.too-low {
   fill: rgba(224, 47, 3, 0.5);
 }
+
 .lab-tests .too-high {
   color: #E02F03;
 }
+
 .lab-tests .too-low {
   color: #E02F03;
 }
@@ -304,6 +329,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .trends-panel {
   min-height: 395px;
 }
+
 .trends-panel .no-results {
   padding-top: 120px;
 }
@@ -324,6 +350,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   border-color: #006c96;
   border-width: 3px;
 }
+
 .central-info-alert.alert.alert-info .btn {
   padding-left: 50px;
   padding-right: 50px;
@@ -332,9 +359,11 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .panel tr.table-edit td {
   vertical-align: middle;
 }
+
 .panel tr.table-edit i.edit {
   visibility: hidden;
 }
+
 .panel tr.table-edit:hover i.edit {
   visibility: visible;
 }
@@ -347,6 +376,7 @@ i.blood-culture-edit {
 div.blood-culture-edit:hover {
   background-color: #f4f8fc;
 }
+
 div.blood-culture-edit:hover i {
   display: inline-block;
   font-size: 28px;
@@ -374,9 +404,11 @@ div.add-isolate:hover {
   font-size: 18px;
   margin-left: -20px;
 }
+
 .form-hint .success {
   color: #0091C9;
 }
+
 .form-hint .failure {
   color: #f76c51;
 }
@@ -427,15 +459,18 @@ div.add-isolate:hover {
   min-height: calc(100vh - 50px);
   padding-left: 1%;
 }
+
 .left-menu h3 {
   padding-top: 18px;
 }
+
 .left-menu a {
   width: 100%;
   display: block;
   padding: 2px;
   color: #FFF;
 }
+
 .left-menu a:hover {
   background: #343637;
   text-decoration: none;
@@ -453,10 +488,12 @@ div.add-isolate:hover {
 .ward-name-list .row {
   border-bottom: 1px solid #343637;
 }
+
 .ward-name-list a {
   padding: 12px 6px 12px 6px;
   display: block;
 }
+
 .ward-name-list a:hover {
   background: #343637;
 }
@@ -500,19 +537,23 @@ div.add-isolate:hover {
 .tb-clinic-list {
   background-color: #FFF;
 }
+
 .tb-clinic-list .date-header {
   padding-left: 10px;
   padding-bottom: 3px;
   border-bottom: 3px solid #D36C08;
   margin-bottom: 0;
 }
+
 .tb-clinic-list .date-header .date-header-link {
   display: none;
   color: #999;
 }
+
 .tb-clinic-list .date-header .date-header-link:hover {
   text-decoration: none;
 }
+
 .tb-clinic-list .date-header:hover .date-header-link {
   display: inline;
 }
@@ -558,6 +599,7 @@ div.add-isolate:hover {
   background-color: #FFF;
   color: #333;
 }
+
 .btn-toggles .btn.btn-primary.active {
   background-color: #0091C9;
   color: #FFF;
@@ -570,22 +612,27 @@ div.add-isolate:hover {
 .tb-stats {
   background-color: #FFF;
 }
+
 .tb-stats .headline h1 {
   font-size: 68px;
   text-align: center;
 }
+
 .tb-stats .headline h3 {
   margin-top: 0;
   text-align: center;
 }
+
 .tb-stats .view-switcher {
   margin-top: 10px;
 }
+
 .tb-stats .view-switcher h4 {
   margin-top: 2px;
   margin-bottom: 2px;
   padding: 0 20px;
 }
+
 .tb-stats td {
   max-width: 150px;
 }
@@ -601,5 +648,4 @@ div.add-isolate:hover {
 .table-bordered th.border-bottom-secondary {
   border-bottom: #D36C08 2px solid;
 }
-
 /*# sourceMappingURL=elcid.css.map */
