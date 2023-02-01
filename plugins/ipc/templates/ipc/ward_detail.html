@@ -16,12 +16,9 @@
   <table class="table table-striped">
     <tr>
       <th><!-- Isolation --></th>
-      <th>Room</th>
       <th>Bed</th>
       <th>Status</th>
-      <th>MRN</th>
-      <th>Name</th>
-      <th>DOB</th>
+      <th>Patient</th>
       <th>Admitted</th>
       <th>IPC Comments</th>
     </tr>
@@ -52,23 +49,19 @@
         </span>
       </td>
 
-      <td>{{ patient.room }} </td>
-      <td>{{ patient.bed }}</td>
+      <td>
+        {{ patient.room }}
+        {{ patient.bed }}
+      </td>
       <td>{{ patient.bed_status }}</td>
 
       <td>
-        {% if patient.local_patient_identifier %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.local_patient_identifier }}</a>
-        {% endif %}
-      </td>
-      <td>
-        {% if patient.patient_name %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.patient_name }}</a>
-        {% endif %}
-      </td>
-      <td>
-        {% if patient.date_of_birth %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.date_of_birth }}</a>
+        {% if patient.bed_status == 'Occupied' %}
+        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">
+          {{ patient.patient_name }}
+        </a>
+          {{ patient.local_patient_identifier }}
+          {{ patient.date_of_birth }}
         {% endif %}
       </td>
       <td>
@@ -77,9 +70,11 @@
         {% endif %}
       </td>
       <td>
+        <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
         {% if patient.patient.ipcstatus_set.get.comments %}
         {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}
+        </div>
       </td>
     </tr>
     {% endfor %}

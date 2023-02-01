@@ -55,9 +55,11 @@
         {% endif %}
       </td>
       <td>
+        <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
         {% if patient.patient.ipcstatus_set.get.comments %}
         {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}
+        </div>
       </td>
       <td ng-controller="IsolationHelper as isolationHelper">
         <span ng-show="isolationHelper.init(

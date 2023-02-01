@@ -1,0 +1,127 @@
+<!-- This template used to display contacts history for an entire encounter -->
+
+{% extends 'admissions/base.html' %}
+
+{% load forms %}
+
+
+{% block content %}
+<div class="panel panel-default ">
+  <div class="panel-heading">
+
+    <div class="row">
+      <div class="col-md-9">
+        <h1>
+          <i class="fa fa-hospital-o"></i>
+          <a href="/#/admissions/location-history/{{ source.spell_number }}/" class="orange-link">Admission</a>
+          contacts
+        </h1>
+        <p>
+          <a href="/#/patient/{{ index_demographics.patient_id }}/location_history" class="orange-link">
+            {{ index_demographics.name }}
+          </a>
+          {{ index_demographics.sex }}
+          {{ index_demographics.date_of_birth }}
+
+          Encounter ID: {{ encounter_id }}
+        </p>
+
+        {% if encounter %} <!-- We don't always have this loaded - data is slightly flakey -->
+        <p class="content-offset-10">{{ encounter.speciality_name }} {{ encounter.consultant_name }}</p>
+        {% endif %}
+        <p class="text-muted">
+          This page shows all patients who were on the same ward as the index patient at any stage
+          during the encouter.
+          <br />
+          It does not take into account proximity.
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- End Panel Header -->
+
+  <section class="scrollable-table-container">
+
+    {% for slice in slices %}
+    <h4 style="padding-left: 12px; padding-bottom: 24px; padding-top: 12px;" class="border-bottom-secondary">
+      <span clas="col-sm-1">
+        {{ slice.unit }}
+      {{ slice.ward }}
+      </span>
+
+      {{ slice.room }}
+      {{ slice.bed }}
+      {{ slice.transfer_start_datetime }} -
+
+      {% if slice.transfer_end_datetime > now %}
+      <span class="text-warning">
+        {{ slice.transfer_end_datetime }}
+      </span>
+      {% else %}
+      {{ slice.transfer_end_datetime }}
+      ({{ slice.transfer_start_datetime|timesince:slice.transfer_end_datetime  }})
+      {% endif %}
+      <small>{{slice.spell_number  }}
+      <a href="/#/admissions/slice-contacts/{{ slice.encounter_slice_id }}/" class="orange-link">Slice detail</a>
+      </small>
+      <div class="btn-group left-offset-20 pull-right" style="margin-right: 200px">
+
+        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.encounter_slice_id}}" uib-btn-radio="true">{% icon 'fa-list-alt' %}Show contacts </label>
+        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.encounter_slice_id}}" uib-btn-radio="undefined">{% icon 'fa-align-justify' %}Hide contacts</label>
+      </div>
+    </h4>
+
+
+    <section uib-collapse="!isTableCollapsed{{ slice.encounter_slice_id }}" >
+      <table class="table table-bordered table-bordered">
+        {% for transfer in slice.contact_transfers %}
+        {% ifchanged transfer.bed %}
+        <tr>
+          <th colspan="4" class="border-bottom-secondary">
+            <p class="content-offset-25">
+              {{ transfer.unit }}
+              {{ transfer.room }}
+              {{ transfer.bed }}
+              <a href="/#/admissions/location-history/{{ transfer.transfer_location_code }}">
+                Bed history
+              </a>
+            </p>
+          </th>
+        </tr>
+        <tr>
+          <th>Patient</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Transfer Reason</th>
+        </tr>
+        {% endifchanged %}
+        <tr>
+          <td>
+            <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
+              {{ transfer.patient.demographics_set.all.0.name }}
+            </a>
+          </td>
+          <td>
+            {{ transfer.transfer_start_datetime }}
+          </td>
+          <td>
+            {% if transfer.transfer_end_datetime > now %}
+            <span class="text-warning">
+              {{ transfer.transfer_end_datetime }}
+            </span>
+            {% else %}
+            {{ transfer.transfer_end_datetime }}
+            {% endif %}
+          </td>
+          <!-- <td>{{ transfer.transfer_location_code }}</td> -->
+          <td>{{ transfer.transfer_reason }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </section>
+
+    {% endfor %}
+  </section>
+
+</div>
+{% endblock %}
