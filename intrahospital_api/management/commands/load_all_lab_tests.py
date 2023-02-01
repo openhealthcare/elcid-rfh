@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from elcid import models as elcid_models
+from elcid import utils
 from plugins.labtests import models as lab_models
 from elcid.utils import timing
 from django.conf import settings
@@ -252,10 +253,12 @@ def write_lab_test_csv():
     It also adds the patient_id column with the elcid patient id in it.
     """
     seen = set()
-    hns_and_patient_ids = elcid_models.Demographics.objects.all().values_list(
-        "hospital_number", "patient_id"
-    )
-    hospital_number_to_patient_id = {i: v for i, v in hns_and_patient_ids}
+    hns = set()
+    with open(RESULTS_CSV) as m:
+        reader = csv.DictReader(m)
+        for row in reader:
+            hns = hns.union(row["Patient_Number"])
+    hospital_number_to_patient_id = utils.find_patients_from_mrns(hns)
     writer = None
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
