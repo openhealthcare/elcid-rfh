@@ -13,6 +13,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
 from django.utils.functional import cached_property
+from django.db.models import Q
 from opal.core.serialization import deserialize_datetime
 from opal.core import subrecords
 from opal.models import (
@@ -723,6 +724,35 @@ class MDTList(LoginRequiredMixin, TemplateView):
         patients = self.get_patients()
         ctx["rows"] = self.patients_to_rows(patients)
         ctx["last_week"] = self.start_date
+        return ctx
+
+
+class OnTBMeds(LoginRequiredMixin, TemplateView):
+    template_name = "tb/on_tb_meds.html"
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        today = datetime.date.today()
+        treatments = Treatment.objects.filter(category=Treatment.TB).exclude(
+            end_date__lte=today
+        ).order_by('-start_date').select_related('episode')
+
+        patient_ids = set(i.episode.patient_id for i in treatments)
+
+        demographics = Demographics.objects.filter(
+            patient_id__in=patient_ids
+        )
+
+        patient_id_to_demographics = {i.patient_id: i for i in demographics}
+
+        demographics_to_treatments = defaultdict(list)
+
+        for treatment in treatments:
+            demographics = patient_id_to_demographics[treatment.episode.patient_id]
+            demographics_to_treatments[demographics].append(treatment)
+        ctx["demographics_and_treatments"] = sorted(
+            demographics_to_treatments.items(), key=lambda x: x[0].name
+        )
         return ctx
 
 
