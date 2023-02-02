@@ -33,7 +33,7 @@
             {{ treatment.route }}
             {{ treatment.frequency }}
             {% if treatment.start_date %}
-              - {{ treatment.start_date|date }} ({{ treatment.start_date|timesince }} ago)
+              &nbsp;-&nbsp; {{ treatment.start_date|date }} ({{ treatment.start_date|timesince }} ago)
             {% endif %}
           </div>
           {% endfor %}
