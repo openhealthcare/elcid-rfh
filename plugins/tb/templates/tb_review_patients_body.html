@@ -94,51 +94,53 @@
                   >
                 </h4>
                 <div ng-if="row.recent_patient_consultation">
-                  <p>
-                    <span
-                      ng-show="row.recent_patient_consultation.initials && row.recent_patient_consultation.initials.trim().length"
-                    >
-                      <p>
-                        <b>By: </b> [[row.recent_patient_consultation.initials]]
-                      </p>
-                    </span>
-                    <span
-                      ng-show="row.recent_patient_consultation.reason_for_interaction"
-                    >
-                      <p>
-                        <b>Reason For Interaction: </b
-                        >[[row.recent_patient_consultation.reason_for_interaction]]
-                      </p>
-                    </span>
-                    <span
-                      ng-show="row.recent_patient_consultation.examination_findings"
-                    >
-                      <b>Examination Findings: </b>
-                      <div markdown="examination_findings"></div>
-                    </span>
-                    <span ng-show="row.recent_patient_consultation.discussion">
-                      <b>Discussion: </b>
-                      <div markdown="discussion"></div>
-                    </span>
-                    <span ng-show="row.recent_patient_consultation.progress">
-                      <b>Progress: </b>
-                      <div markdown="progress"></div>
-                    </span>
-                    <span
-                      ng-show="row.recent_patient_consultation.infection_control"
-                    >
-                      <b>Infection Control: </b>
-                      <div markdown="infection_control"></div>
-                    </span>
-                    <span ng-show="row.recent_patient_consultation.plan">
-                      <b>Plan: </b>
-                      <div markdown="plan"></div>
-                    </span>
-                    <span class="bg-success" ng-show="row.recent_patient_consultation.sent_upstream">
-                      <br>
-                      Note written to EPR
-                    </span>
-                  </p>
+                  <div ng-repeat="item in [row.recent_patient_consultation]">
+                    <p>
+                      <span
+                        ng-show="item.initials && item.initials.trim().length"
+                      >
+                        <p>
+                          <b>By: </b> [[item.initials]]
+                        </p>
+                      </span>
+                      <span
+                        ng-show="item.reason_for_interaction"
+                      >
+                        <p>
+                          <b>Reason For Interaction: </b
+                          >[[item.reason_for_interaction]]
+                        </p>
+                      </span>
+                      <span
+                        ng-show="item.examination_findings"
+                      >
+                        <b>Examination Findings: </b>
+                        <div markdown="examination_findings"></div>
+                      </span>
+                      <span ng-show="item.discussion">
+                        <b>Discussion: </b>
+                        <div markdown="discussion"></div>
+                      </span>
+                      <span ng-show="item.progress">
+                        <b>Progress: </b>
+                        <div markdown="progress"></div>
+                      </span>
+                      <span
+                        ng-show="item.infection_control"
+                      >
+                        <b>Infection Control: </b>
+                        <div markdown="infection_control"></div>
+                      </span>
+                      <span ng-show="item.plan">
+                        <b>Plan: </b>
+                        <div markdown="plan"></div>
+                      </span>
+                      <span class="bg-success" ng-show="item.sent_upstream">
+                        <br>
+                        Note written to EPR
+                      </span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
