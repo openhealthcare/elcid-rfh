@@ -273,6 +273,10 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   margin-bottom: 12px;
 }
 
+.panel-footer hr {
+  border-top-color: #ddd;
+}
+
 .lab-tests hr {
   margin-top: 0;
   margin-bottom: 0;
