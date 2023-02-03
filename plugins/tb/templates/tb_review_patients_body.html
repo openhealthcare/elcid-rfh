@@ -73,7 +73,7 @@
             </div>
             <div uib-collapse="isCardCollapsed" class="panel-body">
               <div class="col-md-5">
-                <h4>
+                <h4 ng-show="row.diagnosis.length || row.review_patient_consultation">
                   <strong>
                     {% icon models.Diagnosis.get_icon %} Primary Diagnosis
                   </strong>
@@ -86,61 +86,59 @@
                   </span>
                 </div>
               </div>
-              <div class="col-md-7 overflow-x-auto">
+              <div ng-if="row.review_patient_consultation" class="col-md-7 overflow-x-auto">
                 <h4>
                   <strong
                     >{% icon 'fa fa-comments' %} Most Recent Clinical
                     Note</strong
                   >
                 </h4>
-                <div ng-if="row.review_patient_consultation">
-                  <div ng-repeat="item in [row.review_patient_consultation]">
-                    <p>
-                      <span
-                        ng-show="item.initials && item.initials.trim().length"
-                      >
-                        <p>
-                          <b>By: </b> [[item.initials]]
-                        </p>
-                      </span>
-                      <span
-                        ng-show="item.reason_for_interaction"
-                      >
-                        <p>
-                          <b>Reason For Interaction: </b
-                          >[[item.reason_for_interaction]]
-                        </p>
-                      </span>
-                      <span
-                        ng-show="item.examination_findings"
-                      >
-                        <b>Examination Findings: </b>
-                        <div markdown="examination_findings"></div>
-                      </span>
-                      <span ng-show="item.discussion">
-                        <b>Discussion: </b>
-                        <div markdown="discussion"></div>
-                      </span>
-                      <span ng-show="item.progress">
-                        <b>Progress: </b>
-                        <div markdown="progress"></div>
-                      </span>
-                      <span
-                        ng-show="item.infection_control"
-                      >
-                        <b>Infection Control: </b>
-                        <div markdown="infection_control"></div>
-                      </span>
-                      <span ng-show="item.plan">
-                        <b>Plan: </b>
-                        <div markdown="plan"></div>
-                      </span>
-                      <span class="bg-success" ng-show="item.sent_upstream">
-                        <br>
-                        Note written to EPR
-                      </span>
-                    </p>
-                  </div>
+                <div ng-repeat="item in [row.review_patient_consultation]">
+                  <p>
+                    <span
+                      ng-show="item.initials && item.initials.trim().length"
+                    >
+                      <p>
+                        <b>By: </b> [[item.initials]]
+                      </p>
+                    </span>
+                    <span
+                      ng-show="item.reason_for_interaction"
+                    >
+                      <p>
+                        <b>Reason For Interaction: </b
+                        >[[item.reason_for_interaction]]
+                      </p>
+                    </span>
+                    <span
+                      ng-show="item.examination_findings"
+                    >
+                      <b>Examination Findings: </b>
+                      <div markdown="examination_findings"></div>
+                    </span>
+                    <span ng-show="item.discussion">
+                      <b>Discussion: </b>
+                      <div markdown="discussion"></div>
+                    </span>
+                    <span ng-show="item.progress">
+                      <b>Progress: </b>
+                      <div markdown="progress"></div>
+                    </span>
+                    <span
+                      ng-show="item.infection_control"
+                    >
+                      <b>Infection Control: </b>
+                      <div markdown="infection_control"></div>
+                    </span>
+                    <span ng-show="item.plan">
+                      <b>Plan: </b>
+                      <div markdown="plan"></div>
+                    </span>
+                    <span class="bg-success" ng-show="item.sent_upstream">
+                      <br>
+                      Note written to EPR
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
