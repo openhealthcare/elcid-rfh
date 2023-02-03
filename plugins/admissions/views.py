@@ -180,8 +180,8 @@ class LocationHistoryView(LoginRequiredMixin, TemplateView):
         ).order_by('-transfer_start_datetime').prefetch_related(
             'patient__demographics_set'
         )
-        frist = history[0]
-        context['location'] = f"{frist.site_code} {frist.unit} {frist.room} {frist.bed}"
+        first = history[0]
+        context['location'] = f"{first.site_code} {first.unit} {first.room} {first.bed}"
 
         context['history'] = history
         context['location_code'] = location_code
