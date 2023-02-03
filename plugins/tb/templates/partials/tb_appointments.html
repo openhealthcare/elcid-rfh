@@ -49,6 +49,9 @@
         </div>
       </span>
     </div>
+    <div ng-show="tb_appointments.next_appointment || tb_appointments.todays_appointments.length || tb_appointments.last_appointments.length">
+      <hr>
+    </div>
     <div class="row">
       <div class="col-md-12">
         <a
@@ -56,23 +59,23 @@
           href="/#/tb/lists/tb_review_patients/"
           ng-show="episode.tagging[0].tb_review_patients"
         >
-          Review Patients
+          TB Review Patients
         </a>
         <button
           ng-hide="episode.tagging[0].tb_review_patients"
-          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'Review Patients list', addTag: true})"
+          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'TB Review Patients', addTag: true})"
           class="pull-right btn btn-primary"
         >
           <i class="fa fa-plus"></i>
-          Add to review patients
+          Add to TB review patients
         </button>
         <button
           ng-show="episode.tagging[0].tb_review_patients"
-          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'Review Patients list', addTag: false})"
+          ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'TB Review Patients', addTag: false})"
           class="pull-right btn btn-primary"
         >
           <i class="fa fa-sign-out"></i>
-          Remove from review patients
+          Remove from TB review patients
         </button>
       </div>
     </div>

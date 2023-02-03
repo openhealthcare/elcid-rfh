@@ -287,6 +287,12 @@ a.list-group-item {
     margin-bottom: 12px;
 }
 
+.panel-footer{
+  hr{
+    border-top-color: #ddd;
+  }
+}
+
 .lab-tests{
   $too-high: #E02F03;
   $too-low: #E02F03;

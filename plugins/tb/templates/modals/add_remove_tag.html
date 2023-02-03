@@ -1,7 +1,7 @@
 {% extends "base_templates/form_modal_base.html" %}
 {% block title %}
-  <span ng-show="addTag">Add ([[ editingName ]])</span>
-  <span ng-hide="addTag">Remove ([[ editingName ]])</span>
+  <span ng-show="addTag"><i class="fa fa-plus"></i>Add ([[ editingName ]])</span>
+  <span ng-hide="addTag"><i class="fa fa-sign-out"></i>Remove ([[ editingName ]])</span>
 {% endblock %}
 
 {% block modal_body%}
@@ -10,7 +10,7 @@
   <div class="row">
     <div class="col-md-8 col-md-offset-2 text-center">
       <p class="lead">
-        Add [[ editingName ]] to the <strong>[[ tagDisplayName ]]</strong>
+        Add to <strong>[[ tagDisplayName ]]</strong>
       </p>
     </div>
   </div>
@@ -29,7 +29,7 @@
   <div class="row">
     <div class="col-md-8 col-md-offset-2 text-center">
       <p class="lead">
-        Remove [[ editingName ]] from the <strong>[[ tagDisplayName ]]</strong>
+        Remove from <strong>[[ tagDisplayName ]]</strong>
       </p>
     </div>
   </div>
