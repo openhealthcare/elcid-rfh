@@ -127,25 +127,6 @@ def async_load_patient(patient_id, patient_load_id):
         raise
 
 
-def sync_all_patients():
-    """
-    A utility to go through all patients and
-    sync them where possible.
-
-    This is expected to be called from the shell
-    """
-    patients = Patient.objects.all().prefetch_related("demographics_set")
-    count = patients.count()
-    for number, patient in enumerate(patients):
-        logger.info("Synching {} ({}/{})".format(
-            patient.id, number+1, count
-        ))
-        try:
-            sync_patient(patient)
-        except Exception:
-            log_errors("Unable to sync {}".format(patient.id))
-
-
 def sync_patient(patient):
     hospital_number = patient.demographics_set.all()[0].hospital_number
     results = api.results_for_hospital_number(

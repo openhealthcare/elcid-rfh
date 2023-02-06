@@ -288,30 +288,6 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         }
 
 
-class SynchAllPatientsTestCase(ApiTestCase):
-    @mock.patch('intrahospital_api.loader.sync_patient')
-    @mock.patch.object(loader.logger, 'info')
-    def test_sync_all_patients(self, info, sync_patient):
-        p, _ = self.new_patient_and_episode_please()
-        loader.sync_all_patients()
-
-        info.assert_called_once_with("Synching {} (1/1)".format(
-            p.id
-        ))
-        sync_patient.assert_called_once_with(p)
-
-    @mock.patch('intrahospital_api.loader.sync_patient')
-    @mock.patch('intrahospital_api.loader.log_errors')
-    @mock.patch.object(loader.logger, 'info')
-    def test_sync_all_patients_with_error(self, info, log_errors, sync_patient):
-        sync_patient.side_effect = ValueError('Boom')
-        patient, _ = self.new_patient_and_episode_please()
-        loader.sync_all_patients()
-        log_errors.assert_called_once_with(
-            "Unable to sync {}".format(patient.id)
-        )
-
-
 class SynchPatientTestCase(ApiTestCase):
     @mock.patch.object(loader.logger, 'info')
     @mock.patch.object(loader.api, 'results_for_hospital_number')
