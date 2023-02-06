@@ -126,24 +126,6 @@ def async_load_patient(patient_id, patient_load_id):
         log_errors("_load_patient")
         raise
 
-
-def sync_patient(patient):
-    hospital_number = patient.demographics_set.all()[0].hospital_number
-    results = api.results_for_hospital_number(
-        hospital_number
-    )
-    logger.info(
-        "fetched results for patient {}".format(patient.id)
-    )
-    update_lab_tests.update_tests(patient, results)
-    logger.info(
-        "tests synced for {}".format(patient.id)
-    )
-    update_demographics.update_patient_information(patient)
-    logger.info(
-        "patient information synced for {}".format(patient.id)
-    )
-
 @timing
 def _load_patient(patient, patient_load):
     logger.info(

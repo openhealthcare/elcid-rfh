@@ -288,39 +288,6 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         }
 
 
-class SynchPatientTestCase(ApiTestCase):
-    @mock.patch.object(loader.logger, 'info')
-    @mock.patch.object(loader.api, 'results_for_hospital_number')
-    @mock.patch('intrahospital_api.loader.update_lab_tests.update_tests')
-    @mock.patch(
-        'intrahospital_api.loader.update_demographics.update_patient_information'
-    )
-    def test_synch_patient(
-        self, update_patient_information, update_tests, results, info
-    ):
-        patient, _ = self.new_patient_and_episode_please()
-        patient.demographics_set.update(
-            hospital_number="111"
-        )
-        results.return_value = "some_results"
-        loader.sync_patient(patient)
-        results.assert_called_once_with('111')
-        update_tests.assert_called_once_with(patient, "some_results")
-        update_patient_information.assert_called_once_with(patient)
-        self.assertEqual(
-            info.call_args_list[0][0][0],
-            "fetched results for patient {}".format(patient.id)
-        )
-        self.assertEqual(
-            info.call_args_list[1][0][0],
-            "tests synced for {}".format(patient.id)
-        )
-        self.assertEqual(
-            info.call_args_list[2][0][0],
-            "patient information synced for {}".format(patient.id)
-        )
-
-
 class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
     def test_creates_patient_and_episode(self):
         patient = loader.create_rfh_patient_from_hospital_number(
