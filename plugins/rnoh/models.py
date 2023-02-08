@@ -5,15 +5,14 @@ from django.db import models
 from opal.core.fields import enum, ForeignKeyOrFreeText
 from opal.core import lookuplists
 from opal.models import EpisodeSubrecord, PatientSubrecord, Antimicrobial
-
-from elcid.models import MicrobiologyOrganism
+from elcid.models import MicrobiologyOrganism, PreviousMRN
 
 
 class RNOHConsultants(lookuplists.LookupList):
     pass
 
 
-class RNOHDemographics(PatientSubrecord):
+class RNOHDemographics(PreviousMRN, PatientSubrecord):
     _is_singleton = True
     _icon         = 'fa fa-user'
 
@@ -23,7 +22,7 @@ class RNOHDemographics(PatientSubrecord):
         verbose_name = 'RNOH Demographics'
 
 
-class RNOHTeams(PatientSubrecord):
+class RNOHTeams(PreviousMRN, PatientSubrecord):
     _is_singleton = True
     _icon         = 'fa fa-users'
 
@@ -42,7 +41,7 @@ class RNOHTeams(PatientSubrecord):
         verbose_name = "RNOH Teams"
 
 
-class OPATEpisodes(EpisodeSubrecord):
+class OPATEpisodes(PreviousMRN, EpisodeSubrecord):
     _icon = 'fa fa-pencil-square'
 
     OUTCOME_CHOICES = enum(
@@ -78,7 +77,7 @@ class OPATEpisodes(EpisodeSubrecord):
 
 
 
-class RNOHMicrobiology(EpisodeSubrecord):
+class RNOHMicrobiology(PreviousMRN, EpisodeSubrecord):
 
     _icon = "fa fa-crosshairs"
 
@@ -153,7 +152,7 @@ class RNOHMicrobiology(EpisodeSubrecord):
         verbose_name = 'Microbiology'
 
 
-class RNOHActions(EpisodeSubrecord):
+class RNOHActions(PreviousMRN, EpisodeSubrecord):
 
     _icon = 'fa fa-list'
 
