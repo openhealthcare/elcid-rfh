@@ -159,6 +159,10 @@ class LocationHistoryEncounterContactsView(LoginRequiredMixin, TemplateView):
             )
             transfer.contact_transfers = contact_transfers
 
+            # We use these for toggling show hide, when they're -ve numbers
+            # it breaks the angular variable naming
+            transfer.abs_encounter_slice_id = abs(transfer.encounter_slice_id)
+
         context['slices'] = slices
 
         context['index_patient'] = slices[0].patient
