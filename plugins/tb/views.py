@@ -735,20 +735,16 @@ class OnTBMeds(LoginRequiredMixin, TemplateView):
         today = datetime.date.today()
         treatments = Treatment.objects.filter(category=Treatment.TB).exclude(
             end_date__lte=today
-        ).order_by('-start_date').select_related('episode')
-
-        patient_ids = set(i.episode.patient_id for i in treatments)
-
-        demographics = Demographics.objects.filter(
-            patient_id__in=patient_ids
+        ).exclude(
+            planned_end_date__lte=today
+        ).order_by('-start_date').prefetch_related(
+            'episode__patient__demographics_set'
         )
-
-        patient_id_to_demographics = {i.patient_id: i for i in demographics}
 
         demographics_to_treatments = defaultdict(list)
 
         for treatment in treatments:
-            demographics = patient_id_to_demographics[treatment.episode.patient_id]
+            demographics = treatment.episode.patient.demographics_set.all()[0]
             demographics_to_treatments[demographics].append(treatment)
         ctx["demographics_and_treatments"] = sorted(
             demographics_to_treatments.items(), key=lambda x: x[0].name
