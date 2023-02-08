@@ -747,7 +747,7 @@ class OnTBMeds(LoginRequiredMixin, TemplateView):
             demographics = treatment.episode.patient.demographics_set.all()[0]
             demographics_to_treatments[demographics].append(treatment)
         ctx["demographics_and_treatments"] = sorted(
-            demographics_to_treatments.items(), key=lambda x: x[0].surname
+            demographics_to_treatments.items(), key=lambda x: x[0].surname.strip().lower()
         )
         return ctx
 
