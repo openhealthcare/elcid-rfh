@@ -75,6 +75,7 @@ app.config(
              .when('/tb/clinic-activity/appointment_data/:year/', param_template_route('/tb/clinic_activity/appointment_data/', 'year'))
              .when('/tb/clinic-activity/mdt_data/:year/', param_template_route('/tb/clinic_activity/mdt_data/', 'year'))
              .when('/tb/mdt-outstanding/',  static_template_route('/templates/tb/outstanding_mdt_list/'))
+             .when('/tb/on-tb-meds/',  static_template_route('/templates/tb/on_tb_meds/'))
              .when('/tb/mdt/:site/', param_template_route('/tb/mdt/', 'site'))
 
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
