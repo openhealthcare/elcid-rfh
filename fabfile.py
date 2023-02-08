@@ -443,7 +443,7 @@ def write_cron_backup(new_env):
 
 def write_cron_lab_tests(new_env):
     """
-    Creates a cron job that runs the 'batch_load' management command
+    Creates a cron job that runs the 'batch_load2' management command
     """
     print("Writing cron {}_batch_test_load".format(PROJECT_NAME))
     template = jinja_env.get_template(

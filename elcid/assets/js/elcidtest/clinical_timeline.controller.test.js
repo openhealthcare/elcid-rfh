@@ -3,7 +3,7 @@ describe('ClinicalAdviceFormTest', function() {
 
     var $scope, $httpBackend, $rootScope, $controller;
     var Episode, ctrl, opalTestHelper;
-    var mkcontroller, $modal;
+    var mkcontroller, $modal, fakeForm;
 
     var recorddata = {
             'microbiology_input': {
@@ -39,6 +39,8 @@ describe('ClinicalAdviceFormTest', function() {
                 $modal: $modal
             });
         };
+        fakeForm = {"$setPristine": function(){}};
+        spyOn(fakeForm, "$setPristine")
         $httpBackend.expectGET('/api/v0.1/referencedata/').respond({});
         $httpBackend.expectGET('/api/v0.1/record/').respond(recorddata);
     });
@@ -188,18 +190,19 @@ describe('ClinicalAdviceFormTest', function() {
         $httpBackend.flush();
       });
 
-      it('should reset item', function(){
+      fit('should reset item', function(){
         ctrl.changed = true
         spyOn(ctrl.formItem, "save").and.returnValue({
           then: function(x){ x() }
         });
         spyOn(ctrl, "getClinicalAdviceFormObject");
         spyOn(ctrl, "getClinicalAdvice");
-        ctrl.save();
+        ctrl.save(fakeForm);
         $rootScope.$apply();
         expect(ctrl.getClinicalAdviceFormObject).toHaveBeenCalledWith();
         expect(ctrl.getClinicalAdvice).toHaveBeenCalledWith();
         expect(ctrl.changed).toBe(false);
+        expect(fakeForm.$setPristine).toHaveBeenCalledWith();
       });
     });
 
