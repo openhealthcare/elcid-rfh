@@ -142,7 +142,7 @@ class LocationHistoryEncounterContactsView(LoginRequiredMixin, TemplateView):
 
         slices = TransferHistory.objects.filter(
             encounter_id=encounter_id
-        ).order_by('-transfer_start_datetime').prefetch_related(
+        ).order_by('transfer_start_datetime').prefetch_related(
             'patient__demographics_set'
         )
 
