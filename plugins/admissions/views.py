@@ -142,7 +142,7 @@ class LocationHistoryEncounterContactsView(LoginRequiredMixin, TemplateView):
 
         slices = TransferHistory.objects.filter(
             encounter_id=encounter_id
-        ).order_by('-transfer_start_datetime').prefetch_related(
+        ).order_by('transfer_start_datetime').prefetch_related(
             'patient__demographics_set'
         )
 
@@ -158,6 +158,10 @@ class LocationHistoryEncounterContactsView(LoginRequiredMixin, TemplateView):
                 'patient__demographics_set'
             )
             transfer.contact_transfers = contact_transfers
+
+            # We use these for toggling show hide, when they're -ve numbers
+            # it breaks the angular variable naming
+            transfer.abs_encounter_slice_id = abs(transfer.encounter_slice_id)
 
         context['slices'] = slices
 
@@ -180,8 +184,8 @@ class LocationHistoryView(LoginRequiredMixin, TemplateView):
         ).order_by('-transfer_start_datetime').prefetch_related(
             'patient__demographics_set'
         )
-        frist = history[0]
-        context['location'] = f"{frist.site_code} {frist.unit} {frist.room} {frist.bed}"
+        first = history[0]
+        context['location'] = f"{first.site_code} {first.unit} {first.room} {first.bed}"
 
         context['history'] = history
         context['location_code'] = location_code

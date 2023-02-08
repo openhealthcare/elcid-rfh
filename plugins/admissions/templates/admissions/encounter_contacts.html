@@ -61,18 +61,21 @@
       {{ slice.transfer_end_datetime }}
       ({{ slice.transfer_start_datetime|timesince:slice.transfer_end_datetime  }})
       {% endif %}
-      <small>{{slice.spell_number  }}
-      <a href="/#/admissions/slice-contacts/{{ slice.encounter_slice_id }}/" class="orange-link">Slice detail</a>
+      <small>
+        {{slice.spell_number  }}
+        | Potential Contacts: {{ slice.contact_transfers|length }}
+        <a href="/#/admissions/slice-contacts/{{ slice.encounter_slice_id }}/" class="orange-link">
+          Slice detail
+        </a>
       </small>
       <div class="btn-group left-offset-20 pull-right" style="margin-right: 200px">
-
-        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.encounter_slice_id}}" uib-btn-radio="true">{% icon 'fa-list-alt' %}Show contacts </label>
-        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.encounter_slice_id}}" uib-btn-radio="undefined">{% icon 'fa-align-justify' %}Hide contacts</label>
+        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.abs_encounter_slice_id}}" uib-btn-radio="true">{% icon 'fa-list-alt' %}Show contacts </label>
+        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.abs_encounter_slice_id}}" uib-btn-radio="undefined">{% icon 'fa-align-justify' %}Hide contacts</label>
       </div>
     </h4>
 
 
-    <section uib-collapse="!isTableCollapsed{{ slice.encounter_slice_id }}" >
+    <section uib-collapse="!isTableCollapsed{{ slice.abs_encounter_slice_id }}" >
       <table class="table table-bordered table-bordered">
         {% for transfer in slice.contact_transfers %}
         {% ifchanged transfer.bed %}
