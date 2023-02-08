@@ -7,7 +7,7 @@ import logging
 import os
 import re
 import sys
-from time import time
+import time
 
 from django.utils import timezone
 
@@ -17,9 +17,12 @@ logger = logging.getLogger('elcid.time_logger')
 def timing(f):
     @wraps(f)
     def wrap(*args, **kw):
-        ts = time()
+        # We use monotonic time because its more
+        # accurate than time.time, e.g.
+        # handles leap seconds.
+        ts = time.monotonic()
         result = f(*args, **kw)
-        te = time()
+        te = time.monotonic()
         logger.info('timing_func: %r %2.4f sec' % (
             f.__name__, te-ts
         ))
