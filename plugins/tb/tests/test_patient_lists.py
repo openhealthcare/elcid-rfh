@@ -7,8 +7,14 @@ from plugins.tb import patient_lists
 
 
 class TBPatientReviewTestCase(OpalTestCase):
+    def setUp(self):
+        opal_models.PatientConsultationReasonForInteraction.objects.create(
+            name=tb_models.PatientConsultation.ADDED_TO_TB_REVIEW_LIST
+        )
+
     def test_serialize_episode(self):
         patient, episode = self.new_patient_and_episode_please()
+
         patient.demographics_set.update(
             first_name="Sally", surname="Wilson"
         )
@@ -52,9 +58,6 @@ class TBPatientReviewTestCase(OpalTestCase):
         episode.tagging_set.create(
             value=patient_lists.TBReviewPatients.tag,
             archived=False
-        )
-        opal_models.PatientConsultationReasonForInteraction.objects.create(
-            name="Added to TB review list"
         )
         pc = tb_models.PatientConsultation(episode=episode)
         pc.plan = "Contact screening"
