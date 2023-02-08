@@ -735,6 +735,8 @@ class OnTBMeds(LoginRequiredMixin, TemplateView):
         today = datetime.date.today()
         treatments = Treatment.objects.filter(category=Treatment.TB).exclude(
             end_date__lte=today
+        ).exclude(
+            planned_end_date__lte=today
         ).order_by('-start_date').select_related('episode')
 
         patient_ids = set(i.episode.patient_id for i in treatments)
