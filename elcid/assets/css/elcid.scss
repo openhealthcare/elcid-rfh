@@ -683,3 +683,12 @@ div.add-isolate:hover{
 .table-bordered th.border-bottom-secondary{
     border-bottom: $secondary 2px solid;
 }
+
+.table-striped > tbody > tr.table-changed-heading:nth-child(odd) > th,
+.table-changed-heading th{
+    background-color: $blue-light;
+    border-bottom: $secondary 1px solid;
+}
+h1 small a{
+    font-size: 14px;
+}

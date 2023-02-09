@@ -602,4 +602,14 @@ div.add-isolate:hover {
   border-bottom: #D36C08 2px solid;
 }
 
+.table-striped > tbody > tr.table-changed-heading:nth-child(odd) > th,
+.table-changed-heading th {
+  background-color: #a0c7ea;
+  border-bottom: #D36C08 1px solid;
+}
+
+h1 small a {
+  font-size: 14px;
+}
+
 /*# sourceMappingURL=elcid.css.map */
