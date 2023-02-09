@@ -7,13 +7,13 @@
       <a href="/#/ipc/bedboard/hospital/{{patients.first.hospital_site_code}}/" class="orange-link">
         {{ patients.first.hospital_site_description }}
       </a>
-      {{ ward_name }}
+      {{ ward_name }} History
       <span>
         ({{slices|length}} patients)
       </span>
     </h1>
     <p class="text-muted">
-      All patients on any bed on {{ ward_name }} during the last 30 days
+      All patients in any bed on {{ ward_name }} during the last 30 days
     </p>
   </div>
   <section class="scrollable-table-container">
