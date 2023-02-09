@@ -1,0 +1,147 @@
+{% load forms %}
+<div class="panel panel-default tb-clinic-list">
+  <div class="panel-heading">
+    {% if on_patient_list %}
+    <h2>
+      <i class="fa fa-user-md"></i>
+      {{ patient_list.display_name }}
+      <span class="pull-right">
+        <div class="btn-group pull-right left-offset-10">
+          <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
+          <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+        </div>
+      </span>
+    </h2>
+    {% else %}
+    <div class="row">
+      <div class="col-md-6">
+        <h1>TB Review Patients</h1>
+      </div>
+      <div class="col-md-5">
+        <span class="pull-right">
+          <div class="btn-group text-right content-offset-25">
+            <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
+            <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+          </div>
+        </span>
+      </div>
+    </div>
+    {% endif %}
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-11">
+        <div
+          ng-repeat="row in rows"
+          class="panel panel-default patient-row"
+          ng-class="{'collapsed': isCardCollapsed}"
+        >
+          <a
+            class="panel-link"
+            href="[[ '/#/patient/' + row.demographics[0].patient_id + '/' + row.id ]]"
+          >
+            <div class="panel-heading">
+              <div class="row">
+                <div class="col-md-10">
+                  <h3>
+                    <i class="fa fa-user"></i>
+                    [[ row.demographics[0].first_name ]] [[
+                    row.demographics[0].surname ]] [[
+                    row.demographics[0].hospital_number ]]
+                    <small>
+                      [[ row.demographics[0].date_of_birth|displayDate ]]
+                      <span ng-show="row.bed_statuses.length">
+                        &nbsp; [[row.bed_statuses[0].hospital]]
+                        [[row.bed_statuses[0].ward]]
+                        [[row.bed_statuses[0].room]] [[row.bed_statuses[0].bed]]
+                      </span>
+                    </small>
+                  </h3>
+                </div>
+                <div class="col-md-2 text-right">
+                  <button
+                    class="btn btn-primary"
+                    pathway-episode="row"
+                    open-pathway="remove"
+                    pathway-callback="removeFromList(row.id)"
+                  >
+                    {% icon 'fa-sign-out' %} Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div uib-collapse="isCardCollapsed" class="panel-body">
+              <div class="col-md-5">
+                <h4 ng-show="row.diagnosis.length || row.review_patient_consultation">
+                  <strong>
+                    {% icon models.Diagnosis.get_icon %} Primary Diagnosis
+                  </strong>
+                </h4>
+                <div ng-repeat="item in row.diagnosis">
+                  <span ng-show="item.condition">
+                    <p><b>Condition:</b> [[ item.condition ]]</p>
+                    <p><b>Date:</b> [[ item.date_of_diagnosis | displayDate ]]</p>
+                    <p>[[ item.details ]]</p>
+                  </span>
+                </div>
+              </div>
+              <div ng-if="row.review_patient_consultation" class="col-md-7 overflow-x-auto">
+                <h4>
+                  <strong>{% icon 'fa fa-comments' %} Clinical Note</strong>
+                </h4>
+                <div ng-repeat="item in [row.review_patient_consultation]">
+                  <p>
+                    <span
+                      ng-show="item.initials && item.initials.trim().length"
+                    >
+                      <p>
+                        <b>By: </b> [[item.initials]]
+                      </p>
+                    </span>
+                    <span
+                      ng-show="item.reason_for_interaction"
+                    >
+                      <p>
+                        <b>Reason For Interaction: </b
+                        >[[item.reason_for_interaction]]
+                      </p>
+                    </span>
+                    <span
+                      ng-show="item.examination_findings"
+                    >
+                      <b>Examination Findings: </b>
+                      <div markdown="examination_findings"></div>
+                    </span>
+                    <span ng-show="item.discussion">
+                      <b>Discussion: </b>
+                      <div markdown="discussion"></div>
+                    </span>
+                    <span ng-show="item.progress">
+                      <b>Progress: </b>
+                      <div markdown="progress"></div>
+                    </span>
+                    <span
+                      ng-show="item.infection_control"
+                    >
+                      <b>Infection Control: </b>
+                      <div markdown="infection_control"></div>
+                    </span>
+                    <span ng-show="item.plan">
+                      <b>Plan: </b>
+                      <div markdown="plan"></div>
+                    </span>
+                    <span class="bg-success" ng-show="item.sent_upstream">
+                      <br>
+                      Note written to EPR
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

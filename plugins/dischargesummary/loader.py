@@ -91,8 +91,12 @@ def load_dischargesummaries(patient):
             params={'tta_id': summary['SQL_Internal_ID']}
         )
 
-
-        parsed = {}
+        # We expect these fields should be filled in
+        # however this is now always the case.
+        parsed = {
+            "date_of_admission": None,
+            "date_of_discharge": None
+        }
         for k, v in summary.items():
             if v: # Ignore empty values
 
