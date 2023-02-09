@@ -20,6 +20,27 @@ class CovidPlugin(plugins.OpalPlugin):
         ]
     }
 
+    @classmethod
+    def get_menu_items(self, user):
+        if not user or not user.is_authenticated:
+            return []
+
+        dashboard = menus.MenuItem(
+            href='/#/covid-19/',
+            display='COVID-19',
+            icon='fa fa-dashboard',
+            activepattern='/#/covid-19/'
+        )
+
+        profile = UserProfile.objects.get(user=user)
+        if profile.roles.filter(name=COVID_ROLE).exists():
+            return [dashboard]
+
+        if user.is_superuser:
+            return [dashboard]
+
+        return []
+
     apis = [
         ('covid_service_test_summary', api.CovidServiceTestSummaryAPI),
         ('covid_cxr', api.CovidCXRViewSet),

@@ -111,7 +111,7 @@ class Application(application.OpalApplication):
         profile = UserProfile.objects.get(user=user)
 
 
-        menu_items.append(ServicesMenuItem(user=user))
+        # menu_items.append(ServicesMenuItem(user=user))
 
 
         return menu_items

@@ -1,26 +1,31 @@
 {% load forms %}
 
 <div ng-controller="PatientConsultationForm as patientConsultationForm" class="panel panel-default hidden-print">
-    <div class="panel-heading"><h3>
-        <i class="fa fa-comments"></i> Clinical Note
-    </div></h3>
+  <form name="form" ng-submit="" class="form-horizontal" novalidate>
+      <div class="panel-heading"><h3>
+          <i class="fa fa-comments"></i> Clinical Note
+      </div></h3>
       <div class="panel-body">
           <div class="row">
             <div class="col-md-12">
-              <form class="form-horizontal">
-                <div ng-repeat="editing in [patientConsultationForm.editing]">
-                  {% include models.PatientConsultation.get_form_template %}
-                </div>
-              </form>
+              <div ng-repeat="editing in [patientConsultationForm.editing]">
+                {% include models.PatientConsultation.get_form_template %}
+              </div>
             </div>
-        </div>
-      <div class="row">
+          </div>
+        <div class="row">
           <div class="col-md-12 text-right">
-              <button ng-disabled="!patientConsultationForm.changed" class="btn btn-primary" ng-click="patientConsultationForm.save('save')">
+            {# We do show hide logic rather than ng-disabled because the check-form directive also alters disabled state #}
+            <button ng-show="patientConsultationForm.changed" check-form="form" class="btn btn-primary" ng-click="form.$valid && patientConsultationForm.save(form)">
               <i class="fa fa-save"></i>
               Save
-              </button>
+            </button>
+            <button disabled ng-show="!patientConsultationForm.changed" class="btn btn-primary">
+              <i class="fa fa-save"></i>
+              Save
+            </button>
           </div>
+        </div>
       </div>
-     </div>
+    </form>
  </div>

@@ -1,0 +1,5 @@
+{% extends "episode_list.html" %}
+{# This template is used by the tb patient review as seen in the Patient Lists section %}
+{% block patient_list_body %}
+{% include "tb_review_patients_body.html" with on_patient_list=True %}
+{% endblock %}

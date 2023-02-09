@@ -1,6 +1,6 @@
 {% load forms %}
 {% datetimepicker field="CovidSixMonthFollowUp.when" %}
-{% input field="CovidSixMonthFollowUp.clinician" %}
+{% input field="CovidSixMonthFollowUp.clinician" required=True %}
 {% input field="CovidSixMonthFollowUp.position" %}
 {% radio field="CovidSixMonthFollowUp.cxr_completed" %}
 {% radio field="CovidSixMonthFollowUp.bloods_completed" %}
