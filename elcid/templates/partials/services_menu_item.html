@@ -1,14 +1,13 @@
 {% load forms %}
 
-<li uib-dropdown uib-dropdown-toggle id="services-dropdown">
-  <a class="pointer">
-  <div>
-    <i class="fa fa-hospital-o"></i>
-    Services
-    <i class="fa fa-angle-down"></i>
-  </div>
+<li uib-dropdown>
+  <a uib-dropdown-toggle class="pointer" id="services-dropdown">
+    <div>
+      <i class="fa fa-hospital-o"></i>
+      Services
+      <i class="fa fa-angle-down"></i>
+    </div>
   </a>
-
   <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="services-dropdown">
     {% for service in item %}
     <li class="services-dropdown-item">
