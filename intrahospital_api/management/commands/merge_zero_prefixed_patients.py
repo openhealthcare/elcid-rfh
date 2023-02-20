@@ -7,6 +7,23 @@ from django.db import transaction
 from intrahospital_api import logger
 from elcid.utils import timing
 
+COMPLEX_MERGES = set(
+    '65695',
+    '7958',
+    '1878',
+    '72281',
+    '25648',
+    '22235',
+    '43079',
+    '2244',
+    '66313',
+    '56979',
+    '25182',
+    '39646',
+    '71583'
+)
+
+
 @timing
 @transaction.atomic
 def update_patients_with_leading_zero_with_no_counter_part():
@@ -35,13 +52,18 @@ def merge_zero_patients():
         # Ignore MRNs with only zeros
         if not mrn.lstrip('0'):
             continue
+        if demo.patient_id in COMPLEX_MERGES:
+            continue
         to_demos = Demographics.objects.filter(
             hospital_number=mrn.lstrip('0')
         ).first()
         if to_demos:
             from_patient = demo.patient
             to_patient = to_demos.patient
-            merge_patient.merge_patient(old_patient=from_patient, new_patient=to_patient)
+            logger.info(f'Merging {mrn}')
+            merge_patient.merge_patient(
+                old_patient=from_patient, new_patient=to_patient
+            )
             merged.append(mrn)
     return merged
 
