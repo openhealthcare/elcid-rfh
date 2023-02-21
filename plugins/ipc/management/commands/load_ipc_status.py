@@ -103,7 +103,7 @@ class Command(BaseCommand):
             else:
                 filtered[mrn] = row
 
-        for row in upstream_result:
+        for mrn, row in filtered.items():
             if not row['Patient_Number']:
                 continue
             patient = Patient.objects.filter(demographics__hospital_number=row['Patient_Number']).first()
@@ -111,7 +111,6 @@ class Command(BaseCommand):
                 patient = loader.create_rfh_patient_from_hospital_number(
                     row['Patient_Number'], InfectionService
                 )
-
 
             if patient.episode_set.filter(category_name='IPC').count() == 0:
                 patient.create_episode(category_name='IPC')
