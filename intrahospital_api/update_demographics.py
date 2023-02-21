@@ -276,7 +276,7 @@ def parse_merge_comments(mrn):
                         f'Multiple active related MRNs found for {merge_result.initial_mrn}'
                     )
             else:
-                inactive_mrn_dicts = {'mrn': next_mrn, 'merge_comments': merge_comments }
+                inactive_mrn_dicts.append({'mrn': next_mrn, 'merge_comments': merge_comments })
 
             merged_mrns = get_mrn_and_date_from_merge_comment(merge_comments)
             for found_mrn, _ in merged_mrns:
