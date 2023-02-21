@@ -109,8 +109,8 @@ def delete_existing_transfer_histories():
 
 def copy_transfer_histories():
     """
-    Runs the psql copy command to copy lab tests from
-    LABTEST_CSV into our lab test table
+    Runs the psql copy command to copy transfer histories from
+    FILE_NAME into our transfer history table
     """
     columns = ",".join(get_column_headers())
     pwd = os.getcwd()
