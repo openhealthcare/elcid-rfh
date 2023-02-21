@@ -24,7 +24,7 @@ from elcid import constants, models
 api = get_api()
 
 
-GET_MASTERFILE_DATA_FOR_MERGED_MRN = """
+GET_MASTERFILE_DATA_FOR_MRN = """
     SELECT *
     FROM CRS_Patient_Masterfile
     WHERE Patient_Number = @mrn
@@ -245,7 +245,7 @@ class MergeResult:
         self.merged_mrn_dicts = []
 
 
-def get_merged_masterfile_row(mrn):
+def get_masterfile_row(mrn):
     """
     Takes in an MRN and returns the row from the master file.
 
@@ -253,7 +253,7 @@ def get_merged_masterfile_row(mrn):
     should never be the case.
     """
     rows = api.execute_hospital_query(
-        GET_MASTERFILE_DATA_FOR_MERGED_MRN, {"mrn": mrn}
+        GET_MASTERFILE_DATA_FOR_MRN, {"mrn": mrn}
     )
     if len(rows) > 1:
         raise ValueError(f'Multiple results found for MRN {mrn}')
@@ -275,7 +275,7 @@ def recursively_parse_merge_comments(mrn, visited, merge_result):
         We are searching for an MRN that does not exist in the Masterfile table.
     """
     visited.append(mrn)
-    row = get_merged_masterfile_row(mrn)
+    row = get_masterfile_row(mrn)
 
     if row is None:
         # If there is no row it suggests someone has typoed an MRN
@@ -335,11 +335,11 @@ def get_active_mrn_and_merged_mrn_data(mrn):
     a CernerPatientNotFoundException. This should not happen.
 
     If the masterfile has multiple rows for an MRN a value
-    error is raised by `get_merged_masterfile_row` this
+    error is raised by `get_masterfile_row` this
     suggests is something that we expect should never happen
     in the upstream system.
     """
-    row = get_merged_masterfile_row(mrn)
+    row = get_masterfile_row(mrn)
 
     if row is None:
         raise CernerPatientNotFoundException(
