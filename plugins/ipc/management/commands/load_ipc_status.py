@@ -89,6 +89,19 @@ class Command(BaseCommand):
         upstream_result = api.execute_hospital_query(QUERY)
 
         self.stdout.write("Query complete")
+        filtered = {}
+        for row in upstream_result:
+            mrn = row["Patient_Number"]
+            if not mrn:
+                continue
+            mrn = mrn.lstrip('0')
+            if not mrn:
+                continue
+            if mrn in filtered:
+                if row["Last_Updated"] > filterd[mrn]["Last_Updated"]:
+                    filterd[mrn] = row
+            else:
+                filtered[mrn] = row
 
         for row in upstream_result:
             if not row['Patient_Number']:
