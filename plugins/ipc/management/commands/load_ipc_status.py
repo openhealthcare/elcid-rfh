@@ -108,7 +108,7 @@ class Command(BaseCommand):
                 continue
             patient = Patient.objects.filter(demographics__hospital_number=row['Patient_Number']).first()
             if not patient:
-                loader.create_rfh_patient_from_hospital_number(
+                patient = loader.create_rfh_patient_from_hospital_number(
                     row['Patient_Number'], InfectionService
                 )
 
