@@ -84,40 +84,36 @@ class Command(BaseCommand):
         updated = timezone.now()
         updated_by = User.objects.filter(username='ohc').first()
 
-        inpatients = BedStatus.objects.filter(bed_status='Occupied').values_list(
-            'local_patient_identifier', flat=True)
-
         upstream_result = api.execute_hospital_query(QUERY)
 
         self.stdout.write("Query complete")
 
         for row in upstream_result:
-            if row['Patient_Number'] in inpatients:
-                patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
+            patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
 
-                if patient.episode_set.filter(category_name='IPC').count() == 0:
-                    patient.create_episode(category_name='IPC')
+            if patient.episode_set.filter(category_name='IPC').count() == 0:
+                patient.create_episode(category_name='IPC')
 
-                status = patient.ipcstatus_set.all()[0]
+            status = patient.ipcstatus_set.all()[0]
 
-                update_dict = {v: row[k] for k, v in MAPPING.items()}
+            update_dict = {v: row[k] for k, v in MAPPING.items()}
 
-                status.created_by_id = updated_by.id
+            status.created_by_id = updated_by.id
 
-                for key, value in update_dict.items():
+            for key, value in update_dict.items():
 
-                    if isinstance(IPCStatus._meta.get_field(key), DateField):
+                if isinstance(IPCStatus._meta.get_field(key), DateField):
 
-                        if value == '':
-                            value = None
-                        elif isinstance(value, str):
-                            value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
+                    if value == '':
+                        value = None
+                    elif isinstance(value, str):
+                        value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
 
-                    if isinstance(IPCStatus._meta.get_field(key), BooleanField):
-                        if value:
-                            value = True
-                        else:
-                            value = False
+                if isinstance(IPCStatus._meta.get_field(key), BooleanField):
+                    if value:
+                        value = True
+                    else:
+                        value = False
 
-                    setattr(status, key, value)
-                status.save()
+                setattr(status, key, value)
+            status.save()
