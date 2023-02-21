@@ -104,12 +104,12 @@ class Command(BaseCommand):
                 filtered[mrn] = row
 
         for mrn, row in filtered.items():
-            if not row['Patient_Number']:
+            if not mrn:
                 continue
             patient = Patient.objects.filter(demographics__hospital_number=row['Patient_Number']).first()
             if not patient:
                 patient = loader.create_rfh_patient_from_hospital_number(
-                    row['Patient_Number'], InfectionService
+                    mrn, InfectionService
                 )
 
             if patient.episode_set.filter(category_name='IPC').count() == 0:
