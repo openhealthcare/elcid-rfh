@@ -98,8 +98,8 @@ class Command(BaseCommand):
             if not mrn:
                 continue
             if mrn in filtered:
-                if row["Last_Updated"] > filterd[mrn]["Last_Updated"]:
-                    filterd[mrn] = row
+                if row["Last_Updated"] > filtered[mrn]["Last_Updated"]:
+                    filtered[mrn] = row
             else:
                 filtered[mrn] = row
 
