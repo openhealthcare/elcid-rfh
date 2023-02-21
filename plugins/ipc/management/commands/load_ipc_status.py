@@ -13,6 +13,8 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import loader
+from elcid.episode_categories import InfectionService
 
 from plugins.admissions.models import BedStatus
 from plugins.ipc.models import IPCStatus
@@ -89,7 +91,14 @@ class Command(BaseCommand):
         self.stdout.write("Query complete")
 
         for row in upstream_result:
-            patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
+            if not row['Patient_Number']:
+                continue
+            patient = Patient.objects.filter(demographics__hospital_number=row['Patient_Number']).first()
+            if not patient:
+                loader.create_rfh_patient_from_hospital_number(
+                    row['Patient_Number'], InfectionService
+                )
+
 
             if patient.episode_set.filter(category_name='IPC').count() == 0:
                 patient.create_episode(category_name='IPC')
