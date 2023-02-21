@@ -255,8 +255,7 @@ def parse_merge_comments(mrn):
     related_mrns = [mrn]
 
     active_mrn = None
-
-    merged_mrn_dicts = []
+    inactive_mrn_dicts = []
 
     while len(related_mrns) > 0:
         next_mrn = related_mrns.pop(0)
@@ -266,8 +265,8 @@ def parse_merge_comments(mrn):
         else:
             parsed.add(next_mrn)
 
-            merge_comments = next_row["MERGE_COMMENTS"]
             next_row = get_masterfile_row(next_mrn)
+            merge_comments = next_row["MERGE_COMMENTS"]
 
             if next_row["ACTIVE_INACTIVE"] == "ACTIVE":
                 if active_mrn is None:
@@ -277,7 +276,7 @@ def parse_merge_comments(mrn):
                         f'Multiple active related MRNs found for {merge_result.initial_mrn}'
                     )
             else:
-                merged_mrn_dicts = {'mrn': next_mrn, 'merge_comments': merge_comments }
+                inactive_mrn_dicts = {'mrn': next_mrn, 'merge_comments': merge_comments }
 
             merged_mrns = get_mrn_and_date_from_merge_comment(merge_comments)
             for found_mrn, _ in merged_mrns:
@@ -286,7 +285,7 @@ def parse_merge_comments(mrn):
                 else:
                     related_mrns.append(found_mrn)
 
-    return active_mrn, merged_mrn_dicts
+    return active_mrn, inactive_mrn_dicts
 
 
 def get_active_mrn_and_merged_mrn_data(mrn):
