@@ -286,6 +286,8 @@ def parse_merge_comments(mrn):
                 else:
                     related_mrns.append(found_mrn)
 
+    return active_mrn, merged_mrn_dicts
+
 
 def get_active_mrn_and_merged_mrn_data(mrn):
     """
