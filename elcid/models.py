@@ -29,10 +29,11 @@ def get_for_lookup_list(model, values):
 
 class MergedMRN(models.Model):
     """
-    Represents each time this patient has had a duplicate MRN merged.
-
-    e.g. if MRN 77456 was merged into patient 123
-    Patient 123 would have a patient merge object with MRN 77456
+    Represents an MRN (unique identifier) that has been used to 
+    represent a patient in an upstream system but is no longer active.
+    
+    This does *not* include identifiers with leading zeros that have 
+    sometimes been added as an implementation detail of other systems.
     """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     mrn = models.CharField(max_length=256, unique=True, db_index=True)
@@ -68,7 +69,6 @@ class PreviousMRN(models.Model):
             data.pop('previous_mrn')
         self.previous_mrn = None
         return super().update_from_dict(data, *args, **kwargs)
-
 
 
 class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
