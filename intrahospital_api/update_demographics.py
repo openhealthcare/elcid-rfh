@@ -243,7 +243,7 @@ def get_masterfile_row(mrn):
     if rows:
         return rows[0]
 
-def parse_merge_comments(mrn):
+def parse_merge_comments(initial_mrn):
     """
     Given a MRN, return an active related MRN (may be the same one),
     and a list of dictionaries of inactive mrns to be converted to
@@ -252,8 +252,7 @@ def parse_merge_comments(mrn):
     Raise a MergeException if there are multiple active MRNs
     """
     parsed = set()
-    related_mrns = [mrn]
-
+    related_mrns = [initial_mrn]
     active_mrn = None
     inactive_mrn_dicts = []
 
@@ -270,10 +269,10 @@ def parse_merge_comments(mrn):
 
             if next_row["ACTIVE_INACTIVE"] == "ACTIVE":
                 if active_mrn is None:
-                    active_mrn = mrn
+                    active_mrn = next_mrn
                 else:
                     raise MergeException(
-                        f'Multiple active related MRNs found for {merge_result.initial_mrn}'
+                        f'Multiple active related MRNs found for {initial_mrn}'
                     )
             else:
                 inactive_mrn_dicts.append({'mrn': next_mrn, 'merge_comments': merge_comments })
