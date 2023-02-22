@@ -257,7 +257,7 @@ def write_lab_test_csv():
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
         for row in reader:
-            hns = hns.union(row["Patient_Number"])
+            hns.add(row["Patient_Number"])
     hospital_number_to_patient_id = utils.find_patients_from_mrns(hns)
     writer = None
     with open(RESULTS_CSV) as m:
@@ -335,10 +335,10 @@ def check_db_command():
 class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
-        check_db_command()
+        # check_db_command()
 
         # Writes a csv of results as they exist in the upstream table
-        write_results()
+        # write_results()
 
         # Writes a csv of lab tests with the fields they will have
         # in our table
