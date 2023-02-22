@@ -106,7 +106,7 @@ class Command(BaseCommand):
         for mrn, row in filtered.items():
             if not mrn:
                 continue
-            patient = Patient.objects.filter(demographics__hospital_number=row['Patient_Number']).first()
+            patient = Patient.objects.filter(demographics__hospital_number=mrn).first()
             if not patient:
                 patient = loader.create_rfh_patient_from_hospital_number(
                     mrn, InfectionService
