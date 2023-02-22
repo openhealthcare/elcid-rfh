@@ -520,12 +520,12 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
 
         }
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
-    def test_basic_inactive_case(self, get_merged_masterfile_row):
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+    def test_basic_inactive_case(self, get_masterfile_row):
         """
         Pass in an inactive MRN, return the active MRN and the date it was merged.
         """
-        get_merged_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
         active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('123')
         self.assertEqual(active_mrn, "234")
         self.assertEqual(
@@ -536,12 +536,12 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             }]
         )
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
-    def test_basic_active_case(self, get_merged_masterfile_row):
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+    def test_basic_active_case(self, get_masterfile_row):
         """
         Pass in an active MRN, return the active MRN and the date it was merged.
         """
-        get_merged_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
         active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data('234')
         self.assertEqual(active_mrn, "234")
         self.assertEqual(
@@ -552,15 +552,15 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             }]
         )
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
-    def test_crawls_nested_rows_from_branch(self, get_merged_masterfile_row):
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+    def test_crawls_nested_rows_from_branch(self, get_masterfile_row):
         """
         We pass in an inactive MRN not directly connected to the active MRN.
 
         We expect it to crawl the across the the MRNs it is connected with
         and to return the active MRN and merged data.
         """
-        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "345"
         )
@@ -579,15 +579,15 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         ]
         self.assertEqual(expected, merged_data)
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
-    def test_crawls_nested_rows_from_trunk(self, get_merged_masterfile_row):
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+    def test_crawls_nested_rows_from_trunk(self, get_masterfile_row):
         """
         We pass in an inactive MRN linked to an inactive MRN and an active MRN.
 
         We expect it to correctly decide which is the active MRN, and to return
         all inactive MRNs in the merged_mrn_data.
         """
-        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "456"
         )
@@ -607,8 +607,8 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         merged_data = sorted(merged_data, key=lambda x: x["mrn"])
         self.assertEqual(expected, merged_data)
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
-    def test_handles_active_mrns(self, get_merged_masterfile_row):
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+    def test_handles_active_mrns(self, get_masterfile_row):
         """
         We pass in an active MRN linked to an inactive MRN that is linked to an inactive
         MRN.
@@ -616,7 +616,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         We expect it to correctly recognise it is an inactive MRN and return
         all related MRNs as merged_mrn_data.
         """
-        get_merged_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
+        get_masterfile_row.side_effect = lambda mrn: self.COMPLEX_MAPPING[mrn]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "567"
         )
@@ -636,17 +636,17 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         merged_data = sorted(merged_data, key=lambda x: x["mrn"])
         self.assertEqual(expected, merged_data)
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
     @mock.patch('intrahospital_api.update_demographics.logger')
     def test_no_active_mrn(
-        self, logger, get_merged_masterfile_row
+        self, logger, get_masterfile_row
     ):
         """
         For an MRN if there are no active rows we should log an error
         """
         basic_mapping = copy.deepcopy(self.BASIC_MAPPING)
         basic_mapping["234"]["ACTIVE_INACTIVE"] = "INACTIVE"
-        get_merged_masterfile_row.side_effect = lambda x: basic_mapping[x]
+        get_masterfile_row.side_effect = lambda x: basic_mapping[x]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "123"
         )
@@ -656,31 +656,31 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
             "Unable to find an active MRN for 123"
         )
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
     @mock.patch('intrahospital_api.update_demographics.logger')
     def test_only_active_mrns(
-        self, logger, get_merged_masterfile_row
+        self, logger, get_masterfile_row
     ):
         """
         For an MRN if there are only active rows we should log an error
         """
         basic_mapping = copy.deepcopy(self.BASIC_MAPPING)
         basic_mapping["123"]["ACTIVE_INACTIVE"] = "ACTIVE"
-        get_merged_masterfile_row.side_effect = lambda x: basic_mapping[x]
+        get_masterfile_row.side_effect = lambda x: basic_mapping[x]
         active_mrn, merged_data = update_demographics.get_active_mrn_and_merged_mrn_data(
             "123"
         )
         self.assertEqual(active_mrn, "123")
         self.assertEqual(merged_data, [])
         logger.error.assert_called_once_with(
-            "Merge exception raised for 123 with 'Multiple active results found for 123'"
+            "Merge exception raised for 123 with 'Multiple active related MRNs found for 123'"
         )
 
-    @mock.patch('intrahospital_api.update_demographics.get_merged_masterfile_row')
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
     def test_raises_exception_if_the_patient_is_not_found(
-        self, get_merged_masterfile_row
+        self, get_masterfile_row
     ):
-        get_merged_masterfile_row.return_value = None
+        get_masterfile_row.return_value = None
         with self.assertRaises(update_demographics.CernerPatientNotFoundException) as err:
             update_demographics.get_active_mrn_and_merged_mrn_data('123')
         self.assertEqual(str(err.exception), "Unable to find a masterfile row for 123")
