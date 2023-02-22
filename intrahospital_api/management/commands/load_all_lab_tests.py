@@ -257,7 +257,7 @@ def write_lab_test_csv():
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
         for row in reader:
-            hns = hns.union(row["Patient_Number"])
+            hns.add(row["Patient_Number"])
     hospital_number_to_patient_id = utils.find_patients_from_mrns(hns)
     writer = None
     with open(RESULTS_CSV) as m:
