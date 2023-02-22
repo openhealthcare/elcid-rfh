@@ -4,6 +4,7 @@ from elcid import models as elcid_models
 from elcid import utils
 from plugins.labtests import models as lab_models
 from elcid.utils import timing
+from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from django.conf import settings
 import subprocess
 import pytds
@@ -17,6 +18,43 @@ import os
 # observations we can cache the call to lab tests
 GET_ALL_RESULTS = """
     SELECT * FROM tQuest.Pathology_Result_View
+"""
+
+# Return the min last updated timestamp
+GET_MIN_LAST_UPDATED = """
+    SELECT MIN(last_updated) FROM tQuest.Pathology_Result_View
+"""
+
+# Copy lab tests and observations where last_updated < x
+# into a temp tables, then truncate the original tables
+# recreate the tables and copy those rows back in
+COPY_PSQL = """
+BEGIN;
+CREATE TEMP TABLE tmp_lab_load (LIKE labtests_labtest) ON COMMIT DROP;
+
+CREATE TEMP TABLE tmp_obs_load (LIKE labtests_observation) ON COMMIT DROP;
+
+INSERT INTO tmp_obs_load
+SELECT * FROM labtests_observation
+WHERE last_updated < '2023-02-10 16:14:19.510246+00:00';
+
+
+INSERT INTO tmp_lab_load
+SELECT * FROM labtests_labtest
+WHERE ID IN (
+    SELECT test_id FROM tmp_obs_load
+);
+
+TRUNCATE TABLE labtests_labtest CASCADE;
+TRUNCATE TABLE labtests_observation CASCADE;
+
+INSERT INTO labtests_labtest
+SELECT * FROM tmp_lab_load;
+
+INSERT INTO labtests_observation
+SELECT * FROM tmp_obs_load;
+
+END;
 """
 
 RESULTS_CSV = "results.csv"
@@ -285,19 +323,25 @@ def call_db_command(sql):
     subprocess.call(f"psql --echo-all -d {settings.DATABASES['default']['NAME']} -c '{sql}'", shell=True)
 
 
-def delete_existing_lab_tests():
+def get_upstream_min_last_updated():
     """
-    Delete all existing lab tests
-    NOTE this cascades into infectious diseases
+    Returns the min last updated timestamp from the
+    upstream lab test table.
     """
-    call_db_command("truncate table labtests_labtest cascade;")
+    api = ProdAPI()
+    result = api.execute_trust_query(GET_MIN_LAST_UPDATED)
+    return result[0][0]
 
 
-def delete_existing_observations():
+def delete_lab_tests_and_observations_that_exist_upstream():
     """
-    Delete all existing observations
+    Delete all existing lab tests and observations that exist after the
+    min(last_updated) of the upstream table.
+    NOTE this cascades into infectious diseases and deletes
+    all lab test relations in infectious diseases
     """
-    call_db_command("truncate table labtests_observation;")
+    last_updated = get_upstream_min_last_updated()
+    call_db_command(COPY_PSQL.format(last_updated))
 
 
 def copy_lab_tests():
@@ -344,19 +388,15 @@ class Command(BaseCommand):
         # in our table
         write_lab_test_csv()
 
-        # Deletes all existing lab tests in our lab test table
-        # note this also deletes FK relationships
-        delete_existing_lab_tests()
+        # Deletes all existing lab tests and observations
+        # that have exist after the min(last_updated)
+        # in the upstream table.
+        # Note this will cascade and delete relations
+        delete_lab_tests_and_observations_that_exist_upstream()
 
         # Copies the lab tests from the lab test csv into our
         # table
         copy_lab_tests()
-
-        # Deletes all observations in our observation table
-        # this is not strictly necessary but its safer if the
-        # process has errored out for any reason (probably disk space)
-        # and restarted.
-        delete_existing_observations()
 
         # Writes a csv of observations with the fields they will have
         # in our table
