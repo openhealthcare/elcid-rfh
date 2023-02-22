@@ -24,7 +24,7 @@ from elcid import constants, models
 api = get_api()
 
 
-GET_MASTERFILE_DATA_FOR_MERGED_MRN = """
+GET_MASTERFILE_DATA_FOR_MRN = """
     SELECT *
     FROM CRS_Patient_Masterfile
     WHERE Patient_Number = @mrn
@@ -228,24 +228,7 @@ class CernerPatientNotFoundException(Exception):
     pass
 
 
-class MergeResult:
-    """
-    An object that stores the merge results from recursively_parse_merge_comments.
-
-    The initial MRN is the MRN that we started with.
-    The active MRN is that active MRN related to the initial MRN.
-    The merged_mrn_dicts is a list of dictionaries to make merged MRNs from.
-    """
-    initial_mrn = None
-    active_mrn = None
-    merged_mrn_dicts = None
-
-    def __init__(self, initial_mrn):
-        self.initial_mrn = initial_mrn
-        self.merged_mrn_dicts = []
-
-
-def get_merged_masterfile_row(mrn):
+def get_masterfile_row(mrn):
     """
     Takes in an MRN and returns the row from the master file.
 
@@ -253,62 +236,55 @@ def get_merged_masterfile_row(mrn):
     should never be the case.
     """
     rows = api.execute_hospital_query(
-        GET_MASTERFILE_DATA_FOR_MERGED_MRN, {"mrn": mrn}
+        GET_MASTERFILE_DATA_FOR_MRN, {"mrn": mrn}
     )
     if len(rows) > 1:
         raise ValueError(f'Multiple results found for MRN {mrn}')
     if rows:
         return rows[0]
 
-
-def recursively_parse_merge_comments(mrn, visited, merge_result):
+def parse_merge_comments(initial_mrn):
     """
-    Takes in an MRN, a list of the MRNs that have already been parsed
-    and the current merge_result.
+    Given a MRN, return an active related MRN (may be the same one),
+    and a list of dictionaries of inactive mrns to be converted to
+    MergedMRN instances
 
-    Stores into merge_results:
-        What the active MRN is.
-        Dictionaries of inactive MRNs that will be turned into mergedMRNs.
-
-    It raises a MergeException if:
-        There are multiple active MRNs
-        We are searching for an MRN that does not exist in the Masterfile table.
+    Raise a MergeException if there are multiple active MRNs
     """
-    visited.append(mrn)
-    row = get_merged_masterfile_row(mrn)
+    parsed = set()
+    related_mrns = [initial_mrn]
+    active_mrn = None
+    inactive_mrn_dicts = []
 
-    if row is None:
-        # If there is no row it suggests someone has typoed an MRN
-        # into a merge comment, this does happen.
-        raise MergeException(
-            f'Unable to find a related MRN {mrn} for {merge_result.initial_mrn}'
-        )
-    merge_comments = row["MERGE_COMMENTS"]
-    is_active = False
-    if row["ACTIVE_INACTIVE"] == "ACTIVE":
-        is_active = True
-    if is_active:
-        if merge_result.active_mrn:
-            # if its active and we already have an active MRN then
-            # there are two actie MRNs, raise an exception.
-            raise MergeException(
-                f'Multiple active results found for {merge_result.initial_mrn}'
-            )
-        else:
-            merge_result.active_mrn = mrn
-    merged_mrn_and_dates = get_mrn_and_date_from_merge_comment(merge_comments)
-    if not merged_mrn_and_dates:
-        raise MergeException(f'Unable to get merge details for {mrn}')
-    if not is_active:
-        merge_result.merged_mrn_dicts.append({
-                "mrn": mrn,
-                "merge_comments": merge_comments,
-        })
+    while len(related_mrns) > 0:
+        next_mrn = related_mrns.pop(0)
 
-    for merged_mrn, _ in merged_mrn_and_dates:
-        if merged_mrn in visited:
+        if next_mrn in parsed:
             continue
-        recursively_parse_merge_comments(merged_mrn, visited.copy(), merge_result)
+        else:
+            parsed.add(next_mrn)
+
+            next_row = get_masterfile_row(next_mrn)
+            merge_comments = next_row["MERGE_COMMENTS"]
+
+            if next_row["ACTIVE_INACTIVE"] == "ACTIVE":
+                if active_mrn is None:
+                    active_mrn = next_mrn
+                else:
+                    raise MergeException(
+                        f'Multiple active related MRNs found for {initial_mrn}'
+                    )
+            else:
+                inactive_mrn_dicts.append({'mrn': next_mrn, 'merge_comments': merge_comments })
+
+            merged_mrns = get_mrn_and_date_from_merge_comment(merge_comments)
+            for found_mrn, _ in merged_mrns:
+                if found_mrn in parsed:
+                    continue
+                else:
+                    related_mrns.append(found_mrn)
+
+    return active_mrn, inactive_mrn_dicts
 
 
 def get_active_mrn_and_merged_mrn_data(mrn):
@@ -335,11 +311,11 @@ def get_active_mrn_and_merged_mrn_data(mrn):
     a CernerPatientNotFoundException. This should not happen.
 
     If the masterfile has multiple rows for an MRN a value
-    error is raised by `get_merged_masterfile_row` this
+    error is raised by `get_masterfile_row` this
     suggests is something that we expect should never happen
     in the upstream system.
     """
-    row = get_merged_masterfile_row(mrn)
+    row = get_masterfile_row(mrn)
 
     if row is None:
         raise CernerPatientNotFoundException(
@@ -352,17 +328,18 @@ def get_active_mrn_and_merged_mrn_data(mrn):
         logger.error(
             f"MRN {mrn} is marked as merged but there is not merge comment"
         )
-    merge_result = MergeResult(mrn)
+
     try:
-        recursively_parse_merge_comments(mrn, [], merge_result)
+        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn)
     except MergeException as err:
         logger.error(f"Merge exception raised for {mrn} with '{err}'")
         return mrn, []
 
-    if not merge_result.active_mrn:
+    if not active_mrn:
         logger.error(f"Unable to find an active MRN for {mrn}")
         return mrn, []
-    return merge_result.active_mrn, merge_result.merged_mrn_dicts
+
+    return active_mrn, merged_mrn_dicts
 
 
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
