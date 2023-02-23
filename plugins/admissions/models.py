@@ -226,7 +226,6 @@ class TransferHistory(models.Model):
     spell_number                    = models.CharField(blank=True, null=True, max_length=255)
     mrn                             = models.CharField(blank=True, null=True, max_length=255)
     transfer_sequence_number        = models.IntegerField(blank=True, null=True)
-    active_transfer_sequence_number = models.IntegerField(blank=True, null=True)
     transfer_start_datetime         = models.DateTimeField(blank=True, null=True)
     transfer_end_datetime           = models.DateTimeField(blank=True, null=True)
     # Numeric code for a location in the hospital
@@ -238,8 +237,11 @@ class TransferHistory(models.Model):
     room                            = models.CharField(blank=True, null=True, max_length=255)
     bed                             = models.CharField(blank=True, null=True, max_length=255)
     transfer_reason                 = models.CharField(blank=True, null=True, max_length=255)
-    created_datetime                = models.DateTimeField(blank=True, null=True)
     updated_datetime                = models.DateTimeField(blank=True, null=True)
+    trans_updated                   = models.DateTimeField(blank=True, null=True)
+    trans_created                   = models.DateTimeField(blank=True, null=True)
+    spell_created                   = models.DateTimeField(blank=True, null=True)
+    spell_updated                   = models.DateTimeField(blank=True, null=True)
 
     # What are these ?
     trf_inp_th_encntr_updt_dt_tm           = models.DateTimeField(blank=True, null=True)
@@ -251,7 +253,9 @@ class TransferHistory(models.Model):
     class Meta:
         ordering = ['transfer_sequence_number']
 
-
+    # We ingore SOURCE because it does not contain useful data
+    # We ignore In_Spells and In_TransHist because if either
+    # of these is 0 we delete the row.
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'UPDT_DT_TM'                            : 'update_datetime',
         'ACTIVE_TRANSFER'                       : 'active_transfer',
@@ -261,7 +265,6 @@ class TransferHistory(models.Model):
         'SPELL_NUMBER'                          : 'spell_number',
         'LOCAL_PATIENT_IDENTIFIER'              : 'mrn',
         'TRANS_HIST_SEQ_NBR'                    : 'transfer_sequence_number',
-        'ACTIVE_TRANS_HIST_SEQ_NBR'             : 'active_transfer_sequence_number',
         'TRANS_HIST_START_DT_TM'                : 'transfer_start_datetime',
         'TRANS_HIST_END_DT_TM'                  : 'transfer_end_datetime',
         'TRANS_HIST_LOCATION_DETAIL_CD'         : 'transfer_location_code',
@@ -270,8 +273,11 @@ class TransferHistory(models.Model):
         'ROOM'                                  : 'room',
         'BED'                                   : 'bed',
         'TRANS_HIST_TRANSFER_REASON'            : 'transfer_reason',
-        'CREATED_DATE'                          : 'created_datetime',
         'UPDATED_DATE'                          : 'updated_datetime',
+        'TRANS_UPDATED'                         : 'trans_updated',
+        'TRANS_CREATED'                         : 'trans_created',
+        'SPELL_CREATED'                         : 'spell_created',
+        'SPELL_UPDATED'                         : 'spell_updated',
         'TRF_INP_TH_ENCNTR_UPDT_DT_TM'          : 'trf_inp_th_encntr_updt_dt_tm',
         'TRF_INP_TH_ENCNTR_SLICE_UPDT_DT_TM'    : 'trf_inp_th_encntr_slice_updt_dt_tm',
         'TRF_INP_TH_ENCNTR_ALIAS_UPDT_DT_TM'    : 'trf_inp_th_encntr_alias_updt_dt_tm',

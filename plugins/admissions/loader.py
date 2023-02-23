@@ -19,13 +19,15 @@ from plugins.admissions.models import Encounter, PatientEncounterStatus, Transfe
 from plugins.admissions import logger
 
 
-# UPDATED_DATE is the same as CREATED_DATE if there
-# has not been an update, ie its always set.
+# UPDATED_DATE is the max of TRANS_UPDATED
+# and SPELL_UPDATED
 Q_GET_TRANSFERS_SINCE = """
     SELECT *
     FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
     WHERE
     UPDATED_DATE >= @since
+    AND LOCAL_PATIENT_IDENTIFIER is not null
+    AND LOCAL_PATIENT_IDENTIFIER <> ''
 """
 
 Q_GET_TRANSFERS_FOR_MRN = """
@@ -261,33 +263,7 @@ def create_patients(mrns):
             )
 
 
-def clean_transfer_history_rows(rows):
-    """
-    Exclude rows with no hospital number.
-
-    The upstream table has an issue where mistakenly
-    they have multiple rows for the same
-    LOCAL_PATIENT_IDENTIFIER, TRANS_HIST_SEQ_NBR, SPELL_NUMBER.
-
-    In this situation, make sure we have the most recent one.
-    Sometimes the duplicates updated timestamps are the same
-    so we need to look at created and updated.
-    """
-    rows = [i for i in rows if i['LOCAL_PATIENT_IDENTIFIER'] and i['LOCAL_PATIENT_IDENTIFIER'].strip()]
-    rows = sorted(rows, key=lambda x: (x['UPDATED_DATE'], x['CREATED_DATE']))
-    upstream_rows = {}
-    # because we ordered by updated, created, this will remove earlier created updated
-    for row in rows:
-        upstream_rows[(
-            row['LOCAL_PATIENT_IDENTIFIER'],
-            row['TRANS_HIST_SEQ_NBR'],
-            row['SPELL_NUMBER']
-        )] = row
-    return upstream_rows.values()
-
-
 def create_transfer_histories_from_upstream_result(some_rows):
-    some_rows = clean_transfer_history_rows(some_rows)
     create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
     return create_transfer_histories(some_rows)
 
@@ -301,44 +277,22 @@ def create_transfer_histories(some_rows):
     for demo in demos:
         mrn_to_patients[demo.hospital_number].append(demo.patient)
 
-    # This means we are already restricting the query by a index column
-    # ie much faster
-    existing_transfer_histories_qs = TransferHistory.objects.filter(
-        patient_id__in=[demo.patient_id for demo in demos]
-    )
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
-    existing_transfer_histories_qs.filter(
+    TransferHistory.objects.filter(
         encounter_slice_id__in=slice_ids
     ).delete()
-
-    existing_transfers = existing_transfer_histories_qs.filter(
-        transfer_sequence_number__in=[row['TRANS_HIST_SEQ_NBR'] for row in some_rows],
-        spell_number__in=[row['SPELL_NUMBER'] for row in some_rows],
-        mrn__in=[row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows]
-    )
-
-    others_to_delete = {
-        (i.transfer_sequence_number, i.spell_number, i.mrn): i for i in existing_transfers
-    }
-
-    for row in some_rows:
-        key = (
-            row['TRANS_HIST_SEQ_NBR'],
-            row['SPELL_NUMBER'],
-            row['LOCAL_PATIENT_IDENTIFIER'],
-        )
-        to_delete = others_to_delete.get(key)
-        if to_delete:
-            to_delete.delete()
 
     transfer_histories = []
 
     for some_row in some_rows:
-        patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
-        for patient in patients:
-            transfer_histories.append(
-                cast_to_transfer_history(some_row, patient)
-            )
+        # if In_TransHist = 0 then the transmission has been deleted
+        # if In_Spells = 0 then the whole spell has been deleted
+        if some_row['In_TransHist'] and some_row['In_Spells']:
+            patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
+            for patient in patients:
+                transfer_histories.append(
+                    cast_to_transfer_history(some_row, patient)
+                )
     TransferHistory.objects.bulk_create(transfer_histories)
     return transfer_histories
 

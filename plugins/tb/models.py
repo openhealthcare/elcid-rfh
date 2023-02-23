@@ -239,6 +239,9 @@ class AccessConsiderations(PreviousMRN, models.PatientSubrecord):
 
 
 class PatientConsultation(PreviousMRN, models.PatientConsultation):
+    # the reason for interacton for the MDT
+    ADDED_TO_TB_REVIEW_LIST = "Added to TB review list"
+
     plan = fields.TextField(blank=True, default="")
     examination_findings = fields.TextField(
         blank=True, default=""

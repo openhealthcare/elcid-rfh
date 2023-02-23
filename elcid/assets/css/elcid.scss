@@ -36,6 +36,11 @@ body{
     margin-top: 30px;
 }
 
+.inline-with-btn{
+  margin-top: 8px;
+  display: inline-block
+}
+
 .content-offset-100{
   margin-top: 100px;
 }
@@ -280,6 +285,12 @@ a.list-group-item {
     background-color: #864200;
     color: white;
     margin-bottom: 12px;
+}
+
+.panel-footer{
+  hr{
+    border-top-color: #ddd;
+  }
 }
 
 .lab-tests{

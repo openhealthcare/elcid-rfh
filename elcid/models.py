@@ -29,10 +29,10 @@ def get_for_lookup_list(model, values):
 
 class MergedMRN(models.Model):
     """
-    Represents an MRN (unique identifier) that has been used to 
+    Represents an MRN (unique identifier) that has been used to
     represent a patient in an upstream system but is no longer active.
-    
-    This does *not* include identifiers with leading zeros that have 
+
+    This does *not* include identifiers with leading zeros that have
     sometimes been added as an implementation detail of other systems.
     """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
