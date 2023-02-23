@@ -306,7 +306,7 @@ def write_lab_test_csv():
                 if key in seen:
                     continue
                 seen.add(key)
-                patient_id = hospital_number_to_patient_id[row["Patient_Number"]]
+                patient_id = hospital_number_to_patient_id[row["Patient_Number"]].id
 
                 our_row = cast_to_lab_test_dict(row, patient_id)
                 if idx == 0:
