@@ -284,6 +284,8 @@ class TransferHistory(models.Model):
         'TRF_INP_TH_ENCNTR_SLICE_ACT_UPDT_DT_TM': 'trf_inp_th_encntr_slice_act_updt_dt_tm',
     }
 
+    def location(self):
+        return " ".join([self.site_code, self.unit, self.room, self.bed])
 
 class IsolatedBed(models.Model):
     """

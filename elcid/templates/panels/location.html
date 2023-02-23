@@ -24,7 +24,14 @@
         <div class="col-md-12">
           <strong>EPR:</strong>
           [[bed_status.hospital]]
+
+          {% if permissions.ipc_user %}
+          <a href="/#/ipc/bedboard/ward/[[ bed_status.ward ]]/" class="orange-link">
+            [[bed_status.ward]]
+          </a>
+          {% else %}
           [[bed_status.ward]]
+          {% endif %}
           [[bed_status.room]]
           [[bed_status.bed]]
         </div>

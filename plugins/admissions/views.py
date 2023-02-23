@@ -171,6 +171,53 @@ class LocationHistoryEncounterContactsView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class LocationHistoryEncounterRemainingInpatientContactsView(LoginRequiredMixin, TemplateView):
+    template_name = 'admissions/remaining_encounter_contacts.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        now = timezone.now()
+        context['now'] = now
+
+        encounter_id = k['encounter_id']
+        context['encounter_id'] = encounter_id
+
+        slices = TransferHistory.objects.filter(
+            encounter_id=encounter_id
+        ).order_by('transfer_start_datetime').prefetch_related(
+            'patient__demographics_set'
+        )
+
+        patients = set()
+
+        for transfer in slices:
+            contact_transfers = TransferHistory.objects.filter(
+                transfer_start_datetime__lte=transfer.transfer_end_datetime,
+                transfer_end_datetime__gte=now,
+                unit=transfer.unit,
+                room=transfer.room
+            ).exclude(
+                mrn=transfer.mrn
+            ).prefetch_related(
+                'patient__demographics_set'
+            )
+            for contact in contact_transfers:
+                patient = contact.patient
+                if patient.bedstatus.count() > 0:
+                    patient.index_location = transfer.location()
+                    patient.contact_location = contact.location()
+                    patients.add(patient)
+
+        context['patients'] = patients
+
+        context['index_patient'] = slices[0].patient
+        context['index_demographics'] = slices[0].patient.demographics()
+
+        return context
+
+
+
+
 class LocationHistoryView(LoginRequiredMixin, TemplateView):
     template_name = 'admissions/location_history.html'
 

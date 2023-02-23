@@ -52,7 +52,10 @@
             {% endif %}
           <td>
             <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
-              {{ transfer.patient.demographics_set.all.0.name }}
+              {% with transfer.patient.demographics_set.get as demographics %}
+              {{ demographics.hospital_number }}
+              {{ demographics.name }}
+              {% endwith %}
             </a>
           </td>
           <td>{{ transfer.transfer_reason }}</td>
