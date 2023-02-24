@@ -44,6 +44,11 @@ urlpatterns = [
         name='location_history_encounter_contacts'
     ),
     path(
+        'templates/admissions/encounter/contacts/inpatients/<encounter_id>/',
+        views.LocationHistoryEncounterRemainingInpatientContactsView.as_view(),
+        name='location_history_remaining_inpatient_encounter_contacts'
+    ),
+    path(
         'templates/admissions/location-history/<location_code>/',
         views.LocationHistoryView.as_view(),
         name='location_history'

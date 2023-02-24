@@ -10,11 +10,19 @@
   <div class="panel-heading">
 
     <div class="row">
-      <div class="col-md-9">
+      <div class="col-md-12">
         <h1>
           <i class="fa fa-hospital-o"></i>
           <a href="/#/admissions/location-history/{{ source.spell_number }}/" class="orange-link">Admission</a>
           contacts
+          <span class="pull-right">
+            <small>
+              <a class="orange-link" href="/#/admissions/encounter/{{ encounter_id }}/contacts/inpatients/" >
+                Only current inpatients
+              </a>
+            </small>
+          </span>
+
         </h1>
         <p>
           <a href="/#/patient/{{ index_demographics.patient_id }}/location_history" class="orange-link">
@@ -24,6 +32,7 @@
           {{ index_demographics.date_of_birth }}
 
           Encounter ID: {{ encounter_id }}
+
         </p>
 
         {% if encounter %} <!-- We don't always have this loaded - data is slightly flakey -->
@@ -101,7 +110,10 @@
         <tr>
           <td>
             <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
-              {{ transfer.patient.demographics_set.all.0.name }}
+              {% with transfer.patient.demographics_set.get as demographics %}
+              {{ demographics.hospital_number }}
+              {{ demographics.name }}
+              {% endwith %}
             </a>
           </td>
           <td>

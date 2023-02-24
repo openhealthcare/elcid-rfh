@@ -1,0 +1,76 @@
+<!-- This template used to display contacts for a specific encounter who are still inpatients   -->
+{% extends 'admissions/base.html' %}
+
+{% block content %}
+    <div class="panel panel-default ">
+      <div class="panel-heading">
+
+        <div class="row">
+          <div class="col-md-9">
+            <h1>
+              <i class="fa fa-hospital-o"></i>
+              {{ patients|length }}
+              <a href="/#/admissions/encounter/{{ encounter_id }}/" class="orange-link">Encounter</a>
+              remaining inpatient contacts
+            </h1>
+            <h2>
+              <a href="/#/patient/{{ index_demographics.patient_id }}/location_history" class="orange-link">
+                {{ index_demographics.name }}
+              </a>
+                {{ index_demographics.sex }}
+              {{ index_demographics.date_of_birth }}
+
+              Encounter ID: {{ encounter_id }}
+            </h2>
+            <p class="text-muted">
+              This page shows all contacts for a single encounter who currently have a location at the
+              trust.
+              <br />
+              It does not take into account proximity to the index case at the time of contact.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- End Panel Header -->
+
+      <section class="scrollable-table-container">
+        <table class="table table-bordered table-bordered">
+        <tr>
+          <th>Patient</th>
+          <th>Current Location</th>
+          <th>Index Location</th>
+          <th>Contact Location</th>
+        </tr>
+
+
+        {% for patient in patients %}
+        <tr>
+          <td>
+            <a href="/#/patient/{{ patient.id }}" class="orange-link">
+              {% with patient.demographics_set.get as demographics %}
+              {{ demographics.hospital_number }}
+              {{ demographics.name }}
+              {% endwith %}
+            </a>
+          </td>
+          <td>
+            {% with patient.bedstatus.get as bed_status %}
+            {{ bed_status.hospital_site_description }}
+            {{ bed_status.ward_name }}
+            {{ bed_status.room }}
+            {{ bed_status.bed }}
+            {% endwith %}
+          </td>
+          <td>
+            {{ patient.index_location }}
+          </td>
+          <td>
+            {{ patient.contact_location }}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+      </section>
+
+    </div>
+{% endblock %}
