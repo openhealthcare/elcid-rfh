@@ -17,7 +17,32 @@ import os
 # so that in future when we iterate over to create
 # observations we can cache the call to lab tests
 GET_ALL_RESULTS = """
-    SELECT * FROM tQuest.Pathology_Result_View
+    SELECT
+    Patient_Number,
+    Relevant_Clinical_Info,
+    Observation_date,
+    Request_Date,
+    Result_ID,
+    Specimen_Site,
+    OBX_Status,
+    Result_ID,
+    OBR_exam_code_ID,
+    OBR_exam_code_Text,
+    Encounter_Consultant_Name,
+    Encounter_Location_Code,
+    Encounter_Location_Name,
+    Accession_number,
+    Department,
+    last_updated,
+    Observation_date,
+    Request_Date,
+    Reported_date,
+    Result_Range,
+    OBX_exam_code_Text,
+    OBX_id,
+    Result_Value,
+    Result_Units
+    FROM tQuest.Pathology_Result_View
 """
 
 # Return the min last updated timestamp
