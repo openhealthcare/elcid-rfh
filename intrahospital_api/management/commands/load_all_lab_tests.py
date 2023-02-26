@@ -18,6 +18,7 @@ import os
 # observations we can cache the call to lab tests
 GET_ALL_RESULTS = """
     SELECT
+    TOP(100000)
     Patient_Number,
     Relevant_Clinical_Info,
     Observation_date,
