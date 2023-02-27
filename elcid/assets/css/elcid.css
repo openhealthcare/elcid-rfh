@@ -265,6 +265,15 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   display: inline-block;
 }
 
+.no-touchevents .panel-heading i.edit, .list-group-item i.edit {
+  display: inline-block;
+  color: #d8dbdd;
+}
+
+.no-touchevents .panel-heading i.edit:hover, .list-group-item i.edit:hover {
+  color: #333;
+}
+
 .death-banner {
   margin-top: -95px;
   padding-top: 80px;

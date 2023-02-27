@@ -18,6 +18,9 @@ $navbar-height: 77px;
 $small-text-color: $secondary-background;
 $bootstrap-danger: #f2dede;
 
+// a faded grey
+$faded: #d8dbdd;
+
 body{
     background-color: $bg;
     height: calc(100%);
@@ -277,6 +280,16 @@ a.list-group-item {
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit{
   display: inline-block;
+}
+
+
+.no-touchevents .panel-heading i.edit, .list-group-item i.edit{
+  display: inline-block;
+  color: $faded;
+
+  &:hover{
+    color: #333;
+  }
 }
 
 .death-banner {
