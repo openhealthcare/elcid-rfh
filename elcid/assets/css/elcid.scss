@@ -286,6 +286,7 @@ a.list-group-item {
 .no-touchevents .panel-heading i.edit, .list-group-item i.edit{
   display: inline-block;
   color: $faded;
+  cursor: pointer;
 
   &:hover{
     color: #333;
