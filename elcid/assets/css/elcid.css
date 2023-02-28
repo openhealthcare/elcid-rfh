@@ -257,12 +257,22 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 
 .no-touchevents
 .patient-timeline-discussion i.edit {
-  display: none;
+  color: #d8dbdd;
 }
 
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit {
+  color: #333;
+}
+
+.no-touchevents .panel-heading i.edit, .list-group-item i.edit {
   display: inline-block;
+  color: #d8dbdd;
+  cursor: pointer;
+}
+
+.no-touchevents .panel-heading i.edit:hover, .list-group-item i.edit:hover {
+  color: #333;
 }
 
 .death-banner {
@@ -365,11 +375,11 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 }
 
 .panel tr.table-edit i.edit {
-  visibility: hidden;
+  color: #d8dbdd;
 }
 
 .panel tr.table-edit:hover i.edit {
-  visibility: visible;
+  color: #333;
 }
 
 .no-touchevents div.blood-culture-edit i,
@@ -662,5 +672,4 @@ div.add-isolate:hover {
 h1 small a {
   font-size: 14px;
 }
-
 /*# sourceMappingURL=elcid.css.map */
