@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from elcid import models as elcid_models
 from elcid import utils
 from plugins.labtests import models as lab_models
@@ -35,7 +34,6 @@ GET_ALL_RESULTS = """
     Department,
     last_updated,
     Observation_date,
-    Request_Date,
     Reported_date,
     Result_Range,
     OBX_exam_code_Text,
@@ -45,42 +43,58 @@ GET_ALL_RESULTS = """
     FROM tQuest.Pathology_Result_View
 """
 
-# Return the min last updated timestamp
-GET_MIN_LAST_UPDATED = """
-    SELECT MIN(last_updated) FROM tQuest.Pathology_Result_View
-"""
-
-# Copy lab tests and observations where last_updated < x
-# into a temp tables, then truncate the original tables
-# recreate the tables and copy those rows back in
-COPY_PSQL = """
+INSERT = """
 BEGIN;
-CREATE TEMP TABLE tmp_lab_load (LIKE labtests_labtest) ON COMMIT DROP;
+-- create a temp table tmp_lab_load which we will load in the csv
+CREATE TEMP TABLE tmp_lab_load
+ON COMMIT DROP
+AS (
+    SELECT {all_columns} FROM labtests_labtest, labtests_observation
+    WHERE labtests_labtest.id = labtests_observation.test_id
+    LIMIT 1000
+)
+WITH NO DATA;
 
-CREATE TEMP TABLE tmp_obs_load (LIKE labtests_observation) ON COMMIT DROP;
+-- create temporary indexes on columns that we are going to be querying
+CREATE INDEX tmp_lab_load_index ON tmp_lab_load (patient_id, test_name, lab_number);
+CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
 
-INSERT INTO tmp_obs_load
-SELECT * FROM labtests_observation
-WHERE last_updated < '2023-02-10 16:14:19.510246+00:00';
+-- copy in all the data into the csv this is all columns
+-- except foreign keys, auto add and ids
+COPY tmp_lab_load ({all_columns}) FROM '{csv_file}' DELIMITER ',' CSV HEADER;
 
+-- if any rows that we have new version os
+DELETE FROM labtests_labtest INNER JOIN tmp_lab_load
+WHERE
+    labtests_labtest.patient_id = tmp_lab_load.patient_id
+    AND labtests_labtest.test_name = tmp_lab_load.test_name
+    AND labtests_labtest.lab_number = tmp_lab_load.lab_number
 
-INSERT INTO tmp_lab_load
-SELECT * FROM labtests_labtest
-WHERE ID IN (
-    SELECT test_id FROM tmp_obs_load
+-- why doesn't this cascade?
+DELETE FROM labtests_observation
+WHERE test_id NOT IN (
+    select id from labtests_labtest
 );
 
-TRUNCATE TABLE labtests_labtest CASCADE;
-TRUNCATE TABLE labtests_observation CASCADE;
+-- insert in our new data
+INSERT INTO labtests_labtest ({lab_columns})
+    SELECT distinct({lab_columns}) FROM tmp_lab_load
+;
 
-INSERT INTO labtests_labtest
-SELECT * FROM tmp_lab_load;
+INSERT INTO labtests_observation (test_id,{obs_columns})
+    SELECT labtests_labtest.id, {obs_columns_with_prefix} FROM
+    tmp_lab_load, labtests_labtest
+    WHERE
+    tmp_lab_load.patient_id = labtests_labtest.patient_id
+    AND tmp_lab_load.test_name = labtests_labtest.test_name
+    AND tmp_lab_load.lab_number = labtests_labtest.lab_number
+;
 
-INSERT INTO labtests_observation
-SELECT * FROM tmp_obs_load;
-
+-- drop the index that we used
+DROP INDEX lab_index;
 END;
 """
+
 
 RESULTS_CSV = "results.csv"
 LABTEST_CSV = "lab_tests.csv"
@@ -128,35 +142,48 @@ OBSERVATION_COLUMNS = [
 COLUMNS = ["Patient_Number"] + LAB_TEST_COLUMNS + OBSERVATION_COLUMNS
 
 
-def get_all_hospital_numbers():
-    mrns = set(
+def get_mrn_to_patient_id():
+    """
+    Returns a map of all MRNs from demographics and Merged MRN
+    to the corresponding patient id.
+    """
+    mrn_to_patient_id = {}
+    demographics_mrn_and_patient_id = list(
         elcid_models.Demographics.objects.exclude(
             hospital_number=None,
         )
         .exclude(hospital_number="")
-        .values_list("hospital_number", flat=True)
+        .values_list("hospital_number", "patient_id")
     )
-    merged_mrns = set(
-        elcid_models.MergedMRN.objects.values_list(
-            'mrn', flat=True
-        )
+
+    for mrn, patient_id in demographics_mrn_and_patient_id:
+        mrn_to_patient_id[mrn] = patient_id
+
+    merged_mrn_and_patient_id = list(
+        elcid_models.MergedMRN.objects.values_list("mrn", "patient_id")
     )
-    all_mrns = mrns.union(merged_mrns)
-    return all_mrns
+
+    for mrn, patient_id in merged_mrn_and_patient_id:
+        mrn_to_patient_id[mrn] = patient_id
+
+    return mrn_to_patient_id
 
 
 @timing
 def write_results():
     """
     Get all lab test data for MRNs that are within elcid.
+    Create a row as we will save to our tables but without id, test id or
+    our
+    Lookup the patient id
 
     Strip the MRN of leading zeros before writing it to the file
     """
-    hns = get_all_hospital_numbers()
+    mrn_to_patient_id = get_mrn_to_patient_id()
     with open(RESULTS_CSV, "w") as m:
-        writer = csv.DictWriter(m, fieldnames=COLUMNS)
+
+        writer = None
         columns = set(COLUMNS)
-        writer.writeheader()
         with pytds.connect(
             settings.TRUST_DB["ip_address"],
             settings.TRUST_DB["database"],
@@ -170,15 +197,18 @@ def write_results():
                     rows = cur.fetchmany()
                     if not rows:
                         break
-                    for row in rows:
-                        key = get_key(row)
-                        if not all(key):
+                    for upstream_row in rows:
+                        if not upstream_row["Patient_Number"]:
                             continue
-                        # lab tests sometimes have leading zeros
-                        # we emulate the cerner master file and
-                        # remove them.
-                        if key[0].lstrip('0') not in hns:
+                        mrn = upstream_row["Patient_Number"].lstrip("0")
+                        patient_id = mrn_to_patient_id.get(mrn)
+                        if not patient_id:
                             continue
+                        row = cast_to_lab_test_dict(upstream_row, patient_id)
+                        row.update(cast_to_observation_dict(upstream_row))
+                        if writer is None:
+                            writer = csv.DictWriter(m, fieldnames=row.keys())
+                            writer.writeheader()
                         writer.writerow({k: v for k, v in row.items() if k in columns})
 
 
@@ -211,8 +241,6 @@ def cast_to_lab_test_dict(row, patient_id):
     result["encounter_location_code"] = row["Encounter_Location_Code"]
     result["encounter_location_name"] = row["Encounter_Location_Name"]
     result["accession_number"] = row["Accession_number"]
-    result["created_at"] = timezone.now()
-    result["updated_at"] = timezone.now()
     dep = row.get("Department")
     result["department_int"] = None
     if dep:
@@ -220,23 +248,22 @@ def cast_to_lab_test_dict(row, patient_id):
     return result
 
 
-def cast_to_observation_dict(row, lab_test_id):
+def cast_to_observation_dict(row):
     """
     Creates a dictionary from an upstream row with keys, values
     of what we want to save in our observation model
     """
-    result = {"test_id": lab_test_id}
+    result = {}
     result["last_updated"] = row["last_updated"]
     result["observation_datetime"] = row["Observation_date"]
     if not result["observation_datetime"]:
-        result["Request_Date"]
+        result["observation_datetime"] = row["Request_Date"]
     result["reported_datetime"] = row["Reported_date"]
     result["reference_range"] = row["Result_Range"]
     result["observation_number"] = row["OBX_id"]
     result["observation_name"] = row["OBX_exam_code_Text"]
     result["observation_value"] = row["Result_Value"]
     result["units"] = row["Result_Units"]
-    result["created_at"] = timezone.now()
     return result
 
 
@@ -265,14 +292,17 @@ def get_csv_fields(file_name):
 
 def get_mrn_lab_number_test_name_to_test_id():
     values = lab_models.LabTest.objects.values_list(
-        'patient__demographics__hospital_number',
-        'lab_number',
-        'test_name',
-        'id'
+        "patient__demographics__hospital_number", "lab_number", "test_name", "id"
     )
     result = {}
     for mrn, lab_number, test_name, test_id in values:
-        result[(mrn, lab_number, test_name,)] = test_id
+        result[
+            (
+                mrn,
+                lab_number,
+                test_name,
+            )
+        ] = test_id
     return result
 
 
@@ -345,7 +375,10 @@ def call_db_command(sql):
     """
     Calls a command on our database via psql
     """
-    subprocess.call(f"psql --echo-all -d {settings.DATABASES['default']['NAME']} -c '{sql}'", shell=True)
+    subprocess.call(
+        f"psql --echo-all -d {settings.DATABASES['default']['NAME']} -c \"{sql}\"",
+        shell=True,
+    )
 
 
 def get_upstream_min_last_updated():
@@ -366,7 +399,7 @@ def delete_lab_tests_and_observations_that_exist_upstream():
     all lab test relations in infectious diseases
     """
     last_updated = get_upstream_min_last_updated()
-    call_db_command(COPY_PSQL.format(last_updated))
+    call_db_command(COPY_OLD_LAB_TESTS_PSQL.format(last_updated))
 
 
 def copy_lab_tests():
@@ -401,37 +434,65 @@ def check_db_command():
     call_db_command("SELECT count(*) FROM labtests_labtest")
 
 
+def get_db_columns(model):
+    all_fields = model._meta.get_fields()
+    result = []
+    fields_to_ignore = set(
+        ["observation", "test", "created_at", "updated_at", "id", "infectionalert"]
+    )
+    for field in all_fields:
+        field_name = field.name
+        if field_name == "patient":
+            field_name = "patient_id"
+        if field_name not in fields_to_ignore:
+            result.append(field_name)
+    return result
+
+
 class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
-        check_db_command()
+        # check_db_command()
 
         # Writes a csv of results as they exist in the upstream table
-        write_results()
+        # write_results()
+        pwd = os.getcwd()
+        lab_columns = get_db_columns(lab_models.LabTest)
+        obs_columns = get_db_columns(lab_models.Observation)
+        command = INSERT.format(
+            all_columns=",".join(lab_columns + obs_columns),
+            lab_columns=",".join(lab_columns),
+            obs_columns=",".join(obs_columns),
+            obs_columns_with_prefix=",".join(
+                [f"tmp_lab_load.{i}" for i in obs_columns]
+            ),
+            csv_file=os.path.join(pwd, RESULTS_CSV),
+        )
+        call_db_command(command)
 
         # Writes a csv of lab tests with the fields they will have
         # in our table
-        write_lab_test_csv()
+        # write_lab_test_csv()
 
-        # Deletes all existing lab tests and observations
-        # that have exist after the min(last_updated)
-        # in the upstream table.
-        # Note this will cascade and delete relations
-        delete_lab_tests_and_observations_that_exist_upstream()
+        # # Deletes all existing lab tests and observations
+        # # that have exist after the min(last_updated)
+        # # in the upstream table.
+        # # Note this will cascade and delete relations
+        # delete_lab_tests_and_observations_that_exist_upstream()
 
-        # Copies the lab tests from the lab test csv into our
-        # table
-        copy_lab_tests()
+        # # Copies the lab tests from the lab test csv into our
+        # # table
+        # copy_lab_tests()
 
-        # Writes a csv of observations with the fields they will have
-        # in our table
-        write_observation_csv()
+        # # Writes a csv of observations with the fields they will have
+        # # in our table
+        # write_observation_csv()
 
-        # Copies the observations from the observation csv into our
-        # table
-        copy_observations()
+        # # Copies the observations from the observation csv into our
+        # # table
+        # copy_observations()
 
-        lab_test_count = lab_models.LabTest.objects.all().count()
-        observation_count = lab_models.Observation.objects.all().count()
-        self.stdout.write(f"{lab_test_count} lab tests loaded")
-        self.stdout.write(f"{observation_count} observations loaded")
+        # lab_test_count = lab_models.LabTest.objects.all().count()
+        # observation_count = lab_models.Observation.objects.all().count()
+        # self.stdout.write(f"{lab_test_count} lab tests loaded")
+        # self.stdout.write(f"{observation_count} observations loaded")
