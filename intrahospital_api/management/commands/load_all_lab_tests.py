@@ -1,11 +1,10 @@
+import asyncio
 from django.core.management.base import BaseCommand
+from django.db import connection
 from elcid import models as elcid_models
-from elcid import utils
 from plugins.labtests import models as lab_models
 from elcid.utils import timing
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from django.conf import settings
-import subprocess
 import pytds
 import csv
 import os
@@ -61,24 +60,25 @@ CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
 
 -- copy in all the data into the csv this is all columns
 -- except foreign keys, auto add and ids
-COPY tmp_lab_load ({all_columns}) FROM '{csv_file}' DELIMITER ',' CSV HEADER;
+COPY tmp_lab_load ({csv_columns}) FROM '{csv_file}' DELIMITER ',' CSV HEADER;
 
 -- if any rows that we have new version os
-DELETE FROM labtests_labtest INNER JOIN tmp_lab_load
+DELETE FROM labtests_labtest USING tmp_lab_load
 WHERE
     labtests_labtest.patient_id = tmp_lab_load.patient_id
     AND labtests_labtest.test_name = tmp_lab_load.test_name
-    AND labtests_labtest.lab_number = tmp_lab_load.lab_number
+    AND labtests_labtest.lab_number = tmp_lab_load.lab_number;
 
 -- why doesn't this cascade?
 DELETE FROM labtests_observation
-WHERE test_id NOT IN (
-    select id from labtests_labtest
+WHERE NOT EXISTS (
+    select from labtests_labtest
+	where labtests_observation.test_id = labtests_labtest.id
 );
 
 -- insert in our new data
 INSERT INTO labtests_labtest ({lab_columns})
-    SELECT distinct({lab_columns}) FROM tmp_lab_load
+    SELECT distinct {lab_columns} FROM tmp_lab_load
 ;
 
 INSERT INTO labtests_observation (test_id,{obs_columns})
@@ -97,8 +97,6 @@ END;
 
 
 RESULTS_CSV = "results.csv"
-LABTEST_CSV = "lab_tests.csv"
-OBSERVATIONS_CSV = "observations.csv"
 
 LAB_TEST_COLUMNS = [
     "Relevant_Clinical_Info",  # Becomes clinical info
@@ -169,6 +167,23 @@ def get_mrn_to_patient_id():
     return mrn_to_patient_id
 
 
+async def delete_in_parellel(lab_dicts):
+    patient_id_lab_number_test_name = set(
+        (i["patient_id"], i["lab_number"], i["test_name"]) for i in lab_dicts
+    )
+    lab_tests = lab_models.LabTest.objects.filter(
+        patient_id__in=patient_id_lab_number_test_name[0],
+        lab_numbers__in=patient_id_lab_number_test_name[1],
+        test_name__in=patient_id_lab_number_test_name[2],
+    )
+    ids_to_delete = []
+    for lab_test in lab_tests:
+        key = (lab_test.patient_id, lab_test.lab_number, lab_test.test_name,)
+        if key in patient_id_lab_number_test_name:
+            ids_to_delete.append(lab_test.id)
+    lab_models.LabTest.objects.filter(id__in=ids_to_delete).delete()
+
+
 @timing
 def write_results():
     """
@@ -180,10 +195,10 @@ def write_results():
     Strip the MRN of leading zeros before writing it to the file
     """
     mrn_to_patient_id = get_mrn_to_patient_id()
+    loop = asyncio.get_event_loop()
+    deleting = []
     with open(RESULTS_CSV, "w") as m:
-
         writer = None
-        columns = set(COLUMNS)
         with pytds.connect(
             settings.TRUST_DB["ip_address"],
             settings.TRUST_DB["database"],
@@ -197,6 +212,7 @@ def write_results():
                     rows = cur.fetchmany()
                     if not rows:
                         break
+                    to_delete = []
                     for upstream_row in rows:
                         if not upstream_row["Patient_Number"]:
                             continue
@@ -206,10 +222,17 @@ def write_results():
                             continue
                         row = cast_to_lab_test_dict(upstream_row, patient_id)
                         row.update(cast_to_observation_dict(upstream_row))
+                        to_delete.append(row)
+                        if len(to_delete) > 20000:
+                            deleting.append(delete_in_parellel(to_delete))
+                            to_delete = []
                         if writer is None:
                             writer = csv.DictWriter(m, fieldnames=row.keys())
                             writer.writeheader()
-                        writer.writerow({k: v for k, v in row.items() if k in columns})
+                        writer.writerow({k: v for k, v in row.items()})
+        if len(to_delete) > 0:
+            deleting.append(delete_in_parellel(to_delete))
+        loop.run_until_complete(asyncio.gather(*deleting))
 
 
 def cast_to_lab_test_dict(row, patient_id):
@@ -267,173 +290,6 @@ def cast_to_observation_dict(row):
     return result
 
 
-def get_key(row):
-    """
-    Returns MRN, lab_number, test_name
-    which are the three things that define a unique
-    lab test.
-    """
-    return (
-        row["Patient_Number"],
-        row["Result_ID"],
-        row["OBR_exam_code_Text"],
-    )
-
-
-def get_csv_fields(file_name):
-    """
-    Gets the column names from a csv file.
-    """
-    with open(file_name) as m:
-        reader = csv.DictReader(m)
-        headers = next(reader).keys()
-    return list(headers)
-
-
-def get_mrn_lab_number_test_name_to_test_id():
-    values = lab_models.LabTest.objects.values_list(
-        "patient__demographics__hospital_number", "lab_number", "test_name", "id"
-    )
-    result = {}
-    for mrn, lab_number, test_name, test_id in values:
-        result[
-            (
-                mrn,
-                lab_number,
-                test_name,
-            )
-        ] = test_id
-    return result
-
-
-@timing
-def write_observation_csv():
-    """
-    Reads the results csv where the data exists as it exists
-    in the upstream table.
-
-    Writes the observation csv where the headers match our observation fields
-    and the data is formatted into what we would save to our observation.
-    It also adds the test_id column with the elcid lab test id in it.
-    """
-    mrn_lab_number_test_name_to_test_id = get_mrn_lab_number_test_name_to_test_id()
-    with open(RESULTS_CSV) as m:
-        reader = csv.DictReader(m)
-        headers = cast_to_observation_dict(next(reader), 1).keys()
-        m.seek(0)
-    with open(RESULTS_CSV) as m:
-        reader = csv.DictReader(m)
-        with open(OBSERVATIONS_CSV, "w") as a:
-            writer = None
-            for idx, row in enumerate(reader):
-                key = get_key(row)
-                lt_id = mrn_lab_number_test_name_to_test_id[key]
-                obs_dict = cast_to_observation_dict(row, lt_id)
-                if idx == 0:
-                    writer = csv.DictWriter(a, fieldnames=headers)
-                    writer.writeheader()
-                writer.writerow(obs_dict)
-
-
-@timing
-def write_lab_test_csv():
-    """
-    Reads the results csv where the data exists as it exists
-    in the upstream table.
-
-    Writes the lab test csv where the headers match our lab test fields
-    and the data is formatted into what we would save to our lab test.
-    It also adds the patient_id column with the elcid patient id in it.
-    """
-    seen = set()
-    hns = set()
-    with open(RESULTS_CSV) as m:
-        reader = csv.DictReader(m)
-        for row in reader:
-            hns.add(row["Patient_Number"])
-    hospital_number_to_patient_id = utils.find_patients_from_mrns(hns)
-    writer = None
-    with open(RESULTS_CSV) as m:
-        reader = csv.DictReader(m)
-        with open(LABTEST_CSV, "w") as a:
-            for idx, row in enumerate(reader):
-                key = get_key(row)
-                if key in seen:
-                    continue
-                seen.add(key)
-                patient_id = hospital_number_to_patient_id[row["Patient_Number"]].id
-
-                our_row = cast_to_lab_test_dict(row, patient_id)
-                if idx == 0:
-                    headers = our_row.keys()
-                    writer = csv.DictWriter(a, fieldnames=headers)
-                    writer.writeheader()
-                writer.writerow(our_row)
-
-
-def call_db_command(sql):
-    """
-    Calls a command on our database via psql
-    """
-    subprocess.call(
-        f"psql --echo-all -d {settings.DATABASES['default']['NAME']} -c \"{sql}\"",
-        shell=True,
-    )
-
-
-def get_upstream_min_last_updated():
-    """
-    Returns the min last updated timestamp from the
-    upstream lab test table.
-    """
-    api = ProdAPI()
-    result = api.execute_trust_query(GET_MIN_LAST_UPDATED)
-    return result[0][0]
-
-
-def delete_lab_tests_and_observations_that_exist_upstream():
-    """
-    Delete all existing lab tests and observations that exist after the
-    min(last_updated) of the upstream table.
-    NOTE this cascades into infectious diseases and deletes
-    all lab test relations in infectious diseases
-    """
-    last_updated = get_upstream_min_last_updated()
-    call_db_command(COPY_OLD_LAB_TESTS_PSQL.format(last_updated))
-
-
-def copy_lab_tests():
-    """
-    Runs the psql copy command to copy lab tests from
-    LABTEST_CSV into our lab test table
-    """
-    columns = ",".join(get_csv_fields(LABTEST_CSV))
-    pwd = os.getcwd()
-    labtest_csv = os.path.join(pwd, LABTEST_CSV)
-    cmd = f"\copy labtests_labtest ({columns}) FROM '{labtest_csv}' WITH (FORMAT csv, header);"
-    call_db_command(cmd)
-
-
-def copy_observations():
-    """
-    Runs the psql copy command to copy observations from
-    OBSERVATIONS_CSV into our observation table
-    """
-    columns = ",".join(get_csv_fields(OBSERVATIONS_CSV))
-    pwd = os.getcwd()
-    observation_csv = os.path.join(pwd, OBSERVATIONS_CSV)
-    cmd = f"\copy labtests_observation ({columns}) FROM '{observation_csv}' WITH (FORMAT csv, header);"
-    call_db_command(cmd)
-
-
-def check_db_command():
-    """
-    A sanity check to make sure we have permissions to
-    run commands on our database.
-    """
-    call_db_command("SELECT count(*) FROM labtests_labtest")
-
-
 def get_db_columns(model):
     all_fields = model._meta.get_fields()
     result = []
@@ -449,18 +305,26 @@ def get_db_columns(model):
     return result
 
 
+def csv_columns():
+    result = []
+    with open(RESULTS_CSV) as f:
+        reader = csv.reader(f)
+        result = next(reader)
+    return result
+
+
 class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
-        # check_db_command()
-
         # Writes a csv of results as they exist in the upstream table
         # write_results()
+
         pwd = os.getcwd()
         lab_columns = get_db_columns(lab_models.LabTest)
         obs_columns = get_db_columns(lab_models.Observation)
         command = INSERT.format(
             all_columns=",".join(lab_columns + obs_columns),
+            csv_columns=",".join(csv_columns()),
             lab_columns=",".join(lab_columns),
             obs_columns=",".join(obs_columns),
             obs_columns_with_prefix=",".join(
@@ -468,31 +332,7 @@ class Command(BaseCommand):
             ),
             csv_file=os.path.join(pwd, RESULTS_CSV),
         )
-        call_db_command(command)
-
-        # Writes a csv of lab tests with the fields they will have
-        # in our table
-        # write_lab_test_csv()
-
-        # # Deletes all existing lab tests and observations
-        # # that have exist after the min(last_updated)
-        # # in the upstream table.
-        # # Note this will cascade and delete relations
-        # delete_lab_tests_and_observations_that_exist_upstream()
-
-        # # Copies the lab tests from the lab test csv into our
-        # # table
-        # copy_lab_tests()
-
-        # # Writes a csv of observations with the fields they will have
-        # # in our table
-        # write_observation_csv()
-
-        # # Copies the observations from the observation csv into our
-        # # table
-        # copy_observations()
-
-        # lab_test_count = lab_models.LabTest.objects.all().count()
-        # observation_count = lab_models.Observation.objects.all().count()
-        # self.stdout.write(f"{lab_test_count} lab tests loaded")
-        # self.stdout.write(f"{observation_count} observations loaded")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                command
+            )
