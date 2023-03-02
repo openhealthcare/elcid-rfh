@@ -39,6 +39,10 @@ GET_ALL_RESULTS = """
     OBX_id,
     Result_Value,
     Result_Units
+    WHERE Patient_Number IS NOT null
+    AND Patient_Number <> ''
+    AND Result_ID IS NOT null
+    AND Result_ID <> ''
     FROM tQuest.Pathology_Result_View
 """
 
