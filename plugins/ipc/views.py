@@ -172,7 +172,7 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             wards[status.ward_name].append(status)
 
         context['wards'] = {name: wards[name] for name in sorted(wards.keys(), key=natural_keys)}
-
+        context['hospital_name'] = statuses[0].hospital_site_description
         return context
 
 

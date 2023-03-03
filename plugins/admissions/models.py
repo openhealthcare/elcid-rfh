@@ -407,7 +407,8 @@ class BedStatus(models.Model):
         'hospital_site_description': 'hospital',
         'ward_name'                : 'ward',
         'room'                     : 'room',
-        'bed'                      : 'bed'
+        'bed'                      : 'bed',
+        'hospital_site_code'       : 'site_code' # Links sometimes use this
     }
 
     def to_dict(self):
