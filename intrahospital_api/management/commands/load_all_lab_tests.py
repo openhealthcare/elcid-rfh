@@ -1,4 +1,3 @@
-import asyncio
 from django.core.management.base import BaseCommand
 from django.db import connection
 from elcid import models as elcid_models
@@ -60,25 +59,36 @@ WITH NO DATA;
 
 -- create temporary indexes on columns that we are going to be querying
 CREATE INDEX tmp_lab_load_index ON tmp_lab_load (patient_id, test_name, lab_number);
-CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
 
 -- copy in all the data into the csv this is all columns
 -- except foreign keys, auto add and ids
 COPY tmp_lab_load ({csv_columns}) FROM '{csv_file}' DELIMITER ',' CSV HEADER;
 
--- if any rows that we have new version os
-DELETE FROM labtests_labtest USING tmp_lab_load
-WHERE
-    labtests_labtest.patient_id = tmp_lab_load.patient_id
-    AND labtests_labtest.test_name = tmp_lab_load.test_name
-    AND labtests_labtest.lab_number = tmp_lab_load.lab_number;
-
--- why doesn't this cascade?
-DELETE FROM labtests_observation
-WHERE NOT EXISTS (
-    select from labtests_labtest
-	where labtests_observation.test_id = labtests_labtest.id
+CREATE TEMP TABLE  old_lab_tests ON COMMIT DROP AS (
+    SELECT * FROM labtests_labtest
+    WHERE id NOT IN (
+        select labtests_labtest.id
+        FROM labtests_labtest, tmp_lab_load
+        WHERE
+        labtests_labtest.patient_id = tmp_lab_load.patient_id
+        AND labtests_labtest.test_name = tmp_lab_load.test_name
+        AND labtests_labtest.lab_number = tmp_lab_load.lab_number
+    )
 );
+
+CREATE TEMP TABLE  old_observations ON COMMIT DROP AS (
+    SELECT * FROM labtests_observation WHERE test_id IN (
+        select id FROM old_lab_tests
+    )
+);
+
+TRUNCATE TABLE labtests_labtest CASCADE;
+TRUNCATE TABLE labtests_observation CASCADE;
+
+CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
+
+INSERT INTO labtests_labtest SELECT * FROM old_lab_tests;
+INSERT INTO labtests_observation SELECT * FROM old_observations;
 
 -- insert in our new data
 INSERT INTO labtests_labtest ({lab_columns})
@@ -228,15 +238,15 @@ def write_results():
                         row.update(cast_to_observation_dict(upstream_row))
                         to_delete.append(row)
                         if len(to_delete) > 20000:
-                            deleting.append(delete_in_parellel(to_delete))
+                            # deleting.append(delete_in_parellel(to_delete))
                             to_delete = []
                         if writer is None:
                             writer = csv.DictWriter(m, fieldnames=row.keys())
                             writer.writeheader()
                         writer.writerow({k: v for k, v in row.items()})
-        if len(to_delete) > 0:
-            deleting.append(delete_in_parellel(to_delete))
-        loop.run_until_complete(asyncio.gather(*deleting))
+        # if len(to_delete) > 0:
+            # deleting.append(delete_in_parellel(to_delete))
+        # loop.run_until_complete(asyncio.gather(*deleting))
 
 
 def cast_to_lab_test_dict(row, patient_id):
