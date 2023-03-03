@@ -1,5 +1,8 @@
+import gzip
+import shutil
 from django.core.management.base import BaseCommand
 from django.db import connection
+from django.db import transaction
 from elcid import models as elcid_models
 from plugins.labtests import models as lab_models
 from elcid.utils import timing
@@ -38,11 +41,39 @@ GET_ALL_RESULTS = """
     OBX_id,
     Result_Value,
     Result_Units
+    FROM tQuest.Pathology_Result_View
     WHERE Patient_Number IS NOT null
     AND Patient_Number <> ''
     AND Result_ID IS NOT null
     AND Result_ID <> ''
-    FROM tQuest.Pathology_Result_View
+"""
+
+DELETE = """
+BEGIN;
+-- create a temp table delete_or_keep which we will load patient number, lab number and test name
+CREATE TEMP TABLE patient_id_lab_number_name (
+    patient_id INT NOT NULL,
+    lab_number VARCHAR (255) NOT NULL,
+    test_name VARCHAR (255) NOT NULL
+) ON COMMIT DROP;
+
+COPY patient_id_lab_number_name (patient_id,lab_number,test_name) FROM '{csv_file}' DELIMITER ',' CSV HEADER;
+
+CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
+
+DELETE FROM labtests_labtest USING patient_id_lab_number_name
+WHERE labtests_labtest.patient_id = patient_id_lab_number_name.patient_id
+AND labtests_labtest.test_name = patient_id_lab_number_name.test_name
+AND labtests_labtest.lab_number = patient_id_lab_number_name.lab_number;
+
+DELETE FROM labtests_observation
+WHERE NOT EXISTS (
+    SELECT null
+    FROM labtests_labtest
+    WHERE labtests_observation.test_id = labtests_labtest.id
+);
+ROLLBACK;
+END;
 """
 
 INSERT = """
@@ -76,19 +107,7 @@ CREATE TEMP TABLE  old_lab_tests ON COMMIT DROP AS (
     )
 );
 
-CREATE TEMP TABLE  old_observations ON COMMIT DROP AS (
-    SELECT * FROM labtests_observation WHERE test_id IN (
-        select id FROM old_lab_tests
-    )
-);
-
-TRUNCATE TABLE labtests_labtest CASCADE;
-TRUNCATE TABLE labtests_observation CASCADE;
-
 CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
-
-INSERT INTO labtests_labtest SELECT * FROM old_lab_tests;
-INSERT INTO labtests_observation SELECT * FROM old_observations;
 
 -- insert in our new data
 INSERT INTO labtests_labtest ({lab_columns})
@@ -109,8 +128,11 @@ DROP INDEX lab_index;
 END;
 """
 
-
 RESULTS_CSV = "results.csv"
+GZIPPED_RESULTS_CSV = "results.csv.gz"
+
+PATIENT_ID_LAB_NUMBER_TEST_NAME_CSV = "patient_id_lab_number_test_name.csv"
+
 
 LAB_TEST_COLUMNS = [
     "Relevant_Clinical_Info",  # Becomes clinical info
@@ -181,22 +203,6 @@ def get_mrn_to_patient_id():
     return mrn_to_patient_id
 
 
-async def delete_in_parellel(lab_dicts):
-    patient_id_lab_number_test_name = set(
-        (i["patient_id"], i["lab_number"], i["test_name"]) for i in lab_dicts
-    )
-    lab_tests = lab_models.LabTest.objects.filter(
-        patient_id__in=patient_id_lab_number_test_name[0],
-        lab_numbers__in=patient_id_lab_number_test_name[1],
-        test_name__in=patient_id_lab_number_test_name[2],
-    )
-    ids_to_delete = []
-    for lab_test in lab_tests:
-        key = (lab_test.patient_id, lab_test.lab_number, lab_test.test_name,)
-        if key in patient_id_lab_number_test_name:
-            ids_to_delete.append(lab_test.id)
-    lab_models.LabTest.objects.filter(id__in=ids_to_delete).delete()
-
 
 @timing
 def write_results():
@@ -209,8 +215,6 @@ def write_results():
     Strip the MRN of leading zeros before writing it to the file
     """
     mrn_to_patient_id = get_mrn_to_patient_id()
-    loop = asyncio.get_event_loop()
-    deleting = []
     with open(RESULTS_CSV, "w") as m:
         writer = None
         with pytds.connect(
@@ -237,17 +241,36 @@ def write_results():
                         row = cast_to_lab_test_dict(upstream_row, patient_id)
                         row.update(cast_to_observation_dict(upstream_row))
                         to_delete.append(row)
-                        if len(to_delete) > 20000:
-                            # deleting.append(delete_in_parellel(to_delete))
-                            to_delete = []
                         if writer is None:
                             writer = csv.DictWriter(m, fieldnames=row.keys())
                             writer.writeheader()
                         writer.writerow({k: v for k, v in row.items()})
-        # if len(to_delete) > 0:
-            # deleting.append(delete_in_parellel(to_delete))
-        # loop.run_until_complete(asyncio.gather(*deleting))
 
+
+@timing
+def write_lab_tests():
+    rows = set()
+    with open(RESULTS_CSV) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            patient_id = row["patient_id"]
+            lab_number = row["lab_number"]
+            test_name = row["test_name"]
+            if (patient_id, lab_number, test_name,) in rows:
+                continue
+            else:
+                rows.add((patient_id, lab_number, test_name,))
+
+    with open(PATIENT_ID_LAB_NUMBER_TEST_NAME_CSV, 'w') as x:
+        rows = list(rows)
+        writer = csv.writer(x)
+        writer.writerow(["patient_id", "lab_number", "test_name"])
+        for row in rows:
+            writer.writerow(row)
+
+@timing
+def delete_lab_test_file():
+    os.remove(os.path.join(os.getcwd(), RESULTS_CSV))
 
 def cast_to_lab_test_dict(row, patient_id):
     """
@@ -326,27 +349,79 @@ def csv_columns():
         result = next(reader)
     return result
 
+@timing
+def gzip_file(file_name, gzipped_file_name):
+    pwd = os.getcwd()
+    with open(os.path.join(pwd, file_name), 'rb') as f_in:
+        with gzip.open(os.path.join(pwd, gzipped_file_name), 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    os.remove(os.path.join(pwd, file_name))
+
+
+@timing
+def gunzip_file(file_name, gzipped_file_name):
+    pwd = os.getcwd()
+    with gzip.open(os.path.join(pwd, gzipped_file_name), 'rb') as f_in:
+        with open(os.path.join(pwd, file_name), 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    os.remove(os.path.join(pwd, gzipped_file_name))
+
+
+@timing
+def run_delete_sql():
+    pwd = os.getcwd()
+    command = DELETE.format(csv_file=os.path.join(
+        pwd, PATIENT_ID_LAB_NUMBER_TEST_NAME_CSV
+    ))
+    with connection.cursor() as cursor:
+        cursor.execute(
+            command
+        )
+
+
 
 class Command(BaseCommand):
     @timing
+    @transaction.atomic
     def handle(self, *args, **options):
+        print('starting')
         # Writes a csv of results as they exist in the upstream table
-        # write_results()
+        write_results()
 
         pwd = os.getcwd()
-        lab_columns = get_db_columns(lab_models.LabTest)
-        obs_columns = get_db_columns(lab_models.Observation)
-        command = INSERT.format(
-            all_columns=",".join(lab_columns + obs_columns),
-            csv_columns=",".join(csv_columns()),
-            lab_columns=",".join(lab_columns),
-            obs_columns=",".join(obs_columns),
-            obs_columns_with_prefix=",".join(
-                [f"tmp_lab_load.{i}" for i in obs_columns]
-            ),
-            csv_file=os.path.join(pwd, RESULTS_CSV),
-        )
-        with connection.cursor() as cursor:
-            cursor.execute(
-                command
-            )
+
+        # write lab tests takes distinct patient id, lab number and test name
+        # out of the results csv.
+        # If we load the whole csv into a temp table and do the delete
+        # and load in one go, then at some point we have...
+        #  * all of the old data,
+        #  * all of the new data in a temp table
+        #  * all of the new on disk
+        #
+        # This takes more disk than we have.
+        #
+        # Solution is that we take the columns we need for the delete
+        # gzip the results csv, do the delete of the old data and
+        # then load
+        # write_lab_tests()
+
+        # gzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
+        # run_delete_sql()
+        # delete_lab_test_file()
+        # gunzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
+        # lab_columns = get_db_columns(lab_models.LabTest)
+        # obs_columns = get_db_columns(lab_models.Observation)
+        # command = INSERT.format(
+        #     all_columns=",".join(lab_columns + obs_columns),
+        #     csv_columns=",".join(csv_columns()),
+        #     lab_columns=",".join(lab_columns),
+        #     obs_columns=",".join(obs_columns),
+        #     obs_columns_with_prefix=",".join(
+        #         [f"tmp_lab_load.{i}" for i in obs_columns]
+        #     ),
+        #     csv_file=os.path.join(pwd, RESULTS_CSV),
+        # )
+        # with connection.cursor() as cursor:
+        #     cursor.execute(
+        #         command
+        #     )
