@@ -46,7 +46,9 @@ def load_demographics(hospital_number):
     return result
 
 
-def create_rfh_patient_from_hospital_number(hospital_number, episode_category, run_async=None):
+def create_rfh_patient_from_hospital_number(
+    hospital_number, episode_category, run_async=None, rfh_patient=True
+):
     """
     Creates a patient programatically and sets up integration.
 
@@ -57,6 +59,7 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
 
     If a patient with this hospital number already exists raise ValueError
     If a hospital number prefixed with zero is passed in raise ValueError
+    If the hospital number has already been merged into another raise ValueError
     """
     if hospital_number.startswith('0'):
         raise ValueError(
@@ -66,17 +69,27 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
     if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
         raise ValueError('Patient with this hospital number already exists')
 
+    if emodels.MergedMRN.objects.filter(mrn=hospital_number).exists():
+        raise ValueError('MRN has already been merged into another MRN')
+
+    if rfh_patient:
+        active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
+            hospital_number
+        )
+
     patient = Patient.objects.create()
-
-    demographics = patient.demographics()
-    demographics.hospital_number = hospital_number
-    demographics.save()
-
-    patient.create_episode(
-        category_name=episode_category.display_name,
-        start=datetime.date.today()
+    patient.demographics_set.update(
+        hospital_number=active_mrn
     )
-    load_patient(patient, run_async=run_async)
+    patient.episode_set.create(
+        category_name=episode_category.display_name
+    )
+
+    if rfh_patient:
+        for merged_mrn_dict in merged_mrn_dicts:
+            patient.mergedmrn_set.create(**merged_mrn_dict)
+
+        load_patient(patient, run_async=run_async)
     return patient
 
 
@@ -172,3 +185,38 @@ def _load_patient(patient, patient_load):
         patient_load.failed()
     else:
         patient_load.complete()
+
+
+def get_or_create_patient(
+    mrn, episode_category, rfh_patient=True, run_async=None
+):
+    """
+    Get or create a opal.Patient with an opal.Episode of the
+    episode category.
+
+    if rfh_patient is False then we will not look at the upstream
+    RFH internal databases for information about the patient.
+
+    if run_async is False the loaders that look for upstream data
+    will be called synchronously.
+    """
+    patient = Patient.objects.filter(
+        demographics__hospital_number=mrn
+    ).first()
+    if not patient:
+        patient = Patient.objects.filter(
+            mergedmrn__mrn=mrn
+        ).first()
+
+    if patient:
+        patient.episode_set.get_or_create(
+            category_name=episode_category.display_name
+        )
+        return (patient, False)
+    patient = create_rfh_patient_from_hospital_number(
+        mrn,
+        episode_category,
+        run_async=run_async,
+        rfh_patient=rfh_patient
+    )
+    return patient, True

@@ -68,14 +68,13 @@ def load_dischargesummaries(patient):
     """
     api = ProdAPI()
 
-    demographic = patient.demographics()
-
     summary_count = patient.dischargesummaries.count()
 
-    summaries = api.execute_hospital_query(
-        Q_GET_SUMMARIES,
-        params={'mrn': demographic.hospital_number}
+    mrn = patient.demographics().hospital_number
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
+<<<<<<< HEAD
     other_mrns = query_for_zero_prefixed(
         demographic.hospital_number
     )
@@ -84,6 +83,16 @@ def load_dischargesummaries(patient):
             Q_GET_SUMMARIES,
             params={'mrn': other_mrn}
         ))
+=======
+    mrns = [mrn] + other_mrns
+    summaries = []
+    for mrn in mrns:
+        summaries.extend(api.execute_hospital_query(
+            Q_GET_SUMMARIES,
+            params={'mrn': mrn}
+        ))
+
+>>>>>>> cerner-merge-branch
     for summary in summaries:
 
         meds = api.execute_hospital_query(
@@ -91,12 +100,16 @@ def load_dischargesummaries(patient):
             params={'tta_id': summary['SQL_Internal_ID']}
         )
 
+<<<<<<< HEAD
         # We expect these fields should be filled in
         # however this is now always the case.
         parsed = {
             "date_of_admission": None,
             "date_of_discharge": None
         }
+=======
+        parsed = {}
+>>>>>>> cerner-merge-branch
         for k, v in summary.items():
             if v: # Ignore empty values
 
