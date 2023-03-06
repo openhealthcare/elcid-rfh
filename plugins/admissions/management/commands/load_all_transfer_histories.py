@@ -40,6 +40,10 @@ def get_column_headers():
 def stream_result():
     query = """
     SELECT * FROM INP.TRANSFER_HISTORY_EL_CID WITH (NOLOCK)
+    WHERE LOCAL_PATIENT_IDENTIFIER is not null
+    and LOCAL_PATIENT_IDENTIFIER <> ''
+    AND In_TransHist = 1
+    AND In_Spells = 1
     ORDER BY LOCAL_PATIENT_IDENTIFIER, ENCNTR_SLICE_ID
     """
     mrn_and_patient_id = elcid_models.Demographics.objects.values_list(
@@ -65,9 +69,6 @@ def stream_result():
                     if result:
                         for upstream_row in result:
                             row_mrn = upstream_row["LOCAL_PATIENT_IDENTIFIER"]
-                            if not row_mrn:
-                                continue
-
                             if row_mrn not in mrn_to_patient_id:
                                 continue
                             patient_id = mrn_to_patient_id[row_mrn]
@@ -108,8 +109,8 @@ def delete_existing_transfer_histories():
 
 def copy_transfer_histories():
     """
-    Runs the psql copy command to copy lab tests from
-    LABTEST_CSV into our lab test table
+    Runs the psql copy command to copy transfer histories from
+    FILE_NAME into our transfer history table
     """
     columns = ",".join(get_column_headers())
     pwd = os.getcwd()
