@@ -61,6 +61,12 @@ COPY patient_id_lab_number_name (patient_id,lab_number,test_name) FROM '{csv_fil
 
 CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
 
+DELETE FROM ipc_infectionalert WHERE lab_test_id IN
+    SELECT labtests_labtest.id FROM labtests_labtest, patient_id_lab_number_name
+    WHERE labtests_labtest.patient_id = patient_id_lab_number_name.patient_id
+    AND labtests_labtest.test_name = patient_id_lab_number_name.test_name
+    AND labtests_labtest.lab_number = patient_id_lab_number_name.lab_number;
+
 DELETE FROM labtests_labtest USING patient_id_lab_number_name
 WHERE labtests_labtest.patient_id = patient_id_lab_number_name.patient_id
 AND labtests_labtest.test_name = patient_id_lab_number_name.test_name
@@ -72,7 +78,6 @@ WHERE NOT EXISTS (
     FROM labtests_labtest
     WHERE labtests_observation.test_id = labtests_labtest.id
 );
-ROLLBACK;
 END;
 """
 
