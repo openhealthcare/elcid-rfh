@@ -29,10 +29,11 @@ def get_for_lookup_list(model, values):
 
 class MergedMRN(models.Model):
     """
-    Represents each time this patient has had a duplicate MRN merged.
-
-    e.g. if MRN 77456 was merged into patient 123
-    Patient 123 would have a patient merge object with MRN 77456
+    Represents an MRN (unique identifier) that has been used to 
+    represent a patient in an upstream system but is no longer active.
+    
+    This does *not* include identifiers with leading zeros that have 
+    sometimes been added as an implementation detail of other systems.
     """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     mrn = models.CharField(max_length=256, unique=True, db_index=True)
@@ -42,11 +43,11 @@ class MergedMRN(models.Model):
 
 class PreviousMRN(models.Model):
     """
-    A mixin for subrecords to maintain an audit trail for occasions 
+    A mixin for subrecords to maintain an audit trail for occasions
     when an upstream MRN merge occurs and the merged MRN has elCID entries.
-    
+
     `previous_mrn` is the MRN in use at the time that this subrecord instance
-    was last created/edited with if that MRN is different from the current 
+    was last created/edited with if that MRN is different from the current
     value of `Demographics.hospital_number` attached to this instance.
     """
     previous_mrn = models.CharField(blank=True, null=True, max_length=256)
@@ -54,6 +55,20 @@ class PreviousMRN(models.Model):
     class Meta:
         abstract = True
 
+    def update_from_dict(self, data, *args, **kwargs):
+        """
+        The original MRN is set when a patient is merged and the subrecord
+        exists on the previous patient object.
+
+        When this happens the previous patient is deleted. If the
+        subrecord is subsequently editted then we can remove
+        this value as the user is updating the subrecord
+        in the context of the merged patient.
+        """
+        if 'previous_mrn' in data:
+            data.pop('previous_mrn')
+        self.previous_mrn = None
+        return super().update_from_dict(data, *args, **kwargs)
 
 
 class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
