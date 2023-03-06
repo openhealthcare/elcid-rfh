@@ -190,7 +190,7 @@ describe('ClinicalAdviceFormTest', function() {
         $httpBackend.flush();
       });
 
-      fit('should reset item', function(){
+      it('should reset item', function(){
         ctrl.changed = true
         spyOn(ctrl.formItem, "save").and.returnValue({
           then: function(x){ x() }
