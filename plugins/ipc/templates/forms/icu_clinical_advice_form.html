@@ -1,7 +1,12 @@
 {% load forms %}
 
 {% datetimepicker model="formItem.editing.when" field="MicrobiologyInput.when" %}
-{% input model="formItem.editing.initials" required=True field="MicrobiologyInput.initials" %}
+<div class="form-group">
+  <label class="control-label col-sm-3">Initials</label>
+  <div ng-class="{'has-error': form.$submitted && form.initials.$error}" class="col-sm-8">
+    <input class="form-control" type="text" ng-model="formItem.editing.initials" autocomplete="off" name="initials" required="1" ng-maxlength="255">
+  </div>
+</div>
 {% select model="formItem.editing.reason_for_interaction" field="MicrobiologyInput.reason_for_interaction" lookuplist="['ICN Ward Review']"%}
 
 <div ng-controller="IPCFormAdviceHelper as ipcFormAdviceHelper">
@@ -33,3 +38,17 @@
   </div>
 </div>
 {% textarea model="formItem.editing.agreed_plan" field="MicrobiologyInput.agreed_plan" %}
+<div class="row">
+  <div class="help-block col-md-8 col-md-push-3 text-center" ng-show="form.$submitted && form.initials.$error.required">
+    <p class="text-danger">
+      Initials are required
+    </p>
+  </div>
+</div>
+<div class="row">
+  <div class="help-block col-md-8 col-md-push-3 text-center" ng-show="form.$submitted && form.initials.$error.maxlength">
+    <p class="text-danger">
+      The maximum length for initials is 255
+    </p>
+  </div>
+</div>
