@@ -414,9 +414,9 @@ class Command(BaseCommand):
         # write_lab_tests()
 
         # gzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
-        run_delete_sql()
-        delete_lab_test_file()
-        gunzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
+        # run_delete_sql()
+        # delete_lab_test_file()
+        # gunzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
         lab_columns = get_db_columns(lab_models.LabTest)
         obs_columns = get_db_columns(lab_models.Observation)
         command = INSERT.format(
