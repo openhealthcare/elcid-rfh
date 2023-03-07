@@ -6,6 +6,7 @@ from django.db import transaction
 from elcid import models as elcid_models
 from plugins.labtests import models as lab_models
 from elcid.utils import timing
+from django.utils import timezone
 from django.conf import settings
 import pytds
 import csv
@@ -61,11 +62,12 @@ COPY patient_id_lab_number_name (patient_id,lab_number,test_name) FROM '{csv_fil
 
 CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
 
-DELETE FROM ipc_infectionalert WHERE lab_test_id IN
+DELETE FROM ipc_infectionalert WHERE lab_test_id IN (
     SELECT labtests_labtest.id FROM labtests_labtest, patient_id_lab_number_name
     WHERE labtests_labtest.patient_id = patient_id_lab_number_name.patient_id
     AND labtests_labtest.test_name = patient_id_lab_number_name.test_name
-    AND labtests_labtest.lab_number = patient_id_lab_number_name.lab_number;
+    AND labtests_labtest.lab_number = patient_id_lab_number_name.lab_number
+);
 
 DELETE FROM labtests_labtest USING patient_id_lab_number_name
 WHERE labtests_labtest.patient_id = patient_id_lab_number_name.patient_id
@@ -389,9 +391,10 @@ class Command(BaseCommand):
     @timing
     @transaction.atomic
     def handle(self, *args, **options):
-        print('starting')
+        now = timezone.now()
+        print(f'starting {now}')
         # Writes a csv of results as they exist in the upstream table
-        write_results()
+        # write_results()
 
         pwd = os.getcwd()
 
@@ -411,22 +414,22 @@ class Command(BaseCommand):
         # write_lab_tests()
 
         # gzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
-        # run_delete_sql()
-        # delete_lab_test_file()
-        # gunzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
-        # lab_columns = get_db_columns(lab_models.LabTest)
-        # obs_columns = get_db_columns(lab_models.Observation)
-        # command = INSERT.format(
-        #     all_columns=",".join(lab_columns + obs_columns),
-        #     csv_columns=",".join(csv_columns()),
-        #     lab_columns=",".join(lab_columns),
-        #     obs_columns=",".join(obs_columns),
-        #     obs_columns_with_prefix=",".join(
-        #         [f"tmp_lab_load.{i}" for i in obs_columns]
-        #     ),
-        #     csv_file=os.path.join(pwd, RESULTS_CSV),
-        # )
-        # with connection.cursor() as cursor:
-        #     cursor.execute(
-        #         command
-        #     )
+        run_delete_sql()
+        delete_lab_test_file()
+        gunzip_file(RESULTS_CSV, GZIPPED_RESULTS_CSV)
+        lab_columns = get_db_columns(lab_models.LabTest)
+        obs_columns = get_db_columns(lab_models.Observation)
+        command = INSERT.format(
+            all_columns=",".join(lab_columns + obs_columns),
+            csv_columns=",".join(csv_columns()),
+            lab_columns=",".join(lab_columns),
+            obs_columns=",".join(obs_columns),
+            obs_columns_with_prefix=",".join(
+                [f"tmp_lab_load.{i}" for i in obs_columns]
+            ),
+            csv_file=os.path.join(pwd, RESULTS_CSV),
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                command
+            )
