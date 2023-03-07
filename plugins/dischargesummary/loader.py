@@ -34,11 +34,13 @@ def save_summary_meds(summary, data):
     Given a DischargeSummary and the raw data for the meds attached to it,
     save those meds.
     """
+    our_meds = []
     for med in data:
         our_med = DischargeMedication(discharge=summary)
         for k, v in med.items():
             setattr(our_med, DischargeMedication.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v)
-        our_med.save()
+        our_meds.append(our_med)
+    summary.medications.bulk_create(our_meds)
 
 
 def query_for_zero_prefixed(mrn):
