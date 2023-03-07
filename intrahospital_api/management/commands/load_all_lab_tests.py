@@ -116,6 +116,10 @@ CREATE TEMP TABLE  old_lab_tests ON COMMIT DROP AS (
 
 CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
 
+ALTER TABLE old_lab_tests ALTER created_at DROP NOT NULL;
+ALTER TABLE labtests_labtest ALTER created_at DROP NOT NULL;
+ALTER TABLE labtests_observation ALTER created_at DROP NOT NULL;
+
 -- insert in our new data
 INSERT INTO labtests_labtest ({lab_columns})
     SELECT distinct {lab_columns} FROM tmp_lab_load
@@ -129,6 +133,18 @@ INSERT INTO labtests_observation (test_id,{obs_columns})
     AND tmp_lab_load.test_name = labtests_labtest.test_name
     AND tmp_lab_load.lab_number = labtests_labtest.lab_number
 ;
+
+UPDATE labtests_labtest
+SET created_at = '{now}'
+WHERE created_at is null;
+
+
+UPDATE labtests_observation
+SET created_at = '{now}'
+WHERE created_at is null;
+
+ALTER TABLE labtests_labtest ALTER created_at SET NOT NULL;
+ALTER TABLE labtests_observation ALTER created_at SET NOT NULL;
 
 -- drop the index that we used
 DROP INDEX lab_index;
@@ -428,6 +444,7 @@ class Command(BaseCommand):
                 [f"tmp_lab_load.{i}" for i in obs_columns]
             ),
             csv_file=os.path.join(pwd, RESULTS_CSV),
+            now=timezone.now()
         )
         with connection.cursor() as cursor:
             cursor.execute(
