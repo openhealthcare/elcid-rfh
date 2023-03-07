@@ -18,6 +18,9 @@ $navbar-height: 77px;
 $small-text-color: $secondary-background;
 $bootstrap-danger: #f2dede;
 
+// a faded grey
+$faded: #d8dbdd;
+
 body{
     background-color: $bg;
     height: calc(100%);
@@ -34,6 +37,11 @@ body{
 .outer-container .container.content-offset,
 .outer-container .container-fluid.content-offset {
     margin-top: 30px;
+}
+
+.inline-with-btn{
+  margin-top: 8px;
+  display: inline-block
 }
 
 .content-offset-100{
@@ -266,12 +274,22 @@ a.list-group-item {
 
 .no-touchevents
 .patient-timeline-discussion i.edit{
-  display:none
+  color: $faded;
 }
 
 .touchevents .patient-timeline-discussion i.edit,
 .no-touchevents .patient-timeline-discussion:hover i.edit{
+  color: #333;
+}
+
+.no-touchevents .panel-heading i.edit, .list-group-item i.edit{
   display: inline-block;
+  color: $faded;
+  cursor: pointer;
+
+  &:hover{
+    color: #333;
+  }
 }
 
 .death-banner {
@@ -280,6 +298,12 @@ a.list-group-item {
     background-color: #864200;
     color: white;
     margin-bottom: 12px;
+}
+
+.panel-footer{
+  hr{
+    border-top-color: #ddd;
+  }
 }
 
 .lab-tests{
@@ -378,12 +402,12 @@ a.list-group-item {
   }
 
   i.edit{
-    visibility: hidden;
+    color: $faded;
   }
 
   &:hover{
     i.edit{
-      visibility: visible;
+      color: #333;
     }
   }
 }

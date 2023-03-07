@@ -68,6 +68,11 @@ urlpatterns = [
         name="tb_mdt"
     ),
     url(
+        r'^templates/tb/on_tb_meds/$',
+        views.OnTBMeds.as_view(),
+        name="on_tb_meds"
+    ),
+    url(
         r'^templates/tb/outstanding_mdt_list/$',
         views.OutstandingActionsMDT.as_view(),
         name="outstanding_mdt_list"

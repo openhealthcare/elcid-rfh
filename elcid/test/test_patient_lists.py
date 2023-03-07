@@ -9,11 +9,16 @@ from rest_framework.reverse import reverse as drf_reverse
 
 from opal.core.patient_lists import PatientList
 from opal.core.test import OpalTestCase
-from opal.models import Clinical_advice_reason_for_interaction, Patient
+from opal.models import (
+    Clinical_advice_reason_for_interaction,
+    Patient,
+    PatientConsultationReasonForInteraction
+)
 
 from elcid import models
 from elcid import episode_categories
 from elcid import patient_lists
+from plugins.tb import models as tb_models
 
 
 class AbstractPatientListTestCase(OpalTestCase):
@@ -44,6 +49,9 @@ class TestPatientList(AbstractPatientListTestCase):
             self.client.login(
                 username=self.user.username, password=self.PASSWORD
             )
+        )
+        PatientConsultationReasonForInteraction.objects.create(
+            name=tb_models.PatientConsultation.ADDED_TO_TB_REVIEW_LIST
         )
         self.factory = RequestFactory()
 

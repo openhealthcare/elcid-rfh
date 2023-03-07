@@ -1,4 +1,5 @@
 from plugins.tb import views
+from elcid import models as elcid_models
 from jinja2 import Environment, FileSystemLoader
 import os
 
@@ -123,19 +124,32 @@ def get_nurse_consultation(clinical_advicer):
     return render_template('nurse_consultation.html', ctx)
 
 
+def get_section(model, field, title=None):
+    value = getattr(model, field)
+    if not value:
+        return ""
+    if title is None:
+        title = field.replace('_', ' ').capitalize()
+    return "\n".join([
+        f"\n** {title} **\n",
+        getattr(model, field)
+    ])
+
+
 def get_default_consultation(clinical_advice):
     """
     If it is not a reason for interaction that usually has a
     letter, then just use a default output.
     """
-    from intrahospital_api.epr import get_note_text
-    return get_note_text(
-        clinical_advice,
-        "infection_control",
-        "progress",
-        "discussion",
-        "plan",
-    )
+    text = ""
+    primary_diagnoses = list(clinical_advice.episode.diagnosis_set.filter(
+        category=elcid_models.Diagnosis.PRIMARY
+    ))
+    if len(primary_diagnoses) == 1:
+        text += get_section(primary_diagnoses[0], "condition", title="Diagnosis")
+    for field in ["infection_control", "progress", "discussion", "plan"]:
+        text += get_section(clinical_advice, field)
+    return "\n" + sign_template(text, clinical_advice)
 
 
 def render_advice(clinical_advice):

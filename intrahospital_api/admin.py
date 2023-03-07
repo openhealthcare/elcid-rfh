@@ -59,10 +59,6 @@ class PatientLoadAdmin(admin.ModelAdmin):
     ordering = ('-started',)
 
 
-class BatchPatientLoadAdmin(PatientLoadAdmin):
-    list_display = ["__str__", "started", "stopped", "state"]
-
-
 class InitialPatientLoadAdmin(PatientSubrecordAdmin, PatientLoadAdmin):
     list_display = [
         "__str__", "patient_details", "started", "stopped", "state"
@@ -82,4 +78,3 @@ admin.site.register(rmodels.Version, admin.ModelAdmin)
 admin.site.register(rmodels.Revision, admin.ModelAdmin)
 admin.site.unregister(imodels.InitialPatientLoad)
 admin.site.register(imodels.InitialPatientLoad, InitialPatientLoadAdmin)
-admin.site.register(imodels.BatchPatientLoad, BatchPatientLoadAdmin)

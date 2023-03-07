@@ -28,7 +28,10 @@ class ExternalDemographics(PatientSubrecord):
     )
 
 
-class PatientLoad(models.Model):
+class InitialPatientLoad(PatientSubrecord):
+    """ This model is the initial load of a patient
+        future loads are done by the cron batch load
+    """
     RUNNING = "running"
     FAILURE = "failure"
     SUCCESS = "success"
@@ -46,6 +49,9 @@ class PatientLoad(models.Model):
     count = models.IntegerField(
         blank=True, null=True
     )
+
+    class Meta:
+        ordering = ('started',)
 
     @property
     def verbose_name(self):
@@ -77,16 +83,6 @@ class PatientLoad(models.Model):
         self.state = self.FAILURE
         self.save()
 
-    class Meta:
-        abstract = True
-        ordering = ('started',)
-
-
-class InitialPatientLoad(PatientLoad, PatientSubrecord):
-    """ This model is the initial load of a patient
-        future loads are done by the cron batch load
-    """
-
     def __str__(self):
         hospital_number = self.patient.demographics_set.first().hospital_number
         if self.stopped:
@@ -107,24 +103,3 @@ class InitialPatientLoad(PatientLoad, PatientSubrecord):
         """ For the purposes of the front end this model is read only.
         """
         pass
-
-
-class BatchPatientLoad(PatientLoad):
-    """ This is the batch load of all reconciled patients
-        every 5 mins
-    """
-
-    def __str__(self):
-        if self.stopped:
-            return "{} {} {} {}".format(
-                self.state,
-                self.started,
-                self.count,
-                self.duration
-            )
-        else:
-            return "{} {} {}".format(
-                self.state,
-                self.started,
-                self.count
-            )

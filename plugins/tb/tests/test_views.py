@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.urls import reverse
 from opal.core.test import OpalTestCase
 from plugins.appointments.models import Appointment
-from plugins.tb import episode_categories, constants
+from plugins.tb import episode_categories, constants, models
 
 
 class AppointmentListTestCase(OpalTestCase):
@@ -148,3 +148,39 @@ class NurseLetterTestCase(OpalTestCase):
             response.context["bloods"],
             []
         )
+
+
+class OnTBMedsTestCase(OpalTestCase):
+    def test_get(self):
+        patient, episode = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="123",
+            first_name="Sarah",
+            surname="Willis"
+        )
+        today = datetime.date.today()
+        treatment = models.Treatment(
+            episode=episode,
+            category=models.Treatment.TB,
+            start_date=today - datetime.timedelta(12)
+        )
+        treatment.drug = 'Bedaquiline'
+        treatment.save()
+        # create the property
+        self.user
+        self.assertTrue(
+            self.client.login(
+                username=self.USERNAME,
+                password=self.PASSWORD
+            )
+        )
+        url = reverse("on_tb_meds")
+        self.client.login
+        request = self.client.get(url)
+        self.assertEqual(
+            request.status_code, 200
+        )
+        ctx = request.context
+        demographics, treatments = ctx["demographics_and_treatments"][0]
+        self.assertEqual(demographics, patient.demographics())
+        self.assertEqual(treatments, [treatment])
