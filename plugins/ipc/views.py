@@ -3,6 +3,7 @@ Views for the IPC module
 """
 import collections
 import datetime
+import re
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
@@ -13,6 +14,24 @@ from plugins.admissions.constants import RFH_HOSPITAL_SITE_CODE, BARNET_HOSPITAL
 from plugins.admissions.models import BedStatus, IsolatedBed, TransferHistory
 
 from plugins.ipc import lab, models
+
+
+def sort_rfh_wards(text):
+    """
+    RFH ward names brak natural keys
+    """
+    tower = False
+    if re.match('RF-[0-9]', text):
+        tower = True
+
+    text = text.replace('RF-', '')
+    keys = natural_keys(text)
+
+    if tower:
+        print(text)
+        keys.insert(0, 'z')
+
+    return keys
 
 
 class IPCHomeView(LoginRequiredMixin, TemplateView):
@@ -156,9 +175,11 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             ).first()
             if bed_status:
                 isolation_status.append(bed_status)
+
         statuses = BedStatus.objects.filter(
             id__in=[i.id for i in side_rooms_statuses + isolation_status]
-        ).order_by('ward_name', 'bed')
+
+        ).exclude(ward_name='RF-Test').order_by('ward_name', 'bed')
 
         for status in statuses:
             if status.patient:
@@ -171,7 +192,9 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         for status in statuses:
             wards[status.ward_name].append(status)
 
-        context['wards'] = {name: wards[name] for name in sorted(wards.keys(), key=natural_keys)}
+        context['wards'] = {
+            name: wards[name] for name in reversed(sorted(wards.keys(), key=sort_rfh_wards))
+        }
         context['hospital_name'] = statuses[0].hospital_site_description
         return context
 

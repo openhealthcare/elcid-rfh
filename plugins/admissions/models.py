@@ -429,3 +429,12 @@ class BedStatus(models.Model):
             except ValueError:
                 result['admission_date_time'] = None
         return result
+
+    def to_location_str(self):
+        """
+        A human readable location
+        """
+        return ' '.join([
+            self.hospital_site_description, self.ward_name,
+            self.room, self.bed
+        ])

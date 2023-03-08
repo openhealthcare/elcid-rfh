@@ -52,7 +52,7 @@
   <section class="scrollable-table-container">
 
     {% for slice in slices %}
-    <h4 style="padding-left: 12px; padding-bottom: 24px; padding-top: 12px;" class="border-bottom-secondary">
+    <h6 style="padding-left: 12px; padding-bottom: 24px; padding-top: 12px;" class="border-bottom-secondary">
       <span clas="col-sm-1">
         {{ slice.unit }}
       {{ slice.ward }}
@@ -78,18 +78,18 @@
         </a>
       </small>
       <div class="btn-group left-offset-20 pull-right" style="margin-right: 200px">
-        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.abs_encounter_slice_id}}" uib-btn-radio="true">{% icon 'fa-list-alt' %}Show contacts </label>
-        <label class="btn btn-primary" ng-model="isTableCollapsed{{slice.abs_encounter_slice_id}}" uib-btn-radio="undefined">{% icon 'fa-align-justify' %}Hide contacts</label>
+        <label class="btn btn-primary btn-sm" ng-model="isTableCollapsed{{slice.abs_encounter_slice_id}}" uib-btn-radio="true">{% icon 'fa-list-alt' %}Show contacts </label>
+        <label class="btn btn-primary btn-sm" ng-model="isTableCollapsed{{slice.abs_encounter_slice_id}}" uib-btn-radio="undefined">{% icon 'fa-align-justify' %}Hide contacts</label>
       </div>
-    </h4>
+    </h6>
 
 
-    <section uib-collapse="!isTableCollapsed{{ slice.abs_encounter_slice_id }}" >
+    <section uib-collapse="!isTableCollapsed{{ slice.abs_encounter_slice_id }}" style="width:90%">
       <table class="table table-bordered table-bordered">
         {% for transfer in slice.contact_transfers %}
         {% ifchanged transfer.bed %}
         <tr>
-          <th colspan="4" class="border-bottom-secondary">
+          <th colspan="5" class="border-bottom-secondary">
             <p class="content-offset-25">
               {{ transfer.unit }}
               {{ transfer.room }}
@@ -105,6 +105,7 @@
           <th>Start</th>
           <th>End</th>
           <th>Transfer Reason</th>
+          <th>Current Location</th>
         </tr>
         {% endifchanged %}
         <tr>
@@ -130,6 +131,9 @@
           </td>
           <!-- <td>{{ transfer.transfer_location_code }}</td> -->
           <td>{{ transfer.transfer_reason }}</td>
+          <td>
+            {{ transfer.patient.bedstatus.get.to_location_str }}
+          </td>
         </tr>
         {% endfor %}
       </table>
