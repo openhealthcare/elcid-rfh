@@ -118,6 +118,7 @@ CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
 
 ALTER TABLE old_lab_tests ALTER created_at DROP NOT NULL;
 ALTER TABLE labtests_labtest ALTER created_at DROP NOT NULL;
+ALTER TABLE labtests_labtest ALTER updated_at DROP NOT NULL;
 ALTER TABLE labtests_observation ALTER created_at DROP NOT NULL;
 
 -- insert in our new data
@@ -138,12 +139,17 @@ UPDATE labtests_labtest
 SET created_at = '{now}'
 WHERE created_at is null;
 
+UPDATE labtests_labtest
+SET updated_at = '{now}'
+WHERE updated_at is null;
+
 
 UPDATE labtests_observation
 SET created_at = '{now}'
 WHERE created_at is null;
 
 ALTER TABLE labtests_labtest ALTER created_at SET NOT NULL;
+ALTER TABLE labtests_labtest ALTER updated_at SET NOT NULL;
 ALTER TABLE labtests_observation ALTER created_at SET NOT NULL;
 
 -- drop the index that we used
