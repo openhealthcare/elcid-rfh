@@ -201,6 +201,8 @@ class Observation(AbstractObserveration):
         Clean these and handle them appropriately
         For the moment we will now pass < 17
         """
+        if not reference_range:
+            return
         reference_range = self.reference_range.replace("]", "").replace("[", "")
         regex = r"\s*([-+]?[0-9]+(\.[0-9]+)?)\s*-\s*([-+]?[0-9]+(\.[0-9]+)?)\s*?"
         matches = re.search(regex, reference_range)
