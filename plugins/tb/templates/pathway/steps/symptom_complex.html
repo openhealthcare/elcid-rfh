@@ -20,3 +20,6 @@
   {% select field="SymptomComplex.duration" %}
   {% textarea field="SymptomComplex.details" %}
 </div>
+<span ng-repeat="item in [editing.symptom_complex]">
+  {% include "partials/_item_created_updated_by.html" %}
+</span>

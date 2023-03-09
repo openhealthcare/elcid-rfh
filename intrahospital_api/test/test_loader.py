@@ -1,12 +1,17 @@
 from unittest import mock
+import datetime
 from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
 from opal.core.test import OpalTestCase
+from elcid import models as emodels
 from elcid import episode_categories
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
+from intrahospital_api.exceptions import BatchLoadError
+from intrahospital_api.constants import EXTERNAL_SYSTEM
 from plugins.labtests import models as lab_test_models
+from plugins.tb import episode_categories as tb_episode_categories
 
 
 @override_settings(API_USER="ohc")
@@ -14,6 +19,89 @@ class ApiTestCase(OpalTestCase):
     def setUp(self):
         super(ApiTestCase, self).setUp()
         User.objects.create(username="ohc", password="fake_password")
+
+
+@mock.patch("intrahospital_api.loader._initial_load")
+@mock.patch("intrahospital_api.loader.log_errors")
+class InitialLoadTestCase(ApiTestCase):
+    def test_successful_load(self, log_errors, _initial_load):
+        loader.initial_load()
+        _initial_load.assert_called_once_with()
+        self.assertFalse(log_errors.called)
+        batch_load = imodels.BatchPatientLoad.objects.get()
+        self.assertEqual(batch_load.state, batch_load.SUCCESS)
+        self.assertTrue(batch_load.started < batch_load.stopped)
+
+    def test_failed_load(self, log_errors, _initial_load):
+        _initial_load.side_effect = ValueError("Boom")
+        with self.assertRaises(ValueError):
+            loader.initial_load()
+        _initial_load.assert_called_once_with()
+        log_errors.assert_called_once_with("initial_load")
+        batch_load = imodels.BatchPatientLoad.objects.get()
+        self.assertEqual(batch_load.state, batch_load.FAILURE)
+        self.assertTrue(batch_load.started < batch_load.stopped)
+
+    def test_deletes_existing(self, log_errors, _initial_load):
+        patient, _ = self.new_patient_and_episode_please()
+        imodels.InitialPatientLoad.objects.create(
+            patient=patient, started=timezone.now()
+        )
+        previous_load = imodels.BatchPatientLoad.objects.create(
+            started=timezone.now()
+        )
+        loader.initial_load()
+        self.assertNotEqual(
+            previous_load.id, imodels.BatchPatientLoad.objects.first().id
+        )
+
+        self.assertFalse(
+            imodels.InitialPatientLoad.objects.exists()
+        )
+
+
+class _InitialLoadTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        super(_InitialLoadTestCase, self).setUp(*args, **kwargs)
+
+        # the first two patients should be updated, but not the last
+        self.patient_1, _ = self.new_patient_and_episode_please()
+        self.patient_2, _ = self.new_patient_and_episode_please()
+        self.patient_3, _ = self.new_patient_and_episode_please()
+        emodels.Demographics.objects.filter(
+            patient__in=[self.patient_1, self.patient_2]
+        ).update(external_system=EXTERNAL_SYSTEM)
+
+    @mock.patch(
+        "intrahospital_api.loader.update_demographics.reconcile_all_demographics",
+    )
+    @mock.patch(
+        "intrahospital_api.loader.load_patient",
+    )
+    def test_flow(self, load_patient, reconcile_all_demographics):
+        with mock.patch.object(loader.logger, "info") as info:
+            loader._initial_load()
+            reconcile_all_demographics.assert_called_once_with()
+            call_args_list = load_patient.call_args_list
+            self.assertEqual(
+                call_args_list[0][0], (self.patient_1,)
+            )
+            self.assertEqual(
+                call_args_list[0][1], dict(run_async=False)
+            )
+            self.assertEqual(
+                call_args_list[1][0], (self.patient_2,)
+            )
+            self.assertEqual(
+                call_args_list[1][1], dict(run_async=False)
+            )
+            call_args_list = info.call_args_list
+            self.assertEqual(
+                call_args_list[0][0], ("running 1/2",)
+            )
+            self.assertEqual(
+                call_args_list[1][0], ("running 2/2",)
+            )
 
 @mock.patch(
     "intrahospital_api.loader.api.results_for_hospital_number",
@@ -96,6 +184,45 @@ class _LoadPatientTestCase(OpalTestCase):
         ]
         self.assertEqual(
             call_args_list, expected
+        )
+
+
+class GetBatchStartTime(ApiTestCase):
+    def test_batch_load_first(self):
+        now = timezone.now()
+        batch_start = now - datetime.timedelta(minutes=1)
+        imodels.BatchPatientLoad.objects.create(
+            started=batch_start,
+            stopped=now,
+            state=imodels.BatchPatientLoad.SUCCESS
+        )
+        self.assertEqual(
+            loader.get_batch_start_time(),
+            batch_start
+        )
+
+    def test_initial_patient_load_first(self):
+        now = timezone.now()
+        batch_start = now - datetime.timedelta(minutes=2)
+        initial_patient_load_start = now - datetime.timedelta(minutes=3)
+        initial_patient_load_stop = now - datetime.timedelta(minutes=1)
+        patient, _ = self.new_patient_and_episode_please()
+
+        imodels.BatchPatientLoad.objects.create(
+            started=batch_start,
+            stopped=now,
+            state=imodels.BatchPatientLoad.SUCCESS
+        )
+
+        imodels.InitialPatientLoad.objects.create(
+            started=initial_patient_load_start,
+            stopped=initial_patient_load_stop,
+            state=imodels.InitialPatientLoad.SUCCESS,
+            patient=patient
+        )
+        self.assertEqual(
+            loader.get_batch_start_time(),
+            initial_patient_load_start
         )
 
 
@@ -245,6 +372,217 @@ class AsyncLoadPatientTestCase(ApiTestCase):
         self.assertEqual(str(ve.exception), "Boom")
 
 
+class GoodToGoTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        self.patient, _ = self.new_patient_and_episode_please()
+        super(GoodToGoTestCase, self).setUp(*args, **kwargs)
+
+    def test_no_initial_batch_load(self):
+        with self.assertRaises(BatchLoadError) as ble:
+            loader.good_to_go()
+        self.assertEqual(
+            str(ble.exception),
+            "We don't appear to have had an initial load run!"
+        )
+
+    def test_multiple_running(self):
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.RUNNING,
+            started=timezone.now()
+        )
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.RUNNING,
+            started=timezone.now()
+        )
+        with self.assertRaises(BatchLoadError) as ble:
+            loader.good_to_go()
+        self.assertEqual(
+            str(ble.exception),
+            "We appear to have 2 concurrent batch loads"
+        )
+
+    @mock.patch.object(loader.logger, 'info')
+    def test_last_load_running_less_than_ten_minutes(self, info):
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.RUNNING,
+            started=timezone.now(),
+            stopped=timezone.now()
+        )
+        self.assertFalse(loader.good_to_go())
+        info.assert_called_once_with(
+            "batch still running after 0 seconds, skipping"
+        )
+
+    @mock.patch.object(loader.logger, 'info')
+    def test_load_load_running_over_ten_minutes_first(self, info):
+        diff = 100000
+        delta = datetime.timedelta(seconds=diff)
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.RUNNING,
+            started=timezone.now() - delta,
+            stopped=timezone.now() - delta
+        )
+        self.assertFalse(loader.good_to_go())
+
+    def test_last_load_running_over_ten_minutes_not_first(self):
+        diff = 60 * 60 * 10
+        delta = datetime.timedelta(seconds=diff)
+
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.SUCCESS,
+            started=timezone.now() - delta + datetime.timedelta(1),
+            stopped=timezone.now() - delta + datetime.timedelta(1)
+        )
+
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.RUNNING,
+            started=timezone.now() - delta,
+            stopped=timezone.now() - delta
+        )
+
+        with self.assertRaises(BatchLoadError) as ble:
+            loader.good_to_go()
+        self.assertEqual(
+            str(ble.exception),
+            "Last load is still running and has been for 600.0 mins"
+        )
+
+    def test_previous_run_has_not_happened_for_sometime(self):
+        diff = 60 * 60 * 10
+        delta = datetime.timedelta(seconds=diff)
+
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.SUCCESS,
+            started=timezone.now() - delta,
+            stopped=timezone.now() - delta
+        )
+
+        with self.assertRaises(BatchLoadError) as ble:
+            loader.good_to_go()
+        self.assertTrue(
+            str(ble.exception).startswith("Last load has not run since")
+        )
+
+
+@mock.patch("intrahospital_api.loader.log_errors")
+@mock.patch("intrahospital_api.loader._batch_load")
+@mock.patch("intrahospital_api.loader.good_to_go")
+class BatchLoadTestCase(ApiTestCase):
+    def test_with_force(self, good_to_go, _batch_load, log_errors):
+        loader.batch_load(force=True)
+        good_to_go.return_value = True
+        bpl = imodels.BatchPatientLoad.objects.first()
+        self.assertIsNotNone(bpl.started)
+        self.assertIsNotNone(bpl.stopped)
+        self.assertEqual(bpl.state, imodels.BatchPatientLoad.SUCCESS)
+        self.assertFalse(good_to_go.called)
+        self.assertTrue(_batch_load.called)
+
+    def test_without_force_not_good_to_go(self, good_to_go, _batch_load, log_errors):
+        good_to_go.return_value = False
+        loader.batch_load()
+        self.assertTrue(good_to_go.called)
+        self.assertFalse(_batch_load.called)
+        self.assertFalse(imodels.BatchPatientLoad.objects.exists())
+
+    def test_without_force_good_to_go(self, good_to_go, _batch_load, log_errors):
+        loader.batch_load()
+        good_to_go.return_value = True
+        bpl = imodels.BatchPatientLoad.objects.first()
+        self.assertIsNotNone(bpl.started)
+        self.assertIsNotNone(bpl.stopped)
+        self.assertEqual(bpl.state, imodels.BatchPatientLoad.SUCCESS)
+        self.assertTrue(good_to_go.called)
+        self.assertTrue(_batch_load.called)
+
+    def test_with_error(self, good_to_go, _batch_load, log_errors):
+        _batch_load.side_effect = ValueError("Boom")
+        loader.batch_load()
+        good_to_go.return_value = True
+        bpl = imodels.BatchPatientLoad.objects.first()
+        self.assertIsNotNone(bpl.started)
+        self.assertIsNotNone(bpl.stopped)
+        self.assertEqual(bpl.state, imodels.BatchPatientLoad.FAILURE)
+        self.assertTrue(good_to_go.called)
+        self.assertTrue(_batch_load.called)
+        log_errors.assert_called_once_with("batch load")
+
+
+class _BatchLoadTestCase(ApiTestCase):
+    @mock.patch.object(loader.api, "data_deltas")
+    @mock.patch('intrahospital_api.loader.update_from_batch')
+    def test_batch_load(
+        self, update_from_batch, data_deltas
+    ):
+        now = timezone.now()
+        imodels.BatchPatientLoad.objects.create(
+            state=imodels.BatchPatientLoad.SUCCESS,
+            started=now
+        )
+        data_deltas.return_value = "something"
+        loader._batch_load()
+        data_deltas.assert_called_once_with(now)
+        update_from_batch.assert_called_once_with("something")
+
+
+@mock.patch('intrahospital_api.loader.update_patient_from_batch')
+class UpdateFromBatchTestCase(ApiTestCase):
+    def setUp(self, *args, **kwargs):
+        super(UpdateFromBatchTestCase, self).setUp(*args, **kwargs)
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.demographics = self.patient.demographics_set.first()
+        self.demographics.external_system = EXTERNAL_SYSTEM
+        self.demographics.save()
+        self.initial_load = imodels.InitialPatientLoad.objects.create(
+            patient=self.patient,
+            started=timezone.now(),
+            stopped=timezone.now(),
+            state=imodels.InitialPatientLoad.SUCCESS
+        )
+        self.data_delta = dict(some="data")
+        self.data_deltas = [self.data_delta]
+
+    def test_update_from_batch_ignore_non_reconciled(
+        self, update_patient_from_batch
+    ):
+        self.demographics.external_system = "asdfasfd"
+        self.demographics.save()
+        loader.update_from_batch(self.data_deltas)
+        call_args = update_patient_from_batch.call_args
+        self.assertEqual(
+            list(call_args[0][0]), list()
+        )
+        self.assertEqual(
+            call_args[0][1], self.data_delta
+        )
+
+    def test_update_from_batch_ignore_failed_loads(
+        self, update_patient_from_batch
+    ):
+        self.initial_load.state = imodels.InitialPatientLoad.FAILURE
+        self.initial_load.save()
+        loader.update_from_batch(self.data_deltas)
+        call_args = update_patient_from_batch.call_args
+        self.assertEqual(
+            list(call_args[0][0]), list()
+        )
+        self.assertEqual(
+            call_args[0][1], self.data_delta
+        )
+
+    def test_update_from_batch_pass_through(
+        self, update_patient_from_batch
+    ):
+        loader.update_from_batch(self.data_deltas)
+        call_args = update_patient_from_batch.call_args
+        self.assertEqual(
+            list(call_args[0][0]), [self.demographics]
+        )
+        self.assertEqual(
+            call_args[0][1], self.data_delta
+        )
+
+
 class UpdatePatientFromBatchTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
         super(UpdatePatientFromBatchTestCase, self).setUp(*args, **kwargs)
@@ -288,8 +626,77 @@ class UpdatePatientFromBatchTestCase(ApiTestCase):
         }
 
 
+class SynchAllPatientsTestCase(ApiTestCase):
+    @mock.patch('intrahospital_api.loader.sync_patient')
+    @mock.patch.object(loader.logger, 'info')
+    def test_sync_all_patients(self, info, sync_patient):
+        p, _ = self.new_patient_and_episode_please()
+        loader.sync_all_patients()
+
+        info.assert_called_once_with("Synching {} (1/1)".format(
+            p.id
+        ))
+        sync_patient.assert_called_once_with(p)
+
+    @mock.patch('intrahospital_api.loader.sync_patient')
+    @mock.patch('intrahospital_api.loader.log_errors')
+    @mock.patch.object(loader.logger, 'info')
+    def test_sync_all_patients_with_error(self, info, log_errors, sync_patient):
+        sync_patient.side_effect = ValueError('Boom')
+        patient, _ = self.new_patient_and_episode_please()
+        loader.sync_all_patients()
+        log_errors.assert_called_once_with(
+            "Unable to sync {}".format(patient.id)
+        )
+
+
+class SynchPatientTestCase(ApiTestCase):
+    @mock.patch.object(loader.logger, 'info')
+    @mock.patch.object(loader.api, 'results_for_hospital_number')
+    @mock.patch('intrahospital_api.loader.update_lab_tests.update_tests')
+    @mock.patch(
+        'intrahospital_api.loader.update_demographics.update_patient_information'
+    )
+    def test_synch_patient(
+        self, update_patient_information, update_tests, results, info
+    ):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="111"
+        )
+        results.return_value = "some_results"
+        loader.sync_patient(patient)
+        results.assert_called_once_with('111')
+        update_tests.assert_called_once_with(patient, "some_results")
+        update_patient_information.assert_called_once_with(patient)
+        self.assertEqual(
+            info.call_args_list[0][0][0],
+            "fetched results for patient {}".format(patient.id)
+        )
+        self.assertEqual(
+            info.call_args_list[1][0][0],
+            "tests synced for {}".format(patient.id)
+        )
+        self.assertEqual(
+            info.call_args_list[2][0][0],
+            "patient information synced for {}".format(patient.id)
+        )
+
+
+@mock.patch('intrahospital_api.loader.load_patient')
 class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
-    def test_creates_patient_and_episode(self):
+    @mock.patch(
+        '.'.join([
+            'intrahospital_api.loader.update_demographics',
+            'get_active_mrn_and_merged_mrn_data'
+        ])
+    )
+    def test_creates_patient_and_episode(self, get_active_mrn_and_merged_mrn_data, load_patient):
+        """
+        A patient has no merged MRNs. Create the patient with
+        the episode category and return it.
+        """
+        get_active_mrn_and_merged_mrn_data.return_value = ('111', [])
         patient = loader.create_rfh_patient_from_hospital_number(
             '111', episode_categories.InfectionService
         )
@@ -300,8 +707,12 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             patient.episode_set.get().category_name,
             episode_categories.InfectionService.display_name
         )
+        self.assertTrue(load_patient.called)
 
-    def test_errors_if_the_hospital_number_starts_with_a_zero(self):
+    def test_errors_if_the_hospital_number_starts_with_a_zero(self, load_patient):
+        """
+        The MRN starts with a zero, raise a ValueError
+        """
         with self.assertRaises(ValueError) as v:
             loader.create_rfh_patient_from_hospital_number(
                 '0111', episode_categories.InfectionService
@@ -311,3 +722,198 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             "Hospital numbers within elCID should never start with a zero"
         ])
         self.assertEqual(str(v.exception), expected)
+        self.assertFalse(load_patient.called)
+
+    def test_errors_if_the_hospital_number_has_already_been_merged(self, load_patient):
+        """
+        The MRN has already been merged, raise a Value Error
+        """
+        patient, _ = self.new_patient_and_episode_please()
+        patient.mergedmrn_set.create(
+            mrn="111"
+        )
+        with self.assertRaises(ValueError) as v:
+            loader.create_rfh_patient_from_hospital_number(
+                '111', episode_categories.InfectionService
+            )
+        self.assertEqual(
+            str(v.exception),
+            "MRN has already been merged into another MRN"
+        )
+        self.assertFalse(load_patient.called)
+
+    @mock.patch(
+        'intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data'
+    )
+    def test_create_rfh_patient_from_hospital_number(
+        self, get_active_mrn_and_merged_mrn_data, load_patient
+    ):
+        """
+        The MRN passed in is inactive and has
+        an associated active MRN. Create a patient with the
+        active MRN and the associated mergedMRNs for the
+        MRN passed in.
+        """
+        MERGED_MRN_DATA = [
+            {
+                "mrn": "123",
+                "merge_comments": " ".join([
+                    "Merged with MRN 234 on Oct 21 2014  4:44PM",
+                ]),
+            },
+            {
+                "mrn": "234",
+                "merge_comments": " ".join([
+                    "Merged with MRN 123 Oct 17 2014 11:03AM",
+                    "Merged with MRN 123 on Oct 21 2014  4:44PM",
+                    "Merged with MRN 456 on Apr 14 2018  1:40PM"
+                ]),
+            }
+        ]
+        get_active_mrn_and_merged_mrn_data.return_value = ("456", MERGED_MRN_DATA)
+        patient = loader.create_rfh_patient_from_hospital_number(
+            '123', episode_category=episode_categories.InfectionService
+        )
+        self.assertEqual(
+            patient.demographics_set.get().hospital_number, "456"
+        )
+        self.assertEqual(patient.mergedmrn_set.count(), 2)
+
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="123",
+                merge_comments=MERGED_MRN_DATA[0]["merge_comments"],
+            ).exists()
+        )
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="234",
+                merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
+            ).exists()
+        )
+        self.assertTrue(load_patient.called)
+
+    @mock.patch(
+        'intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data'
+    )
+    def test_active_mrn_with_inactive_associated_mrns(
+        self, get_active_mrn_and_merged_mrn_data, load_patient
+    ):
+        """
+        The MRN passed in is active and has an associated inactive MRN.
+        Create a patient with the active MRN and the associated mergedMRNs for the
+        other MRNs
+        """
+        MERGED_MRN_DATA = [
+            {
+                "mrn": "123",
+                "merge_comments": " ".join([
+                    "Merged with MRN 234 on Oct 21 2014  4:44PM",
+                ]),
+            },
+            {
+                "mrn": "234",
+                "merge_comments": " ".join([
+                    "Merged with MRN 123 Oct 17 2014 11:03AM",
+                    "Merged with MRN 123 on Oct 21 2014  4:44PM",
+                    "Merged with MRN 456 on Apr 14 2018  1:40PM"
+                ]),
+            }
+        ]
+        get_active_mrn_and_merged_mrn_data.return_value = ("456", MERGED_MRN_DATA)
+        patient = loader.create_rfh_patient_from_hospital_number(
+            '456', episode_category=episode_categories.InfectionService
+        )
+        self.assertEqual(
+            patient.demographics_set.get().hospital_number, "456"
+        )
+        self.assertEqual(patient.mergedmrn_set.count(), 2)
+
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="123",
+                merge_comments=MERGED_MRN_DATA[0]["merge_comments"],
+            ).exists()
+        )
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="234",
+                merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
+            ).exists()
+        )
+        self.assertTrue(load_patient.called)
+
+
+class GetOrCreatePatientTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def test_get_existing_patient(self):
+        self.patient.demographics_set.update(hospital_number="123")
+        self.patient.episode_set.update(
+            category_name=episode_categories.InfectionService.display_name
+        )
+        patient, created = loader.get_or_create_patient(
+            '123', episode_categories.InfectionService
+        )
+        self.assertEqual(self.patient, patient)
+        episode = self.patient.episode_set.get()
+        self.assertEqual(
+            episode.category_name,
+            episode_categories.InfectionService.display_name
+        )
+        self.assertFalse(created)
+
+    def test_create_new_episode_on_existing_patient(self):
+        self.patient.demographics_set.update(hospital_number="123")
+        patient, created = loader.get_or_create_patient(
+            '123', tb_episode_categories.TbEpisode
+        )
+        self.assertEqual(self.patient, patient)
+        self.assertTrue(self.patient.episode_set.filter(
+            category_name=tb_episode_categories.TbEpisode.display_name
+        ).exists())
+        self.assertFalse(created)
+
+    @mock.patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+    def test_get_merged_patient(self, create_rfh_patient_from_hospital_number):
+        self.patient.demographics_set.update(hospital_number="234")
+        self.patient.mergedmrn_set.create(mrn="123")
+        patient, created = loader.get_or_create_patient(
+            '123', episode_categories.InfectionService
+        )
+        self.assertEqual(
+            patient.id, self.patient.id
+        )
+        self.assertFalse(create_rfh_patient_from_hospital_number.called)
+        self.assertFalse(created)
+
+    @mock.patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+    def test_create_new_patient(self, create_rfh_patient_from_hospital_number):
+        create_rfh_patient_from_hospital_number.return_value = self.patient
+        patient, created = loader.get_or_create_patient(
+            '123', episode_categories.InfectionService
+        )
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            '123',
+            episode_categories.InfectionService,
+            run_async=None,
+            rfh_patient=True
+        )
+        self.assertEqual(self.patient, patient)
+        self.assertTrue(created)
+
+    @mock.patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+    def test_create_new_non_patient(self, create_rfh_patient_from_hospital_number):
+        create_rfh_patient_from_hospital_number.return_value = self.patient
+        patient, created = loader.get_or_create_patient(
+            '123', episode_categories.InfectionService, rfh_patient=False
+        )
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            '123',
+            episode_categories.InfectionService,
+            run_async=None,
+            rfh_patient=False
+        )
+        self.assertEqual(self.patient, patient)
+        self.assertTrue(created)

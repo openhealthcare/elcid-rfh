@@ -6,6 +6,7 @@ from plugins.admissions import loader, models
 
 
 
+
 class TansferHistoriesTestCase(OpalTestCase):
     def test_create_transfer_histories(self):
         """
@@ -30,6 +31,7 @@ class TansferHistoriesTestCase(OpalTestCase):
         row["In_Spells"] = 1
         row["TRANS_HIST_START_DT_TM"] = two_days_ago
         row["TRANS_HIST_END_DT_TM"] = yesterday
+
 
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(
