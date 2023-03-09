@@ -51,7 +51,7 @@ OBSERVATION_COLUMNS = [
     "Result_Units",  # units
 ]
 
-UPSTREAM_DB_COLUMNS = ",".join(LAB_TEST_COLUMNS) + "," + ",".join(OBSERVATION_COLUMNS)
+UPSTREAM_DB_COLUMNS = "Patient_Number," + ",".join(LAB_TEST_COLUMNS) + "," + ",".join(OBSERVATION_COLUMNS)
 
 # Get all results from upstream, order the results
 # by the three fields that define a unique lab test
@@ -68,7 +68,6 @@ GET_ALL_RESULTS = f"""
 """
 
 DELETE = """
-BEGIN;
 -- create a temp table delete_or_keep which we will load patient number, lab number and test name
 CREATE TEMP TABLE patient_id_lab_number_name (
     patient_id INT NOT NULL,
@@ -100,7 +99,6 @@ WHERE NOT EXISTS (
 );
 
 DROP INDEX lab_index;
-END;
 """
 
 
@@ -174,17 +172,21 @@ def write_results():
                             continue
                         if upstream_row["Result_ID"] is None:
                             continue
-                        if len(upstream_row["Result_ID"].lstrip(0)):
+                        if len(upstream_row["Result_ID"].strip()) == 0:
                             continue
                         if upstream_row["OBR_exam_code_Text"] is None:
                             continue
-                        if len(upstream_row["OBR_exam_code_Text"].lstrip(0)):
+                        if len(upstream_row["OBR_exam_code_Text"].strip()) == 0:
                             continue
-                        columns = LAB_TEST_COLUMNS + OBSERVATION_COLUMNS
+                        columns = ["patient_id"] + LAB_TEST_COLUMNS + OBSERVATION_COLUMNS
                         if writer is None:
                             writer = csv.DictWriter(m, fieldnames=columns)
                             writer.writeheader()
-                        writer.writerow({k: upstream_row[k] for k in columns})
+                        row = {"patient_id": patient_id}
+                        for k, v in upstream_row.items():
+                            if not k == 'Patient_Number':
+                                row[k] = v
+                        writer.writerow(row)
 
 
 def write_lab_test_csv():
@@ -197,18 +199,16 @@ def write_lab_test_csv():
     It also adds the patient_id column with the elcid patient id in it.
     """
     seen = set()
-    mrn_to_patient_id = get_mrn_to_patient_id()
     writer = None
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
         with open(LABTEST_CSV, "w") as a:
             for idx, row in enumerate(reader):
-                key = (row["Patient_Number"], row["Result_ID"], row["OBR_exam_code_Text"],)
+                key = (row["patient_id"], row["Result_ID"], row["OBR_exam_code_Text"],)
                 if key in seen:
                     continue
                 seen.add(key)
-                patient_id = mrn_to_patient_id[row["Patient_Number"]]
-                our_row = cast_to_lab_test_dict(row, patient_id)
+                our_row = cast_to_lab_test_dict(row)
                 if idx == 0:
                     headers = our_row.keys()
                     writer = csv.DictWriter(a, fieldnames=headers)
@@ -221,12 +221,12 @@ def write_lab_test_csv():
 def write_delete_csv():
     with open(LABTEST_CSV) as l:
         reader = csv.DictReader(l)
-        with open(DELETE_CSV) as d:
+        with open(DELETE_CSV, "w") as d:
             field_names = ["patient_id", "lab_number", "test_name"]
-            writer = csv.DictWriter(d, field_names=field_names)
+            writer = csv.DictWriter(d, fieldnames=field_names)
             writer.writeheader()
             for row in reader:
-                writer.writerow([row[f] for f in field_names])
+                writer.writerow({f: row[f] for f in field_names})
 
 
 @timing
@@ -239,38 +239,38 @@ def write_observation_csv():
     and the data is formatted into what we would save to our observation.
     It also adds the test_id column with the elcid lab test id in it.
     """
-    mrn_lab_number_test_name_to_test_id = get_mrn_lab_number_test_name_to_test_id()
+    patient_id_lab_number_test_name_to_test_id = get_patient_id_lab_number_test_name_to_test_id()
     with open(RESULTS_CSV) as m:
         reader = csv.DictReader(m)
         with open(OBSERVATIONS_CSV, "w") as a:
             writer = None
             for row in reader:
-                key = (row["Patient_Number"], row["Result_ID"], row["OBR_exam_code_Text"],)
-                lt_id = mrn_lab_number_test_name_to_test_id[key]
+                key = (row["patient_id"], row["Result_ID"], row["OBR_exam_code_Text"],)
+                lt_id = patient_id_lab_number_test_name_to_test_id[key]
                 obs_dict = cast_to_observation_dict(row, lt_id)
                 if writer is None:
                     writer = csv.DictWriter(a, fieldnames=obs_dict.keys())
                     writer.writeheader()
                 writer.writerow(obs_dict)
 
-def get_mrn_lab_number_test_name_to_test_id():
+def get_patient_id_lab_number_test_name_to_test_id():
     values = lab_models.LabTest.objects.values_list(
-        'patient__demographics__hospital_number',
+        'patient_id',
         'lab_number',
         'test_name',
         'id'
     )
     result = {}
-    for mrn, lab_number, test_name, test_id in values:
-        result[(mrn, lab_number, test_name,)] = test_id
+    for patient_id, lab_number, test_name, test_id in values:
+        result[(patient_id, lab_number, test_name,)] = test_id
     return result
 
-def cast_to_lab_test_dict(row, patient_id):
+def cast_to_lab_test_dict(row):
     """
     Creates a dictionary from an upstream row with keys, values
     of what we want to save in our lab test model
     """
-    result = {"patient_id": patient_id}
+    result = {"patient_id": row["patient_id"]}
     result["clinical_info"] = row["Relevant_Clinical_Info"]
     result["datetime_ordered"] = row.get("Observation_date")
     result["lab_number"] = row["Result_ID"]
@@ -367,16 +367,17 @@ class Command(BaseCommand):
         write_results()
         write_lab_test_csv()
         write_delete_csv()
-        write_observation_csv()
-        call_db_command(DELETE.format(csv_file=DELETE_CSV))
+        call_db_command(DELETE.format(csv_file=os.path.join(cwd, DELETE_CSV)))
         lab_columns = ",".join(get_csv_fields(LABTEST_CSV))
         lab_test_csv = os.path.join(cwd, LABTEST_CSV)
         copy_in_lab_tests = f"""
-            COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);"
+            COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);
         """
         call_db_command(copy_in_lab_tests)
+        write_observation_csv()
         obs_columns = ",".join(get_csv_fields(OBSERVATIONS_CSV))
         obs_csv = os.path.join(cwd, OBSERVATIONS_CSV)
         copy_in_lab_tests = f"""
-            COPY labtests_observation({obs_columns}) FROM '{obs_csv}' WITH (FORMAT csv, header);"
+            COPY labtests_observation({obs_columns}) FROM '{obs_csv}' WITH (FORMAT csv, header);
         """
+        print(f'finished {now}')
