@@ -11,7 +11,9 @@ from django.db.models.fields import BooleanField, DateField
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import loader
 from elcid.utils import find_patients_from_mrns
+from elcid import episode_categories as elcid_episode_categories
 from plugins.ipc.models import IPCStatus
 
 
@@ -94,7 +96,13 @@ class Command(BaseCommand):
             # not in elcid or if the MRN is invalid
             # ie empty or only made up of spaces and zeros
             if not patient:
-                continue
+                mrn = row['Patient_Number'].lstrip('0')
+                if len(mrn) == 0:
+                    continue
+                else:
+                    patient = loader.create_rfh_patient_from_hospital_number(
+                        mrn, elcid_episode_categories.InfectionService
+                    )
 
             if patient.episode_set.filter(category_name='IPC').count() == 0:
                 patient.create_episode(category_name='IPC')
