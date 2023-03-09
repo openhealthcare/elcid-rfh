@@ -11,7 +11,7 @@ class CreateCovidUserTestCase(OpalTestCase):
 	def setUp(self):
 		self.cmd = create_covid_user.Command()
 		for role_name in ['view_lab_tests_in_list', 'view_lab_tests_in_detail', 'view_lab_test_trends', 'covid19']:
-			opal_models.Role.objects.create(name=role_name)
+			opal_models.Role.objects.get_or_create(name=role_name)
 
 	def test_creates_user(self, send_mail):
 		self.cmd.handle(email="someone@nhs.net")
