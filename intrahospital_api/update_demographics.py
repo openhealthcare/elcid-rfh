@@ -271,6 +271,11 @@ def parse_merge_comments(initial_mrn, cache):
             parsed.add(next_mrn)
 
             next_row = cache.get(next_mrn, get_masterfile_row(next_mrn))
+            if not next_row:
+                raise MergeException(
+                    f'Unable to find row for {next_mrn}'
+                )
+
             merge_comments = next_row["MERGE_COMMENTS"]
 
             if not merge_comments:
