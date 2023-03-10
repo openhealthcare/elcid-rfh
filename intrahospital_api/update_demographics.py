@@ -270,7 +270,9 @@ def parse_merge_comments(initial_mrn, cache):
         else:
             parsed.add(next_mrn)
 
-            next_row = cache.get(next_mrn, get_masterfile_row(next_mrn))
+            next_row = cache.get(next_mrn)
+            if not next_row:
+                next_row = get_masterfile_row(next_mrn)
             if not next_row:
                 raise MergeException(
                     f'Unable to find row for {next_mrn}'
@@ -303,7 +305,7 @@ def parse_merge_comments(initial_mrn, cache):
     return active_mrn, inactive_mrn_dicts
 
 
-def get_active_mrn_and_merged_mrn_data(mrn, cache=False):
+def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
     """
     For an MRN return the active MRN related to it (which could be itself)
     and a list of inactive MRNs that are associated with it.
@@ -333,7 +335,9 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=False):
     """
     if cache is None:
         cache = {}
-    row = cache.get(mrn, get_masterfile_row(mrn))
+    row = cache.get(mrn)
+    if not row:
+        row = get_masterfile_row(mrn)
 
     if row is None:
         raise CernerPatientNotFoundException(
