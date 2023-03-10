@@ -73,7 +73,7 @@ def process_merged_mrns():
                     )
         if active_patient:
             existing_merged_mrns_and_comments_to_merged_mrn = {(i.mrn, i.merge_comments,): i for i in merged_mrn_objs}
-            new_merged_mrn_and_comments_to_merged_mrn_dict = {(i["mrn"], i["merge_comments"]): i for i in merged_mrn_objs}
+            new_merged_mrn_and_comments_to_merged_mrn_dict = {(i["mrn"], i["merge_comments"]): i for i in merged_dicts}
 
             new_keys = set(new_merged_mrn_and_comments_to_merged_mrn_dict.keys())
             old_keys = set(existing_merged_mrns_and_comments_to_merged_mrn.keys())
