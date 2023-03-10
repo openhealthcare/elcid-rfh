@@ -273,6 +273,11 @@ def parse_merge_comments(initial_mrn, cache):
             next_row = cache.get(next_mrn, get_masterfile_row(next_mrn))
             merge_comments = next_row["MERGE_COMMENTS"]
 
+            if not merge_comments:
+                raise MergeException(
+                    f'Unable to find merge comments for {next_mrn}'
+                )
+
             if next_row["ACTIVE_INACTIVE"] == "ACTIVE":
                 if active_mrn is None:
                     active_mrn = next_mrn
@@ -338,6 +343,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, use_cache=False):
         logger.error(
             f"MRN {mrn} is marked as merged but there is not merge comment"
         )
+        return mrn, []
 
     try:
         active_mrn, merged_mrn_dicts = parse_merge_comments(mrn, cache)
