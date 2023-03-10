@@ -3,7 +3,7 @@ Plugin definition
 """
 from opal.core import plugins
 
-from obs import urls
+from plugins.obs import urls
 
 class ObservationsPlugin(plugins.OpalPlugin):
     """

@@ -5,7 +5,7 @@ from django.contrib import admin
 
 import reversion
 
-from obs import models
+from plugins.obs import models
 
 # class ObservationAdmin(reversion.VersionAdmin):
 #     pass

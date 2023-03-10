@@ -3,7 +3,7 @@ Urls for the Opal observations plugin
 """
 from django.conf.urls import url
 
-from obs import views
+from plugins.obs import views
 
 urlpatterns = [
 #    'obs',
