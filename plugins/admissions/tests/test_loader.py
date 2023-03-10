@@ -1,5 +1,6 @@
 import datetime
 from opal.core.test import OpalTestCase
+from django.utils import timezone
 from plugins.admissions import loader, models
 from unittest.mock import patch
 from elcid import episode_categories
@@ -83,6 +84,47 @@ class LoadBedStatusTestCase(OpalTestCase):
         ]
         loader.load_bed_status()
         bed_status = models.BedStatus.objects.get()
+        self.assertFalse(create_rfh_patient_from_hospital_number.called)
+        self.assertEqual(
+            bed_status.patient, patient
+        )
+
+
+@patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+@patch('plugins.admissions.loader.ProdAPI')
+class LoadEncountersSinceTestCase(OpalTestCase):
+    def setUp(self):
+        self.encounter_row = {
+            i: None for i in models.Encounter.UPSTREAM_FIELDS_TO_MODEL_FIELDS.keys()
+        }
+
+    def test_load_encounters_since_new_patient(self, prod_api, create_rfh_patient_from_hospital_number):
+        self.encounter_row["PID_3_MRN"] = "123"
+        patient, _ = self.new_patient_and_episode_please()
+        prod_api.return_value.execute_hospital_query.return_value =[
+            self.encounter_row
+        ]
+        create_rfh_patient_from_hospital_number.return_value = patient
+        loader.load_excounters_since(timezone.now())
+        encounter = models.Encounter.objects.get()
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            "123", episode_categories.InfectionService
+        )
+        self.assertEqual(
+            encounter.patient, patient
+        )
+
+    def test_load_encounters_existing_patient(self, prod_api, create_rfh_patient_from_hospital_number):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number= "123"
+        )
+        self.encounter_row["PID_3_MRN"] = "123"
+        prod_api.return_value.execute_hospital_query.return_value =[
+            self.encounter_row
+        ]
+        loader.load_excounters_since(timezone.now())
+        bed_status = models.Encounter.objects.get()
         self.assertFalse(create_rfh_patient_from_hospital_number.called)
         self.assertEqual(
             bed_status.patient, patient
