@@ -11,7 +11,7 @@ from opal.models import (
     Patient, Episode, Condition, Synonym, Antimicrobial
 )
 from elcid import models as emodels
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 
 
 class AbstractPatientTestCase(TestCase):

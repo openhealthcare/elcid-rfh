@@ -31,7 +31,6 @@ Fabric==1.14.0
 python-tds==1.8.2
 
 # Open Health Care
-opal-observations==0.5.0
 -e git+https://github.com/openhealthcare/opal@elcid-fork#egg=opal
 
 # Open Health Care repositories on GitHub
