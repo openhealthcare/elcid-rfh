@@ -4,8 +4,10 @@ Models for the OPAL observations plugin
 from django.db import models
 
 from opal.models import EpisodeSubrecord
+from elcid.models import PreviousMRN
 
-class Observation(EpisodeSubrecord):
+
+class Observation(PreviousMRN, EpisodeSubrecord):
     _sort           = 'datetime'
     _icon           = 'fa fa-line-chart'
     _list_limit     = 1
