@@ -24,11 +24,12 @@ def get_merge_graph():
     mrns = get_all_active_merged_patients()
     result = []
     errors = []
+    cache = update_demographics.create_cache()
     for idx, mrn in enumerate(mrns):
         if idx % 100 == 0:
             print(idx)
         try:
-            result.append(update_demographics.get_active_mrn_and_merged_mrn_data(mrn, use_cache=True))
+            result.append(update_demographics.get_active_mrn_and_merged_mrn_data(mrn, cache))
         except update_demographics.MergeException:
             errors.append(mrn)
     return result, errors

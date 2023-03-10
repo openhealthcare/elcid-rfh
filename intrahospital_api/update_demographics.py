@@ -298,7 +298,7 @@ def parse_merge_comments(initial_mrn, cache):
     return active_mrn, inactive_mrn_dicts
 
 
-def get_active_mrn_and_merged_mrn_data(mrn, use_cache=False):
+def get_active_mrn_and_merged_mrn_data(mrn, cache=False):
     """
     For an MRN return the active MRN related to it (which could be itself)
     and a list of inactive MRNs that are associated with it.
@@ -316,7 +316,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, use_cache=False):
 
     If the MRN is not marked as merged, return the MRN and an empty list
     If we are unable to process the merge comment, log an error
-    return the MRN and an empty list.
+    return the MRN and  empty list.
 
     If we are unable to find the MRN in the master file return
     a CernerPatientNotFoundException. This should not happen.
@@ -326,9 +326,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, use_cache=False):
     suggests is something that we expect should never happen
     in the upstream system.
     """
-    if use_cache:
-        cache = create_cache()
-    else:
+    if cache is None:
         cache = {}
     row = cache.get(mrn, get_masterfile_row(mrn))
 
