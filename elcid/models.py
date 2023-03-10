@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from opal.utils import camelcase_to_underscore
 import opal.models as omodels
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel, Patient

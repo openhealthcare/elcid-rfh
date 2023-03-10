@@ -7,7 +7,7 @@ from opal.core.pathway import pathways, HelpTextStep
 from elcid import models
 from elcid.pathways import IgnoreDemographicsMixin
 
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 
 from plugins.tb import models as tb_models
 
