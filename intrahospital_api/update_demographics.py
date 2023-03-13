@@ -249,18 +249,25 @@ def get_masterfile_row(mrn):
     if rows:
         return rows[0]
 
-def parse_merge_comments(initial_mrn, cache):
+def parse_merge_comments(initial_mrn, cache=None):
     """
     Given a MRN, return an active related MRN (may be the same one),
     and a list of dictionaries of inactive mrns to be converted to
     MergedMRN instances
 
     Raise a MergeException if there are multiple active MRNs
+
+    The cache that is passed in is a dictionary of MRN to a row
+    in the upstream Masterfile database. This will be used first to get
+    the upstream row rather than querying the upstream database
+    each time.
     """
     parsed = set()
     related_mrns = [initial_mrn]
     active_mrn = None
     inactive_mrn_dicts = []
+    if cache is None:
+        cache = {}
 
     while len(related_mrns) > 0:
         next_mrn = related_mrns.pop(0)
@@ -315,6 +322,11 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
 
     Returns all merged MRNs related to the MRN including the row
     for the MRN from the CRS_Patient_Masterfile.
+
+    The cache that is passed in is a dictionary of MRN to a row
+    in the upstream Masterfile database. This will be used first to get
+    the upstream row rather than querying the upstream database
+    each time.
 
     The merged comments can be nested for for MRN x
     we can have MERGE_COMMENTS "Merged with y on 21 Jan"

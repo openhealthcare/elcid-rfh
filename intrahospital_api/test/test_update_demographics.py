@@ -553,6 +553,25 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         )
 
     @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+    def test_uses_cache(self, get_masterfile_row):
+        """
+        Tests that if we use a cache the database is not called
+        """
+        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data(
+            '123', self.BASIC_MAPPING
+        )
+        self.assertEqual(active_mrn, "234")
+        self.assertEqual(
+            merged_mrn_and_dates,
+            [{
+                "mrn": "123",
+                "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
+            }]
+        )
+        self.assertFalse(get_masterfile_row.called)
+
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
     def test_crawls_nested_rows_from_branch(self, get_masterfile_row):
         """
         We pass in an inactive MRN not directly connected to the active MRN.
