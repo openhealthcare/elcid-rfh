@@ -4,7 +4,7 @@ Unittests for obs.views
 from opal.core.test import OpalTestCase
 from unittest.mock import MagicMock
 
-from obs import views
+from plugins.obs import views
 
 class ObsChartViewTestCase(OpalTestCase):
     def test_get_context_data(self):
