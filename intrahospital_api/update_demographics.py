@@ -15,10 +15,11 @@ from opal.core.serialization import (
     deserialize_date, deserialize_datetime
 )
 
-from intrahospital_api import logger
-from intrahospital_api import get_api
+from intrahospital_api import logger, loader, get_api, merge_patient
+from intrahospital_api import merge_patient
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
+from elcid import episode_categories as elcid_episode_categories
 from elcid import constants, models
 
 api = get_api()
@@ -232,6 +233,83 @@ class MergeException(Exception):
 
 class CernerPatientNotFoundException(Exception):
     pass
+
+
+def check_and_handle_upstream_merges_for_mrns(mrns):
+    """
+    Takes in a list of MRNs.
+
+    Filters those not related to elCID.
+
+    If they are inactive, creates a Patient for the
+    active MRN and creates MergedMRN for all related inactive
+    MRNs.
+
+    If they are active, creates MergedMRN for all
+    related inactive MRNs.
+    """
+    cache = create_cache()
+    now = timezone.now()
+    active_mrn_to_merged_dicts = {}
+    # it is possible that the MRNs passed
+    # in will link to the same active MRN
+    # so make sure we only have one per
+    # active MRN
+    for mrn in mrns:
+        active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
+            mrn, cache
+        )
+        active_mrn_to_merged_dicts[active_mrn] = merged_dicts
+
+    demographics = models.Demographics.objects.all().select_related('patient')
+    mrn_to_patient = {i.hospital_number: i.patient for i in demographics}
+
+    logger.info('Generating merged MRNs')
+    to_create = []
+    for active_mrn, merged_dicts in active_mrn_to_merged_dicts.items():
+        merged_mrns = [i["mrn"] for i in merged_dicts]
+        active_patient = mrn_to_patient.get(active_mrn)
+        merged_mrn_objs = models.MergedMRN.objects.filter(
+            mrn__in=merged_mrns
+        )
+        unmerged_patients = [
+            mrn_to_patient.get(i) for i in merged_mrns if i in mrn_to_patient
+        ]
+
+        # If we have patients that are inactive we need to do a merge.
+        if len(unmerged_patients) > 0:
+            if not active_patient:
+                active_patient, _ = loader.get_or_create_patient(
+                    active_mrn,
+                    elcid_episode_categories.InfectionService,
+                    run_async=False
+                )
+            for unmerged_patient in unmerged_patients:
+                if active_patient:
+                    merge_patient.merge_patient(
+                        old_patient=unmerged_patient,
+                        new_patient=active_patient
+                    )
+
+        # If there is an active patient then we need to create merged MRNs.
+        if active_patient:
+            # we don't delete and readd to preservfe the our_merge_datetime
+            existing_merged_mrns = set([i.mrn for i in merged_mrn_objs])
+            new_merged_mrns = set(i["mrn"] for i in merged_dicts)
+            to_add_merged_mrns = new_merged_mrns - existing_merged_mrns
+
+            for merged_dict in merged_dicts:
+                if merged_dict["mrn"] in to_add_merged_mrns:
+                    to_create.append(
+                        models.MergedMRN(
+                            patient=active_patient,
+                            our_merge_datetime=now,
+                            **merged_dict
+                        )
+                    )
+    logger.info('Saving merged MRNs')
+    models.MergedMRN.objects.bulk_create(to_create)
+    logger.info(f'Saved {len(to_create)} merged MRNs')
 
 
 def get_masterfile_row(mrn):
