@@ -24,6 +24,12 @@ from elcid import constants, models
 
 api = get_api()
 
+GET_ALL_MERGED_MRNS_SINCE = """
+    SELECT Patient_Number FROM CRS_Patient_Masterfile
+    WHERE MERGED = 'Y'
+    AND last_updated >= @since
+"""
+
 # Returns all active merged patients
 # used by the merge_all_patients mgmt
 # command
@@ -234,6 +240,13 @@ def get_mrn_and_date_from_merge_comment(merge_comment):
         result.append((mrn, timezone.make_aware(merge_dt),))
     # return by merged date
     return sorted(result, key=lambda x: x[1], reverse=True)
+
+
+def get_all_merged_mrns_since(since):
+    query_result = api.execute_hospital_query(
+        GET_ALL_MERGED_MRNS_SINCE, params={"since": since}
+    )
+    return [i["Patient_Number"] for i in query_result]
 
 
 def get_all_active_merged_mrns():
