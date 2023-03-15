@@ -284,6 +284,8 @@ class TransferHistory(models.Model):
         'TRF_INP_TH_ENCNTR_SLICE_ACT_UPDT_DT_TM': 'trf_inp_th_encntr_slice_act_updt_dt_tm',
     }
 
+    def location(self):
+        return " ".join([self.site_code, self.unit, self.room, self.bed])
 
 class IsolatedBed(models.Model):
     """
@@ -405,7 +407,8 @@ class BedStatus(models.Model):
         'hospital_site_description': 'hospital',
         'ward_name'                : 'ward',
         'room'                     : 'room',
-        'bed'                      : 'bed'
+        'bed'                      : 'bed',
+        'hospital_site_code'       : 'site_code' # Links sometimes use this
     }
 
     def to_dict(self):
@@ -426,3 +429,12 @@ class BedStatus(models.Model):
             except ValueError:
                 result['admission_date_time'] = None
         return result
+
+    def to_location_str(self):
+        """
+        A human readable location
+        """
+        return ' '.join([
+            self.hospital_site_description, self.ward_name,
+            self.room, self.bed
+        ])

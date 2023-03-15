@@ -11,17 +11,21 @@
       <span>
         ({{patient_count}}/{{ patients|length }} occupied)
       </span>
+      <span class="pull-right">
+        <small>
+          <a class="orange-link" href="/#/ipc/bedboard/ward/{{patients.first.ward_name}}/days/30/" >
+            History
+          </a>
+        </small>
+      </span>
     </h1>
   </div>
   <table class="table table-striped">
     <tr>
       <th><!-- Isolation --></th>
-      <th>Room</th>
       <th>Bed</th>
       <th>Status</th>
-      <th>MRN</th>
-      <th>Name</th>
-      <th>DOB</th>
+      <th>Patient</th>
       <th>Admitted</th>
       <th>IPC Comments</th>
     </tr>
@@ -40,35 +44,31 @@
           <span ng-hide='isolationHelper.isSideRoom'>
             <span ng-show='isolationHelper.isolated_bed_id'>
               <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
-                Isolation
+                Main Ward bed
               </button>
             </span>
             <span ng-hide='isolationHelper.isolated_bed_id'>
               <button ng-click="isolationHelper.isolate()" class="btn btn-default">
-                Add to isolation
+                Extra IPC bed
               </button>
             </span>
           </span>
         </span>
       </td>
 
-      <td>{{ patient.room }} </td>
-      <td>{{ patient.bed }}</td>
+      <td>
+        {{ patient.room }}
+        {{ patient.bed }}
+      </td>
       <td>{{ patient.bed_status }}</td>
 
       <td>
-        {% if patient.local_patient_identifier %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.local_patient_identifier }}</a>
-        {% endif %}
-      </td>
-      <td>
-        {% if patient.patient_name %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.patient_name }}</a>
-        {% endif %}
-      </td>
-      <td>
-        {% if patient.date_of_birth %}
-        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ patient.date_of_birth }}</a>
+        {% if patient.bed_status == 'Occupied' %}
+        <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">
+          {{ patient.patient_name }}
+        </a>
+          {{ patient.local_patient_identifier }}
+          {{ patient.date_of_birth }}
         {% endif %}
       </td>
       <td>
@@ -77,9 +77,11 @@
         {% endif %}
       </td>
       <td>
+        <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
         {% if patient.patient.ipcstatus_set.get.comments %}
         {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}
+        </div>
       </td>
     </tr>
     {% endfor %}

@@ -3,15 +3,35 @@ Views for the IPC module
 """
 import collections
 import datetime
+import re
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+from django.utils import timezone
 
 from elcid.utils import natural_keys
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CODE, BARNET_HOSPITAL_SITE_CODE
-from plugins.admissions.models import BedStatus, IsolatedBed
+from plugins.admissions.models import BedStatus, IsolatedBed, TransferHistory
 
 from plugins.ipc import lab, models
+
+
+def sort_rfh_wards(text):
+    """
+    RFH ward names brak natural keys
+    """
+    tower = False
+    if re.match('RF-[0-9]', text):
+        tower = True
+
+    text = text.replace('RF-', '')
+    keys = natural_keys(text)
+
+    if tower:
+        print(text)
+        keys.insert(0, 'z')
+
+    return keys
 
 
 class IPCHomeView(LoginRequiredMixin, TemplateView):
@@ -109,16 +129,36 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class WardDetailHistoryView(LoginRequiredMixin, TemplateView):
+    template_name = 'ipc/ward_history_detail.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        days_ago = datetime.date.today() - datetime.timedelta(31)
+        slices = TransferHistory.objects.filter(
+            unit=k['ward_name']
+        ).exclude(
+            transfer_end_datetime__lte=days_ago,
+        ).order_by('bed', 'transfer_end_datetime')
+
+        for transfer in slices:
+            ipc = transfer.patient.episode_set.filter(category_name='IPC').first()
+            if ipc:
+                transfer.ipc_episode = ipc
+
+        context['slices'] = slices
+        context['now'] = timezone.now()
+
+        return context
+
+
+
 class SideRoomView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/siderooms.html'
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
-
-        # side_rooms_statuses = list(BedStatus.objects.filter(
-        #     hospital_site_code=RFH_HOSPITAL_SITE_CODE,
-        #     room__startswith='SR'
-        # ))
 
         side_rooms_statuses = list(BedStatus.objects.filter(
             hospital_site_code=k['hospital_code'],
@@ -135,9 +175,11 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             ).first()
             if bed_status:
                 isolation_status.append(bed_status)
+
         statuses = BedStatus.objects.filter(
             id__in=[i.id for i in side_rooms_statuses + isolation_status]
-        ).order_by('ward_name', 'bed')
+
+        ).exclude(ward_name='RF-Test').order_by('ward_name', 'bed')
 
         for status in statuses:
             if status.patient:
@@ -150,8 +192,10 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         for status in statuses:
             wards[status.ward_name].append(status)
 
-        context['wards'] = {name: wards[name] for name in sorted(wards.keys(), key=natural_keys)}
-
+        context['wards'] = {
+            name: wards[name] for name in reversed(sorted(wards.keys(), key=sort_rfh_wards))
+        }
+        context['hospital_name'] = statuses[0].hospital_site_description
         return context
 
 

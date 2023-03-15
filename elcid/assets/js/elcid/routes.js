@@ -99,6 +99,15 @@ app.config(
                    param_template_route(
                        '/templates/admissions/slice_contacts/', 'slice_id'
                    ))
+             .when('/admissions/encounter/:encounter_id/contacts/',
+                   param_template_route(
+                       '/templates/admissions/encounter/contacts/', 'encounter_id'
+                   ))
+             .when('/admissions/encounter/:encounter_id/contacts/inpatients/',
+                   param_template_route(
+                       '/templates/admissions/encounter/contacts/inpatients/', 'encounter_id'
+                   ))
+
              .when('/admissions/location-history/:location_code',
                    param_template_route(
                        '/templates/admissions/location-history/', 'location_code'
@@ -115,6 +124,8 @@ app.config(
                    param_template_route('/ipc/bedboard/hospital/', 'hospital_code'))
              .when('/ipc/bedboard/ward/:ward_name/',
                    param_template_route('/templates/ipc/ward/', 'ward_name'))
+             .when('/ipc/bedboard/ward/:ward_name/days/30/',
+                   param_template_route('/templates/ipc/ward/30-day/', 'ward_name'))
 
              .when('/ipc/siderooms/:hospital_code', param_template_route('/templates/ipc/isolation/', 'hospital_code'))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
