@@ -116,7 +116,7 @@ def update_patients_with_leading_zero_with_no_counter_part():
     zero prefix.
     """
     # patients with leading 0s but no duplicate, remove the 0, re-sync all upstream
-    cnt = 0
+    patients = []
     demos = Demographics.objects.filter(hospital_number__startswith="0").select_related(
         "patient"
     )
@@ -128,8 +128,8 @@ def update_patients_with_leading_zero_with_no_counter_part():
             )
             demo.hospital_number = mrn
             demo.save()
-            cnt += 1
-    print(f"updated {cnt} patients who had no non zero")
+            patients.append(demo.patient)
+    return patients
 
 
 @timing
@@ -167,20 +167,26 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # We do this first as we do not need to reload these patients
         # the merge patient does this.
+        logger.info('Merging patients that have zero and non zero MRNs')
         merge_zero_patients()
 
-        # We need to update all our patients beginning with zero
-        patients_to_reload = set(Patient.objects.filter(demographics__hospital_number__startswith="0"))
+        # All patients who previously had zero prefixes but have not nonzeroprefixed
+        # counterpart should have their MRNs updated and added to a list of
+        # patients that we have to reload.
+        logger.info('Zero prefixed patients who have non zero counterparts')
+        patients_to_reload = set(update_patients_with_leading_zero_with_no_counter_part())
+        logger.info(f'{len(patients_to_reload)} Patients updated')
+
+        logger.info("Looking elCID MRNs that have zero prefixes used in upstream tables")
+        patients_with_zero_prefixes_upstream = patients_with_zero_prefixes_upstream()
+        cnt = len(patients_with_zero_prefixes_upstream)
+        logger.info(f"{cnt} patients found with zero prefixes in the upstream systems")
 
         # We need to reload all patients where there exists a zero upstream
         patients_to_reload = patients_to_reload.union(
             patients_with_zero_prefixes_upstream()
         )
-
-        # Unless they are in the complex patients
-        patients_to_reload = [
-            i for i in patients_to_reload if i.id not in COMPLEX_MERGES
-        ]
+        logger.info(f"Reloading {len(patients_to_reload)} patients")
 
         patients_to_load_count = len(patients_to_reload)
         for idx, patient in enumerate(patients_to_reload):
