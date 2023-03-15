@@ -24,5 +24,4 @@ class Command(BaseCommand):
         except Exception:
             msg = "Loading merges:  \n{}".format(traceback.format_exc())
             logger.error(msg)
-            raise
         return
