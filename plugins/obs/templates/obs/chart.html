@@ -1,0 +1,62 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block title %}
+<i class="fa fa-line-chart"></i>
+ Obs Chart ({{episode.patient.demographics_set.get.name}})
+{% endblock %}
+{% block modal_body %}
+
+<tabset>
+  <tab heading="Table">
+    <table class="table table-bordered table-hover search">
+      <thead>
+        <tr>
+          <td>Date</td>
+          <td>BP Systolic</td>
+          <td>BP Diastolic</td>
+          <td>Pulse</td>
+          <td>Respiratory Rate</td>
+          <td>Sp02</td>
+          <td>Temp</td>
+          <td>Height</td>
+          <td>Weight</td>
+        </tr>
+      </thead>
+      <tbody>
+	<tr ng-repeat="ob in episode.observation">
+          <td>[[ob.datetime | shortDate ]] [[ ob.datetime | hhmm ]]</td>
+	  <td>[[ob.bp_systolic]]</td>
+	  <td>[[ob.bp_diastolic]]</td>
+	  <td>[[ob.pulse]]</td>
+          <td>[[ob.resp_rate]]</td>
+	  <td>[[ob.sp02]]</td>
+          <td>[[ob.temperature]]</td>
+          <td>[[ob.height]]</td>
+          <td>[[ob.weight]]</td>
+	</tr>
+      </tbody>
+    </table>
+
+  </tab>
+  <tab heading="Chart">
+    <h4>Blood Pressure (mm Hg)</h4>
+    <div id="bp_chart"></div>
+
+    <h4>Pulse (BPM)</h4>
+    <div id="pulse_chart"></div>
+
+    <h4>Respiratory Rate (BPM)</h4>
+    <div id="resp_rate_chart"></div>
+
+    <h4>Sp02 (%)</h4>
+    <div id="sp02_chart"></div>
+
+    <h4>Temperature (&deg; C)</h4>
+    <div id="temperature_chart"></div>
+
+    <h4>Height & Weight</h4>
+    <div id="height_weight_chart"></div>
+  </tab>
+</tabset>
+{% endblock %}
+{% block modal_save %}{% endblock %}
+{% block modal_another %}{% endblock %}
