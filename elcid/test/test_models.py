@@ -691,3 +691,4 @@ class PositiveBloodCultureHistoryTestCase(OpalTestCase):
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.episode.set_tag_names(["bacteraemia"], self.user)
         self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+        self.fail()
