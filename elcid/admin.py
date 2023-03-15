@@ -15,8 +15,8 @@ admin.site.unregister(User)
 
 
 class ElcidUserAdmin(opal_admin.UserProfileAdmin):
-	form = forms.ElcidUserAdminChangeForm
-	add_form = forms.ElcidUserAdminCreationForm
+    form = forms.ElcidUserAdminChangeForm
+    add_form = forms.ElcidUserAdminCreationForm
 
 admin.site.register(User, ElcidUserAdmin)
 
