@@ -41,7 +41,6 @@ PATIENT_RELATED_MODELS = [
     icu_models.ICUHandoverLocationHistory,
     intrahospital_api_models.ExternalDemographics,
     intrahospital_api_models.InitialPatientLoad,
-    ipc_models.IPCStatus,
     opal_models.InpatientAdmission,
     opal_models.PatientRecordAccess,
     rnoh_models.RNOHDemographics,
@@ -102,6 +101,29 @@ EPISODE_RELATED_MODELS = [
     tb_models.TBMeta,
     tb_models.Travel,
     tb_models.Treatment,
+]
+
+# We use the max(IPC_DATE_FIELDS) to determine
+# which IPC status we should use for the merged
+# patient.
+IPC_DATE_FIELDS = [
+    "mrsa_date",
+    "mrsa_neg_date",
+    "reactive_date",
+    "c_difficile_date",
+    "vre_date",
+    "vre_neg_date",
+    "carb_resistance_date",
+    "contact_of_carb_resistance_date",
+    "acinetobacter_date",
+    "contact_of_acinetobacter_date",
+    "cjd_date",
+    "candida_auris_date",
+    "contact_of_candida_auris_date",
+    "multi_drug_resistant_organism_date",
+    "covid_19_date",
+    "contact_of_covid_19_date",
+    "other_date"
 ]
 
 # Statuses that hold information in a field about the existence of
@@ -248,9 +270,45 @@ def move_non_singletons(subrecord_cls, old_parent, new_parent, old_mrn):
             old_subrecord.save()
 
 
+def move_ipc_status(old_patient, new_patient, old_mrn):
+    """
+    IPC status as currently exists is being brought in from upstream.
+    In the future this will change, but for the moment special case IPC Status to
+    use the ipc status with the most recent condition date for the merged patient.
+    """
+    old_ipc_status = old_patient.ipcstatus_set.get()
+    old_ipc_dates = [
+        getattr(old_ipc_status, field) for field in IPC_DATE_FIELDS if getattr(old_ipc_status, field) is not None
+    ]
+
+    new_ipc_status = new_patient.ipcstatus_set.get()
+    new_ipc_dates = [
+        getattr(new_ipc_status, field) for field in IPC_DATE_FIELDS  if getattr(new_ipc_status, field) is not None
+    ]
+
+    # If there are no dates on either the old or new statuses do nothing.
+    if len(old_ipc_dates) == 0 and len(new_ipc_dates) == 0:
+        return
+
+    # If there are no old ipc dates then we use the new status
+    if len(old_ipc_dates) == 0:
+        return
+
+    # If there are old ipc dates and no new ipc dates, use the old ipc dates.
+    # Alternatively if the max(old ipc dates) is more recent than the new
+    # use the old ipc status.
+    if len(new_ipc_dates) == 0 or max(old_ipc_dates) > max(new_ipc_dates):
+        new_ipc_status.delete()
+        old_ipc_status.patient_id = new_patient.id
+        old_ipc_status.previous_mrn = old_mrn
+        with reversion.create_revision():
+            old_ipc_status.save()
+
+
+
 def move_record(subrecord_cls, old_parent, new_parent, old_mrn):
     """
-    Moves a subrecord_cl from an old parent (a patient or an episode)
+    Moves a subrecord_cls from an old parent (a patient or an episode)
     to a new one.
     """
     if getattr(subrecord_cls, "_is_singleton", False):
@@ -290,6 +348,7 @@ def merge_patient(*, old_patient, new_patient):
     new parent.
     """
     old_mrn = old_patient.demographics().hospital_number
+    move_ipc_status(old_patient, new_patient, old_mrn)
     for patient_related_model in PATIENT_RELATED_MODELS:
         move_record(
             patient_related_model,

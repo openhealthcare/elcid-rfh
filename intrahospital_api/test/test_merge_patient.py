@@ -12,6 +12,7 @@ from plugins.labtests import models as lab_models
 from plugins.imaging import models as imaging_models
 from plugins.tb import episode_categories as tb_episode_categories
 from plugins.tb import models as tb_models
+from plugins.ipc import models as ipc_models
 from opal.core.test import OpalTestCase
 from opal import models as opal_models
 from intrahospital_api import merge_patient
@@ -49,6 +50,9 @@ PATIENT_RELATED_IGNORE_LIST = set([
     elcid_models.ContactInformation,
     elcid_models.GPDetails,
     elcid_models.NextOfKinDetails,
+
+    # we handle this as a special case
+    ipc_models.IPCStatus,
 
     # not used
     elcid_models.DuplicatePatient,
@@ -379,6 +383,116 @@ class MoveNonSingletonsTestCase(OpalTestCase):
         self.assertTrue(risk_factor.previous_mrn, self.old_mrn)
 
 
+class MoveIPCStatusTestCase(OpalTestCase):
+    def setUp(self):
+        self.old_patient, _ = self.new_patient_and_episode_please()
+        self.old_mrn = "123"
+        self.old_patient.demographics_set.update(
+            hospital_number=self.old_mrn
+        )
+        self.new_patient, _ = self.new_patient_and_episode_please()
+        self.old_ipc_status = self.old_patient.ipcstatus_set.get()
+        self.new_ipc_status = self.new_patient.ipcstatus_set.get()
+
+    def test_no_dates_on_either(self):
+        """
+        If there are no dates on either IPC status
+        we should just leave the new ipc status on
+        the new patient.
+        """
+        merge_patient.move_ipc_status(
+            self.old_patient, self.new_patient, self.old_mrn
+        )
+        self.assertEqual(
+            self.new_patient.ipcstatus_set.get().id,
+            self.new_ipc_status.id
+        )
+
+    def test_no_old_dates(self):
+        self.new_ipc_status.mrsa_date = datetime.date.today()
+        self.new_ipc_status.save()
+        merge_patient.move_ipc_status(
+            self.old_patient, self.new_patient, self.old_mrn
+        )
+        self.assertEqual(
+            self.new_patient.ipcstatus_set.get().id,
+            self.new_ipc_status.id
+        )
+
+    def test_no_new_dates(self):
+        self.old_ipc_status.mrsa_date = datetime.date.today()
+        self.old_ipc_status.save()
+        merge_patient.move_ipc_status(
+            self.old_patient, self.new_patient, self.old_mrn
+        )
+        self.assertEqual(
+            self.new_patient.ipcstatus_set.get().id,
+            self.old_ipc_status.id
+        )
+        self.assertEqual(
+            self.new_patient.ipcstatus_set.get().previous_mrn,
+            self.old_mrn
+        )
+
+    def test_old_dates_are_more_recent(self):
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(1)
+        self.old_ipc_status.mrsa_date = today
+        self.old_ipc_status.save()
+        with reversion.create_revision():
+            self.new_ipc_status.mrsa_date = yesterday
+            self.new_ipc_status.save()
+
+        merge_patient.move_ipc_status(
+            self.old_patient, self.new_patient, self.old_mrn
+        )
+        self.assertEqual(
+            self.new_patient.ipcstatus_set.get().id,
+            self.old_ipc_status.id
+        )
+        self.assertEqual(
+            self.new_patient.ipcstatus_set.get().previous_mrn,
+            self.old_mrn
+        )
+        previous_version = (
+            Version.objects.get_for_object(
+                self.new_patient.ipcstatus_set.get()
+            ).order_by("id").first()
+        )
+        self.assertEqual(previous_version.field_dict["mrsa_date"], today)
+
+    def test_new_dates_are_more_recent(self):
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(1)
+        self.old_ipc_status.mrsa_date = yesterday
+        self.old_ipc_status.save()
+        with reversion.create_revision():
+            self.new_ipc_status.mrsa_date = today
+            self.new_ipc_status.save()
+
+        merge_patient.move_ipc_status(
+            self.old_patient, self.new_patient, self.old_mrn
+        )
+        self.assertEqual(
+            self.new_patient.ipcstatus_set.get().id,
+            self.new_ipc_status.id
+        )
+        previous_version = (
+            Version.objects.get_for_object(
+                self.new_patient.ipcstatus_set.get()
+            ).order_by("id").first()
+        )
+        self.assertEqual(previous_version.field_dict["mrsa_date"], today)
+
+    def test_all_dates_on_the_model(self):
+        expected_fields = set(merge_patient.IPC_DATE_FIELDS + ["created", "updated"])
+        fields = set([
+            i.name for i in ipc_models.IPCStatus._meta.get_fields()
+                if isinstance(i, (django_models.DateField, django_models.DateTimeField,))
+        ])
+        self.assertEqual(expected_fields, fields)
+
+
 class MoveRelatedRecordTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
@@ -496,6 +610,24 @@ class MergePatientTestCase(OpalTestCase):
         self.assertIsNotNone(
             self.new_patient.mergedmrn_set.get(mrn=self.old_mrn).our_merge_datetime
         )
+
+    def test_copies_over_ipc_status(self):
+        """
+        Tests that we copy over ipc status where appropriate
+        """
+        today = datetime.date.today()
+        self.new_patient.mergedmrn_set.create(mrn=self.old_mrn)
+        self.old_patient.ipcstatus_set.update(covid_19_date=today)
+        merge_patient.merge_patient(
+            old_patient=self.old_patient, new_patient=self.new_patient
+        )
+        self.assertEqual(self.new_patient.ipcstatus_set.get().covid_19_date, today)
+        self.assertEqual(self.new_patient.ipcstatus_set.get().previous_mrn, self.old_mrn)
+        self.assertEqual(self.new_patient.mergedmrn_set.count(), 1)
+        self.assertIsNotNone(
+            self.new_patient.mergedmrn_set.get(mrn=self.old_mrn).our_merge_datetime
+        )
+
 
     def test_copies_over_episode_subrecords_where_the_episode_exists(self):
         """
