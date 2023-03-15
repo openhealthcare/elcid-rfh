@@ -5,6 +5,9 @@ jobs:
   test:
     name: python ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      pull-requests: write
     services:
       postgres:
         image: postgres:11
@@ -45,3 +48,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      - name: Add label if tests fail
+        uses: actions/labeler@v4
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        if: ${{ failure() }}
