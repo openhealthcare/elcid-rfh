@@ -100,29 +100,26 @@ def cast_to_encounter(encounter, patient):
 
 
 def update_encounters_from_query_result(rows):
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
     upstream_ids = [i['ID'] for i in rows]
     existing_encounters = Encounter.objects.filter(upstream_id__in=upstream_ids)
     existing_encounters_count = existing_encounters.count()
     logger.info(f'{existing_encounters_count} existing encounters will be removed')
     mrns = [i['PID_3_MRN'].strip() for i in rows if i['PID_3_MRN'].strip()]
-    patients = Patient.objects.filter(
-        demographics__hospital_number__in=mrns
-    ).prefetch_related('demographics_set')
-
-    mrn_to_patients = defaultdict(list)
-    for patient in patients:
-        mrn_to_patients[patient.demographics_set.all()[0].hospital_number].append(
-            patient
-        )
-
+    mrn_to_patients = find_patients_from_mrns(mrns)
     to_create = []
     for row in rows:
-        for patient in mrn_to_patients[row['PID_3_MRN'].strip()]:
-            to_create.append(cast_to_encounter(row, patient))
+        mrn = row['PID_3_MRN']
+        if mrn not in mrn_to_patients:
+            mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(
+                mrn, InfectionService
+            )
+        patient = mrn_to_patients[mrn]
+        to_create.append(cast_to_encounter(row, patient))
     logger.info(f'Creating {len(to_create)} encounters')
     Encounter.objects.bulk_create(to_create, batch_size=500)
     PatientEncounterStatus.objects.filter(
-        patient__in=patients
+        patient__in=mrn_to_patients.values()
     ).update(
         has_encounters=True
     )
@@ -166,23 +163,12 @@ def load_excounters_since(timestamp):
     If the patient is one we are interested in we either create or update
     our copy of the encounter data using the upstream ID.
     """
-    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
     api = ProdAPI()
 
     encounters = api.execute_hospital_query(
         Q_GET_RECENT_ENCOUNTERS,
         params={'timestamp': timestamp}
     )
-    for encounter in encounters:
-        if encounter['PID_3_MRN']:
-            encounter['PID_3_MRN'] = encounter['PID_3_MRN'].strip()
-    mrns = list(set([i['PID_3_MRN'] for i in encounters if i['PID_3_MRN']]))
-    existing_hns = set(Demographics.objects.filter(
-        hospital_number__in=mrns).values_list('hospital_number', flat=True)
-    )
-    for mrn in mrns:
-        if mrn and mrn not in existing_hns:
-            create_rfh_patient_from_hospital_number(mrn, InfectionService)
     update_encounters_from_query_result(encounters)
 
 
@@ -270,12 +256,8 @@ def create_transfer_histories_from_upstream_result(some_rows):
 
 @transaction.atomic
 def create_transfer_histories(some_rows):
-    mrn_to_patients = defaultdict(list)
-    demos = Demographics.objects.filter(hospital_number__in=[
-        i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows
-    ]).select_related('patient')
-    for demo in demos:
-        mrn_to_patients[demo.hospital_number].append(demo.patient)
+    mrns = [i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows]
+    mrn_to_patients = find_patients_from_mrns(mrns)
 
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
@@ -288,11 +270,10 @@ def create_transfer_histories(some_rows):
         # if In_TransHist = 0 then the transmission has been deleted
         # if In_Spells = 0 then the whole spell has been deleted
         if some_row['In_TransHist'] and some_row['In_Spells']:
-            patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
-            for patient in patients:
-                transfer_histories.append(
-                    cast_to_transfer_history(some_row, patient)
-                )
+            patient = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
+            transfer_histories.append(
+                cast_to_transfer_history(some_row, patient)
+            )
     TransferHistory.objects.bulk_create(transfer_histories)
     return transfer_histories
 
