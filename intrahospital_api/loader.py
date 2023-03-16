@@ -67,7 +67,7 @@ def create_rfh_patient_from_hospital_number(
         )
 
     if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
-        raise ValueError(f'Patient with MRN {hospital_number} already exists')
+        raise ValueError(f'A patient with MRN {hospital_number} already exists')
 
     if emodels.MergedMRN.objects.filter(mrn=hospital_number).exists():
         raise ValueError(f'MRN {hospital_number} has already been merged into another MRN')
