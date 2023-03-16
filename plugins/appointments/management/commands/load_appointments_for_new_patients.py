@@ -4,7 +4,7 @@ import pytds
 import csv
 import os
 from django.conf import settings
-from plugins.admissions import models as admissions_models
+from plugins.appointments import models as appointment_models
 from elcid import models as elcid_models
 from django.db.models import DateTimeField
 from django.utils import timezone
@@ -56,30 +56,16 @@ def get_mrn_to_patient_id():
     return mrn_to_patient_id
 
 
-def cast_to_row(patient_id, encounter_row):
+def cast_to_row(patient_id, upstream_dict):
     row = {"patient_id": patient_id}
-    for k, v in encounter_row.items():
-        if v == '""':
-            v = None
-        if v: # Ignore for empty / nullvalues
-            # Empty is actually more complicated than pythonic truthiness.
-            # Many admissions have the string '""' as the contents of room/bed
+    for k, v in upstream_dict.items():
+        if v:  # Ignore empty values
             fieldtype = type(
-                admissions_models.Encounter._meta.get_field(admissions_models.Encounter.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k])
+                appointment_models.Appointment._meta.get_field(appointment_models.Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k])
             )
             if fieldtype == DateTimeField:
-                try:
-                    v = timezone.make_aware(v)
-                except AttributeError:
-                    # Only some of the "DateTime" fields from upstream
-                    # are actually typed datetimes.
-                    # Sometimes (when they were data in the originating HL7v2 message),
-                    # they're strings. Make them datetimes.
-                    v = datetime.datetime.strptime(v, '%Y%m%d%H%M%S')
-                    v = timezone.make_aware(v)
-        if not v:
-            v = None
-        row[admissions_models.Encounter.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v
+                v = timezone.make_aware(v)
+        row[appointment_models.Appointment.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v
     return row
 
 
