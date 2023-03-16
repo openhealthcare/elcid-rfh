@@ -36,7 +36,7 @@ def get_mrn_to_patient_id():
             hospital_number=None,
         )
         .exclude(hospital_number="").filter(
-            appointments=None
+            patient__appointments=None
         )
         .values_list("hospital_number", "patient_id")
     )
@@ -46,7 +46,7 @@ def get_mrn_to_patient_id():
 
     merged_mrn_and_patient_id = list(
         elcid_models.MergedMRN.objects.filter(
-            appointments=None
+            patient__appointments=None
         ).values_list("mrn", "patient_id")
     )
 
