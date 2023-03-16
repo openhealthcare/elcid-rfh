@@ -35,7 +35,9 @@ def get_mrn_to_patient_id():
         elcid_models.Demographics.objects.exclude(
             hospital_number=None,
         )
-        .exclude(hospital_number="")
+        .exclude(hospital_number="").filter(
+            appointments=None
+        )
         .values_list("hospital_number", "patient_id")
     )
 
@@ -43,7 +45,9 @@ def get_mrn_to_patient_id():
         mrn_to_patient_id[mrn] = patient_id
 
     merged_mrn_and_patient_id = list(
-        elcid_models.MergedMRN.objects.values_list("mrn", "patient_id")
+        elcid_models.MergedMRN.objects.filter(
+            appointments=None
+        ).values_list("mrn", "patient_id")
     )
 
     for mrn, patient_id in merged_mrn_and_patient_id:
@@ -126,7 +130,6 @@ class Command(BaseCommand):
     @utils.timing
     def handle(self, *args, **options):
         create_csv()
-        call_db_command("truncate table appointments_appointment")
         columns = ",".join(get_csv_headers())
         pwd = os.getcwd()
         appointment_csv = os.path.join(pwd, CSV_NAME)
