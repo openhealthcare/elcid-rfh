@@ -86,7 +86,7 @@ def zero_prefixed_nurse_handover():
     return [i["Patient_MRN"] for i in query_result]
 
 
-def patients_with_zero_prefixes_upstream():
+def get_patients_with_zero_prefixes_upstream():
     """
     Returns all patients whose MRNs begin with a zero
     in the upstream tables that contain zero prefixes
@@ -178,13 +178,13 @@ class Command(BaseCommand):
         logger.info(f'{len(patients_to_reload)} Patients updated')
 
         logger.info("Looking elCID MRNs that have zero prefixes used in upstream tables")
-        patients_with_zero_prefixes_upstream = patients_with_zero_prefixes_upstream()
+        patients_with_zero_prefixes_upstream = get_patients_with_zero_prefixes_upstream()
         cnt = len(patients_with_zero_prefixes_upstream)
         logger.info(f"{cnt} patients found with zero prefixes in the upstream systems")
 
         # We need to reload all patients where there exists a zero upstream
         patients_to_reload = patients_to_reload.union(
-            patients_with_zero_prefixes_upstream()
+            patients_with_zero_prefixes_upstream
         )
         logger.info(f"Reloading {len(patients_to_reload)} patients")
 
