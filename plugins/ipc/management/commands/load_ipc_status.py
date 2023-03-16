@@ -16,6 +16,7 @@ from intrahospital_api import loader
 from elcid.utils import find_patients_from_mrns
 from elcid import episode_categories as elcid_episode_categories
 from plugins.ipc.models import IPCStatus
+from intrahospital_api import update_demographics
 from plugins.ipc import logger
 
 
@@ -92,6 +93,7 @@ class Command(BaseCommand):
                 i['Patient_Number'] for i in upstream_result
             )
 
+
             for row in upstream_result:
                 patient = mrn_to_ipc_patients.get(row['Patient_Number'])
 
@@ -103,9 +105,13 @@ class Command(BaseCommand):
                     if len(mrn) == 0:
                         continue
                     else:
-                        patient = loader.create_rfh_patient_from_hospital_number(
-                            mrn, elcid_episode_categories.InfectionService
-                        )
+                        try:
+                            patient = loader.create_rfh_patient_from_hospital_number(
+                                mrn, elcid_episode_categories.InfectionService
+                            )
+                        except update_demographics.CernerPatientNotFoundException:
+                            logger.error(f'Unable to find a cerner MRN for {mrn}')
+                            continue
 
                 if patient.episode_set.filter(category_name='IPC').count() == 0:
                     patient.create_episode(category_name='IPC')

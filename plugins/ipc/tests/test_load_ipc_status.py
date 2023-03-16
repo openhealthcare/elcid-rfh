@@ -2,6 +2,7 @@ from unittest.mock import patch
 from django.contrib.auth.models import User
 from opal.core.test import OpalTestCase
 from opal.models import Patient
+from intrahospital_api import update_demographics
 from plugins.ipc.management.commands import load_ipc_status
 from plugins.ipc import episode_categories
 from elcid import episode_categories as elcid_episode_categories
@@ -54,4 +55,16 @@ class LoadIPCTestCase(OpalTestCase):
             ).filter(
                 episode__category_name = episode_categories.IPCEpisode.display_name
             ).exists()
+        )
+
+    @patch('plugins.ipc.management.commands.load_ipc_status.ProdAPI')
+    @patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+    @patch('plugins.ipc.management.commands.load_ipc_status.logger')
+    def test_handles_patients_not_found_upstream(self, logger, create_rfh_patient_from_hospital_number, ProdAPI):
+        ProdAPI.return_value.execute_hospital_query.return_value = [self.upstream_row]
+        self.upstream_row["Patient_Number"] = "234"
+        create_rfh_patient_from_hospital_number.side_effect = update_demographics.CernerPatientNotFoundException
+        self.cmd.handle()
+        logger.error.assert_called_once_with(
+            "Unable to find a cerner MRN for 234"
         )
