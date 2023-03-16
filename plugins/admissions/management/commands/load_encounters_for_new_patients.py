@@ -134,5 +134,5 @@ class Command(BaseCommand):
         columns = ",".join(get_csv_headers())
         pwd = os.getcwd()
         encounters_csv = os.path.join(pwd, CSV_NAME)
-        cmd = f"COPY admissions_encounters ({columns}) FROM '{encounters_csv}' WITH (FORMAT csv, header);"
+        cmd = f"COPY admissions_encounter ({columns}) FROM '{encounters_csv}' WITH (FORMAT csv, header);"
         call_db_command(cmd)
