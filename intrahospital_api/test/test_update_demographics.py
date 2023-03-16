@@ -2,6 +2,7 @@ from unittest import mock
 import datetime
 import copy
 from opal.core.test import OpalTestCase
+from opal.models import Patient
 from django.utils import timezone
 from elcid.models import Demographics, GPDetails
 from intrahospital_api.test.test_loader import ApiTestCase
@@ -473,6 +474,125 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
         )
 
 
+@mock.patch("intrahospital_api.update_demographics.create_cache")
+@mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
+class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
+    def test_handles_an_inactive_mrn(self, get_or_create_patient, create_cache):
+        create_cache.return_value = {
+            "123": {
+                "ACTIVE_INACTIVE": "INACTIVE",
+                "MERGED": "Y",
+                "MRN": "123",
+                "MERGE_COMMENTS": "Merged with MRN 234 on Oct 20 2014  4:44PM",
+            },
+            "234": {
+                "ACTIVE_INACTIVE": "ACTIVE",
+                "MERGED": "Y",
+                "MRN": "234",
+                "MERGE_COMMENTS": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            },
+        }
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        def create_patient(*args, **kwargs):
+            patient = Patient.objects.create()
+            patient.demographics_set.update(hospital_number="234")
+            return patient, True
+        get_or_create_patient.side_effect = create_patient
+        update_demographics.check_and_handle_upstream_merges_for_mrns(["234"])
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "234"
+        )
+        merged_mrn = patient.mergedmrn_set.get()
+        self.assertEqual(
+            merged_mrn.mrn, "123"
+        )
+
+
+    def test_handles_an_active_mrn(self, get_or_create_patient, create_cache):
+        create_cache.return_value = {
+            "123": {
+                "ACTIVE_INACTIVE": "ACTIVE",
+                "MERGED": "Y",
+                "MRN": "123",
+                "MERGE_COMMENTS": "Merged with MRN 234 on Oct 20 2014  4:44PM",
+            },
+            "234": {
+                "ACTIVE_INACTIVE": "INACTIVE",
+                "MERGED": "Y",
+                "MRN": "234",
+                "MERGE_COMMENTS": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            },
+        }
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        update_demographics.check_and_handle_upstream_merges_for_mrns(["234"])
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "123"
+        )
+        self.assertFalse(
+            get_or_create_patient.called
+        )
+        merged_mrn = patient.mergedmrn_set.get()
+        self.assertEqual(
+            merged_mrn.mrn, "234"
+        )
+
+    def test_handles_new_inactive_mrns(self, get_or_create_patient, create_cache):
+        create_cache.return_value = {
+            "123": {
+                "ACTIVE_INACTIVE": "ACTIVE",
+                "MERGED": "Y",
+                "MRN": "123",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 234 on Oct 20 2014  4:44PM",
+                    "Merged with MRN 345 on Oct 21 2014  5:44PM",
+                ])
+            },
+            "234": {
+                "ACTIVE_INACTIVE": "INACTIVE",
+                "MERGED": "Y",
+                "MRN": "234",
+                "MERGE_COMMENTS": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            },
+            "345": {
+                "ACTIVE_INACTIVE": "INACTIVE",
+                "MERGED": "Y",
+                "MRN": "345",
+                "MERGE_COMMENTS": "Merged with MRN 123 on Oct 20 2014  5:44PM",
+            },
+        }
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        before = timezone.now() - datetime.timedelta(1)
+        patient.mergedmrn_set.create(
+            mrn="234",
+            our_merge_datetime=before,
+            merge_comments="Merged with MRN 123 on Oct 20 2014  4:44PM"
+        )
+        update_demographics.check_and_handle_upstream_merges_for_mrns(["345"])
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "123"
+        )
+        self.assertFalse(get_or_create_patient.called)
+        # Make sure that we haven't deleted the old one
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="234", our_merge_datetime=before, merge_comments="Merged with MRN 123 on Oct 20 2014  4:44PM"
+            ).exists()
+        )
+
+        # Make sure wehave created a new one
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="345", merge_comments="Merged with MRN 123 on Oct 20 2014  5:44PM"
+            ).exists()
+        )
+
+
 class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
     BASIC_MAPPING = {
         "123": {
@@ -551,6 +671,25 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
                 "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
             }]
         )
+
+    @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
+    def test_uses_cache(self, get_masterfile_row):
+        """
+        Tests that if we use a cache the database is not called
+        """
+        get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
+        active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data(
+            '123', self.BASIC_MAPPING
+        )
+        self.assertEqual(active_mrn, "234")
+        self.assertEqual(
+            merged_mrn_and_dates,
+            [{
+                "mrn": "123",
+                "merge_comments": self.BASIC_MAPPING["123"]["MERGE_COMMENTS"],
+            }]
+        )
+        self.assertFalse(get_masterfile_row.called)
 
     @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
     def test_crawls_nested_rows_from_branch(self, get_masterfile_row):

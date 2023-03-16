@@ -15,19 +15,41 @@ from opal.core.serialization import (
     deserialize_date, deserialize_datetime
 )
 
-from intrahospital_api import logger
-from intrahospital_api import get_api
+from intrahospital_api import logger, loader, get_api, merge_patient
+from intrahospital_api import merge_patient
 from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing
+from elcid import episode_categories as elcid_episode_categories
 from elcid import constants, models
 
 api = get_api()
+
+GET_ALL_MERGED_MRNS_SINCE = """
+    SELECT Patient_Number FROM CRS_Patient_Masterfile
+    WHERE MERGED = 'Y'
+    AND last_updated >= @since
+"""
+
+# Returns all active merged patients
+# used by the merge_all_patients mgmt
+# command
+GET_ALL_ACTIVE_MERGED_MRNS = """
+    SELECT Patient_Number FROM CRS_Patient_Masterfile
+    WHERE MERGED = 'Y'
+    AND ACTIVE_INACTIVE = 'ACTIVE'
+"""
 
 
 GET_MASTERFILE_DATA_FOR_MRN = """
     SELECT *
     FROM CRS_Patient_Masterfile
     WHERE Patient_Number = @mrn
+"""
+
+GET_MERGED_DATA_FOR_ALL_MERGED_PATIENTS = """
+    SELECT Patient_Number, ACTIVE_INACTIVE, MERGE_COMMENTS, MERGED
+    FROM CRS_Patient_Masterfile
+    WHERE MERGED = 'Y'
 """
 
 
@@ -220,12 +242,101 @@ def get_mrn_and_date_from_merge_comment(merge_comment):
     return sorted(result, key=lambda x: x[1], reverse=True)
 
 
+def get_all_merged_mrns_since(since):
+    query_result = api.execute_hospital_query(
+        GET_ALL_MERGED_MRNS_SINCE, params={"since": since}
+    )
+    return [i["Patient_Number"] for i in query_result]
+
+
+def get_all_active_merged_mrns():
+    query_result = api.execute_hospital_query(GET_ALL_ACTIVE_MERGED_MRNS)
+    return [i["Patient_Number"] for i in query_result]
+
+
 class MergeException(Exception):
     pass
 
 
 class CernerPatientNotFoundException(Exception):
     pass
+
+
+def check_and_handle_upstream_merges_for_mrns(mrns):
+    """
+    Takes in a list of MRNs.
+
+    Filters those not related to elCID.
+
+    If they are inactive, creates a Patient for the
+    active MRN and creates MergedMRN for all related inactive
+    MRNs.
+
+    If they are active, creates MergedMRN for all
+    related inactive MRNs.
+    """
+    cache = create_cache()
+    now = timezone.now()
+    active_mrn_to_merged_dicts = {}
+    # it is possible that the MRNs passed
+    # in will link to the same active MRN
+    # so make sure we only have one per
+    # active MRN
+    for mrn in mrns:
+        active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
+            mrn, cache
+        )
+        active_mrn_to_merged_dicts[active_mrn] = merged_dicts
+
+    demographics = models.Demographics.objects.all().select_related('patient')
+    mrn_to_patient = {i.hospital_number: i.patient for i in demographics}
+
+    logger.info('Generating merged MRNs')
+    to_create = []
+    for active_mrn, merged_dicts in active_mrn_to_merged_dicts.items():
+        merged_mrns = [i["mrn"] for i in merged_dicts]
+        active_patient = mrn_to_patient.get(active_mrn)
+        merged_mrn_objs = models.MergedMRN.objects.filter(
+            mrn__in=merged_mrns
+        )
+        unmerged_patients = [
+            mrn_to_patient.get(i) for i in merged_mrns if i in mrn_to_patient
+        ]
+
+        # If we have patients that are inactive we need to do a merge.
+        if len(unmerged_patients) > 0:
+            if not active_patient:
+                active_patient, _ = loader.get_or_create_patient(
+                    active_mrn,
+                    elcid_episode_categories.InfectionService,
+                    run_async=False
+                )
+            for unmerged_patient in unmerged_patients:
+                if active_patient:
+                    merge_patient.merge_patient(
+                        old_patient=unmerged_patient,
+                        new_patient=active_patient
+                    )
+
+        # If there is an active patient then we need to create merged MRNs.
+        if active_patient:
+            # we don't delete and readd to preservfe the our_merge_datetime
+            existing_merged_mrns = set([i.mrn for i in merged_mrn_objs])
+            new_merged_mrns = set(i["mrn"] for i in merged_dicts)
+            to_add_merged_mrns = new_merged_mrns - existing_merged_mrns
+
+            for merged_dict in merged_dicts:
+                if merged_dict["mrn"] in to_add_merged_mrns:
+                    to_create.append(
+                        models.MergedMRN(
+                            patient=active_patient,
+                            our_merge_datetime=now,
+                            **merged_dict
+                        )
+                    )
+    logger.info('Saving merged MRNs')
+    models.MergedMRN.objects.bulk_create(to_create)
+    logger.info(f'Saved {len(to_create)} merged MRNs')
 
 
 def get_masterfile_row(mrn):
@@ -243,18 +354,25 @@ def get_masterfile_row(mrn):
     if rows:
         return rows[0]
 
-def parse_merge_comments(initial_mrn):
+def parse_merge_comments(initial_mrn, cache=None):
     """
     Given a MRN, return an active related MRN (may be the same one),
     and a list of dictionaries of inactive mrns to be converted to
     MergedMRN instances
 
     Raise a MergeException if there are multiple active MRNs
+
+    The cache that is passed in is a dictionary of MRN to a row
+    in the upstream Masterfile database. This will be used first to get
+    the upstream row rather than querying the upstream database
+    each time.
     """
     parsed = set()
     related_mrns = [initial_mrn]
     active_mrn = None
     inactive_mrn_dicts = []
+    if cache is None:
+        cache = {}
 
     while len(related_mrns) > 0:
         next_mrn = related_mrns.pop(0)
@@ -264,8 +382,20 @@ def parse_merge_comments(initial_mrn):
         else:
             parsed.add(next_mrn)
 
-            next_row = get_masterfile_row(next_mrn)
+            next_row = cache.get(next_mrn)
+            if not next_row:
+                next_row = get_masterfile_row(next_mrn)
+            if not next_row:
+                raise MergeException(
+                    f'Unable to find row for {next_mrn}'
+                )
+
             merge_comments = next_row["MERGE_COMMENTS"]
+
+            if not merge_comments:
+                raise MergeException(
+                    f'Unable to find merge comments for {next_mrn}'
+                )
 
             if next_row["ACTIVE_INACTIVE"] == "ACTIVE":
                 if active_mrn is None:
@@ -287,7 +417,7 @@ def parse_merge_comments(initial_mrn):
     return active_mrn, inactive_mrn_dicts
 
 
-def get_active_mrn_and_merged_mrn_data(mrn):
+def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
     """
     For an MRN return the active MRN related to it (which could be itself)
     and a list of inactive MRNs that are associated with it.
@@ -298,6 +428,11 @@ def get_active_mrn_and_merged_mrn_data(mrn):
     Returns all merged MRNs related to the MRN including the row
     for the MRN from the CRS_Patient_Masterfile.
 
+    The cache that is passed in is a dictionary of MRN to a row
+    in the upstream Masterfile database. This will be used first to get
+    the upstream row rather than querying the upstream database
+    each time.
+
     The merged comments can be nested for for MRN x
     we can have MERGE_COMMENTS "Merged with y on 21 Jan"
     Then for y we can have the merge comment "Merged with z on 30 Mar"
@@ -305,7 +440,7 @@ def get_active_mrn_and_merged_mrn_data(mrn):
 
     If the MRN is not marked as merged, return the MRN and an empty list
     If we are unable to process the merge comment, log an error
-    return the MRN and an empty list.
+    return the MRN and  empty list.
 
     If we are unable to find the MRN in the master file return
     a CernerPatientNotFoundException. This should not happen.
@@ -315,7 +450,11 @@ def get_active_mrn_and_merged_mrn_data(mrn):
     suggests is something that we expect should never happen
     in the upstream system.
     """
-    row = get_masterfile_row(mrn)
+    if cache is None:
+        cache = {}
+    row = cache.get(mrn)
+    if not row:
+        row = get_masterfile_row(mrn)
 
     if row is None:
         raise CernerPatientNotFoundException(
@@ -328,9 +467,10 @@ def get_active_mrn_and_merged_mrn_data(mrn):
         logger.error(
             f"MRN {mrn} is marked as merged but there is not merge comment"
         )
+        return mrn, []
 
     try:
-        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn)
+        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn, cache)
     except MergeException as err:
         logger.error(f"Merge exception raised for {mrn} with '{err}'")
         return mrn, []
@@ -506,9 +646,23 @@ def sync_recent_patient_information():
         value_int=changed_count
     )
 
+def create_cache():
+    """
+    Returns a dictionary of {
+        MRN: {
+            Patient_Number,
+            ACTIVE_INACTIVE,
+            MERGE_COMMENTS,
+            MERGED
+        }
+    }
+    """
+    result = api.execute_hospital_query(GET_MERGED_DATA_FOR_ALL_MERGED_PATIENTS)
+    return {i["Patient_Number"]: i for i in result}
+
 
 @transaction.atomic
-def update_patient_information_since(last_updated):
+def update_patient_information_since(last_updated, use_cache):
     """
     Updates all patient data that has changed since
     the datetime last_updated.
