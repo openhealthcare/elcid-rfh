@@ -100,7 +100,10 @@ class Command(BaseCommand):
                 if len(mrn) == 0:
                     continue
                 else:
-                    patient = loader.create_rfh_patient_from_hospital_number(
+                    # we do get_or_create in case the MRN has already
+                    # is already connected to another patient created
+                    # within the load
+                    patient, _ = loader.get_or_create_patient(
                         mrn, elcid_episode_categories.InfectionService
                     )
 
