@@ -344,7 +344,7 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             )
         self.assertEqual(
             str(v.exception),
-            "MRN has already been merged into another MRN"
+            "MRN 111 has already been merged into another MRN"
         )
         self.assertFalse(load_patient.called)
 
