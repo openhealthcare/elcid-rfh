@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from elcid.models import Demographics
 from opal.models import Patient
@@ -192,4 +193,4 @@ class Command(BaseCommand):
         for idx, patient in enumerate(patients_to_reload):
             print(f'loading {idx+1}/{patients_to_load_count}')
             loader.load_patient(patient, run_async=False)
-            dicharge_summary_loader.load_dischargesummaries(patient)
+        call_command('fetch_dischargesummaries')
