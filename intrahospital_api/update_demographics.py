@@ -320,7 +320,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
 
         # If there is an active patient then we need to create merged MRNs.
         if active_patient:
-            # we don't delete and readd to preservfe the our_merge_datetime
+            # we don't delete and write anew to preserve the our_merge_datetime field
             existing_merged_mrns = set([i.mrn for i in merged_mrn_objs])
             new_merged_mrns = set(i["mrn"] for i in merged_dicts)
             to_add_merged_mrns = new_merged_mrns - existing_merged_mrns
@@ -362,10 +362,12 @@ def parse_merge_comments(initial_mrn, cache=None):
 
     Raise a MergeException if there are multiple active MRNs
 
-    The cache that is passed in is a dictionary of MRN to a row
-    in the upstream Masterfile database. This will be used first to get
-    the upstream row rather than querying the upstream database
-    each time.
+    The optional cache is a dictionary of MRN to
+    "Patient_Number", "ACTIVE_INACTIVE", "MERGE_COMMENTS", "MERGED"
+    fields of the upstream database.
+
+    This will be used first to get the upstream row rather than querying
+    the upstream database each time.
     """
     parsed = set()
     related_mrns = [initial_mrn]
@@ -428,8 +430,10 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
     Returns all merged MRNs related to the MRN including the row
     for the MRN from the CRS_Patient_Masterfile.
 
-    The cache that is passed in is a dictionary of MRN to a row
-    in the upstream Masterfile database. This will be used first to get
+
+    The optional cache is a dictionary of MRN to
+    "Patient_Number", "ACTIVE_INACTIVE", "MERGE_COMMENTS", "MERGED"
+    fields of the upstream database. This will be used first to get
     the upstream row rather than querying the upstream database
     each time.
 
@@ -440,7 +444,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
 
     If the MRN is not marked as merged, return the MRN and an empty list
     If we are unable to process the merge comment, log an error
-    return the MRN and  empty list.
+    return the MRN and an empty list.
 
     If we are unable to find the MRN in the master file return
     a CernerPatientNotFoundException. This should not happen.
