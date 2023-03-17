@@ -57,7 +57,7 @@ def get_mrn_to_patient_id():
 
 
 def cast_to_row(patient_id, upstream_dict):
-    row = {"patient_id": patient_id}
+    row = {"patient_id": patient_id, "created": timezone.now()}
     for k, v in upstream_dict.items():
         if v:  # Ignore empty values
             fieldtype = type(
