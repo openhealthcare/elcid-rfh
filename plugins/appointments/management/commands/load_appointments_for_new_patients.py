@@ -121,7 +121,7 @@ class Command(BaseCommand):
         appointment_csv = os.path.join(pwd, CSV_NAME)
         cmd = f"COPY appointments_appointment ({columns}) FROM '{appointment_csv}' WITH (FORMAT csv, header);"
         call_db_command(cmd)
-        admissions_models.PatientAppointmentStatus.objects.filter(patient__appointments__isnull=False).update(
+        appointment_models.PatientAppointmentStatus.objects.filter(patient__appointments__isnull=False).update(
             has_appointments=True
         )
         os.remove(appointment_csv)
