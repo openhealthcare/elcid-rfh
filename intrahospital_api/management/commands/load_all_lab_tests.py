@@ -368,12 +368,21 @@ def get_csv_fields(file_name):
         headers = next(reader).keys()
     return list(headers)
 
+@timing
+def copy_lab_tests():
+    lab_columns = ",".join(get_csv_fields(LABTEST_CSV))
+    lab_test_csv = os.path.join(cwd, LABTEST_CSV)
+    copy_in_lab_tests = f"""
+        COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);
+    """
+    call_db_command(copy_in_lab_tests)
+
+
 
 class Command(BaseCommand):
     @timing
     @transaction.atomic
     def handle(self, *args, **options):
-        now = timezone.now()
         cwd = os.getcwd()
         logger.info('Starting')
         # Write all the columns we need out of the upstream table
@@ -386,12 +395,7 @@ class Command(BaseCommand):
         run_delete()
 
         logger.info('Copying in the lab tests')
-        lab_columns = ",".join(get_csv_fields(LABTEST_CSV))
-        lab_test_csv = os.path.join(cwd, LABTEST_CSV)
-        copy_in_lab_tests = f"""
-            COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);
-        """
-        call_db_command(copy_in_lab_tests)
+        copy_lab_tests()
         logger.info('Writing the observations csv')
         write_observation_csv()
         obs_columns = ",".join(get_csv_fields(OBSERVATIONS_CSV))
