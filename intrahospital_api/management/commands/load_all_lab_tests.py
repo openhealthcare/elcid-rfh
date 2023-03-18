@@ -1,6 +1,5 @@
-import gzip
-import shutil
 from django.core.management.base import BaseCommand
+from intrahospital_api import logger
 from django.db import connection
 from django.db import transaction
 from elcid import models as elcid_models
@@ -188,7 +187,7 @@ def write_results():
                                 row[k] = v
                         writer.writerow(row)
 
-
+@timing
 def write_lab_test_csv():
     """
     Reads the results csv where the data exists as it exists
@@ -216,18 +215,33 @@ def write_lab_test_csv():
                 writer.writerow(our_row)
 
 
-
 @timing
-def write_delete_csv():
+def get_delete_ids():
+    delete_ids = []
+    key_to_id = get_patient_id_lab_number_test_name_to_test_id()
     with open(LABTEST_CSV) as l:
         reader = csv.DictReader(l)
-        with open(DELETE_CSV, "w") as d:
-            field_names = ["patient_id", "lab_number", "test_name"]
-            writer = csv.DictWriter(d, fieldnames=field_names)
-            writer.writeheader()
-            for row in reader:
-                writer.writerow({f: row[f] for f in field_names})
+        for row in reader:
+            key = ( row["patient_id"], row["lab_number"], row["test_name"])
+            lab_test_id = key_to_id.get(key)
+            if lab_test_id:
+                delete_ids.append(lab_test_id)
+    print(f'found {len(delete_ids)}')
+    return delete_ids
 
+
+@timing
+def run_delete():
+    to_delete_ids = get_delete_ids()
+    logger.info(f'{len(to_delete_ids)} to delete')
+    step = 100000
+    for amt in range(0, len(to_delete_ids), step):
+        logger.info(f'Running the delete for {amt}-{amt+step}')
+        ids_to_delete = to_delete_ids[amt:amt+step]
+        query = f"""
+            DELETE FROM table WHERE id IN ({ids_to_delete})
+        """
+        call_db_command(query)
 
 @timing
 def write_observation_csv():
@@ -361,23 +375,30 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         now = timezone.now()
         cwd = os.getcwd()
-        print(f'starting {now}')
+        logger.info('Starting')
         # Write all the columns we need out of the upstream table
         # into out table
+        logger.info('Writing results')
         write_results()
+        logger.info('Writing lab_test csv')
         write_lab_test_csv()
-        write_delete_csv()
-        call_db_command(DELETE.format(csv_file=os.path.join(cwd, DELETE_CSV)))
+        logger.info('Running the delete')
+        run_delete()
+
+        logger.info('Copying in the lab tests')
         lab_columns = ",".join(get_csv_fields(LABTEST_CSV))
         lab_test_csv = os.path.join(cwd, LABTEST_CSV)
         copy_in_lab_tests = f"""
             COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);
         """
         call_db_command(copy_in_lab_tests)
+        logger.info('Writing the observations csv')
         write_observation_csv()
         obs_columns = ",".join(get_csv_fields(OBSERVATIONS_CSV))
         obs_csv = os.path.join(cwd, OBSERVATIONS_CSV)
-        copy_in_lab_tests = f"""
+        logger.info('Copying in the observations')
+        copy_in_observations = f"""
             COPY labtests_observation({obs_columns}) FROM '{obs_csv}' WITH (FORMAT csv, header);
         """
-        print(f'finished {now}')
+        call_db_command(copy_in_observations)
+        logger.info("Finished")
