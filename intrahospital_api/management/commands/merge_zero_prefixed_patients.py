@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.utils import timezone
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api import update_demographics
 from elcid.models import Demographics
 from opal.models import Patient
 from plugins.dischargesummary import loader as dicharge_summary_loader
@@ -134,7 +136,6 @@ def update_patients_with_leading_zero_with_no_counter_part():
 
 
 @timing
-@transaction.atomic
 def merge_zero_patients():
     """
     Merge zero prefixed patients with their non zero prefixed counterparts.
@@ -162,9 +163,46 @@ def merge_zero_patients():
             )
 
 
+def merge_patient(*, old_patient, new_patient):
+    """
+    A copied from intrahospital_api.merge_patient but instead
+    of running load_patient it just syncs demographics
+    """
+    old_mrn = old_patient.demographics().hospital_number
+    for patient_related_model in merge_patient.PATIENT_RELATED_MODELS:
+        merge_patient.move_record(
+            patient_related_model,
+            old_patient,
+            new_patient,
+            old_mrn,
+        )
+    for old_episode in old_patient.episode_set.all():
+        # Note: if the old episode has multiple episode
+        # categories of the same category name
+        # this will merge those.
+        new_episode, _ = new_patient.episode_set.get_or_create(
+            category_name=old_episode.category_name
+        )
+        merge_patient.update_tagging(old_episode, new_episode)
+        for episode_related_model in merge_patient.EPISODE_RELATED_MODELS:
+            merge_patient.move_record(
+                episode_related_model,
+                old_episode,
+                new_episode,
+                old_mrn,
+            )
+    old_patient.delete()
+    new_patient.mergedmrn_set.filter(mrn=old_mrn).update(
+        our_merge_datetime=timezone.now()
+    )
+    merge_patient.updates_statuses(new_patient)
+    update_demographics.update_patient_information(new_patient)
+
+
+
+
 class Command(BaseCommand):
     @timing
-    @transaction.atomic
     def handle(self, *args, **options):
         # We do this first as we do not need to reload these patients
         # the merge patient does this.
@@ -192,5 +230,5 @@ class Command(BaseCommand):
         patients_to_load_count = len(patients_to_reload)
         for idx, patient in enumerate(patients_to_reload):
             print(f'loading {idx+1}/{patients_to_load_count}')
-            loader.load_patient(patient, run_async=False)
+            update_demographics.update_patient_information(patient)
         call_command('fetch_dischargesummaries')
