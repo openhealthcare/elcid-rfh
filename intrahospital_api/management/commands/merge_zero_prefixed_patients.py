@@ -7,7 +7,7 @@ from elcid.models import Demographics
 from opal.models import Patient
 from plugins.dischargesummary import loader as dicharge_summary_loader
 from intrahospital_api import loader
-from intrahospital_api import merge_patient
+from intrahospital_api import merge_patient as intrahospital_api_merge_patient
 from django.db import transaction
 from intrahospital_api import logger
 from elcid.utils import timing
@@ -20,8 +20,8 @@ COMPLEX_MERGES = set([
     "72281",
     "25648",
     "22235",
-    "43079",
-    "2244",
+    "89646",
+    "68349",
     "66313",
     "56979",
     "25182",
@@ -158,7 +158,7 @@ def merge_zero_patients():
             from_patient = demo.patient
             to_patient = to_demos.patient
             logger.info(f"Merged {mrn}")
-            merge_patient.merge_patient(
+            merge_patient(
                 old_patient=from_patient, new_patient=to_patient
             )
 
@@ -169,8 +169,8 @@ def merge_patient(*, old_patient, new_patient):
     of running load_patient it just syncs demographics
     """
     old_mrn = old_patient.demographics().hospital_number
-    for patient_related_model in merge_patient.PATIENT_RELATED_MODELS:
-        merge_patient.move_record(
+    for patient_related_model in intrahospital_api_merge_patient.PATIENT_RELATED_MODELS:
+        intrahospital_api_merge_patient.move_record(
             patient_related_model,
             old_patient,
             new_patient,
@@ -183,9 +183,9 @@ def merge_patient(*, old_patient, new_patient):
         new_episode, _ = new_patient.episode_set.get_or_create(
             category_name=old_episode.category_name
         )
-        merge_patient.update_tagging(old_episode, new_episode)
-        for episode_related_model in merge_patient.EPISODE_RELATED_MODELS:
-            merge_patient.move_record(
+        intrahospital_api_merge_patient.update_tagging(old_episode, new_episode)
+        for episode_related_model in intrahospital_api_merge_patient.EPISODE_RELATED_MODELS:
+            intrahospital_api_merge_patient.move_record(
                 episode_related_model,
                 old_episode,
                 new_episode,
@@ -195,7 +195,7 @@ def merge_patient(*, old_patient, new_patient):
     new_patient.mergedmrn_set.filter(mrn=old_mrn).update(
         our_merge_datetime=timezone.now()
     )
-    merge_patient.updates_statuses(new_patient)
+    intrahospital_api_merge_patient.updates_statuses(new_patient)
     update_demographics.update_patient_information(new_patient)
 
 
