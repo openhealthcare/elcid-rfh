@@ -9,6 +9,7 @@ from plugins.labtests import models as lab_models
 from elcid.utils import timing
 from django.utils import timezone
 from django.conf import settings
+import subprocess
 import pytds
 import csv
 import os
@@ -306,22 +307,8 @@ def write_observation_csv():
                         writer = csv.DictWriter(a, fieldnames=obs_dict.keys())
                         writer.writeheader()
                     writer.writerow(obs_dict)
+    gzip_results()
 
-
-def yield_patient_id_lab_number_test_name_to_test_id(amt=300000):
-    values = lab_models.LabTest.objects.values_list(
-        'patient_id',
-        'lab_number',
-        'test_name',
-        'id'
-    ).order_by()
-    result = {}
-    for patient_id, lab_number, test_name, test_id in values:
-        result[(patient_id, lab_number, test_name,)] = test_id
-        if len(result) > amt:
-            yield result
-            result = {}
-    yield result
 
 def cast_to_lab_test_dict(row):
     """
@@ -436,16 +423,21 @@ def copy_observations():
     send_email('copied observations')
 
 
+@timing
+def gzip_results():
+    result_csv = os.path.join(os.getcwd(), RESULTS_CSV)
+    subprocess.run(f"gzip {result_csv}", shell=True)
+
 
 class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
-        send_email('starting')
+        # send_email('starting')
         logger.info('Starting')
         # Write all the columns we need out of the upstream table
         # into out table
         logger.info('Writing results')
-        write_results()
+        # write_results()
         logger.info('Writing lab_test csv')
         # write_lab_test_csv()
         logger.info('Running the delete')
