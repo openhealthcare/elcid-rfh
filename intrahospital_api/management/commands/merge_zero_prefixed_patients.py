@@ -126,7 +126,7 @@ def update_patients_with_leading_zero_with_no_counter_part():
     for demo in demos:
         mrn = demo.hospital_number.lstrip("0")
         if mrn and not Demographics.objects.filter(hospital_number=mrn).exists():
-            print(
+            logger.info(
                 f"Changing stripping the zero from the MRN of patient id {demo.patient_id}"
             )
             demo.hospital_number = mrn
@@ -229,6 +229,6 @@ class Command(BaseCommand):
 
         patients_to_load_count = len(patients_to_reload)
         for idx, patient in enumerate(patients_to_reload):
-            print(f'loading {idx+1}/{patients_to_load_count}')
+            logger.info(f'loading {idx+1}/{patients_to_load_count}')
             update_demographics.update_patient_information(patient)
         call_command('fetch_dischargesummaries')
