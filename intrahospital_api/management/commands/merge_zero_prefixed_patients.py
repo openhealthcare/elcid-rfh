@@ -231,4 +231,3 @@ class Command(BaseCommand):
         for idx, patient in enumerate(patients_to_reload):
             logger.info(f'loading {idx+1}/{patients_to_load_count}')
             update_demographics.update_patient_information(patient)
-        call_command('fetch_dischargesummaries')
