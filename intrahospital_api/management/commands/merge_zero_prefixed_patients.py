@@ -12,21 +12,22 @@ from django.db import transaction
 from intrahospital_api import logger
 from elcid.utils import timing
 
+
 # The patient ids of patients who we want to double check before merging
 COMPLEX_MERGES = set([
-    "65695",
-    "7958",
-    "1878",
-    "72281",
-    "25648",
-    "22235",
-    "89646",
-    "68349",
-    "66313",
-    "56979",
-    "25182",
-    "39646",
-    "71583",
+    65695,
+    7958,
+    1878,
+    72281,
+    25648,
+    22235,
+    89646,
+    68349,
+    66313,
+    56979,
+    25182,
+    39646,
+    71583,
 ])
 
 IPC_QUERY = """
