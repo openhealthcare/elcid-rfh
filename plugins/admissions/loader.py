@@ -172,7 +172,6 @@ def load_excounters_since(timestamp):
     update_encounters_from_query_result(encounters)
 
 
-
 def cast_to_transfer_history(upstream_dict, patient):
     hist = TransferHistory(patient=patient)
     for k, v in upstream_dict.items():
