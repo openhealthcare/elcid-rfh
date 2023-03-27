@@ -90,16 +90,6 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
         self.assertEqual(datetime.date(1972, 6, 21), demographics.date_of_birth)
         self.assertEqual('AA1112', demographics.hospital_number)
 
-    def test_update_from_dict_zero_prefix(self):
-        data = {
-            'consistency_token': '12345678',
-            'id': self.demographics.id,
-            'hospital_number': '0AA1112',
-            }
-        self.demographics.update_from_dict(data, self.user)
-        demographics = self.patient.demographics_set.get()
-        self.assertEqual('AA1112', demographics.hospital_number)
-
     def test_update_from_dict_with_missing_consistency_token(self):
         with self.assertRaises(exceptions.MissingConsistencyTokenError):
             self.demographics.update_from_dict({}, self.user)
@@ -109,6 +99,12 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             self.demographics.update_from_dict(
                 {'consistency_token': '87654321'}, self.user
             )
+
+    def test_save(self):
+        self.demographics.hospital_number = '0AA1112'
+        self.demographics.save()
+        self.demographics.refresh_from_db()
+        self.assertEqual('AA1112', self.demographics.hospital_number)
 
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
