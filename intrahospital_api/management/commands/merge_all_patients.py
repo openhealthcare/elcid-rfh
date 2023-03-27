@@ -96,7 +96,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     it runs the above merge_patient function that
     does not call load_patient.
     """
-    cache = update_demographics.create_cache()
+    cache = update_demographics.get_mrn_to_upstream_merge_data()
     now = timezone.now()
     active_mrn_to_merged_dicts = {}
     # it is possible that the MRNs passed

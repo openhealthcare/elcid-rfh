@@ -260,7 +260,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     If they are active, creates MergedMRN for all
     related inactive MRNs.
     """
-    cache = create_cache()
+    mrn_to_upstream_merge_data = get_mrn_to_upstream_merge_data()
     now = timezone.now()
     active_mrn_to_merged_dicts = {}
     # it is possible that the MRNs passed
@@ -269,7 +269,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     # active MRN
     for mrn in mrns:
         active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
-            mrn, cache
+            mrn, mrn_to_upstream_merge_data
         )
         active_mrn_to_merged_dicts[active_mrn] = merged_dicts
 
@@ -339,7 +339,7 @@ def get_masterfile_row(mrn):
     if rows:
         return rows[0]
 
-def parse_merge_comments(initial_mrn, cache=None):
+def parse_merge_comments(initial_mrn, mrn_to_upstream_merge_data=None):
     """
     Given a MRN, return an active related MRN (may be the same one),
     and a list of dictionaries of inactive mrns to be converted to
@@ -347,7 +347,7 @@ def parse_merge_comments(initial_mrn, cache=None):
 
     Raise a MergeException if there are multiple active MRNs
 
-    The optional cache is a dictionary of MRN to
+    The optional mrn_to_upstream_merge_data is a dictionary of MRN to
     "Patient_Number", "ACTIVE_INACTIVE", "MERGE_COMMENTS", "MERGED"
     fields of the upstream database.
 
@@ -358,8 +358,8 @@ def parse_merge_comments(initial_mrn, cache=None):
     related_mrns = [initial_mrn]
     active_mrn = None
     inactive_mrn_dicts = []
-    if cache is None:
-        cache = {}
+    if mrn_to_upstream_merge_data is None:
+        mrn_to_upstream_merge_data = {}
 
     while len(related_mrns) > 0:
         next_mrn = related_mrns.pop(0)
@@ -369,7 +369,7 @@ def parse_merge_comments(initial_mrn, cache=None):
         else:
             parsed.add(next_mrn)
 
-            next_row = cache.get(next_mrn)
+            next_row = mrn_to_upstream_merge_data.get(next_mrn)
             if not next_row:
                 next_row = get_masterfile_row(next_mrn)
             if not next_row:
@@ -404,7 +404,7 @@ def parse_merge_comments(initial_mrn, cache=None):
     return active_mrn, inactive_mrn_dicts
 
 
-def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
+def get_active_mrn_and_merged_mrn_data(mrn, mrn_to_upstream_merge_data=None):
     """
     For an MRN return the active MRN related to it (which could be itself)
     and a list of inactive MRNs that are associated with it.
@@ -416,7 +416,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
     for the MRN from the CRS_Patient_Masterfile.
 
 
-    The optional cache is a dictionary of MRN to
+    The optional mrn_to_upstream_merge_data is a dictionary of MRN to
     "Patient_Number", "ACTIVE_INACTIVE", "MERGE_COMMENTS", "MERGED"
     fields of the upstream database. This will be used first to get
     the upstream row rather than querying the upstream database
@@ -439,9 +439,9 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
     suggests is something that we expect should never happen
     in the upstream system.
     """
-    if cache is None:
-        cache = {}
-    row = cache.get(mrn)
+    if mrn_to_upstream_merge_data is None:
+        mrn_to_upstream_merge_data = {}
+    row = mrn_to_upstream_merge_data.get(mrn)
     if not row:
         row = get_masterfile_row(mrn)
 
@@ -459,7 +459,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
         return mrn, []
 
     try:
-        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn, cache)
+        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn, mrn_to_upstream_merge_data)
     except MergeException as err:
         logger.error(f"Merge exception raised for {mrn} with '{err}'")
         return mrn, []
@@ -635,7 +635,7 @@ def sync_recent_patient_information():
         value_int=changed_count
     )
 
-def create_cache():
+def get_mrn_to_upstream_merge_data():
     """
     Returns a dictionary of {
         MRN: {
@@ -651,7 +651,7 @@ def create_cache():
 
 
 @transaction.atomic
-def update_patient_information_since(last_updated, use_cache):
+def update_patient_information_since(last_updated):
     """
     Updates all patient data that has changed since
     the datetime last_updated.
