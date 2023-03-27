@@ -268,7 +268,7 @@ def run_delete():
         """
         call_db_command(query)
         query = f"""
-            DELETE FROM labtests_observation WHERE id IN ({delete_ids})
+            DELETE FROM labtests_observation WHERE test_id IN ({delete_ids})
         """
         call_db_command(query)
     logger.info('Delete section complete')
