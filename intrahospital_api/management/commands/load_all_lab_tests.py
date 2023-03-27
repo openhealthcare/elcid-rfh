@@ -423,19 +423,18 @@ def gzip_results():
 class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
-        # send_email('starting')
         logger.info('Starting')
         # Write all the columns we need out of the upstream table
         # into out table
         logger.info('Writing results')
-        # write_results()
+        write_results()
         logger.info('Writing lab_test csv')
-        # write_lab_test_csv()
+        write_lab_test_csv()
         logger.info('Running the delete')
-        # run_delete()
+        run_delete()
 
         logger.info('Copying in the lab tests')
-        # copy_lab_tests()
+        copy_lab_tests()
         logger.info('Writing the observations csv')
         write_observation_csv()
         copy_observations()
