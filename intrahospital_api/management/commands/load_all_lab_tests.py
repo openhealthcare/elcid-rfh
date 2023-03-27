@@ -1,6 +1,6 @@
-import gzip
-import shutil
 from django.core.management.base import BaseCommand
+from functools import lru_cache
+from intrahospital_api import logger
 from django.db import connection
 from django.db import transaction
 from elcid import models as elcid_models
@@ -8,6 +8,7 @@ from plugins.labtests import models as lab_models
 from elcid.utils import timing
 from django.utils import timezone
 from django.conf import settings
+import subprocess
 import pytds
 import csv
 import os
@@ -67,68 +68,26 @@ GET_ALL_RESULTS = f"""
     AND Result_ID <> ''
 """
 
-DELETE = """
--- create a temp table delete_or_keep which we will load patient number, lab number and test name
-CREATE TEMP TABLE patient_id_lab_number_name (
-    patient_id INT NOT NULL,
-    lab_number VARCHAR (255) NOT NULL,
-    test_name VARCHAR (255) NOT NULL
-) ON COMMIT DROP;
-
-COPY patient_id_lab_number_name (patient_id,lab_number,test_name) FROM '{csv_file}' DELIMITER ',' CSV HEADER;
-
-CREATE INDEX lab_index ON labtests_labtest (patient_id, test_name, lab_number);
-
-DELETE FROM ipc_infectionalert WHERE lab_test_id IN (
-    SELECT labtests_labtest.id FROM labtests_labtest, patient_id_lab_number_name
-    WHERE labtests_labtest.patient_id = patient_id_lab_number_name.patient_id
-    AND labtests_labtest.test_name = patient_id_lab_number_name.test_name
-    AND labtests_labtest.lab_number = patient_id_lab_number_name.lab_number
-);
-
-DELETE FROM labtests_labtest USING patient_id_lab_number_name
-WHERE labtests_labtest.patient_id = patient_id_lab_number_name.patient_id
-AND labtests_labtest.test_name = patient_id_lab_number_name.test_name
-AND labtests_labtest.lab_number = patient_id_lab_number_name.lab_number;
-
-DELETE FROM labtests_observation
-WHERE NOT EXISTS (
-    SELECT null
-    FROM labtests_labtest
-    WHERE labtests_observation.test_id = labtests_labtest.id
-);
-
-DROP INDEX lab_index;
-"""
-
-
 RESULTS_CSV = "results.csv"
 OBSERVATIONS_CSV = "observations.csv"
 LABTEST_CSV = "lab_tests.csv"
-DELETE_CSV = "patient_id_lab_number_test_name.csv"
 
 
-
+@timing
 def get_mrn_to_patient_id():
     """
     Returns a map of all MRNs from demographics and Merged MRN
     to the corresponding patient id.
     """
     mrn_to_patient_id = {}
-    demographics_mrn_and_patient_id = list(
-        elcid_models.Demographics.objects.exclude(
-            hospital_number=None,
-        )
-        .exclude(hospital_number="")
-        .values_list("hospital_number", "patient_id")
-    )
+    demographics_mrn_and_patient_id = elcid_models.Demographics.objects.exclude(
+        hospital_number=None,
+    ).exclude(hospital_number="").values_list("hospital_number", "patient_id")
 
     for mrn, patient_id in demographics_mrn_and_patient_id:
         mrn_to_patient_id[mrn] = patient_id
 
-    merged_mrn_and_patient_id = list(
-        elcid_models.MergedMRN.objects.values_list("mrn", "patient_id")
-    )
+    merged_mrn_and_patient_id = elcid_models.MergedMRN.objects.values_list("mrn", "patient_id")
 
     for mrn, patient_id in merged_mrn_and_patient_id:
         mrn_to_patient_id[mrn] = patient_id
@@ -188,7 +147,7 @@ def write_results():
                                 row[k] = v
                         writer.writerow(row)
 
-
+@timing
 def write_lab_test_csv():
     """
     Reads the results csv where the data exists as it exists
@@ -216,17 +175,101 @@ def write_lab_test_csv():
                 writer.writerow(our_row)
 
 
+def create_patient_id_lookup_table(cursor):
+    query = """
+    CREATE TABLE lab_test_lookup AS SELECT patient_id, test_name, lab_number, id FROM labtests_labtest;
+    CREATE INDEX lab_test_lookup_idx ON lab_test_lookup(patient_id, test_name, lab_number);
+    """
+    logger.info('Calling')
+    logger.info(query)
+    cursor.execute(
+        query
+    )
+
+def drop_patient_id_lookup_table(cursor):
+    query = """
+    DROP TABLE IF EXISTS lab_test_lookup;
+    """
+    logger.info('Calling')
+    logger.info(query)
+    cursor.execute(
+        query
+    )
+
+def get_id_from_lookup_table(cursor, patient_id, test_name, lab_number):
+    query = """
+    SELECT id FROM lab_test_lookup
+    WHERE patient_id=%s AND test_name=%s AND lab_number=%s
+    """
+    cursor.execute(
+        query, [patient_id, test_name, lab_number]
+    )
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+
+
+@lru_cache(maxsize=2048)
+def cached_get_id_from_lookup_table(cursor, patient_id, test_name, lab_number):
+    """
+    Caches the result per patient_id, test_name and lab_number.
+
+    When iterating over the resuls csv which has one line per
+    observation, using the cache is ~10x faster
+
+    """
+    return get_id_from_lookup_table(cursor, patient_id, test_name, lab_number)
+
+
+def get_delete_ids():
+    query = """
+    CREATE TABLE lab_test_lookup AS SELECT patient_id, test_name, lab_number, id FROM labtests_labtest;
+    CREATE INDEX lab_test_lookup_idx ON lab_test_lookup(patient_id, test_name, lab_number);
+    """
+    delete_ids = []
+    with connection.cursor() as cursor:
+        logger.info('Calling')
+        logger.info(query)
+        cursor.execute(
+            query
+        )
+        with open(LABTEST_CSV) as l:
+            reader = csv.DictReader(l)
+            for row in reader:
+                lab_test_id = get_id_from_lookup_table(cursor, row["patient_id"], row["test_name"], row["lab_number"])
+                if lab_test_id:
+                    delete_ids.append(lab_test_id)
+        logger.info(f'found {len(delete_ids)}')
+    return delete_ids
+
 
 @timing
-def write_delete_csv():
-    with open(LABTEST_CSV) as l:
-        reader = csv.DictReader(l)
-        with open(DELETE_CSV, "w") as d:
-            field_names = ["patient_id", "lab_number", "test_name"]
-            writer = csv.DictWriter(d, fieldnames=field_names)
-            writer.writeheader()
-            for row in reader:
-                writer.writerow({f: row[f] for f in field_names})
+@transaction.atomic
+def run_delete():
+    cnt = 0
+    delete_ids_list = get_delete_ids()
+    cnt = len(delete_ids_list)
+    logger.info(f'Running the delete for {len(delete_ids_list)}')
+    chunk_size = 50000
+    list_chunked = [
+        delete_ids_list[i:i + chunk_size] for i in range(0, len(delete_ids_list), chunk_size)
+    ]
+    for d in list_chunked:
+        delete_ids = ",".join([str(i) for i in d])
+        query = f"""
+            DELETE FROM ipc_infectionalert WHERE lab_test_id IN ({delete_ids})
+        """
+        call_db_command(query)
+        query = f"""
+            DELETE FROM labtests_labtest WHERE id IN ({delete_ids})
+        """
+        call_db_command(query)
+        query = f"""
+            DELETE FROM labtests_observation WHERE test_id IN ({delete_ids})
+        """
+        call_db_command(query)
+    logger.info('Delete section complete')
+    logger.info(f"Deleted {cnt}")
 
 
 @timing
@@ -239,31 +282,26 @@ def write_observation_csv():
     and the data is formatted into what we would save to our observation.
     It also adds the test_id column with the elcid lab test id in it.
     """
-    patient_id_lab_number_test_name_to_test_id = get_patient_id_lab_number_test_name_to_test_id()
-    with open(RESULTS_CSV) as m:
-        reader = csv.DictReader(m)
-        with open(OBSERVATIONS_CSV, "w") as a:
-            writer = None
-            for row in reader:
-                key = (row["patient_id"], row["Result_ID"], row["OBR_exam_code_Text"],)
-                lt_id = patient_id_lab_number_test_name_to_test_id[key]
-                obs_dict = cast_to_observation_dict(row, lt_id)
-                if writer is None:
-                    writer = csv.DictWriter(a, fieldnames=obs_dict.keys())
-                    writer.writeheader()
-                writer.writerow(obs_dict)
+    with open(OBSERVATIONS_CSV, "w") as a:
+        with open(RESULTS_CSV) as m:
+            reader = csv.DictReader(m)
+            with connection.cursor() as cursor:
+                drop_patient_id_lookup_table(cursor)
+                create_patient_id_lookup_table(cursor)
+                writer = None
+                for row in reader:
+                    lt_id = get_id_from_lookup_table(
+                        cursor, row["patient_id"], row["OBR_exam_code_Text"], row["Result_ID"]
+                    )
+                    if not lt_id:
+                        continue
+                    obs_dict = cast_to_observation_dict(row, lt_id)
+                    if writer is None:
+                        writer = csv.DictWriter(a, fieldnames=obs_dict.keys())
+                        writer.writeheader()
+                    writer.writerow(obs_dict)
+    gzip_results()
 
-def get_patient_id_lab_number_test_name_to_test_id():
-    values = lab_models.LabTest.objects.values_list(
-        'patient_id',
-        'lab_number',
-        'test_name',
-        'id'
-    )
-    result = {}
-    for patient_id, lab_number, test_name, test_id in values:
-        result[(patient_id, lab_number, test_name,)] = test_id
-    return result
 
 def cast_to_lab_test_dict(row):
     """
@@ -303,12 +341,12 @@ def cast_to_lab_test_dict(row):
     return result
 
 
-def cast_to_observation_dict(row):
+def cast_to_observation_dict(row, test_id):
     """
     Creates a dictionary from an upstream row with keys, values
     of what we want to save in our observation model
     """
-    result = {}
+    result = {"test_id": test_id}
     result["last_updated"] = row["last_updated"]
     result["observation_datetime"] = row["Observation_date"]
     if not result["observation_datetime"]:
@@ -354,30 +392,50 @@ def get_csv_fields(file_name):
         headers = next(reader).keys()
     return list(headers)
 
+@timing
+def copy_lab_tests():
+    cwd = os.getcwd()
+    lab_columns = ",".join(get_csv_fields(LABTEST_CSV))
+    lab_test_csv = os.path.join(cwd, LABTEST_CSV)
+    copy_in_lab_tests = f"""
+        COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);
+    """
+    call_db_command(copy_in_lab_tests)
+
+@timing
+def copy_observations():
+    cwd = os.getcwd()
+    obs_columns = ",".join(get_csv_fields(OBSERVATIONS_CSV))
+    obs_csv = os.path.join(cwd, OBSERVATIONS_CSV)
+    logger.info('Copying in the observations')
+    copy_in_observations = f"""
+        COPY labtests_observation({obs_columns}) FROM '{obs_csv}' WITH (FORMAT csv, header);
+    """
+    call_db_command(copy_in_observations)
+
+
+@timing
+def gzip_results():
+    result_csv = os.path.join(os.getcwd(), RESULTS_CSV)
+    subprocess.run(f"gzip {result_csv}", shell=True)
+
 
 class Command(BaseCommand):
     @timing
-    @transaction.atomic
     def handle(self, *args, **options):
-        now = timezone.now()
-        cwd = os.getcwd()
-        print(f'starting {now}')
+        logger.info('Starting')
         # Write all the columns we need out of the upstream table
         # into out table
+        logger.info('Writing results')
         write_results()
+        logger.info('Writing lab_test csv')
         write_lab_test_csv()
-        write_delete_csv()
-        call_db_command(DELETE.format(csv_file=os.path.join(cwd, DELETE_CSV)))
-        lab_columns = ",".join(get_csv_fields(LABTEST_CSV))
-        lab_test_csv = os.path.join(cwd, LABTEST_CSV)
-        copy_in_lab_tests = f"""
-            COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);
-        """
-        call_db_command(copy_in_lab_tests)
+        logger.info('Running the delete')
+        run_delete()
+
+        logger.info('Copying in the lab tests')
+        copy_lab_tests()
+        logger.info('Writing the observations csv')
         write_observation_csv()
-        obs_columns = ",".join(get_csv_fields(OBSERVATIONS_CSV))
-        obs_csv = os.path.join(cwd, OBSERVATIONS_CSV)
-        copy_in_lab_tests = f"""
-            COPY labtests_observation({obs_columns}) FROM '{obs_csv}' WITH (FORMAT csv, header);
-        """
-        print(f'finished {now}')
+        copy_observations()
+        logger.info("Finished")
