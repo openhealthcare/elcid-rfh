@@ -7,7 +7,7 @@ from unittest.mock import patch
 from elcid import episode_categories
 
 
-class TansferHistoriesTestCase(OpalTestCase):
+class TransferHistoriesTestCase(OpalTestCase):
     def test_create_transfer_histories(self):
         """
         Tests that the create transfer histories loader
