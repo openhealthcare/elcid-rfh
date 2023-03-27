@@ -158,7 +158,7 @@ def merge_zero_patients():
         if to_demos:
             from_patient = demo.patient
             to_patient = to_demos.patient
-            logger.info(f"Merged {mrn}")
+            logger.info(f"Merged elcid patient id {from_patient.id} to {to_patient.id}  for MRN {mrn}")
             merge_patient(
                 old_patient=from_patient, new_patient=to_patient
             )
