@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from functools import lru_cache
-from django.core.mail import send_mail
 from intrahospital_api import logger
 from django.db import connection
 from django.db import transaction
@@ -243,8 +242,6 @@ def get_delete_ids():
         logger.info(f'found {len(delete_ids)}')
     return delete_ids
 
-def send_email(msg):
-    send_mail(msg, msg, settings.DEFAULT_FROM_EMAIL, settings.ADMINS)
 
 @timing
 @transaction.atomic
@@ -273,11 +270,7 @@ def run_delete():
         call_db_command(query)
     logger.info('Delete section complete')
     logger.info(f"Deleted {cnt}")
-    send_email(f'Done deleting {cnt}')
 
-
-def send_email(msg):
-    send_mail(msg, msg, settings.DEFAULT_FROM_EMAIL, settings.ADMINS)
 
 @timing
 def write_observation_csv():
@@ -408,7 +401,6 @@ def copy_lab_tests():
         COPY labtests_labtest({lab_columns}) FROM '{lab_test_csv}' WITH (FORMAT csv, header);
     """
     call_db_command(copy_in_lab_tests)
-    send_email('copied lab tests')
 
 @timing
 def copy_observations():
@@ -420,7 +412,6 @@ def copy_observations():
         COPY labtests_observation({obs_columns}) FROM '{obs_csv}' WITH (FORMAT csv, header);
     """
     call_db_command(copy_in_observations)
-    send_email('copied observations')
 
 
 @timing
