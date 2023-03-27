@@ -30,16 +30,6 @@ GET_ALL_MERGED_MRNS_SINCE = """
     AND last_updated >= @since
 """
 
-# Returns all active merged patients
-# used by the merge_all_patients mgmt
-# command
-GET_ALL_ACTIVE_MERGED_MRNS = """
-    SELECT Patient_Number FROM CRS_Patient_Masterfile
-    WHERE MERGED = 'Y'
-    AND ACTIVE_INACTIVE = 'ACTIVE'
-"""
-
-
 GET_MASTERFILE_DATA_FOR_MRN = """
     SELECT *
     FROM CRS_Patient_Masterfile
@@ -246,11 +236,6 @@ def get_all_merged_mrns_since(since):
     query_result = api.execute_hospital_query(
         GET_ALL_MERGED_MRNS_SINCE, params={"since": since}
     )
-    return [i["Patient_Number"] for i in query_result]
-
-
-def get_all_active_merged_mrns():
-    query_result = api.execute_hospital_query(GET_ALL_ACTIVE_MERGED_MRNS)
     return [i["Patient_Number"] for i in query_result]
 
 
