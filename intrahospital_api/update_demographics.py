@@ -339,7 +339,7 @@ def get_masterfile_row(mrn):
     if rows:
         return rows[0]
 
-def parse_merge_comments(initial_mrn, mrn_to_upstream_merge_data=None):
+def parse_merge_comments(initial_mrn, mrn_to_upstream_merge_data):
     """
     Given a MRN, return an active related MRN (may be the same one),
     and a list of dictionaries of inactive mrns to be converted to
@@ -347,9 +347,9 @@ def parse_merge_comments(initial_mrn, mrn_to_upstream_merge_data=None):
 
     Raise a MergeException if there are multiple active MRNs
 
-    The optional mrn_to_upstream_merge_data is a dictionary of MRN to
+    mrn_to_upstream_merge_data is a dictionary of MRN to
     "Patient_Number", "ACTIVE_INACTIVE", "MERGE_COMMENTS", "MERGED"
-    fields of the upstream database.
+    fields of merged rows in the upstream database.
 
     This will be used first to get the upstream row rather than querying
     the upstream database each time.
@@ -439,8 +439,12 @@ def get_active_mrn_and_merged_mrn_data(mrn, mrn_to_upstream_merge_data=None):
     suggests is something that we expect should never happen
     in the upstream system.
     """
+
+    # mrn_to_upstream_merge_data is an optional dictionary of
+    # mrn to upstream rows.
     if mrn_to_upstream_merge_data is None:
         mrn_to_upstream_merge_data = {}
+
     row = mrn_to_upstream_merge_data.get(mrn)
     if not row:
         row = get_masterfile_row(mrn)
