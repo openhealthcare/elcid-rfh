@@ -7,8 +7,8 @@ from unittest.mock import patch
 from elcid import episode_categories
 
 
-class TransferHistoriesTestCase(OpalTestCase):
-    def test_create_transfer_histories(self):
+class CreateTransferHistoriesTestCase(OpalTestCase):
+    def test_simple_create_transfer_histories(self):
         """
         Tests that the create transfer histories loader
         populates the key fields on the model
@@ -49,7 +49,6 @@ class TransferHistoriesTestCase(OpalTestCase):
             found_th.transfer_end_datetime.date(), datetime.date.today() - datetime.timedelta(1)
         )
 
-class CreateTransferHistoriesFromUpstreamResultTestCase(OpalTestCase):
     @patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
     def test_creates_patients(self, create_rfh_patient_from_hospital_number):
         row = {
@@ -73,7 +72,7 @@ class CreateTransferHistoriesFromUpstreamResultTestCase(OpalTestCase):
             patient.demographics_set.update(hospital_number="123")
             return patient
         create_rfh_patient_from_hospital_number.side_effect = create_patient
-        loader.create_transfer_histories_from_upstream_result([row])
+        loader.create_transfer_histories([row])
         patient = Patient.objects.get(demographics__hospital_number="123")
         found_th = patient.transferhistory_set.get()
         self.assertEqual(found_th.encounter_slice_id, row["ENCNTR_SLICE_ID"])
@@ -88,7 +87,7 @@ class CreateTransferHistoriesFromUpstreamResultTestCase(OpalTestCase):
             found_th.transfer_end_datetime.date(), datetime.date.today() - datetime.timedelta(1)
         )
 
-    def handles_merged_mrns(self):
+    def test_handles_merged_mrns(self):
         row = {
             k: None for k in models.TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS.keys()
         }
@@ -114,7 +113,7 @@ class CreateTransferHistoriesFromUpstreamResultTestCase(OpalTestCase):
         patient.mergedmrn_set.create(
             mrn="234"
         )
-        loader.create_transfer_histories_from_upstream_result([row])
+        loader.create_transfer_histories([row])
         self.assertTrue(
             patient.transferhistory_set.exists()
         )

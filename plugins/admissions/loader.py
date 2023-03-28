@@ -203,7 +203,7 @@ def load_transfer_history_since(since):
     logger.info(
         f"Transfer histories: queries {len(query_result)} rows in {query_time}s"
     )
-    created = create_transfer_histories_from_upstream_result(query_result)
+    created = create_transfer_histories(query_result)
     created_end = time.time()
     logger.info(f'Transfer histories: created {len(created)} in {created_end - query_end}')
     return created
@@ -223,7 +223,7 @@ def load_transfer_history_for_patient(patient):
             params={'mrn': mrn}
         )
         transfers.extend(query_result)
-    created = create_transfer_histories_from_upstream_result(transfers)
+    created = create_transfer_histories(transfers)
     return created
 
 
@@ -248,15 +248,17 @@ def create_patients(mrns):
             )
 
 
-def create_transfer_histories_from_upstream_result(some_rows):
-    create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
-    return create_transfer_histories(some_rows)
-
-
 @transaction.atomic
 def create_transfer_histories(some_rows):
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
     mrns = [i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows]
     mrn_to_patients = find_patients_from_mrns(mrns)
+
+    for mrn in mrns:
+        if mrn not in mrn_to_patients:
+            mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(
+                mrn, InfectionService, run_async=False
+            )
 
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
