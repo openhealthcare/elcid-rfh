@@ -164,4 +164,4 @@ class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
         mrns = get_all_active_merged_mrns()
-        update_demographics.check_and_handle_upstream_merges_for_mrns(mrns)
+        check_and_handle_upstream_merges_for_mrns(mrns)
