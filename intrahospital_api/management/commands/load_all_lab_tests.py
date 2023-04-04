@@ -222,6 +222,15 @@ def cached_get_id_from_lookup_table(cursor, patient_id, test_name, lab_number):
 
 
 def get_delete_ids():
+    """
+    Creates a lookup table of patient_id, test_name, lab_number
+    for all lab tests.
+
+    Reads through the lab test csv and get the ids for tests
+    who have a patient_id, test_name, lab_number in the csv
+
+    Return the ids
+    """
     query = """
     CREATE TABLE lab_test_lookup AS SELECT patient_id, test_name, lab_number, id FROM labtests_labtest;
     CREATE INDEX lab_test_lookup_idx ON lab_test_lookup(patient_id, test_name, lab_number);
@@ -246,6 +255,19 @@ def get_delete_ids():
 @timing
 @transaction.atomic
 def run_delete():
+    """
+    Delete all lab tests that have patient id, test name and lab number
+    in the lab tests csv.
+
+    We do it in batches of 50000 as otherwise the process uses too much
+    memory.
+
+    We manually have to delete from ipc_infectionalert and labtests_observation
+    as ipc_infectionalert raises a constraint alert if the lab tests aren't deleted
+    first.
+
+    We manually delete from labtests_observation as the delete does not cascade.
+    """
     cnt = 0
     delete_ids_list = get_delete_ids()
     cnt = len(delete_ids_list)
@@ -421,21 +443,39 @@ def gzip_results():
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        # Only create the resutls csv do not do the rest of the load
+        parser.add_argument(
+            '--only_results_csv',
+            help='Only create the results csv',
+            action='store_false'
+        )
+        # Do not create the results csv, assume it has already been created
+        parser.add_argument(
+            '--use_existing_results',
+            help='Use an existing results csv rather than creating one',
+            action='store_false'
+        )
+
     @timing
     def handle(self, *args, **options):
         logger.info('Starting')
-        # Write all the columns we need out of the upstream table
-        # into out table
-        logger.info('Writing results')
-        write_results()
-        logger.info('Writing lab_test csv')
-        write_lab_test_csv()
-        logger.info('Running the delete')
-        run_delete()
+        only_results = options["only_results_csv"]
+        use_existing_results = options["use_existing_results"]
 
-        logger.info('Copying in the lab tests')
-        copy_lab_tests()
-        logger.info('Writing the observations csv')
-        write_observation_csv()
-        copy_observations()
+        if not use_existing_results:
+            logger.info('Writing results')
+            write_results()
+        if not only_results:
+            logger.info('Writing lab_test csv')
+            write_lab_test_csv()
+            logger.info('Running the delete')
+            run_delete()
+
+            logger.info('Copying in the lab tests')
+            copy_lab_tests()
+            logger.info('Writing the observations csv')
+            write_observation_csv()
+            logger.info('Copying in the observations')
+            copy_observations()
         logger.info("Finished")
