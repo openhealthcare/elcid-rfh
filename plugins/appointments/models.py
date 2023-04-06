@@ -141,7 +141,7 @@ class Appointment(models.Model):
         'insert_date'                      : 'insert_date',
         'last_updated'                     : 'last_updated',
         'AIG_Resource_ID'                  : 'aig_resource_id',
-        'AIL_Location_Resource_ID'         : 'aiL_location_resource_id',
+        'AIL_Location_Resource_ID'         : 'ail_location_resource_id',
         'AIP_Personnel_ID'                 : 'aip_personnel_id',
         'TCI_DateTime_Text'                : 'tci_datetime_text',
         'TCI_DateTime'                     : 'tci_datetime',
