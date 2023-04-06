@@ -80,7 +80,7 @@ class Appointment(models.Model):
     aig_resource_id          = models.CharField(
         max_length=255,blank=True, null=True,
         help_text="General Resourse associated with non-consultant seeing the patient eg SPR, Nurse, Therapist")
-    aiL_location_resource_id = models.CharField(max_length=255,blank=True, null=True,
+    ail_location_resource_id = models.CharField(max_length=255,blank=True, null=True,
                                                 help_text="Actual location of the appointment")
     aip_personnel_id         = models.CharField(max_length=255, blank=True, null=True,
                                                 help_text="Consultant resource details if they are seeing the patient.")
