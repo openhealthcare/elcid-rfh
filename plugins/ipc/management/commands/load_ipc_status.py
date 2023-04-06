@@ -108,7 +108,9 @@ class Command(BaseCommand):
                         # is already connected to another patient created
                         # within the load
                         patient, _ = loader.get_or_create_patient(
-                            mrn, elcid_episode_categories.InfectionService
+                            mrn,
+                            elcid_episode_categories.InfectionService,
+                            run_async=False
                         )
                     except update_demographics.CernerPatientNotFoundException:
                         continue
