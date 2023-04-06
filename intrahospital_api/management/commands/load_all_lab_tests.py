@@ -448,13 +448,13 @@ class Command(BaseCommand):
         parser.add_argument(
             '--only_results_csv',
             help='Only create the results csv',
-            action='store_false'
+            action='store_true'
         )
         # Do not create the results csv, assume it has already been created
         parser.add_argument(
             '--use_existing_results',
             help='Use an existing results csv rather than creating one',
-            action='store_false'
+            action='store_true'
         )
 
     @timing
