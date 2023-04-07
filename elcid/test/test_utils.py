@@ -88,3 +88,7 @@ class FindPatientsFromMRNsTestCase(OpalTestCase):
     def test_no_match(self):
         result = utils.find_patients_from_mrns(["123"])
         self.assertEqual(result, {})
+
+    def test_ignores_nones(self):
+        result = utils.find_patients_from_mrns([None])
+        self.assertEqual(result, {})
