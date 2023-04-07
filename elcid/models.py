@@ -9,7 +9,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from opal.utils import camelcase_to_underscore
 import opal.models as omodels
-from obs import models as obs_models
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel, Patient
@@ -760,7 +759,7 @@ class MicroInputICURoundRelation(models.Model):
         MicrobiologyInput, blank=True, null=True, on_delete=models.SET_NULL
     )
     observation = models.OneToOneField(
-        obs_models.Observation, blank=True, null=True, on_delete=models.SET_NULL
+        "obs.Observation", blank=True, null=True, on_delete=models.SET_NULL
     )
     icu_round = models.OneToOneField(
         ICURound,
@@ -770,6 +769,7 @@ class MicroInputICURoundRelation(models.Model):
     )
 
     def update_from_dict(self, episode, when, data, *args, **kwargs):
+        from plugins.obs import models as obs_models
         if self.observation_id:
             observation = self.observation
         else:

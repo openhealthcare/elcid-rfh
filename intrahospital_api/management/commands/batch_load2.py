@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from opal.models import Patient
 
-from elcid.models import Demographics
+from elcid import utils
 from intrahospital_api.loader import api
 from intrahospital_api import update_lab_tests
 from plugins.labtests.models import Observation
@@ -77,22 +77,17 @@ class Command(BaseCommand):
         data = api.data_deltas(since)
         tquery2 = time.time()
 
-        demographics_set = Demographics.objects.all()
+        mrns = [item['demographics']["hospital_number"] for item in data]
+        patient_to_mrn = utils.find_patients_from_mrns(mrns)
 
         for item in data:
             obs_count += len(item['lab_tests'])
-
-            patient_demographics_set = demographics_set.filter(
-                hospital_number=item['demographics']["hospital_number"]
-            )
-
-            if not item['demographics']["hospital_number"]:
+            mrn = item['demographics']["hospital_number"]
+            patient = patient_to_mrn.get(mrn)
+            # The patient is not in our cohort
+            if not patient:
                 continue
-
-            if not patient_demographics_set.exists():
-                continue  # Not in our cohort
-
-            update_patient(patient_demographics_set.first().patient,  item["lab_tests"])
+            update_patient(patient,  item["lab_tests"])
 
         t2 = time.time()
 
