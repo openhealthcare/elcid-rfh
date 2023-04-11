@@ -1,11 +1,7 @@
 {% load forms %}
 
-{% input field="Demographics.birth_place" %}
-<div ng-show="editing.demographics.birth_place.length && editing.demographics.birth_place !== 'United Kingdom'">
-  {% include models.Nationality.get_form_template %}
-</div>
+{% include models.Nationality.get_form_template %}
 {% include models.CommuninicationConsiderations.get_form_template %}
-
 
 <span ng-repeat="item in [editing.nationality]">
   {% include "partials/_item_created_updated_by.html" %}

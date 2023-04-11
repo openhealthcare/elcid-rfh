@@ -69,11 +69,6 @@ class NationalityAndLanguage(pathways.PagePathway):
         # to get around this we need to update the demographics?
 
         if patient:
-            our_demographics = patient.demographics_set.get()
-            client_demographics = data.pop("demographics")
-            our_demographics.birth_place = client_demographics[0]["birth_place"]
-            our_demographics.save()
-
             # We don't necessarily call update_from_dict on
             # pathway subrecords, only if they are editted,
             # so force removal of previous_mrn if we hit

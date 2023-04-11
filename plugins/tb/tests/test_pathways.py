@@ -22,9 +22,9 @@ class NationalityAndLanguageTestCase(OpalTestCase):
 
     def test_nulls_out_communication_considerations(self):
         data = {
-            "demographics": [{'birth_place': None}],
             "nationality": [{
                 "id": self.patient.nationality_set.get().id,
+                "birth_place": "France",
                 "arrival_in_the_uk": "1956",
                 "previous_mrn": "234"
             }]
@@ -49,8 +49,8 @@ class NationalityAndLanguageTestCase(OpalTestCase):
 
     def test_nulls_out_nationality(self):
         data = {
-            "demographics": [{'birth_place': None}],
             "communication_considerations": [{
+                "birth_place": "France",
                 "arrival_in_the_uk": "1956",
                 "previous_mrn": "234"
             }]
