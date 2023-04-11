@@ -14,12 +14,48 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
     @mock.patch("plugins.covid.loader.Episode")
     def test_create_patient_who_does_not_exist(
         self,
-            Episode,
+        Episode,
         ProdAPI,
         create_rfh_patient_from_hospital_number
     ):
         ProdAPI.return_value.execute_hospital_query.return_value = [
             {"vPatient_Number": "111"}
+        ]
+        Episode.objects.get_or_create.return_value = (None, None)
+        loader.create_followup_episodes()
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            "111", InfectionService
+        )
+
+    @mock.patch("plugins.covid.loader.Episode")
+    def test_dont_create_patient_who_does_exist(
+        self,
+        Episode,
+        ProdAPI,
+        create_rfh_patient_from_hospital_number
+    ):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="111"
+        )
+        ProdAPI.return_value.execute_hospital_query.return_value = [
+            {"vPatient_Number": "111"}
+        ]
+        Episode.objects.get_or_create.return_value = (None, None)
+        loader.create_followup_episodes()
+        self.assertFalse(
+            create_rfh_patient_from_hospital_number.called
+        )
+
+    @mock.patch("plugins.covid.loader.Episode")
+    def test_dont_create_patients_with_zero_prefixes(
+        self,
+        Episode,
+        ProdAPI,
+        create_rfh_patient_from_hospital_number
+    ):
+        ProdAPI.return_value.execute_hospital_query.return_value = [
+            {"vPatient_Number": "0111"}
         ]
         Episode.objects.get_or_create.return_value = (None, None)
         loader.create_followup_episodes()

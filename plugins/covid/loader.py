@@ -4,6 +4,7 @@ Loading Covid data from upstream
 import datetime
 from opal.models import Patient, Episode
 from elcid.models import Demographics
+from elcid import utils
 from elcid.episode_categories import InfectionService
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
@@ -66,20 +67,19 @@ def create_followup_episodes():
         )
         results.update(i["vPatient_Number"] for i in results_for_type)
 
-    existing_hospital_numbers = set(Demographics.objects.filter(
-        patient__episode__category_name=CovidEpisode.display_name
-    ).values_list("hospital_number", flat=True))
+    mrn_to_patient = utils.find_patients_from_mrns(results)
 
     results = list(results)
     for mrn in results:
-        if mrn not in existing_hospital_numbers:
-            patient = Patient.objects.filter(
-                demographics__hospital_number=mrn
-            ).first()
-            if not patient:
-                patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
-
-            covid_episode, _ = Episode.objects.get_or_create(
-                patient=patient,
-                category_name=CovidEpisode.display_name
-            )
+        patient = mrn_to_patient.get(mrn)
+        if not patient:
+            if mrn is None:
+                continue
+            mrn = mrn.lstrip('0')
+            if len(mrn) == 0:
+                continue
+            patient = create_rfh_patient_from_hospital_number(mrn, InfectionService)
+        Episode.objects.get_or_create(
+            patient=patient,
+            category_name=CovidEpisode.display_name
+        )
