@@ -12,6 +12,7 @@ from opal.models import Patient
 
 from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
+from elcid.utils import find_patients_from_mrns
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
 from plugins.admissions.models import Encounter, PatientEncounterStatus, TransferHistory, BedStatus
@@ -133,11 +134,18 @@ def load_encounters(patient):
     """
     api = ProdAPI()
 
-    demographic     = patient.demographics()
-    encounters = api.execute_hospital_query(
-        Q_GET_ALL_PATIENT_ENCOUNTERS,
-        params={'mrn': demographic.hospital_number}
+    mrn = patient.demographics().hospital_number
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
+    all_mrns = [mrn] + other_mrns
+    encounters = []
+    for mrn in all_mrns:
+        query_result = api.execute_hospital_query(
+            Q_GET_ALL_PATIENT_ENCOUNTERS,
+            params={'mrn': mrn}
+        )
+        encounters.extend(query_result)
     update_encounters_from_query_result(encounters)
 
 
@@ -219,10 +227,18 @@ def load_transfer_history_since(since):
 def load_transfer_history_for_patient(patient):
     api = ProdAPI()
     mrn = patient.demographics().hospital_number
-    query_result = api.execute_warehouse_query(
-        Q_GET_TRANSFERS_FOR_MRN, params={"mrn": mrn}
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
-    created = create_transfer_histories_from_upstream_result(query_result)
+    all_mrns = [mrn] + other_mrns
+    transfers = []
+    for mrn in all_mrns:
+        query_result = api.execute_warehouse_query(
+            Q_GET_TRANSFERS_FOR_MRN,
+            params={'mrn': mrn}
+        )
+        transfers.extend(query_result)
+    created = create_transfer_histories_from_upstream_result(transfers)
     return created
 
 
@@ -293,29 +309,33 @@ def load_bed_status():
         Q_GET_ALL_BED_STATUS
     )
 
+    mrns = [i["Local_Patient_Identifier"] for i in status]
+    mrn_to_patient = find_patients_from_mrns(mrns)
+
+    for mrn in mrns:
+        if mrn not in mrn_to_patient:
+            if mrn and mrn.strip("0").strip():
+                mrn_to_patient[mrn] = create_rfh_patient_from_hospital_number(
+                    mrn, InfectionService
+                )
+
     with transaction.atomic():
 
         BedStatus.objects.all().delete()
 
         for bed_data in status:
-            bed_status = BedStatus()
+            patient = mrn_to_patient.get(bed_data["Local_Patient_Identifier"])
+            # find_patients_from_mrns excludes invalid MRNs,
+            # if the patient identifier is not present it means
+            # it is either Nones, an empty string, only made up of zeros or empty spaces
+            # in this case, skip it.
+            if not patient:
+                continue
+            bed_status = BedStatus(patient=patient)
             for k, v in bed_data.items():
                 setattr(
                     bed_status,
                     BedStatus.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k],
                     v
                 )
-
-            if bed_status.local_patient_identifier:
-                patient = Patient.objects.filter(
-                    demographics__hospital_number=bed_status.local_patient_identifier
-                ).first()
-
-                if patient:
-                    bed_status.patient = patient
-                else:
-                    patient = create_rfh_patient_from_hospital_number(
-                        bed_status.local_patient_identifier, InfectionService)
-                    bed_status.patient = patient
-
             bed_status.save()

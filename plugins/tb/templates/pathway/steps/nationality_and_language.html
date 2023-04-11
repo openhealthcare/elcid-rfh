@@ -5,3 +5,8 @@
   {% include models.Nationality.get_form_template %}
 </div>
 {% include models.CommuninicationConsiderations.get_form_template %}
+
+
+<span ng-repeat="item in [editing.nationality]">
+  {% include "partials/_item_created_updated_by.html" %}
+</span>

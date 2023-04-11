@@ -15,7 +15,7 @@ from intrahospital_api import models as intrahospital_api_models
 from plugins.icu import models as icu_models
 from plugins.rnoh import models as rnoh_models
 from plugins.tb import models as tb_models
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 from opal import models as opal_models
 import reversion
 

@@ -34,3 +34,59 @@ class ModelMethodLoggingTestCase(OpalTestCase):
         self.assertEqual(
             result, "some_var"
         )
+
+
+class FindPatientsFromMRNsTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def test_demographics_match(self):
+        self.patient.demographics_set.update(
+            hospital_number="123"
+        )
+        result = utils.find_patients_from_mrns(["123"])
+        self.assertEqual(result["123"], self.patient)
+
+    def test_demographics_zero_match(self):
+        self.patient.demographics_set.update(
+            hospital_number="123"
+        )
+        result = utils.find_patients_from_mrns(["0123"])
+        self.assertEqual(result["0123"], self.patient)
+
+    def test_ignore_empties(self):
+        # we shouldn't have empty strings but if we
+        # do we should not return them.
+        self.patient.demographics_set.update(
+            hospital_number=""
+        )
+        result = utils.find_patients_from_mrns([None])
+        self.assertEqual(result, {})
+        result = utils.find_patients_from_mrns([""])
+        self.assertEqual(result, {})
+        result = utils.find_patients_from_mrns(["000"])
+        self.assertEqual(result, {})
+
+    def test_merged_mrn_match(self):
+        self.patient.demographics_set.update(
+            hospital_number="234"
+        )
+        self.patient.mergedmrn_set.create(
+            mrn="123"
+        )
+        result = utils.find_patients_from_mrns(["123"])
+        self.assertEqual(result["123"], self.patient)
+
+    def test_merged_mrn_zero_match(self):
+        self.patient.demographics_set.update(
+            hospital_number="234"
+        )
+        self.patient.mergedmrn_set.create(
+            mrn="123"
+        )
+        result = utils.find_patients_from_mrns(["0123"])
+        self.assertEqual(result["0123"], self.patient)
+
+    def test_no_match(self):
+        result = utils.find_patients_from_mrns(["123"])
+        self.assertEqual(result, {})

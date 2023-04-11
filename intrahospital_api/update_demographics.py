@@ -2,6 +2,7 @@
 Handles updating demographics pulled in by the loader
 """
 import datetime
+import re
 from plugins.monitoring.models import Fact
 from time import time
 from collections import defaultdict
@@ -21,6 +22,13 @@ from elcid.utils import timing
 from elcid import constants, models
 
 api = get_api()
+
+
+GET_MASTERFILE_DATA_FOR_MRN = """
+    SELECT *
+    FROM CRS_Patient_Masterfile
+    WHERE Patient_Number = @mrn
+"""
 
 
 def update_external_demographics(
@@ -194,6 +202,146 @@ def update_if_changed(instance, update_dict):
         instance.save()
 
 
+def get_mrn_and_date_from_merge_comment(merge_comment):
+    """
+    Takes in an merge comment e.g.
+    " Merged with MRN 123456 Oct 18 2014 11:03AM  Merged with MRN 234567 on Oct 22 2013  4:44PM"
+    returns a list of (MRN, datetime_merged,)
+    """
+    regex = r'Merged with MRN (?P<mrn>\w*\d*) on (?P<month>\w\w\w)\s(?P<day>[\s|\d]\d) (?P<year>\d\d\d\d)\s(?P<HHMM>[\s|\d]\d:\d\d)(?P<AMPM>[A|P]M)'
+    found = list(set(re.findall(regex, merge_comment)))
+    result = []
+    for match in found:
+        mrn = match[0]
+        date_str = f"{match[2]} {match[1]} {match[3]} {match[4]}{match[5]}"
+        merge_dt = datetime.datetime.strptime(date_str, "%d %b %Y %I:%M%p")
+        result.append((mrn, timezone.make_aware(merge_dt),))
+    # return by merged date
+    return sorted(result, key=lambda x: x[1], reverse=True)
+
+
+class MergeException(Exception):
+    pass
+
+
+class CernerPatientNotFoundException(Exception):
+    pass
+
+
+def get_masterfile_row(mrn):
+    """
+    Takes in an MRN and returns the row from the master file.
+
+    If there a multiple rows raise a ValueError as this
+    should never be the case.
+    """
+    rows = api.execute_hospital_query(
+        GET_MASTERFILE_DATA_FOR_MRN, {"mrn": mrn}
+    )
+    if len(rows) > 1:
+        raise ValueError(f'Multiple results found for MRN {mrn}')
+    if rows:
+        return rows[0]
+
+def parse_merge_comments(initial_mrn):
+    """
+    Given a MRN, return an active related MRN (may be the same one),
+    and a list of dictionaries of inactive mrns to be converted to
+    MergedMRN instances
+
+    Raise a MergeException if there are multiple active MRNs
+    """
+    parsed = set()
+    related_mrns = [initial_mrn]
+    active_mrn = None
+    inactive_mrn_dicts = []
+
+    while len(related_mrns) > 0:
+        next_mrn = related_mrns.pop(0)
+
+        if next_mrn in parsed:
+            continue
+        else:
+            parsed.add(next_mrn)
+
+            next_row = get_masterfile_row(next_mrn)
+            merge_comments = next_row["MERGE_COMMENTS"]
+
+            if next_row["ACTIVE_INACTIVE"] == "ACTIVE":
+                if active_mrn is None:
+                    active_mrn = next_mrn
+                else:
+                    raise MergeException(
+                        f'Multiple active related MRNs ({active_mrn}, {next_mrn}) found for {initial_mrn}'
+                    )
+            else:
+                inactive_mrn_dicts.append({'mrn': next_mrn, 'merge_comments': merge_comments })
+
+            merged_mrns = get_mrn_and_date_from_merge_comment(merge_comments)
+            for found_mrn, _ in merged_mrns:
+                if found_mrn in parsed:
+                    continue
+                else:
+                    related_mrns.append(found_mrn)
+
+    return active_mrn, inactive_mrn_dicts
+
+
+def get_active_mrn_and_merged_mrn_data(mrn):
+    """
+    For an MRN return the active MRN related to it (which could be itself)
+    and a list of inactive MRNs that are associated with it.
+
+    If there are no inactive MRNs or we are to say which is the
+    active MRN return the MRN passed in and an empty list.
+
+    Returns all merged MRNs related to the MRN including the row
+    for the MRN from the CRS_Patient_Masterfile.
+
+    The merged comments can be nested for for MRN x
+    we can have MERGE_COMMENTS "Merged with y on 21 Jan"
+    Then for y we can have the merge comment "Merged with z on 30 Mar"
+    This will return the rows for x, y and z
+
+    If the MRN is not marked as merged, return the MRN and an empty list
+    If we are unable to process the merge comment, log an error
+    return the MRN and an empty list.
+
+    If we are unable to find the MRN in the master file return
+    a CernerPatientNotFoundException. This should not happen.
+
+    If the masterfile has multiple rows for an MRN a value
+    error is raised by `get_masterfile_row` this
+    suggests is something that we expect should never happen
+    in the upstream system.
+    """
+    row = get_masterfile_row(mrn)
+
+    if row is None:
+        raise CernerPatientNotFoundException(
+            f'Unable to find a masterfile row for {mrn}'
+        )
+    if not row["MERGED"] == 'Y':
+        # The patient is not merged
+        return mrn, []
+    if not row["MERGE_COMMENTS"]:
+        logger.error(
+            f"MRN {mrn} is marked as merged but there is not merge comment"
+        )
+
+    try:
+        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn)
+    except MergeException as err:
+        logger.error(f"Merge exception raised for {mrn} with '{err}'")
+        return mrn, []
+
+    if not active_mrn:
+        logger.error(f"Unable to find an active MRN for {mrn}")
+        return mrn, []
+
+    return active_mrn, merged_mrn_dicts
+
+
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
     """
     Updates a patient's:
@@ -275,6 +423,7 @@ def update_patient_information(patient):
         return
     if not has_master_file_timestamp_changed(patient, upstream_patient_information):
         return
+
     update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information)
     master_file_dict = upstream_patient_information[models.MasterFileMeta.get_api_name()]
     master_file_metas = patient.masterfilemeta_set.all()

@@ -9,9 +9,11 @@ from plugins.tb import episode_categories
 
 @mock.patch("plugins.tb.loader.create_rfh_patient_from_hospital_number")
 @mock.patch("plugins.tb.loader.ProdAPI")
+@mock.patch("plugins.tb.loader.logger")
 class CreateFollowUpEpisodeTestCase(OpalTestCase):
     def test_create_patient_who_does_not_exist(
         self,
+        logger,
         ProdAPI,
         create_rfh_patient_from_hospital_number
     ):
@@ -43,6 +45,7 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
 
     def test_create_episode_which_does_not_exist(
         self,
+        logger,
         ProdAPI,
         create_rfh_patient_from_hospital_number
     ):
@@ -69,6 +72,7 @@ class CreateFollowUpEpisodeTestCase(OpalTestCase):
 
     def test_do_nothing_if_episode_exists(
         self,
+        logger,
         ProdAPI,
         create_rfh_patient_from_hospital_number
     ):
