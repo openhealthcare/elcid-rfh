@@ -35,7 +35,6 @@ def pre_load_covid_patients():
     patient_mrns = set()
 
     for test_name in lab.COVID_19_TEST_NAMES:
-
         results = api.execute_trust_query(
             Q_GET_COVID_IDS,
             params={'test_name': test_name, 'since': last_90_days}
@@ -44,18 +43,18 @@ def pre_load_covid_patients():
         # lab test MRNs can have preceding zeros, elCID does not use zero
         # prefixes as we match the upstream masterfile table
         mrns = [
-            r['Patient_Number'].lstrip('0') for r in results if r['Patient_Number'].lstrip('0')
+            r['Patient_Number'] for r in results
         ]
         patient_mrns.update(mrns)
 
-    all_mrns = set(
-        Demographics.objects.values_list('hospital_number', flat=True)
-    )
-
+    mrn_to_patient = utils.find_patients_from_mrns(mrns)
     for mrn in patient_mrns:
-        if mrn in all_mrns:
+        if mrn in mrn_to_patient:
             continue
-        create_rfh_patient_from_hospital_number(mrn, InfectionService)
+        if mrn is not None:
+            mrn = mrn.lstrip('0')
+            if len(mrn) > 0:
+                create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
 
 def create_followup_episodes():
