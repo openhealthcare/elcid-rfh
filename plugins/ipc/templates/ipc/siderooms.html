@@ -69,7 +69,7 @@
         </div>
       </td>
       <td>
-        {{ sideroom_status.actions|default_if_none:"" }}
+        {{ sideroom_status.actions|default_if_none:""| linebreaks }}
       </td>
       <td ng-controller="IsolationHelper as isolationHelper">
         <span ng-show="isolationHelper.init(
