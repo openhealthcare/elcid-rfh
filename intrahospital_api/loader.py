@@ -147,16 +147,15 @@ def _load_patient(patient, patient_load):
     failed = []
     try:
         with transaction.atomic():
-            # hospital_number = patient.demographics_set.first().hospital_number
-            # results = api.results_for_hospital_number(hospital_number)
-            # logger.info(
-            #     f"Loaded results for patient id {patient.id}"
-            # )
-            # update_lab_tests.update_tests(patient, results)
-            # logger.info(
-            #     f"Tests updated for patient id {patient.id}"
-            # )
-            pass
+            hospital_number = patient.demographics_set.first().hospital_number
+            results = api.results_for_hospital_number(hospital_number)
+            logger.info(
+                f"Loaded results for patient id {patient.id}"
+            )
+            update_lab_tests.update_tests(patient, results)
+            logger.info(
+                f"Tests updated for patient id {patient.id}"
+            )
     except Exception:
         msg = f"Initial patient load for patient id {patient.id} failed on results"
         logger.error(f"{msg}\n{traceback.format_exc()}")
@@ -164,10 +163,10 @@ def _load_patient(patient, patient_load):
 
     loaders = [
         update_demographics.update_patient_information,
-        # load_imaging,
+        load_imaging,
         load_encounters,
         load_appointments,
-        # load_transfer_history_for_patient,
+        load_transfer_history_for_patient,
         # Discharge summaries are currently inaccurate
         # load_dischargesummaries
     ]
