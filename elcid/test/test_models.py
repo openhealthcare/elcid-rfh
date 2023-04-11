@@ -100,6 +100,12 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
                 {'consistency_token': '87654321'}, self.user
             )
 
+    def test_save(self):
+        self.demographics.hospital_number = '0AA1112'
+        self.demographics.save()
+        self.demographics.refresh_from_db()
+        self.assertEqual('AA1112', self.demographics.hospital_number)
+
 
 class PreviousMRNTestCase(OpalTestCase):
     def setUp(self):

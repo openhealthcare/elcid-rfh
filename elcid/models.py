@@ -87,6 +87,13 @@ class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
         if self.date_of_birth:
             return datetime.date.today().year - self.date_of_birth.year
 
+    def save(self, *args, **kwargs):
+        """
+        Remove any zero prefix on the hospital number
+        """
+        self.hospital_number = self.hospital_number.lstrip('0')
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name_plural = "Demographics"
 
