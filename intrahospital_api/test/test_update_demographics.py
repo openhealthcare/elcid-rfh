@@ -474,11 +474,11 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
         )
 
 
-@mock.patch("intrahospital_api.update_demographics.create_cache")
+@mock.patch("intrahospital_api.update_demographics.get_mrn_to_upstream_merge_data")
 @mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
 class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
-    def test_handles_an_inactive_mrn(self, get_or_create_patient, create_cache):
-        create_cache.return_value = {
+    def test_handles_an_inactive_mrn(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "INACTIVE",
                 "MERGED": "Y",
@@ -510,8 +510,8 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
 
 
-    def test_handles_an_active_mrn(self, get_or_create_patient, create_cache):
-        create_cache.return_value = {
+    def test_handles_an_active_mrn(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "ACTIVE",
                 "MERGED": "Y",
@@ -540,8 +540,8 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
             merged_mrn.mrn, "234"
         )
 
-    def test_handles_new_inactive_mrns(self, get_or_create_patient, create_cache):
-        create_cache.return_value = {
+    def test_handles_new_inactive_mrns(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "ACTIVE",
                 "MERGED": "Y",
@@ -673,9 +673,9 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         )
 
     @mock.patch('intrahospital_api.update_demographics.get_masterfile_row')
-    def test_uses_cache(self, get_masterfile_row):
+    def test_uses_mrn_to_upstream_merge_data(self, get_masterfile_row):
         """
-        Tests that if we use a cache the database is not called
+        Tests that if we use the mrn_to_upstream_merge_data dict the database is not called
         """
         get_masterfile_row.side_effect = lambda x: self.BASIC_MAPPING[x]
         active_mrn, merged_mrn_and_dates = update_demographics.get_active_mrn_and_merged_mrn_data(

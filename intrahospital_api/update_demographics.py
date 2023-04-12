@@ -30,16 +30,6 @@ GET_ALL_MERGED_MRNS_SINCE = """
     AND last_updated >= @since
 """
 
-# Returns all active merged patients
-# used by the merge_all_patients mgmt
-# command
-GET_ALL_ACTIVE_MERGED_MRNS = """
-    SELECT Patient_Number FROM CRS_Patient_Masterfile
-    WHERE MERGED = 'Y'
-    AND ACTIVE_INACTIVE = 'ACTIVE'
-"""
-
-
 GET_MASTERFILE_DATA_FOR_MRN = """
     SELECT *
     FROM CRS_Patient_Masterfile
@@ -249,11 +239,6 @@ def get_all_merged_mrns_since(since):
     return [i["Patient_Number"] for i in query_result]
 
 
-def get_all_active_merged_mrns():
-    query_result = api.execute_hospital_query(GET_ALL_ACTIVE_MERGED_MRNS)
-    return [i["Patient_Number"] for i in query_result]
-
-
 class MergeException(Exception):
     pass
 
@@ -275,7 +260,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     If they are active, creates MergedMRN for all
     related inactive MRNs.
     """
-    cache = create_cache()
+    mrn_to_upstream_merge_data = get_mrn_to_upstream_merge_data()
     now = timezone.now()
     active_mrn_to_merged_dicts = {}
     # it is possible that the MRNs passed
@@ -284,7 +269,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     # active MRN
     for mrn in mrns:
         active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
-            mrn, cache
+            mrn, mrn_to_upstream_merge_data
         )
         active_mrn_to_merged_dicts[active_mrn] = merged_dicts
 
@@ -320,7 +305,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
 
         # If there is an active patient then we need to create merged MRNs.
         if active_patient:
-            # we don't delete and readd to preservfe the our_merge_datetime
+            # we don't delete and write anew to preserve the our_merge_datetime field
             existing_merged_mrns = set([i.mrn for i in merged_mrn_objs])
             new_merged_mrns = set(i["mrn"] for i in merged_dicts)
             to_add_merged_mrns = new_merged_mrns - existing_merged_mrns
@@ -354,7 +339,7 @@ def get_masterfile_row(mrn):
     if rows:
         return rows[0]
 
-def parse_merge_comments(initial_mrn, cache=None):
+def parse_merge_comments(initial_mrn, mrn_to_upstream_merge_data):
     """
     Given a MRN, return an active related MRN (may be the same one),
     and a list of dictionaries of inactive mrns to be converted to
@@ -362,17 +347,19 @@ def parse_merge_comments(initial_mrn, cache=None):
 
     Raise a MergeException if there are multiple active MRNs
 
-    The cache that is passed in is a dictionary of MRN to a row
-    in the upstream Masterfile database. This will be used first to get
-    the upstream row rather than querying the upstream database
-    each time.
+    mrn_to_upstream_merge_data is a dictionary of MRN to
+    "Patient_Number", "ACTIVE_INACTIVE", "MERGE_COMMENTS", "MERGED"
+    fields of merged rows in the upstream database.
+
+    This will be used first to get the upstream row rather than querying
+    the upstream database each time.
     """
     parsed = set()
     related_mrns = [initial_mrn]
     active_mrn = None
     inactive_mrn_dicts = []
-    if cache is None:
-        cache = {}
+    if mrn_to_upstream_merge_data is None:
+        mrn_to_upstream_merge_data = {}
 
     while len(related_mrns) > 0:
         next_mrn = related_mrns.pop(0)
@@ -382,7 +369,7 @@ def parse_merge_comments(initial_mrn, cache=None):
         else:
             parsed.add(next_mrn)
 
-            next_row = cache.get(next_mrn)
+            next_row = mrn_to_upstream_merge_data.get(next_mrn)
             if not next_row:
                 next_row = get_masterfile_row(next_mrn)
             if not next_row:
@@ -417,7 +404,7 @@ def parse_merge_comments(initial_mrn, cache=None):
     return active_mrn, inactive_mrn_dicts
 
 
-def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
+def get_active_mrn_and_merged_mrn_data(mrn, mrn_to_upstream_merge_data=None):
     """
     For an MRN return the active MRN related to it (which could be itself)
     and a list of inactive MRNs that are associated with it.
@@ -428,8 +415,10 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
     Returns all merged MRNs related to the MRN including the row
     for the MRN from the CRS_Patient_Masterfile.
 
-    The cache that is passed in is a dictionary of MRN to a row
-    in the upstream Masterfile database. This will be used first to get
+
+    The optional mrn_to_upstream_merge_data is a dictionary of MRN to
+    "Patient_Number", "ACTIVE_INACTIVE", "MERGE_COMMENTS", "MERGED"
+    fields of the upstream database. This will be used first to get
     the upstream row rather than querying the upstream database
     each time.
 
@@ -440,7 +429,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
 
     If the MRN is not marked as merged, return the MRN and an empty list
     If we are unable to process the merge comment, log an error
-    return the MRN and  empty list.
+    return the MRN and an empty list.
 
     If we are unable to find the MRN in the master file return
     a CernerPatientNotFoundException. This should not happen.
@@ -450,9 +439,13 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
     suggests is something that we expect should never happen
     in the upstream system.
     """
-    if cache is None:
-        cache = {}
-    row = cache.get(mrn)
+
+    # mrn_to_upstream_merge_data is an optional dictionary of
+    # mrn to upstream rows.
+    if mrn_to_upstream_merge_data is None:
+        mrn_to_upstream_merge_data = {}
+
+    row = mrn_to_upstream_merge_data.get(mrn)
     if not row:
         row = get_masterfile_row(mrn)
 
@@ -470,7 +463,7 @@ def get_active_mrn_and_merged_mrn_data(mrn, cache=None):
         return mrn, []
 
     try:
-        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn, cache)
+        active_mrn, merged_mrn_dicts = parse_merge_comments(mrn, mrn_to_upstream_merge_data)
     except MergeException as err:
         logger.error(f"Merge exception raised for {mrn} with '{err}'")
         return mrn, []
@@ -646,7 +639,7 @@ def sync_recent_patient_information():
         value_int=changed_count
     )
 
-def create_cache():
+def get_mrn_to_upstream_merge_data():
     """
     Returns a dictionary of {
         MRN: {
@@ -662,7 +655,7 @@ def create_cache():
 
 
 @transaction.atomic
-def update_patient_information_since(last_updated, use_cache):
+def update_patient_information_since(last_updated):
     """
     Updates all patient data that has changed since
     the datetime last_updated.
