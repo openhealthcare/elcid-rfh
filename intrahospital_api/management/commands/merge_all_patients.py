@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import logger, loader, merge_patient, update_demographics
 from elcid import episode_categories as elcid_episode_categories
@@ -109,21 +110,19 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
         )
         active_mrn_to_merged_dicts[active_mrn] = merged_dicts
 
-    demographics = models.Demographics.objects.all().select_related('patient')
-    mrn_to_patient = {i.hospital_number: i.patient for i in demographics}
-
     logger.info('Generating merged MRNs')
     for active_mrn, merged_dicts in active_mrn_to_merged_dicts.items():
         to_create = []
         merged_mrns = [i["mrn"] for i in merged_dicts]
-        active_patient = mrn_to_patient.get(active_mrn)
+        active_patient = Patient.objects.filter(
+            demographics__hospital_number=active_mrn
+        ).first()
         merged_mrn_objs = models.MergedMRN.objects.filter(
             mrn__in=merged_mrns
         )
-        unmerged_patients = [
-            mrn_to_patient.get(i) for i in merged_mrns if i in mrn_to_patient
-        ]
-
+        unmerged_patients = Patient.objects.filter(
+            demographics__hospital_number__in=merged_mrns
+        )
         # If we have patients that are inactive we need to do a merge.
         if len(unmerged_patients) > 0:
             if not active_patient:
