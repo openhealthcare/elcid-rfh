@@ -135,7 +135,7 @@ def merge_patient_episodes(patient_id):
 def patient_ids_with_duplicate_episode_categories():
     dups = opal_models.Episode.objects.values('patient_id', 'category_name').annotate(
         cnt=Count('id')
-    ).filter(cnt__gt=2)
+    ).filter(cnt__gte=2)
     return [i["patient_id"] for i in dups]
 
 
