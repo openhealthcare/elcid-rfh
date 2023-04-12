@@ -73,6 +73,16 @@ class LoadBedStatusTestCase(OpalTestCase):
             bed_status.patient, patient
         )
 
+    def test_load_bed_status_does_not_create_patients_with_empty_mrns(self, prod_api, create_rfh_patient_from_hospital_number):
+        self.bed_status_row["Local_Patient_Identifier"] = ""
+        prod_api.return_value.execute_warehouse_query.return_value =[
+            self.bed_status_row
+        ]
+        loader.load_bed_status()
+        self.assertFalse(
+            create_rfh_patient_from_hospital_number.called
+        )
+
     def test_load_bed_status_existing_patient(self, prod_api, create_rfh_patient_from_hospital_number):
         patient, _ = self.new_patient_and_episode_please()
         patient.demographics_set.update(

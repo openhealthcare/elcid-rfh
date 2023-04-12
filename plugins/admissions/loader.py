@@ -295,9 +295,10 @@ def load_bed_status():
 
     for mrn in mrns:
         if mrn not in mrn_to_patient:
-            mrn_to_patient[mrn] = create_rfh_patient_from_hospital_number(
-                mrn, InfectionService
-            )
+            if mrn and mrn.strip("0").strip():
+                mrn_to_patient[mrn] = create_rfh_patient_from_hospital_number(
+                    mrn, InfectionService
+                )
 
     with transaction.atomic():
 

@@ -6,6 +6,7 @@ from opal.core.test import OpalTestCase
 from elcid import episode_categories
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
+from intrahospital_api import update_demographics
 from plugins.labtests import models as lab_test_models
 from plugins.tb import episode_categories as tb_episode_categories
 
@@ -448,6 +449,16 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             ).exists()
         )
         self.assertTrue(load_patient.called)
+
+
+    @mock.patch(
+        'intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data'
+    )
+    def test_create_rfh_patient_no_upstream(self, get_active_mrn_and_merged_mrn_data, load_patient):
+        get_active_mrn_and_merged_mrn_data.side_effect = update_demographics.CernerPatientNotFoundException('patient not found')
+        loader.create_rfh_patient_from_hospital_number(
+            '456', episode_category=episode_categories.InfectionService
+        )
 
 
 class GetOrCreatePatientTestCase(OpalTestCase):

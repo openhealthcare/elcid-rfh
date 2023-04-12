@@ -61,6 +61,8 @@ def create_rfh_patient_from_hospital_number(
     If a hospital number prefixed with zero is passed in raise ValueError
     If the hospital number has already been merged into another raise ValueError
     """
+    not_found_upstream = False
+    active_mrn = None
     if hospital_number.startswith('0'):
         raise ValueError(
             f'Unable to create a patient {hospital_number}. Hospital numbers within elCID should never start with a zero'
@@ -73,9 +75,19 @@ def create_rfh_patient_from_hospital_number(
         raise ValueError('MRN has already been merged into another MRN')
 
     if rfh_patient:
-        active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
-            hospital_number
-        )
+        try:
+            active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
+                hospital_number
+            )
+        except update_demographics.CernerPatientNotFoundException:
+            logger.info(f'Patient for {hospital_number} not found upstream')
+            not_found_upstream = True
+
+    if active_mrn is None:
+        # Active MRN is None if the patient is not RFH
+        # or for whatever reason does not exist in the
+        # Cerner master file
+        active_mrn = hospital_number
 
     patient = Patient.objects.create()
     patient.demographics_set.update(
@@ -85,7 +97,7 @@ def create_rfh_patient_from_hospital_number(
         category_name=episode_category.display_name
     )
 
-    if rfh_patient:
+    if rfh_patient and not_found_upstream == False:
         for merged_mrn_dict in merged_mrn_dicts:
             patient.mergedmrn_set.create(**merged_mrn_dict)
 
