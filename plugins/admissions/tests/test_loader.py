@@ -97,3 +97,12 @@ class LoadBedStatusTestCase(OpalTestCase):
         self.assertEqual(
             bed_status.patient, patient
         )
+
+    def test_bed_status_can_have_none_patient(self, prod_api, create_rfh_patient_from_hospital_number):
+        self.bed_status_row["Local_Patient_Identifier"] = None
+        prod_api.return_value.execute_warehouse_query.return_value =[
+            self.bed_status_row
+        ]
+        loader.load_bed_status()
+        bed_status = models.BedStatus.objects.get()
+        self.assertIsNone(bed_status.patient)
