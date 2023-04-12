@@ -26,7 +26,7 @@ def get_all_active_merged_mrns():
 
 
 @transaction.atomic
-def merge_patient(*, old_patient, new_patient):
+def our_merge_patient(*, old_patient, new_patient):
     """
     All elcid native non-singleton entries to be converted to
     the equivalent episode category on the wining MRN, with a reference
@@ -133,7 +133,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                 )
             for unmerged_patient in unmerged_patients:
                 if active_patient:
-                    merge_patient(
+                    our_merge_patient(
                         old_patient=unmerged_patient,
                         new_patient=active_patient
                     )
