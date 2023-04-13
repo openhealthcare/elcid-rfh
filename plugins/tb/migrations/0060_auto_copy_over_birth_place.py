@@ -23,6 +23,22 @@ def migrate_forwards(apps, schema_editor):
             birth_place_ft=demo.birth_place_ft
         )
 
+def migrate_backwards(apps, schema_editor):
+    Demographics = apps.get_model(
+        'elcid', 'Demographics'
+    )
+    Nationality = apps.get_model(
+        'tb', 'Nationality'
+    )
+    for nat in Nationality.objects.exclude(birth_place_fk_id=None):
+        Demographics.objects.filter(patient_id=nat.patient_id).update(
+            birth_place_fk_id=nat.birth_place_fk_id
+        )
+    for nat in Nationality.objects.exclude(birth_place_ft='').exclude(birth_place_ft=None):
+        Demographics.objects.filter(patient_id=nat.patient_id).update(
+            birth_place_ft=nat.birth_place_ft
+        )
+
 
 class Migration(migrations.Migration):
 
@@ -32,6 +48,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            migrate_forwards
+            migrate_forwards, reverse_code=migrate_backwards
         )
     ]
