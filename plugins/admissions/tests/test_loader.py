@@ -237,10 +237,10 @@ class LoadEncountersSinceTestCase(OpalTestCase):
             self.encounter_row
         ]
         loader.load_excounters_since(timezone.now())
-        bed_status = models.Encounter.objects.get()
+        encounter = models.Encounter.objects.get()
         self.assertFalse(create_rfh_patient_from_hospital_number.called)
         self.assertEqual(
-            bed_status.patient, patient
+            encounter.patient, patient
         )
 
     def test_ignores_invalid_mrns(self, prod_api, create_rfh_patient_from_hospital_number):
