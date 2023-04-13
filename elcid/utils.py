@@ -85,7 +85,7 @@ def find_patients_from_mrns(mrns):
     """
     Takes in an iterable of MRNs and returns
     a dictionary of {mrn: patient}.
-    
+
     MRNs that do not match to a patient are silently ignored.
 
     When matching MRN to patient:
@@ -96,7 +96,7 @@ def find_patients_from_mrns(mrns):
     e.g. 000 will be removed.
     """
     cleaned_mrn_to_mrn = {
-        i.strip().lstrip('0'): i for i in mrns if i.strip().lstrip('0')
+        i.strip().lstrip('0'): i for i in mrns if i and i.strip().lstrip('0')
     }
     result = {}
     demos = models.Demographics.objects.filter(

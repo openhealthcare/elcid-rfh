@@ -191,12 +191,12 @@ INSTALLED_APPS = (
     'plugins.ipc',
     'plugins.rnoh',
     'plugins.elcid_search',
+    'plugins.obs',
     'intrahospital_api',
     'elcid',
     'passwordreset',
     'django.contrib.admin',
     'django_celery_results',
-    'obs',
 )
 
 #### API Settings
@@ -414,7 +414,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.107.1'
+VERSION_NUMBER = '0.108'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'

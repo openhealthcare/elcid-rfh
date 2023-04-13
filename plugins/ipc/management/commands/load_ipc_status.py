@@ -8,13 +8,12 @@ is just in this management command
 import datetime
 from django.db import transaction
 from django.db.models.fields import BooleanField, DateField
-from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-
-from plugins.admissions.models import BedStatus
+from intrahospital_api import loader
+from elcid.utils import find_patients_from_mrns
+from elcid import episode_categories as elcid_episode_categories
 from plugins.ipc.models import IPCStatus
 
 
@@ -81,43 +80,53 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         api = ProdAPI()
 
-        updated = timezone.now()
         updated_by = User.objects.filter(username='ohc').first()
 
-        inpatients = BedStatus.objects.filter(bed_status='Occupied').values_list(
-            'local_patient_identifier', flat=True)
-
         upstream_result = api.execute_hospital_query(QUERY)
-
         self.stdout.write("Query complete")
 
+        mrn_to_ipc_patients = find_patients_from_mrns(
+            i['Patient_Number'] for i in upstream_result
+        )
+
         for row in upstream_result:
-            if row['Patient_Number'] in inpatients:
-                patient = Patient.objects.get(demographics__hospital_number=row['Patient_Number'])
+            patient = mrn_to_ipc_patients.get(row['Patient_Number'])
 
-                if patient.episode_set.filter(category_name='IPC').count() == 0:
-                    patient.create_episode(category_name='IPC')
+            # There will not be a patient if the patient is
+            # not in elcid or if the MRN is invalid
+            # ie empty or only made up of spaces and zeros
+            if not patient:
+                mrn = row['Patient_Number'].lstrip('0')
+                if len(mrn) == 0:
+                    continue
+                else:
+                    patient = loader.create_rfh_patient_from_hospital_number(
+                        mrn, elcid_episode_categories.InfectionService
+                    )
 
-                status = patient.ipcstatus_set.all()[0]
+            if patient.episode_set.filter(category_name='IPC').count() == 0:
+                patient.create_episode(category_name='IPC')
 
-                update_dict = {v: row[k] for k, v in MAPPING.items()}
+            status = patient.ipcstatus_set.all()[0]
 
-                status.created_by_id = updated_by.id
+            update_dict = {v: row[k] for k, v in MAPPING.items()}
 
-                for key, value in update_dict.items():
+            status.created_by_id = updated_by.id
 
-                    if isinstance(IPCStatus._meta.get_field(key), DateField):
+            for key, value in update_dict.items():
 
-                        if value == '':
-                            value = None
-                        elif isinstance(value, str):
-                            value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
+                if isinstance(IPCStatus._meta.get_field(key), DateField):
 
-                    if isinstance(IPCStatus._meta.get_field(key), BooleanField):
-                        if value:
-                            value = True
-                        else:
-                            value = False
+                    if value == '':
+                        value = None
+                    elif isinstance(value, str):
+                        value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
 
-                    setattr(status, key, value)
-                status.save()
+                if isinstance(IPCStatus._meta.get_field(key), BooleanField):
+                    if value:
+                        value = True
+                    else:
+                        value = False
+
+                setattr(status, key, value)
+            status.save()

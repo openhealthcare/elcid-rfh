@@ -11,7 +11,7 @@ from opal.models import (
     Patient, Episode, Condition, Synonym, Antimicrobial
 )
 from elcid import models as emodels
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 
 
 class AbstractPatientTestCase(TestCase):
@@ -99,6 +99,12 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
             self.demographics.update_from_dict(
                 {'consistency_token': '87654321'}, self.user
             )
+
+    def test_save(self):
+        self.demographics.hospital_number = '0AA1112'
+        self.demographics.save()
+        self.demographics.refresh_from_db()
+        self.assertEqual('AA1112', self.demographics.hospital_number)
 
 
 class PreviousMRNTestCase(OpalTestCase):

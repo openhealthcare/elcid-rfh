@@ -272,7 +272,7 @@ def parse_merge_comments(initial_mrn):
                     active_mrn = next_mrn
                 else:
                     raise MergeException(
-                        f'Multiple active related MRNs found for {initial_mrn}'
+                        f'Multiple active related MRNs ({active_mrn}, {next_mrn}) found for {initial_mrn}'
                     )
             else:
                 inactive_mrn_dicts.append({'mrn': next_mrn, 'merge_comments': merge_comments })
