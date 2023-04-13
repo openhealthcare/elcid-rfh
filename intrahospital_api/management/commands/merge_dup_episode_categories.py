@@ -3,10 +3,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from intrahospital_api import logger, loader, merge_patient, update_demographics
-from elcid import episode_categories as elcid_episode_categories
+from intrahospital_api import logger, merge_patient
 from elcid.utils import timing
-from elcid import models
 
 
 import os
@@ -143,5 +141,7 @@ class Command(BaseCommand):
     @timing
     def handle(self, *args, **options):
         dups = patient_ids_with_duplicate_episode_categories()
-        for patient_id in dups:
+        logger.info(f'Looking at {len(dups)}')
+        for idx, patient_id in enumerate(dups):
+            logger.info(f'Merging {patient_id} ({idx+1}/{len(dups)})')
             merge_patient_episodes(patient_id)
