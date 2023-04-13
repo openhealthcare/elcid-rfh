@@ -242,3 +242,13 @@ class LoadEncountersSinceTestCase(OpalTestCase):
         self.assertEqual(
             bed_status.patient, patient
         )
+
+    def test_ignores_invalid_mrns(self, prod_api, create_rfh_patient_from_hospital_number):
+        self.encounter_row["PID_3_MRN"] = None
+        self.assertFalse(models.Encounter.objects.exists())
+
+        self.encounter_row["PID_3_MRN"] = ""
+        self.assertFalse(models.Encounter.objects.exists())
+
+        self.encounter_row["PID_3_MRN"] = "00"
+        self.assertFalse(models.Encounter.objects.exists())
