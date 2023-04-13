@@ -107,7 +107,7 @@ def update_encounters_from_query_result(rows):
     logger.info(f'{existing_encounters_count} existing encounters will be removed')
     mrns = [i['PID_3_MRN'].strip() for i in rows if i['PID_3_MRN'].strip()]
     mrn_to_patients = find_patients_from_mrns(mrns)
-    to_create = []
+    encounters_to_create = []
     for row in rows:
         mrn = row['PID_3_MRN']
         if mrn not in mrn_to_patients:
@@ -115,9 +115,9 @@ def update_encounters_from_query_result(rows):
                 mrn, InfectionService
             )
         patient = mrn_to_patients[mrn]
-        to_create.append(cast_to_encounter(row, patient))
-    logger.info(f'Creating {len(to_create)} encounters')
-    Encounter.objects.bulk_create(to_create, batch_size=500)
+        encounters_to_create.append(cast_to_encounter(row, patient))
+    logger.info(f'Creating {len(encounters_to_create)} encounters')
+    Encounter.objects.bulk_create(encounters_to_create, batch_size=500)
     PatientEncounterStatus.objects.filter(
         patient__in=mrn_to_patients.values()
     ).update(
