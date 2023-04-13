@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.test import override_settings
 from django.utils import timezone
 from opal.core.test import OpalTestCase
+from opal.models import Patient
 from elcid import episode_categories
 from intrahospital_api import models as imodels
 from intrahospital_api import loader
@@ -523,3 +524,34 @@ class GetOrCreatePatientTestCase(OpalTestCase):
         )
         self.assertEqual(self.patient, patient)
         self.assertTrue(created)
+
+
+@mock.patch('intrahospital_api.loader.load_patient')
+@mock.patch('intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data')
+class GetOrCreatePatientTestCase(OpalTestCase):
+    def test_rfh_patient(self, get_active_mrn_and_merged_mrn_data, load_patient):
+        mrn = "123"
+        get_active_mrn_and_merged_mrn_data.return_value = ("234", [{
+            "mrn": "123",
+            "merge_comments": "has been merged"
+        }],)
+        loader.get_or_create_patient(mrn, episode_categories.InfectionService)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "234"
+        )
+        load_patient.assert_called_once_with(patient, run_async=None)
+
+    def test_non_rfh_patient(self, get_active_mrn_and_merged_mrn_data, load_patient):
+        mrn = "123"
+        loader.get_or_create_patient(mrn, episode_categories.InfectionService, rfh_patient=False)
+        self.assertFalse(
+            get_active_mrn_and_merged_mrn_data.called
+        )
+        self.assertFalse(
+            load_patient.called
+        )
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "123"
+        )

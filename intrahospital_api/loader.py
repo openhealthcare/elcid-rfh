@@ -76,6 +76,8 @@ def create_rfh_patient_from_hospital_number(
         active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
             hospital_number
         )
+    else:
+        active_mrn = hospital_number
 
     patient = Patient.objects.create()
     patient.demographics_set.update(
