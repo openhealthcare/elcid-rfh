@@ -118,6 +118,39 @@ class CreateTransferHistoriesTestCase(OpalTestCase):
             patient.transferhistory_set.exists()
         )
 
+    def test_ignores_rows_with_none_empty_strings_or_only_zeros(self):
+        row = {
+            k: None for k in models.TransferHistory.UPSTREAM_FIELDS_TO_MODEL_FIELDS.keys()
+        }
+        two_days_ago = datetime.datetime.now() - datetime.timedelta(2)
+        yesterday = datetime.datetime.now() - datetime.timedelta(1)
+
+        row["ENCNTR_SLICE_ID"] = 1231231
+        row["SITE_CODE"] = "1231231"
+        row["ENCNTR_SLICE_ID"] = 1231231
+        row["UNIT"] = "X"
+        row["ROOM"] = "7W"
+        row["BED"] = "B12"
+        row["In_TransHist"] = 1
+        row["In_Spells"] = 1
+        row["TRANS_HIST_START_DT_TM"] = two_days_ago
+        row["TRANS_HIST_END_DT_TM"] = yesterday
+
+        # test with None
+        row["LOCAL_PATIENT_IDENTIFIER"] = None
+        loader.create_transfer_histories([row])
+        self.assertFalse(models.TransferHistory.objects.all().exists())
+
+        # test with empty string
+        row["LOCAL_PATIENT_IDENTIFIER"] = ""
+        loader.create_transfer_histories([row])
+        self.assertFalse(models.TransferHistory.objects.all().exists())
+
+        # test with only 000s
+        row["LOCAL_PATIENT_IDENTIFIER"] = "0000"
+        loader.create_transfer_histories([row])
+        self.assertFalse(models.TransferHistory.objects.all().exists())
+
 
 @patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
 @patch('plugins.admissions.loader.ProdAPI')

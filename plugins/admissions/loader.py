@@ -247,10 +247,22 @@ def create_patients(mrns):
                 mrn, InfectionService, run_async=False
             )
 
+def is_valid_mrn(mrn):
+    """
+    An MRN is invalid if it is None or if it is only 00s
+    """
+    if mrn is None:
+        return False
+    if len(mrn.lstrip('0').strip()) == 0:
+        return False
+    return True
+
 
 @transaction.atomic
-def create_transfer_histories(some_rows):
+def create_transfer_histories(unfiltered_rows):
     from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+    # Remove rows where the MRN is None, an empty string or only 000s
+    some_rows = [i for i in unfiltered_rows if is_valid_mrn(i['LOCAL_PATIENT_IDENTIFIER'])]
     mrns = [i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows]
     mrn_to_patients = find_patients_from_mrns(mrns)
 
