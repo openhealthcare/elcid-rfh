@@ -77,7 +77,7 @@ def our_merge_patient(*, old_patient, new_patient):
     merge_patient.updates_statuses(new_patient)
 
 
-
+@transaction.atomic
 def check_and_handle_upstream_merges_for_mrns(mrns):
     """
     Takes in a list of MRNs.
@@ -111,8 +111,8 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
         active_mrn_to_merged_dicts[active_mrn] = merged_dicts
 
     logger.info('Generating merged MRNs')
+    to_create = []
     for active_mrn, merged_dicts in active_mrn_to_merged_dicts.items():
-        to_create = []
         merged_mrns = [i["mrn"] for i in merged_dicts]
         active_patient = Patient.objects.filter(
             demographics__hospital_number=active_mrn
@@ -154,9 +154,9 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                             **merged_dict
                         )
                     )
-        logger.info('Saving merged MRNs')
-        models.MergedMRN.objects.bulk_create(to_create)
-        logger.info(f'Saved {len(to_create)} merged MRNs')
+    logger.info('Saving merged MRNs')
+    models.MergedMRN.objects.bulk_create(to_create)
+    logger.info(f'Saved {len(to_create)} merged MRNs')
 
 
 class Command(BaseCommand):
