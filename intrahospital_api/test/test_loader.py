@@ -112,7 +112,7 @@ class LoadDemographicsTestCase(ApiTestCase):
     @mock.patch.object(loader.api, 'demographics')
     def test_success(self, demographics):
         demographics.return_value = "success"
-        result = loader.load_demographics("some_hospital_number")
+        result = loader.search_upstream_demographics("some_hospital_number")
         demographics.assert_called_once_with("some_hospital_number")
         self.assertEqual(result, "success")
 
@@ -122,15 +122,15 @@ class LoadDemographicsTestCase(ApiTestCase):
     def test_failed(self, log_err, info, demographics):
         demographics.side_effect = ValueError("Boom")
         demographics.return_value = "success"
-        loader.load_demographics("some_hospital_number")
+        loader.search_upstream_demographics("some_hospital_number")
         self.assertEqual(info.call_count, 1)
-        log_err.assert_called_once_with("load_demographics")
+        log_err.assert_called_once_with("search_upstream_demographics")
 
     @override_settings(
         INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
     )
     def test_integration(self):
-        result = loader.load_demographics("some_number")
+        result = loader.search_upstream_demographics("some_number")
         self.assertTrue(isinstance(result, dict))
 
 

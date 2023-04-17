@@ -31,16 +31,16 @@ def log_errors(name):
 
 
 @timing
-def load_demographics(hospital_number):
+def search_upstream_demographics(hospital_number):
     started = timezone.now()
     try:
         result = api.demographics(hospital_number)
     except:
         stopped = timezone.now()
-        logger.info("demographics load failed in {}".format(
+        logger.info("searching upstream demographics failed in {}".format(
             (stopped - started).seconds
         ))
-        log_errors("load_demographics")
+        log_errors("search_upstream_demographics")
         return
 
     return result
