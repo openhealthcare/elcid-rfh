@@ -493,6 +493,20 @@ class DemographicsSearchTestCase(OpalTestCase):
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
 
+    def test_patient_found_with_merged_mrn(self):
+        patient = self.get_patient("Wilma", "123")
+        patient.mergedmrn_set.create(
+            mrn="1", our_merge_datetime=timezone.now()
+        )
+        response = json.loads(self.client.get(self.url).content.decode('utf-8'))
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
+
     def test_with_demographics_add_patient_in_elcid_without_zeros(self):
         """
         When we querying within elcid, query should use

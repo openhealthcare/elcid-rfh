@@ -573,6 +573,17 @@ class DemographicsSearch(LoginRequiredViewset):
             hospital_number=hospital_number
         ).last()
 
+        # If we can't find a patient in demographics
+        # check to see if it is an inactive MRN that
+        # has been merged with a different MRN on elcid
+        if not demographics:
+            merged_mrn = emodels.MergedMRN.objects.filter(
+                mrn=hospital_number
+            ).first()
+            if merged_mrn:
+                demographics = merged_mrn.patient.demographics()
+
+
         # the patient is in elcid
         if demographics:
             return json_response(dict(

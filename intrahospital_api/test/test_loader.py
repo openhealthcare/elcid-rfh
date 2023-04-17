@@ -110,17 +110,22 @@ class LogErrorsTestCase(ApiTestCase):
 class LoadDemographicsTestCase(ApiTestCase):
 
     @mock.patch.object(loader.api, 'demographics')
-    def test_success(self, demographics):
+    @mock.patch('intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data')
+    def test_success(self, get_active_mrn_and_merged_mrn_data, demographics):
         demographics.return_value = "success"
+        get_active_mrn_and_merged_mrn_data.return_value = ("some_hospital_number", [],)
         result = loader.search_upstream_demographics("some_hospital_number")
         demographics.assert_called_once_with("some_hospital_number")
+        get_active_mrn_and_merged_mrn_data.assert_called_once_with("some_hospital_number")
         self.assertEqual(result, "success")
 
     @mock.patch.object(loader.api, 'demographics')
     @mock.patch.object(loader.logger, 'info')
     @mock.patch('intrahospital_api.loader.log_errors')
-    def test_failed(self, log_err, info, demographics):
+    @mock.patch('intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data')
+    def test_failed(self, get_active_mrn_and_merged_mrn_data, log_err, info, demographics):
         demographics.side_effect = ValueError("Boom")
+        get_active_mrn_and_merged_mrn_data.return_value = ("some_hospital_number", [],)
         demographics.return_value = "success"
         loader.search_upstream_demographics("some_hospital_number")
         self.assertEqual(info.call_count, 1)
@@ -129,7 +134,9 @@ class LoadDemographicsTestCase(ApiTestCase):
     @override_settings(
         INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
     )
-    def test_integration(self):
+    @mock.patch('intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data')
+    def test_integration(self, get_active_mrn_and_merged_mrn_data):
+        get_active_mrn_and_merged_mrn_data.return_value = ("some_number", [],)
         result = loader.search_upstream_demographics("some_number")
         self.assertTrue(isinstance(result, dict))
 

@@ -150,5 +150,4 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             demo_system = data["demographics"][0].get("external_system")
             if demo_system == constants.EXTERNAL_SYSTEM:
                 loader.load_patient(saved_patient)
-
         return saved_patient, saved_episode

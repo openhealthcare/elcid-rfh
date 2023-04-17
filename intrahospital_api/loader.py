@@ -34,7 +34,10 @@ def log_errors(name):
 def search_upstream_demographics(hospital_number):
     started = timezone.now()
     try:
-        result = api.demographics(hospital_number)
+        active_mrn, _ = update_demographics.get_active_mrn_and_merged_mrn_data(
+            hospital_number
+        )
+        result = api.demographics(active_mrn)
     except:
         stopped = timezone.now()
         logger.info("searching upstream demographics failed in {}".format(
@@ -136,6 +139,7 @@ def async_load_patient(patient_id, patient_load_id):
     except:
         log_errors("_load_patient")
         raise
+
 
 @timing
 def _load_patient(patient, patient_load):
