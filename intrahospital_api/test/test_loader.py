@@ -389,12 +389,14 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             patient.mergedmrn_set.filter(
                 mrn="123",
                 merge_comments=MERGED_MRN_DATA[0]["merge_comments"],
+                our_merge_datetime__isnull=False
             ).exists()
         )
         self.assertTrue(
             patient.mergedmrn_set.filter(
                 mrn="234",
                 merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
+                our_merge_datetime__isnull=False
             ).exists()
         )
         self.assertTrue(load_patient.called)

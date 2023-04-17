@@ -85,7 +85,10 @@ def create_rfh_patient_from_hospital_number(
     )
 
     for merged_mrn_dict in merged_mrn_dicts:
-        patient.mergedmrn_set.create(**merged_mrn_dict)
+        patient.mergedmrn_set.create(
+            our_merge_datetime=timezone.now(),
+            **merged_mrn_dict
+        )
 
     load_patient(patient, run_async=run_async)
     return patient
