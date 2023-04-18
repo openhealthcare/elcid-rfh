@@ -53,17 +53,6 @@ class IntrahospitalRawView(PivottedData):
         return ctx
 
 
-class IntrahospitalCookedView(PivottedData):
-    api_method = "cooked_data"
-
-    def get_context_data(self, *args, **kwargs):
-        ctx = super(IntrahospitalCookedView, self).get_context_data(
-            *args, **kwargs
-        )
-        ctx["title"] = "All Cooked Data"
-        return ctx
-
-
 class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
     """
         Provides the raw results, remove cerner fields as these are demographics
@@ -99,21 +88,6 @@ class IntrahospitalRawResultsView(StaffRequiredMixin, TemplateView):
         ctx["lab_results"] = dict(ctx["lab_results"])
 
         ctx["title"] = "Raw Results Data"
-        return ctx
-
-
-class IntrahospitalCookedResultsView(StaffRequiredMixin, TemplateView):
-    template_name = "intrahospital_api/cooked_result_view.html"
-
-    def get_context_data(self, *args, **kwargs):
-        ctx = super(IntrahospitalCookedResultsView, self).get_context_data(
-            *args, **kwargs
-        )
-        api = get_api()
-        ctx["lab_results"] = api.results_for_hospital_number(
-            kwargs["hospital_number"], **self.request.GET
-        )
-        ctx["title"] = "Cooked Results Data"
         return ctx
 
 
