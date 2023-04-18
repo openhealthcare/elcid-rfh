@@ -244,9 +244,7 @@ def create_patients(mrns):
     for mrn in mrns:
         if mrn not in existing_mrns:
             logger.info(f'creating {mrn}')
-            create_rfh_patient_from_hospital_number(
-                mrn, InfectionService, run_async=False
-            )
+            create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
 def is_valid_mrn(mrn):
     """
@@ -269,9 +267,7 @@ def create_transfer_histories(unfiltered_rows):
 
     for mrn in mrns:
         if mrn not in mrn_to_patients:
-            mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(
-                mrn, InfectionService, run_async=False
-            )
+            mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
