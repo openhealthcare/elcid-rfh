@@ -101,33 +101,3 @@ def write_result_summary():
         api.execute_hospital_insert(RESULTS_INSERT, params=params)
 
     return
-
-
-def write_advice_upstream(advice_id):
-    """
-    Given the ID of a MicrobiologyInput entry, write it upstream.
-    """
-    advice = MicrobiologyInput.objects.get(id=advice_id)
-
-    if not advice.agreed_plan and not advice.infection_control:
-        return
-
-    demographic = advice.episode.patient.demographics()
-
-    params = {
-        'elcid_version'           : settings.VERSION_NUMBER,
-        'elcid_clinical_advice_id': advice.id,
-        'elcid_patient_id'        : advice.episode.patient_id,
-        'written_by'              : advice.initials,
-        'datetime_inserted'       : datetime.datetime.now(),
-        'hospital_number'         : demographic.hospital_number,
-        'patient_forename'        : demographic.first_name,
-        'patient_surname'         : demographic.surname,
-        'agreed_plan'             : advice.agreed_plan,
-        'infection_control'       : advice.infection_control,
-        'datetime_issued'         : advice.when
-    }
-
-    api = ProdAPI()
-    if settings.WRITEBACK_ON:
-        api.execute_hospital_insert(ADVICE_INSERT, params=params)
