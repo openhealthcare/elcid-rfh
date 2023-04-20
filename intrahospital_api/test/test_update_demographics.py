@@ -478,6 +478,12 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
 @mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
 class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
     def test_handles_an_inactive_mrn(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        """
+        We have a patient with an MRN that has become inactive.
+
+        We should create a new patient with the active MRN and MergedMRN
+        with the inactive MRN.
+        """
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "INACTIVE",
@@ -511,6 +517,13 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
 
 
     def test_handles_an_active_mrn(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        """
+        We have a patient with an active MRN that has a new inactive MRN
+        merged into it.
+
+        We should create MergedMRN with the new inactive MRN connected to
+        the patient.
+        """
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "ACTIVE",
@@ -541,6 +554,12 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
 
     def test_handles_new_inactive_mrns(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        """
+        We have a patient that has a merged MRN but a new inactive MRN
+        has been been created for them upstream.
+
+        We should create a new merged MRN and not delete the existing MRN.
+        """
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "ACTIVE",
