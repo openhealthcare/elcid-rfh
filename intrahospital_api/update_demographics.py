@@ -287,6 +287,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
         unmerged_patients = [
             mrn_to_patient.get(i) for i in merged_mrns if i in mrn_to_patient
         ]
+        patients_now_merged = set()
 
         # If we have patients that are inactive we need to do a merge.
         if len(unmerged_patients) > 0:
@@ -302,6 +303,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                         old_patient=unmerged_patient,
                         new_patient=active_patient
                     )
+                    patients_now_merged.add(active_patient)
 
         # If there is an active patient then we need to create merged MRNs.
         if active_patient:
@@ -322,6 +324,14 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     logger.info('Saving merged MRNs')
     models.MergedMRN.objects.bulk_create(to_create)
     logger.info(f'Saved {len(to_create)} merged MRNs')
+
+    # Patients who have had merge_patient called on them have
+    # already been reloaded.
+    # Other patients who have new merged MRNs need to be reloaded
+    # to add in upstream data from the new merged MRN.
+    patients_to_reload = set(i.patient for i in to_create if i.patient not in patients_now_merged)
+    for patient in list(patients_to_reload):
+        loader.load_patient(patient)
 
 
 def get_masterfile_row(mrn):

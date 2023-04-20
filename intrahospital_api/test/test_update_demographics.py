@@ -516,8 +516,9 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
 
 
+    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
     @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
-    def test_handles_an_active_mrn(self, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_handles_an_active_mrn(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         We have a patient with an active MRN that has a new inactive MRN
         merged into it.
@@ -557,8 +558,13 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         # creating a new MergedMRN
         self.assertFalse(merge_patient.called)
 
+        # Make sure we reload the patient so they have the data including
+        # the new merged MRN
+        load_patient.assert_called_once_with(patient)
+
     @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
-    def test_handles_new_inactive_mrns(self, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
+    def test_handles_new_inactive_mrns(self, load_patient, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         We have a patient that has a merged MRN but a new inactive MRN
         has been been created for them upstream.
@@ -617,6 +623,47 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
         # There is no reason to call merge patient, we are just
         # creating a new MergedMRN
+        self.assertFalse(merge_patient.called)
+
+        # Make sure we reload the patient so they have the data including
+        # the new merged MRN
+        load_patient.assert_called_once_with(patient)
+
+    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
+    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
+    def test_does_not_reload_already_merged_patients(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        """
+        We have a patient who has already had merged MRNs and had that merge processed.
+
+        We should not reload the patient or create any new MergedMRN objects.
+        """
+        get_mrn_to_upstream_merge_data.return_value = {
+            "123": {
+                "ACTIVE_INACTIVE": "ACTIVE",
+                "MERGED": "Y",
+                "MRN": "123",
+                "MERGE_COMMENTS": " ".join([
+                    "Merged with MRN 234 on Oct 20 2014  4:44PM",
+                ])
+            },
+            "234": {
+                "ACTIVE_INACTIVE": "INACTIVE",
+                "MERGED": "Y",
+                "MRN": "234",
+                "MERGE_COMMENTS": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            },
+        }
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        before = timezone.now() - datetime.timedelta(1)
+        patient.mergedmrn_set.create(
+            mrn="234",
+            our_merge_datetime=before,
+            merge_comments="Merged with MRN 123 on Oct 20 2014  4:44PM"
+        )
+        update_demographics.check_and_handle_upstream_merges_for_mrns(["123"])
+        self.assertEqual(patient.mergedmrn_set.get().mrn, "234")
+        self.assertFalse(load_patient.called)
         self.assertFalse(merge_patient.called)
 
 
