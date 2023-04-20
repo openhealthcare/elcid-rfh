@@ -106,7 +106,7 @@ def update_encounters_from_query_result(rows):
     existing_encounters = Encounter.objects.filter(upstream_id__in=upstream_ids)
     existing_encounters_count = existing_encounters.count()
     logger.info(f'{existing_encounters_count} existing encounters will be removed')
-    mrns = [i['PID_3_MRN'].strip() for i in rows if i['PID_3_MRN'].strip()]
+    mrns = [i for i in rows if i['PID_3_MRN']]
     mrn_to_patients = find_patients_from_mrns(mrns)
     encounters_to_create = []
     for row in rows:
