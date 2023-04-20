@@ -516,7 +516,8 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
 
 
-    def test_handles_an_active_mrn(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
+    def test_handles_an_active_mrn(self, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         We have a patient with an active MRN that has a new inactive MRN
         merged into it.
@@ -552,8 +553,12 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         self.assertEqual(
             merged_mrn.mrn, "234"
         )
+        # There is no reason to call merge patient, we are just
+        # creating a new MergedMRN
+        self.assertFalse(merge_patient.called)
 
-    def test_handles_new_inactive_mrns(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
+    def test_handles_new_inactive_mrns(self, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         We have a patient that has a merged MRN but a new inactive MRN
         has been been created for them upstream.
@@ -610,6 +615,9 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
                 mrn="345", merge_comments="Merged with MRN 123 on Oct 20 2014  5:44PM"
             ).exists()
         )
+        # There is no reason to call merge patient, we are just
+        # creating a new MergedMRN
+        self.assertFalse(merge_patient.called)
 
 
 class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
