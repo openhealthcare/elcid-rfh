@@ -427,6 +427,12 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
             ).first()
             if micro_input:
                 micro_input.delete_self()
+
+        if data.get("reason_for_interaction") == self.ANTIFUNGAL_STEWARDSHIP_ROUND:
+            omodels.Episode.objects.get(id=data['episode_id']).patient.chronicantifungal_set.create(
+                reason=ChronicAntifungal.REASON_TO_INTERACTION
+            )
+
         return result
 
     def delete(self):
@@ -444,14 +450,9 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
 
 # method for updating
 @receiver(post_save, sender=MicrobiologyInput)
-def update_chronic_antifungal_reason_for_interaction(
+def update_microbiology_input(
     sender, instance, **kwargs
 ):
-    asr = MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
-    if instance.reason_for_interaction == asr:
-        instance.episode.patient.chronicantifungal_set.create(
-            reason=ChronicAntifungal.REASON_TO_INTERACTION
-        )
     if instance.reason_for_interaction == MicrobiologyInput.ICU_REASON_FOR_INTERACTION:
         from intrahospital_api import tasks
         # wait for all transactions to complete then launch the celery task
