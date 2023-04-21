@@ -330,6 +330,28 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
         self.assertEqual(str(v.exception), expected)
         self.assertFalse(load_patient.called)
 
+    def test_erors_if_the_hospital_number_is_already_assigned(self, load_patient):
+        """
+        The MRN is already in use by a patient
+        """
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="111"
+        )
+        patient.mergedmrn_set.create(
+            mrn="111"
+        )
+        with self.assertRaises(ValueError) as v:
+            loader.create_rfh_patient_from_hospital_number(
+                '111', episode_categories.InfectionService
+            )
+        self.assertEqual(
+            str(v.exception),
+            "A patient with MRN 111 already exists"
+        )
+        self.assertFalse(load_patient.called)
+
+
     def test_errors_if_the_hospital_number_has_already_been_merged(self, load_patient):
         """
         The MRN has already been merged, raise a Value Error
@@ -344,7 +366,7 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             )
         self.assertEqual(
             str(v.exception),
-            "MRN has already been merged into another MRN"
+            "MRN 111 has already been merged into another MRN"
         )
         self.assertFalse(load_patient.called)
 
