@@ -245,6 +245,12 @@ class AsyncLoadPatientTestCase(ApiTestCase):
         log_errors.assert_called_once_with("_load_patient")
         self.assertEqual(str(ve.exception), "Boom")
 
+    def test_no_patient(self, load_patient, log_errors):
+        result = loader.async_load_patient(self.patient.id+1, self.patient_load.id+1)
+        self.assertIsNone(result)
+        self.assertFalse(load_patient.called)
+        self.assertFalse(log_errors.called)
+
 
 class UpdatePatientFromBatchTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):

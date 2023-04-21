@@ -129,7 +129,11 @@ def async_task(patient, patient_load):
 
 
 def async_load_patient(patient_id, patient_load_id):
-    patient = Patient.objects.get(id=patient_id)
+    patient = Patient.objects.filter(id=patient_id).first()
+    # If the patient does not exist then we assume they have been merged
+    # and then deleted.
+    if not patient:
+        return
     patient_load = models.InitialPatientLoad.objects.get(id=patient_load_id)
     try:
         _load_patient(patient, patient_load)
