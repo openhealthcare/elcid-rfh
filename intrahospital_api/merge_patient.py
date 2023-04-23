@@ -1,15 +1,12 @@
 from django.utils import timezone
 from intrahospital_api import loader
-from opal.core import subrecords
 from django.db import transaction
 from elcid import models as elcid_models
 from plugins.admissions import models as admission_models
-from plugins.appointments import models as appointment_models
 from plugins.covid import models as covid_models
 from plugins.dischargesummary import models as discharge_models
 from plugins.handover import models as handover_models
 from plugins.ipc import models as ipc_models
-from plugins.imaging import models as imaging_models
 from plugins.labtests import models as lab_models
 from intrahospital_api import models as intrahospital_api_models
 from plugins.icu import models as icu_models
