@@ -1,5 +1,8 @@
 from django.utils import timezone
-from intrahospital_api import loader
+import json
+from django.contrib.auth.models import User
+from intrahospital_api import loader, logger
+from opal.core.serialization import OpalSerializer
 from django.db import transaction
 from elcid import models as elcid_models
 from plugins.admissions import models as admission_models
@@ -303,6 +306,16 @@ def merge_patient(*, old_patient, new_patient):
     new parent.
     """
     old_mrn = old_patient.demographics().hospital_number
+    new_mrn = new_patient.demographics().hospital_number
+    logger.info(
+        f'Merging patient id={old_patient.id} mrn={old_mrn} into patient id={new_patient.id} mrn={new_mrn} '
+    )
+    ohc = User.objects.get(username='ohc')
+    old_patient_json = json.dumps(old_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    logger.info(f'From patient json\n {old_patient_json}')
+    new_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    logger.info(f'To patient json\n {new_patient_json}')
+
     for patient_related_model in PATIENT_RELATED_MODELS:
         if patient_related_model == lab_models.LabTest:
             move_lab_tests(old_patient, new_patient)
@@ -334,3 +347,7 @@ def merge_patient(*, old_patient, new_patient):
     )
     updates_statuses(new_patient)
     loader.load_patient(new_patient, run_async=False)
+    new_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    logger.info(f'Patient id={new_patient.id} now merged')
+    new_merged_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    logger.info(f'merged patient json\n {new_merged_patient_json}')
