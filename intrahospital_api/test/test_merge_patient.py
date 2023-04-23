@@ -1,5 +1,6 @@
 import datetime
 import reversion
+from unittest import mock
 from django.apps import apps
 from django.db import models as django_models
 from django.utils import timezone
@@ -480,6 +481,7 @@ class UpdateStatusesTestCase(OpalTestCase):
         self.assertTrue(nursing_status.has_handover)
 
 
+@mock.patch('intrahospital_api.merge_patient.loader.load_patient')
 class MergePatientTestCase(OpalTestCase):
     def setUp(self):
         self.old_patient, self.old_episode = self.new_patient_and_episode_please()
@@ -496,8 +498,10 @@ class MergePatientTestCase(OpalTestCase):
         self.new_episode.save()
         self.new_mrn = "456"
         self.new_patient.demographics_set.update(hospital_number=self.new_mrn)
+        # The logging expects a user with username ohc
+        User.objects.create(username='ohc')
 
-    def test_copies_over_patient_subrecords(self):
+    def test_copies_over_patient_subrecords(self, load_patient):
         """
         Test merge_patient copies over patient subrecords to
         the new patient
@@ -518,7 +522,7 @@ class MergePatientTestCase(OpalTestCase):
             self.new_patient.mergedmrn_set.get(mrn=self.old_mrn).our_merge_datetime
         )
 
-    def test_copies_over_episode_subrecords_where_the_episode_exists(self):
+    def test_copies_over_episode_subrecords_where_the_episode_exists(self, load_patient):
         """
         Test merge_patient copies over episode subrecords to
         the episode
@@ -534,14 +538,14 @@ class MergePatientTestCase(OpalTestCase):
         micro_input = self.new_episode.microbiologyinput_set.get()
         self.assertEqual(micro_input.clinical_discussion, "treatment options")
 
-    def test_copies_over_observations(self):
+    def test_copies_over_observations(self, load_patient):
         self.old_episode.observation_set.create()
         merge_patient.merge_patient(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         self.assertTrue(self.new_episode.observation_set.exists())
 
-    def test_copies_over_episode_subrecords_where_the_episode_does_not_exist(self):
+    def test_copies_over_episode_subrecords_where_the_episode_does_not_exist(self, load_patient):
         """
         Test merge_patient creates episode categories if they
         don't exist
@@ -556,7 +560,7 @@ class MergePatientTestCase(OpalTestCase):
         new_patient_consultation = new_tb_episode.patientconsultation_set.get()
         self.assertEqual(new_patient_consultation.plan, "treatment options")
 
-    def test_blood_cultures(self):
+    def test_blood_cultures(self, load_patient):
         """
         Blood cultures have related foreign keys, make sure that
         these are copied over
@@ -572,7 +576,7 @@ class MergePatientTestCase(OpalTestCase):
             blood_culture.isolates.get().date_positive, datetime.date.today()
         )
 
-    def test_updates_status(self):
+    def test_updates_status(self, load_patient):
         self.old_patient.dischargesummaries.create()
         merge_patient.merge_patient(
             old_patient=self.old_patient, new_patient=self.new_patient
@@ -581,7 +585,7 @@ class MergePatientTestCase(OpalTestCase):
         summary_status = self.new_patient.patientdischargesummarystatus_set.get()
         self.assertTrue(summary_status.has_dischargesummaries)
 
-    def test_copies_tags(self):
+    def test_copies_tags(self, load_patient):
         self.old_episode.tagging_set.create(archived=False, value="some list")
         merge_patient.merge_patient(
             old_patient=self.old_patient, new_patient=self.new_patient
