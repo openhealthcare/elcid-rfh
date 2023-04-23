@@ -100,13 +100,13 @@ def cast_to_encounter(encounter, patient):
 
 
 def update_encounters_from_query_result(rows):
-    rows = [i for i in rows if is_valid_mrn(i['PID_3_MRN'])]
     from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+    rows = [i for i in rows if is_valid_mrn(i['PID_3_MRN'])]
     upstream_ids = [i['ID'] for i in rows]
     existing_encounters = Encounter.objects.filter(upstream_id__in=upstream_ids)
     existing_encounters_count = existing_encounters.count()
     logger.info(f'{existing_encounters_count} existing encounters will be removed')
-    mrns = [i for i in rows if i['PID_3_MRN']]
+    mrns = [i['PID_3_MRN'] for i in rows]
     mrn_to_patients = find_patients_from_mrns(mrns)
     encounters_to_create = []
     for row in rows:
