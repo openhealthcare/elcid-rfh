@@ -17,11 +17,11 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 
 		get_all_merged_patients.return_value = [
 			{
-				"Patient_Number": "123",
+				"PATIENT_NUMBER": "123",
 				"ACTIVE_INACTIVE": "ACTIVE"
 			},
 			{
-				"Patient_Number": "234",
+				"PATIENT_NUMBER": "234",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},
 		]
@@ -35,75 +35,50 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 		self.cmd.handle()
 		self.assertFalse(logger.error.called)
 
-	def test_no_active_patients(self, get_all_merged_patients, logger):
-		get_all_merged_patients.return_value = []
-		self.cmd.handle()
-		logger.error.assert_called_once_with(
-			"We have no active merged patients in our system"
-		)
-
-	def test_no_inactive_patients(self, get_all_merged_patients, logger):
-		get_all_merged_patients.return_value = [
-			{
-				"Patient_Number": "123",
-				"ACTIVE_INACTIVE": "ACTIVE"
-			}
-		]
-		patient, _ = self.new_patient_and_episode_please()
-		patient.demographics_set.update(
-			hospital_number="123"
-		)
-		patient.mergedmrn_set.create(
-			mrn="234"
-		)
-		self.cmd.handle()
-		logger.error.assert_called_once_with(
-			"We have no inactive merged patients in our system"
-		)
-
 	def test_missing_active_patients(self, get_all_merged_patients, logger):
+		"""
+		A patient with an INACTIVE MRN is attached to a wrong
+		patient and we are missing the active MRN.
+		"""
 		get_all_merged_patients.return_value = [
 			{
-				"Patient_Number": "123",
+				"PATIENT_NUMBER": "123",
 				"ACTIVE_INACTIVE": "ACTIVE"
 			},
 			{
-				"Patient_Number": "234",
-				"ACTIVE_INACTIVE": "INACTIVE"
-			},
-			{
-				"Patient_Number": "345",
+				"PATIENT_NUMBER": "234",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},
 		]
-		patient, _ = self.new_patient_and_episode_please()
-		patient.demographics_set.update(
+		patient_1, _ = self.new_patient_and_episode_please()
+		patient_1.demographics_set.update(
 			hospital_number="123"
 		)
-		patient.mergedmrn_set.create(
-			mrn="234"
-		)
-		patient.demographics_set.update(
+		patient_2, _ = self.new_patient_and_episode_please()
+		patient_2.demographics_set.update(
 			hospital_number="345"
 		)
+		patient_2.mergedmrn_set.create(
+			mrn="234"
+		)
 		self.cmd.handle()
 		logger.error.assert_called_once_with(
-			"We have no active merged patients in our system"
+			"We have 1 missing active MRN"
 		)
 
 
 	def test_missing_inactive_patients(self, get_all_merged_patients, logger):
 		get_all_merged_patients.return_value = [
 			{
-				"Patient_Number": "123",
+				"PATIENT_NUMBER": "123",
 				"ACTIVE_INACTIVE": "ACTIVE"
 			},
 			{
-				"Patient_Number": "234",
+				"PATIENT_NUMBER": "234",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},
 			{
-				"Patient_Number": "345",
+				"PATIENT_NUMBER": "345",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},
 		]
