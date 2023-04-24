@@ -1,10 +1,10 @@
 """
-Checks upstream merged patients (with MRNs in elcid) are correctly
-marked as merged in our system.
+Checks that our Merged MRN cron job is running.
 
-There are some inactive MRNs that are flawed up stream, we explicitly
-ignore these based on their row "ID" column in the upstream cerner
-master file table.
+* check_all_merged_mrns
+Compares Inactive MRNs against our MergedMRN mrns
+Compares Active MRNs to Demographics hospital numbers which have related MRNs
+Sends an email if we are missing MRNs.
 """
 from django.core.management.base import BaseCommand
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
@@ -12,10 +12,10 @@ from elcid import models as elcid_models
 from intrahospital_api import logger
 
 INACTIVE_IDS_TO_IGNORE = [
-    3382209,  # Inactive merged with 2 MRNs, both marked as active
+    3382209,  # Inactive, merged with 2 MRNs, both marked as active
     3410891,  # Merged with an active MRN, but the active MRN has no merge comment
-    3453183,  # Inactive merged with 2 MRNs, both marked as active
-    3377689,  # Inactive merged with 2 MRNs, both marked as active
+    3453183,  # Inactive, merged with 2 MRNs, both marked as active
+    3377689,  # Inactive, merged with 2 MRNs, both marked as active
 ]
 
 
