@@ -17,10 +17,12 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 
 		get_all_merged_patients.return_value = [
 			{
+				"ID": 1,
 				"PATIENT_NUMBER": "123",
 				"ACTIVE_INACTIVE": "ACTIVE"
 			},
 			{
+				"ID": 2,
 				"PATIENT_NUMBER": "234",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},
@@ -42,10 +44,12 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 		"""
 		get_all_merged_patients.return_value = [
 			{
+				"ID": 1,
 				"PATIENT_NUMBER": "123",
 				"ACTIVE_INACTIVE": "ACTIVE"
 			},
 			{
+				"ID": 2,
 				"PATIENT_NUMBER": "234",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},
@@ -70,14 +74,17 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 	def test_missing_inactive_patients(self, get_all_merged_patients, logger):
 		get_all_merged_patients.return_value = [
 			{
+				"ID": 1,
 				"PATIENT_NUMBER": "123",
 				"ACTIVE_INACTIVE": "ACTIVE"
 			},
 			{
+				"ID": 2,
 				"PATIENT_NUMBER": "234",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},
 			{
+				"ID": 3,
 				"PATIENT_NUMBER": "345",
 				"ACTIVE_INACTIVE": "INACTIVE"
 			},

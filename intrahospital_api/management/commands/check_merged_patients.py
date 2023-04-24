@@ -1,17 +1,26 @@
 """
-Checks merged patients are what we would expect
+Checks upstream merged patients (with MRNs in elcid) are correctly
+marked as merged in our system.
+
+There are some inactive MRNs that are flawed up stream, we explicitly
+ignore these based on their row "ID" column in the upstream cerner
+master file table.
 """
 from django.core.management.base import BaseCommand
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from elcid.utils import timing
 from elcid import models as elcid_models
 from intrahospital_api import logger
 
-MISSING_ACTIVE_THRESHOLD = 0
-MISSING_INACTIVE_THRESHOLD = 3
+INACTIVE_IDS_TO_IGNORE = [
+    3382209,  # Inactive merged with 2 MRNs, both marked as active
+    3410891,  # Merged with an active MRN, but the active MRN has no merge comment
+    3453183,  # Inactive merged with 2 MRNs, both marked as active
+    3377689,  # Inactive merged with 2 MRNs, both marked as active
+]
+
 
 GET_ALL_MERGED_PATIENTS = """
-    SELECT PATIENT_NUMBER, ACTIVE_INACTIVE FROM CRS_Patient_Masterfile
+    SELECT ID, PATIENT_NUMBER, ACTIVE_INACTIVE FROM CRS_Patient_Masterfile
     WHERE MERGED = 'Y'
 """
 
@@ -59,17 +68,18 @@ def check_all_merged_mrns():
                 missing_active.append(mrn)
         else:
             if row["PATIENT_NUMBER"] not in our_merged_mrns:
-                missing_inactive.append(mrn)
+                if row["ID"] not in INACTIVE_IDS_TO_IGNORE:
+                    missing_inactive.append(mrn)
 
     # We have patients in elCID that do not have merged MRNs
     # but should according to the upstream table
-    if len(missing_active) > MISSING_ACTIVE_THRESHOLD:
+    if len(missing_active) > 0:
         logger.info(f"Missing active MRNs {missing_active}")
         logger.error(f"We have {len(missing_active)} missing active MRN")
 
     # We have patients in elCID that are not marked as merged
     # but should are merged in the upstream table.
-    if len(missing_inactive) > MISSING_ACTIVE_THRESHOLD:
+    if len(missing_inactive) > 0:
         logger.info(f"Missing inactive MRNs {missing_inactive}")
         logger.error(f"We have {len(missing_inactive)} missing inactive MRN")
 
