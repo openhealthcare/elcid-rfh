@@ -452,13 +452,6 @@ def update_chronic_antifungal_reason_for_interaction(
         instance.episode.patient.chronicantifungal_set.create(
             reason=ChronicAntifungal.REASON_TO_INTERACTION
         )
-    if instance.reason_for_interaction == MicrobiologyInput.ICU_REASON_FOR_INTERACTION:
-        from intrahospital_api import tasks
-        # wait for all transactions to complete then launch the celery task
-        # http://celery.readthedocs.io/en/latest/userguide/tasks.html#database-transactions
-        transaction.on_commit(
-            lambda: tasks.write_advice_upstream.delay(instance.id)
-        )
 
 
 class Line(PreviousMRN, EpisodeSubrecord):
