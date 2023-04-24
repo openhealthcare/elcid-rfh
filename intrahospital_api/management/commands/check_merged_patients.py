@@ -10,6 +10,8 @@ from django.core.management.base import BaseCommand
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from elcid import models as elcid_models
 from intrahospital_api import logger
+from django.core.mail import send_mail
+from django.conf import settings
 
 INACTIVE_IDS_TO_IGNORE = [
     3382209,  # Inactive, merged with 2 MRNs, both marked as active
@@ -24,6 +26,18 @@ GET_ALL_MERGED_PATIENTS = """
     WHERE MERGED = 'Y'
 """
 
+
+def send_email(title):
+    title = f"{settings.OPAL_BRAND_NAME}: {title}"
+    send_mail(
+        title,
+        "",
+        settings.DEFAULT_FROM_EMAIL,
+        settings.ADMINS,
+    )
+
+
+
 def get_all_merged_patients():
     api = ProdAPI()
     return api.execute_hospital_query(GET_ALL_MERGED_PATIENTS)
@@ -33,12 +47,11 @@ def check_all_merged_mrns():
     """
     Checks all patients who are marked as merged in the upstream.
 
-    If those patients are merged, it makes sure they have merged MRNs
-    in our system.
+    If patients are inactive, it makes sure we have mergedMRNs. It ignores
+    CRS Masterfile rows with ids declared in INACTIVE_IDS_TO_IGNORE
 
-    If those patients are active, it makes sure we have active MRNs
-    in our system, ie patients in the demographics table that also
-    have entries in merged MRNs.
+    If patients are active it makes sure we have Demographics with those
+    MRNs and that the patients have merged MRNs.
     """
     # ALL inactive MRNs
     our_merged_mrns = set(elcid_models.MergedMRN.objects.values_list('mrn', flat=True))
@@ -53,9 +66,9 @@ def check_all_merged_mrns():
     ))
     intersection = our_merged_mrns.intersection(our_demographics_mrns)
     if len(intersection) > 0:
-        raise ValueError(
-            f"{len(intersection)} MRNS are in the MergedMRN table AND Demographics ({intersection})"
-        )
+        send_email(f"{len(intersection)} MRN(s) are in the MergedMRN table AND Demographics")
+        logger.info(f"{len(intersection)} MRN(s) are in the MergedMRN table AND Demographics ({intersection})")
+        return
     upstream_merged_rows = get_all_merged_patients()
     our_mrns = our_merged_mrns.union(our_demographics_mrns)
     upstream_merged_rows = [i for i in upstream_merged_rows if i["PATIENT_NUMBER"] in our_mrns]
@@ -75,13 +88,13 @@ def check_all_merged_mrns():
     # but should according to the upstream table
     if len(missing_active) > 0:
         logger.info(f"Missing active MRNs {missing_active}")
-        logger.error(f"We have {len(missing_active)} missing active MRN")
+        send_email(f"We have {len(missing_active)} missing active MRN(s)")
 
     # We have patients in elCID that are not marked as merged
     # but should are merged in the upstream table.
     if len(missing_inactive) > 0:
         logger.info(f"Missing inactive MRNs {missing_inactive}")
-        logger.error(f"We have {len(missing_inactive)} missing inactive MRN")
+        send_email(f"We have {len(missing_inactive)} missing inactive MRN(s)")
 
 
 class Command(BaseCommand):
