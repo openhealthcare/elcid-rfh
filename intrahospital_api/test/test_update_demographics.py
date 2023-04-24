@@ -652,7 +652,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         )
         self.assertEqual(active_mrn, "123")
         self.assertEqual(merged_data, [])
-        logger.error.assert_called_once_with(
+        logger.warn.assert_called_once_with(
             "Unable to find an active MRN for 123"
         )
 
@@ -672,7 +672,7 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         )
         self.assertEqual(active_mrn, "123")
         self.assertEqual(merged_data, [])
-        logger.error.assert_called_once_with(
+        logger.warn.assert_called_once_with(
             "Merge exception raised for 123 with 'Multiple active related MRNs (123, 234) found for 123'"
         )
 
