@@ -3,7 +3,6 @@ Utils for the elCID project
 """
 import errno
 from functools import wraps
-from opal.models import Patient
 from elcid import models
 import logging
 import os
