@@ -79,16 +79,13 @@ def our_merge_patient(*, old_patient, new_patient):
 @transaction.atomic
 def check_and_handle_upstream_merges_for_mrns(mrns):
     """
-    Takes in a list of MRNs.
+    Takes in a list of active MRNs.
 
     Filters those not related to elCID.
 
-    If they are inactive, creates a Patient for the
-    active MRN and creates MergedMRN for all related inactive
-    MRNs.
+    Creates MergedMRNs for the related inactive MRNs
+    and merges any elcid patients with inactive MRNs.
 
-    If they are active, creates MergedMRN for all
-    related inactive MRNs.
 
     This function looks the same as
     update_demographics.check_and_handle_upstream_merges_for_mrns
