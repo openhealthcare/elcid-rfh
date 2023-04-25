@@ -19,12 +19,14 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 			{
 				"ID": 1,
 				"PATIENT_NUMBER": "123",
-				"ACTIVE_INACTIVE": "ACTIVE"
+				"ACTIVE_INACTIVE": "ACTIVE",
+				"MERGE_COMMENTS": "Merged"
 			},
 			{
 				"ID": 2,
 				"PATIENT_NUMBER": "234",
-				"ACTIVE_INACTIVE": "INACTIVE"
+				"ACTIVE_INACTIVE": "INACTIVE",
+				"MERGE_COMMENTS": "Merged"
 			},
 		]
 		patient, _ = self.new_patient_and_episode_please()
@@ -67,12 +69,14 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 			{
 				"ID": 1,
 				"PATIENT_NUMBER": "123",
-				"ACTIVE_INACTIVE": "ACTIVE"
+				"ACTIVE_INACTIVE": "ACTIVE",
+				"MERGE_COMMENTS": "Merged"
 			},
 			{
 				"ID": 2,
 				"PATIENT_NUMBER": "234",
-				"ACTIVE_INACTIVE": "INACTIVE"
+				"ACTIVE_INACTIVE": "INACTIVE",
+				"MERGE_COMMENTS": "Merged"
 			},
 		]
 		patient_1, _ = self.new_patient_and_episode_please()
@@ -91,23 +95,57 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 			"We have 1 missing active MRN(s)"
 		)
 
+	def test_ignores_active_patients_with_no_merge_comments(self, get_all_merged_patients, send_email):
+		get_all_merged_patients.return_value = [
+			{
+				"ID": 1,
+				"PATIENT_NUMBER": "123",
+				"ACTIVE_INACTIVE": "ACTIVE",
+				"MERGE_COMMENTS": ""
+			}
+		]
+		patient, _ = self.new_patient_and_episode_please()
+		patient.demographics_set.update(
+			hospital_number="123"
+		)
+		self.cmd.handle()
+		self.assertFalse(send_email.called)
+
+	def test_ignores_active_patients_with_null_merge_comments(self, get_all_merged_patients, send_email):
+		get_all_merged_patients.return_value = [
+			{
+				"ID": 1,
+				"PATIENT_NUMBER": "123",
+				"ACTIVE_INACTIVE": "ACTIVE",
+				"MERGE_COMMENTS": None
+			}
+		]
+		patient, _ = self.new_patient_and_episode_please()
+		patient.demographics_set.update(
+			hospital_number="123"
+		)
+		self.cmd.handle()
+		self.assertFalse(send_email.called)
 
 	def test_missing_inactive_patients(self, get_all_merged_patients, send_email):
 		get_all_merged_patients.return_value = [
 			{
 				"ID": 1,
 				"PATIENT_NUMBER": "123",
-				"ACTIVE_INACTIVE": "ACTIVE"
+				"ACTIVE_INACTIVE": "ACTIVE",
+				"MERGE_COMMENTS": "Merged"
 			},
 			{
 				"ID": 2,
 				"PATIENT_NUMBER": "234",
-				"ACTIVE_INACTIVE": "INACTIVE"
+				"ACTIVE_INACTIVE": "INACTIVE",
+				"MERGE_COMMENTS": "Merged"
 			},
 			{
 				"ID": 3,
 				"PATIENT_NUMBER": "345",
-				"ACTIVE_INACTIVE": "INACTIVE"
+				"ACTIVE_INACTIVE": "INACTIVE",
+				"MERGE_COMMENTS": "Merged"
 			},
 		]
 		patient, _ = self.new_patient_and_episode_please()
