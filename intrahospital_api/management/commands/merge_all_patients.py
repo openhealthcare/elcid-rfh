@@ -25,7 +25,6 @@ def get_all_active_merged_mrns():
 
 
 
-@transaction.atomic
 def our_merge_patient(*, old_patient, new_patient):
     """
     All elcid native non-singleton entries to be converted to
