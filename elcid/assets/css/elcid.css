@@ -3,6 +3,10 @@ body {
   height: calc(100%);
 }
 
+.text-strong {
+  font-weight: bold;
+}
+
 .green {
   color: #9cc96b;
 }
