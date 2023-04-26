@@ -50,6 +50,8 @@ class TbTests(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
+        # observations of a singl test are split across models, fetch them
+        # and group them back by lab number
         smears = list(models.AFBSmear.objects.filter(
             patient=patient, pending=False
         ))
@@ -60,106 +62,54 @@ class TbTests(LoginRequiredViewset):
             patient=patient, pending=False
         ))
         culture_tests = smears + cultures + ref_labs
+
         cultures_by_lab_number = defaultdict(list)
         for culture_test in culture_tests:
             cultures_by_lab_number[culture_test.lab_number].append(culture_test)
 
-        cultures_by_reported = sorted(
-            list(cultures_by_lab_number.values()),
-            key=lambda x: x[0].observation_datetime,
-            reverse=True
-        )
-
         cultures_result = []
 
-        for cultures in cultures_by_reported:
-            culture_lines = []
-            lab_number = cultures[0].lab_number
-            obs_dt = cultures[0].observation_datetime.strftime('%d/%m/%Y %H:%M')
-            site = cultures[0].site
-            positive = False
+        for culture in cultures_by_lab_number.values():
+            culture_data = []
+            for observation in culture:
+                data = observation.to_dict()
 
-            if len(cultures) == 1 and not cultures[0].display_value().startswith("1)"):
-                display_value = cultures[0].display_value()
-                culture_lines = [f"{lab_number} {obs_dt} {site} {display_value}"]
-                positive = cultures[0].positive
-            else:
-                for culture in cultures:
-                    # Don't show pending cultures/ref lab reports
-                    if not isinstance(culture, models.AFBSmear):
-                        if culture.pending:
-                            continue
-                    if culture.positive:
-                        positive = True
-                    display_value = culture.display_value()
-                    if isinstance(culture, models.AFBCulture):
-                        if any([i for i in ref_labs if i.lab_number == culture.lab_number]):
-                            # If there is a reference lab report, strip of the bit of
-                            # the culture result that says we are sending to the ref lab
-                            # as this is a given.
-                            to_strip = [
-                                "Sent to Ref Lab for confirmation.$",
-                                "Isolate sent to Reference laboratory$",
-                                "Isolate sent to Reference  laboratory$"
-                            ]
-                            for some_str in to_strip:
-                                display_value = re.sub(
-                                    some_str,
-                                    "",
-                                    display_value,
-                                    flags=re.IGNORECASE
-                                )
-                    if display_value.startswith("1)") and len([i for i in display_value.split("\n") if i.strip()]) > 2:
-                        display_lines = [culture.OBSERVATION_NAME]
-                        for row in display_value.split("\n"):
-                            row = row.strip()
-                            if not row.strip():
-                                continue
-                            if len(row) > 2 and row[0].isnumeric() and row[1] == ")":
-                                display_lines.append(row)
-                            elif row.endswith(" S") or row.endswith(" I") or row.endswith(" R") or row.endswith(" U"):
-                                display_lines.append(row)
-                            elif len(row) > 1 and row[-2].isnumeric() and row[-1] == ")":
-                                display_lines[-1] = f"{display_lines[-1]} {row[:-2]}".strip()
-                                display_lines.append(row[-2:])
-                            else:
-                                display_lines[-1] = f"{display_lines[-1]} {row}"
-                        culture_lines.extend(display_lines)
-                    else:
-                        culture_lines.append(
-                            f"{culture.OBSERVATION_NAME} {display_value}"
-                        )
-                culture_lines.insert(0, f"{lab_number} {obs_dt} {site}")
-            cultures_result.append({
-                "text": culture_lines,
-                "positive": positive
-            })
+                if isinstance(observation, models.AFBCulture):
+                    if any([i for i in ref_labs if i.lab_number == observation.lab_number]):
+                        # If there is a reference lab report, strip of the bit of
+                        # the culture result that says we are sending to the ref lab
+                        # as this is a given.
+                        to_strip = [
+                            "Sent to Ref Lab for confirmation.$",
+                            "Isolate sent to Reference laboratory$",
+                            "Isolate sent to Reference  laboratory$"
+                        ]
+
+                        display_value = data['display_value']
+
+                        for some_str in to_strip:
+                            display_value = re.sub(
+                                some_str,
+                                "",
+                                display_value,
+                                flags=re.IGNORECASE
+                            )
+                        data['display_value'] = display_value
+
+                culture_data.append(data)
+            cultures_result.append(culture_data)
+
+        cultures_result = sorted(
+            cultures_result,
+            key=lambda x: x[0]['observation_datetime'],
+            reverse=True
+        )
 
         pcrs = models.TBPCR.objects.filter(patient=patient, pending=False)
         pcrs = pcrs.order_by('-observation_datetime')
 
-        pcr_result = []
-        for pcr in pcrs:
-            pcr_lines = []
-            lab_number = pcr.lab_number
-            obs_dt = pcr.observation_datetime.strftime('%d/%m/%Y %H:%M')
-            site = pcr.site
-            display_value = pcr.display_value()
-            if display_value == "NOT detected.":
-                pcr_lines.append(
-                    f"{lab_number} {obs_dt} {site} {display_value}"
-                )
-            else:
-                pcr_lines.append(
-                    f"{lab_number} {obs_dt} {site}"
-                )
-                pcr_lines.append(
-                    pcr.display_value()
-                )
-            pcr_result.append({
-                "text": pcr_lines,
-                "positive": pcr.positive
-            })
+        pcr_result = [pcr.to_dict() for pcr in pcrs]
+
 
         igra_obs = lab_models.Observation.objects.filter(
             test__patient=patient,
@@ -168,6 +118,7 @@ class TbTests(LoginRequiredViewset):
         ).exclude(
             observation_value__iexact='pending'
         )
+
         igra_lts = lab_models.LabTest.objects.filter(
             observation__in=igra_obs
         ).prefetch_related('observation_set')
@@ -187,7 +138,7 @@ class TbTests(LoginRequiredViewset):
             obs_dt = interpretation.observation_datetime.strftime('%d/%m/%Y %H:%M')
             site = igra_lt.site_code or ""
             igra_lines.append(
-                f"{lab_number} {obs_dt} {site}".strip()
+                f"{obs_dt} {site}".strip()
             )
             igra_lines.append(
                 f"Interpretation {interpretation.observation_value}"
@@ -210,11 +161,13 @@ class TbTests(LoginRequiredViewset):
             igra.append({
                 "text": igra_lines,
                 "positive": positive,
-                "obs_dt": interpretation.observation_datetime
+                "obs_dt": interpretation.observation_datetime,
+                "lab_number": lab_number
             })
         igra = sorted(igra, key=lambda x: x["obs_dt"], reverse=True)
 
-        return json_response({
+        return json_response(
+            [{
             'cultures': cultures_result[:5],
             'culture_count': len(cultures_result),
             'pcrs': pcr_result[:5],
@@ -222,7 +175,8 @@ class TbTests(LoginRequiredViewset):
             'igra': igra[:5],
             'igra_count': len(igra),
             'patient_id': patient.id
-        })
+            }])
+
 
 
 class TBAppointments(LoginRequiredViewset):

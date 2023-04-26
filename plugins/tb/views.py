@@ -584,7 +584,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
             result.append(
                 self.patient_to_row(
                     patient,
-                    patient_id_to_obs[patient.id],
+                    #patient_id_to_obs[patient.id],
+                    [],
                     patient_id_to_consultations[patient.id]
                 )
             )
