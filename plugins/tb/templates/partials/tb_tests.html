@@ -1,65 +1,91 @@
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3><i class="fa fa-crosshairs"></i>
-      Cultures, PCRs & IGRAs
-    </h3>
-  </div>
-  <div ng-show="tb_tests.culture_count || tb_tests.pcr_count || tb_tests.igra_count" patient-api target='tb_tests' endpoint='tb_tests' class="panel-footer">
-    <div ng-class="{'content-offset-below-20': tb_tests.igra.length || tb_tests.pcrs.length}" ng-if="tb_tests.cultures.length">
-      <div class="row content-offset-below-5">
-        <div class="col-md-6">
-          <strong>Cultures</strong>
-        </div>
-        <div class="col-md-6 text-right">
-          Latest
-          <span ng-show="tb_tests.culture_count > 5">5</span>
-          <span ng-hide="tb_tests.culture_count > 5">[[ tb_tests.culture_count ]]</span>
-          of [[ tb_tests.culture_count ]]
-        </div>
+
+
+  <div ng-class="{'content-offset-below-20': tb_tests.igra.length || tb_tests.pcrs.length}"
+       ng-if="tb_tests.cultures.length">
+    <div class="row content-offset-below-5">
+      <div class="col-md-6">
+        <strong>Culture</strong>
       </div>
-      <div ng-repeat="culture in tb_tests.cultures">
-        <div ng-class="{'text-muted': !culture.positive, 'left-offset-10': !$first}" ng-repeat="culture_line in culture.text">
-          <div ng-class="{'left-offset-20': !$first && culture_line.indexOf('AFB Smear') !== 0 && culture_line.indexOf('TB: Culture Result') !== 0 && culture_line.indexOf('TB Ref. Lab. Culture result') !== 0}">
+      <div class="col-md-6 text-right">
+        Latest
+        <span ng-show="tb_tests.culture_count > 5">5</span>
+        <span ng-hide="tb_tests.culture_count > 5">[[ tb_tests.culture_count ]]</span>
+        of [[ tb_tests.culture_count ]]
+      </div>
+    </div>
+    <div ng-repeat="culture in tb_tests.cultures">
+
+      <a href="/#/lab-test/[[ culture[0].lab_number ]]" class="orange-link">
+        [[ culture[0].lab_number ]]
+      </a>
+      [[ culture[0].observation_datetime | displayDate ]]
+      [[ culture[0].site ]]
+      <div ng-class="{'text-muted': !observation.positive}" class="left-offset-20" ng-repeat="observation in culture">
+        <span ng-class="{'text-strong': observation.reported_recently && observation.positive}">
+          [[ observation.reported_datetime | displayDate ]]
+        </span>
+
+        [[ observation.test_name ]]
+        [[ observation.display_value ]]
+
+        <span ng-show="observation.reported_recently && observation.positive" class="float-right">
+          <i class="primary-text fa fa-flag"></i>
+        </span>
+
+      </div>
+
+      <div ng-class="{'text-muted': !culture[0].positive, 'left-offset-10': !$first}"
+           ng-repeat="culture_line in culture.text">
+        <div ng-class="{'left-offset-20': !$first && culture_line.indexOf('AFB Smear') !== 0 && culture_line.indexOf('TB: Culture Result') !== 0 && culture_line.indexOf('TB Ref. Lab. Culture result') !== 0}">
           [[ culture_line ]]
-          </div>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div ng-class="{'content-offset-below-20': tb_tests.igra.length}" ng-if="tb_tests.pcrs.length">
+    <div class="row content-offset-below-5">
+      <div class="col-md-6">
+        <strong>PCR</strong>
+      </div>
+      <div class="col-md-6 text-right">
+        Latest
+        <span ng-show="tb_tests.pcr_count > 5">5</span>
+        <span ng-hide="tb_tests.pcr_count > 5">[[ tb_tests.pcr_count ]]</span>
+        of [[ tb_tests.pcr_count ]]
       </div>
     </div>
-    <div ng-class="{'content-offset-below-20': tb_tests.igra.length}" ng-if="tb_tests.pcrs.length">
-      <div class="row content-offset-below-5">
-        <div class="col-md-6">
-          <strong>PCRs</strong>
-        </div>
-        <div class="col-md-6 text-right">
-          Latest
-          <span ng-show="tb_tests.pcr_count > 5">5</span>
-          <span ng-hide="tb_tests.pcr_count > 5">[[ tb_tests.pcr_count ]]</span>
-          of [[ tb_tests.pcr_count ]]
-        </div>
-      </div>
+    <div ng-repeat="pcr in tb_tests.pcrs">
       <div ng-repeat="pcr in tb_tests.pcrs">
-        <div ng-class="{'text-muted': !pcr.positive, 'left-offset-10': !$first}" ng-repeat="pcr_line in pcr.text">
-          [[ pcr_line ]]
-        </div>
-      </div>
-    </div>
-    <div ng-if="tb_tests.igra.length">
-      <div class="row content-offset-below-5">
-        <div class="col-md-6">
-          <strong>IGRA</strong>
-        </div>
-        <div class="col-md-6 text-right">
-          Latest
-          <span ng-show="tb_tests.igra_count > 5">5</span>
-          <span ng-hide="tb_tests.igra_count > 5">[[ tb_tests.igra_count ]]</span>
-          of [[ tb_tests.igra_count ]]
-        </div>
-      </div>
-      <div ng-repeat="igra in tb_tests.igra">
-        <div ng-class="{'text-muted': !igra.positive, 'left-offset-10': !$first}" ng-repeat="igra_line in igra.text">
-          [[ igra_line ]]
-        </div>
+        <a href="/#/lab-test/[[ pcr.lab_number ]]" class="orange-link">
+          [[ pcr.lab_number ]]
+        </a>
+        <span ng-class="{'text-muted': !pcr.positive}">
+          [[ pcr.observation_datetime | displayDate ]]
+          [[ pcr.site ]]
+          [[ pcr.display_value ]]
+        </span>
       </div>
     </div>
   </div>
-</div>
+
+  <div ng-if="tb_tests.igra.length">
+    <div class="row content-offset-below-5">
+      <div class="col-md-6">
+        <strong>IGRA</strong>
+      </div>
+      <div class="col-md-6 text-right">
+        Latest
+        <span ng-show="tb_tests.igra_count > 5">5</span>
+        <span ng-hide="tb_tests.igra_count > 5">[[ tb_tests.igra_count ]]</span>
+        of [[ tb_tests.igra_count ]]
+      </div>
+    </div>
+    <div ng-repeat="igra in tb_tests.igra">
+      <div ng-class="{'text-muted': !igra.positive, 'left-offset-10': !$first}" ng-repeat="igra_line in igra.text">
+        <a href="/#/lab-test/[[ igra.lab_number ]]" class="orange-link" ng-show="$first">[[ igra.lab_number]]</a>
+        [[ igra_line ]]
+      </div>
+    </div>
+  </div>

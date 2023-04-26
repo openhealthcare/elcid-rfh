@@ -30,8 +30,8 @@
     <tbody>
       <tr>
         <th class="col-md-3">Patient</th>
-        <th class="col-md-1">Imaging</th>
-        <th class="col-md-8">Timeline</th>
+        <th class="col-md-5">TB Results</th>
+        <th class="col-md-4">Timeline</th>
       </tr>
     {% for row in rows %}
       <tr>
@@ -49,14 +49,24 @@
           </a>
             {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% endif %}
-        </td>
-        <td>
+          <br />
           <span style="white-space: nowrap;">
           <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
             PACS
             <i class="fa fa-external-link" aria-hidden="true"></i>
           </a>
           </span>
+        </td>
+        <td>
+          <div
+               patient-api patient-id="{{ row.demographics.patient_id }}"
+            target='tb_tests_{{ row.demographics.patient_id }}' endpoint='tb_tests' class="panel-footer">
+            <div ng-repeat="tb_tests in tb_tests_{{ row.demographics.patient_id }}"
+                 ng-show="tb_tests.culture_count || tb_tests.pcr_count || tb_tests.igra_count" >
+              {% include 'partials/tb_tests.html' %}
+            </div>
+
+          </div>
         </td>
         <td class="tb-mdt-row">
           {% for ts, timeline_type, instance in row.timeline %}
