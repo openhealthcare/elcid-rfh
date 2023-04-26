@@ -714,10 +714,16 @@ class MDTList(LoginRequiredMixin, TemplateView):
         timeline = obs + notes + appointments
         timeline = sorted(timeline, key=lambda x: x[0], reverse=True)
 
+        location = ""
+        status = patient.bedstatus.first()
+        if status:
+            location = status.to_location_str()
+
         return {
             "episode": episode,
             "demographics": demographics,
             "timeline": timeline,
+            "location": location,
         }
 
     def get_context_data(self, *args, **kwargs):
