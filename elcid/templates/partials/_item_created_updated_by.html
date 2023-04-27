@@ -1,11 +1,11 @@
 {% load i18n %}
-<div ng-show="item.created || item.updated" class="content-offset-20">
+<div ng-show="item.previous_mrn || item.created || item.updated" class="content-offset-20">
   <p class="text-muted text-center">
     <span ng-show="item.previous_mrn">
-      <span ng-show="item.updated">This information entered prior to patient merge under alternative MRN [[ item.previous_mrn ]]</span>
+      This information entered prior to patient merge under alternative MRN [[ item.previous_mrn ]]
       <br>
     </span>
-    <span ng-hide="item.updated">
+    <span ng-show="item.created && !item.updated">
       <img class="text-avatar" avatar-for-user="[[ item.created_by_id ]]">
       <span ng-show="item.created_by_id">
       {% trans "Created by" %}
