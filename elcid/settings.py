@@ -453,7 +453,6 @@ WAREHOUSE_DB = dict(
 
 EXTRACT_ASYNC = False
 OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
-WRITEBACK_ON = True
 
 OPAL_DEFAULT_SEARCH_FIELDS = [
     "demographics__hospital_number",

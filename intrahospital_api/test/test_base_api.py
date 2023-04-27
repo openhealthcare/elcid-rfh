@@ -30,9 +30,3 @@ class BaseApiTestCase(OpalTestCase):
             "raw_data",
             "Please a method that get's all raw data about a patient"
         )
-
-    def test_cooked_data(self):
-        self.method_test(
-            "cooked_data",
-            "Please a method that get's all cooked data about a patient"
-        )

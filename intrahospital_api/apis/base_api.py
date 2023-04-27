@@ -21,14 +21,6 @@ class BaseApi(object):
             "Please a method that get's all raw data about a patient"
         )
 
-    def cooked_data(self, hospital_number):
-        """ The data 'cooked' into just the fields we want with
-            the names we want
-        """
-        raise NotImplementedError(
-            "Please a method that get's all cooked data about a patient"
-        )
-
     def data_deltas(self, some_datetime):
         """ All data (ie demographics/upstream lab tests) about a patient
             since the datetime

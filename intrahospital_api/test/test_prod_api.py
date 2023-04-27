@@ -545,13 +545,6 @@ class ProdApiTestcase(OpalTestCase):
             )
         )
 
-    def test_cooked_data(self):
-        api = self.get_api()
-        with mock.patch.object(api, "raw_data") as raw_data:
-            raw_data.return_value = [copy.copy(FAKE_PATHOLOGY_DATA)]
-            rows = api.cooked_data("123")
-        self.assertEqual(len(list(rows)), 1)
-
     def test_pathology_demographics_success(self):
         api = self.get_api()
         with mock.patch.object(api, "execute_trust_query") as execute_query:
