@@ -22,6 +22,9 @@ import reversion
 
 IGNORED_FIELDS = {"id", "episode", "patient", "previous_mrn"}
 
+# not *.log so it will not be picked up log rotate
+MERGE_FILE = '/usr/lib/ohc/log/merges.txt'
+
 # All models with a foriegn key to Patient that should be moved over
 PATIENT_RELATED_MODELS = [
     admission_models.BedStatus,
@@ -123,6 +126,10 @@ STATUS_MODELS_TO_RELATED_MODEL = {
         handover_models.NursingHandover,
     ),
 }
+
+def append_to_merge_file(some_txt):
+    with open(MERGE_FILE, 'a+') as merge_file:
+        merge_file.write(some_txt + "\n")
 
 
 def update_tagging(old_episode, new_episode):
@@ -307,14 +314,16 @@ def merge_patient(*, old_patient, new_patient):
     """
     old_mrn = old_patient.demographics().hospital_number
     new_mrn = new_patient.demographics().hospital_number
-    logger.info(
-        f'Merging patient id={old_patient.id} mrn={old_mrn} into patient id={new_patient.id} mrn={new_mrn} '
-    )
+    log_str = f'Merging patient id={old_patient.id} mrn={old_mrn} into patient id={new_patient.id} mrn={new_mrn}'
+    logger.info(log_str)
+    append_to_merge_file(f"{timezone.now().strftime('%d/%m/%Y %H:%M:%S')} {log_str}")
     ohc = User.objects.get(username='ohc')
     old_patient_json = json.dumps(old_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
-    logger.info(f'From patient json\n {old_patient_json}')
+    append_to_merge_file('Inactive patient json')
+    append_to_merge_file(old_patient_json)
     new_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
-    logger.info(f'To patient json\n {new_patient_json}')
+    append_to_merge_file('Active patient json')
+    append_to_merge_file(new_patient_json)
 
     for patient_related_model in PATIENT_RELATED_MODELS:
         if patient_related_model == lab_models.LabTest:
@@ -348,6 +357,8 @@ def merge_patient(*, old_patient, new_patient):
     updates_statuses(new_patient)
     loader.load_patient(new_patient, run_async=False)
     new_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
-    logger.info(f'Patient id={new_patient.id} now merged')
+    log_str = f'Merged patient id={new_patient.id}'
+    logger.info(log_str)
+    append_to_merge_file(log_str)
     new_merged_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
-    logger.info(f'merged patient json\n {new_merged_patient_json}')
+    append_to_merge_file(new_merged_patient_json)
