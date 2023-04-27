@@ -134,6 +134,7 @@ ACTIVE_IDS_TO_IGNORE = [
     3147508,  # Merged from an MRN that does not exist
     3257202,  # Merged from an MRN that does not exist
     3267086,  # Merged from an MRN that does not exist
+    1030326,
 ]
 
 
