@@ -1,10 +1,14 @@
 """
-Checks that our Merged MRN cron job is running.
+A sanity check to make sure that merge_patient_since is successfully
+merging patients in keeping with the upstream data.
 
-* check_all_merged_mrns
-Compares Inactive MRNs against our MergedMRN mrns
-Compares Active MRNs to Demographics hospital numbers which have related MRNs
-Sends an email if we are missing MRNs.
+`check_all_merged_mrns` sends_emails warning us if:
+ * We have MergedMRN.mrns that are also in Demographics.hospital_number
+ * We have an MRN in demographics.hospital_number that is marked as inactive upstream
+ * We have an MRN in MergedMRN.mrn that is marked as active upstream
+
+We are aware that the upstream data is flawed and ignore Masterfile row IDs
+which we have individually validated as flawed data.
 """
 from django.core.management.base import BaseCommand
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
@@ -163,20 +167,20 @@ def get_all_merged_patients():
 
 def check_all_merged_mrns():
     """
-    Checks all patients who are marked as merged in the upstream.
+    Sends_emails warning us if:
+    * We have MergedMRN.mrns that are also in Demographics.hospital_number
+    * We have an MRN in demographics.hospital_number that is marked as inactive upstream
+    * We have an MRN in MergedMRN.mrn that is marked as active upstream
 
-    If patients are inactive, it makes sure we have mergedMRNs. It ignores
-    CRS Masterfile rows with ids declared in INACTIVE_IDS_TO_IGNORE
-
-    If patients are active it makes sure we have Demographics with those
-    MRNs and that the patients have merged MRNs.
+    Ignores CernerMasterFile rows with IDS in  that we have checked, and concluded have
+    flawed data.
     """
-    # ALL inactive MRNs
+    # ALL inactive MRNs in our system.
     our_merged_mrns = set(elcid_models.MergedMRN.objects.values_list('mrn', flat=True))
-    # All MRNS in our system
+    # All demographics hospital numbers in our system whether merged or not.
     our_demographics_mrns = set(elcid_models.Demographics.objects.all().values_list('hospital_number', flat=True))
 
-    # ALL active MRNs which have an inactive MRN
+    # ALL active MRNs which have an inactive MRN.
     our_merged_demographics_mrns = set(elcid_models.Demographics.objects.filter(
         patient_id__in=set(elcid_models.MergedMRN.objects.values_list('patient_id', flat=True).distinct())
     ).values_list(
@@ -198,13 +202,13 @@ def check_all_merged_mrns():
             if row["PATIENT_NUMBER"] not in our_merged_demographics_mrns:
                 # At time of writing there are 24 rows with active patients
                 # with null as merge comments, we can't do anything about
-                # these so ignore them
+                # these so ignore them.
                 if row["MERGE_COMMENTS"] is None:
                     continue
 
                 # At time of writing there are 4530 rows with active patients
                 # and empty merge comments, we can't do anything about
-                # these so ignore them
+                # these so ignore them.
                 if len(row["MERGE_COMMENTS"]) == 0:
                     continue
                 if row["ID"] not in ACTIVE_IDS_TO_IGNORE:
@@ -215,7 +219,7 @@ def check_all_merged_mrns():
                     missing_inactive.append(mrn)
 
     # We have patients in elCID that do not have merged MRNs
-    # but should according to the upstream table
+    # but should according to the upstream table.
     if len(missing_active) > 0:
         logger.info(f"Missing active MRNs {missing_active}")
         send_email(f"We have {len(missing_active)} missing active MRN(s)")
