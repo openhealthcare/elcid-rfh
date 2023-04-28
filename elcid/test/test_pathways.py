@@ -100,7 +100,6 @@ class TestAddPatientPathway(OpalTestCase):
         self.url = AddPatientPathway().save_url()
 
     @patch("elcid.pathways.loader.load_patient")
-    @override_settings(ADD_PATIENT_LAB_TESTS=True)
     def test_queries_loader_if_external_demographics(self, load_patient):
         test_data = dict(
             demographics=[dict(
@@ -117,7 +116,6 @@ class TestAddPatientPathway(OpalTestCase):
         )
 
     @patch("elcid.pathways.loader.load_patient")
-    @override_settings(ADD_PATIENT_LAB_TESTS=True)
     def test_does_not_query_loader_if_local_demographics(
         self, load_patient
     ):

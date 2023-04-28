@@ -146,7 +146,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         # if the patient its a new patient and we have
         # got their demographics from the upstream api service
         # bring in their lab tests
-        if not patient and settings.ADD_PATIENT_LAB_TESTS:
+        if not patient:
             demo_system = data["demographics"][0].get("external_system")
             if demo_system == constants.EXTERNAL_SYSTEM:
                 loader.load_patient(saved_patient)
