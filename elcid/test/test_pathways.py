@@ -9,8 +9,8 @@ from intrahospital_api import constants
 from elcid.pathways import (
     AddPatientPathway, IgnoreDemographicsMixin
 )
-from elcid import episode_categories
 from elcid import models as emodels
+from intrahospital_api import update_demographics
 
 
 @override_settings(
@@ -89,6 +89,14 @@ class IgnoreDemographicsMixinTestCase(PathwayTestCase):
         )
 
 
+def create_patient(mrn, episode_category):
+    patient = models.Patient.objects.create()
+    patient.demographics_set.update(hospital_number=mrn)
+    patient.episode_set.create(category_name=episode_category.display_name)
+    return patient, True
+
+
+@patch('elcid.pathways.loader.get_or_create_patient')
 class TestAddPatientPathway(OpalTestCase):
     def setUp(self):
         super(TestAddPatientPathway, self).setUp()
@@ -99,58 +107,11 @@ class TestAddPatientPathway(OpalTestCase):
         )
         self.url = AddPatientPathway().save_url()
 
-    @patch("elcid.pathways.loader.load_patient")
-    def test_queries_loader_if_external_demographics(self, load_patient):
-        test_data = dict(
-            demographics=[dict(
-                hospital_number="234",
-                nhs_number="12312",
-                external_system=constants.EXTERNAL_SYSTEM
-            )],
-            tagging=[{u'antifungal': True}],
-        )
-        response = self.post_json(self.url, test_data)
-        self.assertEqual(response.status_code, 200)
-        load_patient.assert_called_once_with(
-            models.Patient.objects.get()
-        )
-
-    @patch("elcid.pathways.loader.load_patient")
-    def test_does_not_query_loader_if_local_demographics(
-        self, load_patient
-    ):
-        test_data = dict(
-            demographics=[dict(
-                hospital_number="234",
-                nhs_number="12312"
-            )],
-            tagging=[{u'antifungal': True}],
-        )
-        response = self.post_json(self.url, test_data)
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(load_patient.called)
-
-    def test_saves_tag(self):
+    def test_creates_patients_in_the_generic_case(self, create_rfh_patient_from_hospital_number):
+        create_rfh_patient_from_hospital_number.side_effect = create_patient
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        response = self.post_json(self.url, test_data)
-        self.assertEqual(response.status_code, 200)
-        patient = models.Patient.objects.get()
-        self.assertEqual(
-            patient.demographics_set.first().hospital_number,
-            "234"
-        )
-        episode = patient.episode_set.get()
-        self.assertEqual(
-            list(episode.get_tag_names(None)),
-            ["antifungal"]
-        )
-
-    def test_saves_without_tags(self):
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
+            location=[dict(ward="9W", hospital="RFH")]
         )
         self.post_json(self.url, test_data)
         patient = models.Patient.objects.get()
@@ -158,13 +119,15 @@ class TestAddPatientPathway(OpalTestCase):
             patient.demographics_set.first().hospital_number,
             "234"
         )
-        episode = patient.episode_set.get()
-        self.assertEqual(
-            list(episode.get_tag_names(None)),
-            []
-        )
 
-    def test_does_not_error_if_hospital_is_not_set(self):
+    def test_does_not_error_if_hospital_is_not_set(self, create_rfh_patient_from_hospital_number):
+        """
+        Hospital will not be populated for new patients where the
+        user enters nothing in the location form's hospital field.
+
+        We should not error.
+        """
+        create_rfh_patient_from_hospital_number.side_effect = create_patient
         test_data = dict(
             demographics=[dict(hospital_number="234", nhs_number="12312")],
             location=[dict(ward="9W")]
@@ -175,54 +138,56 @@ class TestAddPatientPathway(OpalTestCase):
             patient.demographics_set.first().hospital_number,
             "234"
         )
+
+    def test_does_not_error_if_location_is_not_set(self, create_rfh_patient_from_hospital_number):
+        """
+        Location will not be populated for new patients where the
+        user enters nothing in the location form.
+
+        We should not error.
+        """
+        create_rfh_patient_from_hospital_number.side_effect = create_patient
+        test_data = dict(
+            demographics=[dict(hospital_number="234", nhs_number="12312")],
+        )
+        self.post_json(self.url, test_data)
+        patient = models.Patient.objects.get()
+        self.assertEqual(
+            patient.demographics_set.first().hospital_number,
+            "234"
+        )
         episode = patient.episode_set.get()
         self.assertEqual(
             list(episode.get_tag_names(None)),
             []
         )
 
-
-    @patch("elcid.pathways.datetime")
-    def test_episode_start(self, datetime):
-        patient, episode = self.new_patient_and_episode_please()
-        datetime.date.today.return_value = date(2016, 5, 1)
-        url = AddPatientPathway().save_url()
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        self.post_json(url, test_data)
-        new_episode = models.Episode.objects.last()
-        self.assertEqual(new_episode.start, date(2016, 5, 1))
-
-        self.assertEqual(
-            list(new_episode.get_tag_names(None)),
-            ['antifungal']
-        )
-
-    def test_dont_create_new_episode_if_infectious_service_episode_exists(self):
-        patient, episode = self.new_patient_and_episode_please()
-        episode.category_name = episode_categories.InfectionService.display_name
-        episode.save()
-        url = AddPatientPathway().save_url(patient=patient)
-        test_data = dict(
-            demographics=[dict(hospital_number="234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
-        )
-        self.post_json(url, test_data)
-        self.assertEqual(
-            patient.episode_set.get().id, episode.id
-        )
-        self.assertEqual(
-            list(episode.get_tag_names(None)),
-            ['antifungal']
-        )
-
-    def test_create_new_patient_with_stripped_zeros(self):
+    def test_create_new_patient_with_stripped_zeros(self, create_rfh_patient_from_hospital_number):
+        """
+        We should strip leading zeros from hospital numbers before creating
+        patients.
+        """
+        create_rfh_patient_from_hospital_number.side_effect = create_patient
         url = AddPatientPathway().save_url()
         test_data = dict(
             demographics=[dict(hospital_number="00234", nhs_number="12312")],
-            tagging=[{u'antifungal': True}]
+        )
+        self.post_json(url, test_data)
+        self.assertTrue(
+            emodels.Demographics.objects.filter(hospital_number="234").exists()
+        )
+
+    def test_creates_rnoh_episodes(self, create_rfh_patient_from_hospital_number):
+        """
+        We should create RNOH episodes if the hospital is RNOH
+        """
+        create_rfh_patient_from_hospital_number.side_effect = update_demographics.CernerPatientNotFoundException(
+            "Not found upstream because they are from RNOH"
+        )
+        url = AddPatientPathway().save_url()
+        test_data = dict(
+            demographics=[dict(hospital_number="00234", nhs_number="12312")],
+            location=[dict(ward="9W", hospital="RNOH")]
         )
         self.post_json(url, test_data)
         self.assertTrue(

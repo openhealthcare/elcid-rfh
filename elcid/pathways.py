@@ -4,6 +4,7 @@ Pathways for the RFH elCID application
 import datetime
 
 from django.db import transaction
+from django.http import HttpResponseBadRequest
 from django.conf import settings
 from opal.core.pathway.pathways import (
     Step,
@@ -14,6 +15,7 @@ from opal.core.pathway.pathways import (
 
 from intrahospital_api import loader
 from intrahospital_api import constants
+from intrahospital_api import update_demographics
 from plugins.rnoh.episode_categories import RNOHEpisode
 
 from elcid import models
@@ -124,17 +126,19 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             # strip off leading zeros, we do not create patients
             # who have leading zeros.
             hn = data["demographics"][0].get("hospital_number")
-            if hn:
-                hn = data["demographics"][0]["hospital_number"].lstrip('0')
-                data["demographics"][0]["hospital_number"] = hn
-
-        saved_patient, saved_episode = super(AddPatientPathway, self).save(
-            data, user=user, patient=patient, episode=episode
-        )
-
-        # there should always be a new episode
-        saved_episode.start = datetime.date.today()
-        saved_episode.save()
+            if hn is None or len(hn.lstrip('0')) == 0:
+                raise HttpResponseBadRequest('A hospital number is required')
+            hn = hn.lstrip('0')
+            try:
+                patient, _ = loader.get_or_create_patient(hn, episode_category=InfectionService)
+                episode = patient.episode_set.get(category_name=InfectionService.display_name)
+            except update_demographics.CernerPatientNotFoundException:
+                pass
+            # Save the pathway to create patients that do not exist
+            # and to update related subrecords
+            saved_patient, saved_episode = super(AddPatientPathway, self).save(
+                data, user=user, patient=patient, episode=episode
+            )
 
         if hospital == 'RNOH':
             # Move the location data to an RNOH episode,
@@ -142,12 +146,4 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             saved_episode.category_name = RNOHEpisode.display_name
             saved_episode.save()
             saved_patient.create_episode(category_name=InfectionService.display_name)
-
-        # if the patient its a new patient and we have
-        # got their demographics from the upstream api service
-        # bring in their lab tests
-        if not patient:
-            demo_system = data["demographics"][0].get("external_system")
-            if demo_system == constants.EXTERNAL_SYSTEM:
-                loader.load_patient(saved_patient)
         return saved_patient, saved_episode
