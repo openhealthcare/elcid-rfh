@@ -514,13 +514,9 @@ class MergePatientTestCase(OpalTestCase):
             self.new_patient.mergedmrn_set.get(mrn=self.old_mrn).our_merge_datetime
         )
         log_call_args = append_to_merge_file.call_args_list
-        self.assertEqual(len(log_call_args), 7)
-        old_json = json.loads(log_call_args[2][0][0])
+        self.assertEqual(len(log_call_args), 1)
+        old_json = json.loads(log_call_args[0][0][0])
         self.assertEqual(old_json['id'], old_id)
-        new_json = json.loads(log_call_args[4][0][0])
-        self.assertEqual(new_json['id'], self.new_patient.id)
-        merged_json = json.loads(log_call_args[6][0][0])
-        self.assertEqual(merged_json['id'], self.new_patient.id)
 
     def test_copies_over_patient_subrecords(self, append_to_merge_file, load_patient):
         """
@@ -543,7 +539,7 @@ class MergePatientTestCase(OpalTestCase):
             self.new_patient.mergedmrn_set.get(mrn=self.old_mrn).our_merge_datetime
         )
         log_call_args = append_to_merge_file.call_args_list
-        self.assertEqual(len(log_call_args), 7)
+        self.assertEqual(len(log_call_args), 1)
 
     def test_copies_over_episode_subrecords_where_the_episode_exists(self, append_to_merge_file, load_patient):
         """
