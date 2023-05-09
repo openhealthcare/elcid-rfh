@@ -9,6 +9,8 @@ from opal.core.test import OpalTestCase
 from django.utils import timezone
 from django.test import override_settings
 from rest_framework.reverse import reverse
+from django.contrib.auth.models import User
+from django.conf import settings
 
 from elcid import models as emodels
 from elcid import patient_lists
@@ -874,6 +876,9 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         )
 
     def test_update(self):
+        # created should be updated on the blood culture set
+        # make sure we start with None
+        self.assertIsNone(self.bcs.created)
         data = {
             'id': self.isolate.id,
             'notes': '',
@@ -905,6 +910,8 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         self.assertEqual(
             reloaded_isolate.aerobic_or_anaerobic, 'Anerobic'
         )
+        # created should be updated on the blood culture set
+        self.bcs.created = self.user
 
 @override_settings(NEW_LAB_TEST_SUMMARY_DISPLAY=True)
 class LabTestSummaryTestCase(OpalTestCase):
