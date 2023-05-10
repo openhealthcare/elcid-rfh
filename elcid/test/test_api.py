@@ -744,10 +744,10 @@ class BloodCultureSetTestCase(OpalTestCase):
 class BloodCultureIsolateTestCase(OpalTestCase):
     def setUp(self):
         positive = datetime.date(2019, 5, 8)
-        yesterday = positive - datetime.timedelta(1)
+        self.yesterday = positive - datetime.timedelta(1)
         patient, _ = self.new_patient_and_episode_please()
         self.bcs = emodels.BloodCultureSet.objects.create(
-            date_ordered=yesterday,
+            date_ordered=self.yesterday,
             source="Hickman",
             lab_number="111",
             patient=patient
@@ -900,6 +900,21 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         )
         # created should be updated on the blood culture set
         self.bcs.created = self.user
+
+    def test_delete(self):
+        self.bcs.updated = self.yesterday
+        other_user = User.objects.create(username="other user")
+        self.bcs.updated_by = other_user
+        self.bcs.save()
+        self.client.delete(self.detail_url)
+        self.bcs.refresh_from_db()
+        # it should be approximately now
+        self.assertTrue(
+            self.bcs.updated > timezone.now() - datetime.timedelta(minutes=1)
+        )
+        self.assertEqual(self.bcs.updated_by, self.user)
+
+
 
 @override_settings(NEW_LAB_TEST_SUMMARY_DISPLAY=True)
 class LabTestSummaryTestCase(OpalTestCase):

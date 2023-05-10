@@ -605,6 +605,21 @@ class BloodCultureIsolateApi(SubrecordViewSet):
             status_code=status.HTTP_201_CREATED
         )
 
+    @item_from_pk
+    def destroy(self, request, item):
+        """
+        Delete a blood culture isolate.
+        Update the updated* and previous_mrn fields of the parent
+        blood culture set.
+        """
+        blood_culture_set = item.blood_culture_set
+        blood_culture_set.set_updated_by_id(None, request.user)
+        blood_culture_set.set_updated(None, request.user)
+        if blood_culture_set.previous_mrn:
+            blood_culture_set.previous_mrn = None
+        blood_culture_set.save()
+        return super().destroy(request, item.id)
+
 
 class AddToServiceViewSet(LoginRequiredViewset):
     basename = 'add_to_service'
