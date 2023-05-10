@@ -4,8 +4,10 @@ merging patients in keeping with the upstream data.
 
 `check_all_merged_mrns` sends_emails warning us if:
  * We have MergedMRN.mrns that are also in Demographics.hospital_number
- * We have an MRN in demographics.hospital_number that is marked as inactive upstream
- * We have an MRN in MergedMRN.mrn that is marked as active upstream
+ * We have a demographics.hospital_number that is marked as inactive upstream
+ * We have a MergedMRN.mrn that is marked as active upstream
+ * We have a patient with merged MRNs whose MRN is not marked as merged upstream
+ * We have a MergedMRN.mrn that is not marked as inactive upstream
 
 We are aware that the upstream data is flawed and ignore Masterfile row IDs
 which we have individually validated as flawed data.
@@ -167,10 +169,16 @@ def get_all_merged_patients():
 
 def check_all_merged_mrns():
     """
+    Looks at all merged MRNs upstream who have are in Demographics.hospital_number
+    or MergedMRN.mrn.
+
     Sends_emails warning us if:
-    * We have MergedMRN.mrns that are also in Demographics.hospital_number
-    * We have an MRN in demographics.hospital_number that is marked as inactive upstream
-    * We have an MRN in MergedMRN.mrn that is marked as active upstream
+    * We have a MergedMRN.mrn that are also in Demographics.hospital_number.
+    * If an upstream MRN is active and merged but it is not in a list of all our Demographics.hospital numbers
+      that have mergedMRNs.
+    * If an upstream MRN is inactive, but they are not in our mergedMRN table.
+    * If we have an active MRN with merged MRNs that is not marked as active and merged upstream.
+    * If we have an inactive MRN that is not marked as inactive upstream
 
     Ignores CernerMasterFile rows with IDS in  that we have checked, and concluded have
     flawed data.
@@ -229,6 +237,28 @@ def check_all_merged_mrns():
     if len(missing_inactive) > 0:
         logger.info(f"Missing inactive MRNs {missing_inactive}")
         send_email(f"We have {len(missing_inactive)} missing inactive MRN(s)")
+
+    # Looks at all active MRNs in our system that have merges and makes
+    # sure the upstream also has an active merge for this patient.
+    active_mrns = set([row["PATIENT_NUMBER"] for row in upstream_merged_rows if row["ACTIVE_INACTIVE"] == "ACTIVE"])
+    active_in_ours_but_not_in_theirs = []
+    for i in list(our_merged_demographics_mrns):
+        if i not in active_mrns:
+            active_in_ours_but_not_in_theirs.append(i)
+    if len(active_in_ours_but_not_in_theirs) > 0:
+        logger.info(f"Active MRNS in ours but not in theirs {active_in_ours_but_not_in_theirs}")
+        send_email(f"We have {len(active_in_ours_but_not_in_theirs)} active MRN(s) that are not upstream")
+
+    # Looks at all inactive MRNs in our system that have merges and makes
+    # sure the upstream also has an inactive merge for this patient.
+    inactive_mrns = set([row["PATIENT_NUMBER"] for row in upstream_merged_rows if row["ACTIVE_INACTIVE"] == "INACTIVE"])
+    inactive_in_ours_but_not_in_theirs = []
+    for i in list(our_merged_mrns):
+        if i not in inactive_mrns:
+            inactive_in_ours_but_not_in_theirs.append(i)
+    if len(inactive_in_ours_but_not_in_theirs) > 0:
+        logger.info(f"Inactive MRNS in ours but not in theirs {inactive_in_ours_but_not_in_theirs}")
+        send_email(f"We have {len(inactive_in_ours_but_not_in_theirs)} inactive MRN(s) that are not upstream")
 
 
 class Command(BaseCommand):
