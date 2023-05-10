@@ -627,7 +627,6 @@ class RiskFactor(PreviousMRN, omodels.PatientSubrecord):
 class BloodCultureIsolate(
     omodels.UpdatesFromDictMixin,
     omodels.ToDictMixin,
-    omodels.TrackedModel,
     models.Model
 ):
     AEROBIC = "Aerobic"
@@ -675,24 +674,26 @@ class BloodCultureIsolate(
         Changes updated*/previousMRN on the related
         BloodCultureSet when the isolate is updated.
         """
-        # updated*/previous_mrn are hoisted onto
+        # created*/updated*/previous_mrn are hoisted onto
         # the blood culture isolate from the blood culture set
-        # by the blood_culture_isolate.js
-
-        # On save the blood culture set updated*/previous_mrn
-        # should be updated when the isolate is upadated.
-        # Note, previous MRN is not actually a field on the model.
-        if 'previous_mrn' in data:
-            data.pop('previous_mrn')
+        # by the blood_culture_isolate.js, they are not fields
+        # on the isolate so need to be removed.
+        blood_culture_set_fields = [
+            "previous_mrn", "created", "created_by_id", "updated", "updated_by_id"
+        ]
+        for field in blood_culture_set_fields:
+            if field in data:
+                data.pop(field)
 
         blood_culture_set_id = data.get('blood_culture_set_id')
         blood_culture_set = BloodCultureSet.objects.get(
             id=blood_culture_set_id
         )
-
         # data is ignored by the below for functions
         blood_culture_set.set_updated_by_id(data, user)
         blood_culture_set.set_updated(data, user)
+        blood_culture_set.save()
+
         if blood_culture_set.previous_mrn:
             blood_culture_set.previous_mrn = None
             blood_culture_set.save()
