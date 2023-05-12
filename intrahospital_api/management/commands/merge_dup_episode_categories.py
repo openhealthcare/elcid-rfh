@@ -1,5 +1,8 @@
+import json
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.contrib.auth.models import User
+from opal.core.serialization import OpalSerializer
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import logger, merge_patient
 from elcid.utils import timing
@@ -29,10 +32,9 @@ def update_singleton(subrecord_cls, old_episode, new_episode):
             old_singleton.save()
     else:
         if new_singleton.updated < old_singleton.updated:
-            # the old singleton is new than the new singleton
-            # stamp the new singleton as reversion
-            # then copy over all the fields from the old
-            # onto the new
+            # the old singleton is newer than the new singleton
+            # copy over the fields from the old to the new
+            # and save with reversion history
             for field in old_singleton._meta.get_fields():
                 field_name = field.name
                 if field_name in merge_patient.IGNORED_FIELDS:
@@ -43,7 +45,7 @@ def update_singleton(subrecord_cls, old_episode, new_episode):
         else:
             # the old singleton is older than the new singleton
             # create a reversion record with the data of the old
-            # singleton, then continue with the more recent data
+            # singleton data, then continue with the more recent data
             more_recent_data = {}
             for field in new_singleton._meta.get_fields():
                 field_name = field.name
@@ -60,7 +62,7 @@ def update_singleton(subrecord_cls, old_episode, new_episode):
 
 def move_non_singletons(subrecord_cls, old_episode, new_episode):
     """
-    Updates the old_subrecords query set to the new episode.
+    Updates the old_subrecords queryset to point to the new episode.
     """
     if new_episode.__class__ == opal_models.Episode:
         is_episode_subrecord = True
@@ -97,13 +99,14 @@ def merge_patient_episodes(patient_id):
         if len(category_episodes) > 1:
             root = category_episodes[0]
             for category_episode in category_episodes[1:]:
-                merge_patient.update_tagging(category_episode, root)
+                merge_patient.update_tagging(old_episode=category_episode, new_episode=root)
+                ohc = User.objects.get(username='ohc')
+                prior_json = json.dumps(category_episode.to_dict(ohc), indent=4, cls=OpalSerializer)
                 merge_episode(old_episode=category_episode, new_episode=root)
-                category_episode_id = category_episode.id
                 patient_id = category_episode.patient_id
                 category_episode.delete()
-                with open(DELETE_FILE, 'a') as w:
-                    w.write(f'\n{patient_id},{category_episode_id}')
+                with open(DELETE_FILE, 'a+') as w:
+                    w.write(f'{prior_json}\n')
 
 
 def patient_ids_with_duplicate_episode_categories():
