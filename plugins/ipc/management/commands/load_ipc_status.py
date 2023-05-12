@@ -13,7 +13,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from opal.models import Patient
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-
+from plugins.ipc import logger
 from plugins.admissions.models import BedStatus
 from plugins.ipc.models import IPCStatus
 
@@ -79,6 +79,7 @@ SELECT * FROM ElCid_Infection_Prevention_Control_View
 class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
+        logger.info("IPC load status starting")
         api = ProdAPI()
 
         updated = timezone.now()
@@ -88,8 +89,7 @@ class Command(BaseCommand):
             'local_patient_identifier', flat=True)
 
         upstream_result = api.execute_hospital_query(QUERY)
-
-        self.stdout.write("Query complete")
+        logger.info(f"IPC load status query complete, {len(upstream_result)} rows returned")
 
         for row in upstream_result:
             if row['Patient_Number'] in inpatients:
@@ -121,3 +121,4 @@ class Command(BaseCommand):
 
                     setattr(status, key, value)
                 status.save()
+        logger.info("IPC load status complete")
