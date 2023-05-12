@@ -82,6 +82,7 @@ class Command(BaseCommand):
         logger.info("IPC load status starting")
         api = ProdAPI()
 
+        updated = timezone.now()
         updated_by = User.objects.filter(username='ohc').first()
 
         inpatients = BedStatus.objects.filter(bed_status='Occupied').values_list(
@@ -128,7 +129,6 @@ class Command(BaseCommand):
                     # don't overwrite the value
                     if value is None and existing_value is not None:
                         continue
-
                     if value == False and not existing_value == False:
                         continue
 
