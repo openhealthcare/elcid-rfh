@@ -331,6 +331,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'ipc': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'labtests': {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
@@ -414,7 +419,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.108'
+VERSION_NUMBER = '0.107.1'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -453,6 +458,16 @@ WAREHOUSE_DB = dict(
 
 EXTRACT_ASYNC = False
 OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
+WRITEBACK_ON = True
+
+OPAL_DEFAULT_SEARCH_FIELDS = [
+    "demographics__hospital_number",
+    "demographics__first_name",
+    "demographics__surname",
+    # Search the normal fields but also
+    # include mrns that have been merged
+    "mergedmrn__mrn"
+]
 
 COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')
 
