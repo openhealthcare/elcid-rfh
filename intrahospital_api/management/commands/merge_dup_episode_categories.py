@@ -13,9 +13,9 @@ from elcid.utils import timing
 DELETE_FILE = "deleted_episodes.txt"
 
 
-def update_singleton(subrecord_cls, old_parent, new_parent):
-    old_singleton = subrecord_cls.objects.get(episode=old_parent)
-    new_singleton = subrecord_cls.objects.get(episode=new_parent)
+def update_singleton(subrecord_cls, old_episode, new_episode):
+    old_singleton = subrecord_cls.objects.get(episode=old_episode)
+    new_singleton = subrecord_cls.objects.get(episode=new_episode)
 
     if not old_singleton.updated:
         # the old singleton was never editted, we can skip
@@ -24,7 +24,7 @@ def update_singleton(subrecord_cls, old_parent, new_parent):
         # the new singleton was never editted, we can delete
         # it and replace it with the old one.
         new_singleton.delete()
-        old_singleton.episode = new_parent
+        old_singleton.episode = new_episode
         with reversion.create_revision():
             old_singleton.save()
     else:
@@ -58,24 +58,23 @@ def update_singleton(subrecord_cls, old_parent, new_parent):
                 new_singleton.save()
 
 
-def move_non_singletons(subrecord_cls, old_parent, new_parent):
+def move_non_singletons(subrecord_cls, old_episode, new_episode):
     """
-    Moves the old_subrecords query set onto the new parent (a patient or episode).
-    In doing so it updates the previous_mrn field to be that of the old_mrn
+    Updates the old_subrecords query set to the new episode.
     """
-    if new_parent.__class__ == opal_models.Episode:
+    if new_episode.__class__ == opal_models.Episode:
         is_episode_subrecord = True
     else:
         is_episode_subrecord = False
     if is_episode_subrecord:
-        old_subrecords = subrecord_cls.objects.filter(episode=old_parent)
+        old_subrecords = subrecord_cls.objects.filter(episode=old_episode)
     else:
-        old_subrecords = subrecord_cls.objects.filter(patient=old_parent)
+        old_subrecords = subrecord_cls.objects.filter(patient=old_episode)
     for old_subrecord in old_subrecords:
         if is_episode_subrecord:
-            old_subrecord.episode = new_parent
+            old_subrecord.episode = new_episode
         else:
-            old_subrecord.patient = new_parent
+            old_subrecord.patient = new_episode
         with reversion.create_revision():
             old_subrecord.save()
 
