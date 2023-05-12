@@ -82,7 +82,6 @@ class Command(BaseCommand):
         logger.info("IPC load status starting")
         api = ProdAPI()
 
-        updated = timezone.now()
         updated_by = User.objects.filter(username='ohc').first()
 
         inpatients = BedStatus.objects.filter(bed_status='Occupied').values_list(
@@ -105,20 +104,46 @@ class Command(BaseCommand):
                 status.created_by_id = updated_by.id
 
                 for key, value in update_dict.items():
+                    existing_value = getattr(IPCStatus, key)
 
-                    if isinstance(IPCStatus._meta.get_field(key), DateField):
+                    is_date_field = isinstance(IPCStatus._meta.get_field(key), DateField)
 
+                    if is_date_field:
                         if value == '':
                             value = None
                         elif isinstance(value, str):
                             value = datetime.datetime.strptime(value, '%d/%m/%Y').date()
-
                     if isinstance(IPCStatus._meta.get_field(key), BooleanField):
                         if value:
                             value = True
                         else:
                             value = False
 
+                    # If we haven't changed the value skip
+                    if value == existing_value:
+                        continue
+
+                    # We can have multiple rows per patient so if there
+                    # is a value already and no new value
+                    # don't overwrite the value
+                    if value is None and existing_value is not None:
+                        continue
+
+                    if value == False and not existing_value == False:
+                        continue
+
+                    # For date fields, if its covid, just use the most recent
+                    # date, otherwise we should not have contractdictory dates
+                    # raise an error
+                    if is_date_field:
+                        if key == "covid_19_date":
+                            if value < existing_value:
+                                continue
+                        else:
+                            raise ValueError(" ".join([
+                                f"For MRN {row['Patient_Number']}, Field {key}",
+                                f"upstream={value}, local value={existing_value}"
+                            ]))
                     setattr(status, key, value)
                 status.save()
         logger.info("IPC load status complete")
