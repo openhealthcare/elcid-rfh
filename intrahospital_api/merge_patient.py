@@ -127,13 +127,13 @@ STATUS_MODELS_TO_RELATED_MODEL = {
 
 def update_tagging(*, old_episode, new_episode):
     """
-    Moves the tagging from the old episode to the new episode.
+    Copies tags over from the old episode to the
+    new episode if the tag.value does not exist
+    in the new episodes tagging.
 
-    We have no updated timestamp so consider the unarchived tag to be
-    more important than the unarchived tag.
-
-    If the old episode has an archived tag which is not
-    on the new episdoe we move this over.
+    If the tag exists and is unarchived on the old episode
+    but is archived on the new episode, unarchive it on the
+    new episode.
     """
     for old_tag in old_episode.tagging_set.all():
         new_tag = new_episode.tagging_set.filter(value=old_tag.value).first()
