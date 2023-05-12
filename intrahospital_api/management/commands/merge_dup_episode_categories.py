@@ -80,20 +80,13 @@ def move_non_singletons(subrecord_cls, old_parent, new_parent):
             old_subrecord.save()
 
 
-def move_record(subrecord_cls, old_parent, new_parent):
-    if getattr(subrecord_cls, "_is_singleton", False):
-        update_singleton(subrecord_cls, old_parent, new_parent)
-    else:
-        move_non_singletons(subrecord_cls, old_parent, new_parent)
-
-
 def merge_episode(*, old_episode, new_episode):
     for episode_related_model in merge_patient.EPISODE_RELATED_MODELS:
-        move_record(
-            episode_related_model,
-            old_episode,
-            new_episode,
-        )
+        if getattr(episode_related_model, "_is_singleton", False):
+            update_singleton(episode_related_model, old_episode, new_episode)
+        else:
+            move_non_singletons(episode_related_model, old_episode, new_episode)
+
 
 @transaction.atomic
 def merge_patient_episodes(patient_id):
