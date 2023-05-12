@@ -1,10 +1,10 @@
 from unittest import mock
 from opal.core.test import OpalTestCase
-from intrahospital_api.management.commands import check_merged_patients
+from plugins.monitoring.management.commands import check_merged_patients
 
 
-@mock.patch('intrahospital_api.management.commands.check_merged_patients.send_email')
-@mock.patch('intrahospital_api.management.commands.check_merged_patients.get_all_merged_patients')
+@mock.patch('plugins.monitoring.management.commands.check_merged_patients.send_email')
+@mock.patch('plugins.monitoring.management.commands.check_merged_patients.get_all_merged_patients')
 class CheckMergedPatientsTestCase(OpalTestCase):
 	def setUp(self):
 		self.cmd = check_merged_patients.Command()
