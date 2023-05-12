@@ -13,7 +13,7 @@ from elcid.utils import natural_keys
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CODE, BARNET_HOSPITAL_SITE_CODE
 from plugins.admissions.models import BedStatus, IsolatedBed, TransferHistory
 
-from plugins.ipc import lab, models
+from plugins.ipc import lab, models, constants
 
 
 def sort_rfh_wards(text):
@@ -193,7 +193,8 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             wards[status.ward_name].append(status)
 
         context['wards'] = {
-            name: wards[name] for name in reversed(sorted(wards.keys(), key=sort_rfh_wards))
+            name[3:]: wards[name] for name in reversed(sorted(wards.keys(), key=sort_rfh_wards))
+            if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
         }
         context['hospital_name'] = statuses[0].hospital_site_description
         return context

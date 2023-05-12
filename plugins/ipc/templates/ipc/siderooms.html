@@ -7,11 +7,17 @@
       Isolation locations: {{ hospital_name }}
     </h1>
   </div>
-
+  <div class="row">
+    <div class="col-md-1" style="position:fixed">
+      {% for name, ward in wards.items %}
+      <a class="orange-link pointer" scroll-on-click target="#{{name|slugify}}">{{ name }}</a><br />
+      {% endfor %}
+    </div>
+    <div class="col-md-11 col-md-offset-1">
     <table class="table table-striped">
 
   {% for name, ward in wards.items %}
-      <tr>
+      <tr id="{{name|slugify }}">
         <th colspan="10">
           <h2>{{ name }}</h2>
         </th>
@@ -83,12 +89,12 @@
           <span ng-hide='isolationHelper.isSideRoom'>
             <span ng-show='isolationHelper.isolated_bed_id'>
               <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
-                Main Ward bed
+                Open bed
               </button>
             </span>
             <span ng-hide='isolationHelper.isolated_bed_id'>
               <button ng-click="isolationHelper.isolate()" class="btn btn-default">
-                Extra IPC bed
+                Close bed
               </button>
             </span>
           </span>
@@ -102,7 +108,8 @@
   {% endfor %}
   </table>
 
-
+    </div>
+    </div>
 
 
 
