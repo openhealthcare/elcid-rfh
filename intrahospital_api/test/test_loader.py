@@ -5,7 +5,7 @@ from django.utils import timezone
 from opal.core.test import OpalTestCase
 from elcid import episode_categories
 from intrahospital_api import models as imodels
-from intrahospital_api import loader
+from intrahospital_api import loader, update_demographics
 from plugins.labtests import models as lab_test_models
 from plugins.tb import episode_categories as tb_episode_categories
 
@@ -514,3 +514,16 @@ class GetOrCreatePatientTestCase(OpalTestCase):
         )
         self.assertEqual(self.patient, patient)
         self.assertTrue(created)
+
+    @mock.patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
+    @mock.patch('intrahospital_api.loader.logger')
+    def test_when_patient_not_found_in_rfh(self, logger, create_rfh_patient_from_hospital_number):
+        create_rfh_patient_from_hospital_number.side_effect = update_demographics.CernerPatientNotFoundException('Unable to find a masterfile row for 123')
+        patient, created = loader.get_or_create_patient(
+            '123', episode_categories.InfectionService
+        )
+        self.assertTrue(created)
+        self.assertEqual(patient.demographics_set.get().hospital_number, "123")
+        logger.info.assert_called_once_with(
+            "Unable to find MRN 123 in cerner, creating the patient without the upstream data"
+        )

@@ -196,7 +196,13 @@ def get_or_create_patient(
     Get or create a opal.Patient with an opal.Episode of the
     episode category.
 
-    if run_async is False the loaders that look for upstream data
+    If the patient is in the upstream cerner master file, create the patient and
+    load in the upstream datadata.
+
+    If the patient is not found in the cerner master file, just create an elCID
+    patient with no data.
+
+    If run_async is False the loaders that look for upstream data
     will be called synchronously.
     """
     patient = Patient.objects.filter(
@@ -212,9 +218,21 @@ def get_or_create_patient(
             category_name=episode_category.display_name
         )
         return (patient, False)
-    patient = create_rfh_patient_from_hospital_number(
-        mrn,
-        episode_category,
-        run_async=run_async
-    )
+    try:
+        patient = create_rfh_patient_from_hospital_number(
+            mrn,
+            episode_category,
+            run_async=run_async
+        )
+    except update_demographics.CernerPatientNotFoundException:
+        logger.info(
+            f"Unable to find MRN {mrn} in cerner, creating the patient without the upstream data"
+        )
+        patient = Patient.objects.create()
+        patient.demographics_set.update(
+            hospital_number=mrn
+        )
+        patient.episode_set.create(
+            category_name=episode_category.display_name
+        )
     return patient, True
