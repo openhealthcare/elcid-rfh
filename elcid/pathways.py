@@ -15,7 +15,6 @@ from opal.core.pathway.pathways import (
 
 from intrahospital_api import loader
 from intrahospital_api import constants
-from intrahospital_api import update_demographics
 from plugins.rnoh.episode_categories import RNOHEpisode
 
 from elcid import models
@@ -100,29 +99,18 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
         Else if the patient doesn't exist load in the patient.
         """
-        if patient:
-            infectious_episode = patient.episode_set.filter(
-                category_name=InfectionService.display_name
-            ).last()
-            if infectious_episode:
-                return super(AddPatientPathway, self).save(
-                    data, user=user, patient=patient, episode=infectious_episode
-                )
-        else:
+        if not patient:
             # strip off leading zeros, we do not create patients
             # who have leading zeros.
             hn = data["demographics"][0].get("hospital_number")
             if hn is None or len(hn.lstrip('0')) == 0:
                 raise HttpResponseBadRequest('A hospital number is required')
             hn = hn.lstrip('0')
-            try:
-                patient, _ = loader.get_or_create_patient(hn, episode_category=InfectionService)
-                episode = patient.episode_set.get(category_name=InfectionService.display_name)
-            except update_demographics.CernerPatientNotFoundException:
-                pass
-            # Save the pathway to create patients that do not exist
-            # and to update related subrecords
-            saved_patient, saved_episode = super(AddPatientPathway, self).save(
-                data, user=user, patient=patient, episode=episode
-            )
-        return saved_patient, saved_episode
+            patient, _ = loader.get_or_create_patient(hn, episode_category=InfectionService)
+
+        episode, _ = patient.episode_set.get_or_create(
+            category_name=InfectionService.display_name
+        )
+        return super(AddPatientPathway, self).save(
+            data, user=user, patient=patient, episode=episode
+        )
