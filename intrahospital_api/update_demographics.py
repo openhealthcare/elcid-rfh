@@ -246,6 +246,21 @@ class MergeException(Exception):
 class CernerPatientNotFoundException(Exception):
     pass
 
+def mrn_in_elcid(mrn):
+    """
+    Returns True if the MRN is in Demographics.hospital_number
+    or MergedMRN.mrn fields
+    """
+    if models.MergedMRN.objects.filter(
+        mrn=mrn
+    ).exists():
+        return True
+    if models.Demographics.objects.filter(
+        hospital_number=mrn
+    ).exists():
+        return True
+    return False
+
 
 def check_and_handle_upstream_merges_for_mrns(mrns):
     """
@@ -262,31 +277,45 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     """
     mrn_to_upstream_merge_data = get_mrn_to_upstream_merge_data()
     now = timezone.now()
-    active_mrn_to_merged_dicts = {}
-    # it is possible that the MRNs passed
-    # in will link to the same active MRN
-    # so make sure we only have one per
-    # active MRN
-    for mrn in mrns:
-        active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
-            mrn, mrn_to_upstream_merge_data
-        )
-        active_mrn_to_merged_dicts[active_mrn] = merged_dicts
 
-    demographics = models.Demographics.objects.all().select_related('patient')
-    mrn_to_patient = {i.hospital_number: i.patient for i in demographics}
+    all_active_mrn_and_merged_dicts = []
+    for mrn in mrns:
+        all_active_mrn_and_merged_dicts.append(get_active_mrn_and_merged_mrn_data(
+            mrn, mrn_to_upstream_merge_data
+        ))
+
+    unique_active_mrn_and_merged_dicts = []
+    # it is possible that the MRNs passed in will link to the same active MRN
+    # so make sure we only have one per active MRN
+    mrns_seen = set()
+    for active_mrn, merged_dicts in all_active_mrn_and_merged_dicts:
+        if active_mrn in mrns_seen:
+            continue
+        mrns_seen.add(active_mrn)
+        unique_active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
+
+    # If neither the active MRN or the inactive MRN is in elcid then
+    # we do not need to process it.
+    active_mrn_and_merged_dicts = []
+    for active_mrn, merged_dicts in unique_active_mrn_and_merged_dicts:
+        if mrn_in_elcid(active_mrn):
+            active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
+        elif len([i for i in merged_dicts if mrn_in_elcid(i["mrn"])]) > 0:
+            active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
 
     logger.info('Generating merged MRNs')
     to_create = []
-    for active_mrn, merged_dicts in active_mrn_to_merged_dicts.items():
+    for active_mrn, merged_dicts in active_mrn_and_merged_dicts:
+        active_patient = Patient.objects.filter(
+            demographics__hospital_number=active_mrn
+        ).first()
         merged_mrns = [i["mrn"] for i in merged_dicts]
-        active_patient = mrn_to_patient.get(active_mrn)
         merged_mrn_objs = models.MergedMRN.objects.filter(
             mrn__in=merged_mrns
         )
-        unmerged_patients = [
-            mrn_to_patient.get(i) for i in merged_mrns if i in mrn_to_patient
-        ]
+        unmerged_patients = Patient.objects.filter(
+            demographics__hospital_number__in=merged_mrns
+        )
         patients_now_merged = set()
 
         # If we have patients that are inactive we need to do a merge.

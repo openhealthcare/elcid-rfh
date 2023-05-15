@@ -473,6 +473,21 @@ class GetMRNAndDateFromMergeCommentTestCase(OpalTestCase):
             )
         )
 
+class MRNInElcidTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+
+    def test_in_demographics(self):
+        self.patient.demographics_set.update(hospital_number="123")
+        self.assertTrue(update_demographics.mrn_in_elcid("123"))
+
+    def test_in_merged_mrn(self):
+        self.patient.mergedmrn_set.create(mrn="123")
+        self.assertTrue(update_demographics.mrn_in_elcid("123"))
+
+    def test_in_neither(self):
+        self.assertFalse(update_demographics.mrn_in_elcid("123"))
+
 
 @mock.patch("intrahospital_api.update_demographics.get_mrn_to_upstream_merge_data")
 @mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
