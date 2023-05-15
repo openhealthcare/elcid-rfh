@@ -100,21 +100,7 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
         Else if the patient doesn't exist load in the patient.
         """
-
-        hospital = ""
-        if "location" in data:
-            hospital = data['location'][0].get('hospital', "")
-
         if patient:
-            if hospital == 'RNOH':
-                rnoh_episode = patient.episode_set.filter(
-                    category_name=RNOHEpisode.display_name
-                ).last()
-                if rnoh_episode:
-                    return super(AddPatientPathway, self).save(
-                        data, user=user, patient=patient, episode=rnoh_episode
-                    )
-
             infectious_episode = patient.episode_set.filter(
                 category_name=InfectionService.display_name
             ).last()
@@ -139,11 +125,4 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
             saved_patient, saved_episode = super(AddPatientPathway, self).save(
                 data, user=user, patient=patient, episode=episode
             )
-
-        if hospital == 'RNOH':
-            # Move the location data to an RNOH episode,
-            # create a background infection episode
-            saved_episode.category_name = RNOHEpisode.display_name
-            saved_episode.save()
-            saved_patient.create_episode(category_name=InfectionService.display_name)
         return saved_patient, saved_episode

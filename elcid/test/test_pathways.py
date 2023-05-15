@@ -176,20 +176,3 @@ class TestAddPatientPathway(OpalTestCase):
         self.assertTrue(
             emodels.Demographics.objects.filter(hospital_number="234").exists()
         )
-
-    def test_creates_rnoh_episodes(self, create_rfh_patient_from_hospital_number):
-        """
-        We should create RNOH episodes if the hospital is RNOH
-        """
-        create_rfh_patient_from_hospital_number.side_effect = update_demographics.CernerPatientNotFoundException(
-            "Not found upstream because they are from RNOH"
-        )
-        url = AddPatientPathway().save_url()
-        test_data = dict(
-            demographics=[dict(hospital_number="00234", nhs_number="12312")],
-            location=[dict(ward="9W", hospital="RNOH")]
-        )
-        self.post_json(url, test_data)
-        self.assertTrue(
-            emodels.Demographics.objects.filter(hospital_number="234").exists()
-        )
