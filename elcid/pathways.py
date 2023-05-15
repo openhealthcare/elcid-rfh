@@ -1,11 +1,8 @@
 """
 Pathways for the RFH elCID application
 """
-import datetime
-
 from django.db import transaction
 from django.http import HttpResponseBadRequest
-from django.conf import settings
 from opal.core.pathway.pathways import (
     Step,
     PagePathway,
