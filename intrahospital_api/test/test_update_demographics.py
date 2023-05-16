@@ -492,13 +492,15 @@ class MRNInElcidTestCase(OpalTestCase):
 @mock.patch("intrahospital_api.update_demographics.get_mrn_to_upstream_merge_data")
 @mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
 class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
-    def test_handles_an_inactive_mrn(self, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
+    def test_handles_an_inactive_mrn(self, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         We have a patient with an MRN that has become inactive.
 
         We should create a new patient with the active MRN and MergedMRN
         with the inactive MRN.
         """
+        merge_patient.side_effect = lambda old_patient, new_patient: old_patient.delete()
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "INACTIVE",
