@@ -491,9 +491,10 @@ class MRNInElcidTestCase(OpalTestCase):
 
 @mock.patch("intrahospital_api.update_demographics.get_mrn_to_upstream_merge_data")
 @mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
+@mock.patch("intrahospital_api.update_demographics.loader.load_patient")
+@mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
 class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
-    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
-    def test_handles_an_inactive_mrn(self, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_handles_an_inactive_mrn(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         We have a patient with an MRN that has become inactive.
 
@@ -533,8 +534,6 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
 
 
-    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
-    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
     def test_handles_an_active_mrn(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have a patient with an active MRN of 123
@@ -578,9 +577,7 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         # the new merged MRN
         load_patient.assert_called_once_with(patient)
 
-    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
-    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
-    def test_upstream_merge_between_two_previously_active_mrns(self, load_patient, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_upstream_merge_between_two_previously_active_mrns(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have 2 patients with MRNS 123, 234
         Upstream 123 is merged into 234
@@ -621,9 +618,7 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
             merged_mrn.mrn, "123"
         )
 
-    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
-    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
-    def test_handles_new_inactive_mrns(self, load_patient, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_handles_new_inactive_mrns(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally have Patient with MRN 123 and an inactive MRN of 234
         Upstream, 234 and 345 have been merged with 123
@@ -689,8 +684,6 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         # the new merged MRN
         load_patient.assert_called_once_with(patient)
 
-    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
-    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
     def test_does_not_reload_already_merged_patients(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have patient with MRN 123 and a merged MRN of 234
