@@ -6,10 +6,12 @@ import re
 from plugins.monitoring.models import Fact
 from time import time
 from collections import defaultdict
+from django.core.mail import send_mail
 from opal.core.fields import ForeignKeyOrFreeText
 from django.db import transaction
 from django.db.models import DateTimeField, DateField
 from django.utils import timezone
+from django.conf import settings
 from opal.models import Patient
 from opal.core.serialization import (
     deserialize_date, deserialize_datetime
@@ -41,6 +43,23 @@ GET_MERGED_DATA_FOR_ALL_MERGED_PATIENTS = """
     FROM CRS_Patient_Masterfile
     WHERE MERGED = 'Y'
 """
+
+# If we receive more than this number, send an email
+# notifiying the admins
+MERGED_MRN_COUNT_EMAIL_THRESHOLD = 300
+
+
+def send_email(subject, body):
+    logger.info("sending email")
+    logger.info(f"update_demographics: {subject}")
+    send_mail(
+        f"{settings.OPAL_BRAND_NAME}: {subject}",
+        body,
+        settings.DEFAULT_FROM_EMAIL,
+        [i[1] for i in settings.ADMINS]
+    )
+
+
 
 
 def update_external_demographics(
@@ -302,7 +321,6 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
             active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
         elif len([i for i in merged_dicts if mrn_in_elcid(i["mrn"])]) > 0:
             active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
-
     logger.info('Generating merged MRNs')
     to_create = []
     for active_mrn, merged_dicts in active_mrn_and_merged_dicts:
@@ -358,6 +376,14 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                     )
                 )
     logger.info('Saving merged MRNs')
+    if(len(to_create)) > MERGED_MRN_COUNT_EMAIL_THRESHOLD:
+        subject = f"We are creating {len(to_create)} mergedMRNs"
+        body = "\n".join([
+            subject,
+            f"this breaches the threshold of {MERGED_MRN_COUNT_EMAIL_THRESHOLD}",
+            f"please log in and check this is valid"
+        ])
+        send_email(subject, body)
     models.MergedMRN.objects.bulk_create(to_create)
     logger.info(f'Saved {len(to_create)} merged MRNs')
 

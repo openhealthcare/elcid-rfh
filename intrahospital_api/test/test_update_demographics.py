@@ -721,6 +721,60 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         self.assertFalse(load_patient.called)
         self.assertFalse(merge_patient.called)
 
+    @mock.patch("intrahospital_api.update_demographics.send_email")
+    def test_sends_an_email_when_threshold_is_breached(self, send_email, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        """
+        Locally we have a patient with an active MRN of 123
+        Upstream says 123 has an inactive MRN of MERGED_MRN_COUNT_EMAIL_THRESHOLD + 1
+        inactive MRNs
+
+        We should create the merged MRNS but send an email first
+        """
+        upstream_data = {
+            "123": {
+                "ACTIVE_INACTIVE": "ACTIVE",
+                "MERGED": "Y",
+                "MRN": "123",
+                "MERGE_COMMENTS": "",
+            },
+        }
+        for i in range(update_demographics.MERGED_MRN_COUNT_EMAIL_THRESHOLD + 1):
+            upstream_inactive_mrn = str(124 + i)
+            upstream_data.update({
+                upstream_inactive_mrn: {
+                    "ACTIVE_INACTIVE": "INACTIVE",
+                    "MERGED": "Y",
+                    "MRN": upstream_inactive_mrn,
+                    "MERGE_COMMENTS": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+                }
+            })
+            upstream_data["123"]["MERGE_COMMENTS"] += f" Merged with MRN {upstream_inactive_mrn} on Oct 20 2014  4:44PM"
+        get_mrn_to_upstream_merge_data.return_value = upstream_data
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        update_demographics.check_and_handle_upstream_merges_for_mrns(["123"])
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "123"
+        )
+        self.assertFalse(
+            get_or_create_patient.called
+        )
+        self.assertEqual(
+            patient.mergedmrn_set.count(), update_demographics.MERGED_MRN_COUNT_EMAIL_THRESHOLD + 1
+        )
+        # Make sure we reload the patient so they have the data including
+        # the new merged MRN
+        load_patient.assert_called_once_with(patient)
+        call_args_list = send_email.call_args_list
+        self.assertEqual(len(call_args_list), 1)
+        self.assertEqual(call_args_list[0][0][0], "We are creating 301 mergedMRNs")
+        self.assertEqual(call_args_list[0][0][1], "\n".join([
+            "We are creating 301 mergedMRNs",
+            "this breaches the threshold of 300",
+            "please log in and check this is valid"
+        ]))
+
 
 class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
     BASIC_MAPPING = {
