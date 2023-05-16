@@ -309,6 +309,14 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
         active_patient = Patient.objects.filter(
             demographics__hospital_number=active_mrn
         ).first()
+
+        if not active_patient:
+            active_patient, _ = loader.get_or_create_patient(
+                active_mrn,
+                elcid_episode_categories.InfectionService,
+                run_async=False
+            )
+
         merged_mrns = [i["mrn"] for i in merged_dicts]
         merged_mrn_objs = models.MergedMRN.objects.filter(
             mrn__in=merged_mrns
@@ -334,22 +342,21 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                     )
                     patients_now_merged.add(active_patient)
 
-        # If there is an active patient then we need to create merged MRNs.
-        if active_patient:
-            # we don't delete and write anew to preserve the our_merge_datetime field
-            existing_merged_mrns = set([i.mrn for i in merged_mrn_objs])
-            new_merged_mrns = set(i["mrn"] for i in merged_dicts)
-            to_add_merged_mrns = new_merged_mrns - existing_merged_mrns
 
-            for merged_dict in merged_dicts:
-                if merged_dict["mrn"] in to_add_merged_mrns:
-                    to_create.append(
-                        models.MergedMRN(
-                            patient=active_patient,
-                            our_merge_datetime=now,
-                            **merged_dict
-                        )
+        # we don't delete and write anew to preserve the our_merge_datetime field
+        existing_merged_mrns = set([i.mrn for i in merged_mrn_objs])
+        new_merged_mrns = set(i["mrn"] for i in merged_dicts)
+        to_add_merged_mrns = new_merged_mrns - existing_merged_mrns
+
+        for merged_dict in merged_dicts:
+            if merged_dict["mrn"] in to_add_merged_mrns:
+                to_create.append(
+                    models.MergedMRN(
+                        patient=active_patient,
+                        our_merge_datetime=now,
+                        **merged_dict
                     )
+                )
     logger.info('Saving merged MRNs')
     models.MergedMRN.objects.bulk_create(to_create)
     logger.info(f'Saved {len(to_create)} merged MRNs')

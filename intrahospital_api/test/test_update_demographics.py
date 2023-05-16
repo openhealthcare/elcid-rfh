@@ -537,11 +537,10 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
     def test_handles_an_active_mrn(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
-        We have a patient with an active MRN that has a new inactive MRN
-        merged into it.
+        Locally we have a patient with an active MRN of 123
+        Upstream says 123 has an inactive MRN of 234
 
-        We should create MergedMRN with the new inactive MRN connected to
-        the patient.
+        We should add a MergedMRN of 234, we should not call merge patient
         """
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
@@ -581,12 +580,56 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
 
     @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
     @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
+    def test_upstream_merge_between_two_previously_active_mrns(self, load_patient, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+        """
+        Locally we have 2 patients with MRNS 123, 234
+        Upstream 123 is merged into 234
+
+        We should merge and delete 123 and add a MergedMRN of 123
+        """
+        merge_patient.side_effect = lambda old_patient, new_patient: old_patient.delete()
+        get_mrn_to_upstream_merge_data.return_value = {
+            "123": {
+                "ACTIVE_INACTIVE": "INACTIVE",
+                "MERGED": "Y",
+                "MRN": "123",
+                "MERGE_COMMENTS": "Merged with MRN 234 on Oct 20 2014  4:44PM",
+            },
+            "234": {
+                "ACTIVE_INACTIVE": "ACTIVE",
+                "MERGED": "Y",
+                "MRN": "234",
+                "MERGE_COMMENTS": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            },
+        }
+        patient_1, _ = self.new_patient_and_episode_please()
+        patient_1.demographics_set.update(hospital_number='123')
+        patient_2, _ = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(hospital_number='234')
+        update_demographics.check_and_handle_upstream_merges_for_mrns(["234"])
+        reloaded_patient = Patient.objects.get()
+
+        # patient 1 should be deleted and merged intol 2
+        self.assertEqual(
+            reloaded_patient.id, patient_2.id
+        )
+        self.assertEqual(
+            reloaded_patient.demographics().hospital_number, "234"
+        )
+        merged_mrn = reloaded_patient.mergedmrn_set.get()
+        self.assertEqual(
+            merged_mrn.mrn, "123"
+        )
+
+    @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
+    @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
     def test_handles_new_inactive_mrns(self, load_patient, merge_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
-        We have a patient that has a merged MRN but a new inactive MRN
-        has been been created for them upstream.
+        Locally have Patient with MRN 123 and an inactive MRN of 234
+        Upstream, 234 and 345 have been merged with 123
 
-        We should create a new merged MRN and not delete the existing MRN.
+        We should create a new merged MRN and not delete the existing Merged MRN MRN.
+        We should not call merge_patient
         """
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
@@ -650,8 +693,10 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
     @mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
     def test_does_not_reload_already_merged_patients(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
-        We have a patient who has already had merged MRNs and had that merge processed.
+        Locally we have patient with MRN 123 and a merged MRN of 234
+        Upstream has 234 as an iactive MRN merged into MRN 123
 
+        We should not change anything.
         We should not reload the patient or create any new MergedMRN objects.
         """
         get_mrn_to_upstream_merge_data.return_value = {
