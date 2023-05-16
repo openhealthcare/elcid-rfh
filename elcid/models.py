@@ -9,7 +9,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from opal.utils import camelcase_to_underscore
 import opal.models as omodels
-from obs import models as obs_models
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel, Patient
@@ -87,6 +86,13 @@ class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
     def age(self):
         if self.date_of_birth:
             return datetime.date.today().year - self.date_of_birth.year
+
+    def save(self, *args, **kwargs):
+        """
+        Remove any zero prefix on the hospital number
+        """
+        self.hospital_number = self.hospital_number.lstrip('0')
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = "Demographics"
@@ -460,13 +466,6 @@ def update_chronic_antifungal_reason_for_interaction(
         instance.episode.patient.chronicantifungal_set.create(
             reason=ChronicAntifungal.REASON_TO_INTERACTION
         )
-    if instance.reason_for_interaction == MicrobiologyInput.ICU_REASON_FOR_INTERACTION:
-        from intrahospital_api import tasks
-        # wait for all transactions to complete then launch the celery task
-        # http://celery.readthedocs.io/en/latest/userguide/tasks.html#database-transactions
-        transaction.on_commit(
-            lambda: tasks.write_advice_upstream.delay(instance.id)
-        )
 
 
 class Line(PreviousMRN, EpisodeSubrecord):
@@ -760,7 +759,7 @@ class MicroInputICURoundRelation(models.Model):
         MicrobiologyInput, blank=True, null=True, on_delete=models.SET_NULL
     )
     observation = models.OneToOneField(
-        obs_models.Observation, blank=True, null=True, on_delete=models.SET_NULL
+        "obs.Observation", blank=True, null=True, on_delete=models.SET_NULL
     )
     icu_round = models.OneToOneField(
         ICURound,
@@ -770,6 +769,7 @@ class MicroInputICURoundRelation(models.Model):
     )
 
     def update_from_dict(self, episode, when, data, *args, **kwargs):
+        from plugins.obs import models as obs_models
         if self.observation_id:
             observation = self.observation
         else:

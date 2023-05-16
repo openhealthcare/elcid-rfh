@@ -60,6 +60,8 @@ class FindPatientsFromMRNsTestCase(OpalTestCase):
         self.patient.demographics_set.update(
             hospital_number=""
         )
+        result = utils.find_patients_from_mrns([None])
+        self.assertEqual(result, {})
         result = utils.find_patients_from_mrns([""])
         self.assertEqual(result, {})
         result = utils.find_patients_from_mrns(["000"])

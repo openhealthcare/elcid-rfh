@@ -7,7 +7,7 @@ from opal.core.pathway import pathways, HelpTextStep
 from elcid import models
 from elcid.pathways import IgnoreDemographicsMixin
 
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 
 from plugins.tb import models as tb_models
 
@@ -69,11 +69,6 @@ class NationalityAndLanguage(pathways.PagePathway):
         # to get around this we need to update the demographics?
 
         if patient:
-            our_demographics = patient.demographics_set.get()
-            client_demographics = data.pop("demographics")
-            our_demographics.birth_place = client_demographics[0]["birth_place"]
-            our_demographics.save()
-
             # We don't necessarily call update_from_dict on
             # pathway subrecords, only if they are editted,
             # so force removal of previous_mrn if we hit

@@ -1,31 +1,34 @@
 {% load i18n %}
-<div ng-show="item.created || item.updated" class="content-offset-20">
-  <p class="text-muted text-center">
-    <span ng-show="item.previous_mrn">
-      <span ng-show="item.updated">This information entered prior to patient merge under alternative MRN [[ item.previous_mrn ]]</span>
-      <br>
-    </span>
-    <span ng-hide="item.updated">
-      <img class="text-avatar" avatar-for-user="[[ item.created_by_id ]]">
-      <span ng-show="item.created_by_id">
-      {% trans "Created by" %}
+{# Some forms use "formItem.editing" rather than "item" so lets make this work for both #}
+<div ng-repeat="item in [formItem.editing || item]">
+  <div ng-show="item.previous_mrn || item.created || item.updated" class="content-offset-20">
+    <p class="text-muted text-center">
+      <span ng-show="item.previous_mrn">
+        This information entered prior to patient merge under alternative MRN [[ item.previous_mrn ]]
+        <br>
       </span>
-      <span ng-hide="item.created_by_id">
-        {% trans "Created" %}
+      <span ng-show="item.created && !item.updated">
+        <img class="text-avatar" avatar-for-user="[[ item.created_by_id ]]">
+        <span ng-show="item.created_by_id">
+        {% trans "Created by" %}
+        </span>
+        <span ng-hide="item.created_by_id">
+          {% trans "Created" %}
+        </span>
+        <span full-name-for-user="[[ item.created_by_id ]]"></span>
+        [[ item.created | displayDate ]]
       </span>
-      <span full-name-for-user="[[ item.created_by_id ]]"></span>
-      [[ item.created | displayDate ]]
-    </span>
-    <span ng-show="item.updated">
-      <img class="text-avatar" avatar-for-user="[[ item.updated_by_id ]]">
-      <span ng-show="item.created_by_id">
-        {% trans "Last updated by" %}
+      <span ng-show="item.updated">
+        <img class="text-avatar" avatar-for-user="[[ item.updated_by_id ]]">
+        <span ng-show="item.created_by_id">
+          {% trans "Last updated by" %}
+        </span>
+        <span ng-hide="item.created_by_id">
+          {% trans "Last updated" %}
+        </span>
+        <span full-name-for-user="[[ item.updated_by_id ]]"></span>
+        [[ item.updated | displayDate ]]
       </span>
-      <span ng-hide="item.created_by_id">
-        {% trans "Last updated" %}
-      </span>
-      <span full-name-for-user="[[ item.updated_by_id ]]"></span>
-      [[ item.updated | displayDate ]]
-    </span>
-  </p>
+    </p>
+  </div>
 </div>

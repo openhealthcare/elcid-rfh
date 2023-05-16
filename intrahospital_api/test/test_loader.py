@@ -245,6 +245,12 @@ class AsyncLoadPatientTestCase(ApiTestCase):
         log_errors.assert_called_once_with("_load_patient")
         self.assertEqual(str(ve.exception), "Boom")
 
+    def test_no_patient(self, load_patient, log_errors):
+        result = loader.async_load_patient(self.patient.id+1, self.patient_load.id+1)
+        self.assertIsNone(result)
+        self.assertFalse(load_patient.called)
+        self.assertFalse(log_errors.called)
+
 
 class UpdatePatientFromBatchTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
@@ -330,6 +336,28 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
         self.assertEqual(str(v.exception), expected)
         self.assertFalse(load_patient.called)
 
+    def test_erors_if_the_hospital_number_is_already_assigned(self, load_patient):
+        """
+        The MRN is already in use by a patient
+        """
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="111"
+        )
+        patient.mergedmrn_set.create(
+            mrn="111"
+        )
+        with self.assertRaises(ValueError) as v:
+            loader.create_rfh_patient_from_hospital_number(
+                '111', episode_categories.InfectionService
+            )
+        self.assertEqual(
+            str(v.exception),
+            "A patient with MRN 111 already exists"
+        )
+        self.assertFalse(load_patient.called)
+
+
     def test_errors_if_the_hospital_number_has_already_been_merged(self, load_patient):
         """
         The MRN has already been merged, raise a Value Error
@@ -344,7 +372,7 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             )
         self.assertEqual(
             str(v.exception),
-            "MRN has already been merged into another MRN"
+            "MRN 111 has already been merged into another MRN"
         )
         self.assertFalse(load_patient.called)
 
@@ -389,12 +417,14 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             patient.mergedmrn_set.filter(
                 mrn="123",
                 merge_comments=MERGED_MRN_DATA[0]["merge_comments"],
+                our_merge_datetime__isnull=False
             ).exists()
         )
         self.assertTrue(
             patient.mergedmrn_set.filter(
                 mrn="234",
                 merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
+                our_merge_datetime__isnull=False
             ).exists()
         )
         self.assertTrue(load_patient.called)
@@ -503,23 +533,7 @@ class GetOrCreatePatientTestCase(OpalTestCase):
         create_rfh_patient_from_hospital_number.assert_called_once_with(
             '123',
             episode_categories.InfectionService,
-            run_async=None,
-            rfh_patient=True
-        )
-        self.assertEqual(self.patient, patient)
-        self.assertTrue(created)
-
-    @mock.patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
-    def test_create_new_non_patient(self, create_rfh_patient_from_hospital_number):
-        create_rfh_patient_from_hospital_number.return_value = self.patient
-        patient, created = loader.get_or_create_patient(
-            '123', episode_categories.InfectionService, rfh_patient=False
-        )
-        create_rfh_patient_from_hospital_number.assert_called_once_with(
-            '123',
-            episode_categories.InfectionService,
-            run_async=None,
-            rfh_patient=False
+            run_async=None
         )
         self.assertEqual(self.patient, patient)
         self.assertTrue(created)

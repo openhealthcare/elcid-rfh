@@ -47,7 +47,7 @@ def load_demographics(hospital_number):
 
 
 def create_rfh_patient_from_hospital_number(
-    hospital_number, episode_category, run_async=None, rfh_patient=True
+    hospital_number, episode_category, run_async=None
 ):
     """
     Creates a patient programatically and sets up integration.
@@ -67,15 +67,14 @@ def create_rfh_patient_from_hospital_number(
         )
 
     if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
-        raise ValueError('Patient with this hospital number already exists')
+        raise ValueError(f'A patient with MRN {hospital_number} already exists')
 
     if emodels.MergedMRN.objects.filter(mrn=hospital_number).exists():
-        raise ValueError('MRN has already been merged into another MRN')
+        raise ValueError(f'MRN {hospital_number} has already been merged into another MRN')
 
-    if rfh_patient:
-        active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
-            hospital_number
-        )
+    active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
+        hospital_number
+    )
 
     patient = Patient.objects.create()
     patient.demographics_set.update(
@@ -85,11 +84,13 @@ def create_rfh_patient_from_hospital_number(
         category_name=episode_category.display_name
     )
 
-    if rfh_patient:
-        for merged_mrn_dict in merged_mrn_dicts:
-            patient.mergedmrn_set.create(**merged_mrn_dict)
+    for merged_mrn_dict in merged_mrn_dicts:
+        patient.mergedmrn_set.create(
+            our_merge_datetime=timezone.now(),
+            **merged_mrn_dict
+        )
 
-        load_patient(patient, run_async=run_async)
+    load_patient(patient, run_async=run_async)
     return patient
 
 
@@ -131,7 +132,11 @@ def async_task(patient, patient_load):
 
 
 def async_load_patient(patient_id, patient_load_id):
-    patient = Patient.objects.get(id=patient_id)
+    patient = Patient.objects.filter(id=patient_id).first()
+    # If the patient does not exist then we assume they have been merged
+    # and then deleted.
+    if not patient:
+        return
     patient_load = models.InitialPatientLoad.objects.get(id=patient_load_id)
     try:
         _load_patient(patient, patient_load)
@@ -188,14 +193,11 @@ def _load_patient(patient, patient_load):
 
 
 def get_or_create_patient(
-    mrn, episode_category, rfh_patient=True, run_async=None
+    mrn, episode_category, run_async=None
 ):
     """
     Get or create a opal.Patient with an opal.Episode of the
     episode category.
-
-    if rfh_patient is False then we will not look at the upstream
-    RFH internal databases for information about the patient.
 
     if run_async is False the loaders that look for upstream data
     will be called synchronously.
@@ -216,7 +218,6 @@ def get_or_create_patient(
     patient = create_rfh_patient_from_hospital_number(
         mrn,
         episode_category,
-        run_async=run_async,
-        rfh_patient=rfh_patient
+        run_async=run_async
     )
     return patient, True
