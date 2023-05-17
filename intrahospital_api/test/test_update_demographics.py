@@ -771,8 +771,9 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         self.assertEqual(call_args_list[0][0][0], "We are creating 301 mergedMRNs")
         self.assertEqual(call_args_list[0][0][1], "\n".join([
             "We are creating 301 mergedMRNs",
-            "this breaches the threshold of 300",
-            "please log in and check this is valid"
+            "this is far more than we would expect and",
+            "breaches the threshold of 300",
+            "please log in and check the upstream data"
         ]))
 
 

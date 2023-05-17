@@ -363,13 +363,8 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                 )
     logger.info('Saving merged MRNs')
     if(len(to_create)) > MERGED_MRN_COUNT_EMAIL_THRESHOLD:
-        subject = f"We are creating {len(to_create)} mergedMRNs"
-        body = "\n".join([
-            subject,
-            f"this breaches the threshold of {MERGED_MRN_COUNT_EMAIL_THRESHOLD}",
-            f"please log in and check this is valid"
-        ])
-        send_email(subject, body)
+        send_to_many_merged_mrn_email(len(to_create))
+
     models.MergedMRN.objects.bulk_create(to_create)
     logger.info(f'Saved {len(to_create)} merged MRNs')
 
@@ -381,6 +376,22 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     for patient in list(patients_to_reload):
         loader.load_patient(patient)
 
+def send_to_many_merged_mrn_email(cnt):
+    """
+    Sends an email saying we are creating more MergedMRNs than
+    the MERGED_MRN_COUNT_EMAIL_THRESHOLD
+
+    This is so we can take a look at the upstream data and
+    check with upstream that the data is valid.
+    """
+    subject = f"We are creating {cnt} mergedMRNs"
+    body = "\n".join([
+        subject,
+        "this is far more than we would expect and",
+        f"breaches the threshold of {MERGED_MRN_COUNT_EMAIL_THRESHOLD}",
+        f"please log in and check the upstream data"
+    ])
+    send_email(subject, body)
 
 def get_masterfile_row(mrn):
     """
