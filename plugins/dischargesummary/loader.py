@@ -70,29 +70,32 @@ def load_dischargesummaries(patient):
     """
     api = ProdAPI()
 
-    demographic = patient.demographics()
-
     summary_count = patient.dischargesummaries.count()
 
-    summaries = api.execute_hospital_query(
-        Q_GET_SUMMARIES,
-        params={'mrn': demographic.hospital_number}
+    original_mrn = patient.demographics().hospital_number
+    other_mrns = list(
+        patient.mergedmrn_set.values_list('mrn', flat=True)
     )
-    other_mrns = query_for_zero_prefixed(
-        demographic.hospital_number
-    )
-    for other_mrn in other_mrns:
+    summaries = []
+    for mrn in [original_mrn] + other_mrns:
         summaries.extend(api.execute_hospital_query(
             Q_GET_SUMMARIES,
-            params={'mrn': other_mrn}
+            params={'mrn': mrn}
         ))
-    for summary in summaries:
+        zero_prefixed_mrns = query_for_zero_prefixed(
+            mrn
+        )
+        for zero_prefixed_mrn in zero_prefixed_mrns:
+            summaries.extend(api.execute_hospital_query(
+                Q_GET_SUMMARIES,
+                params={'mrn': zero_prefixed_mrn}
+            ))
 
+    for summary in summaries:
         meds = api.execute_hospital_query(
             Q_GET_MEDS_FOR_SUMMARY,
             params={'tta_id': summary['SQL_Internal_ID']}
         )
-
         # We expect these fields should be filled in
         # however this is now always the case.
         parsed = {
@@ -121,7 +124,6 @@ def load_dischargesummaries(patient):
                         v = timezone.make_aware(v)
 
                 parsed[DischargeSummary.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k]] = v
-
 
         our_summary, _ = DischargeSummary.objects.get_or_create(
             patient=patient,

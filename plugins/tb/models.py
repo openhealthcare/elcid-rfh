@@ -159,6 +159,9 @@ class Pregnancy(PreviousMRN, models.PatientSubrecord):
 class Nationality(PreviousMRN, models.PatientSubrecord):
     _is_singleton = True
 
+    birth_place = ForeignKeyOrFreeText(
+        models.Destination, verbose_name="Country of Birth"
+    )
     immigration_concerns = fields.BooleanField(default=False)
     immigration_details = fields.TextField(blank=True)
     immigration_support_officer = fields.TextField(blank=True)
@@ -238,7 +241,7 @@ class AccessConsiderations(PreviousMRN, models.PatientSubrecord):
     )
 
 
-class PatientConsultation(models.PatientConsultation, PreviousMRN):
+class PatientConsultation(PreviousMRN, models.PatientConsultation):
     # the reason for interacton for the MDT
     ADDED_TO_TB_REVIEW_LIST = "Added to TB review list"
 

@@ -191,12 +191,12 @@ INSTALLED_APPS = (
     'plugins.ipc',
     'plugins.rnoh',
     'plugins.elcid_search',
+    'plugins.obs',
     'intrahospital_api',
     'elcid',
     'passwordreset',
     'django.contrib.admin',
     'django_celery_results',
-    'obs',
 )
 
 #### API Settings
@@ -355,7 +355,7 @@ LOGGING = {
 }
 
 if 'test' not in sys.argv:
-    LOGGING['loggers']['elcid.time_logger'] = {
+    LOGGING['loggers']['elcid.utils'] = {
         'handlers': ['console_detailed'],
         'level': 'INFO',
         'propagate': False,
@@ -459,6 +459,15 @@ WAREHOUSE_DB = dict(
 EXTRACT_ASYNC = False
 OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
 WRITEBACK_ON = True
+
+OPAL_DEFAULT_SEARCH_FIELDS = [
+    "demographics__hospital_number",
+    "demographics__first_name",
+    "demographics__surname",
+    # Search the normal fields but also
+    # include mrns that have been merged
+    "mergedmrn__mrn"
+]
 
 OPAL_DEFAULT_SEARCH_FIELDS = [
     "demographics__hospital_number",
