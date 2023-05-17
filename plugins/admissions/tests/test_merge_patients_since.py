@@ -30,3 +30,26 @@ class MergePatientsSinceTestCase(OpalTestCase):
 		cmd = merge_patients_since.Command()
 		cmd.handle()
 		self.assertTrue(error.called)
+
+	@mock.patch(f'{root}.utils.send_email')
+	def test_sends_email(
+		self,
+		send_email,
+		error,
+		check_and_handle_upstream_merges_for_mrns,
+		get_all_merged_mrns_since,
+	):
+		get_all_merged_mrns_since.return_value = list(
+			range(merge_patients_since.UNEXPECTED_VOLUMES_THRESHOLD + 1)
+		)
+		cmd = merge_patients_since.Command()
+		cmd.handle()
+		self.assertTrue(check_and_handle_upstream_merges_for_mrns.called)
+		send_email.assert_called_once_with(
+			'200001 being processed by merge_patients_since',
+			"\n".join([
+				'get_all_merged_mrns_since returned 200001 MRNs',
+				f'This is more than we would expect and higher than the threshold {merge_patients_since.UNEXPECTED_VOLUMES_THRESHOLD}',
+				'Please log in and check that the server is handling this unexpected volume.'
+			])
+		)
