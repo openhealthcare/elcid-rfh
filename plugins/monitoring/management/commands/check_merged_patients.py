@@ -1,5 +1,5 @@
 """
-A sanity check to make sure that merge_patient_since is successfully
+A sense check to make sure that merge_patient_since is successfully
 merging patients in keeping with the upstream data.
 
 `check_all_merged_mrns` sends_emails warning us if:
