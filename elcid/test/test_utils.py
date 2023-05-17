@@ -1,5 +1,6 @@
 import datetime
 from unittest.mock import patch
+from django.test import override_settings
 from opal.core.test import OpalTestCase
 from elcid import utils
 
@@ -33,4 +34,48 @@ class ModelMethodLoggingTestCase(OpalTestCase):
         )
         self.assertEqual(
             result, "some_var"
+        )
+
+@patch('elcid.utils.send_mail')
+@patch('elcid.utils.logger')
+@override_settings(
+    OPAL_BRAND_NAME="Test brand name",
+    DEFAULT_FROM_EMAIL="our@hospital_email",
+    ADMINS=(('admin name', 'admin@admin.org',),)
+)
+class SendEmailTestCase(OpalTestCase):
+    def test_calls_send_mail_and_logs(self, logger, send_mail):
+        utils.send_email('test subject', 'test body')
+        logger_calls = logger.info.call_args_list
+        self.assertEqual(len(logger_calls), 2)
+        self.assertEqual(
+            logger_calls[0][0][0], "Sending email: test subject"
+        )
+        self.assertEqual(
+            logger_calls[1][0][0], "Sent email: test subject"
+        )
+        send_mail.assert_called_once_with(
+            "Test brand name: test subject",
+            "test body",
+            "our@hospital_email",
+            ["admin@admin.org"],
+            html_message=None
+        )
+
+    def test_with_html_message(self, logger, send_mail):
+        utils.send_email('test subject', 'test body', html_message="<h1>test html</h1>")
+        logger_calls = logger.info.call_args_list
+        self.assertEqual(len(logger_calls), 2)
+        self.assertEqual(
+            logger_calls[0][0][0], "Sending email: test subject"
+        )
+        self.assertEqual(
+            logger_calls[1][0][0], "Sent email: test subject"
+        )
+        send_mail.assert_called_once_with(
+            "Test brand name: test subject",
+            "test body",
+            "our@hospital_email",
+            ["admin@admin.org"],
+            html_message="<h1>test html</h1>"
         )
