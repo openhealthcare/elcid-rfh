@@ -8,10 +8,9 @@ import os
 import re
 import sys
 from time import time
-
 from django.utils import timezone
 
-logger = logging.getLogger('elcid.time_logger')
+logger = logging.getLogger('elcid.utils')
 
 
 def timing(f):
