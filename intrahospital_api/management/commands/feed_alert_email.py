@@ -16,6 +16,7 @@ from plugins.labtests.models import Observation
 from plugins.imaging.models import Imaging
 from plugins.admissions.models import Encounter
 from elcid.models import MasterFileMeta
+from elcid import utils
 from intrahospital_api import logger
 
 
@@ -27,11 +28,9 @@ def send_email(title, context):
         "today": datetime.date.today()
     })
     plain_message = strip_tags(html_message)
-    send_mail(
+    utils.send_email(
         title,
         plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        settings.ADMINS,
         html_message=html_message,
     )
 
@@ -91,7 +90,7 @@ def check_feeds():
         errors.append(f"No patient information loaded since {crs_last_updated_str}")
     table_ctx["Last CRS masterfile updated"] = crs_master_file_last_updated
     if len(errors):
-        title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
+        title = f"ALERT," + ", ".join(errors)
         send_email(title, table_ctx)
 
     # Check Admissions
@@ -107,7 +106,7 @@ def check_feeds():
         )
     table_ctx["Last encounter updated"] = encounter_last_updated
     if len(errors):
-        title = f"ALERT {settings.OPAL_BRAND_NAME}:" + ", ".join(errors)
+        title = f"ALERT," + ", ".join(errors)
         send_email(title, table_ctx)
 
 

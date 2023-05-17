@@ -331,6 +331,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'ipc': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'labtests': {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
@@ -350,7 +355,7 @@ LOGGING = {
 }
 
 if 'test' not in sys.argv:
-    LOGGING['loggers']['elcid.time_logger'] = {
+    LOGGING['loggers']['elcid.utils'] = {
         'handlers': ['console_detailed'],
         'level': 'INFO',
         'propagate': False,

@@ -5,20 +5,18 @@ import datetime
 import subprocess
 
 from django.conf import settings
-from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from elcid.utils import send_email
 from plugins.monitoring.models import Fact
 
 
 def raise_the_alarm():
     msg = "Routine system check on {} has detected a volume with > 90% disk usage. Please log in and investigate."
-    send_mail(
-        "{} Disk Space Alert: Action Required".format(settings.OPAL_BRAND_NAME),
+    send_email(
+        "Disk Space Alert, Action Required",
         msg.format(settings.OPAL_BRAND_NAME),
-        settings.DEFAULT_FROM_EMAIL,
-        [i[1] for i in settings.ADMINS]
     )
 
 
