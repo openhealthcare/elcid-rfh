@@ -6,7 +6,6 @@ import re
 from plugins.monitoring.models import Fact
 from time import time
 from collections import defaultdict
-from django.core.mail import send_mail
 from opal.core.fields import ForeignKeyOrFreeText
 from django.db import transaction
 from django.db.models import DateTimeField, DateField
@@ -20,7 +19,7 @@ from opal.core.serialization import (
 from intrahospital_api import logger, loader, get_api, merge_patient
 from intrahospital_api import merge_patient
 from intrahospital_api.constants import EXTERNAL_SYSTEM
-from elcid.utils import timing
+from elcid.utils import timing, send_email
 from elcid import episode_categories as elcid_episode_categories
 from elcid import constants, models
 
@@ -47,19 +46,6 @@ GET_MERGED_DATA_FOR_ALL_MERGED_PATIENTS = """
 # If we receive more than this number, send an email
 # notifiying the admins
 MERGED_MRN_COUNT_EMAIL_THRESHOLD = 300
-
-
-def send_email(subject, body):
-    logger.info("sending email")
-    logger.info(f"update_demographics: {subject}")
-    send_mail(
-        f"{settings.OPAL_BRAND_NAME}: {subject}",
-        body,
-        settings.DEFAULT_FROM_EMAIL,
-        [i[1] for i in settings.ADMINS]
-    )
-
-
 
 
 def update_external_demographics(
