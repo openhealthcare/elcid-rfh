@@ -46,9 +46,9 @@ class MergePatientsSinceTestCase(OpalTestCase):
 		cmd.handle()
 		self.assertTrue(check_and_handle_upstream_merges_for_mrns.called)
 		send_email.assert_called_once_with(
-			'200001 being processed by merge_patients_since',
+			f'{merge_patients_since.UNEXPECTED_VOLUMES_THRESHOLD + 1} being processed by merge_patients_since',
 			"\n".join([
-				'get_all_merged_mrns_since returned 200001 MRNs',
+				f'get_all_merged_mrns_since returned {merge_patients_since.UNEXPECTED_VOLUMES_THRESHOLD + 1} MRNs',
 				f'This is more than we would expect and higher than the threshold {merge_patients_since.UNEXPECTED_VOLUMES_THRESHOLD}',
 				'Please log in and check that the server is handling this unexpected volume.'
 			])
