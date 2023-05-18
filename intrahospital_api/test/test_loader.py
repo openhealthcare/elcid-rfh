@@ -555,5 +555,5 @@ class GetOrCreatePatientTestCase(OpalTestCase):
         self.assertTrue(created)
         self.assertEqual(patient.demographics_set.get().hospital_number, "123")
         logger.info.assert_called_once_with(
-            "Unable to find MRN 123 in cerner, creating the patient without the upstream data"
+            "Unable to find MRN 123 in Cerner, creating the patient without the upstream data"
         )
