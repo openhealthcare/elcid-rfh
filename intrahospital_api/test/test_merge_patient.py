@@ -43,7 +43,6 @@ PATIENT_RELATED_IGNORE_LIST = set([
     appointment_models.PatientAppointmentStatus,
     imaging_models.Imaging,
     imaging_models.PatientImagingStatus,
-    lab_models.LabTest,
     elcid_models.Demographics,
     elcid_models.MasterFileMeta,
     elcid_models.ContactInformation,
@@ -121,7 +120,9 @@ class UpdateTaggingTestCase(OpalTestCase):
         self.old_episode.tagging_set.create(
             archived=True, user=self.old_user, value="some list"
         )
-        merge_patient.update_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(
+            old_episode=self.old_episode, new_episode=self.new_episode
+        )
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=True, user=self.old_user, value="some list"
@@ -135,7 +136,9 @@ class UpdateTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=True, user=self.new_user, value="some list"
         )
-        merge_patient.update_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(
+            old_episode=self.old_episode, new_episode=self.new_episode
+        )
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.old_user, value="some list"
@@ -149,7 +152,10 @@ class UpdateTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=False, user=self.new_user, value="some list"
         )
-        merge_patient.update_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(
+            old_episode=self.old_episode,
+            new_episode=self.new_episode
+        )
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.new_user, value="some list"
@@ -163,7 +169,9 @@ class UpdateTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=True, user=self.new_user, value="some list"
         )
-        merge_patient.update_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(
+            old_episode=self.old_episode, new_episode=self.new_episode
+        )
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=True, user=self.new_user, value="some list"
@@ -177,7 +185,9 @@ class UpdateTaggingTestCase(OpalTestCase):
         self.new_episode.tagging_set.create(
             archived=False, user=self.new_user, value="some list"
         )
-        merge_patient.update_tagging(self.old_episode, self.new_episode)
+        merge_patient.update_tagging(
+            old_episode=self.old_episode, new_episode=self.new_episode
+        )
         self.assertTrue(
             self.new_episode.tagging_set.filter(
                 archived=False, user=self.new_user, value="some list"
@@ -405,6 +415,28 @@ class MoveRelatedRecordTestCase(OpalTestCase):
         new_nationality = self.new_patient.nationality_set.get()
         self.assertEqual(new_nationality.arrival_in_the_uk, "2020")
         self.assertEqual(new_nationality.previous_mrn, self.old_mrn)
+
+    def test_lab_tests(self):
+        lab_test = self.old_patient.lab_tests.create(
+            test_name="Blood culture",
+            lab_number="123"
+        )
+        lab_test.observation_set.create(
+            observation_name="WBC",
+            observation_value="234"
+        )
+        merge_patient.move_record(
+            lab_models.LabTest,
+            self.old_patient,
+            self.new_patient,
+            self.old_mrn,
+        )
+        self.assertTrue(
+            lab_models.Observation.objects.filter(
+                test__patient_id=self.new_patient.id
+            ).exists()
+        )
+
 
     def test_episode_non_singleton(self):
         """

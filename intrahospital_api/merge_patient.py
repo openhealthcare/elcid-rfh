@@ -10,6 +10,7 @@ from plugins.dischargesummary import models as discharge_models
 from plugins.handover import models as handover_models
 from plugins.ipc import models as ipc_models
 from plugins.imaging import models as imaging_models
+from plugins.labtests import models as lab_models
 from intrahospital_api import models as intrahospital_api_models
 from plugins.icu import models as icu_models
 from plugins.rnoh import models as rnoh_models
@@ -32,7 +33,6 @@ PATIENT_RELATED_MODELS = [
     elcid_models.BloodCultureSet,
     elcid_models.ChronicAntifungal,
     elcid_models.GP,
-    elcid_models.PositiveBloodCultureHistory,
     elcid_models.RiskFactor,
     handover_models.AMTHandover,
     handover_models.NursingHandover,
@@ -62,6 +62,7 @@ PATIENT_RELATED_MODELS = [
     tb_models.Pregnancy,
     tb_models.TBHistory,
     tb_models.TBPCR,
+    lab_models.LabTest,
 ]
 
 
@@ -123,15 +124,15 @@ STATUS_MODELS_TO_RELATED_MODEL = {
 }
 
 
-def update_tagging(old_episode, new_episode):
+def update_tagging(*, old_episode, new_episode):
     """
-    Moves the tagging from the old episode to the new episode.
+    Copies tags over from the old episode to the
+    new episode if the tag.value does not exist
+    in the new episodes tagging.
 
-    We have no updated timestamp so consider the unarchived tag to be
-    more important than the unarchived tag.
-
-    If the old episode has an archived tag which is not
-    on the new episdoe we move this over.
+    If the tag exists and is unarchived on the old episode
+    but is archived on the new episode, unarchive it on the
+    new episode.
     """
     for old_tag in old_episode.tagging_set.all():
         new_tag = new_episode.tagging_set.filter(value=old_tag.value).first()
@@ -270,6 +271,20 @@ def updates_statuses(new_patient):
         status.objects.filter(patient=new_patient).update(**{related_field: exists})
 
 
+def move_lab_tests(old_patient, new_patient):
+    """
+    We special case lab tests because
+
+    * they don't have previous_mrn fields or versions.
+
+    * The average person also has more lab tests than they
+    do subrecords so by running an update we can make the
+    merge much faster.
+    """
+    lab_models.LabTest.objects.filter(patient_id=old_patient.id).update(
+        patient_id=new_patient.id
+    )
+
 @transaction.atomic
 def merge_patient(*, old_patient, new_patient):
     """
@@ -291,12 +306,15 @@ def merge_patient(*, old_patient, new_patient):
     """
     old_mrn = old_patient.demographics().hospital_number
     for patient_related_model in PATIENT_RELATED_MODELS:
-        move_record(
-            patient_related_model,
-            old_patient,
-            new_patient,
-            old_mrn,
-        )
+        if patient_related_model == lab_models.LabTest:
+            move_lab_tests(old_patient, new_patient)
+        else:
+            move_record(
+                patient_related_model,
+                old_patient,
+                new_patient,
+                old_mrn,
+            )
     for old_episode in old_patient.episode_set.all():
         # Note: if the old episode has multiple episode
         # categories of the same category name
@@ -304,7 +322,7 @@ def merge_patient(*, old_patient, new_patient):
         new_episode, _ = new_patient.episode_set.get_or_create(
             category_name=old_episode.category_name
         )
-        update_tagging(old_episode, new_episode)
+        update_tagging(old_episode=old_episode, new_episode=new_episode)
         for episode_related_model in EPISODE_RELATED_MODELS:
             move_record(
                 episode_related_model,

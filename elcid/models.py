@@ -448,19 +448,6 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
         verbose_name = "Clinical Advice"
         verbose_name_plural = "Clinical Advice"
 
-# method for updating
-@receiver(post_save, sender=MicrobiologyInput)
-def update_microbiology_input(
-    sender, instance, **kwargs
-):
-    if instance.reason_for_interaction == MicrobiologyInput.ICU_REASON_FOR_INTERACTION:
-        from intrahospital_api import tasks
-        # wait for all transactions to complete then launch the celery task
-        # http://celery.readthedocs.io/en/latest/userguide/tasks.html#database-transactions
-        transaction.on_commit(
-            lambda: tasks.write_advice_upstream.delay(instance.id)
-        )
-
 
 class Line(PreviousMRN, EpisodeSubrecord):
     _sort = 'insertion_datetime'
@@ -497,15 +484,6 @@ class Imaging(PreviousMRN, EpisodeSubrecord):
     site         = models.CharField(max_length=200, blank=True, null=True)
     hospital     = ForeignKeyOrFreeText(omodels.Hospital)
     details      = models.TextField(blank=True, null=True)
-
-
-class PositiveBloodCultureHistory(PreviousMRN, PatientSubrecord):
-    when = models.DateTimeField(default=timezone.now)
-
-    @classmethod
-    def _get_field_default(cls, name):
-        # this should not be necessary...
-        return None
 
 
 class ReferralReason(lookuplists.LookupList):
@@ -690,19 +668,6 @@ class ChronicAntifungal(models.Model):
         ).filter(
             category_name=InfectionService.display_name
         ).distinct()
-
-
-# method for updating
-@receiver(post_save, sender=omodels.Tagging)
-def record_positive_blood_culture(sender, instance, **kwargs):
-    from elcid.patient_lists import Bacteraemia
-
-    if instance.value == Bacteraemia.tag:
-        pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
-            patient_id=instance.episode.patient.id
-        )
-        pbch.when = timezone.now()
-        pbch.save()
 
 
 class InotropicDrug(lookuplists.LookupList):

@@ -59,17 +59,7 @@
           </div>
         </form>
       </div>
-      {# comment #}
-      {% if permissions.view_lab_test_trends %}
-      {# endcomment #}
-
       {% include 'partials/card_with_results.html' %}
-
-      {# comment #}
-      {% else %}
-      {% include 'partials/card_without_results.html' %}
-      {% endif %}
-      {# endcomment #}
       <div class="empty-list" ng-hide="num_episodes > 0">
         <p class="lead text-center">
           There are no patients on this list.
