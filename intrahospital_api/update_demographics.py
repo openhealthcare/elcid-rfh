@@ -272,7 +272,7 @@ def parse_merge_comments(initial_mrn):
                     active_mrn = next_mrn
                 else:
                     raise MergeException(
-                        f'Multiple active related MRNs found for {initial_mrn}'
+                        f'Multiple active related MRNs ({active_mrn}, {next_mrn}) found for {initial_mrn}'
                     )
             else:
                 inactive_mrn_dicts.append({'mrn': next_mrn, 'merge_comments': merge_comments })
@@ -325,22 +325,21 @@ def get_active_mrn_and_merged_mrn_data(mrn):
         # The patient is not merged
         return mrn, []
     if not row["MERGE_COMMENTS"]:
-        logger.error(
+        logger.warn(
             f"MRN {mrn} is marked as merged but there is not merge comment"
         )
 
     try:
         active_mrn, merged_mrn_dicts = parse_merge_comments(mrn)
     except MergeException as err:
-        logger.error(f"Merge exception raised for {mrn} with '{err}'")
+        logger.warn(f"Merge exception raised for {mrn} with '{err}'")
         return mrn, []
 
     if not active_mrn:
-        logger.error(f"Unable to find an active MRN for {mrn}")
+        logger.warn(f"Unable to find an active MRN for {mrn}")
         return mrn, []
 
     return active_mrn, merged_mrn_dicts
-
 
 def update_patient_subrecords_from_upstream_dict(patient, upstream_patient_information):
     """

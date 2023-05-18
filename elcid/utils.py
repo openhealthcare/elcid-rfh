@@ -3,17 +3,17 @@ Utils for the elCID project
 """
 import errno
 from functools import wraps
-from opal.models import Patient
 from elcid import models
 import logging
 import os
 import re
 import sys
 from time import time
-
+from django.conf import settings
+from django.core.mail import send_mail
 from django.utils import timezone
 
-logger = logging.getLogger('elcid.time_logger')
+logger = logging.getLogger('elcid.utils')
 
 
 def timing(f):
@@ -69,8 +69,10 @@ def mkdir_p(path):
         else:
             raise
 
+
 def atoi(text):
     return int(text) if text.isdigit() else text
+
 
 def natural_keys(text):
     '''
@@ -85,7 +87,7 @@ def find_patients_from_mrns(mrns):
     """
     Takes in an iterable of MRNs and returns
     a dictionary of {mrn: patient}.
-    
+
     MRNs that do not match to a patient are silently ignored.
 
     When matching MRN to patient:
@@ -96,7 +98,7 @@ def find_patients_from_mrns(mrns):
     e.g. 000 will be removed.
     """
     cleaned_mrn_to_mrn = {
-        i.strip().lstrip('0'): i for i in mrns if i.strip().lstrip('0')
+        i.strip().lstrip('0'): i for i in mrns if i and i.strip().lstrip('0')
     }
     result = {}
     demos = models.Demographics.objects.filter(
@@ -117,3 +119,19 @@ def find_patients_from_mrns(mrns):
         upstream_mrn = cleaned_mrn_to_mrn[merged_mrn.mrn]
         result[upstream_mrn] = merged_mrn.patient
     return result
+
+
+def send_email(subject, body, html_message=None):
+    """
+    Sends an email to the admins prefixing the subject with
+    settings.DEFAULT_FROM_EMAIL
+    """
+    logger.info(f"Sending email: {subject}")
+    send_mail(
+        f"{settings.OPAL_BRAND_NAME}: {subject}",
+        body,
+        settings.DEFAULT_FROM_EMAIL,
+        [i[1] for i in settings.ADMINS],
+        html_message=html_message
+    )
+    logger.info(f"Sent email: {subject}")

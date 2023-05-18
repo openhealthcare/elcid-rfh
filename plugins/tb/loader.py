@@ -4,6 +4,7 @@ from django.db import transaction
 from plugins.appointments import loader
 from opal.models import Patient
 from elcid.models import Demographics
+from elcid import utils
 from elcid import episode_categories as infection_episode_categories
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api.loader import create_rfh_patient_from_hospital_number
@@ -52,19 +53,17 @@ def create_patients_from_tb_tests():
             )
             hns = hns.union([i["Patient_Number"] for i in query_result])
 
+    hn_to_patient = utils.find_patients_from_mrns(hns)
     for hn in list(hns):
-        # lab test MRNs can have preceding zeros, elCID does not use zero
-        # prefixes as we match the upstream masterfile table
-        hn = hn.lstrip('0')
-        # don't process empty hospital numbers
-        if not hn:
-            continue
-        if not Demographics.objects.filter(
-            hospital_number=hn
-        ).exists():
-            create_rfh_patient_from_hospital_number(
-                    hn, infection_episode_categories.InfectionService
-            )
+        if hn not in hn_to_patient:
+            # lab test MRNs can have preceding zeros, elCID does not use zero
+            # prefixes as we match the upstream masterfile table
+            if hn is not None:
+                hn = hn.lstrip('0')
+                if len(hn) > 0:
+                    create_rfh_patient_from_hospital_number(
+                            hn, infection_episode_categories.InfectionService
+                    )
 
 
 @transaction.atomic

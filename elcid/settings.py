@@ -191,12 +191,12 @@ INSTALLED_APPS = (
     'plugins.ipc',
     'plugins.rnoh',
     'plugins.elcid_search',
+    'plugins.obs',
     'intrahospital_api',
     'elcid',
     'passwordreset',
     'django.contrib.admin',
     'django_celery_results',
-    'obs',
 )
 
 #### API Settings
@@ -246,8 +246,6 @@ EPMA_DB = dict(
 # search with external demographics when adding a patient
 ADD_PATIENT_DEMOGRAPHICS = True
 
-# after we've added a patient, should we load in the labtests?
-ADD_PATIENT_LAB_TESTS = True
 
 #### END API Settings
 
@@ -331,6 +329,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+        'ipc': {
+            'handlers': ['console_detailed', 'mail_admins'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'labtests': {
             'handlers': ['console_detailed', 'mail_admins'],
             'level': 'INFO',
@@ -350,7 +353,7 @@ LOGGING = {
 }
 
 if 'test' not in sys.argv:
-    LOGGING['loggers']['elcid.time_logger'] = {
+    LOGGING['loggers']['elcid.utils'] = {
         'handlers': ['console_detailed'],
         'level': 'INFO',
         'propagate': False,
@@ -414,7 +417,7 @@ else:
     EMAIL_HOST = 'localhost'
 
 
-VERSION_NUMBER = '0.107.1'
+VERSION_NUMBER = '0.108'
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 #TEST_RUNNER = 'django_test_coverage.runner.CoverageTestSuiteRunner'
@@ -453,7 +456,6 @@ WAREHOUSE_DB = dict(
 
 EXTRACT_ASYNC = False
 OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
-WRITEBACK_ON = True
 
 OPAL_DEFAULT_SEARCH_FIELDS = [
     "demographics__hospital_number",
