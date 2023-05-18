@@ -18,7 +18,7 @@ class Command(BaseCommand):
             upstream_merged_mrns = update_demographics.get_all_merged_mrns_since(since)
             if len(upstream_merged_mrns) > UNEXPECTED_VOLUMES_THRESHOLD:
                 utils.send_email(
-                    f"{len(upstream_merged_mrns)} being processed by merge_patients_since",
+                    f"{len(upstream_merged_mrns)} MRNs being processed by merge_patients_since",
                     "\n".join([
                         f"get_all_merged_mrns_since returned {len(upstream_merged_mrns)} MRNs",
                         f"This is more than we would expect and higher than the threshold {UNEXPECTED_VOLUMES_THRESHOLD}",
