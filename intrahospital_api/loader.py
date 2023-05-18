@@ -226,7 +226,7 @@ def get_or_create_patient(
         )
     except update_demographics.CernerPatientNotFoundException:
         logger.info(
-            f"Unable to find MRN {mrn} in cerner, creating the patient without the upstream data"
+            f"Unable to find MRN {mrn} in Cerner, creating the patient without the upstream data"
         )
         patient = Patient.objects.create()
         patient.demographics_set.update(
