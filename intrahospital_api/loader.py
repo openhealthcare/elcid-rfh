@@ -197,10 +197,10 @@ def get_or_create_patient(
     episode category.
 
     If the patient is in the upstream Cerner master file, create the patient and
-    load in the upstream datadata.
+    load in the upstream data.
 
-    If the patient is not found in the cerner master file, just create an elCID
-    patient with no data.
+    If the patient is not found in the Cerner master file, create an elCID
+    patient and do not attempt to query upstream data sources.
 
     If run_async is False the loaders that look for upstream data
     will be called synchronously.
