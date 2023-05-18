@@ -25,7 +25,7 @@ class RandomiseStatusReport(OpalTestCase):
             created=timezone.make_aware(datetime.datetime(2015, 1, 1))
         )
 
-        patient.positivebloodculturehistory_set.create(
+        patient.riskfactor_set.create(
             created=timezone.now() - datetime.timedelta(1)
         )
 
@@ -42,12 +42,11 @@ class RandomiseStatusReport(OpalTestCase):
         self.assertEqual(
             output["last_week"]["Demographics"], 0
         )
-
         self.assertEqual(
-            output["all_time"]["Positive Blood Culture History"], 1
+            output["all_time"]["Risk Factors"], 1
         )
         self.assertEqual(
-            output["last_week"]["Positive Blood Culture History"], 1
+            output["last_week"]["Risk Factors"], 1
         )
 
     def test_handle_episodes(self):
