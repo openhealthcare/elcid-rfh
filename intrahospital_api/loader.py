@@ -196,7 +196,7 @@ def get_or_create_patient(
     Get or create a opal.Patient with an opal.Episode of the
     episode category.
 
-    If the patient is in the upstream cerner master file, create the patient and
+    If the patient is in the upstream Cerner master file, create the patient and
     load in the upstream datadata.
 
     If the patient is not found in the cerner master file, just create an elCID
