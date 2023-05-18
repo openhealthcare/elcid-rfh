@@ -3,7 +3,7 @@ from opal.core.test import OpalTestCase
 from plugins.monitoring.management.commands import check_merged_patients
 
 
-@mock.patch('plugins.monitoring.management.commands.check_merged_patients.send_email')
+@mock.patch('plugins.monitoring.management.commands.check_merged_patients.utils.send_email')
 @mock.patch('plugins.monitoring.management.commands.check_merged_patients.get_all_merged_patients')
 class CheckMergedPatientsTestCase(OpalTestCase):
 	def setUp(self):
@@ -56,7 +56,7 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 		)
 		self.cmd.handle()
 		send_email.assert_called_once_with(
-			"1 MRN(s) are in the MergedMRN table AND Demographics"
+			"1 MRN(s) are in the MergedMRN table AND Demographics", ""
 		)
 
 
@@ -98,7 +98,7 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 		)
 		self.cmd.handle()
 		send_email.assert_called_once_with(
-			"We have 1 missing active MRN(s)"
+			"We have 1 missing active MRN(s)", ""
 		)
 
 	def test_ignores_active_patients_with_no_merge_comments(self, get_all_merged_patients, send_email):
@@ -166,9 +166,7 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 			hospital_number="345"
 		)
 		self.cmd.handle()
-		send_email.assert_called_once_with(
-			"We have 1 missing inactive MRN(s)"
-		)
+		send_email.assert_called_once_with("We have 1 missing inactive MRN(s)", "")
 
 	def test_active_patients_only_in_our_system(self, get_all_merged_patients, send_email):
 		"""
@@ -210,9 +208,7 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 			mrn="345"
 		)
 		self.cmd.handle()
-		send_email.assert_called_once_with(
-			"We have 1 active MRN(s) that are not upstream"
-		)
+		send_email.assert_called_once_with("We have 1 active MRN(s) that are not upstream", "")
 
 
 	def test_inactive_patients_only_in_our_system(self, get_all_merged_patients, send_email):
@@ -255,6 +251,4 @@ class CheckMergedPatientsTestCase(OpalTestCase):
 			mrn="456"
 		)
 		self.cmd.handle()
-		send_email.assert_called_once_with(
-			"We have 1 inactive MRN(s) that are not upstream"
-		)
+		send_email.assert_called_once_with("We have 1 inactive MRN(s) that are not upstream", "")

@@ -15,8 +15,8 @@ which we have individually validated as flawed data.
 from django.core.management.base import BaseCommand
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from elcid import models as elcid_models
+from elcid import utils
 from intrahospital_api import logger
-from django.core.mail import send_mail
 from django.conf import settings
 
 INACTIVE_IDS_TO_IGNORE = [
@@ -150,18 +150,6 @@ GET_ALL_MERGED_PATIENTS = """
 """
 
 
-def send_email(title):
-    title = f"{settings.OPAL_BRAND_NAME}: {title}"
-    send_mail(
-        title,
-        "",
-        settings.DEFAULT_FROM_EMAIL,
-        settings.ADMINS,
-    )
-
-
-
-
 def get_all_merged_patients():
     api = ProdAPI()
     return api.execute_hospital_query(GET_ALL_MERGED_PATIENTS)
@@ -196,7 +184,7 @@ def check_all_merged_mrns():
     ))
     intersection = our_merged_mrns.intersection(our_demographics_mrns)
     if len(intersection) > 0:
-        send_email(f"{len(intersection)} MRN(s) are in the MergedMRN table AND Demographics")
+        utils.send_email(f"{len(intersection)} MRN(s) are in the MergedMRN table AND Demographics", "")
         logger.info(f"{len(intersection)} MRN(s) are in the MergedMRN table AND Demographics ({intersection})")
         return
     upstream_merged_rows = get_all_merged_patients()
@@ -230,13 +218,13 @@ def check_all_merged_mrns():
     # but should according to the upstream table.
     if len(missing_active) > 0:
         logger.info(f"Missing active MRNs {missing_active}")
-        send_email(f"We have {len(missing_active)} missing active MRN(s)")
+        utils.send_email(f"We have {len(missing_active)} missing active MRN(s)", "")
 
     # We have patients in elCID that are not marked as merged
     # but should are merged in the upstream table.
     if len(missing_inactive) > 0:
         logger.info(f"Missing inactive MRNs {missing_inactive}")
-        send_email(f"We have {len(missing_inactive)} missing inactive MRN(s)")
+        utils.send_email(f"We have {len(missing_inactive)} missing inactive MRN(s)", "")
 
     # Looks at all active MRNs in our system that have merges and makes
     # sure the upstream also has an active merge for this patient.
@@ -247,7 +235,7 @@ def check_all_merged_mrns():
             active_in_ours_but_not_in_theirs.append(i)
     if len(active_in_ours_but_not_in_theirs) > 0:
         logger.info(f"Active MRNS in ours but not in theirs {active_in_ours_but_not_in_theirs}")
-        send_email(f"We have {len(active_in_ours_but_not_in_theirs)} active MRN(s) that are not upstream")
+        utils.send_email(f"We have {len(active_in_ours_but_not_in_theirs)} active MRN(s) that are not upstream", "")
 
     # Looks at all inactive MRNs in our system that have merges and makes
     # sure the upstream also has an inactive merge for this patient.
@@ -258,7 +246,7 @@ def check_all_merged_mrns():
             inactive_in_ours_but_not_in_theirs.append(i)
     if len(inactive_in_ours_but_not_in_theirs) > 0:
         logger.info(f"Inactive MRNS in ours but not in theirs {inactive_in_ours_but_not_in_theirs}")
-        send_email(f"We have {len(inactive_in_ours_but_not_in_theirs)} inactive MRN(s) that are not upstream")
+        utils.send_email(f"We have {len(inactive_in_ours_but_not_in_theirs)} inactive MRN(s) that are not upstream", "")
 
 
 class Command(BaseCommand):
