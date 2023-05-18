@@ -333,12 +333,11 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                     run_async=False
                 )
             for unmerged_patient in unmerged_patients:
-                if active_patient:
-                    merge_patient.merge_patient(
-                        old_patient=unmerged_patient,
-                        new_patient=active_patient
-                    )
-                    patients_now_merged.add(active_patient)
+                merge_patient.merge_patient(
+                    old_patient=unmerged_patient,
+                    new_patient=active_patient
+                )
+                patients_now_merged.add(active_patient)
 
 
         # we don't delete and write anew to preserve the our_merge_datetime field
