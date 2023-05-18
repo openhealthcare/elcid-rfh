@@ -283,30 +283,24 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     mrn_to_upstream_merge_data = get_mrn_to_upstream_merge_data()
     now = timezone.now()
 
-    all_active_mrn_and_merged_dicts = []
-    for mrn in mrns:
-        all_active_mrn_and_merged_dicts.append(get_active_mrn_and_merged_mrn_data(
-            mrn, mrn_to_upstream_merge_data
-        ))
-
-    unique_active_mrn_and_merged_dicts = []
-    # it is possible that the MRNs passed in will link to the same active MRN
-    # so make sure we only have one per active MRN
+    active_mrn_and_merged_dicts = []
     mrns_seen = set()
-    for active_mrn, merged_dicts in all_active_mrn_and_merged_dicts:
+    for mrn in mrns:
+        active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
+            mrn, mrn_to_upstream_merge_data
+        )
+        # Remove duplicate active MRNs
         if active_mrn in mrns_seen:
             continue
         mrns_seen.add(active_mrn)
-        unique_active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
 
-    # If neither the active MRN or the inactive MRN is in elcid then
-    # we do not need to process it.
-    active_mrn_and_merged_dicts = []
-    for active_mrn, merged_dicts in unique_active_mrn_and_merged_dicts:
+        # Make sure either the active MRN or a related one is part of
+        # the elCID cohort
         if mrn_in_elcid(active_mrn):
             active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
         elif len([i for i in merged_dicts if mrn_in_elcid(i["mrn"])]) > 0:
             active_mrn_and_merged_dicts.append((active_mrn, merged_dicts,))
+
     logger.info('Generating merged MRNs')
     to_create = []
     for active_mrn, merged_dicts in active_mrn_and_merged_dicts:
