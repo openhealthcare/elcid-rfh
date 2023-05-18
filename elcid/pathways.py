@@ -1,10 +1,8 @@
 """
 Pathways for the RFH elCID application
 """
-import datetime
-
 from django.db import transaction
-from django.conf import settings
+from django.http import HttpResponseBadRequest
 from opal.core.pathway.pathways import (
     Step,
     PagePathway,
@@ -98,57 +96,18 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
 
         Else if the patient doesn't exist load in the patient.
         """
-
-        hospital = ""
-        if "location" in data:
-            hospital = data['location'][0].get('hospital', "")
-
-        if patient:
-            if hospital == 'RNOH':
-                rnoh_episode = patient.episode_set.filter(
-                    category_name=RNOHEpisode.display_name
-                ).last()
-                if rnoh_episode:
-                    return super(AddPatientPathway, self).save(
-                        data, user=user, patient=patient, episode=rnoh_episode
-                    )
-
-            infectious_episode = patient.episode_set.filter(
-                category_name=InfectionService.display_name
-            ).last()
-            if infectious_episode:
-                return super(AddPatientPathway, self).save(
-                    data, user=user, patient=patient, episode=infectious_episode
-                )
-        else:
+        if not patient:
             # strip off leading zeros, we do not create patients
             # who have leading zeros.
             hn = data["demographics"][0].get("hospital_number")
-            if hn:
-                hn = data["demographics"][0]["hospital_number"].lstrip('0')
-                data["demographics"][0]["hospital_number"] = hn
+            if hn is None or len(hn.lstrip('0')) == 0:
+                raise HttpResponseBadRequest('A hospital number is required')
+            hn = hn.lstrip('0')
+            patient, _ = loader.get_or_create_patient(hn, episode_category=InfectionService)
 
-        saved_patient, saved_episode = super(AddPatientPathway, self).save(
+        episode, _ = patient.episode_set.get_or_create(
+            category_name=InfectionService.display_name
+        )
+        return super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
         )
-
-        # there should always be a new episode
-        saved_episode.start = datetime.date.today()
-        saved_episode.save()
-
-        if hospital == 'RNOH':
-            # Move the location data to an RNOH episode,
-            # create a background infection episode
-            saved_episode.category_name = RNOHEpisode.display_name
-            saved_episode.save()
-            saved_patient.create_episode(category_name=InfectionService.display_name)
-
-        # if the patient its a new patient and we have
-        # got their demographics from the upstream api service
-        # bring in their lab tests
-        if not patient and settings.ADD_PATIENT_LAB_TESTS:
-            demo_system = data["demographics"][0].get("external_system")
-            if demo_system == constants.EXTERNAL_SYSTEM:
-                loader.load_patient(saved_patient)
-
-        return saved_patient, saved_episode

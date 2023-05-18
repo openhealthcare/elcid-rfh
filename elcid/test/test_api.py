@@ -433,11 +433,11 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(self.client.get(self.raw_url).status_code, 400)
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.search_upstream_demographics")
     def test_with_demographics_add_patient_not_found(
-        self, load_demographics
+        self, search_upstream_demographics
     ):
-        load_demographics.return_value = None
+        search_upstream_demographics.return_value = None
         response = json.loads(
             self.client.get(self.url).content.decode('utf-8')
         )
@@ -446,11 +446,11 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.search_upstream_demographics")
     def test_with_demographics_add_patient_found_upstream(
-        self, load_demographics
+        self, search_upstream_demographics
     ):
-        load_demographics.return_value = dict(first_name="Wilma")
+        search_upstream_demographics.return_value = dict(first_name="Wilma")
         response = json.loads(
             self.client.get(self.get_url('01')).content.decode('utf-8')
         )
@@ -460,18 +460,18 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
-        load_demographics.assert_called_once_with('1')
+        search_upstream_demographics.assert_called_once_with('1')
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.search_upstream_demographics")
     def test_with_demographics_add_patient_found_upstream_without_zeros(
-        self, load_demographics
+        self, search_upstream_demographics
     ):
         """
         When we query upstream demographics, query should use
         the hn without preceding zeros.
         """
-        load_demographics.return_value = dict(first_name="Wilma")
+        search_upstream_demographics.return_value = dict(first_name="Wilma")
         response = json.loads(
             self.client.get(self.get_url('01')).content.decode('utf-8')
         )
@@ -481,7 +481,7 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
-        load_demographics.assert_called_once_with('1')
+        search_upstream_demographics.assert_called_once_with('1')
 
     def test_patient_found(self):
         self.get_patient("Wilma", "1")
@@ -492,6 +492,20 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
+
+    def test_patient_found_with_merged_mrn(self):
+        patient = self.get_patient("Wilma", "123")
+        patient.mergedmrn_set.create(
+            mrn="1", our_merge_datetime=timezone.now()
+        )
+        response = json.loads(self.client.get(self.url).content.decode('utf-8'))
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
 
     def test_with_demographics_add_patient_in_elcid_without_zeros(self):
         """
