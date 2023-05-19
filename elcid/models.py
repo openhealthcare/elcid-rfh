@@ -82,6 +82,14 @@ class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
 
     class Meta:
         verbose_name_plural = "Demographics"
+        constraints = [
+            # The bitwise "not" here is actually how you do the negation of a Q expression
+            # https://docs.djangoproject.com/en/dev/topics/db/queries/#complex-lookups-with-q-objects
+            models.CheckConstraint(
+                check = ~models.Q(hospital_number__startswith=0),
+                name = 'No initial zeros',
+            ),
+        ]
 
 
 class ContactInformation(PatientSubrecord, ExternallySourcedModel):
