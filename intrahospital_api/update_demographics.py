@@ -302,16 +302,15 @@ def get_or_create_active_patient(active_mrn):
     
 def check_and_handle_upstream_merges_for_mrns(mrns):
     """
-    Takes in a list of MRNs.
+    Given a list of MRNs that have been recently updated,
+    construct their upstream identifier merge graph, and
+    filters out any not in the elCID cohort.
 
-    Filters those not related to elCID.
-
-    If they are inactive, creates a Patient for the
-    active MRN and creates MergedMRN for all related inactive
-    MRNs.
-
-    If they are active, creates MergedMRN for all
-    related inactive MRNs.
+    If they are in the elCID cohort, make the active MRN
+    an elCID patient, and save the upstream identifier 
+    merge graph to our models.
+   
+    If required, merge elCID patients.
     """
     mrn_to_upstream_merge_data = get_mrn_to_upstream_merge_data()
     mrns_seen = set()
