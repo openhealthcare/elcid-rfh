@@ -613,6 +613,10 @@ class BloodCultureIsolateApi(SubrecordViewSet):
         blood culture set.
         """
         blood_culture_set = item.blood_culture_set
+
+        # This uses the set_{field_name} behaviour from update_from_dict.
+        # We pass in None as the set_{field_name} interface takes in the value
+        # to set as the first argument but this is unused for the updated* methods.
         blood_culture_set.set_updated_by_id(None, request.user)
         blood_culture_set.set_updated(None, request.user)
         if blood_culture_set.previous_mrn:
