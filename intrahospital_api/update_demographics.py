@@ -327,7 +327,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
         mrns_seen.add(active_mrn)
         
         if not mrn_in_elcid(active_mrn):
-            if not any(mrn_in_elcid(i['mrn']) for i in merged_data):
+            if not any(mrn_in_elcid(i['mrn']) for i in merged_dicts):
                 continue # no node in this graph is part of the elCID cohort        
                 
         active_patient = get_or_create_active_patient(active_mrn)
@@ -346,7 +346,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                 
         # Our copy of the merge graph
         for merged_dict in merged_dicts:
-            if not MergedMRN.objects.filter(mrn=merged_dict['mrn']).exists():
+            if not models.MergedMRN.objects.filter(mrn=merged_dict['mrn']).exists():
                 merged_mrns_to_create.append(
                     models.MergedMRN(
                         patient=active_patient,
