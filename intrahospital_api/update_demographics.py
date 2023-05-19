@@ -292,7 +292,7 @@ def get_or_create_active_patient(active_mrn):
         demographics__hospital_number=active_mrn
     ).first()
 
-   if not active_patient:
+    if not active_patient:
         active_patient, _ = loader.get_or_create_patient(
             active_mrn,
             elcid_episode_categories.InfectionService,
