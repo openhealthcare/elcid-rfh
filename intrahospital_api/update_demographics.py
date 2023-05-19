@@ -342,7 +342,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                 old_patient=unmerged_patient,
                 new_patient=active_patient
             )
-            patients_now_merged.add(active_patient)
+            active_patients_merged.add(active_patient)
                 
         # Our copy of the merge graph
         for merged_dict in merged_dicts:
