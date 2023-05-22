@@ -493,7 +493,6 @@ class UpdateStatusesTestCase(OpalTestCase):
         self.assertTrue(nursing_status.has_handover)
 
 
-@mock.patch('intrahospital_api.merge_patient.loader.load_patient')
 @mock.patch('intrahospital_api.merge_patient.append_to_merge_file')
 class MergePatientTestCase(OpalTestCase):
     def setUp(self):
@@ -514,10 +513,10 @@ class MergePatientTestCase(OpalTestCase):
         # The logging expects a user with username ohc
         User.objects.create(username='ohc')
 
-    def test_writing_to_merge_log(self, append_to_merge_file, load_patient):
+    def test_writing_to_merge_log(self, append_to_merge_file):
         self.new_patient.mergedmrn_set.create(mrn=self.old_mrn)
         old_id = self.old_patient.id
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         self.assertEqual(self.new_patient.mergedmrn_set.count(), 1)
@@ -529,7 +528,7 @@ class MergePatientTestCase(OpalTestCase):
         old_json = json.loads(log_call_args[0][0][0])
         self.assertEqual(old_json['id'], old_id)
 
-    def test_copies_over_patient_subrecords(self, append_to_merge_file, load_patient):
+    def test_copies_over_patient_subrecords(self, append_to_merge_file):
         """
         Test merge_patient copies over patient subrecords to
         the new patient
@@ -539,7 +538,7 @@ class MergePatientTestCase(OpalTestCase):
         old_nationality.arrival_in_the_uk = "2020"
         old_nationality.updated = timezone.now()
         old_nationality.save()
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         new_nationality = self.new_patient.nationality_set.get()
@@ -552,7 +551,7 @@ class MergePatientTestCase(OpalTestCase):
         log_call_args = append_to_merge_file.call_args_list
         self.assertEqual(len(log_call_args), 1)
 
-    def test_copies_over_episode_subrecords_where_the_episode_exists(self, append_to_merge_file, load_patient):
+    def test_copies_over_episode_subrecords_where_the_episode_exists(self, append_to_merge_file):
         """
         Test merge_patient copies over episode subrecords to
         the episode
@@ -560,7 +559,7 @@ class MergePatientTestCase(OpalTestCase):
         self.old_episode.microbiologyinput_set.create(
             clinical_discussion="treatment options"
         )
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         # make sure we haven't created a new episode
@@ -568,14 +567,14 @@ class MergePatientTestCase(OpalTestCase):
         micro_input = self.new_episode.microbiologyinput_set.get()
         self.assertEqual(micro_input.clinical_discussion, "treatment options")
 
-    def test_copies_over_observations(self, append_to_merge_file, load_patient):
+    def test_copies_over_observations(self, append_to_merge_file):
         self.old_episode.observation_set.create()
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         self.assertTrue(self.new_episode.observation_set.exists())
 
-    def test_copies_over_episode_subrecords_where_the_episode_does_not_exist(self, append_to_merge_file, load_patient):
+    def test_copies_over_episode_subrecords_where_the_episode_does_not_exist(self, append_to_merge_file):
         """
         Test merge_patient creates episode categories if they
         don't exist
@@ -583,21 +582,21 @@ class MergePatientTestCase(OpalTestCase):
         tb_category = tb_episode_categories.TbEpisode.display_name
         old_tb_episode = self.old_patient.episode_set.create(category_name=tb_category)
         old_tb_episode.patientconsultation_set.create(plan="treatment options")
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         new_tb_episode = self.new_patient.episode_set.get(category_name=tb_category)
         new_patient_consultation = new_tb_episode.patientconsultation_set.get()
         self.assertEqual(new_patient_consultation.plan, "treatment options")
 
-    def test_blood_cultures(self, append_to_merge_file, load_patient):
+    def test_blood_cultures(self, append_to_merge_file):
         """
         Blood cultures have related foreign keys, make sure that
         these are copied over
         """
         blood_culture = self.old_patient.bloodcultureset_set.create(lab_number="111")
         blood_culture.isolates.create(date_positive=datetime.date.today())
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         blood_culture = self.new_patient.bloodcultureset_set.get()
@@ -606,18 +605,18 @@ class MergePatientTestCase(OpalTestCase):
             blood_culture.isolates.get().date_positive, datetime.date.today()
         )
 
-    def test_updates_status(self, append_to_merge_file, load_patient):
+    def test_updates_status(self, append_to_merge_file):
         self.old_patient.dischargesummaries.create()
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         self.assertTrue(self.new_patient.dischargesummaries.exists())
         summary_status = self.new_patient.patientdischargesummarystatus_set.get()
         self.assertTrue(summary_status.has_dischargesummaries)
 
-    def test_copies_tags(self, append_to_merge_file, load_patient):
+    def test_copies_tags(self, append_to_merge_file):
         self.old_episode.tagging_set.create(archived=False, value="some list")
-        merge_patient.merge_patient(
+        merge_patient.merge_elcid_data(
             old_patient=self.old_patient, new_patient=self.new_patient
         )
         self.assertTrue(

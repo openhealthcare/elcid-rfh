@@ -492,16 +492,16 @@ class MRNInElcidTestCase(OpalTestCase):
 @mock.patch("intrahospital_api.update_demographics.get_mrn_to_upstream_merge_data")
 @mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
 @mock.patch("intrahospital_api.update_demographics.loader.load_patient")
-@mock.patch("intrahospital_api.update_demographics.merge_patient.merge_patient")
+@mock.patch("intrahospital_api.update_demographics.merge_patient.merge_elcid_data")
 class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
-    def test_handles_an_inactive_mrn(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_handles_an_inactive_mrn(self, merge_elcid_data, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         We have a patient with an MRN that has become inactive.
 
         We should create a new patient with the active MRN and MergedMRN
         with the inactive MRN.
         """
-        merge_patient.side_effect = lambda old_patient, new_patient: old_patient.delete()
+        merge_elcid_data.side_effect = lambda old_patient, new_patient: old_patient.delete()
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "INACTIVE",
@@ -534,7 +534,7 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
 
 
-    def test_handles_an_active_mrn(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_handles_an_active_mrn(self, merge_elcid_data, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have a patient with an active MRN of 123
         Upstream says 123 has an inactive MRN of 234
@@ -571,20 +571,20 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
         # There is no reason to call merge patient, we are just
         # creating a new MergedMRN
-        self.assertFalse(merge_patient.called)
+        self.assertFalse(merge_elcid_data.called)
 
         # Make sure we reload the patient so they have the data including
         # the new merged MRN
         load_patient.assert_called_once_with(patient)
 
-    def test_upstream_merge_between_two_previously_active_mrns(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_upstream_merge_between_two_previously_active_mrns(self, merge_elcid_data, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have 2 patients with MRNS 123, 234
         Upstream 123 is merged into 234
 
         We should merge and delete 123 and add a MergedMRN of 123
         """
-        merge_patient.side_effect = lambda old_patient, new_patient: old_patient.delete()
+        merge_elcid_data.side_effect = lambda old_patient, new_patient: old_patient.delete()
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
                 "ACTIVE_INACTIVE": "INACTIVE",
@@ -618,13 +618,13 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
             merged_mrn.mrn, "123"
         )
 
-    def test_handles_new_inactive_mrns(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_handles_new_inactive_mrns(self, merge_elcid_data, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally have Patient with MRN 123 and an inactive MRN of 234
         Upstream, 234 and 345 have been merged with 123
 
         We should create a new merged MRN and not delete the existing Merged MRN MRN.
-        We should not call merge_patient
+        We should not call merge_elcid_data
         """
         get_mrn_to_upstream_merge_data.return_value = {
             "123": {
@@ -678,13 +678,13 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         )
         # There is no reason to call merge patient, we are just
         # creating a new MergedMRN
-        self.assertFalse(merge_patient.called)
+        self.assertFalse(merge_elcid_data.called)
 
         # Make sure we reload the patient so they have the data including
         # the new merged MRN
         load_patient.assert_called_once_with(patient)
 
-    def test_does_not_reload_already_merged_patients(self, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_does_not_reload_already_merged_patients(self, merge_elcid_data, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have patient with MRN 123 and a merged MRN of 234
         Upstream has 234 as an iactive MRN merged into MRN 123
@@ -719,10 +719,10 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
         update_demographics.check_and_handle_upstream_merges_for_mrns(["123"])
         self.assertEqual(patient.mergedmrn_set.get().mrn, "234")
         self.assertFalse(load_patient.called)
-        self.assertFalse(merge_patient.called)
+        self.assertFalse(merge_elcid_data.called)
 
     @mock.patch("intrahospital_api.update_demographics.send_email")
-    def test_sends_an_email_when_threshold_is_breached(self, send_email, merge_patient, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
+    def test_sends_an_email_when_threshold_is_breached(self, send_email, merge_elcid_data, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have a patient with an active MRN of 123
         Upstream says 123 has an inactive MRN of MERGED_MRN_COUNT_EMAIL_THRESHOLD + 1

@@ -341,7 +341,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
             demographics__hospital_number__in=merged_mrns
         )
         for unmerged_patient in unmerged_patients:
-            merge_patient.merge_patient(
+            merge_patient.merge_elcid_data(
                 old_patient=unmerged_patient,
                 new_patient=active_patient
             )
@@ -368,7 +368,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     # already been reloaded.
     # Other patients who have new merged MRNs need to be reloaded
     # to add in upstream data from the new merged MRN.
-    patients_to_reload = set(i.patient for i in merged_mrns_to_create if i.patient not in active_patients_merged)
+    patients_to_reload = set(i.patient for i in merged_mrns_to_create)
     for patient in list(patients_to_reload):
         loader.load_patient(patient)
 

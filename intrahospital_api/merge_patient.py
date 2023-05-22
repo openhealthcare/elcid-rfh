@@ -2,7 +2,7 @@ from django.utils import timezone
 import os
 import json
 from django.contrib.auth.models import User
-from intrahospital_api import loader, logger
+from intrahospital_api import logger
 from opal.core.serialization import OpalSerializer
 from django.db import transaction
 from elcid import models as elcid_models
@@ -298,7 +298,7 @@ def move_lab_tests(old_patient, new_patient):
     )
 
 @transaction.atomic
-def merge_patient(*, old_patient, new_patient):
+def merge_elcid_data(*, old_patient, new_patient):
     """
     All elcid native non-singleton entries to be converted to
     the equivalent episode category on the wining MRN, with a reference
@@ -359,7 +359,6 @@ def merge_patient(*, old_patient, new_patient):
         our_merge_datetime=timezone.now()
     )
     updates_statuses(new_patient)
-    loader.load_patient(new_patient, run_async=False)
     new_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
     log_str = f'Merged patient id={new_patient.id}'
     logger.info(log_str)
