@@ -292,6 +292,7 @@ def get_or_create_active_patient(active_mrn):
     active_patient = Patient.objects.filter(
         demographics__hospital_number=active_mrn
     ).first()
+    created = False
 
     if not active_patient:
         active_patient, _ = loader.get_or_create_patient(
@@ -299,7 +300,8 @@ def get_or_create_active_patient(active_mrn):
             elcid_episode_categories.InfectionService,
             run_async=False
         )
-    return active_patient
+        created = True
+    return active_patient, created
 
 def check_and_handle_upstream_merges_for_mrns(mrns):
     """
@@ -331,7 +333,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
             if not any(is_mrn_in_elcid(i['mrn']) for i in merged_dicts):
                 continue # no node in this graph is part of the elCID cohort
 
-        active_patient = get_or_create_active_patient(active_mrn)
+        active_patient, _ = get_or_create_active_patient(active_mrn)
 
         # Do we have to perform any merges our side?
         merged_mrns = [i["mrn"] for i in merged_dicts]
