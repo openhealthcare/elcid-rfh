@@ -30,17 +30,22 @@
     <tbody>
       <tr>
         <th class="col-md-3">Patient</th>
-        <th class="col-md-1">Imaging</th>
-        <th class="col-md-8">Timeline</th>
+        <th class="col-md-5">TB Results</th>
+        <th class="col-md-4">Timeline</th>
       </tr>
     {% for row in rows %}
       <tr>
         <td>
           {% if row.episode %}
           <a href="/#/patient/{{ row.episode.patient_id }}/{{ row.episode.id }}/" class="orange-link">
-            {{ row.demographics.hospital_number }} {{ row.demographics.name }} <br />
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }}
+            <br />
           </a>
           {{ row.demographics.date_of_birth }}
+          {% if row.demographics.death_indicator %}
+          <br />Deceased: {{ row.demographics.date_of_death }}
+          {% endif %}
+
           <br>
             {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% else %}
@@ -49,14 +54,36 @@
           </a>
             {{ row.demographics.sex }} {{ row.demographics.get_age }}
           {% endif %}
-        </td>
-        <td>
+          <br />
+          {% if row.location %}
+          <p>{{ row.location }}</p>
+          {% endif %}
           <span style="white-space: nowrap;">
           <a class="orange-link" target="upstream_imaging" href="http://freenet/carestream/?pid={{ row.demographics.hospital_number }}">
             PACS
             <i class="fa fa-external-link" aria-hidden="true"></i>
           </a>
           </span>
+
+          <p>
+            <a class="btn btn-secondary content-offset pointer"
+               ng-click="open_modal('TBMDTNoActionCtrl', 'templates/tb/mdt_no_action_modal.html', {patient_id: {{row.demographics.patient_id}} })"
+               >
+              <i class="fa fa-comment"></i> No action
+            </a>
+          </p>
+
+        </td>
+        <td>
+          <div
+               patient-api patient-id="{{ row.demographics.patient_id }}"
+            target='tb_tests_{{ row.demographics.patient_id }}' endpoint='tb_tests' class="panel-footer">
+            <div ng-repeat="tb_tests in tb_tests_{{ row.demographics.patient_id }}"
+                 ng-show="tb_tests.culture_count || tb_tests.pcr_count || tb_tests.igra_count" >
+              {% include 'partials/tb_tests.html' %}
+            </div>
+
+          </div>
         </td>
         <td class="tb-mdt-row">
           {% for ts, timeline_type, instance in row.timeline %}

@@ -1,0 +1,13 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3><i class="fa fa-crosshairs"></i>
+      TB Results
+    </h3>
+  </div>
+  <div
+    patient-api target='tb_tests_container' endpoint='tb_tests' class="panel-footer">
+    <div ng-repeat="tb_tests in tb_tests_container"  ng-show="tb_tests.culture_count || tb_tests.pcr_count || tb_tests.igra_count">
+      {% include 'partials/tb_tests.html' %}
+    </div>
+  </div>
+</div>
