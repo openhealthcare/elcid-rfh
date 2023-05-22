@@ -533,7 +533,6 @@ class CheckAndHandleUpstreamMergesForMRNsTestCase(OpalTestCase):
             merged_mrn.mrn, "123"
         )
 
-
     def test_handles_an_active_mrn(self, merge_elcid_data, load_patient, get_or_create_patient, get_mrn_to_upstream_merge_data):
         """
         Locally we have a patient with an active MRN of 123
@@ -1007,3 +1006,188 @@ class GetActiveMrnAndMergedMrnDataTestCase(OpalTestCase):
         with self.assertRaises(update_demographics.CernerPatientNotFoundException) as err:
             update_demographics.get_active_mrn_and_merged_mrn_data('123')
         self.assertEqual(str(err.exception), "Unable to find a masterfile row for 123")
+
+
+@mock.patch("intrahospital_api.update_demographics.loader.get_or_create_patient")
+@mock.patch("intrahospital_api.update_demographics.loader.load_patient")
+@mock.patch("intrahospital_api.update_demographics.merge_patient.merge_elcid_data")
+class MergeMRNFromCernerTestCase(OpalTestCase):
+    def test_handles_an_inactive_mrn(self, merge_elcid_data, load_patient, get_or_create_patient):
+        """
+        We have a patient with an MRN that has become inactive.
+
+        We should create a new patient with the active MRN and MergedMRN
+        with the inactive MRN.
+        """
+        merge_elcid_data.side_effect = lambda old_patient=None, new_patient=None: old_patient.delete()
+        merged_mrn_dicts = [
+            {
+                "mrn": "123",
+                "merge_comments": "Merged with MRN 234 on Oct 20 2014  4:44PM",
+            }
+        ]
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        def create_patient(*args, **kwargs):
+            patient = Patient.objects.create()
+            patient.demographics_set.update(hospital_number="234")
+            return patient, True
+        get_or_create_patient.side_effect = create_patient
+        update_demographics.merge_mrn_from_cerner("234", merged_mrn_dicts)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "234"
+        )
+        merged_mrn = patient.mergedmrn_set.get()
+        self.assertEqual(
+            merged_mrn.mrn, "123"
+        )
+        load_patient.assert_called_once_with(patient)
+
+    def test_handles_an_active_mrn(self, merge_elcid_data, load_patient, get_or_create_patient):
+        """
+        Locally we have a patient with an active MRN of 123
+        Upstream says 123 has an inactive MRN of 234
+
+        We should add a MergedMRN of 234, we should not call merge patient
+        """
+        merged_dicts = [
+            {
+                "mrn": "234",
+                "merge_comments": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            }
+        ]
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        update_demographics.merge_mrn_from_cerner("123", merged_dicts)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "123"
+        )
+        self.assertFalse(
+            get_or_create_patient.called
+        )
+        merged_mrn = patient.mergedmrn_set.get()
+        self.assertEqual(
+            merged_mrn.mrn, "234"
+        )
+        # There is no reason to call merge patient, we are just
+        # creating a new MergedMRN
+        self.assertFalse(merge_elcid_data.called)
+
+        # Make sure we reload the patient so they have the data including
+        # the new merged MRN
+        load_patient.assert_called_once_with(patient)
+
+    def test_upstream_merge_between_two_previously_active_mrns(self, merge_elcid_data, load_patient, get_or_create_patient):
+        """
+        Locally we have 2 patients with MRNS 123, 234
+        Upstream 123 is merged into 234
+
+        We should merge and delete 123 and add a MergedMRN of 123
+        """
+        merge_elcid_data.side_effect = lambda old_patient, new_patient: old_patient.delete()
+        merge_dicts = [
+            {
+                "mrn": "123",
+                "merge_comments": "Merged with MRN 234 on Oct 20 2014  4:44PM",
+            },
+        ]
+        patient_1, _ = self.new_patient_and_episode_please()
+        patient_1.demographics_set.update(hospital_number='123')
+        patient_2, _ = self.new_patient_and_episode_please()
+        patient_2.demographics_set.update(hospital_number='234')
+        update_demographics.merge_mrn_from_cerner("234", merge_dicts)
+        reloaded_patient = Patient.objects.get()
+
+        # patient 1 should be deleted and merged intol 2
+        self.assertEqual(
+            reloaded_patient.id, patient_2.id
+        )
+        self.assertEqual(
+            reloaded_patient.demographics().hospital_number, "234"
+        )
+        merged_mrn = reloaded_patient.mergedmrn_set.get()
+        self.assertEqual(
+            merged_mrn.mrn, "123"
+        )
+
+    def test_handles_new_inactive_mrns(self, merge_elcid_data, load_patient, get_or_create_patient):
+        """
+        Locally have Patient with MRN 123 and an inactive MRN of 234
+        Upstream, 234 and 345 have been merged with 123
+
+        We should create a new merged MRN and not delete the existing Merged MRN.
+        We should not call merge_elcid_data
+        """
+        merge_dicts = [
+            {
+                "mrn": "234",
+                "merge_comments": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            },
+            {
+                "mrn": "345",
+                "merge_comments": "Merged with MRN 123 on Oct 20 2014  5:44PM",
+            },
+        ]
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        before = timezone.now() - datetime.timedelta(1)
+        patient.mergedmrn_set.create(
+            mrn="234",
+            our_merge_datetime=before,
+            merge_comments="Merged with MRN 123 on Oct 20 2014  4:44PM"
+        )
+        update_demographics.merge_mrn_from_cerner("123", merge_dicts)
+        patient = Patient.objects.get()
+        self.assertEqual(
+            patient.demographics().hospital_number, "123"
+        )
+        self.assertFalse(get_or_create_patient.called)
+        # Make sure that we haven't deleted the old one
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="234", our_merge_datetime=before, merge_comments="Merged with MRN 123 on Oct 20 2014  4:44PM"
+            ).exists()
+        )
+
+        # Make sure wehave created a new one
+        self.assertTrue(
+            patient.mergedmrn_set.filter(
+                mrn="345", merge_comments="Merged with MRN 123 on Oct 20 2014  5:44PM"
+            ).exists()
+        )
+        # There is no reason to call merge patient, we are just
+        # creating a new MergedMRN
+        self.assertFalse(merge_elcid_data.called)
+
+        # Make sure we reload the patient so they have the data including
+        # the new merged MRN
+        load_patient.assert_called_once_with(patient)
+
+    def test_does_not_reload_already_merged_patients(self, merge_elcid_data, load_patient, get_or_create_patient):
+        """
+        Locally we have patient with MRN 123 and a merged MRN of 234
+        Upstream has 234 as an iactive MRN merged into MRN 123
+
+        We should not change anything.
+        We should not reload the patient or create any new MergedMRN objects.
+        """
+        merge_dicts = [
+            {
+                "mrn": "234",
+                "merge_comments": "Merged with MRN 123 on Oct 20 2014  4:44PM",
+            }
+        ]
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number='123')
+        before = timezone.now() - datetime.timedelta(1)
+        patient.mergedmrn_set.create(
+            mrn="234",
+            our_merge_datetime=before,
+            merge_comments="Merged with MRN 123 on Oct 20 2014  4:44PM"
+        )
+        update_demographics.merge_mrn_from_cerner("123", merge_dicts)
+        self.assertEqual(patient.mergedmrn_set.get().mrn, "234")
+        self.assertFalse(load_patient.called)
+        self.assertFalse(merge_elcid_data.called)

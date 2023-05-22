@@ -303,6 +303,51 @@ def get_or_create_active_patient(active_mrn):
         created = True
     return active_patient, created
 
+
+def merge_mrn_from_cerner(mrn, merged_dicts=None):
+    if merged_dicts is None:
+        active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(mrn)
+    else:
+        active_mrn = mrn
+
+    # no node in this graph is part of the elCID cohort
+    if not is_mrn_in_elcid(active_mrn):
+        if not any(is_mrn_in_elcid(i['mrn']) for i in merged_dicts):
+            return (None, None, False,)
+
+    active_patient, _ = get_or_create_active_patient(active_mrn)
+
+    our_merged_mrns_objs = active_patient.mergedmrn_set.all()
+    our_merged_mrns = set([i.mrn for i in our_merged_mrns_objs])
+    upstream_merged_mrns = set([i["mrn"] for i in merged_dicts])
+
+    new_merged_mrns_needed = upstream_merged_mrns - our_merged_mrns
+
+    # We already have the merged MRNs, everything has already been merged
+    # no action is required
+    if len(new_merged_mrns_needed) == 0:
+        return (active_patient, our_merged_mrns_objs, False,)
+
+    merges = []
+    for merged_dict in merged_dicts:
+        if merged_dict["mrn"] in new_merged_mrns_needed:
+            unmerged_patient = Patient.objects.filter(
+                demographics__hospital_number=merged_dict["mrn"]
+            ).first()
+            if unmerged_patient is not None:
+                merge_patient.merge_elcid_data(
+                    old_patient=unmerged_patient,
+                    new_patient=active_patient
+                )
+            merges.append(models.MergedMRN.objects.create(
+                patient=active_patient,
+                our_merge_datetime=timezone.now(),
+                **merged_dict
+            ))
+    loader.load_patient(active_patient)
+    return active_patient, merges, True
+
+
 def check_and_handle_upstream_merges_for_mrns(mrns):
     """
     Given a list of MRNs that have been recently updated,
@@ -317,9 +362,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     """
     mrn_to_upstream_merge_data = get_mrn_to_upstream_merge_data()
     mrns_seen = set()
-    active_patients_merged = set() # We won't want to reload them later
-    merged_mrns_to_create = []
-
+    merged_mrns_created_count = 0
     for mrn in mrns:
         active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
             mrn, mrn_to_upstream_merge_data
@@ -328,49 +371,14 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
         # The list passed into this function potentially contains all nodes in a merge graph
             continue
         mrns_seen.add(active_mrn)
+        _, merges, _ = merge_mrn_from_cerner(active_mrn, merged_dicts)
+        if merges is not None:
+            merged_mrns_created_count += len(merges)
 
-        if not is_mrn_in_elcid(active_mrn):
-            if not any(is_mrn_in_elcid(i['mrn']) for i in merged_dicts):
-                continue # no node in this graph is part of the elCID cohort
+    if merged_mrns_created_count > MERGED_MRN_COUNT_EMAIL_THRESHOLD:
+        send_to_many_merged_mrn_email(merged_mrns_created_count)
+    logger.info(f'Saved {merged_mrns_created_count} merged MRNs')
 
-        active_patient, _ = get_or_create_active_patient(active_mrn)
-
-        # Do we have to perform any merges our side?
-        merged_mrns = [i["mrn"] for i in merged_dicts]
-        unmerged_patients = Patient.objects.filter(
-            demographics__hospital_number__in=merged_mrns
-        )
-        for unmerged_patient in unmerged_patients:
-            merge_patient.merge_elcid_data(
-                old_patient=unmerged_patient,
-                new_patient=active_patient
-            )
-            active_patients_merged.add(active_patient)
-
-        # Our copy of the merge graph
-        for merged_dict in merged_dicts:
-            if not models.MergedMRN.objects.filter(mrn=merged_dict['mrn']).exists():
-                merged_mrns_to_create.append(
-                    models.MergedMRN(
-                        patient=active_patient,
-                        our_merge_datetime=timezone.now(),
-                        **merged_dict
-                    )
-                )
-
-    if(len(merged_mrns_to_create)) > MERGED_MRN_COUNT_EMAIL_THRESHOLD:
-        send_to_many_merged_mrn_email(len(merged_mrns_to_create))
-
-    models.MergedMRN.objects.bulk_create(merged_mrns_to_create)
-    logger.info(f'Saved {len(merged_mrns_to_create)} merged MRNs')
-
-    # Patients who have had merge_patient called on them have
-    # already been reloaded.
-    # Other patients who have new merged MRNs need to be reloaded
-    # to add in upstream data from the new merged MRN.
-    patients_to_reload = set(i.patient for i in merged_mrns_to_create)
-    for patient in list(patients_to_reload):
-        loader.load_patient(patient)
 
 def get_masterfile_row(mrn):
     """
