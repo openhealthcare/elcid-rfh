@@ -137,3 +137,23 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
 
     class Meta:
         verbose_name = 'IPC Portal Status'
+
+
+class SideroomStatus(PreviousMRN, PatientSubrecord):
+
+    _is_singleton = True
+    _icon = 'fa fa-hospital-o'
+
+    RISKS = enum(
+        '15', '20', '25', '30', '35', '40', '45', '50'
+    )
+
+    # A current risk score for this patient to enable prioritisation
+    # in a resource-constrained environment
+    risk_score = models.CharField(
+        max_length=5, blank=True, null=True, choices=RISKS
+    )
+    # Infections relevant to this admission, but not of permanant note
+    admission_organism = models.TextField(blank=True, null=True)
+    # notes on current tasks and actions that may be required
+    actions = models.TextField(blank=True, null=True)

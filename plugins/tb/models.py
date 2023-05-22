@@ -3,6 +3,8 @@ Models for tb
 """
 import datetime
 from django.db import models as fields
+from django.db.models import Max
+
 from elcid.models import PreviousMRN
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
@@ -687,6 +689,45 @@ class AbstractTBObservation(fields.Model):
     class Meta:
         abstract = True
 
+    def to_dict(self):
+        # For the purposes of TB results we care about the recent
+        # TB MDT period - so if it is since the last Tuesday
+        start_date = datetime.date.today()
+        for i in range(7):
+            start_date = start_date - datetime.timedelta(i)
+            if start_date.isoweekday() == 3:
+                break
+
+        if self.reported_datetime is None:
+            recently = False
+        else:
+            recently = self.reported_datetime.date() >= start_date
+
+            episode = self.patient.episode_set.get(category_name='TB')
+            mdt_reason = models.PatientConsultationReasonForInteraction.objects.get(
+                name='MDT meeting')
+            mdts = episode.patientconsultation_set.filter(
+                reason_for_interaction_fk=mdt_reason.pk
+            )
+            if mdts.exists():
+                max_mdt = mdts.order_by('-when').first().when
+                if self.reported_datetime < max_mdt:
+                    recently = False
+
+
+        return {
+            'value'               : self.value,
+            'site'                : self.site,
+            'lab_number'          : self.lab_number,
+            'test_name'           : self.test_name,
+            'observation_datetime': self.observation_datetime,
+            'reported_datetime'   : self.reported_datetime,
+            'reported_recently'   : recently,
+            'pending'             : self.pending,
+            'positive'            : self.positive,
+            'display_value'       : self.display_value()
+        }
+
 
 class AFBSmear(AbstractTBObservation):
     OBSERVATION_NAME = 'AFB Smear'
@@ -731,6 +772,11 @@ class AFBSmear(AbstractTBObservation):
             if microscopy_date:
                 new_model.date_of_microscopy = microscopy_date
         return new_model
+
+    def to_dict(self):
+        data = super().to_dict()
+        data['date_of_microscopy'] = self.date_of_microscopy
+        return data
 
 
 class AFBCulture(AbstractTBObservation):
@@ -795,6 +841,14 @@ class AFBCulture(AbstractTBObservation):
         ])
         return val.replace(to_remove, "").strip()
 
+    def to_dict(self):
+        data = super().to_dict()
+        data['date_of_culture_result'] = self.date_of_culture_result
+        data['tb_comment'] = self.tb_comment
+        data['tb_clinical_comment'] = self.tb_clinical_comment
+        return data
+
+
 
 class AFBRefLab(AbstractTBObservation):
     OBSERVATION_NAME = 'TB Ref. Lab. Culture result'
@@ -855,6 +909,13 @@ class AFBRefLab(AbstractTBObservation):
             'R = resistant',
         ])
         return val.replace(to_remove, "").strip()
+
+    def to_dict(self):
+        data = super().to_dict()
+        data['date_of_ref_lab_string'] = self.date_of_ref_lab_string
+        data['comment'] = self.comment
+        return data
+
 
 
 class TBPCR(AbstractTBObservation):
