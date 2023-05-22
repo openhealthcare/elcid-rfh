@@ -690,7 +690,7 @@ class AbstractTBObservation(fields.Model):
         # For the purposes of TB results we care about the recent
         # TB MDT period - so if it is since the last Tuesday
         start_date = datetime.date.today()
-        for i in range(40, 47):
+        for i in range(7):
             start_date = start_date - datetime.timedelta(i)
             if start_date.isoweekday() == 3:
                 break
