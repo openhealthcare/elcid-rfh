@@ -251,7 +251,8 @@ class MergeException(Exception):
 class CernerPatientNotFoundException(Exception):
     pass
 
-def mrn_in_elcid(mrn):
+
+def is_mrn_in_elcid(mrn):
     """
     Returns True if the MRN is in Demographics.hospital_number
     or MergedMRN.mrn fields
@@ -298,8 +299,8 @@ def get_or_create_active_patient(active_mrn):
             elcid_episode_categories.InfectionService,
             run_async=False
         )
-    return active_patient   
-    
+    return active_patient
+
 def check_and_handle_upstream_merges_for_mrns(mrns):
     """
     Given a list of MRNs that have been recently updated,
@@ -307,32 +308,32 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
     filters out any not in the elCID cohort.
 
     If they are in the elCID cohort, make the active MRN
-    an elCID patient, and save the upstream identifier 
+    an elCID patient, and save the upstream identifier
     merge graph to our models.
-   
+
     If required, merge elCID patients.
     """
     mrn_to_upstream_merge_data = get_mrn_to_upstream_merge_data()
     mrns_seen = set()
-    active_patients_merged = set() # We won't want to reload them later    
+    active_patients_merged = set() # We won't want to reload them later
     merged_mrns_to_create = []
-    
+
     for mrn in mrns:
         active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(
             mrn, mrn_to_upstream_merge_data
         )
         if active_mrn in mrns_seen:
-        # The list passed into this function potentially contains all nodes in a merge graph            
+        # The list passed into this function potentially contains all nodes in a merge graph
             continue
         mrns_seen.add(active_mrn)
-        
-        if not mrn_in_elcid(active_mrn):
-            if not any(mrn_in_elcid(i['mrn']) for i in merged_dicts):
-                continue # no node in this graph is part of the elCID cohort        
-                
+
+        if not is_mrn_in_elcid(active_mrn):
+            if not any(is_mrn_in_elcid(i['mrn']) for i in merged_dicts):
+                continue # no node in this graph is part of the elCID cohort
+
         active_patient = get_or_create_active_patient(active_mrn)
 
-        # Do we have to perform any merges our side? 
+        # Do we have to perform any merges our side?
         merged_mrns = [i["mrn"] for i in merged_dicts]
         unmerged_patients = Patient.objects.filter(
             demographics__hospital_number__in=merged_mrns
@@ -343,7 +344,7 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                 new_patient=active_patient
             )
             active_patients_merged.add(active_patient)
-                
+
         # Our copy of the merge graph
         for merged_dict in merged_dicts:
             if not models.MergedMRN.objects.filter(mrn=merged_dict['mrn']).exists():
@@ -354,10 +355,10 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
                         **merged_dict
                     )
                 )
-                
+
     if(len(merged_mrns_to_create)) > MERGED_MRN_COUNT_EMAIL_THRESHOLD:
         send_to_many_merged_mrn_email(len(merged_mrns_to_create))
-        
+
     models.MergedMRN.objects.bulk_create(merged_mrns_to_create)
     logger.info(f'Saved {len(merged_mrns_to_create)} merged MRNs')
 

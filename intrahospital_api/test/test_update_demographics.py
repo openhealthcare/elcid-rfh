@@ -479,14 +479,14 @@ class MRNInElcidTestCase(OpalTestCase):
 
     def test_in_demographics(self):
         self.patient.demographics_set.update(hospital_number="123")
-        self.assertTrue(update_demographics.mrn_in_elcid("123"))
+        self.assertTrue(update_demographics.is_mrn_in_elcid("123"))
 
     def test_in_merged_mrn(self):
         self.patient.mergedmrn_set.create(mrn="123")
-        self.assertTrue(update_demographics.mrn_in_elcid("123"))
+        self.assertTrue(update_demographics.is_mrn_in_elcid("123"))
 
     def test_in_neither(self):
-        self.assertFalse(update_demographics.mrn_in_elcid("123"))
+        self.assertFalse(update_demographics.is_mrn_in_elcid("123"))
 
 
 @mock.patch("intrahospital_api.update_demographics.get_mrn_to_upstream_merge_data")
