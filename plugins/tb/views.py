@@ -717,7 +717,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
         location = ""
         status = patient.bedstatus.first()
         if status:
-            location = status.to_location_str()
+            # location = status.to_location_str()
+            pass
 
         return {
             "episode": episode,
