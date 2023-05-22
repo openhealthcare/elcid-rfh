@@ -28,6 +28,7 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/mantoux_test.js',
             'js/tb/controllers/add_episode_helper.js',
             'js/tb/controllers/tb_date_helper.js',
+            'js/tb/controllers/tb_mdt_no_action.js',
             # 'js/tb/services/larry.js',
         ],
         'opal.services': [
@@ -40,4 +41,5 @@ class TbPlugin(plugins.OpalPlugin):
         ('tb_test_summary', api.TbTestSummary,),
         (api.TbTests.basename, api.TbTests,),
         (api.TBAppointments.basename, api.TBAppointments,),
+        (api.TBMDTNoAction.basename, api.TBMDTNoAction),
     ]

@@ -59,6 +59,15 @@
             <i class="fa fa-external-link" aria-hidden="true"></i>
           </a>
           </span>
+
+          <p>
+            <a class="btn btn-secondary content-offset pointer"
+               ng-click="open_modal('TBMDTNoActionCtrl', 'templates/tb/mdt_no_action_modal.html', {patient_id: {{row.demographics.patient_id}} })"
+               >
+              <i class="fa fa-comment"></i> No action
+            </a>
+          </p>
+
         </td>
         <td>
           <div

@@ -3,6 +3,8 @@ Models for tb
 """
 import datetime
 from django.db import models as fields
+from django.db.models import Max
+
 from elcid.models import PreviousMRN
 from opal.core.fields import ForeignKeyOrFreeText
 from opal.core import lookuplists
@@ -688,12 +690,27 @@ class AbstractTBObservation(fields.Model):
         # For the purposes of TB results we care about the recent
         # TB MDT period - so if it is since the last Tuesday
         start_date = datetime.date.today()
-        for i in range(7):
-            start_date = start_date - datetime.timedelta(1)
+        for i in range(40, 47):
+            start_date = start_date - datetime.timedelta(i)
             if start_date.isoweekday() == 3:
                 break
 
-        recently = self.reported_datetime.date() >= start_date
+        if self.reported_datetime is None:
+            recently = False
+        else:
+            recently = self.reported_datetime.date() >= start_date
+
+            episode = self.patient.episode_set.get(category_name='TB')
+            mdt_reason = models.PatientConsultationReasonForInteraction.objects.get(
+                name='MDT meeting')
+            mdts = episode.patientconsultation_set.filter(
+                reason_for_interaction_fk=mdt_reason.pk
+            )
+            if mdts.exists():
+                max_mdt = mdts.order_by('-when').first().when
+                if self.reported_datetime < max_mdt:
+                    recently = False
+
 
         return {
             'value'               : self.value,
