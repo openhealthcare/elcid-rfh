@@ -4,11 +4,16 @@ Specific API endpoints for the TB module
 import re
 import datetime
 from collections import defaultdict
+
+from django.utils import timezone
 from opal.core.views import json_response
 from opal.core.api import patient_from_pk, LoginRequiredViewset
+from rest_framework import status
+
 from plugins.tb.utils import get_tb_summary_information
 from plugins.tb import models
 from plugins.tb import constants
+from plugins.tb.episode_categories import TbEpisode as TBEpisode
 from plugins.appointments import models as appointment_models
 from plugins.labtests import models as lab_models
 
@@ -223,4 +228,22 @@ class TBAppointments(LoginRequiredViewset):
             "todays_appointments": todays_appointments,
             "next_appointment": next_appointment,
             "last_appointments": last_appointments,
+        })
+
+
+class TBMDTNoAction(LoginRequiredViewset):
+    basename = 'tb_mdt_no_action'
+
+    @patient_from_pk
+    def update(self, request, patient):
+        episode = patient.episode_set.get(category_name=TBEpisode.display_name)
+        note = models.PatientConsultation(
+            episode=episode,
+            reason_for_interaction='MDT meeting',
+            when=timezone.now(),
+            initials="MDT",
+            plan="Results reviewed, no further action required."
+        ).save()
+        return json_response({
+            'status_code': status.HTTP_202_ACCEPTED
         })
