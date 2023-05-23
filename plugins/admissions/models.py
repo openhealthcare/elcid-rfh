@@ -357,6 +357,23 @@ class BedStatus(models.Model):
     def is_side_room(self):
         return self.room.startwith('SR')
 
+    def to_location_str(self):
+            """
+            A human readable location,
+
+            returns f"{hospital_site_description} {ward_name} {room} {bed}"
+            removing fields that are empty or None
+            """
+            result = []
+            for field in [
+                "hospital_site_description", "ward_name", "room", "bed"
+            ]:
+                field_str = getattr(self, field)
+                if field_str is not None and len(field_str):
+                    result.append(field_str)
+            return " ".join(result)
+
+
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'Facility'                      : 'facility',
         'Building'                      : 'building',
