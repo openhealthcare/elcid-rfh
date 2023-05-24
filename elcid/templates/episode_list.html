@@ -64,7 +64,7 @@
         <p class="lead text-center">
           There are no patients on this list.
         </p>
-        {% if not patient_list.is_read_only %}
+        {% if not patient_list.is_read_only and not request.user.profile.readonly %}
         <p class="lead text-center">
           <span class="screen-only">
             Would you like to <a href="/pathway/#/add_patient">add one</a>?
