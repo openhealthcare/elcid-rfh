@@ -29,7 +29,9 @@
   <div class="col-md-6">
     {% include "partials/tb_appointments.html" %}
     {% include "partials/tb_summary_tests.html" %}
-    {% include "inline_forms/patient_consultation.html" %}
+    {% if not request.user.profile.readonly %}
+      {% include "inline_forms/patient_consultation.html" %}
+    {% endif %}
     <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
       <div class="panel-body">
         <div class="patient-timeline-container">
