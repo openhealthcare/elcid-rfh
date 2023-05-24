@@ -151,11 +151,13 @@
                     </div>
                     <div class="col-sm-2">
                       <div class="row">
+                        {% if not user.profile.readonly %}
                         <div class="col-md-12">
                           <i class="fa fa-pencil edit pull-right pointer" ng-click="clinicalTimeline.editItem(item)"></i>
                         </div>
                       </div>
                       <div class="row content-offset-10">
+                        {% endif %}
                         <div class="col-md-12">
                           <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".timeline-data-[[ $index ]]"></i>
                         </div>
