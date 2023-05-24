@@ -35,8 +35,8 @@ class LoadIPCTestCase(OpalTestCase):
         self.assertEqual(ipc_status.comments, "A comment")
 
     @patch('plugins.ipc.management.commands.load_ipc_status.ProdAPI')
-    @patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
-    def test_creates_patient(self, create_rfh_patient_from_hospital_number, ProdAPI):
+    @patch('intrahospital_api.loader.get_or_create_patient')
+    def test_creates_patient(self, get_or_create_patient, ProdAPI):
         ProdAPI.return_value.execute_hospital_query.return_value = [self.upstream_row]
         self.upstream_row["Patient_Number"] = "234"
         def create_patient():
@@ -46,7 +46,7 @@ class LoadIPCTestCase(OpalTestCase):
             episode.save()
             return patient
 
-        create_rfh_patient_from_hospital_number.side_effect = lambda x, y: create_patient()
+        get_or_create_patient.side_effect = lambda x, y: (create_patient(), True,)
         self.cmd.handle()
         self.assertTrue(
             Patient.objects.filter(
