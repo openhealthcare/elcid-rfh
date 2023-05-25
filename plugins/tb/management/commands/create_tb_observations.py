@@ -17,8 +17,8 @@ TB_OBSERVATIONS = [models.TBPCR, models.AFBSmear, models.AFBCulture, models.AFBR
 
 
 @transaction.atomic
-def populate_tests(since):
-    labtests_obs_qs = Observation.objects.filter(last_updated__gte=since)
+def populate_tests():
+    labtests_obs_qs = Observation.objects.all()
 
     for tb_obs_model in TB_OBSERVATIONS:
         labtests_tb_obs_qs = labtests_obs_qs.filter(
@@ -47,9 +47,8 @@ def populate_tests(since):
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        three_days_ago = timezone.now() - datetime.timedelta(3)
         start = time.time()
-        populate_tests(three_days_ago)
+        populate_tests()
         end_populate = time.time()
         logger.info(
             f"Creating TB observations: Finished creating TB tests in {end_populate-start}s"

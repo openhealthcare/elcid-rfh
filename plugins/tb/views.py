@@ -584,7 +584,8 @@ class MDTList(LoginRequiredMixin, TemplateView):
             result.append(
                 self.patient_to_row(
                     patient,
-                    patient_id_to_obs[patient.id],
+                    #patient_id_to_obs[patient.id],
+                    [],
                     patient_id_to_consultations[patient.id]
                 )
             )
@@ -713,10 +714,15 @@ class MDTList(LoginRequiredMixin, TemplateView):
         timeline = obs + notes + appointments
         timeline = sorted(timeline, key=lambda x: x[0], reverse=True)
 
+        location = ""
+        status = patient.bedstatus.first()
+        if status:
+            location = status.to_location_str()
         return {
             "episode": episode,
             "demographics": demographics,
             "timeline": timeline,
+            "location": location,
         }
 
     def get_context_data(self, *args, **kwargs):

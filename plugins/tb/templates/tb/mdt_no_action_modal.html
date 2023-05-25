@@ -1,0 +1,24 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block icon_name %}fa fa-comment{% endblock %}
+{% block title %}No action for this patient ([[ name ]]){% endblock %}
+
+{% block modal_body%}
+<div class="row">
+  <div class="col-md-8 col-md-offset-2" >
+    <p class="lead">
+      <span class="bold">No action required</span> for [[ name ]]
+    </p>
+    <p class="lead"> A MDT note will be written for this patient, stating that no action was required at this time.</p>
+    <div class="row text-center">
+      <button class="btn btn-primary btn-save text-center" ng-click="no_action()">
+        <i class="fa fa-pencil"></i> Write
+      </button>
+    </div>
+
+    </p>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block modal_save %}{% endblock %}

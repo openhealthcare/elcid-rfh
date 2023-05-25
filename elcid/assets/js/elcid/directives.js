@@ -31,7 +31,12 @@ directives.directive('patientApi', function($http, $window){
         link: function(scope, element, attrs){
             var endpoint = attrs.endpoint;
             var target   = attrs.target;
-            var url = '/api/v0.1/' + endpoint + '/' + '' + scope.patient.id + '' + '/';
+            if (attrs.patientId){
+                var patient_id = scope.$eval(attrs.patientId);
+            }else{
+                var patient_id = scope.patient.id;
+            }
+            var url = '/api/v0.1/' + endpoint + '/' + '' + patient_id + '' + '/';
             if(attrs.getParams){
               var getParams = scope.$eval(attrs.getParams);
               url += '?' + $.param(getParams);
