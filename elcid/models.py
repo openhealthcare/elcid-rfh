@@ -427,6 +427,12 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
             ).first()
             if micro_input:
                 micro_input.delete_self()
+
+        if data.get("reason_for_interaction") == self.ANTIFUNGAL_STEWARDSHIP_ROUND:
+            self.episode.patient.chronicantifungal_set.create(
+                reason=ChronicAntifungal.REASON_TO_INTERACTION
+            )
+
         return result
 
     def delete(self):
@@ -441,17 +447,6 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
     class Meta:
         verbose_name = "Clinical Advice"
         verbose_name_plural = "Clinical Advice"
-
-# method for updating
-@receiver(post_save, sender=MicrobiologyInput)
-def update_chronic_antifungal_reason_for_interaction(
-    sender, instance, **kwargs
-):
-    asr = MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
-    if instance.reason_for_interaction == asr:
-        instance.episode.patient.chronicantifungal_set.create(
-            reason=ChronicAntifungal.REASON_TO_INTERACTION
-        )
 
 
 class Line(PreviousMRN, EpisodeSubrecord):

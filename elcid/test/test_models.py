@@ -502,6 +502,40 @@ class MicrobiologyInputTestCase(OpalTestCase):
         self.assertFalse(emodels.ICURound.objects.all().exists())
         self.assertFalse(emodels.MicrobiologyInput.objects.all().exists())
 
+    def test_update_from_dicts_with_antifungal_reason(self):
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'Antifungal stewardship ward round',
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(episode=self.episode)
+        micro_input.update_from_dict(update_dict, self.user)
+        self.assertTrue(
+            self.patient.chronicantifungal_set.filter(
+                reason=emodels.ChronicAntifungal.REASON_TO_INTERACTION
+            ).exists()
+        )
+
+    def test_update_from_dicts_without_antifungal_reason(self):
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'TB initial assessment',
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(episode=self.episode)
+        micro_input.update_from_dict(update_dict, self.user)
+        self.assertFalse(
+            self.patient.chronicantifungal_set.filter(
+                reason=emodels.ChronicAntifungal.REASON_TO_INTERACTION
+            ).exists()
+        )
+
 
 class DiagnosisTest(OpalTestCase, AbstractEpisodeTestCase):
 
@@ -641,19 +675,3 @@ class ChronicAntifungalTestCase(OpalTestCase):
         self.assertEqual(
             list(emodels.ChronicAntifungal.antifungal_episodes()), []
         )
-
-    def test_signals_with_antifungal_reason(self):
-        self.episode.microbiologyinput_set.create(
-            reason_for_interaction=emodels.MicrobiologyInput.ANTIFUNGAL_STEWARDSHIP_ROUND
-        )
-        self.assertTrue(
-            self.patient.chronicantifungal_set.filter(
-                reason=emodels.ChronicAntifungal.REASON_TO_INTERACTION
-            ).exists()
-        )
-
-    def test_signals_without_antifungal_reason(self):
-        self.episode.microbiologyinput_set.create(
-            reason_for_interaction="something"
-        )
-        self.assertFalse(self.patient.chronicantifungal_set.exists())

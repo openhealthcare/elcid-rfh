@@ -21,7 +21,7 @@
       [[ culture[0].observation_datetime | displayDate ]]
       [[ culture[0].site ]]
       <div ng-class="{'text-muted': !observation.positive}" class="left-offset-20" ng-repeat="observation in culture">
-        <span ng-class="{'text-strong': observation.reported_recently && observation.positive}">
+        <span ng-class="{'bold': observation.reported_recently && observation.positive}">
           [[ observation.reported_datetime | displayDate ]]
         </span>
 
