@@ -429,7 +429,7 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
                 micro_input.delete_self()
 
         if data.get("reason_for_interaction") == self.ANTIFUNGAL_STEWARDSHIP_ROUND:
-            omodels.Episode.objects.get(id=data['episode_id']).patient.chronicantifungal_set.create(
+            self.episode.patient.chronicantifungal_set.create(
                 reason=ChronicAntifungal.REASON_TO_INTERACTION
             )
 
