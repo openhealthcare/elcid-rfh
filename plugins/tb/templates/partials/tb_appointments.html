@@ -61,6 +61,7 @@
         >
           TB Review Patients
         </a>
+        {% if not request.user.profile.readonly %}
         <button
           ng-hide="episode.tagging[0].tb_review_patients"
           ng-click="open_modal('AddRemoveTagCtrl', '/templates/modals/add_remove_tag.html', {episode: episode, tagName: 'tb_review_patients', tagDisplayName: 'TB Review Patients', addTag: true})"
@@ -77,6 +78,7 @@
           <i class="fa fa-sign-out"></i>
           Remove
         </button>
+        {% endif %}
       </div>
     </div>
   </div>
