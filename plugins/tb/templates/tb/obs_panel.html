@@ -2,8 +2,10 @@
   <div class="panel-heading">
     <h3>
       <i class="fa fa-line-chart"></i> Observations
+      {% if not request.user.profile.readonly %}
       <i class="fa fa-plus-circle edit pull-right"
          ng-click="episode.recordEditor.newItem('observation')"></i>
+      {% endif %}
     </h3>
   </div>
   <table
@@ -28,9 +30,11 @@
         <td>[[ob.sp02]]</td>
         <td>[[ob.temperature]]</td>
         <td>
+          {% if not request.user.profile.readonly %}
           <i
             class="fa fa-pencil edit pull-right pointer"
             ng-click="episode.recordEditor.editItem('observation', ob)"></i>
+          {% endif %}
         </td>
       </tr>
     </tbody>

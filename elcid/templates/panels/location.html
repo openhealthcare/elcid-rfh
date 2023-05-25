@@ -3,7 +3,9 @@
     <div class="panel-heading">
       <h3>
         <i class="{{ models.Location.get_icon }}"></i> {{ models.Location.get_display_name }}
+        {% if not request.user.profile.readonly %}
         <i class="fa fa-plus-circle edit pull-right pointer" ng-click="parent.recordEditor.newItem('{{ models.Location.get_api_name }}')"></i>
+        {% endif %}
       </h3>
     </div>
     <ul ng-show='location.hospital || location.ward || location.bed || location.provenance' ng-repeat='location in [parent.location[0]]' class="list-group">
@@ -13,7 +15,9 @@
           {% include models.Location.get_detail_template %}
           </div>
           <div class="col-md-3">
+            {% if not request.user.profile.readonly %}
             <i class="fa fa-pencil edit pull-right pointer" ng-click="parent.recordEditor.editItem('{{ models.Location.get_api_name }}', item)"></i>
+            {% endif %}
           </div>
         </div>
       </li>
