@@ -11,6 +11,7 @@
     <div class="panel-heading">
       <h3>
         <i class="{{ icon }}"></i> {{ title }}
+        {% if not request.user.profile.readonly %}
         <span ng-show="{{ editable }}" >
             {% if singleton %}
             <i class="fa fa-pencil edit pull-right pointer"
@@ -20,6 +21,7 @@
                ng-click="parent.recordEditor.newItem('{{ name }}')"></i>
             {% endif %}
        </span>
+       {% endif %}
       </h3>
     </div>
     <ul class="list-group">
@@ -34,12 +36,14 @@
           {% include detail_template %}
         </div>
         <div class="col-md-{% block actions_width %}3{% endblock %}">
+          {% if not request.user.profile.readonly %}
           <span ng-show="{{ editable }}" >
               {% if not singleton %}
               <i class="fa fa-pencil edit pull-right pointer"
                  ng-click="parent.recordEditor.editItem('{{ name }}', item)"></i>
               {% endif %}
           </span>
+          {% endif %}
         </div>
         {% endif %}
         </div>
