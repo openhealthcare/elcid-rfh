@@ -505,15 +505,6 @@ class Imaging(PreviousMRN, EpisodeSubrecord):
     details      = models.TextField(blank=True, null=True)
 
 
-class PositiveBloodCultureHistory(PreviousMRN, PatientSubrecord):
-    when = models.DateTimeField(default=timezone.now)
-
-    @classmethod
-    def _get_field_default(cls, name):
-        # this should not be necessary...
-        return None
-
-
 class ReferralReason(lookuplists.LookupList):
     pass
 
@@ -696,19 +687,6 @@ class ChronicAntifungal(models.Model):
         ).filter(
             category_name=InfectionService.display_name
         ).distinct()
-
-
-# method for updating
-@receiver(post_save, sender=omodels.Tagging)
-def record_positive_blood_culture(sender, instance, **kwargs):
-    from elcid.patient_lists import Bacteraemia
-
-    if instance.value == Bacteraemia.tag:
-        pbch, _ = PositiveBloodCultureHistory.objects.get_or_create(
-            patient_id=instance.episode.patient.id
-        )
-        pbch.when = timezone.now()
-        pbch.save()
 
 
 class InotropicDrug(lookuplists.LookupList):

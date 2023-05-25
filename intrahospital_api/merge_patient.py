@@ -37,7 +37,6 @@ PATIENT_RELATED_MODELS = [
     elcid_models.BloodCultureSet,
     elcid_models.ChronicAntifungal,
     elcid_models.GP,
-    elcid_models.PositiveBloodCultureHistory,
     elcid_models.RiskFactor,
     handover_models.AMTHandover,
     handover_models.NursingHandover,

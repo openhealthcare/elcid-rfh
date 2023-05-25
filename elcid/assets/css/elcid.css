@@ -1,6 +1,6 @@
 body {
   background-color: #EEE;
-  height: calc(100%);
+  height: 100%;
 }
 
 .text-strong {
@@ -143,8 +143,7 @@ h5 {
 /* ngProgress overrides */
 .ngProgressLiteBar {
   background-color: #D36C08;
-  box-shadow: 0 0 10px 0;
-  /* Inherits the font color */
+  box-shadow: 0 0 10px 0; /* Inherits the font color */
 }
 
 .smpl-step > .smpl-step-step > .progress > .progress-bar {
@@ -197,7 +196,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   font-size: 1.1em;
 }
 
-/*# sourceMappingURL=elcid.css.map */
+
 .label-warning {
   background-color: #A03110;
 }
@@ -439,7 +438,7 @@ div.add-isolate:hover {
 }
 
 .left-menu {
-  background-color: #4676c5;
+  background-color: rgb(70, 118, 197);
   color: #FFF;
   width: 10%;
   float: left;
@@ -498,7 +497,7 @@ div.add-isolate:hover {
 }
 
 .patientlist-list:hover::-webkit-scrollbar-track, .touchevents .patientlist-list::-webkit-scrollbar-track {
-  background-color: #4676c5;
+  background-color: rgb(70, 118, 197);
 }
 
 .patientlist-list::-webkit-scrollbar {
@@ -507,7 +506,7 @@ div.add-isolate:hover {
 }
 
 .patientlist-list:hover::-webkit-scrollbar, .touchevents .patientlist-list::-webkit-scrollbar {
-  background-color: #4676c5;
+  background-color: rgb(70, 118, 197);
 }
 
 .patientlist-list::-webkit-scrollbar-thumb {
@@ -632,6 +631,4 @@ div.add-isolate:hover {
 
 h1 small a {
   font-size: 14px;
-}
-
-/*# sourceMappingURL=elcid.css.map */
+}/*# sourceMappingURL=elcid.css.map */
