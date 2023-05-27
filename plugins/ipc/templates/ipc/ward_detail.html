@@ -38,6 +38,7 @@
           {% if patient.isSideRoom %}1{% else %}0{% endif %}
         )">
           <span ng-hide='isolationHelper.isSideRoom'>
+            {% if not request.user.profile.readonly %}
             <span ng-show='isolationHelper.isolated_bed_id'>
               <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
                 Isolation
@@ -48,6 +49,7 @@
                 Add to isolation
               </button>
             </span>
+            {% endif %}
           </span>
         </span>
       </td>
