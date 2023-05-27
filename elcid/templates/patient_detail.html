@@ -21,8 +21,10 @@
       <h3>
         <i class="fa fa-history"></i>
         Services
+        {% if not request.user.profile.readonly %}
         <i class="fa fa-plus-circle edit pull-right pointer"
            ng-click="open_modal('AddToServiceCtrl', '/templates/add_to_service_modal.html', {profile:profile, patient: patient, refresh:refresh})"></i>
+        {% endif %}
       </h3>
     </div>
     <div class="list-group">
