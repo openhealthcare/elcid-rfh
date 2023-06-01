@@ -5,7 +5,7 @@ from django.utils import timezone
 from opal.core.test import OpalTestCase
 from elcid import episode_categories
 from intrahospital_api import models as imodels
-from intrahospital_api import loader
+from intrahospital_api import loader, update_demographics
 from plugins.labtests import models as lab_test_models
 from plugins.tb import episode_categories as tb_episode_categories
 
@@ -110,27 +110,34 @@ class LogErrorsTestCase(ApiTestCase):
 class LoadDemographicsTestCase(ApiTestCase):
 
     @mock.patch.object(loader.api, 'demographics')
-    def test_success(self, demographics):
+    @mock.patch('intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data')
+    def test_success(self, get_active_mrn_and_merged_mrn_data, demographics):
         demographics.return_value = "success"
-        result = loader.load_demographics("some_hospital_number")
+        get_active_mrn_and_merged_mrn_data.return_value = ("some_hospital_number", [],)
+        result = loader.search_upstream_demographics("some_hospital_number")
         demographics.assert_called_once_with("some_hospital_number")
+        get_active_mrn_and_merged_mrn_data.assert_called_once_with("some_hospital_number")
         self.assertEqual(result, "success")
 
     @mock.patch.object(loader.api, 'demographics')
     @mock.patch.object(loader.logger, 'info')
     @mock.patch('intrahospital_api.loader.log_errors')
-    def test_failed(self, log_err, info, demographics):
+    @mock.patch('intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data')
+    def test_failed(self, get_active_mrn_and_merged_mrn_data, log_err, info, demographics):
         demographics.side_effect = ValueError("Boom")
+        get_active_mrn_and_merged_mrn_data.return_value = ("some_hospital_number", [],)
         demographics.return_value = "success"
-        loader.load_demographics("some_hospital_number")
+        loader.search_upstream_demographics("some_hospital_number")
         self.assertEqual(info.call_count, 1)
-        log_err.assert_called_once_with("load_demographics")
+        log_err.assert_called_once_with("search_upstream_demographics")
 
     @override_settings(
         INTRAHOSPITAL_API='intrahospital_api.apis.dev_api.DevApi'
     )
-    def test_integration(self):
-        result = loader.load_demographics("some_number")
+    @mock.patch('intrahospital_api.loader.update_demographics.get_active_mrn_and_merged_mrn_data')
+    def test_integration(self, get_active_mrn_and_merged_mrn_data):
+        get_active_mrn_and_merged_mrn_data.return_value = ("some_number", [],)
+        result = loader.search_upstream_demographics("some_number")
         self.assertTrue(isinstance(result, dict))
 
 
@@ -245,6 +252,12 @@ class AsyncLoadPatientTestCase(ApiTestCase):
         log_errors.assert_called_once_with("_load_patient")
         self.assertEqual(str(ve.exception), "Boom")
 
+    def test_no_patient(self, load_patient, log_errors):
+        result = loader.async_load_patient(self.patient.id+1, self.patient_load.id+1)
+        self.assertIsNone(result)
+        self.assertFalse(load_patient.called)
+        self.assertFalse(log_errors.called)
+
 
 class UpdatePatientFromBatchTestCase(ApiTestCase):
     def setUp(self, *args, **kwargs):
@@ -330,6 +343,28 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
         self.assertEqual(str(v.exception), expected)
         self.assertFalse(load_patient.called)
 
+    def test_erors_if_the_hospital_number_is_already_assigned(self, load_patient):
+        """
+        The MRN is already in use by a patient
+        """
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(
+            hospital_number="111"
+        )
+        patient.mergedmrn_set.create(
+            mrn="111"
+        )
+        with self.assertRaises(ValueError) as v:
+            loader.create_rfh_patient_from_hospital_number(
+                '111', episode_categories.InfectionService
+            )
+        self.assertEqual(
+            str(v.exception),
+            "A patient with MRN 111 already exists"
+        )
+        self.assertFalse(load_patient.called)
+
+
     def test_errors_if_the_hospital_number_has_already_been_merged(self, load_patient):
         """
         The MRN has already been merged, raise a Value Error
@@ -344,7 +379,7 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             )
         self.assertEqual(
             str(v.exception),
-            "MRN has already been merged into another MRN"
+            "MRN 111 has already been merged into another MRN"
         )
         self.assertFalse(load_patient.called)
 
@@ -389,12 +424,14 @@ class CreateRfhPatientFromHospitalNumberTestCase(OpalTestCase):
             patient.mergedmrn_set.filter(
                 mrn="123",
                 merge_comments=MERGED_MRN_DATA[0]["merge_comments"],
+                our_merge_datetime__isnull=False
             ).exists()
         )
         self.assertTrue(
             patient.mergedmrn_set.filter(
                 mrn="234",
                 merge_comments=MERGED_MRN_DATA[1]["merge_comments"],
+                our_merge_datetime__isnull=False
             ).exists()
         )
         self.assertTrue(load_patient.called)
@@ -503,23 +540,20 @@ class GetOrCreatePatientTestCase(OpalTestCase):
         create_rfh_patient_from_hospital_number.assert_called_once_with(
             '123',
             episode_categories.InfectionService,
-            run_async=None,
-            rfh_patient=True
+            run_async=None
         )
         self.assertEqual(self.patient, patient)
         self.assertTrue(created)
 
     @mock.patch('intrahospital_api.loader.create_rfh_patient_from_hospital_number')
-    def test_create_new_non_patient(self, create_rfh_patient_from_hospital_number):
-        create_rfh_patient_from_hospital_number.return_value = self.patient
+    @mock.patch('intrahospital_api.loader.logger')
+    def test_when_patient_not_found_in_rfh(self, logger, create_rfh_patient_from_hospital_number):
+        create_rfh_patient_from_hospital_number.side_effect = update_demographics.CernerPatientNotFoundException('Unable to find a masterfile row for 123')
         patient, created = loader.get_or_create_patient(
-            '123', episode_categories.InfectionService, rfh_patient=False
+            '123', episode_categories.InfectionService
         )
-        create_rfh_patient_from_hospital_number.assert_called_once_with(
-            '123',
-            episode_categories.InfectionService,
-            run_async=None,
-            rfh_patient=False
-        )
-        self.assertEqual(self.patient, patient)
         self.assertTrue(created)
+        self.assertEqual(patient.demographics_set.get().hospital_number, "123")
+        logger.info.assert_called_once_with(
+            "Unable to find MRN 123 in Cerner, creating the patient without the upstream data"
+        )

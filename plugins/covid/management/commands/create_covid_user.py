@@ -25,6 +25,11 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
 
         email = kwargs['email']
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user is not None:
+            raise ValueError(
+                f"Email is currently in use by {existing_user.username}"
+            )
         username, _ = email.split('@')
 
         user = User(username=username)

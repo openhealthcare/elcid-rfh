@@ -397,22 +397,6 @@ class DevApi(base_api.BaseApi):
         else:
             return random_result - deviation
 
-    def cooked_data(self, hospital_number):
-        rows = []
-        demographics = self.demographics(hospital_number)
-        results = self.results_for_hospital_number(hospital_number)
-        for result in results:
-            for obs in result["observations"]:
-                row = {}
-                row.update(
-                    {i: v for i, v in obs.items() if i != 'observations'}
-                )
-                row.update(obs)
-                row.update(demographics)
-                rows.append(row)
-
-        return rows
-
     def create_observation_dict(
         self,
         test_base_observation_name,

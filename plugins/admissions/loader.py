@@ -100,29 +100,27 @@ def cast_to_encounter(encounter, patient):
 
 
 def update_encounters_from_query_result(rows):
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+    rows = [i for i in rows if is_valid_mrn(i['PID_3_MRN'])]
     upstream_ids = [i['ID'] for i in rows]
     existing_encounters = Encounter.objects.filter(upstream_id__in=upstream_ids)
     existing_encounters_count = existing_encounters.count()
     logger.info(f'{existing_encounters_count} existing encounters will be removed')
-    mrns = [i['PID_3_MRN'].strip() for i in rows if i['PID_3_MRN'].strip()]
-    patients = Patient.objects.filter(
-        demographics__hospital_number__in=mrns
-    ).prefetch_related('demographics_set')
-
-    mrn_to_patients = defaultdict(list)
-    for patient in patients:
-        mrn_to_patients[patient.demographics_set.all()[0].hospital_number].append(
-            patient
-        )
-
-    to_create = []
+    mrns = [i['PID_3_MRN'] for i in rows]
+    mrn_to_patients = find_patients_from_mrns(mrns)
+    encounters_to_create = []
     for row in rows:
-        for patient in mrn_to_patients[row['PID_3_MRN'].strip()]:
-            to_create.append(cast_to_encounter(row, patient))
-    logger.info(f'Creating {len(to_create)} encounters')
-    Encounter.objects.bulk_create(to_create, batch_size=500)
+        mrn = row['PID_3_MRN']
+        if mrn not in mrn_to_patients:
+            mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(
+                mrn, InfectionService
+            )
+        patient = mrn_to_patients[mrn]
+        encounters_to_create.append(cast_to_encounter(row, patient))
+    logger.info(f'Creating {len(encounters_to_create)} encounters')
+    Encounter.objects.bulk_create(encounters_to_create, batch_size=500)
     PatientEncounterStatus.objects.filter(
-        patient__in=patients
+        patient__in=mrn_to_patients.values()
     ).update(
         has_encounters=True
     )
@@ -166,25 +164,13 @@ def load_excounters_since(timestamp):
     If the patient is one we are interested in we either create or update
     our copy of the encounter data using the upstream ID.
     """
-    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
     api = ProdAPI()
 
     encounters = api.execute_hospital_query(
         Q_GET_RECENT_ENCOUNTERS,
         params={'timestamp': timestamp}
     )
-    for encounter in encounters:
-        if encounter['PID_3_MRN']:
-            encounter['PID_3_MRN'] = encounter['PID_3_MRN'].strip()
-    mrns = list(set([i['PID_3_MRN'] for i in encounters if i['PID_3_MRN']]))
-    existing_hns = set(Demographics.objects.filter(
-        hospital_number__in=mrns).values_list('hospital_number', flat=True)
-    )
-    for mrn in mrns:
-        if mrn and mrn not in existing_hns:
-            create_rfh_patient_from_hospital_number(mrn, InfectionService)
     update_encounters_from_query_result(encounters)
-
 
 
 def cast_to_transfer_history(upstream_dict, patient):
@@ -218,7 +204,7 @@ def load_transfer_history_since(since):
     logger.info(
         f"Transfer histories: queries {len(query_result)} rows in {query_time}s"
     )
-    created = create_transfer_histories_from_upstream_result(query_result)
+    created = create_transfer_histories(query_result)
     created_end = time.time()
     logger.info(f'Transfer histories: created {len(created)} in {created_end - query_end}')
     return created
@@ -238,7 +224,7 @@ def load_transfer_history_for_patient(patient):
             params={'mrn': mrn}
         )
         transfers.extend(query_result)
-    created = create_transfer_histories_from_upstream_result(transfers)
+    created = create_transfer_histories(transfers)
     return created
 
 
@@ -257,25 +243,31 @@ def create_patients(mrns):
     mrns = list(set(mrns))
     for mrn in mrns:
         if mrn not in existing_mrns:
-            print(f'creating {mrn}')
-            create_rfh_patient_from_hospital_number(
-                mrn, InfectionService, run_async=False
-            )
+            logger.info(f'creating {mrn}')
+            create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
-
-def create_transfer_histories_from_upstream_result(some_rows):
-    create_patients([row['LOCAL_PATIENT_IDENTIFIER'] for row in some_rows])
-    return create_transfer_histories(some_rows)
+def is_valid_mrn(mrn):
+    """
+    An MRN is invalid if it is None or if it is only 00s
+    """
+    if mrn is None:
+        return False
+    if len(mrn.lstrip('0').strip()) == 0:
+        return False
+    return True
 
 
 @transaction.atomic
-def create_transfer_histories(some_rows):
-    mrn_to_patients = defaultdict(list)
-    demos = Demographics.objects.filter(hospital_number__in=[
-        i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows
-    ]).select_related('patient')
-    for demo in demos:
-        mrn_to_patients[demo.hospital_number].append(demo.patient)
+def create_transfer_histories(unfiltered_rows):
+    from intrahospital_api.loader import create_rfh_patient_from_hospital_number
+    # Remove rows where the MRN is None, an empty string or only 000s
+    some_rows = [i for i in unfiltered_rows if is_valid_mrn(i['LOCAL_PATIENT_IDENTIFIER'])]
+    mrns = [i['LOCAL_PATIENT_IDENTIFIER'] for i in some_rows]
+    mrn_to_patients = find_patients_from_mrns(mrns)
+
+    for mrn in mrns:
+        if mrn not in mrn_to_patients:
+            mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(mrn, InfectionService)
 
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
@@ -288,11 +280,10 @@ def create_transfer_histories(some_rows):
         # if In_TransHist = 0 then the transmission has been deleted
         # if In_Spells = 0 then the whole spell has been deleted
         if some_row['In_TransHist'] and some_row['In_Spells']:
-            patients = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
-            for patient in patients:
-                transfer_histories.append(
-                    cast_to_transfer_history(some_row, patient)
-                )
+            patient = mrn_to_patients[some_row['LOCAL_PATIENT_IDENTIFIER']]
+            transfer_histories.append(
+                cast_to_transfer_history(some_row, patient)
+            )
     TransferHistory.objects.bulk_create(transfer_histories)
     return transfer_histories
 
@@ -320,17 +311,10 @@ def load_bed_status():
                 )
 
     with transaction.atomic():
-
         BedStatus.objects.all().delete()
-
         for bed_data in status:
+            # A bed can not have a patient, this is ok.
             patient = mrn_to_patient.get(bed_data["Local_Patient_Identifier"])
-            # find_patients_from_mrns excludes invalid MRNs,
-            # if the patient identifier is not present it means
-            # it is either Nones, an empty string, only made up of zeros or empty spaces
-            # in this case, skip it.
-            if not patient:
-                continue
             bed_status = BedStatus(patient=patient)
             for k, v in bed_data.items():
                 setattr(

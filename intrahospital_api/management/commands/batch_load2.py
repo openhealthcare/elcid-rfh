@@ -4,17 +4,13 @@ A management command that is run by a cron job
 import datetime
 import time
 from django.db import transaction
-from django.conf import settings
-from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from opal.models import Patient
-
 from elcid import utils
 from intrahospital_api.loader import api
 from intrahospital_api import update_lab_tests
 from plugins.labtests.models import Observation
-from plugins.labtests import logger
 from plugins.monitoring.models import Fact
 
 MAX_AMOUNT = 250000
@@ -43,13 +39,7 @@ def send_too_many_email(since_dt, count):
         f"We found {count} lab tests which is over the threshold of {MAX_AMOUNT}.",
         "Cancelling the load"
     ])
-    logger.info(f"batch_load2: {msg}")
-    send_mail(
-        f"{settings.OPAL_BRAND_NAME}: Too many labtests",
-        msg,
-        settings.DEFAULT_FROM_EMAIL,
-        [i[1] for i in settings.ADMINS]
-    )
+    utils.send_email("Too many labtests", msg)
 
 
 class Command(BaseCommand):

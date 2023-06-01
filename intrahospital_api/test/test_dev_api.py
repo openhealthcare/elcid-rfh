@@ -59,30 +59,5 @@ class DevApiTestCase(OpalTestCase):
         self.assertTrue(bool(some_val))
         self.assertTrue(isinstance(some_val, float))
 
-    def test_cooked_data(self):
-        cooked_data = self.api.cooked_data("q2343424")
-        self.assertTrue(len(cooked_data) > 1)
-        expected_fields = [
-            'first_name',
-            'surname',
-            'title',
-            'observation_value',
-            'sex',
-            'hospital_number',
-            'nhs_number',
-            'date_of_birth',
-            'units',
-            'external_system',
-            'reference_range',
-            'observation_number',
-            'last_updated',
-            'observation_datetime',
-            'observation_name',
-            'ethnicity',
-        ]
-        self.assertEqual(
-            set(expected_fields), set(cooked_data[0].keys())
-        )
-
     def test_raw_data(self):
         self.assertEqual(len(self.api.raw_data("2323441312")), 1)

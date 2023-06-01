@@ -159,6 +159,9 @@ class Pregnancy(PreviousMRN, models.PatientSubrecord):
 class Nationality(PreviousMRN, models.PatientSubrecord):
     _is_singleton = True
 
+    birth_place = ForeignKeyOrFreeText(
+        models.Destination, verbose_name="Country of Birth"
+    )
     immigration_concerns = fields.BooleanField(default=False)
     immigration_details = fields.TextField(blank=True)
     immigration_support_officer = fields.TextField(blank=True)

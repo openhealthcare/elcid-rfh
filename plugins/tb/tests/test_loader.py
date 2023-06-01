@@ -6,6 +6,66 @@ from plugins.tb import loader
 from plugins.tb import episode_categories
 
 
+@mock.patch("plugins.tb.loader.ProdAPI")
+@mock.patch("plugins.tb.loader.create_rfh_patient_from_hospital_number")
+class CreatePatientsFromTBTestsTestCase(OpalTestCase):
+    def test_does_not_create_if_the_patient_already_exists(self, create_rfh_patient_from_hospital_number, prodAPI):
+        prodAPI().execute_trust_query.return_value = [{
+            "Patient_Number": "123"
+        }]
+        loader.create_patients_from_tb_tests()
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            "123", InfectionService
+        )
+
+    def test_creates_the_patient_if_they_dont_exist(self, create_rfh_patient_from_hospital_number, prodAPI):
+        patient, _ = self.new_patient_and_episode_please()
+        patient.demographics_set.update(hospital_number="123")
+        prodAPI().execute_trust_query.return_value = [{
+            "Patient_Number": "123"
+        }]
+        loader.create_patients_from_tb_tests()
+        self.assertFalse(
+            create_rfh_patient_from_hospital_number.called
+        )
+
+    def ignores_none_hns(self, create_rfh_patient_from_hospital_number, prodAPI):
+        prodAPI().execute_trust_query.return_value = [{
+            "Patient_Number": None
+        }]
+        loader.create_patients_from_tb_tests()
+        self.assertFalse(
+            create_rfh_patient_from_hospital_number.called
+        )
+
+    def test_strips_zeros(self, create_rfh_patient_from_hospital_number, prodAPI):
+        prodAPI().execute_trust_query.return_value = [{
+            "Patient_Number": "0123"
+        }]
+        loader.create_patients_from_tb_tests()
+        create_rfh_patient_from_hospital_number.assert_called_once_with(
+            "123", InfectionService
+        )
+
+    def test_ignores_only_zeroes(self, create_rfh_patient_from_hospital_number, prodAPI):
+        prodAPI().execute_trust_query.return_value = [{
+            "Patient_Number": "000"
+        }]
+        loader.create_patients_from_tb_tests()
+        self.assertFalse(
+            create_rfh_patient_from_hospital_number.called
+        )
+
+
+    def test_ignores_empty_strings(self, create_rfh_patient_from_hospital_number, prodAPI):
+        prodAPI().execute_trust_query.return_value = [{
+            "Patient_Number": ""
+        }]
+        loader.create_patients_from_tb_tests()
+        self.assertFalse(
+            create_rfh_patient_from_hospital_number.called
+        )
+
 
 @mock.patch("plugins.tb.loader.create_rfh_patient_from_hospital_number")
 @mock.patch("plugins.tb.loader.ProdAPI")

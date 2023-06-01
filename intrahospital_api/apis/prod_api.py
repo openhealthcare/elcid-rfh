@@ -743,10 +743,6 @@ class ProdApi(base_api.BaseApi):
 
         return result
 
-    def cooked_data(self, hospital_number):
-        raw_data = self.raw_data(hospital_number)
-        return (PathologyRow(row).get_all_fields() for row in raw_data)
-
     def cast_rows_to_lab_test(self, rows):
         """ We cast multiple rows to lab tests.
 
