@@ -116,10 +116,17 @@
           {{ sideroom_status.risk_score|default_if_none:"" }}
         </td>
         <td>
-          <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
-            {% if patient.patient.ipcstatus_set.get.comments %}
-            {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
+          <div class="max-360">
+            {% with patient.patient.ipcstatus_set.get as ipc_status %}
+            {% if ipc_status.comments %}
+            {{ ipc_status.comments | linebreaks }}
             {% endif %}
+            <span class="{% if ipc_status.covid_expired %}text-muted{% endif %}">
+              {% if ipc_status.covid_19_lab_numbers %}
+              {{ ipc_status.covid_19_lab_numbers }}
+              {% endif %}
+            </span>
+            {% endwith %}
           </div>
         </td>
         <td>

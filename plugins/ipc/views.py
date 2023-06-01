@@ -223,6 +223,9 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
 
         ).exclude(ward_name='RF-Test').order_by('ward_name', 'bed')
 
+        # Do this here in case we filer everything out later
+        context['hospital_name'] = statuses[0].hospital_site_description
+
         for status in statuses:
             if not status.room.startswith('SR'):
                 status.is_open_bay = True
@@ -250,7 +253,6 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             name[3:]: wards[name] for name in reversed(sorted(wards.keys(), key=sort_rfh_wards))
             if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
         }
-        context['hospital_name'] = statuses[0].hospital_site_description
         context['hospital_code'] = k['hospital_code']
         context['flags'] = list(models.IPCStatus.FLAGS.keys())
         return context

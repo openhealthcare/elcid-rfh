@@ -16,8 +16,12 @@
 {% ipc_check_box_and_date_field 'candida_auris' %}
 {% ipc_check_box_and_date_field 'contact_of_candida_auris' %}
 {% ipc_check_box_and_date_field 'multi_drug_resistant_organism' %}
+
 {% ipc_check_box_and_date_field 'covid_19' %}
+{% input field="IPCStatus.covid_19_lab_numbers" %}
+
 {% ipc_check_box_and_date_field 'contact_of_covid_19' %}
+
 {% input field="IPCStatus.other" %}
 {% datepicker field="IPCStatus.other_date" %}
 
