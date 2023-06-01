@@ -118,6 +118,11 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
         locations = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
 
         for location in locations:
+            if location.room.startswith('SR'):
+                location.is_sideroom = True
+            if location.isolated_bed:
+                location.is_sideroom = True
+
             if location.patient:
                 ipc = location.patient.episode_set.filter(category_name='IPC').first()
                 if ipc:
@@ -215,6 +220,9 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         ).exclude(ward_name='RF-Test').order_by('ward_name', 'bed')
 
         for status in statuses:
+            if not status.room.startswith('SR'):
+                status.is_open_bay = True
+
             if status.patient:
                 ipc = status.patient.episode_set.filter(category_name='IPC').first()
                 if ipc:

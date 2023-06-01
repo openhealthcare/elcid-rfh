@@ -656,4 +656,8 @@ h1 small a {
   display: inline-block;
 }
 
+table.table.table-striped tr.highlighted-row td {
+  background: #a0c7ea;
+}
+
 /*# sourceMappingURL=elcid.css.map */

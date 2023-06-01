@@ -739,3 +739,7 @@ h1 small a{
 #sideroom-gender-count p{
     display: inline-block;
 }
+
+table.table.table-striped tr.highlighted-row td{
+    background: $blue-light;
+}

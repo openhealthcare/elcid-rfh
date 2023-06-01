@@ -30,7 +30,9 @@
       <th>IPC Comments</th>
     </tr>
     {% for patient in patients %}
-    <tr>
+    <tr {% if patient.is_sideroom %}
+        class="highlighted-row"
+        {% endif %}>
 
       <td ng-controller="IsolationHelper as isolationHelper">
         <span ng-show="isolationHelper.init(
@@ -43,13 +45,13 @@
         )">
           <span ng-hide='isolationHelper.isSideRoom'>
             <span ng-show='isolationHelper.isolated_bed_id'>
-              <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
-                Open bed
+              <button ng-click='isolationHelper.unisolate()' class="btn btn-sm btn-primary">
+                Re-open bed
               </button>
             </span>
             <span ng-hide='isolationHelper.isolated_bed_id'>
-              <button ng-click="isolationHelper.isolate()" class="btn btn-default">
-                Close bed
+              <button ng-click="isolationHelper.isolate()" class="btn btn-sm btn-default">
+                Add to Isolation
               </button>
             </span>
           </span>

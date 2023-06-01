@@ -31,9 +31,12 @@ angular.module('opal.controllers').controller('IsolationHelper',
 			});
 		}
 
-		this.unisolate = function(){
+		this.unisolate = function(refresh){
 			$http.delete('/api/v0.1/isolated_bed/' + self.isolated_bed_id + '/').then(function(response){
-				self.isolated_bed_id = undefined;
+			    self.isolated_bed_id = undefined;
+                            if(refresh){
+                                window.location.reload();
+                            }
 			});
 		}
 });

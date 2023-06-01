@@ -79,13 +79,18 @@
 
       {% for patient in ward %}
       {% with patient.patient.sideroomstatus_set.get as sideroom_status %}
-      <tr>
+      <tr {% if patient.is_open_bay %}
+          class="highlighted-row"
+          {% endif %}>
         <td>
           <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
             {{ patient.ward_name }}
           </a>
           {{ patient.room }}
           {{ patient.bed }}
+          {% if patient.is_open_bay %}
+          <br />Open Bay
+          {% endif %}
         </td>
         <td> {{ patient.bed_status }}</td>
         {% with patient.patient.demographics as demographics %}
@@ -123,7 +128,7 @@
         <td ng-controller="IsolationHelper as isolationHelper">
           <span ng-show="isolationHelper.init(
                          '{{ patient.hospital_site_code }}',
-                         '{{ patient.ward_name }}',
+                         '{{ patient.wxard_name }}',
                          '{{ patient.room }}',
                          '{{ patient.bed }}',
                          {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
@@ -131,13 +136,8 @@
                          )">
             <span ng-hide='isolationHelper.isSideRoom'>
               <span ng-show='isolationHelper.isolated_bed_id'>
-                <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
-                  Open bed
-                </button>
-              </span>
-              <span ng-hide='isolationHelper.isolated_bed_id'>
-                <button ng-click="isolationHelper.isolate()" class="btn btn-default">
-                  Close bed
+                <button ng-click='isolationHelper.unisolate(true)' class="btn btn-sm btn-primary">
+                  Remove
                 </button>
               </span>
             </span>
