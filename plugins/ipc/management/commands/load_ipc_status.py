@@ -14,6 +14,7 @@ from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import loader
 from elcid.utils import find_patients_from_mrns
 from elcid import episode_categories as elcid_episode_categories
+from plugins.ipc import logger
 from plugins.ipc.models import IPCStatus
 
 
@@ -78,12 +79,13 @@ SELECT * FROM ElCid_Infection_Prevention_Control_View
 class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
+        logger.info("IPC load status starting")
         api = ProdAPI()
 
         updated_by = User.objects.filter(username='ohc').first()
 
         upstream_result = api.execute_hospital_query(QUERY)
-        self.stdout.write("Query complete")
+        logger.info(f"IPC load status query complete, {len(upstream_result)} rows returned")
 
         mrn_to_ipc_patients = find_patients_from_mrns(
             i['Patient_Number'] for i in upstream_result
@@ -130,3 +132,4 @@ class Command(BaseCommand):
 
                 setattr(status, key, value)
             status.save()
+            logger.info("IPC load status complete")
