@@ -96,8 +96,11 @@ class HospitalWardListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        wards = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
+        wards = BedStatus.objects.filter(
+            hospital_site_code=k['hospital_code']
+        ).exclude(ward_name__in=constants.WARDS_TO_EXCLUDE_FROM_LIST).values_list(
             'ward_name', flat=True).distinct()
+
 
         wards = sorted(wards, key=natural_keys)
 
@@ -105,6 +108,7 @@ class HospitalWardListView(LoginRequiredMixin, TemplateView):
             hospital_site_code=k['hospital_code']).first().hospital_site_description
 
         context['wards'] = wards
+        context['hospital_ward_template'] = f"ipc/{k['hospital_code']}_ward_list.html"
 
         return context
 

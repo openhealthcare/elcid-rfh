@@ -55,7 +55,7 @@
     <h6 style="padding-left: 12px; padding-bottom: 24px; padding-top: 12px;" class="border-bottom-secondary">
       <span clas="col-sm-1">
         {{ slice.unit }}
-      {{ slice.ward }}
+        {{ slice.ward }}
       </span>
 
       {{ slice.room }}
@@ -89,7 +89,7 @@
         {% for transfer in slice.contact_transfers %}
         {% ifchanged transfer.bed %}
         <tr>
-          <th colspan="5" class="border-bottom-secondary">
+          <th colspan="6" class="border-bottom-secondary">
             <p class="content-offset-25">
               {{ transfer.unit }}
               {{ transfer.room }}
@@ -106,6 +106,7 @@
           <th>End</th>
           <th>Transfer Reason</th>
           <th>Current Location</th>
+          <th>IPC Status</th>
         </tr>
         {% endifchanged %}
         <tr>
@@ -133,6 +134,11 @@
           <td>{{ transfer.transfer_reason }}</td>
           <td>
             {{ transfer.patient.bedstatus.get.to_location_str }}
+          </td>
+          <td class="max-360">
+            {% if transfer.patient.ipcstatus_set.get.comments %}
+            {{ transfer.patient.ipcstatus_set.get.comments | linebreaks }}
+            {% endif %}
           </td>
         </tr>
         {% endfor %}

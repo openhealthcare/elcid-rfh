@@ -79,7 +79,7 @@
         {% endif %}
       </td>
       <td>
-        <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
+        <div class="max-360">
         {% if patient.patient.ipcstatus_set.get.comments %}
         {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
         {% endif %}

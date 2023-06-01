@@ -660,4 +660,14 @@ table.table.table-striped tr.highlighted-row td {
   background: #a0c7ea;
 }
 
+.max-360 {
+  max-width: 360px;
+}
+
+.known-wards .row {
+  padding-bottom: 12px;
+  padding-top: 12px;
+  border-bottom: solid 1px #cbc9c8;
+}
+
 /*# sourceMappingURL=elcid.css.map */
