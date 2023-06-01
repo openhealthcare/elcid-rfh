@@ -157,6 +157,39 @@ class WardDetailHistoryView(LoginRequiredMixin, TemplateView):
 class SideRoomView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/siderooms.html'
 
+    def filter_statuses(self, statuses, flag):
+        """
+        Given a list of annotated bedstatus objects, filter them
+        by those flagged with the IPCStatus.FLAGS boolean FLAG
+        """
+        flagged = []
+        for status in statuses:
+            if status.patient is None:
+                continue
+
+            ipcstatus = status.patient.ipcstatus_set.get()
+            if getattr(ipcstatus, models.IPCStatus.FLAGS[flag]):
+                flagged.append(status)
+        return flagged
+
+    def get_sex_count(self, statuses):
+        """
+        Given an iterable of STATUSES, return a count of male and female patients.
+        """
+        male = 0
+        female = 0
+
+        for bedstatus in statuses:
+            if bedstatus.patient is None:
+                continue
+            demographics = bedstatus.patient.demographics()
+            if demographics.sex == 'Male':
+                male += 1
+            if demographics.sex == 'Female':
+                female += 1
+
+        return male, female
+
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
@@ -187,6 +220,15 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
                 if ipc:
                     status.ipc_episode = ipc
 
+        if k.get('flag'):
+            context['flag'] = k['flag']
+            statuses = self.filter_statuses(statuses, k['flag'])
+
+
+        male, female = self.get_sex_count(statuses)
+        context['male'] = male
+        context['female'] = female
+
         wards = collections.defaultdict(list)
 
         for status in statuses:
@@ -197,6 +239,8 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
         }
         context['hospital_name'] = statuses[0].hospital_site_description
+        context['hospital_code'] = k['hospital_code']
+        context['flags'] = list(models.IPCStatus.FLAGS.keys())
         return context
 
 

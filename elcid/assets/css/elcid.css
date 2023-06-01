@@ -642,4 +642,18 @@ h1 small a {
   padding-left: 4px;
 }
 
+#sideroom-gender-count {
+  color: #343637;
+  font-size: 0.4em;
+}
+
+#sideroom-gender-count div {
+  margin-right: 12px;
+}
+
+#sideroom-gender-count div,
+#sideroom-gender-count p {
+  display: inline-block;
+}
+
 /*# sourceMappingURL=elcid.css.map */

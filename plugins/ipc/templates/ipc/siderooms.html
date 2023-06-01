@@ -1,10 +1,46 @@
 {% extends 'ipc/base.html' %}
 {% load ipc %}
 {% block content %}
-<div class="panel panel-default" style="position:fixed; width:100%">
+<div class="panel panel-default" style="position:fixed; width:90%">
   <div class="panel-heading">
     <h1>
       Isolation locations: {{ hospital_name }}
+      {% if flag %}
+      patients flagged{{ flag }}
+      {% endif %}
+
+      <span class="pull-right" id="sideroom-gender-count">
+
+        <div uib-dropdown>
+          <a uib-dropdown-toggle class="pointer" id="ipc-flags-dropdown">
+            <div>
+              <i class="fa fa-flag"></i>
+              Flags
+              <i class="fa fa-angle-down"></i>
+            </div>
+          </a>
+          <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="ipc-flags-dropdown">
+            <li class="ipc-flags-dropdown-item">
+              <a href="/#/ipc/siderooms/{{hospital_code}}">
+                All Patients
+              </a>
+            </li>
+
+            {% for flag in flags %}
+            <li class="ipc-flags-dropdown-item">
+              <a href="/#/ipc/siderooms/{{hospital_code}}/{{flag}}">
+                {{ flag }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <p >
+          Male {{ male }}
+          Female {{ female }}
+        </p>
+
+      </span>
     </h1>
   </div>
   <div class="row">
@@ -15,101 +51,105 @@
     </div>
     <div class="col-md-11 col-md-offset-1">
     </div>
-    </div>
+  </div>
 </div> <!-- Panel -->
 
 
-    <table class="table table-striped content-offset-75 col-md-offset-1">
+<div class="row content-offset-75">
+  <div class="col-md-offset-1">
+    <table class="table table-striped" style="margin-left: 12px; width:95%;">
 
-  {% for name, ward in wards.items %}
+      {% for name, ward in wards.items %}
       <tr id="{{name|slugify }}">
         <th colspan="10">
           <h2>{{ name }}</h2>
         </th>
-    <tr>
-      <th>Location</th>
-      <th>Status</th>
-      <th>Patient</th>
-      <th>Sex</th>
-      <th>Admitted</th>
-      <th>Organism</th>
-      <th>Risk</th>
-      <th>IPC Portal</th>
-      <th>Actions</th>
-      <th><!-- Isolation --></th>
-    </tr>
+      <tr>
+        <th>Location</th>
+        <th>Status</th>
+        <th>Patient</th>
+        <th>Sex</th>
+        <th>Admitted</th>
+        <th>Organism</th>
+        <th>Risk</th>
+        <th>IPC Portal</th>
+        <th>Actions</th>
+        <th><!-- Isolation --></th>
+      </tr>
 
-    {% for patient in ward %}
-    {% with patient.patient.sideroomstatus_set.get as sideroom_status %}
-    <tr>
-      <td>
-        <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
-          {{ patient.ward_name }}
-        </a>
-        {{ patient.room }}
-        {{ patient.bed }}
-      </td>
-      <td> {{ patient.bed_status }}</td>
-      {% with patient.patient.demographics as demographics %}
-      <td>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.hospital_number }}</a>
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.date_of_birth }}</a>
-        <br />
-        <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.name }}</a>
-      </td>
-      <td>
-        {{ demographics.sex }}
-      </td>
-      {% endwith %}
-      <td>
-        {% if patient.admission_date_time %}
-        {{ patient.admission_date_time }}
-        {% endif %}
-      </td>
-      <td>
-        {{ sideroom_status.admission_organism|default_if_none:"" }}
-      </td>
-      <td>
-        {{ sideroom_status.risk_score|default_if_none:"" }}
-      </td>
-      <td>
-        <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
-        {% if patient.patient.ipcstatus_set.get.comments %}
-        {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
-        {% endif %}
-        </div>
-      </td>
-      <td>
-        {{ sideroom_status.actions|default_if_none:""| linebreaks }}
-      </td>
-      <td ng-controller="IsolationHelper as isolationHelper">
-        <span ng-show="isolationHelper.init(
-          '{{ patient.hospital_site_code }}',
-          '{{ patient.ward_name }}',
-          '{{ patient.room }}',
-          '{{ patient.bed }}',
-          {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
-          {% if patient.isSideRoom %}1{% else %}0{% endif %}
-        )">
-          <span ng-hide='isolationHelper.isSideRoom'>
-            <span ng-show='isolationHelper.isolated_bed_id'>
-              <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
-                Open bed
-              </button>
-            </span>
-            <span ng-hide='isolationHelper.isolated_bed_id'>
-              <button ng-click="isolationHelper.isolate()" class="btn btn-default">
-                Close bed
-              </button>
+      {% for patient in ward %}
+      {% with patient.patient.sideroomstatus_set.get as sideroom_status %}
+      <tr>
+        <td>
+          <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
+            {{ patient.ward_name }}
+          </a>
+          {{ patient.room }}
+          {{ patient.bed }}
+        </td>
+        <td> {{ patient.bed_status }}</td>
+        {% with patient.patient.demographics as demographics %}
+        <td>
+          <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.hospital_number }}</a>
+          <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.date_of_birth }}</a>
+          <br />
+          <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">{{ demographics.name }}</a>
+        </td>
+        <td>
+          {{ demographics.sex }}
+        </td>
+        {% endwith %}
+        <td>
+          {% if patient.admission_date_time %}
+          {{ patient.admission_date_time }}
+          {% endif %}
+        </td>
+        <td>
+          {{ sideroom_status.admission_organism|default_if_none:"" }}
+        </td>
+        <td>
+          {{ sideroom_status.risk_score|default_if_none:"" }}
+        </td>
+        <td>
+          <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
+            {% if patient.patient.ipcstatus_set.get.comments %}
+            {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
+            {% endif %}
+          </div>
+        </td>
+        <td>
+          {{ sideroom_status.actions|default_if_none:""| linebreaks }}
+        </td>
+        <td ng-controller="IsolationHelper as isolationHelper">
+          <span ng-show="isolationHelper.init(
+                         '{{ patient.hospital_site_code }}',
+                         '{{ patient.ward_name }}',
+                         '{{ patient.room }}',
+                         '{{ patient.bed }}',
+                         {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
+                         {% if patient.isSideRoom %}1{% else %}0{% endif %}
+                         )">
+            <span ng-hide='isolationHelper.isSideRoom'>
+              <span ng-show='isolationHelper.isolated_bed_id'>
+                <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
+                  Open bed
+                </button>
+              </span>
+              <span ng-hide='isolationHelper.isolated_bed_id'>
+                <button ng-click="isolationHelper.isolate()" class="btn btn-default">
+                  Close bed
+                </button>
+              </span>
             </span>
           </span>
-        </span>
-      </td>
-    </tr>
-    {% endwith %}
-    {% endfor %}
+        </td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
 
 
-  {% endfor %}
-  </table>
+      {% endfor %}
+    </table>
+  </div>
+</div>
 {% endblock %}

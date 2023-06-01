@@ -728,3 +728,14 @@ h1 small a{
 #sideroom-ward-nav a{
     padding-left: 4px;
 }
+#sideroom-gender-count {
+    color: $obsidian;
+    font-size: 0.4em;
+}
+#sideroom-gender-count div{
+    margin-right: 12px;
+}
+#sideroom-gender-count div,
+#sideroom-gender-count p{
+    display: inline-block;
+}
