@@ -199,7 +199,7 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         ))
 
         isolation_status = []
-        for isolated_bed in IsolatedBed.objects.all():
+        for isolated_bed in IsolatedBed.objects.filter(hospital_site_code=k['hospital_code']):
             bed_status = BedStatus.objects.filter(
                 hospital_site_code=isolated_bed.hospital_site_code,
                 ward_name=isolated_bed.ward_name,
