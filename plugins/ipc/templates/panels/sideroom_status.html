@@ -19,7 +19,7 @@
       </li>
     </ul>
 
-    <div class="panel-footer" ng-show="patient.bed_statuses[0].room.indexOf('SR') != -1">
+    <div class="panel-footer" ng-show="patient.bed_statuses[0].room.indexOf('SR') != -1 || patient.bed_statuses[0].side_room_flag">
       <div class="row">
         <div class="col-md-12">
           <a href="/#/ipc/siderooms/[[ patient.bed_statuses[0].site_code ]]" class="orange-link">Isolation list</a>

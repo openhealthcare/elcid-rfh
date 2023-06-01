@@ -408,7 +408,8 @@ class BedStatus(models.Model):
         'ward_name'                : 'ward',
         'room'                     : 'room',
         'bed'                      : 'bed',
-        'hospital_site_code'       : 'site_code' # Links sometimes use this
+        'hospital_site_code'       : 'site_code', # Links sometimes use this
+        'side_room_flag'           : 'side_room_flag' # tell the front room it's an extra sideroom
     }
 
     def to_dict(self):
