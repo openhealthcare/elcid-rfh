@@ -117,5 +117,7 @@ angular.module('opal.controllers').controller(
 			}
 			$scope.formItem.editing.clinical_discussion = discussion + text;
 		}
+
+            $scope.formItem.editing.reason_for_interaction = "IPC Note"
 	}
 )

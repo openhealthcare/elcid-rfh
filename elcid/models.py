@@ -392,7 +392,7 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
     _modal = 'lg'
     _list_limit = 3
     ICU_REASON_FOR_INTERACTION = "ICU round"
-    ICN_WARD_REVIEW_REASON_FOR_INTERACTION = "ICN Ward Review"
+    ICN_WARD_REVIEW_REASON_FOR_INTERACTION = "IPC Note"
     ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"
 
     when = models.DateTimeField(null=True, blank=True)
