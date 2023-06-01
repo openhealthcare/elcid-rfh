@@ -630,4 +630,16 @@ h1 small a {
   font-size: 14px;
 }
 
+#sideroom-ward-nav {
+  position: fixed;
+  padding-top: 12px;
+  top: 142px;
+  border-right: 2px solid #D36C08;
+  height: 100%;
+}
+
+#sideroom-ward-nav a {
+  padding-left: 4px;
+}
+
 /*# sourceMappingURL=elcid.css.map */

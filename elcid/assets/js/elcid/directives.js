@@ -188,20 +188,26 @@ directives.directive('printPage', function () {
 
 
 directives.directive('scrollOnClick', function() {
-  return {
-    restrict: 'A',
-    link: function(scope, $elm, attrs) {
-      var idToScroll = attrs.target;
-      $elm.on('click', function() {
-        var $target;
-        if (idToScroll) {
-          $target = $(idToScroll);
-        } else {
-          $target = $elm;
+    return {
+        restrict: 'A',
+        link: function(scope, $elm, attrs) {
+            var idToScroll = attrs.target;
+            var offset = attrs.offset
+            $elm.on('click', function() {
+                var $target;
+                if (idToScroll) {
+                    $target = $(idToScroll);
+                } else {
+                    $target = $elm;
+                }
+                if (offset){
+                    offset = parseInt(offset);
+                } else {
+                    offset = 100
+                }
+                $("html,body").animate({scrollTop: $target.offset().top-offset}, "slow");
+                return false;
+            });
         }
-          $("html,body").animate({scrollTop: $target.offset().top-100}, "slow");
-          return false;
-      });
     }
-  }
 });

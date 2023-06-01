@@ -1,20 +1,25 @@
 {% extends 'ipc/base.html' %}
 {% load ipc %}
 {% block content %}
-<div class="panel panel-default">
+<div class="panel panel-default" style="position:fixed; width:100%">
   <div class="panel-heading">
     <h1>
       Isolation locations: {{ hospital_name }}
     </h1>
   </div>
   <div class="row">
-    <div class="col-md-1" style="position:fixed">
+    <div class="col-md-1" id="sideroom-ward-nav">
       {% for name, ward in wards.items %}
-      <a class="orange-link pointer" scroll-on-click target="#{{name|slugify}}">{{ name }}</a><br />
+      <a class="orange-link pointer" scroll-on-click target="#{{name|slugify}}" offset="140">{{ name }}</a><br />
       {% endfor %}
     </div>
     <div class="col-md-11 col-md-offset-1">
-    <table class="table table-striped">
+    </div>
+    </div>
+</div> <!-- Panel -->
+
+
+    <table class="table table-striped content-offset-75 col-md-offset-1">
 
   {% for name, ward in wards.items %}
       <tr id="{{name|slugify }}">
@@ -107,12 +112,4 @@
 
   {% endfor %}
   </table>
-
-    </div>
-    </div>
-
-
-
-
-</div> <!-- Panel -->
 {% endblock %}
