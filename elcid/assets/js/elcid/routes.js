@@ -17,14 +17,16 @@ var static_template_route = function(url){
   }
 };
 
-var param_template_route = function(base, param_name){
+var param_template_route = function(base, param_list){
     return {
         controller: 'WelcomeCtrl',
         controllerAs: 'welcome',
         templateUrl: function(params){
           // silly cache busting technique. The param is never read
-          params["cache_bust"] = Date.now();
-          return base + params[param_name] + '/?' + $.param(_.omit(params, param_name));
+            params["cache_bust"] = Date.now();
+            var url = base
+            _.each(param_list, function(x){ url = url + params[x] + '/'  });
+            return url + '?' + $.param(_.omit(params, param_list));
         },
         resolve: {
             referencedata: function(Referencedata) { return Referencedata; },
@@ -79,14 +81,14 @@ app.config(
                 templateUrl: "/templates/tb_list_tb_review_patients.html"
              })
              .when('/tb/clinic-list/',  static_template_route('/templates/tb/clinic_list/'))
-             .when('/tb/clinic-list/:date_stamp',  param_template_route('/templates/tb/clinic_list/', 'date_stamp'))
+             .when('/tb/clinic-list/:date_stamp',  param_template_route('/templates/tb/clinic_list/', ['date_stamp']))
              .when('/tb/last-30-days/',  static_template_route('/templates/tb/last_30_days.html'))
-             .when('/tb/clinic-activity/:year/', param_template_route('/tb/clinic_activity/', 'year'))
-             .when('/tb/clinic-activity/appointment_data/:year/', param_template_route('/tb/clinic_activity/appointment_data/', 'year'))
-             .when('/tb/clinic-activity/mdt_data/:year/', param_template_route('/tb/clinic_activity/mdt_data/', 'year'))
+             .when('/tb/clinic-activity/:year/', param_template_route('/tb/clinic_activity/', ['year']))
+             .when('/tb/clinic-activity/appointment_data/:year/', param_template_route('/tb/clinic_activity/appointment_data/', ['year']))
+             .when('/tb/clinic-activity/mdt_data/:year/', param_template_route('/tb/clinic_activity/mdt_data/', ['year']))
              .when('/tb/mdt-outstanding/',  static_template_route('/templates/tb/outstanding_mdt_list/'))
              .when('/tb/on-tb-meds/',  static_template_route('/templates/tb/on_tb_meds/'))
-             .when('/tb/mdt/:site/', param_template_route('/tb/mdt/', 'site'))
+             .when('/tb/mdt/:site/', param_template_route('/tb/mdt/', ['site']))
 
              .when('/amt-covid/',            static_template_route('/templates/covid/amt_dashboard.html'))
              .when('/nursing-handover/',     static_template_route('/templates/nursing/dashboard.html'))
@@ -94,45 +96,47 @@ app.config(
 
              .when('/admissions/transfer-history/:spell_number/',
                    param_template_route(
-                       '/templates/admissions/transfer_history/', 'spell_number'))
+                       '/templates/admissions/transfer_history/', ['spell_number']))
              .when('/admissions/slice-contacts/:slice_id/',
                    param_template_route(
-                       '/templates/admissions/slice_contacts/', 'slice_id'
+                       '/templates/admissions/slice_contacts/', ['slice_id']
                    ))
              .when('/admissions/encounter/:encounter_id/contacts/',
                    param_template_route(
-                       '/templates/admissions/encounter/contacts/', 'encounter_id'
+                       '/templates/admissions/encounter/contacts/', ['encounter_id']
                    ))
              .when('/admissions/encounter/:encounter_id/contacts/inpatients/',
                    param_template_route(
-                       '/templates/admissions/encounter/contacts/inpatients/', 'encounter_id'
+                       '/templates/admissions/encounter/contacts/inpatients/', ['encounter_id']
                    ))
 
              .when('/admissions/location-history/:location_code',
                    param_template_route(
-                       '/templates/admissions/location-history/', 'location_code'
+                       '/templates/admissions/location-history/', ['location_code']
                    ))
              .when('/admissions/bedboard/hospitals/', static_template_route('/admissions/bedboard/hospitals/'))
              .when('/admissions/bedboard/hospital/:hospital_code/',
-                   param_template_route('/admissions/bedboard/hospital/', 'hospital_code'))
+                   param_template_route('/admissions/bedboard/hospital/', ['hospital_code']))
              .when('/admissions/bedboard/ward/:ward_name/',
-                   param_template_route('/admissions/bedboard/ward/', 'ward_name'))
+                   param_template_route('/admissions/bedboard/ward/', ['ward_name']))
 
              .when('/ipc/',                         static_template_route('/templates/ipc/home.html'))
              .when('/ipc/bedboard/hospitals/',      static_template_route('/templates/ipc/hospitals.html'))
              .when('/ipc/bedboard/hospital/:hospital_code/',
-                   param_template_route('/ipc/bedboard/hospital/', 'hospital_code'))
+                   param_template_route('/ipc/bedboard/hospital/', ['hospital_code']))
              .when('/ipc/bedboard/ward/:ward_name/',
-                   param_template_route('/templates/ipc/ward/', 'ward_name'))
+                   param_template_route('/templates/ipc/ward/', ['ward_name']))
              .when('/ipc/bedboard/ward/:ward_name/days/30/',
-                   param_template_route('/templates/ipc/ward/30-day/', 'ward_name'))
+                   param_template_route('/templates/ipc/ward/30-day/', ['ward_name']))
 
-             .when('/ipc/siderooms/:hospital_code', param_template_route('/templates/ipc/isolation/', 'hospital_code'))
-             .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', 'alert_code'))
+             .when('/ipc/siderooms/:hospital_code', param_template_route('/templates/ipc/isolation/', ['hospital_code']))
+             .when('/ipc/siderooms/:hospital_code/:flag',
+                   param_template_route('/templates/ipc/isolation/', ['hospital_code', 'flag']))
+             .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', ['alert_code']))
 
              .when('/rnoh/inpatients/',             static_template_route('/templates/rnoh/inpatients.html'))
              .when('/rnoh/numbers/',                static_template_route('/templates/rnoh/numbers.html'))
-             .when('/rnoh/ward/:ward_name/',        param_template_route('/templates/rnoh/ward_list/', 'ward_name'))
+             .when('/rnoh/ward/:ward_name/',        param_template_route('/templates/rnoh/ward_list/', ['ward_name']))
 
              .when('/patient-information-load-stats/', static_template_route(
                  '/templates/monitoring/patient_information_load_stats.html'))

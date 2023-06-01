@@ -32,6 +32,11 @@ urlpatterns = [
         name='ipc_ward_detail_history'
     ),
     path(
+        'templates/ipc/isolation/<hospital_code>/<flag>/',
+        views.SideRoomView.as_view(),
+        name='ipc_siderooms_flag'
+    ),
+    path(
         'templates/ipc/isolation/<hospital_code>/',
         views.SideRoomView.as_view(),
         name='ipc_siderooms'

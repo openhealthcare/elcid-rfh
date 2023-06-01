@@ -721,3 +721,25 @@ div.add-isolate:hover{
 h1 small a{
     font-size: 14px;
 }
+
+#sideroom-ward-nav {
+    position: fixed;
+    padding-top: 12px;
+    top: 142px;
+    border-right: 2px solid $secondary;
+    height: 100%;
+}
+#sideroom-ward-nav a{
+    padding-left: 4px;
+}
+#sideroom-gender-count {
+    color: $obsidian;
+    font-size: 0.4em;
+}
+#sideroom-gender-count div{
+    margin-right: 12px;
+}
+#sideroom-gender-count div,
+#sideroom-gender-count p{
+    display: inline-block;
+}

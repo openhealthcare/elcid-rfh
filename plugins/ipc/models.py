@@ -61,6 +61,26 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     _is_singleton = True
     _icon = 'fa fa-list-ul'
 
+    FLAGS = {
+        'MRSA'                 : 'mrsa',
+        'MRSA NEG'             : 'mrsa_neg',
+        'Reactive'             : 'reactive',
+        'C Diff'               : 'c_difficile',
+        'VRE'                  : 'vre',
+        'VRE neg'              : 'vre_neg',
+        'Carb Res'             : 'carb_resistance',
+        'Carb Res contact'     : 'contact_of_carb_resistance',
+        'Acinetobacter'        : 'acinetobacter',
+        'Acinetobacter contact': 'contact_of_acinetobacter',
+        'CJD'                  : 'cjd',
+        'Candida Auris'        : 'candida_auris',
+        'Candida Auris contact': 'contact_of_candida_auris',
+        'MDR'                  : 'multi_drug_resistant_organism',
+        'Covid 19'             : 'covid_19',
+        'Covid 19 contact'     : 'contact_of_covid_19',
+
+    }
+
     mrsa = models.BooleanField(
         default=False, verbose_name='MRSA'
     )
@@ -137,6 +157,7 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
 
     class Meta:
         verbose_name = 'IPC Portal Status'
+
 
 
 class SideroomStatus(PreviousMRN, PatientSubrecord):
