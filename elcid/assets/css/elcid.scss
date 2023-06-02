@@ -296,6 +296,17 @@ a.list-group-item {
   }
 }
 
+.no-touchevents
+table td i.edit{
+  color: $faded;
+
+  &:hover{
+    color: #333;
+  }
+
+}
+
+
 .death-banner {
     margin-top: -95px;
     padding-top: 80px;
