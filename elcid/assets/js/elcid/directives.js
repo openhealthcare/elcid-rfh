@@ -211,3 +211,20 @@ directives.directive('scrollOnClick', function() {
         }
     }
 });
+
+directives.directive('labNumberString', function(){
+    return {
+        // require: "ngModel",
+        scope: true,
+        template: "[[text]]<br/><span ng-repeat=\"lab_number in lab_numbers\"><a class=\"orange-link pointer\" ng-click=\"open_modal('LabDetailModalCtrl', '/templates/lab/lab_detail_modal.html', {'lab_number': lab_number} )\">[[ lab_number ]]</a> </span>",
+        link: function(scope, element, attrs){
+            var text = scope.$eval(attrs.text);
+            var regexp = /[0-9]+[LK][0-9]+/g;
+
+            scope.text = text;
+            matches = text.match(regexp);
+            scope.lab_numbers = _.map(matches, function(x){ return x.replace(/^0+/, '') });
+        }
+    }
+
+})
