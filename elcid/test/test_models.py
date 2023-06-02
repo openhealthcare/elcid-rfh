@@ -1,8 +1,11 @@
 import datetime
 from unittest import mock
+from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
+from django.conf import settings
 from elcid import episode_categories
 
 from opal.core import exceptions
@@ -726,3 +729,85 @@ class ChronicAntifungalTestCase(OpalTestCase):
             reason_for_interaction="something"
         )
         self.assertFalse(self.patient.chronicantifungal_set.exists())
+
+class PositiveBloodCultureHistoryTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+
+    def test_creation_on_tagging_save(self):
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), datetime.date.today())
+
+    def test_not_created_on_a_different_tag_save(self):
+        self.episode.set_tag_names(["something"], self.user)
+        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 0)
+
+    def test_not_updated_on_other_removal(self):
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.patient.positivebloodculturehistory_set.update(
+            when=weeks_ago
+        )
+        self.episode.set_tag_names(["something"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), weeks_ago.date())
+
+    def test_updated_on_repeat_saves(self):
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.patient.positivebloodculturehistory_set.update(
+            when=weeks_ago
+        )
+        self.episode.set_tag_names(["something"], self.user)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), datetime.date.today())
+
+    def test_only_one_instance_created(self):
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+
+
+class BloodCultureIsolateTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.now = timezone.now()
+        self.yesterday = self.now - datetime.timedelta(1)
+        self.bcs = self.patient.bloodcultureset_set.create(
+            date_ordered=self.yesterday,
+            source="Hickman",
+            lab_number="111",
+            patient=self.patient,
+            created=self.yesterday,
+            created_by=self.user,
+            previous_mrn="123"
+        )
+        self.other_user = User.objects.create(
+            username="other_user"
+        )
+
+    def test_update_from_dict(self):
+        update_dict = {
+            "organism": "Aspergillus",
+            "blood_culture_set_id": self.bcs.id,
+            "created": self.yesterday,
+            "created_by_id": self.user.id,
+            "updated": self.now,
+            "updated_by_id": self.other_user.id
+        }
+        isolate = emodels.BloodCultureIsolate()
+        isolate.update_from_dict(update_dict, self.other_user)
+        self.bcs.refresh_from_db()
+        self.assertEqual(
+            self.bcs.created.strftime(settings.DATETIME_INPUT_FORMATS[0]),
+            self.yesterday.strftime(settings.DATETIME_INPUT_FORMATS[0])
+        )
+        self.assertEqual(self.bcs.created_by, self.user)
+        self.assertEqual(
+            self.bcs.updated.strftime(settings.DATETIME_INPUT_FORMATS[0]),
+            self.now.strftime(settings.DATETIME_INPUT_FORMATS[0])
+        )
+        self.assertEqual(self.bcs.updated_by, self.other_user)
+        self.assertIsNone(self.bcs.previous_mrn)
