@@ -212,6 +212,7 @@ directives.directive('scrollOnClick', function() {
     }
 });
 
+
 directives.directive('labNumberString', function(){
     return {
         // require: "ngModel",
@@ -222,8 +223,12 @@ directives.directive('labNumberString', function(){
             var regexp = /[0-9]+[LK][0-9]+/g;
 
             scope.text = text;
-            matches = text.match(regexp);
-            scope.lab_numbers = _.map(matches, function(x){ return x.replace(/^0+/, '') });
+            scope.lab_numbers = [];
+
+            if(text){ // sometimes patients don't have Covid.
+                matches = text.match(regexp);
+                scope.lab_numbers = _.map(matches, function(x){ return x.replace(/^0+/, '') });
+            }
         }
     }
 
