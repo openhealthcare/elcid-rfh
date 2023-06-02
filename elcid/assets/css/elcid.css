@@ -261,6 +261,13 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   color: #333;
 }
 
+.no-touchevents table td i.edit {
+  color: #d8dbdd;
+}
+.no-touchevents table td i.edit:hover {
+  color: #333;
+}
+
 .death-banner {
   margin-top: -95px;
   padding-top: 80px;

@@ -75,6 +75,7 @@
         <th>IPC Portal</th>
         <th>Actions</th>
         <th><!-- Isolation --></th>
+        <th></th> <!-- Edit -->
       </tr>
 
       {% for patient in ward %}
@@ -150,6 +151,14 @@
             </span>
           </span>
         </td>
+
+        <td ng-controller="EditSideroomHelper as editSideroomHelper">
+          {% if patient.patient %}
+          <i class="fa fa-pencil edit pointer"
+             ng-click="editSideroomHelper.edit_status({{patient.patient_id}})"></i>
+          {% endif %}
+        </td>
+
       </tr>
       {% endwith %}
       {% endfor %}
