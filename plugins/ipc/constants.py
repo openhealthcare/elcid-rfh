@@ -6,6 +6,7 @@ IPC_ROLE = "ipc_user"
 WARDS_TO_EXCLUDE_FROM_SIDEROOMS = [
     'RF-12 WEST B',
     'RF-12 EAST B',
+    '12 NORTH DIA',
     'BA-Test',
     'BA-Paed Test',
 ]
