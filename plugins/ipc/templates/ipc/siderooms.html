@@ -79,13 +79,18 @@
 
       {% for patient in ward %}
       {% with patient.patient.sideroomstatus_set.get as sideroom_status %}
-      <tr>
+      <tr {% if patient.is_open_bay %}
+          class="highlighted-row"
+          {% endif %}>
         <td>
           <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
             {{ patient.ward_name }}
           </a>
           {{ patient.room }}
           {{ patient.bed }}
+          {% if patient.is_open_bay %}
+          <br />Open Bay
+          {% endif %}
         </td>
         <td> {{ patient.bed_status }}</td>
         {% with patient.patient.demographics as demographics %}
@@ -111,10 +116,17 @@
           {{ sideroom_status.risk_score|default_if_none:"" }}
         </td>
         <td>
-          <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
-            {% if patient.patient.ipcstatus_set.get.comments %}
-            {{ patient.patient.ipcstatus_set.get.comments | linebreaks }}
+          <div class="max-360">
+            {% with patient.patient.ipcstatus_set.get as ipc_status %}
+            {% if ipc_status.comments %}
+            {{ ipc_status.comments | linebreaks }}
             {% endif %}
+            <span class="{% if ipc_status.covid_expired %}text-muted{% endif %}">
+              {% if ipc_status.covid_19_lab_numbers %}
+              {{ ipc_status.covid_19_lab_numbers }}
+              {% endif %}
+            </span>
+            {% endwith %}
           </div>
         </td>
         <td>
@@ -123,7 +135,7 @@
         <td ng-controller="IsolationHelper as isolationHelper">
           <span ng-show="isolationHelper.init(
                          '{{ patient.hospital_site_code }}',
-                         '{{ patient.ward_name }}',
+                         '{{ patient.wxard_name }}',
                          '{{ patient.room }}',
                          '{{ patient.bed }}',
                          {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
@@ -131,13 +143,8 @@
                          )">
             <span ng-hide='isolationHelper.isSideRoom'>
               <span ng-show='isolationHelper.isolated_bed_id'>
-                <button ng-click='isolationHelper.unisolate()' class="btn btn-primary">
-                  Open bed
-                </button>
-              </span>
-              <span ng-hide='isolationHelper.isolated_bed_id'>
-                <button ng-click="isolationHelper.isolate()" class="btn btn-default">
-                  Close bed
+                <button ng-click='isolationHelper.unisolate(true)' class="btn btn-sm btn-primary">
+                  Remove
                 </button>
               </span>
             </span>

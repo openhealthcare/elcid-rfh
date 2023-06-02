@@ -246,8 +246,6 @@ EPMA_DB = dict(
 # search with external demographics when adding a patient
 ADD_PATIENT_DEMOGRAPHICS = True
 
-# after we've added a patient, should we load in the labtests?
-ADD_PATIENT_LAB_TESTS = True
 
 #### END API Settings
 

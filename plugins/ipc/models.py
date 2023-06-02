@@ -143,6 +143,9 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     covid_19_date = models.DateField(
         blank=True, null=True, verbose_name='Covid-19 Date'
     )
+    covid_19_lab_numbers = models.TextField(
+        blank=True, null=True,
+    )
 
     contact_of_covid_19 = models.BooleanField(
         default=False, verbose_name='Contact of Covid-19'
@@ -158,6 +161,15 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     class Meta:
         verbose_name = 'IPC Portal Status'
 
+    def covid_expired(self):
+        if not self.covid_19_date:
+            return False
+
+        today = timezone.now().date()
+        expiry = today - datetime.timedelta(days=90)
+        expired = self.covid_19_date >= expiry
+
+        return expired
 
 
 class SideroomStatus(PreviousMRN, PatientSubrecord):

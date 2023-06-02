@@ -31,16 +31,19 @@ def log_errors(name):
 
 
 @timing
-def load_demographics(hospital_number):
+def search_upstream_demographics(hospital_number):
     started = timezone.now()
     try:
-        result = api.demographics(hospital_number)
+        active_mrn, _ = update_demographics.get_active_mrn_and_merged_mrn_data(
+            hospital_number
+        )
+        result = api.demographics(active_mrn)
     except:
         stopped = timezone.now()
-        logger.info("demographics load failed in {}".format(
+        logger.info("searching upstream demographics failed in {}".format(
             (stopped - started).seconds
         ))
-        log_errors("load_demographics")
+        log_errors("search_upstream_demographics")
         return
 
     return result
@@ -144,6 +147,7 @@ def async_load_patient(patient_id, patient_load_id):
         log_errors("_load_patient")
         raise
 
+
 @timing
 def _load_patient(patient, patient_load):
     logger.info(
@@ -199,7 +203,13 @@ def get_or_create_patient(
     Get or create a opal.Patient with an opal.Episode of the
     episode category.
 
-    if run_async is False the loaders that look for upstream data
+    If the patient is in the upstream Cerner master file, create the patient and
+    load in the upstream data.
+
+    If the patient is not found in the Cerner master file, create an elCID
+    patient and do not attempt to query upstream data sources.
+
+    If run_async is False the loaders that look for upstream data
     will be called synchronously.
     """
     patient = Patient.objects.filter(
@@ -215,9 +225,21 @@ def get_or_create_patient(
             category_name=episode_category.display_name
         )
         return (patient, False)
-    patient = create_rfh_patient_from_hospital_number(
-        mrn,
-        episode_category,
-        run_async=run_async
-    )
+    try:
+        patient = create_rfh_patient_from_hospital_number(
+            mrn,
+            episode_category,
+            run_async=run_async
+        )
+    except update_demographics.CernerPatientNotFoundException:
+        logger.info(
+            f"Unable to find MRN {mrn} in Cerner, creating the patient without the upstream data"
+        )
+        patient = Patient.objects.create()
+        patient.demographics_set.update(
+            hospital_number=mrn
+        )
+        patient.episode_set.create(
+            category_name=episode_category.display_name
+        )
     return patient, True

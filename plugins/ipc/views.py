@@ -96,8 +96,11 @@ class HospitalWardListView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        wards = BedStatus.objects.filter(hospital_site_code=k['hospital_code']).values_list(
+        wards = BedStatus.objects.filter(
+            hospital_site_code=k['hospital_code']
+        ).exclude(ward_name__in=constants.WARDS_TO_EXCLUDE_FROM_LIST).values_list(
             'ward_name', flat=True).distinct()
+
 
         wards = sorted(wards, key=natural_keys)
 
@@ -105,6 +108,7 @@ class HospitalWardListView(LoginRequiredMixin, TemplateView):
             hospital_site_code=k['hospital_code']).first().hospital_site_description
 
         context['wards'] = wards
+        context['hospital_ward_template'] = f"ipc/{k['hospital_code']}_ward_list.html"
 
         return context
 
@@ -118,6 +122,11 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
         locations = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
 
         for location in locations:
+            if location.room.startswith('SR'):
+                location.is_sideroom = True
+            if location.isolated_bed:
+                location.is_sideroom = True
+
             if location.patient:
                 ipc = location.patient.episode_set.filter(category_name='IPC').first()
                 if ipc:
@@ -214,7 +223,13 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
 
         ).exclude(ward_name='RF-Test').order_by('ward_name', 'bed')
 
+        # Do this here in case we filer everything out later
+        context['hospital_name'] = statuses[0].hospital_site_description
+
         for status in statuses:
+            if not status.room.startswith('SR'):
+                status.is_open_bay = True
+
             if status.patient:
                 ipc = status.patient.episode_set.filter(category_name='IPC').first()
                 if ipc:
@@ -238,7 +253,6 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             name[3:]: wards[name] for name in reversed(sorted(wards.keys(), key=sort_rfh_wards))
             if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
         }
-        context['hospital_name'] = statuses[0].hospital_site_description
         context['hospital_code'] = k['hospital_code']
         context['flags'] = list(models.IPCStatus.FLAGS.keys())
         return context
