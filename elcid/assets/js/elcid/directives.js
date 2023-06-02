@@ -219,9 +219,14 @@ directives.directive('labNumberString', function(){
         scope: true,
         template: "[[text]]<br/><span ng-repeat=\"lab_number in lab_numbers\"><a class=\"orange-link pointer\" ng-click=\"open_modal('LabDetailModalCtrl', '/templates/lab/lab_detail_modal.html', {'lab_number': lab_number} )\">[[ lab_number ]]</a> </span>",
         link: function(scope, element, attrs){
-            var text = scope.$eval(attrs.text);
-            var regexp = /[0-9]+[LK][0-9]+/g;
+            if(attrs.text){
+                var text = scope.$eval(attrs.text);
+            }
+            if(attrs.rawText){
+                var text = attrs.rawText
+            }
 
+            var regexp = /[0-9]+[LK][0-9]+/g;
             scope.text = text;
             scope.lab_numbers = [];
 

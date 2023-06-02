@@ -124,7 +124,7 @@
             {% endif %}
             <span class="{% if ipc_status.covid_expired %}text-muted{% endif %}">
               {% if ipc_status.covid_19_lab_numbers %}
-              {{ ipc_status.covid_19_lab_numbers }}
+                 <span lab-number-string raw_text="{{ ipc_status.covid_19_lab_numbers }}"></span>
               {% endif %}
             </span>
             {% endwith %}
