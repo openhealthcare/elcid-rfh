@@ -167,7 +167,7 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
 
         today = timezone.now().date()
         expiry = today - datetime.timedelta(days=90)
-        expired = self.covid_19_date >= expiry
+        expired = self.covid_19_date <= expiry
 
         return expired
 
