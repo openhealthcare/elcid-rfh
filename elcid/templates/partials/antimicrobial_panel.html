@@ -4,11 +4,13 @@
       <div class="panel-heading">
         <h3>
           <i class="{{ models.Antimicrobial.get_icon }}"></i> {{ models.Antimicrobial.get_display_name }}
+          {% if not request.user.profile.readonly %}
           <span>
               <i class="fa fa-plus-circle edit pull-right pointer"
                  ng-click="parent.recordEditor.newItem('{{ name }}')"></i>
               <i ng-show="parent.{{ name }}.length" class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".antimicrobial-panel"></i>
          </span>
+         {% endif %}
         </h3>
       </div>
       <ul class="list-group">
@@ -19,8 +21,10 @@
             </div>
             <div class="col-md-3">
               <span>
+                {% if not request.user.profile.readonly %}
                   <i class="fa fa-pencil edit pull-right pointer"
                      ng-click="parent.recordEditor.editItem('{{ name }}', item)"></i>
+                {% endif %}
               </span>
             </div>
           </div>

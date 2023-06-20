@@ -144,9 +144,11 @@
                          )">
             <span ng-hide='isolationHelper.isSideRoom'>
               <span ng-show='isolationHelper.isolated_bed_id'>
+                {% if not request.user.profile.readonly %}
                 <button ng-click='isolationHelper.unisolate(true)' class="btn btn-sm btn-primary">
                   Remove
                 </button>
+                {% endif %}
               </span>
             </span>
           </span>

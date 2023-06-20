@@ -84,3 +84,25 @@ class TestMultipleResults(OpalTestCase):
             ]
         }
         self.assertEqual(result.json(), expected)
+
+
+class TestTBTests(OpalTestCase):
+
+    def setUp(self):
+        self.request = self.rf.get("/")
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.url = reverse(
+            'tb_tests-detail',
+            kwargs={"pk": self.patient.id},
+            request=self.request
+        )
+        self.assertTrue(
+            self.client.login(
+                username=self.user.username, password=self.PASSWORD
+            )
+        )
+
+    def test_no_TB_epispde(self):
+        result = self.client.get(self.url)
+        expected = {}
+        self.assertEqual(result.json(), expected)

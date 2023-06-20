@@ -29,7 +29,9 @@
   <div class="col-md-6">
     {% include "partials/tb_appointments.html" %}
     {% include "partials/tb_summary_tests.html" %}
-    {% include "inline_forms/patient_consultation.html" %}
+    {% if not request.user.profile.readonly %}
+      {% include "inline_forms/patient_consultation.html" %}
+    {% endif %}
     <div ng-show="episode.patient_consultation.length" class="panel panel-default hidden-print">
       <div class="panel-body">
         <div class="patient-timeline-container">
@@ -98,11 +100,13 @@
                   </div>
                   <div class="col-sm-2">
                     <div class="row">
+                      {% if not request.user.profile.readonly %}
                       <div class="col-md-12">
                         <i class="fa fa-pencil edit pull-right pointer" ng-click="episode.recordEditor.openEditItemModal(item, 'patient_consultation')"></i>
                       </div>
                     </div>
                     <div class="row content-offset-10">
+                      {% endif %}
                       <div class="col-md-12">
                         <i class="fa fa-clipboard edit pull-right pointer" clipboard data-clipboard-target=".consultation-timeline-data-[[ $index ]]"></i>
                       </div>
@@ -128,10 +132,12 @@
                           <i class="fa fa-envelope edit pull-right pointer"></i>
                         </a>
                       </div>
+                      {% if not request.user.profile.readonly %}
                       <div ng-hide="item.sent_upstream" class="col-md-12">
                           <i class="fa fa-exchange edit pull-right pointer"
                           ng-click="open_modal('SendPatientConsultationUpstreamCtrl', '/templates/send_upstream_modal.html', {item:item, callback: refresh, patient: patient})"></i>
                       </div>
+                      {% endif %}
                     </div>
                   </div>
                 </div>

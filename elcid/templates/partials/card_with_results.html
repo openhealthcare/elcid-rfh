@@ -21,7 +21,7 @@
               </h3>
             </div>
             <div class="col-md-2 text-right">
-              {% if not patient_list.is_read_only %}
+              {% if not patient_list.is_read_only and not request.user.profile.readonly %}
               <button class="btn btn-primary" pathway-episode="row" open-pathway="remove" pathway-callback="removeFromList(row.id)">
                 {% icon 'fa-sign-out' %} Remove
               </button>
