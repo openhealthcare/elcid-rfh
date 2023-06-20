@@ -55,6 +55,15 @@ class TbTests(LoginRequiredViewset):
 
     @patient_from_pk
     def retrieve(self, request, patient):
+        tb_patient = patient.episode_set.filter(category_name=TBEpisode.display_name).exists()
+        # There is nowhere in the UI where these results are displayed if no TB episode
+        # exists, but due to questionable implementation details of episode detail views,
+        # sometimes this can be called for non-tb patients.
+        # If they have old -ve TB screening tests this raises an exception - prevent that
+        # by simply returning fast.
+        if not tb_patient:
+            return json_response({})
+
         # observations of a singl test are split across models, fetch them
         # and group them back by lab number
         smears = list(models.AFBSmear.objects.filter(
