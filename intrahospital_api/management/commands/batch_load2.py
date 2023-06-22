@@ -16,7 +16,7 @@ from plugins.labtests.models import Observation
 from plugins.labtests import logger
 from plugins.monitoring.models import Fact
 
-MAX_AMOUNT = 300000
+MAX_AMOUNT = 350000
 
 
 @transaction.atomic
