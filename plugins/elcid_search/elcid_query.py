@@ -1,5 +1,6 @@
 from opal.core.search.queries import DatabaseQuery
-
+from opal.models import Patient
+from elcid.models import Demographics
 
 class ElcidSearchQuery(DatabaseQuery):
     def fuzzy_query(self):
@@ -12,4 +13,9 @@ class ElcidSearchQuery(DatabaseQuery):
         """
         query_parts = self.query.split(" ")
         self.query = " ".join(i.lstrip('0') for i in query_parts)
+        self.query = self.query.strip()
+
+        if Demographics.objects.filter(hospital_number=self.query).exists():
+            return [Patient.objects.get(demographics__hospital_number=self.query)]
+
         return super().fuzzy_query()
