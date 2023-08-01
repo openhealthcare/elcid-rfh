@@ -4,11 +4,20 @@ from rest_framework import viewsets
 from opal.core.views import json_response
 from opal import models as omodels
 from opal.core import subrecords
+
 from elcid import models as emodels
 from elcid.episode_serialization import serialize
+from elcid.utils import timing
 from intrahospital_api import get_api
 
+@timing
+def timed_is_antifungal(episode_ids):
+    antifungal_episodes = emodels.ChronicAntifungal.antifungal_episodes()
+    return antifungal_episodes.filter(
+        id__in=episode_ids
+    ).exists()
 
+@timing
 def patient_to_dict(patient, user):
     subs = list(subrecords.subrecords())
     subs.append(omodels.Tagging)
@@ -62,10 +71,7 @@ def patient_to_dict(patient, user):
     episode_id_to_episode = {i["id"]: i for i in serialised_episodes}
     d["episodes"] = episode_id_to_episode
 
-    antifungal_episodes = emodels.ChronicAntifungal.antifungal_episodes()
-    d["is_antifungal"] = antifungal_episodes.filter(
-        id__in=episode_ids
-    ).exists()
+    d["is_antifungal"] = timed_is_antifungal(episode_ids)
 
     return d
 
@@ -82,18 +88,27 @@ class UpstreamDataViewset(viewsets.ViewSet):
         hospital_number = patient.demographics_set.first().hospital_number
         return json_response(api.results_for_hospital_number(hospital_number))
 
+@timing
+def timed_json_response(data):
+    return json_response(data)
+
+@timing
+def timed_get_bedstatus(patient):
+    return [
+            i.to_dict() for i in patient.bedstatus.all().order_by('-updated_date')
+        ]
 
 class PatientViewSet(viewsets.ViewSet):
     basename = 'patient'
     permission_classes = (IsAuthenticated,)
 
+    @timing
     def retrieve(self, request, pk=None):
         patient = get_object_or_404(omodels.Patient.objects.all(), pk=pk)
-        omodels.PatientRecordAccess.objects.create(
-            patient=patient, user=request.user
-        )
+        # omodels.PatientRecordAccess.objects.create(
+        #     patient=patient, user=request.user
+        # )
         patient_as_dict = patient_to_dict(patient, request.user)
-        patient_as_dict['bed_statuses'] = [
-            i.to_dict() for i in patient.bedstatus.all().order_by('-updated_date')
-        ]
-        return json_response(patient_as_dict)
+        patient_as_dict['bed_statuses'] = timed_get_bedstatus(patient)
+        response = timed_json_response(patient_as_dict)
+        return response

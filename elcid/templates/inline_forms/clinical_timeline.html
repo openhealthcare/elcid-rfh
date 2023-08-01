@@ -7,67 +7,67 @@
 {% endblock %}
 
 {% block additional_field_display %}
-<div ng-show="item.reason_for_interaction === '{{ models.MicrobiologyInput.ICU_REASON_FOR_INTERACTION }}'">
-  <div class="row">
-    <div class="col-md-6">
-      <b>Ventilation:</b>
-    </div>
-    <div class="col-md-6">
-      [[ item.micro_input_icu_round_relation.icu_round.ventilation_type ]]
-      <span ng-show="item.micro_input_icu_round_relation.icu_round.fio2">
-        FiO₂:
-        [[ item.micro_input_icu_round_relation.icu_round.fio2 ]]
-      </span>
-    </div>
-  </div> <!-- row -->
+<!-- <div ng-show="item.reason_for_interaction === '{{ models.MicrobiologyInput.ICU_REASON_FOR_INTERACTION }}'"> -->
+<!--   <div class="row"> -->
+<!--     <div class="col-md-6"> -->
+<!--       <b>Ventilation:</b> -->
+<!--     </div> -->
+<!--     <div class="col-md-6"> -->
+<!--       [[ item.micro_input_icu_round_relation.icu_round.ventilation_type ]] -->
+<!--       <span ng-show="item.micro_input_icu_round_relation.icu_round.fio2"> -->
+<!--         FiO₂: -->
+<!--         [[ item.micro_input_icu_round_relation.icu_round.fio2 ]] -->
+<!--       </span> -->
+<!--     </div> -->
+<!--   </div> <\!-- row -\-> -->
 
-  <div class="row">
-    <div class="col-md-6">
-      <b>Inotropic Support:</b>
-    </div>
-    <div class="col-md-6">
-      [[ item.micro_input_icu_round_relation.icu_round.inotrope ]]
-      [[ item.micro_input_icu_round_relation.icu_round.inotrope_dose ]]
-    </div>
-  </div> <!-- row -->
+<!--   <div class="row"> -->
+<!--     <div class="col-md-6"> -->
+<!--       <b>Inotropic Support:</b> -->
+<!--     </div> -->
+<!--     <div class="col-md-6"> -->
+<!--       [[ item.micro_input_icu_round_relation.icu_round.inotrope ]] -->
+<!--       [[ item.micro_input_icu_round_relation.icu_round.inotrope_dose ]] -->
+<!--     </div> -->
+<!--   </div> <\!-- row -\-> -->
 
-  <div class="row">
-    <div class="col-md-6">
-      <b>Vasopressor:</b>
-    </div>
-    <div class="col-md-6">
-      [[ item.micro_input_icu_round_relation.icu_round.vasopressor ]]
-      [[ item.micro_input_icu_round_relation.icu_round.vasopressor_dose ]]
-    </div>
-  </div> <!-- row -->
+<!--   <div class="row"> -->
+<!--     <div class="col-md-6"> -->
+<!--       <b>Vasopressor:</b> -->
+<!--     </div> -->
+<!--     <div class="col-md-6"> -->
+<!--       [[ item.micro_input_icu_round_relation.icu_round.vasopressor ]] -->
+<!--       [[ item.micro_input_icu_round_relation.icu_round.vasopressor_dose ]] -->
+<!--     </div> -->
+<!--   </div> <\!-- row -\-> -->
 
-  <div class="row">
-    <div class="col-md-6">
-      <b>MELD:</b>
-    </div>
-    <div class="col-md-6">
-      [[ item.micro_input_icu_round_relation.icu_round.meld_score ]]
-    </div>
-  </div> <!-- row -->
+<!--   <div class="row"> -->
+<!--     <div class="col-md-6"> -->
+<!--       <b>MELD:</b> -->
+<!--     </div> -->
+<!--     <div class="col-md-6"> -->
+<!--       [[ item.micro_input_icu_round_relation.icu_round.meld_score ]] -->
+<!--     </div> -->
+<!--   </div> <\!-- row -\-> -->
 
-  <div class="row">
-    <div class="col-md-6">
-      <b>SOFA:</b>
-    </div>
-    <div class="col-md-6">
-      [[ item.micro_input_icu_round_relation.icu_round.sofa_score ]]
-    </div>
-  </div> <!-- row -->
-  <div class="row">
-    <div class="col-md-6">
-      <b>Temperature:</b>
-    </div>
-    <div class="col-md-6">
-      [[ item.micro_input_icu_round_relation.observation.temperature ]]
-    </div>
-  </div> <!-- row -->
+<!--   <div class="row"> -->
+<!--     <div class="col-md-6"> -->
+<!--       <b>SOFA:</b> -->
+<!--     </div> -->
+<!--     <div class="col-md-6"> -->
+<!--       [[ item.micro_input_icu_round_relation.icu_round.sofa_score ]] -->
+<!--     </div> -->
+<!--   </div> <\!-- row -\-> -->
+<!--   <div class="row"> -->
+<!--     <div class="col-md-6"> -->
+<!--       <b>Temperature:</b> -->
+<!--     </div> -->
+<!--     <div class="col-md-6"> -->
+<!--       [[ item.micro_input_icu_round_relation.observation.temperature ]] -->
+<!--     </div> -->
+<!--   </div> <\!-- row -\-> -->
 
-</div>
+<!-- </div> -->
 
 {% endblock %}
 

@@ -403,30 +403,30 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
 
     def to_dict(self, *args, **kwargs):
         result = super().to_dict(*args, **kwargs)
-        if MicroInputICURoundRelation.objects.filter(microbiology_input_id=self.id).exists():
-            result["micro_input_icu_round_relation"] = self.microinputicuroundrelation.to_dict(*args, **kwargs)
-        else:
-            result["micro_input_icu_round_relation"] = MicroInputICURoundRelation().to_dict()
+        # if MicroInputICURoundRelation.objects.filter(microbiology_input_id=self.id).exists():
+        #     result["micro_input_icu_round_relation"] = self.microinputicuroundrelation.to_dict(*args, **kwargs)
+        # else:
+        #     result["micro_input_icu_round_relation"] = MicroInputICURoundRelation().to_dict()
         return result
 
     def update_from_dict(self, data, *args, **kwargs):
         micro_input_icu_round_relation = data.pop("micro_input_icu_round_relation", {})
         result = super().update_from_dict(data, *args, **kwargs)
 
-        if self.reason_for_interaction == self.ICU_REASON_FOR_INTERACTION:
-            icu_round, _ = MicroInputICURoundRelation.objects.get_or_create(
-                microbiology_input_id=self.id
-            )
-            icu_round.update_from_dict(
-                self.episode, data.get("when"), micro_input_icu_round_relation, *args, **kwargs
-            )
-            return result
-        else:
-            micro_input = MicroInputICURoundRelation.objects.filter(
-                microbiology_input_id=self.id
-            ).first()
-            if micro_input:
-                micro_input.delete_self()
+        # if self.reason_for_interaction == self.ICU_REASON_FOR_INTERACTION:
+        #     icu_round, _ = MicroInputICURoundRelation.objects.get_or_create(
+        #         microbiology_input_id=self.id
+        #     )
+        #     icu_round.update_from_dict(
+        #         self.episode, data.get("when"), micro_input_icu_round_relation, *args, **kwargs
+        #     )
+        #     return result
+        # else:
+        #     micro_input = MicroInputICURoundRelation.objects.filter(
+        #         microbiology_input_id=self.id
+        #     ).first()
+        #     if micro_input:
+        #         micro_input.delete_self()
         return result
 
     def delete(self):
