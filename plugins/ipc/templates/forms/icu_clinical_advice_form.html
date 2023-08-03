@@ -7,7 +7,7 @@
     <input class="form-control" type="text" ng-model="formItem.editing.initials" autocomplete="off" name="initials" required="1" ng-maxlength="255">
   </div>
 </div>
-{% select model="formItem.editing.reason_for_interaction" field="MicrobiologyInput.reason_for_interaction" lookuplist="['ICN Ward Review']"%}
+{% select model="formItem.editing.reason_for_interaction" field="MicrobiologyInput.reason_for_interaction" lookuplist="['IPC Note']"%}
 
 <div ng-controller="IPCFormAdviceHelper as ipcFormAdviceHelper">
   {% textarea model="formItem.editing.clinical_discussion" field="MicrobiologyInput.clinical_discussion" rows="30"%}
