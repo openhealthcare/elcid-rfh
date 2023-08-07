@@ -1,26 +1,30 @@
 from django.utils import timezone
-from intrahospital_api import loader
-from opal.core import subrecords
+import os
+import json
+from django.contrib.auth.models import User
+from intrahospital_api import loader, logger
+from opal.core.serialization import OpalSerializer
 from django.db import transaction
 from elcid import models as elcid_models
 from plugins.admissions import models as admission_models
-from plugins.appointments import models as appointment_models
 from plugins.covid import models as covid_models
 from plugins.dischargesummary import models as discharge_models
 from plugins.handover import models as handover_models
 from plugins.ipc import models as ipc_models
-from plugins.imaging import models as imaging_models
 from plugins.labtests import models as lab_models
 from intrahospital_api import models as intrahospital_api_models
 from plugins.icu import models as icu_models
 from plugins.rnoh import models as rnoh_models
 from plugins.tb import models as tb_models
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 from opal import models as opal_models
 import reversion
 
 
 IGNORED_FIELDS = {"id", "episode", "patient", "previous_mrn"}
+
+# not *.log so it will not be picked up log rotate
+MERGE_FILE = '/usr/lib/ohc/merge_log/merges.txt'
 
 # All models with a foriegn key to Patient that should be moved over
 PATIENT_RELATED_MODELS = [
@@ -122,6 +126,13 @@ STATUS_MODELS_TO_RELATED_MODEL = {
         handover_models.NursingHandover,
     ),
 }
+
+def append_to_merge_file(some_txt):
+    merge_dir = os.path.dirname(MERGE_FILE)
+    if not os.path.exists(merge_dir):
+        os.mkdir(merge_dir)
+    with open(MERGE_FILE, 'a+') as merge_file:
+        merge_file.write(some_txt + "\n")
 
 
 def update_tagging(*, old_episode, new_episode):
@@ -305,6 +316,18 @@ def merge_patient(*, old_patient, new_patient):
     new parent.
     """
     old_mrn = old_patient.demographics().hospital_number
+    new_mrn = new_patient.demographics().hospital_number
+    log_str = f'Merging patient id={old_patient.id} mrn={old_mrn} into patient id={new_patient.id} mrn={new_mrn}'
+    logger.info(log_str)
+    ohc = User.objects.get(username='ohc')
+    old_patient_json = json.dumps(old_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    logger.info('Inactive patient json')
+    logger.info(old_patient_json)
+    append_to_merge_file(old_patient_json)
+    new_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    logger.info('Active patient json')
+    logger.info(new_patient_json)
+
     for patient_related_model in PATIENT_RELATED_MODELS:
         if patient_related_model == lab_models.LabTest:
             move_lab_tests(old_patient, new_patient)
@@ -336,3 +359,8 @@ def merge_patient(*, old_patient, new_patient):
     )
     updates_statuses(new_patient)
     loader.load_patient(new_patient, run_async=False)
+    new_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    log_str = f'Merged patient id={new_patient.id}'
+    logger.info(log_str)
+    new_merged_patient_json = json.dumps(new_patient.to_dict(ohc), indent=4, cls=OpalSerializer)
+    logger.info(new_merged_patient_json)

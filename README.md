@@ -5,7 +5,6 @@ elCID is an electronic Clinical Infection Database.
 It is built using the [Opal](https://github.com/openhealthcare/opal) framework.
 
 [![Build
-Status](https://travis-ci.org/openhealthcare/elcid-rfh.png)](https://travis-ci.org/openhealthcare/elcid-rfh)
 [![Coverage Status](https://coveralls.io/repos/github/openhealthcare/elcid/badge.svg?branch=v0.2.4)](https://coveralls.io/github/openhealthcare/elcid?branch=v0.2.4)
 
 http://elcid.openhealthcare.org.uk

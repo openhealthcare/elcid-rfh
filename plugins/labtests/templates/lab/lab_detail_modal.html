@@ -1,0 +1,9 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block icon_name %}fa fa-flask{% endblock %}
+{% block title %}[[ lab_number ]]{% endblock %}
+
+{% block modal_body%}
+{% include "partials/lab_detail_test_lines.html" %}
+{% endblock %}
+
+{% block modal_save %}{% endblock %}
