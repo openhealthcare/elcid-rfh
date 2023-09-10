@@ -13,7 +13,7 @@ from intrahospital_api import update_lab_tests
 from plugins.labtests.models import Observation
 from plugins.monitoring.models import Fact
 
-MAX_AMOUNT = 250000
+MAX_AMOUNT = 350000
 
 
 @transaction.atomic

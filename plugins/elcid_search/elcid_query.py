@@ -1,3 +1,6 @@
+from opal.core.search.queries import DatabaseQuery
+from opal.models import Patient
+from elcid.models import Demographics
 from opal.core.search.queries import DatabaseQuery, PatientSummary
 from elcid import models
 
@@ -17,7 +20,6 @@ class ElcidPatientSummary(PatientSummary):
         result["previous_mrns"] = list(previous_merges.values_list('mrn', flat=True))
         return result
 
-
 class ElcidSearchQuery(DatabaseQuery):
     patient_summary_class = ElcidPatientSummary
 
@@ -31,4 +33,9 @@ class ElcidSearchQuery(DatabaseQuery):
         """
         query_parts = self.query.split(" ")
         self.query = " ".join(i.lstrip('0') for i in query_parts)
+        self.query = self.query.strip()
+
+        if Demographics.objects.filter(hospital_number=self.query).exists():
+            return [Patient.objects.get(demographics__hospital_number=self.query)]
+
         return super().fuzzy_query()
