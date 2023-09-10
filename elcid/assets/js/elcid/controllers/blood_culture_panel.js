@@ -37,7 +37,12 @@ angular.module('opal.controllers').controller('BloodCulturePanelCtrl', function(
     var deferred = $q.defer();
     $http.get("/api/v0.1/blood_culture_set/" + bcs.id + "/").then(function(result){
       var bcs_idx = _.findIndex($scope.patient.blood_culture_set, {id: bcs.id})
+      // when we update isolates we update the fields the previous_mrn, updated*
+      // fields on the set.
       $scope.patient.blood_culture_set[bcs_idx].isolates = result.data.isolates;
+      $scope.patient.blood_culture_set[bcs_idx].previous_mrn = result.data.previous_mrn;
+      $scope.patient.blood_culture_set[bcs_idx].updated = result.data.updated;
+      $scope.patient.blood_culture_set[bcs_idx].updated_by_id = result.data.updated_by_id;
       deferred.resolve();
     })
 

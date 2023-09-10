@@ -26,6 +26,10 @@ body{
     height: calc(100%);
 }
 
+.text-strong{
+    font-weight: bold;
+}
+
 .green {
     color: $green;
 }
@@ -291,6 +295,17 @@ a.list-group-item {
     color: #333;
   }
 }
+
+.no-touchevents
+table td i.edit{
+  color: $faded;
+
+  &:hover{
+    color: #333;
+  }
+
+}
+
 
 .death-banner {
     margin-top: -95px;
@@ -693,4 +708,61 @@ div.add-isolate:hover{
   td{
     max-width: 150px;
   }
+}
+
+
+.scrollable-table-container {
+    overflow-y: scroll;
+    height: 75%;
+    position: fixed;
+    width: 100%;
+}
+
+.border-bottom-secondary,
+.table-bordered th.border-bottom-secondary{
+    border-bottom: $secondary 2px solid;
+}
+
+.table-striped > tbody > tr.table-changed-heading:nth-child(odd) > th,
+.table-changed-heading th{
+    background-color: $blue-light;
+    border-bottom: $secondary 1px solid;
+}
+
+h1 small a{
+    font-size: 14px;
+}
+
+#sideroom-ward-nav {
+    position: fixed;
+    padding-top: 12px;
+    top: 142px;
+    border-right: 2px solid $secondary;
+    height: 100%;
+}
+#sideroom-ward-nav a{
+    padding-left: 4px;
+}
+#sideroom-gender-count {
+    color: $obsidian;
+    font-size: 0.4em;
+}
+#sideroom-gender-count div{
+    margin-right: 12px;
+}
+#sideroom-gender-count div,
+#sideroom-gender-count p{
+    display: inline-block;
+}
+
+table.table.table-striped tr.highlighted-row td{
+    background: lighten($blue-light, 18%);
+}
+.max-360 {
+    max-width: 360px;
+}
+.known-wards .row{
+    padding-bottom: 12px;
+    padding-top: 12px;
+    border-bottom: solid 1px $obsidian-light;
 }

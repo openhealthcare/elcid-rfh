@@ -9,7 +9,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 from opal.utils import camelcase_to_underscore
 import opal.models as omodels
-from obs import models as obs_models
 
 from opal.models import (
     EpisodeSubrecord, PatientSubrecord, ExternallySourcedModel, Patient
@@ -29,10 +28,11 @@ def get_for_lookup_list(model, values):
 
 class MergedMRN(models.Model):
     """
-    Represents each time this patient has had a duplicate MRN merged.
+    Represents an MRN (unique identifier) that has been used to
+    represent a patient in an upstream system but is no longer active.
 
-    e.g. if MRN 77456 was merged into patient 123
-    Patient 123 would have a patient merge object with MRN 77456
+    This does *not* include identifiers with leading zeros that have
+    sometimes been added as an implementation detail of other systems.
     """
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     mrn = models.CharField(max_length=256, unique=True, db_index=True)
@@ -54,6 +54,20 @@ class PreviousMRN(models.Model):
     class Meta:
         abstract = True
 
+    def update_from_dict(self, data, *args, **kwargs):
+        """
+        The original MRN is set when a patient is merged and the subrecord
+        exists on the previous patient object.
+
+        When this happens the previous patient is deleted. If the
+        subrecord is subsequently editted then we can remove
+        this value as the user is updating the subrecord
+        in the context of the merged patient.
+        """
+        if 'previous_mrn' in data:
+            data.pop('previous_mrn')
+        self.previous_mrn = None
+        return super().update_from_dict(data, *args, **kwargs)
 
 
 class Demographics(PreviousMRN, omodels.Demographics, ExternallySourcedModel):
@@ -378,7 +392,7 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
     _modal = 'lg'
     _list_limit = 3
     ICU_REASON_FOR_INTERACTION = "ICU round"
-    ICN_WARD_REVIEW_REASON_FOR_INTERACTION = "ICN Ward Review"
+    ICN_WARD_REVIEW_REASON_FOR_INTERACTION = "IPC Note"
     ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"
 
     when = models.DateTimeField(null=True, blank=True)
@@ -597,7 +611,6 @@ class RiskFactor(PreviousMRN, omodels.PatientSubrecord):
 class BloodCultureIsolate(
     omodels.UpdatesFromDictMixin,
     omodels.ToDictMixin,
-    omodels.TrackedModel,
     models.Model
 ):
     AEROBIC = "Aerobic"
@@ -639,6 +652,36 @@ class BloodCultureIsolate(
         omodels.Antimicrobial, blank=True, related_name="resistant_isolates"
     )
     notes = models.TextField(blank=True)
+
+    def update_from_dict(self, data, user, *args, **kwargs):
+        """
+        Changes updated*/previousMRN on the related
+        BloodCultureSet when the isolate is updated.
+        """
+        # created*/updated*/previous_mrn are hoisted onto
+        # the blood culture isolate from the blood culture set
+        # by the blood_culture_isolate.js, they are not fields
+        # on the isolate so need to be removed.
+        blood_culture_set_fields = [
+            "previous_mrn", "created", "created_by_id", "updated", "updated_by_id"
+        ]
+        for field in blood_culture_set_fields:
+            if field in data:
+                data.pop(field)
+
+        blood_culture_set_id = data.get('blood_culture_set_id')
+        blood_culture_set = BloodCultureSet.objects.get(
+            id=blood_culture_set_id
+        )
+        # data is ignored by the below for functions
+        blood_culture_set.set_updated_by_id(data, user)
+        blood_culture_set.set_updated(data, user)
+        blood_culture_set.save()
+
+        if blood_culture_set.previous_mrn:
+            blood_culture_set.previous_mrn = None
+            blood_culture_set.save()
+        return super().update_from_dict(data, user, *args, **kwargs)
 
     @classmethod
     def get_api_name(cls):
@@ -723,7 +766,7 @@ class MicroInputICURoundRelation(models.Model):
         MicrobiologyInput, blank=True, null=True, on_delete=models.SET_NULL
     )
     observation = models.OneToOneField(
-        obs_models.Observation, blank=True, null=True, on_delete=models.SET_NULL
+        "obs.Observation", blank=True, null=True, on_delete=models.SET_NULL
     )
     icu_round = models.OneToOneField(
         ICURound,
@@ -733,6 +776,7 @@ class MicroInputICURoundRelation(models.Model):
     )
 
     def update_from_dict(self, episode, when, data, *args, **kwargs):
+        from plugins.obs import models as obs_models
         if self.observation_id:
             observation = self.observation
         else:

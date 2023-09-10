@@ -24,22 +24,22 @@
                 </span>
                 Encounter ID: [[ title.encounter_id ]]
               </small>
+              <small class="pull-right">
+                <a href="/#/admissions/encounter/[[ title.encounter_id ]]/contacts/" class="orange-link">
+                  Contacts
+                </a>
+              </small>
             </h4>
             <table class="table table-bordered table-striped">
               <tr>
-                <th class="col-xs-1">Seq #</th>
-                <th class="col-xs-1">Start</th>
-                <th class="col-xs-1">End</th>
+                <th class="col-xs-2">Start</th>
+                <th class="col-xs-2">End</th>
                 <th class="col-xs-2">Duration</th>
-                <th class="col-xs-1">Location code</th>
-                <th class="col-xs-1">Hospital</th>
-                <th class="col-xs-1">Unit</th>
-                <th class="col-xs-1">Room</th>
-                <th class="col-xs-1">Bed</th>
+                <th class="">Location</th>
+                <th></th> <!-- Placeolder - bed history -->
                 <th class="col-xs-2">Reason</th>
               </tr>
               <tr ng-repeat='row in location_history.table_data'>
-                <td>[[ row.transfer_sequence_number ]]</td>
                 <td>[[ row.transfer_start_datetime | displayDateTime  ]]</td>
                 <td ng-class="{'text-warning': row.transfer_end_datetime && !(row.transfer_end_datetime | past:true) }">
                   [[ row.transfer_end_datetime | displayDateTime ]]
@@ -48,15 +48,16 @@
                   <span ng-show='row.duration'>[[ row.duration ]]</span>
                 </td>
                 <td>
-                  <span ng-show="row.transfer_location_code">
-                    <a class="orange-link" href="/#/admissions/location-history/[[ row.transfer_location_code ]]">
-                      [[ row.transfer_location_code ]]</td>
-                    </a>
-                  </span>
-                <td>[[ row.hospital ]]</td>
-                <td>[[ row.unit ]]</td>
-                <td>[[ row.room ]]</td>
-                <td>[[ row.bed ]]</td>
+                  [[ row.hospital ]]
+                  [[ row.unit ]]
+                  [[ row.room ]]
+                  [[ row.bed ]]
+                </td>
+                <td>
+                  <a class="orange-link" href="/#/admissions/location-history/[[ row.transfer_location_code ]]">
+                    Bed history
+                  </a>
+                </td>
                 <td>[[ row.transfer_reason ]]</td>
               </tr>
             </table>

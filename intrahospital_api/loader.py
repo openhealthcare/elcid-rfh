@@ -31,22 +31,27 @@ def log_errors(name):
 
 
 @timing
-def load_demographics(hospital_number):
+def search_upstream_demographics(hospital_number):
     started = timezone.now()
     try:
-        result = api.demographics(hospital_number)
+        active_mrn, _ = update_demographics.get_active_mrn_and_merged_mrn_data(
+            hospital_number
+        )
+        result = api.demographics(active_mrn)
     except:
         stopped = timezone.now()
-        logger.info("demographics load failed in {}".format(
+        logger.info("searching upstream demographics failed in {}".format(
             (stopped - started).seconds
         ))
-        log_errors("load_demographics")
+        log_errors("search_upstream_demographics")
         return
 
     return result
 
 
-def create_rfh_patient_from_hospital_number(hospital_number, episode_category, run_async=None):
+def create_rfh_patient_from_hospital_number(
+    hospital_number, episode_category, run_async=None
+):
     """
     Creates a patient programatically and sets up integration.
 
@@ -57,6 +62,7 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
 
     If a patient with this hospital number already exists raise ValueError
     If a hospital number prefixed with zero is passed in raise ValueError
+    If the hospital number has already been merged into another raise ValueError
     """
     if hospital_number.startswith('0'):
         raise ValueError(
@@ -64,18 +70,29 @@ def create_rfh_patient_from_hospital_number(hospital_number, episode_category, r
         )
 
     if emodels.Demographics.objects.filter(hospital_number=hospital_number).exists():
-        raise ValueError('Patient with this hospital number already exists')
+        raise ValueError(f'A patient with MRN {hospital_number} already exists')
+
+    if emodels.MergedMRN.objects.filter(mrn=hospital_number).exists():
+        raise ValueError(f'MRN {hospital_number} has already been merged into another MRN')
+
+    active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
+        hospital_number
+    )
 
     patient = Patient.objects.create()
-
-    demographics = patient.demographics()
-    demographics.hospital_number = hospital_number
-    demographics.save()
-
-    patient.create_episode(
-        category_name=episode_category.display_name,
-        start=datetime.date.today()
+    patient.demographics_set.update(
+        hospital_number=active_mrn
     )
+    patient.episode_set.create(
+        category_name=episode_category.display_name
+    )
+
+    for merged_mrn_dict in merged_mrn_dicts:
+        patient.mergedmrn_set.create(
+            our_merge_datetime=timezone.now(),
+            **merged_mrn_dict
+        )
+
     load_patient(patient, run_async=run_async)
     return patient
 
@@ -118,13 +135,18 @@ def async_task(patient, patient_load):
 
 
 def async_load_patient(patient_id, patient_load_id):
-    patient = Patient.objects.get(id=patient_id)
+    patient = Patient.objects.filter(id=patient_id).first()
+    # If the patient does not exist then we assume they have been merged
+    # and then deleted.
+    if not patient:
+        return
     patient_load = models.InitialPatientLoad.objects.get(id=patient_load_id)
     try:
         _load_patient(patient, patient_load)
     except:
         log_errors("_load_patient")
         raise
+
 
 @timing
 def _load_patient(patient, patient_load):
@@ -172,3 +194,52 @@ def _load_patient(patient, patient_load):
         patient_load.failed()
     else:
         patient_load.complete()
+
+
+def get_or_create_patient(
+    mrn, episode_category, run_async=None
+):
+    """
+    Get or create a opal.Patient with an opal.Episode of the
+    episode category.
+
+    If the patient is in the upstream Cerner master file, create the patient and
+    load in the upstream data.
+
+    If the patient is not found in the Cerner master file, create an elCID
+    patient and do not attempt to query upstream data sources.
+
+    If run_async is False the loaders that look for upstream data
+    will be called synchronously.
+    """
+    patient = Patient.objects.filter(
+        demographics__hospital_number=mrn
+    ).first()
+    if not patient:
+        patient = Patient.objects.filter(
+            mergedmrn__mrn=mrn
+        ).first()
+
+    if patient:
+        patient.episode_set.get_or_create(
+            category_name=episode_category.display_name
+        )
+        return (patient, False)
+    try:
+        patient = create_rfh_patient_from_hospital_number(
+            mrn,
+            episode_category,
+            run_async=run_async
+        )
+    except update_demographics.CernerPatientNotFoundException:
+        logger.info(
+            f"Unable to find MRN {mrn} in Cerner, creating the patient without the upstream data"
+        )
+        patient = Patient.objects.create()
+        patient.demographics_set.update(
+            hospital_number=mrn
+        )
+        patient.episode_set.create(
+            category_name=episode_category.display_name
+        )
+    return patient, True

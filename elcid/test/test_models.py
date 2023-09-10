@@ -1,8 +1,11 @@
 import datetime
 from unittest import mock
+from django.urls import reverse
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
+from django.conf import settings
 from elcid import episode_categories
 
 from opal.core import exceptions
@@ -11,7 +14,7 @@ from opal.models import (
     Patient, Episode, Condition, Synonym, Antimicrobial
 )
 from elcid import models as emodels
-from obs import models as obs_models
+from plugins.obs import models as obs_models
 
 
 class AbstractPatientTestCase(TestCase):
@@ -105,6 +108,52 @@ class DemographicsTest(OpalTestCase, AbstractPatientTestCase):
         self.demographics.save()
         self.demographics.refresh_from_db()
         self.assertEqual('AA1112', self.demographics.hospital_number)
+
+
+class PreviousMRNTestCase(OpalTestCase):
+    def setUp(self):
+        _, self.episode = self.new_patient_and_episode_please()
+        self.procedure = self.episode.procedure_set.create()
+
+    def test_nones_previous_mrn_on_update(self):
+        self.procedure.previous_mrn = "123"
+        self.procedure.stage = "Stage 1"
+        self.procedure.save()
+        self.procedure.update_from_dict(
+            {
+                'stage': 'Stage 2',
+                'previous_mrn': '123'
+            },
+            None
+        )
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.previous_mrn)
+
+    def test_does_not_error_if_previous_mrn_is_none(self):
+        self.procedure.stage = "Stage 1"
+        self.procedure.save()
+        self.procedure.update_from_dict({'stage': 'Stage 2'}, None)
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.previous_mrn)
+
+    def test_never_updates_from_the_front_end(self):
+        self.procedure.previous_mrn = None
+        self.procedure.save()
+        self.procedure.update_from_dict(
+            {'stage': 'Stage 2', 'previous_mrn': "234"},
+            None
+        )
+        procedure = self.episode.procedure_set.get()
+        self.assertEqual(
+            procedure.stage, "Stage 2"
+        )
+        self.assertIsNone(procedure.previous_mrn)
 
 
 class LocationTest(OpalTestCase, AbstractEpisodeTestCase):
@@ -261,6 +310,29 @@ class MicrobiologyInputTestCase(OpalTestCase):
             saved_input.microinputicuroundrelation.icu_round.id,
             emodels.ICURound.objects.get().id
         )
+
+    def test_update_from_dict_zeros_previous_mrn(self):
+        update_dict = {
+            'when': '27/03/2020 09:33:55',
+            'initials': 'FJK',
+            'infection_control': 'asdf',
+            'clinical_discussion': 'asdf',
+            'reason_for_interaction': 'ICU round',
+            'micro_input_icu_round_relation': {
+                'observation': {'temperature': 1111},
+                'icu_round': {}
+            },
+            'episode_id': self.episode.id
+        }
+        micro_input = emodels.MicrobiologyInput(
+            episode=self.episode, previous_mrn="123"
+        )
+        micro_input.update_from_dict(update_dict, self.user)
+        saved_input = self.episode.microbiologyinput_set.get()
+        self.assertEqual(
+            saved_input.previous_mrn, None
+        )
+
 
     def test_update_from_dict_without_when(self):
         update_dict = {
@@ -657,3 +729,85 @@ class ChronicAntifungalTestCase(OpalTestCase):
             reason_for_interaction="something"
         )
         self.assertFalse(self.patient.chronicantifungal_set.exists())
+
+class PositiveBloodCultureHistoryTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, self.episode = self.new_patient_and_episode_please()
+
+    def test_creation_on_tagging_save(self):
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), datetime.date.today())
+
+    def test_not_created_on_a_different_tag_save(self):
+        self.episode.set_tag_names(["something"], self.user)
+        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 0)
+
+    def test_not_updated_on_other_removal(self):
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.patient.positivebloodculturehistory_set.update(
+            when=weeks_ago
+        )
+        self.episode.set_tag_names(["something"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), weeks_ago.date())
+
+    def test_updated_on_repeat_saves(self):
+        weeks_ago = timezone.make_aware(datetime.datetime(2017, 1, 1))
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.patient.positivebloodculturehistory_set.update(
+            when=weeks_ago
+        )
+        self.episode.set_tag_names(["something"], self.user)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        pbch = self.patient.positivebloodculturehistory_set.get()
+        self.assertEqual(pbch.when.date(), datetime.date.today())
+
+    def test_only_one_instance_created(self):
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.episode.set_tag_names(["bacteraemia"], self.user)
+        self.assertEqual(self.patient.positivebloodculturehistory_set.count(), 1)
+
+
+class BloodCultureIsolateTestCase(OpalTestCase):
+    def setUp(self):
+        self.patient, _ = self.new_patient_and_episode_please()
+        self.now = timezone.now()
+        self.yesterday = self.now - datetime.timedelta(1)
+        self.bcs = self.patient.bloodcultureset_set.create(
+            date_ordered=self.yesterday,
+            source="Hickman",
+            lab_number="111",
+            patient=self.patient,
+            created=self.yesterday,
+            created_by=self.user,
+            previous_mrn="123"
+        )
+        self.other_user = User.objects.create(
+            username="other_user"
+        )
+
+    def test_update_from_dict(self):
+        update_dict = {
+            "organism": "Aspergillus",
+            "blood_culture_set_id": self.bcs.id,
+            "created": self.yesterday,
+            "created_by_id": self.user.id,
+            "updated": self.now,
+            "updated_by_id": self.other_user.id
+        }
+        isolate = emodels.BloodCultureIsolate()
+        isolate.update_from_dict(update_dict, self.other_user)
+        self.bcs.refresh_from_db()
+        self.assertEqual(
+            self.bcs.created.strftime(settings.DATETIME_INPUT_FORMATS[0]),
+            self.yesterday.strftime(settings.DATETIME_INPUT_FORMATS[0])
+        )
+        self.assertEqual(self.bcs.created_by, self.user)
+        self.assertEqual(
+            self.bcs.updated.strftime(settings.DATETIME_INPUT_FORMATS[0]),
+            self.now.strftime(settings.DATETIME_INPUT_FORMATS[0])
+        )
+        self.assertEqual(self.bcs.updated_by, self.other_user)
+        self.assertIsNone(self.bcs.previous_mrn)

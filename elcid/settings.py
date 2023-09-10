@@ -191,12 +191,12 @@ INSTALLED_APPS = (
     'plugins.ipc',
     'plugins.rnoh',
     'plugins.elcid_search',
+    'plugins.obs',
     'intrahospital_api',
     'elcid',
     'passwordreset',
     'django.contrib.admin',
     'django_celery_results',
-    'obs',
 )
 
 #### API Settings
@@ -246,8 +246,6 @@ EPMA_DB = dict(
 # search with external demographics when adding a patient
 ADD_PATIENT_DEMOGRAPHICS = True
 
-# after we've added a patient, should we load in the labtests?
-ADD_PATIENT_LAB_TESTS = True
 
 #### END API Settings
 
@@ -458,6 +456,25 @@ WAREHOUSE_DB = dict(
 
 EXTRACT_ASYNC = False
 OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
+WRITEBACK_ON = True
+
+OPAL_DEFAULT_SEARCH_FIELDS = [
+    "demographics__hospital_number",
+    "demographics__first_name",
+    "demographics__surname",
+    # Search the normal fields but also
+    # include mrns that have been merged
+    "mergedmrn__mrn"
+]
+
+OPAL_DEFAULT_SEARCH_FIELDS = [
+    "demographics__hospital_number",
+    "demographics__first_name",
+    "demographics__surname",
+    # Search the normal fields but also
+    # include mrns that have been merged
+    "mergedmrn__mrn"
+]
 
 COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')
 

@@ -193,20 +193,53 @@ directives.directive('printPage', function () {
 
 
 directives.directive('scrollOnClick', function() {
-  return {
-    restrict: 'A',
-    link: function(scope, $elm, attrs) {
-      var idToScroll = attrs.target;
-      $elm.on('click', function() {
-        var $target;
-        if (idToScroll) {
-          $target = $(idToScroll);
-        } else {
-          $target = $elm;
+    return {
+        restrict: 'A',
+        link: function(scope, $elm, attrs) {
+            var idToScroll = attrs.target;
+            var offset = attrs.offset
+            $elm.on('click', function() {
+                var $target;
+                if (idToScroll) {
+                    $target = $(idToScroll);
+                } else {
+                    $target = $elm;
+                }
+                if (offset){
+                    offset = parseInt(offset);
+                } else {
+                    offset = 100
+                }
+                $("html,body").animate({scrollTop: $target.offset().top-offset}, "slow");
+                return false;
+            });
         }
-          $("html,body").animate({scrollTop: $target.offset().top-100}, "slow");
-          return false;
-      });
     }
-  }
 });
+
+
+directives.directive('labNumberString', function(){
+    return {
+        // require: "ngModel",
+        scope: true,
+        template: "[[text]]<br/><span ng-repeat=\"lab_number in lab_numbers\"><a class=\"orange-link pointer\" ng-click=\"open_modal('LabDetailModalCtrl', '/templates/lab/lab_detail_modal.html', {'lab_number': lab_number} )\">[[ lab_number ]]</a> </span>",
+        link: function(scope, element, attrs){
+            if(attrs.text){
+                var text = scope.$eval(attrs.text);
+            }
+            if(attrs.rawText){
+                var text = attrs.rawText
+            }
+
+            var regexp = /[0-9]+[LK][0-9]+/g;
+            scope.text = text;
+            scope.lab_numbers = [];
+
+            if(text){ // sometimes patients don't have Covid.
+                matches = text.match(regexp);
+                scope.lab_numbers = _.map(matches, function(x){ return x.replace(/^0+/, '') });
+            }
+        }
+    }
+
+})

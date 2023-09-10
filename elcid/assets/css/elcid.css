@@ -1,6 +1,10 @@
 body {
   background-color: #EEE;
-  height: 100%;
+  height: calc(100%);
+}
+
+.text-strong {
+  font-weight: bold;
 }
 
 .green {
@@ -139,7 +143,8 @@ h5 {
 /* ngProgress overrides */
 .ngProgressLiteBar {
   background-color: #D36C08;
-  box-shadow: 0 0 10px 0; /* Inherits the font color */
+  box-shadow: 0 0 10px 0;
+  /* Inherits the font color */
 }
 
 .smpl-step > .smpl-step-step > .progress > .progress-bar {
@@ -192,7 +197,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   font-size: 1.1em;
 }
 
-
+/*# sourceMappingURL=elcid.css.map */
 .label-warning {
   background-color: #A03110;
 }
@@ -257,6 +262,13 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   cursor: pointer;
 }
 .no-touchevents .panel-heading i.edit:hover, .list-group-item i.edit:hover {
+  color: #333;
+}
+
+.no-touchevents table td i.edit {
+  color: #d8dbdd;
+}
+.no-touchevents table td i.edit:hover {
   color: #333;
 }
 
@@ -434,7 +446,7 @@ div.add-isolate:hover {
 }
 
 .left-menu {
-  background-color: rgb(70, 118, 197);
+  background-color: #4676c5;
   color: #FFF;
   width: 10%;
   float: left;
@@ -493,7 +505,7 @@ div.add-isolate:hover {
 }
 
 .patientlist-list:hover::-webkit-scrollbar-track, .touchevents .patientlist-list::-webkit-scrollbar-track {
-  background-color: rgb(70, 118, 197);
+  background-color: #4676c5;
 }
 
 .patientlist-list::-webkit-scrollbar {
@@ -502,7 +514,7 @@ div.add-isolate:hover {
 }
 
 .patientlist-list:hover::-webkit-scrollbar, .touchevents .patientlist-list::-webkit-scrollbar {
-  background-color: rgb(70, 118, 197);
+  background-color: #4676c5;
 }
 
 .patientlist-list::-webkit-scrollbar-thumb {
@@ -605,4 +617,68 @@ div.add-isolate:hover {
 }
 .tb-stats td {
   max-width: 150px;
-}/*# sourceMappingURL=elcid.css.map */
+}
+
+.scrollable-table-container {
+  overflow-y: scroll;
+  height: 75%;
+  position: fixed;
+  width: 100%;
+}
+
+.border-bottom-secondary,
+.table-bordered th.border-bottom-secondary {
+  border-bottom: #D36C08 2px solid;
+}
+
+.table-striped > tbody > tr.table-changed-heading:nth-child(odd) > th,
+.table-changed-heading th {
+  background-color: #a0c7ea;
+  border-bottom: #D36C08 1px solid;
+}
+
+h1 small a {
+  font-size: 14px;
+}
+
+#sideroom-ward-nav {
+  position: fixed;
+  padding-top: 12px;
+  top: 142px;
+  border-right: 2px solid #D36C08;
+  height: 100%;
+}
+
+#sideroom-ward-nav a {
+  padding-left: 4px;
+}
+
+#sideroom-gender-count {
+  color: #343637;
+  font-size: 0.4em;
+}
+
+#sideroom-gender-count div {
+  margin-right: 12px;
+}
+
+#sideroom-gender-count div,
+#sideroom-gender-count p {
+  display: inline-block;
+}
+
+table.table.table-striped tr.highlighted-row td {
+  background: #ebf3fb;
+}
+
+.max-360 {
+  max-width: 360px;
+}
+
+.known-wards .row {
+  padding-bottom: 12px;
+  padding-top: 12px;
+  border-bottom: solid 1px #cbc9c8;
+}
+
+/*# sourceMappingURL=elcid.css.map */

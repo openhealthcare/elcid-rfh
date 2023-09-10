@@ -13,6 +13,7 @@ class LabtestsPlugin(plugins.OpalPlugin):
     javascripts = {
         'opal.controllers': [
             'labtests/js/controllers/lab_detail.js',
+            'labtests/js/controllers/lab_detail_modal.js',
         ],
         'opal.services': [
             'labtests/js/services/lab_detail_loader.js',

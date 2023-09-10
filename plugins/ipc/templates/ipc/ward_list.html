@@ -1,14 +1,17 @@
 {% extends 'ipc/base.html' %}
 {% load ipc %}
+{% load elcid_templates %}
 {% block content %}
 <div class="panel panel-default">
   <div class="panel-heading">
     <h1>{{ hospital }} Wards</h1>
   </div>
   <div class="panel-body">
+    {% include_maybe hospital_ward_template %}
+
     <div class="row">
     {% for ward in wards %}
-    <div class="col-md-4">
+    <div class="col-md-2">
     <p>
       <a href="/#/ipc/bedboard/ward/{{ ward }}/" class="orange-link">
         {{ ward }}

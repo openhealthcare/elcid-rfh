@@ -20,6 +20,8 @@ class DischargeSummary(models.Model):
         Patient, on_delete=models.CASCADE, related_name='dischargesummaries')
 
     sql_internal_id         = models.IntegerField(blank=True, null=True)
+
+    # the MRN
     rf1_number              = models.CharField(blank=True, null=True, max_length=255)
     patient_nhs_number      = models.CharField(blank=True, null=True, max_length=255)
     patient_forenames       = models.CharField(blank=True, null=True, max_length=255)
