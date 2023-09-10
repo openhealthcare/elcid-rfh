@@ -1,7 +1,20 @@
 from collections import defaultdict
+
 from opal import managers
 from opal import models as omodels
 from opal.core.subrecords import patient_subrecords, episode_subrecords
+
+from elcid.utils import timing, timing_with_args
+
+@timing_with_args
+def timed_serialize_subrecord(model, qs_args, user):
+    subrecords = managers.prefetch(model.objects.filter(**qs_args))
+
+    for related in model._meta.many_to_many:
+        subrecords = subrecords.prefetch_related(related.attname)
+
+    return [sub.to_dict(user) for sub in subrecords]
+
 
 
 def serialize_subrecords(ids, user, subrecords_to_serialise):
@@ -28,16 +41,14 @@ def serialize_subrecords(ids, user, subrecords_to_serialise):
 
     for model in subrecords_to_serialise:
         name = model.get_api_name()
-        subrecords = managers.prefetch(model.objects.filter(**qs_args))
+        as_dicts = timed_serialize_subrecord(model, qs_args, user)
+        for subrecord in as_dicts:
+            result[subrecord.get(key)][name].append(subrecord)
 
-        for related in model._meta.many_to_many:
-            subrecords = subrecords.prefetch_related(related.attname)
-
-        for sub in subrecords:
-            result[getattr(sub, key)][name].append(sub.to_dict(user))
     return result
 
 
+@timing
 def serialize_episode_subrecords(episodes, user, subrecords=None):
     """
         serialises episode subrecords.
@@ -59,6 +70,7 @@ def serialize_episode_subrecords(episodes, user, subrecords=None):
     )
 
 
+@timing
 def serialize_patient_subrecords(episodes, user, subrecords=None):
     """
         serialises patient subrecords.
@@ -80,6 +92,7 @@ def serialize_patient_subrecords(episodes, user, subrecords=None):
     )
 
 
+@timing
 def serialize_tagging(episodes, user, subrecords=None):
     """
         Checks if we want to serialise the tagging model and if so
@@ -99,6 +112,7 @@ def serialize_tagging(episodes, user, subrecords=None):
         return taggings
 
 
+@timing
 def serialize(episodes, user, subrecords=None):
     """
     Return a set of serialize EPISODES.

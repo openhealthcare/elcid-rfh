@@ -29,6 +29,18 @@ def timing(f):
     return wrap
 
 
+def timing_with_args(f):
+    @wraps(f)
+    def wrap(*args, **kw):
+        ts = time()
+        result = f(*args, **kw)
+        te = time()
+        logger.info('timing_func: %r %2.4f sec (%s)' % (
+            f.__name__, te-ts, str(args)
+        ))
+        return result
+    return wrap
+
 def model_method_logging(f):
     @wraps(f)
     def wrap(self, *args, **kw):
