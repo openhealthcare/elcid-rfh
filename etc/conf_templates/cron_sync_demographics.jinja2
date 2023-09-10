@@ -1,2 +1,2 @@
-8 * * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py sync_demographics >> /usr/lib/ohc/log/cron.log 2>&1
+8 9,19,23 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py sync_demographics >> /usr/lib/ohc/log/cron.log 2>&1
 22 */6 * * * {{ unix_user }} {{ virtualenv }}/bin/python {{ project_dir }}/manage.py merge_patients_since >> /usr/lib/ohc/log/cron.log 2>&1
