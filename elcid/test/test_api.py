@@ -9,6 +9,8 @@ from opal.core.test import OpalTestCase
 from django.utils import timezone
 from django.test import override_settings
 from rest_framework.reverse import reverse
+from django.contrib.auth.models import User
+from django.conf import settings
 
 from elcid import models as emodels
 from elcid import patient_lists
@@ -433,11 +435,11 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(self.client.get(self.raw_url).status_code, 400)
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.search_upstream_demographics")
     def test_with_demographics_add_patient_not_found(
-        self, load_demographics
+        self, search_upstream_demographics
     ):
-        load_demographics.return_value = None
+        search_upstream_demographics.return_value = None
         response = json.loads(
             self.client.get(self.url).content.decode('utf-8')
         )
@@ -446,11 +448,11 @@ class DemographicsSearchTestCase(OpalTestCase):
         )
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.search_upstream_demographics")
     def test_with_demographics_add_patient_found_upstream(
-        self, load_demographics
+        self, search_upstream_demographics
     ):
-        load_demographics.return_value = dict(first_name="Wilma")
+        search_upstream_demographics.return_value = dict(first_name="Wilma")
         response = json.loads(
             self.client.get(self.get_url('01')).content.decode('utf-8')
         )
@@ -460,18 +462,18 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
-        load_demographics.assert_called_once_with('1')
+        search_upstream_demographics.assert_called_once_with('1')
 
     @override_settings(USE_UPSTREAM_DEMOGRAPHICS=True)
-    @mock.patch("elcid.api.loader.load_demographics")
+    @mock.patch("elcid.api.loader.search_upstream_demographics")
     def test_with_demographics_add_patient_found_upstream_without_zeros(
-        self, load_demographics
+        self, search_upstream_demographics
     ):
         """
         When we query upstream demographics, query should use
         the hn without preceding zeros.
         """
-        load_demographics.return_value = dict(first_name="Wilma")
+        search_upstream_demographics.return_value = dict(first_name="Wilma")
         response = json.loads(
             self.client.get(self.get_url('01')).content.decode('utf-8')
         )
@@ -481,7 +483,7 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
-        load_demographics.assert_called_once_with('1')
+        search_upstream_demographics.assert_called_once_with('1')
 
     def test_patient_found(self):
         self.get_patient("Wilma", "1")
@@ -492,6 +494,20 @@ class DemographicsSearchTestCase(OpalTestCase):
         self.assertEqual(
             response["patient"]["demographics"][0]["first_name"], "Wilma"
         )
+
+    def test_patient_found_with_merged_mrn(self):
+        patient = self.get_patient("Wilma", "123")
+        patient.mergedmrn_set.create(
+            mrn="1", our_merge_datetime=timezone.now()
+        )
+        response = json.loads(self.client.get(self.url).content.decode('utf-8'))
+        self.assertEqual(
+            response["status"], "patient_found_in_elcid"
+        )
+        self.assertEqual(
+            response["patient"]["demographics"][0]["first_name"], "Wilma"
+        )
+
 
     def test_with_demographics_add_patient_in_elcid_without_zeros(self):
         """
@@ -600,8 +616,6 @@ class BloodCultureSetTestCase(OpalTestCase):
                 'date_positive': datetime.date(2019, 5, 9),
                 'blood_culture_set_id': 1,
                 'consistency_token': '111',
-                'created': None,
-                'created_by_id': None,
                 'gpc_staph': '',
                 'gpc_strep': '',
                 'gram_stain': 'Gram -ve Rods',
@@ -612,8 +626,6 @@ class BloodCultureSetTestCase(OpalTestCase):
                 'sepsityper_organism': '',
                 'resistance': [],
                 'sensitivities': [],
-                'updated': None,
-                'updated_by_id': None
             }],
             'lab_number': '111',
             'patient_id': 1,
@@ -746,10 +758,10 @@ class BloodCultureSetTestCase(OpalTestCase):
 class BloodCultureIsolateTestCase(OpalTestCase):
     def setUp(self):
         positive = datetime.date(2019, 5, 8)
-        yesterday = positive - datetime.timedelta(1)
+        self.yesterday = positive - datetime.timedelta(1)
         patient, _ = self.new_patient_and_episode_please()
         self.bcs = emodels.BloodCultureSet.objects.create(
-            date_ordered=yesterday,
+            date_ordered=self.yesterday,
             source="Hickman",
             lab_number="111",
             patient=patient
@@ -790,17 +802,13 @@ class BloodCultureIsolateTestCase(OpalTestCase):
             'resistance': [],
             'sepsityper_organism': '',
             'gpc_strep': '',
-            'created_by_id': None,
-            'updated': None,
             'id': self.isolate.id,
             'gram_stain': 'Gram -ve Rods',
             'date_positive': datetime.date(2019, 5, 8),
             'sensitivities': [],
-            'updated_by_id': None,
             'quick_fish': 'Negative',
             'blood_culture_set_id': 1,
             'gpc_staph': '',
-            'created': None,
             'organism': '',
             'consistency_token': '111',
             'aerobic_or_anaerobic': 'Aerobic'
@@ -819,17 +827,13 @@ class BloodCultureIsolateTestCase(OpalTestCase):
             'resistance': [],
             'date_positive': datetime.date(2019, 5, 8),
             'gpc_strep': '',
-            'created_by_id': None,
-            'updated': None,
             'id': self.isolate.id,
             'gram_stain': 'Gram -ve Rods',
             'sensitivities': [],
             'sepsityper_organism': '',
-            'updated_by_id': None,
             'quick_fish': 'Negative',
             'blood_culture_set_id': 1,
             'gpc_staph': '',
-            'created': None,
             'organism': '',
             'consistency_token': '111',
             'aerobic_or_anaerobic': 'Aerobic'
@@ -874,6 +878,9 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         )
 
     def test_update(self):
+        # created should be updated on the blood culture set
+        # make sure we start with None
+        self.assertIsNone(self.bcs.created)
         data = {
             'id': self.isolate.id,
             'notes': '',
@@ -905,6 +912,23 @@ class BloodCultureIsolateTestCase(OpalTestCase):
         self.assertEqual(
             reloaded_isolate.aerobic_or_anaerobic, 'Anerobic'
         )
+        # created should be updated on the blood culture set
+        self.bcs.created = self.user
+
+    def test_delete(self):
+        self.bcs.updated = self.yesterday
+        other_user = User.objects.create(username="other user")
+        self.bcs.updated_by = other_user
+        self.bcs.save()
+        self.client.delete(self.detail_url)
+        self.bcs.refresh_from_db()
+        # it should be approximately now
+        self.assertTrue(
+            self.bcs.updated > timezone.now() - datetime.timedelta(minutes=1)
+        )
+        self.assertEqual(self.bcs.updated_by, self.user)
+
+
 
 @override_settings(NEW_LAB_TEST_SUMMARY_DISPLAY=True)
 class LabTestSummaryTestCase(OpalTestCase):

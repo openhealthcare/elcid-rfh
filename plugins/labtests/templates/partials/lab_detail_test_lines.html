@@ -1,0 +1,119 @@
+<div class="panel panel-default" ng-repeat="lab_test in lab_data.lab_tests">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-12">
+        <h3>
+          [[ lab_test.test_name ]] ([[ lab_test.test_code ]])
+        </h3>
+      </div>
+    </div>
+  </div>
+  <div class="panel-body">
+    <div class="row content-offset-10 content-offset-below-10">
+      <div class="col-md-3">
+        <b>Site</b>
+      </div>
+      <div class="col-md-3">
+        [[ lab_test.site ]]
+      </div>
+      <div class="col-md-3">
+        <b>Status</b>
+      </div>
+      <div class="col-md-3">
+        [[ lab_test.status ]]
+      </div>
+    </div>
+    <div class="row content-offset-10 content-offset-below-10">
+      <div class="col-md-3">
+        <b>Date time</b>
+      </div>
+      <div class="col-md-3">
+        [[ lab_test.datetime_ordered | displayDateTime ]]
+      </div>
+      <div class="col-md-3">
+        <b>Reported</b>
+      </div>
+      <div class="col-md-3">
+        [[ lab_test.observations[0].reported_datetime ]]
+      </div>
+    </div>
+    <div class="row content-offset-10 content-offset-below-10">
+      <div class="col-md-3">
+        <b>Accession number</b>
+      </div>
+      <div class="col-md-3">
+        [[ lab_test.accession_number ]]
+      </div>
+      <div class="col-md-3">
+        <b>Department</b>
+      </div>
+      <div class="col-md-3">
+        [[ lab_test.department_int ]]
+        <span ng-show='lab_test.department'>
+          ([[ lab_test.department ]])
+        </span>
+      </div>
+    </div>
+    <div class="row content-offset-10 content-offset-below-10">
+      <div class="col-md-3">
+        <b>Encounter consultant name</b>
+      </div>
+      <div class="col-md-3">
+        [[ lab_test.encounter_consultant_name ]]
+      </div>
+      <div ng-show="lab_test.encounter_location_name"  class="col-md-3">
+        <b>Encounter location</b>
+      </div>
+      <div ng-show="lab_test.encounter_location_name"  class="col-md-3">
+        [[ lab_test.encounter_location_name ]]
+        <span ng-show="lab_test.encounter_location_code">
+          ([[ lab_test.encounter_location_code ]])
+        </span>
+      </div>
+    </div>
+    <div ng-show="lab_test.clinical_info" class="row content-offset-10 content-offset-below-10">
+      <div class="col-md-3">
+        <b>Clinical info</b>
+      </div>
+      <div class="col-md-9">
+        [[ lab_test.clinical_info ]]
+      </div>
+    </div>
+    <span ng-repeat="item in lab_test.observations">
+      <hr>
+      <div class="row content-offset-10 content-offset-below-10">
+        <div ng-show="!item.observation_value || item.observation_value.length < 50" class="col-md-3">
+          <strong>
+            [[ item.observation_name ]]
+          </strong>
+        </div>
+        <div ng-show="!item.observation_value || item.observation_value.length < 50" class="col-md-3">
+          [[ item.observation_value ]] [[ item.units ]]
+        </div>
+        <div ng-show="item.observation_value && item.observation_value.length >= 50" class="col-md-6">
+          <strong>
+            [[ item.observation_name ]]
+          </strong>
+          <span ng-bind-html="item.observation_value + ' ' + item.units | markdown"></span>
+        </div>
+        <div class="col-md-3">
+          <b>
+            Observation number
+          </b>
+        </div>
+        <div class="col-md-3">
+          [[ item.observation_number ]]
+        </div>
+      </div>
+      <div ng-show="item.reference_range" class="row content-offset-10 content-offset-below-10">
+        <div class="col-md-3">
+          <b>
+            Reference range
+          </b>
+        </div>
+        <div class="col-md-3">
+          [[ item.reference_range ]]
+        </div>
+    </span>
+    </div>
+  </div>

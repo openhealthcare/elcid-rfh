@@ -23,10 +23,19 @@ angular.module('opal.services').service(
       this.isolateUrl = baseUrl;
       this.editing = {
         consistency_token: "",
-        blood_culture_set_id: blood_culture_set.id
+        blood_culture_set_id: blood_culture_set.id,
       }
       this.isNew = true;
     }
+
+    // we consider an isolate and a set to be one thing
+    // for the purposes of created*/updated*/previous_mrn
+    // even if when we are creating a new isolate.
+    this.editing.created = blood_culture_set.created;
+    this.editing.created_by_id = blood_culture_set.created_by_id;
+    this.editing.updated = blood_culture_set.updated;
+    this.editing.updated_by_id = blood_culture_set.updated_by_id;
+    this.editing.previous_mrn = blood_culture_set.previous_mrn;
 
     var isolate = this;
 

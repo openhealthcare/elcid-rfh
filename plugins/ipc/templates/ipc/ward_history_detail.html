@@ -1,0 +1,75 @@
+{% extends 'ipc/base.html' %}
+{% load ipc %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>
+      <a href="/#/ipc/bedboard/hospital/{{patients.first.hospital_site_code}}/" class="orange-link">
+        {{ patients.first.hospital_site_description }}
+      </a>
+      {{ ward_name }} History
+      <span>
+        ({{slices|length}} patients)
+      </span>
+    </h1>
+    <p class="text-muted">
+      All patients in any bed on {{ ward_name }} during the last 30 days
+    </p>
+  </div>
+  <section class="scrollable-table-container">
+  <table class="table table-striped">
+    <tr>
+      <th>Bed</th>
+      <th>Patient</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>IPC Comments</th>
+    </tr>
+    {% for slice in slices %}
+    {% ifchanged slice.bed %}
+    <tr class="table-changed-heading">
+      <th colspan="5">
+        <strong>{{ slice.room }} {{ slice.bed }}</strong>
+      </th>
+    </tr>
+    {% endifchanged %}
+    <tr>
+
+      <td>
+        {{ slice.room }}
+        {{ slice.bed }}
+      </td>
+      <td>
+        <a class="orange-link" href="/#/patient/{{ slice.patient_id }}{% if slice.ipc_episode %}/{{slice.ipc_episode.id}}{% endif %}">
+          {{ slice.patient.demographics.name }}
+        </a>
+        {{ slice.patient.demographics.hospital_number }}
+        {{ slice.patient.demographics.date_of_birth }}
+      </td>
+      <td>
+        {{ slice.transfer_start_datetime }}
+      </td>
+      <td>
+        {% if slice.transfer_end_datetime > now %}
+        <span class="text-warning">
+          {{ slice.transfer_end_datetime }}
+        </span>
+        {% else %}
+        {{ slice.transfer_end_datetime }}
+        {% endif %}
+
+      </td>
+      <td>
+        <div style="max-width:360px"><!-- TODO: NOT LIKE THIS -->
+          {% if slice.patient.ipcstatus_set.get.comments %}
+          {{ slice.patient.ipcstatus_set.get.comments | linebreaks }}
+          {% endif %}
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  </section>
+
+</div> <!-- Panel -->
+{% endblock %}

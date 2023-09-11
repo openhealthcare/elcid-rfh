@@ -61,6 +61,26 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     _is_singleton = True
     _icon = 'fa fa-list-ul'
 
+    FLAGS = {
+        'MRSA'                 : 'mrsa',
+        'MRSA NEG'             : 'mrsa_neg',
+        'Reactive'             : 'reactive',
+        'C Diff'               : 'c_difficile',
+        'VRE'                  : 'vre',
+        'VRE neg'              : 'vre_neg',
+        'Carb Res'             : 'carb_resistance',
+        'Carb Res contact'     : 'contact_of_carb_resistance',
+        'Acinetobacter'        : 'acinetobacter',
+        'Acinetobacter contact': 'contact_of_acinetobacter',
+        'CJD'                  : 'cjd',
+        'Candida Auris'        : 'candida_auris',
+        'Candida Auris contact': 'contact_of_candida_auris',
+        'MDR'                  : 'multi_drug_resistant_organism',
+        'Covid 19'             : 'covid_19',
+        'Covid 19 contact'     : 'contact_of_covid_19',
+
+    }
+
     mrsa = models.BooleanField(
         default=False, verbose_name='MRSA'
     )
@@ -123,6 +143,9 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     covid_19_date = models.DateField(
         blank=True, null=True, verbose_name='Covid-19 Date'
     )
+    covid_19_lab_numbers = models.TextField(
+        blank=True, null=True,
+    )
 
     contact_of_covid_19 = models.BooleanField(
         default=False, verbose_name='Contact of Covid-19'
@@ -137,3 +160,33 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
 
     class Meta:
         verbose_name = 'IPC Portal Status'
+
+    def covid_expired(self):
+        if not self.covid_19_date:
+            return False
+
+        today = timezone.now().date()
+        expiry = today - datetime.timedelta(days=90)
+        expired = self.covid_19_date <= expiry
+
+        return expired
+
+
+class SideroomStatus(PreviousMRN, PatientSubrecord):
+
+    _is_singleton = True
+    _icon = 'fa fa-hospital-o'
+
+    RISKS = enum(
+        '15', '20', '25', '30', '35', '40', '45', '50'
+    )
+
+    # A current risk score for this patient to enable prioritisation
+    # in a resource-constrained environment
+    risk_score = models.CharField(
+        max_length=5, blank=True, null=True, choices=RISKS
+    )
+    # Infections relevant to this admission, but not of permanant note
+    admission_organism = models.TextField(blank=True, null=True)
+    # notes on current tasks and actions that may be required
+    actions = models.TextField(blank=True, null=True)

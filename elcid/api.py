@@ -573,6 +573,17 @@ class DemographicsSearch(LoginRequiredViewset):
             hospital_number=hospital_number
         ).last()
 
+        # If we can't find a patient in demographics
+        # check to see if it is an inactive MRN that
+        # has been merged with a different MRN on elcid
+        if not demographics:
+            merged_mrn = emodels.MergedMRN.objects.filter(
+                mrn=hospital_number
+            ).first()
+            if merged_mrn:
+                demographics = merged_mrn.patient.demographics()
+
+
         # the patient is in elcid
         if demographics:
             return json_response(dict(
@@ -584,7 +595,7 @@ class DemographicsSearch(LoginRequiredViewset):
             return json_response(dict(status=self.PATIENT_NOT_FOUND))
         else:
             if settings.USE_UPSTREAM_DEMOGRAPHICS:
-                demographics = loader.load_demographics(hospital_number)
+                demographics = loader.search_upstream_demographics(hospital_number)
                 if demographics:
                     return json_response(dict(
                         patient=dict(demographics=[demographics]),
@@ -604,6 +615,25 @@ class BloodCultureIsolateApi(SubrecordViewSet):
             bc.to_dict(request.user),
             status_code=status.HTTP_201_CREATED
         )
+
+    @item_from_pk
+    def destroy(self, request, item):
+        """
+        Delete a blood culture isolate.
+        Update the updated* and previous_mrn fields of the parent
+        blood culture set.
+        """
+        blood_culture_set = item.blood_culture_set
+
+        # This uses the set_{field_name} behaviour from update_from_dict.
+        # We pass in None as the set_{field_name} interface takes in the value
+        # to set as the first argument but this is unused for the updated* methods.
+        blood_culture_set.set_updated_by_id(None, request.user)
+        blood_culture_set.set_updated(None, request.user)
+        if blood_culture_set.previous_mrn:
+            blood_culture_set.previous_mrn = None
+        blood_culture_set.save()
+        return super().destroy(request, item.id)
 
 
 class AddToServiceViewSet(LoginRequiredViewset):
