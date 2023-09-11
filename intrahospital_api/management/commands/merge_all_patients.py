@@ -61,7 +61,7 @@ def our_merge_patient(*, old_patient, new_patient):
         new_episode, _ = new_patient.episode_set.get_or_create(
             category_name=old_episode.category_name
         )
-        merge_patient.update_tagging(old_episode, new_episode)
+        merge_patient.update_tagging(old_episode=old_episode, new_episode=new_episode)
         for episode_related_model in merge_patient.EPISODE_RELATED_MODELS:
             merge_patient.move_record(
                 episode_related_model,
