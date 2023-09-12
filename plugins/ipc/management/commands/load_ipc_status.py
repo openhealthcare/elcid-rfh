@@ -6,14 +6,17 @@ We do not expect this to happen multiple times so the logic
 is just in this management command
 """
 import datetime
+
 from django.db import transaction
 from django.db.models.fields import BooleanField, DateField
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from intrahospital_api import loader
+from django.contrib.auth.models import
+
 from elcid.utils import find_patients_from_mrns
 from elcid import episode_categories as elcid_episode_categories
+from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahospital_api.update_demographics import CernerPatientNotFoundException
+from intrahospital_api import loader
 from plugins.ipc import logger
 from plugins.ipc.models import IPCStatus
 
@@ -102,9 +105,12 @@ class Command(BaseCommand):
                 if len(mrn) == 0:
                     continue
                 else:
-                    patient = loader.create_rfh_patient_from_hospital_number(
-                        mrn, elcid_episode_categories.InfectionService
-                    )
+                    try:
+                        patient = loader.create_rfh_patient_from_hospital_number(
+                            mrn, elcid_episode_categories.InfectionService
+                        )
+                    except CernerPatientNotFoundException:
+                        continue
 
             if patient.episode_set.filter(category_name='IPC').count() == 0:
                 patient.create_episode(category_name='IPC')
