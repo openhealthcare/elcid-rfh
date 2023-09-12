@@ -70,15 +70,6 @@ def check_feeds():
         errors.append(f"No appointments loaded since {last_appointment_str}")
     table_ctx["Last appointment updated/inserted"] = last_appointment
 
-    # Check Imaging
-    imaging_last_reported = Imaging.objects.aggregate(
-        max_date_reported=Max('date_reported')
-    )["max_date_reported"]
-    if not imaging_last_reported.date() == today:
-        imaging_last_reported_str = imaging_last_reported.strftime(str_format)
-        errors.append(f"No imaging loaded since {imaging_last_reported_str}")
-    table_ctx["Last imaging date reported"] = imaging_last_reported
-
     # Check Patient information
     crs_master_file_last_updated = MasterFileMeta.objects.aggregate(
         max_updated=Max("last_updated")
