@@ -106,7 +106,7 @@ class Command(BaseCommand):
                     continue
                 else:
                     try:
-                        patient = loader.create_rfh_patient_from_hospital_number(
+                        patient, _ = loader.get_or_create_patient(
                             mrn, elcid_episode_categories.InfectionService
                         )
                     except CernerPatientNotFoundException:
