@@ -1,15 +1,18 @@
+import csv
+import datetime
+import os
+import subprocess
+
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.utils import timezone
-import subprocess
 from django.db import models
+import pytds
+
 from elcid import models as elcid_models
 from elcid.utils import timing
 from plugins.admissions.models import TransferHistory
-import datetime
-import pytds
-import csv
-import os
+from plugins.admissions import logger
 
 
 FILE_NAME = "transfer_history.csv"
@@ -46,6 +49,7 @@ def stream_result():
     AND In_Spells = 1
     ORDER BY LOCAL_PATIENT_IDENTIFIER, ENCNTR_SLICE_ID
     """
+    logger.info('Fetching all our MRNs')
     mrn_and_patient_id = elcid_models.Demographics.objects.values_list(
         "hospital_number", "patient_id"
     )
@@ -63,10 +67,12 @@ def stream_result():
             as_dict=True,
         ) as conn:
             with conn.cursor() as cur:
+                logger.info('Starting Query')
                 cur.execute(query)
                 while True:
                     result = cur.fetchmany()
                     if result:
+                        print('.')
                         for upstream_row in result:
                             row_mrn = upstream_row["LOCAL_PATIENT_IDENTIFIER"]
                             if row_mrn not in mrn_to_patient_id:
