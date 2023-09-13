@@ -70,9 +70,9 @@
         <th>Patient</th>
         <th>Sex</th>
         <th>Admitted</th>
-        <th>Organism</th>
         <th>Risk</th>
-        <th>IPC Portal</th>
+        <th>IPC Flags</th>
+        <th>Problems</th>
         <th>Actions</th>
         <th><!-- Isolation --></th>
         <th></th> <!-- Edit -->
@@ -87,6 +87,7 @@
           <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
             {{ patient.ward_name }}
           </a>
+          <br />
           {{ patient.room }}
           {{ patient.bed }}
           {% if patient.is_open_bay %}
@@ -111,9 +112,6 @@
           {% endif %}
         </td>
         <td>
-          {{ sideroom_status.admission_organism|default_if_none:"" }}
-        </td>
-        <td>
           {{ sideroom_status.risk_score|default_if_none:"" }}
         </td>
         <td>
@@ -129,6 +127,10 @@
             </span>
             {% endwith %}
           </div>
+        </td>
+
+        <td>
+          {{ sideroom_status.admission_organism|default_if_none:"" }}
         </td>
         <td>
           {{ sideroom_status.actions|default_if_none:""| linebreaks }}
