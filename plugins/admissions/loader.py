@@ -14,6 +14,7 @@ from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from elcid.utils import find_patients_from_mrns
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
+from intrahpspital_api.exceptions import CernerPatientNotFoundException
 
 from plugins.admissions.models import Encounter, PatientEncounterStatus, TransferHistory, BedStatus
 from plugins.admissions import logger
@@ -267,7 +268,12 @@ def create_transfer_histories(unfiltered_rows):
 
     for mrn in mrns:
         if mrn not in mrn_to_patients:
-            mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(mrn, InfectionService)
+            try:
+                mrn_to_patients[mrn] = create_rfh_patient_from_hospital_number(mrn, InfectionService)
+            except CernerPatientNotFoundException:
+                # If we couldn't find it in the masterfile, filter out rows for this MRN
+                # These are noise in the warehouse data
+                some_rows = [r for r in some_rows if r['LOCAL_PATIENT_IDENTIFIER'] != mrn]
 
     slice_ids = [i["ENCNTR_SLICE_ID"] for i in some_rows]
     TransferHistory.objects.filter(
