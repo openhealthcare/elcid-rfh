@@ -14,7 +14,7 @@ from elcid.episode_categories import InfectionService
 from elcid.models import Demographics
 from elcid.utils import find_patients_from_mrns
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
-from intrahpspital_api.exceptions import CernerPatientNotFoundException
+from intrahospital_api.exceptions import CernerPatientNotFoundException
 
 from plugins.admissions.models import Encounter, PatientEncounterStatus, TransferHistory, BedStatus
 from plugins.admissions import logger
