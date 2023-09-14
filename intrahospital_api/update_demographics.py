@@ -1,27 +1,29 @@
 """
 Handles updating demographics pulled in by the loader
 """
+from collections import defaultdict
 import datetime
 import re
-from plugins.monitoring.models import Fact
 from time import time
-from collections import defaultdict
-from opal.core.fields import ForeignKeyOrFreeText
+
 from django.db import transaction
 from django.db.models import DateTimeField, DateField
 from django.utils import timezone
 from django.conf import settings
+from opal.core.fields import ForeignKeyOrFreeText
 from opal.models import Patient
 from opal.core.serialization import (
     deserialize_date, deserialize_datetime
 )
 
-from intrahospital_api import logger, loader, get_api, merge_patient
-from intrahospital_api import merge_patient
-from intrahospital_api.constants import EXTERNAL_SYSTEM
 from elcid.utils import timing, send_email
 from elcid import episode_categories as elcid_episode_categories
 from elcid import constants, models
+from plugins.monitoring.models import Fact
+from intrahospital_api import logger, loader, get_api, merge_patient
+from intrahospital_api import merge_patient
+from intrahospital_api.constants import EXTERNAL_SYSTEM
+from intrahospital_api.exceptions import MergeException, CernerPatientNotFoundException
 
 api = get_api()
 
@@ -242,14 +244,6 @@ def get_all_merged_mrns_since(since):
         GET_ALL_MERGED_MRNS_SINCE, params={"since": since}
     )
     return [i["Patient_Number"] for i in query_result]
-
-
-class MergeException(Exception):
-    pass
-
-
-class CernerPatientNotFoundException(Exception):
-    pass
 
 
 def is_mrn_in_elcid(mrn):

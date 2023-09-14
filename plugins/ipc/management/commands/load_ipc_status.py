@@ -10,7 +10,7 @@ import datetime
 from django.db import transaction
 from django.db.models.fields import BooleanField, DateField
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import
+from django.contrib.auth.models import User
 
 from elcid.utils import find_patients_from_mrns
 from elcid import episode_categories as elcid_episode_categories
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                     continue
                 else:
                     try:
-                        patient = loader.create_rfh_patient_from_hospital_number(
+                        patient, _ = loader.get_or_create_patient(
                             mrn, elcid_episode_categories.InfectionService
                         )
                     except CernerPatientNotFoundException:
