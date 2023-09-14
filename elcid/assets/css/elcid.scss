@@ -26,10 +26,6 @@ body{
     height: calc(100%);
 }
 
-.text-strong{
-    font-weight: bold;
-}
-
 .green {
     color: $green;
 }
@@ -756,7 +752,7 @@ h1 small a{
 }
 
 table.table.table-striped tr.highlighted-row td{
-    background: lighten($blue-light, 18%);
+    background: $blue-light;
 }
 .max-360 {
     max-width: 360px;
