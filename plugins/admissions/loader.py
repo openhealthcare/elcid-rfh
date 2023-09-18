@@ -312,9 +312,14 @@ def load_bed_status():
     for mrn in mrns:
         if mrn not in mrn_to_patient:
             if mrn and mrn.strip("0").strip():
-                mrn_to_patient[mrn] = create_rfh_patient_from_hospital_number(
-                    mrn, InfectionService
-                )
+                try:
+                    mrn_to_patient[mrn] = create_rfh_patient_from_hospital_number(
+                        mrn, InfectionService
+                    )
+                except CernerPatientNotFoundException:
+                    # If we couldn't find it in the masterfile, for now, don't care
+                    continue
+
 
     with transaction.atomic():
         BedStatus.objects.all().delete()
