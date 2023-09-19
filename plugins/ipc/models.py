@@ -172,6 +172,13 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
 
         return expired
 
+    def is_flagged(self):
+        """
+        Predicate function to return true if this patient has
+        any active IPC flags.
+        """
+        return bool(any(getattr(self, f) for f in self.FLAGS.values()))
+
 
 class SideroomStatus(PreviousMRN, PatientSubrecord):
 
