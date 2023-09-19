@@ -130,8 +130,10 @@ app.config(
                    param_template_route('/templates/ipc/ward/30-day/', ['ward_name']))
 
              .when('/ipc/siderooms/:hospital_code', param_template_route('/templates/ipc/isolation/', ['hospital_code']))
-             .when('/ipc/siderooms/:hospital_code/:flag',
+             .when('/ipc/siderooms/:hospital_code/flagged/:flag',
                    param_template_route('/templates/ipc/isolation/', ['hospital_code', 'flag']))
+             .when('/ipc/siderooms/:hospital_code/:room_code',
+                   param_template_route('/templates/ipc/isolation/', ['hospital_code']))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', ['alert_code']))
 
              .when('/rnoh/inpatients/',             static_template_route('/templates/rnoh/inpatients.html'))
