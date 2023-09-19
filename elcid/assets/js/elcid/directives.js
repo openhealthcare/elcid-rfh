@@ -222,7 +222,7 @@ directives.directive('labNumberString', function(){
     return {
         // require: "ngModel",
         scope: true,
-        template: "[[text]]<br/><span ng-repeat=\"lab_number in lab_numbers\"><a class=\"orange-link pointer\" ng-click=\"open_modal('LabDetailModalCtrl', '/templates/lab/lab_detail_modal.html', {'lab_number': lab_number} )\">[[ lab_number ]]</a> </span>",
+        template: "<span ng-if=\"text\">[[text]]<br/></span><span ng-repeat=\"lab_number in lab_numbers\"><a class=\"orange-link pointer\" ng-click=\"open_modal('LabDetailModalCtrl', '/templates/lab/lab_detail_modal.html', {'lab_number': lab_number} )\">[[ lab_number ]]</a> </span>",
         link: function(scope, element, attrs){
             if(attrs.text){
                 var text = scope.$eval(attrs.text);

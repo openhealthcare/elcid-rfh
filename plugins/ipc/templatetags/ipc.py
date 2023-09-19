@@ -30,12 +30,15 @@ def location_alerts(location, **k):
 
 
 @register.inclusion_tag('templatetags/ipc_check_box_and_date_field.html')
-def ipc_check_box_and_date_field(field):
+def ipc_check_box_and_date_field(field, lab_numbers=False):
     ctx = {"formname": "form", "field": field}
     ctx["date_field"] = f"{field}_date"
+    ctx["lab_field"] = f"{field}_lab_numbers"
     ctx["label"] = models.IPCStatus._get_field_title(field)
     ctx["model"] = f"editing.ipc_status.{field}"
     ctx["date_model"] = f"{ctx['model']}_date"
+    ctx["lab_model"] = f"{ctx['model']}_lab_numbers"
+    ctx["lab_numbers"] = lab_numbers
     if not models.IPCStatus._meta.get_field(ctx["date_field"]):
         raise ValueError(f'Unknown IPC date field {ctx["date_field"]}')
     return ctx

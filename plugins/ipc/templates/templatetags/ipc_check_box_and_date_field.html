@@ -1,30 +1,54 @@
 <div class="form-group">
-  <label class="control-label col-sm-3"> {{ label }}</label>
-  <div class="col-sm-2" >
-    <div class="btn-group btn-toggles">
-      <label class="btn btn-primary" ng-model="{{ model }}" uib-btn-radio="true">Yes</label>
-      <label class="btn btn-primary" ng-model="{{ model }}" uib-btn-radio="false">No</label>
+  <div class="row">
+    <label class="control-label col-sm-3"> {{ label }}</label>
+    <div class="col-sm-2" >
+      <div class="btn-group btn-toggles">
+        <label class="btn btn-primary" ng-model="{{ model }}" uib-btn-radio="true">Yes</label>
+        <label class="btn btn-primary" ng-model="{{ model }}" uib-btn-radio="false">No</label>
+      </div>
     </div>
-  </div>
-  <div class="col-sm-5" >
-    <div class="input-group">
-      <input type="text" class="form-control"
-              uib-datepicker-popup="dd/MM/yyyy"
-              ng-model="{{ date_model }}"
-              is-open="{{ formname }}['{{ date_field }}' + '_open']"
-              min-date="{{ mindate}}"
-              max-date="maxDate"
-              show-button-bar="false"
-              show-weeks="false"
-              name="{{ date_field }}"
-              datepicker-options="{startingDay: 1}"
-              ng-focus="{{ formname }}['{{ date_field }}' + '_open']=true"
-              close-text="Close"
-        />
+    <div class="col-sm-5" >
+      <div class="input-group">
+        <input type="text" class="form-control"
+               uib-datepicker-popup="dd/MM/yyyy"
+               ng-model="{{ date_model }}"
+               is-open="{{ formname }}['{{ date_field }}' + '_open']"
+               min-date="{{ mindate}}"
+               max-date="maxDate"
+               show-button-bar="false"
+               show-weeks="false"
+               name="{{ date_field }}"
+               datepicker-options="{startingDay: 1}"
+               ng-focus="{{ formname }}['{{ date_field }}' + '_open']=true"
+               close-text="Close"
+               />
         <span class="input-group-btn">
-          <button type="button" class="btn btn-default" ng-click="{{ date_model }} = dateHelper.now()" href="">Today</a>
-          <button type="button" class="btn btn-default" ng-click="{{ date_model }} = dateHelper.yesterday()" href="">Yesterday</a>
+          <button type="button" class="btn btn-default" ng-click="{{ date_model }} = dateHelper.now()" href="">
+            Today
+          </button>
+          <button type="button" class="btn btn-default" ng-click="{{ date_model }} = dateHelper.yesterday()" href="">
+            Yesterday
+          </button>
         </span>
       </div>
+    </div>
   </div>
+  {% if lab_numbers %}
+  <div class="form-group">
+    <div class="row">
+      <label class="control-label col-sm-3">Lab Numbers</label>
+
+      <div class="col-sm-5 content-offset-5 content-offset-left-5">
+        <input class="form-control"
+               type="text"
+               ng-model="{{ lab_model }}"
+               autocomplete="off"
+               name="{{ lab_field }}"
+               />
+
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
+<hr />

@@ -2,24 +2,22 @@
 {% load ipc %}
 
 {% textarea field="IPCStatus.comments" %}
-{% ipc_check_box_and_date_field 'mrsa' %}
-{% ipc_check_box_and_date_field 'mrsa_neg' %}
-{% ipc_check_box_and_date_field 'reactive' %}
-{% ipc_check_box_and_date_field 'c_difficile' %}
-{% ipc_check_box_and_date_field 'vre' %}
-{% ipc_check_box_and_date_field 'vre_neg' %}
-{% ipc_check_box_and_date_field 'carb_resistance' %}
+
+{% ipc_check_box_and_date_field 'mrsa' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'mrsa_neg' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'reactive' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'c_difficile' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'vre' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'vre_neg' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'carb_resistance' lab_numbers=True %}
 {% ipc_check_box_and_date_field 'contact_of_carb_resistance' %}
-{% ipc_check_box_and_date_field 'acinetobacter' %}
+{% ipc_check_box_and_date_field 'acinetobacter' lab_numbers=True %}
 {% ipc_check_box_and_date_field 'contact_of_acinetobacter' %}
-{% ipc_check_box_and_date_field 'cjd' %}
-{% ipc_check_box_and_date_field 'candida_auris' %}
+{% ipc_check_box_and_date_field 'cjd' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'candida_auris' lab_numbers=True %}
 {% ipc_check_box_and_date_field 'contact_of_candida_auris' %}
-{% ipc_check_box_and_date_field 'multi_drug_resistant_organism' %}
-
-{% ipc_check_box_and_date_field 'covid_19' %}
-{% input field="IPCStatus.covid_19_lab_numbers" %}
-
+{% ipc_check_box_and_date_field 'multi_drug_resistant_organism' lab_numbers=True %}
+{% ipc_check_box_and_date_field 'covid_19' lab_numbers=True %}
 {% ipc_check_box_and_date_field 'contact_of_covid_19' %}
 
 {% input field="IPCStatus.other" %}

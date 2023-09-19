@@ -1,42 +1,49 @@
 <span ng-show="item.mrsa || item.mrsa_date">
      MRSA [[ item.mrsa_date | displayDate ]]
      <span ng-show="item.mrsa">(<i class="fa fa-check"></i>)</span>
+     <span lab-number-string text="item.mrsa_lab_numbers"></span>
    <br />
 </span>
 
 <span ng-show="item.mrsa_neg || item.mrsa_neg_date">
    MRSA Neg [[ item.mrsa_neg_date | displayDate ]]
    <span ng-show="item.mrsa_neg">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.mrsa_neg_lab_numbers"></span>
  <br />
 </span>
 
 <span ng-show="item.reactive || item.reactive_date">
    Reactive [[ item.reactive_date | displayDate ]]
    <span ng-show="item.reactive">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.reactive_lab_numbers"></span>
 <br />
 </span>
 
 <span ng-show="item.c_difficile || item.c_difficile_date">
    C Difficile [[ item.c_difficile_date | displayDate ]]
    <span ng-show="item.c_difficile">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.c_difficile_lab_numbers"></span>
 <br />
 </span>
 
 <span ng-show="item.vre || item.vre_date">
    VRE [[ item.vre_date | displayDate ]]
    <span ng-show="item.vre">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.vre_lab_numbers"></span>
 <br />
 </span>
 
 <span ng-show="item.vre_neg || item.vre_neg_date">
    VRE Neg [[ item.vre_neg_date | displayDate ]]
    <span ng-show="item.vre_neg">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.vre_neg_lab_numbers"></span>
 <br />
 </span>
 
 <span ng-show="item.carb_resistance || item.carb_resistance_date">
    Carb Resistance [[ item.carb_resistance_date | displayDate ]]
    <span ng-show="item.carb_resistance">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.carb_resistance_lab_numbers"></span>
 <br />
 </span>
 
@@ -49,6 +56,7 @@
 <span ng-show="item.acinetobacter || item.acinetobacter_date">
    Acinetobacter [[ item.acinetobacter_date | displayDate ]]
    <span ng-show="item.acinetobacter">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.acinetobacter_lab_numbers"></span>
 <br />
 </span>
 
@@ -61,12 +69,14 @@
 <span ng-show="item.cjd || item.cjd_date">
    CJD [[ item.cjd_date | displayDate ]]
    <span ng-show="item.cjd">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.cjd_lab_numbers"></span>
 <br />
 </span>
 
 <span ng-show="item.candida_auris || item.candida_auris_date">
    Candida auris [[ item.candida_auris_date | displayDate ]]
    <span ng-show="item.candida_auris">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.candida_auris_lab_numbers"></span>
 <br />
 </span>
 
@@ -79,6 +89,7 @@
 <span ng-show="item.multi_drug_resistant_organism || item.multi_drug_resistant_organism_date">
    Multi Drug Resistant Organism [[ item.multi_drug_resistant_organism_date | displayDate ]]
    <span ng-show="item.multi_drug_resistant_organism">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.multi_drug_resistant_organism_lab_numbers"></span>
 <br />
 </span>
 
