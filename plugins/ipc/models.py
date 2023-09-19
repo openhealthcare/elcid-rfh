@@ -59,6 +59,7 @@ class InfectionAlert(PreviousMRN, EpisodeSubrecord):
 class IPCStatus(PreviousMRN, PatientSubrecord):
 
     _is_singleton = True
+    _title = 'IPC Flags'
     _icon = 'fa fa-list-ul'
 
     FLAGS = {
@@ -171,6 +172,13 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
 
         return expired
 
+    def is_flagged(self):
+        """
+        Predicate function to return true if this patient has
+        any active IPC flags.
+        """
+        return bool(any(getattr(self, f) for f in self.FLAGS.values()))
+
 
 class SideroomStatus(PreviousMRN, PatientSubrecord):
 
@@ -186,7 +194,7 @@ class SideroomStatus(PreviousMRN, PatientSubrecord):
     risk_score = models.CharField(
         max_length=5, blank=True, null=True, choices=RISKS
     )
-    # Infections relevant to this admission, but not of permanant note
-    admission_organism = models.TextField(blank=True, null=True)
+    # Issues relevant to this admission, but not of permanant note
+    problems = models.TextField(blank=True, null=True)
     # notes on current tasks and actions that may be required
     actions = models.TextField(blank=True, null=True)

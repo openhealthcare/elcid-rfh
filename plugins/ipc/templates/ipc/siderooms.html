@@ -74,6 +74,7 @@
         <th>IPC Flags</th>
         <th>Problems</th>
         <th>Actions</th>
+        <th>Comments</th>
         <th><!-- Isolation --></th>
         <th></th> <!-- Edit -->
       </tr>
@@ -114,19 +115,26 @@
         <td>
           {{ sideroom_status.risk_score|default_if_none:"" }}
         </td>
+        {% with patient.patient.ipcstatus_set.get as ipc_status %}
         <td>
-          <div class="max-360">
-            {% with patient.patient.ipcstatus_set.get as ipc_status %}
-            {% if ipc_status.comments %}
-            {{ ipc_status.comments | linebreaks }}
-            {% endif %}
-            <span class="{% if ipc_status.covid_expired %}text-muted{% endif %}">
-              {% if ipc_status.covid_19_lab_numbers %}
-                 <span lab-number-string raw_text="{{ ipc_status.covid_19_lab_numbers }}"></span>
-              {% endif %}
-            </span>
-            {% endwith %}
-          </div>
+            {% if ipc_status.mrsa %}{{ ipc_status.mrsa_date }} MRSA <br/>{% endif %}
+            {% if ipc_status.mrsa_neg %}{{ ipc_status.mrsa_neg_date }} MRSA Neg<br/>{% endif %}
+            {% if ipc_status.reactive %}{{ ipc_status.reactive_date }} Reactive<br/>{% endif %}
+            {% if ipc_status.c_difficile %}{{ ipc_status.c_difficile_date }} C Difficile<br/>{% endif %}
+            {% if ipc_status.vre %}{{ ipc_status.vre_date }} VRE <br/>{% endif %}
+            {% if ipc_status.vre_neg %}{{ ipc_status.vre_neg_date }} VRE Neg<br/>{% endif %}
+            {% if ipc_status.carb_resistance %}{{ ipc_status.carb_resistance_date }} Carb Resistance<br/>{% endif %}
+            {% if ipc_status.contact_of_carb_resistance %}{{ ipc_status.contact_of_carb_resistance_date }} Contact Of Carb Resistance<br/>{% endif %}
+            {% if ipc_status.acinetobacter %}{{ ipc_status.acinetobacter_date }} Acinetobacter <br/>{% endif %}
+            {% if ipc_status.contact_ofacinetobacter %}{{ ipc_status.contact_ofacinetobacter_date }} Contact Of Acinetobacter <br/>{% endif %}
+            {% if ipc_status.cjd %}{{ ipc_status.cjd_date }} CJD <br/>{% endif %}
+            {% if ipc_status.candida_auris %}{{ ipc_status.candida_auris_date }} Candida Auris <br/>{% endif %}
+            {% if ipc_status.contact_of_candida_auris %}{{ ipc_status.contact_of_candida_auris_date }} Contact Of Candida Auris <br/>{% endif %}
+            {% if ipc_status.multi_drug_resistant_organism %}{{ ipc_status.multi_drug_resistant_organism_date }} Multi Drug Resistant Organism <br/>{% endif %}
+            {% if ipc_status.covid_19 %}{{ ipc_status.covid_19_date }} Covid-19 <br/>{% endif %}
+            {% if ipc_status.contact_of_covid_19 %}{{ ipc_status.contact_of_covid_19_date }} Contact Of Covid-19 <br/>{% endif %}
+            {% if ipc_status.other %}{{ ipc_status.other_date }} Other: {{ ipc_status.other }} <br/>{% endif %}
+
         </td>
 
         <td>
@@ -135,6 +143,24 @@
         <td>
           {{ sideroom_status.actions|default_if_none:""| linebreaks }}
         </td>
+        <td>
+          <div class="max-360">
+            <span class="{% if not ipc_status.is_flagged %}text-muted{% endif %}">
+            {% if ipc_status.comments %}
+            {{ ipc_status.comments | linebreaks }}
+            {% endif %}
+            </span>
+
+            <span class="{% if ipc_status.covid_expired %}text-muted{% endif %}">
+              {% if ipc_status.covid_19_lab_numbers %}
+                 <span lab-number-string raw_text="{{ ipc_status.covid_19_lab_numbers }}"></span>
+              {% endif %}
+            </span>
+
+          </div>
+        </td>
+        {% endwith %}
+
         <td ng-controller="IsolationHelper as isolationHelper">
           <span ng-show="isolationHelper.init(
                          '{{ patient.hospital_site_code }}',
