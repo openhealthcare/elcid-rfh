@@ -754,6 +754,11 @@ h1 small a{
 table.table.table-striped tr.highlighted-row td{
     background: $blue-light;
 }
+
+table.table.table-striped tr.danger-row td{
+    background: $bootstrap-danger;
+}
+
 .max-360 {
     max-width: 360px;
 }

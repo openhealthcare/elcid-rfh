@@ -83,7 +83,11 @@
       {% with patient.patient.sideroomstatus_set.get as sideroom_status %}
       <tr {% if patient.is_open_bay %}
           class="highlighted-row"
-          {% endif %}>
+          {% endif %}
+        {% if patient.is_rogue %}
+          class="danger-row"
+          {% endif %}
+          >
         <td>
           <a href="/#/ipc/bedboard/ward/{{ patient.ward_name }}/" class="orange-link">
             {{ patient.ward_name }}

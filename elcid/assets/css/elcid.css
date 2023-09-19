@@ -666,6 +666,10 @@ table.table.table-striped tr.highlighted-row td {
   background: #a0c7ea;
 }
 
+table.table.table-striped tr.danger-row td {
+  background: #f2dede;
+}
+
 .max-360 {
   max-width: 360px;
 }

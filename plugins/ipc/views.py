@@ -6,6 +6,7 @@ import datetime
 import re
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.views.generic import TemplateView
 from django.utils import timezone
 
@@ -28,10 +29,21 @@ def sort_rfh_wards(text):
     keys = natural_keys(text)
 
     if tower:
-        print(text)
         keys.insert(0, 'z')
 
     return keys
+
+def sort_sideroom_beds(bed):
+    """
+    Ordering of beds in sideroom list is not by location.
+    It's a proxy for priority:
+    Siderooms > Open Bays > Rogue patients
+    """
+    if getattr(bed, 'is_rogue', False):
+        return (3, bed.bed)
+    if getattr(bed, 'is_open_bay', False):
+        return (2, bed.bed)
+    return (1, bed.bed)
 
 
 class IPCHomeView(LoginRequiredMixin, TemplateView):
@@ -218,22 +230,40 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             if bed_status:
                 isolation_status.append(bed_status)
 
+        isolation_ids = [i.id for i in side_rooms_statuses + isolation_status]
+
+        # Patients with IPC flags not in siderooms or marked known open bays
+        ipc_flags = [Q(**{f:True}) for f in [f"patient__ipcstatus__{k}" for k in models.IPCStatus.FLAGS.values()]]
+        query = ipc_flags.pop()
+        for f in ipc_flags:
+            query |= f
+
+        rogue_flagged_patients = BedStatus.objects.exclude(
+            id__in=isolation_ids).exclude(patient__isnull=True).filter(
+                hospital_site_code=k['hospital_code']).filter(query)
+        rogue_ids = [i.id for i in rogue_flagged_patients]
+
         statuses = BedStatus.objects.filter(
-            id__in=[i.id for i in side_rooms_statuses + isolation_status]
+            id__in=[i.id for i in rogue_flagged_patients]+isolation_ids
 
         ).exclude(ward_name='RF-Test').order_by('ward_name', 'bed')
 
-        # Do this here in case we filer everything out later
+        # Do this here in case we filter everything out later
         context['hospital_name'] = statuses[0].hospital_site_description
 
         for status in statuses:
             if not status.room.startswith('SR'):
-                status.is_open_bay = True
+                if status.id in rogue_ids:
+                    status.is_rogue = True
+                else:
+                    status.is_open_bay = True
 
             if status.patient:
                 ipc = status.patient.episode_set.filter(category_name='IPC').first()
                 if ipc:
                     status.ipc_episode = ipc
+
+
 
         if k.get('flag'):
             context['flag'] = k['flag']
@@ -250,7 +280,8 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
             wards[status.ward_name].append(status)
 
         context['wards'] = {
-            name[3:]: wards[name] for name in reversed(sorted(wards.keys(), key=sort_rfh_wards))
+            name[3:]: sorted(wards[name], key=sort_sideroom_beds) for name in
+            reversed(sorted(wards.keys(), key=sort_rfh_wards))
             if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
         }
         context['hospital_code'] = k['hospital_code']
