@@ -34,12 +34,12 @@
     </div>
   </div>
   {% if lab_numbers %}
-  <div class="form-group">
+  <div class="form-group" ng-show="{{ model }} == true">
     <div class="row">
-      <label class="control-label col-sm-3">Lab Numbers</label>
+      <label class="control-label col-sm-3">{{ label }} Notes</label>
 
       <div class="col-sm-5 content-offset-5 content-offset-left-5">
-        <input class="form-control"
+        <textarea class="form-control"
                type="text"
                ng-model="{{ lab_model }}"
                autocomplete="off"
