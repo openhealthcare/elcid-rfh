@@ -59,6 +59,9 @@ WARDS_TO_EXCLUDE_FROM_LIST = [
     'RF-ICU 4 SOUTH',
     'RF-ICU 4 WEST',
 
+    'RF-EPIC',
+    'RF-AAU',
+
     'RF-12 WEST B',
     'RF-12 EAST B',
     'BA-Test',
