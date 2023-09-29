@@ -8,9 +8,14 @@ angular.module(
                 patientLoader(patient_id).then(function(patient){
                     patient.recordEditor.editItem(
                         'sideroom_status', patient.sideroom_status[0]
-                    ).then(function(){
-                        window.location.reload();
-                    });
+                    ).then(
+                        function(status){
+                            if(status === "cancel"){
+                                return
+                            }
+                            window.location.reload();
+                        }
+                    );
                 })
             }
         });
