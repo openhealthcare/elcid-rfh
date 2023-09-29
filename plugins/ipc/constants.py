@@ -9,6 +9,8 @@ WARDS_TO_EXCLUDE_FROM_SIDEROOMS = [
     '12 NORTH DIA',
     'BA-Test',
     'BA-Paed Test',
+    'zzzBA-Maple',
+
 ]
 
 WARDS_TO_EXCLUDE_FROM_LIST = [
@@ -69,4 +71,5 @@ WARDS_TO_EXCLUDE_FROM_LIST = [
     'zzzRF-BMDI',
     'zzzFetaLink Virtual Devices',
     'RF-MORT',
+    'zzzBA-Maple',
 ]
