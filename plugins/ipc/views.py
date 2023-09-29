@@ -78,8 +78,8 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
         context['rfh_beds_available'] = BedStatus.objects.filter(
             hospital_site_code=RFH_HOSPITAL_SITE_CODE, bed_status='Available').count()
         context['rfh_siderooms'] = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CODE,
-                                                            room__startswith='SR',
-                                                            bed_status='Occupied').count()
+                                                            bed_status='Occupied').filter(
+                                                                Q(room__startswith='SR') | Q(bed__startswith='SR')).count()
 
         context['barnet_patients'] = BedStatus.objects.filter(
             hospital_site_code=BARNET_HOSPITAL_SITE_CODE, bed_status='Occupied').count()
@@ -215,8 +215,8 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(*a, **k)
 
         side_rooms_statuses = list(BedStatus.objects.filter(
-            hospital_site_code=k['hospital_code'],
-            room__startswith='SR'
+            hospital_site_code=k['hospital_code']).filter(
+                Q(room__startswith='SR') | Q(bed__startswith='SR')
         ))
 
         isolation_status = []
@@ -252,7 +252,7 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         context['hospital_name'] = statuses[0].hospital_site_description
 
         for status in statuses:
-            if not status.room.startswith('SR'):
+            if not any([status.room.startswith('SR'), status.bed.startswith('SR')]):
                 if status.id in rogue_ids:
                     status.is_rogue = True
                 else:
