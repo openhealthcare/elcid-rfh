@@ -8,7 +8,7 @@ from intrahospital_api import update_demographics, logger, constants
 from plugins.monitoring.models import Fact
 from elcid import utils
 
-UNEXPECTED_VOLUMES_THRESHOLD = 1000
+UNEXPECTED_VOLUMES_THRESHOLD = 10000
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
