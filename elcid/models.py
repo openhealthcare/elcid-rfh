@@ -391,6 +391,7 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
     _icon = 'fa fa-comments'
     _modal = 'lg'
     _list_limit = 3
+
     ICU_REASON_FOR_INTERACTION = "ICU round"
     ICN_WARD_REVIEW_REASON_FOR_INTERACTION = "IPC Note"
     ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"

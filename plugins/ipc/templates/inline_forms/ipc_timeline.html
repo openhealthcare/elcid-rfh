@@ -3,7 +3,21 @@
 {% load forms %}
 
 {% block form_template %}
+
   {% include 'forms/ipc_clinical_advice_form.html' %}
+{% endblock %}
+
+{% block save_button %}
+{# We do show hide logic rather than ng-disabled because the check-form directive also alters disabled state #}
+<button ng-show="clinicalTimeline.changed" check-form="form" class="btn btn-primary" ng-click="form.$valid && clinicalTimeline.save(form, {reason_for_interaction: '{{ models.MicrobiologyInput.ICN_WARD_REVIEW_REASON_FOR_INTERACTION }}'})">
+  <i class="fa fa-save"></i>
+  Save
+</button>
+<button disabled ng-show="!clinicalTimeline.changed" class="btn btn-primary">
+  <i class="fa fa-save"></i>
+  Save
+</button>
+
 {% endblock %}
 
 {% block send_upstream_button %}

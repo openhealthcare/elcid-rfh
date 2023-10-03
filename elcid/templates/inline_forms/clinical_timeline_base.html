@@ -9,13 +9,14 @@
       <div class="panel-body">
         <div class="row">
           <div class="col-md-12">
-              <div ng-repeat="formItem in [clinicalTimeline.formItem]">
-                {% block form_template %}{% endblock %}
-              </div>
+            <div ng-repeat="formItem in [clinicalTimeline.formItem]">
+              {% block form_template %}{% endblock %}
+            </div>
           </div>
         </div>
         <div class="row">
           <div class="col-md-12 text-right">
+            {% block save_button %}
             {# We do show hide logic rather than ng-disabled because the check-form directive also alters disabled state #}
             <button ng-show="clinicalTimeline.changed" check-form="form" class="btn btn-primary" ng-click="form.$valid && clinicalTimeline.save(form)">
               <i class="fa fa-save"></i>
@@ -25,6 +26,7 @@
               <i class="fa fa-save"></i>
               Save
             </button>
+            {% endblock %}
           </div>
         </div>
       </div>
