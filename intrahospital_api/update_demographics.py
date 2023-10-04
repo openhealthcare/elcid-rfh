@@ -261,7 +261,7 @@ def is_mrn_in_elcid(mrn):
         return True
     return False
 
-def send_to_many_merged_mrn_email(cnt):
+def send_too_many_merged_mrn_email(cnt):
     """
     Sends an email saying we are creating more MergedMRNs than
     the MERGED_MRN_COUNT_EMAIL_THRESHOLD
@@ -299,6 +299,19 @@ def get_or_create_active_patient(active_mrn):
 
 
 def merge_mrn_from_cerner(mrn, merged_dicts=None):
+    """
+    Given a MRN and optionally a set of MERGED_DICTS,
+    check to see whether we need to take any action
+    to deal with upstream MRN merges.
+
+    If we do need to take action, take it.
+
+    Returns a tuple of
+    (ACTIVE_PATIENT, MergedMRNs, ACTION_TAKEN)
+    ACTION_TAKEN is a boolean that can be used to
+    check whether we actuallly performed any work in
+    this run.
+    """
     if merged_dicts is None:
         active_mrn, merged_dicts = get_active_mrn_and_merged_mrn_data(mrn)
     else:
@@ -365,12 +378,13 @@ def check_and_handle_upstream_merges_for_mrns(mrns):
         # The list passed into this function potentially contains all nodes in a merge graph
             continue
         mrns_seen.add(active_mrn)
-        _, merges, _ = merge_mrn_from_cerner(active_mrn, merged_dicts)
+        _, merges, action_taken = merge_mrn_from_cerner(active_mrn, merged_dicts)
         if merges is not None:
-            merged_mrns_created_count += len(merges)
+            if action_taken:
+                merged_mrns_created_count += len(merges)
 
     if merged_mrns_created_count > MERGED_MRN_COUNT_EMAIL_THRESHOLD:
-        send_to_many_merged_mrn_email(merged_mrns_created_count)
+        send_too_many_merged_mrn_email(merged_mrns_created_count)
     logger.info(f'Saved {merged_mrns_created_count} merged MRNs')
 
 
