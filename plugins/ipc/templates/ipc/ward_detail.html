@@ -35,6 +35,7 @@
         {% endif %}>
 
       <td ng-controller="IsolationHelper as isolationHelper">
+        {% if not permissions.bed_manager %}
         <span ng-show="isolationHelper.init(
           '{{ patient.hospital_site_code }}',
           '{{ patient.ward_name }}',
@@ -58,6 +59,7 @@
             {% endif %}
           </span>
         </span>
+        {% endif %}
       </td>
 
       <td>
@@ -68,9 +70,13 @@
 
       <td>
         {% if patient.bed_status == 'Occupied' %}
+        {% if permissions.bed_manager %}
+          {{ patient.patient_name }}
+        {% else %}
         <a class="orange-link" href="/#/patient/{{ patient.patient_id }}{% if patient.ipc_episode %}/{{patient.ipc_episode.id}}{% endif %}">
           {{ patient.patient_name }}
         </a>
+        {% endif %}
           {{ patient.local_patient_identifier }}
           {{ patient.date_of_birth }}
         {% endif %}

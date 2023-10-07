@@ -5,6 +5,10 @@ angular.module('opal.controllers').controller(
             $location.path('/ipc/portal/')
             return
         }
+        if(_.contains(profile.active_roles(), 'bed_manager')){
+            $location.path('/ipc/')
+            return
+        }
         return
     }
 );

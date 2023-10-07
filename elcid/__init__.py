@@ -1,17 +1,15 @@
 """
 elCID Royal Free Hospital implementation
 """
-
+from django.urls import reverse
 from opal.core import application
-
 from opal.core import menus
-from plugins.ipc.constants import IPC_ROLE
 from opal.core.menus import MenuItem
-from plugins.tb import constants as tb_constants
-
 
 from elcid import episode_categories
 from elcid.menus import ServicesMenuItem
+from plugins.ipc import constants as ipc_constants
+from plugins.tb import constants as tb_constants
 
 
 class StandardAddPatientMenuItem(MenuItem):
@@ -111,8 +109,15 @@ class Application(application.OpalApplication):
         from opal.models import UserProfile
         profile = UserProfile.objects.get(user=user)
 
-        if 'ipc_portal_only' in profile.get_roles()['default']:
-            return []
+        explicit_log_out = MenuItem(
+            href=reverse("logout"), icon="fa-sign-out", index=1000, display="Log Out"
+        )
+
+        if ipc_constants.IPC_PORTAL_ROLE in profile.get_roles()['default']:
+            return [explicit_log_out]
+
+        if ipc_constants.BED_MANAGER_ROLE in profile.get_roles()['default']:
+            return [explicit_log_out]
 
         menu_items.append(ServicesMenuItem(user=user))
 
