@@ -189,6 +189,16 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
         """
         return bool(any(getattr(self, f) for f in self.FLAGS.values()))
 
+    def get_flags(self):
+        """
+        Return any flags this patient has as a list of strings.
+        """
+        flags = []
+        for label, attr, in self.FLAGS.items():
+            if getattr(self, attr):
+                flags.append(label)
+        return flags
+
 
 class SideroomStatus(PreviousMRN, PatientSubrecord):
 

@@ -7,10 +7,11 @@ import re
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 from django.utils import timezone
+from opal.core.views import json_response
 
-from elcid.utils import natural_keys
+from elcid.utils import natural_keys, find_patients_from_mrns
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CODE, BARNET_HOSPITAL_SITE_CODE
 from plugins.admissions.models import BedStatus, IsolatedBed, TransferHistory
 
@@ -312,3 +313,25 @@ class AlertListView(LoginRequiredMixin, TemplateView):
         context['alert_code'] = k['alert_code']
 
         return context
+
+
+class IPCPortalSearchView(LoginRequiredMixin, View):
+
+    def get(self, *args, **kwargs):
+        results = find_patients_from_mrns([kwargs['mrn']])
+
+        if len(results) == 0:
+            return json_response(False)
+
+        patient = next(iter(results.values()))
+        demographics = patient.demographics()
+        ipc_status = patient.ipcstatus_set.get()
+
+        data = {
+            'mrn'       : demographics.hospital_number,
+            'name'      : demographics.name,
+            'dob'       : demographics.date_of_birth,
+            'is_flagged': ipc_status.is_flagged(),
+            'flags'     : ipc_status.get_flags()
+        }
+        return json_response(data)

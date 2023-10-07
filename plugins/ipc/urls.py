@@ -46,5 +46,10 @@ urlpatterns = [
         views.AlertListView.as_view(),
         name='ipc_alert_list'
     ),
+    path(
+        'ipc/portal/search/<mrn>/',
+        views.IPCPortalSearchView.as_view(),
+        name='ipc_portal_search'
+    )
 
 ]

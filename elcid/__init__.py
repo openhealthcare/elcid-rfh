@@ -63,6 +63,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/tagging_step.js',
         'js/elcid/controllers/investigations.js',
         'js/elcid/controllers/add_antifungal_patients.js',
+        'js/elcid/controllers/elcid_post_login_controller.js',
 
         'js/elcid/services/blood_culture_isolate.js',
         'js/elcid/services/clinical_advice.js',
@@ -110,6 +111,8 @@ class Application(application.OpalApplication):
         from opal.models import UserProfile
         profile = UserProfile.objects.get(user=user)
 
+        if 'ipc_portal_only' in profile.get_roles()['default']:
+            return []
 
         menu_items.append(ServicesMenuItem(user=user))
 

@@ -680,4 +680,12 @@ table.table.table-striped tr.danger-row td {
   border-bottom: solid 1px #cbc9c8;
 }
 
+.ipc-portal-flag {
+  padding: 6px;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #FFF;
+  background-color: #864200;
+}
+
 /*# sourceMappingURL=elcid.css.map */

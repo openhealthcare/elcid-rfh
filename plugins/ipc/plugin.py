@@ -16,6 +16,7 @@ class IPCPlugin(plugins.OpalPlugin):
             'ipc/js/controllers/ipc_form_advice_helper.js',
             "ipc/js/controllers/isolationHelper.js",
             "ipc/js/controllers/edit_sideroom_helper.js",
+            "ipc/js/controllers/ipc_portal_controller.js",
         ]
     }
 
