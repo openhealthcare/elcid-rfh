@@ -196,7 +196,11 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
         flags = []
         for label, attr, in self.FLAGS.items():
             if getattr(self, attr):
-                flags.append(label)
+                sample_date = getattr(self, f"{attr}_date")
+                if sample_date:
+                    sample_date = sample_date.strftime("%d %b %Y")
+                display = f"{sample_date} {label}"
+                flags.append(display)
         return flags
 
 
