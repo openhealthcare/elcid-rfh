@@ -372,7 +372,15 @@ class PathologyRow(object):
     def get_department_int(self):
         dep = self.db_row.get("Department")
         if dep:
-            return int(dep)
+            try:
+                return int(dep)
+            except ValueError:
+                # At some point in 2023 this field began
+                # to include values such as 'CP'.
+                # For now we simply skip the department
+                # code as the features relying on it
+                # are not visible to users
+                return
 
     def get_site(self):
         site = self.db_row.get('Specimen_Site')
