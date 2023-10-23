@@ -73,7 +73,10 @@
               {% for flag, count in counts.items %}
               <tr>
                 <td>
-                  {{ flag }}
+                  <a href="/#/ipc/siderooms/{{ site_code }}/flagged/{{ flag }}"
+                     class="orange-link">
+                    {{ flag }}
+                  </a>
                 </td>
                 <td>
                   {{ count }}

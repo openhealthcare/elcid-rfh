@@ -66,14 +66,12 @@
         </th>
       <tr>
         <th>Location</th>
-        <th>Status</th>
         <th>Patient</th>
         <th>Admitted</th>
         <th>Risk</th>
         <th>IPC Flags</th>
         <th>Problems</th>
         <th>Actions</th>
-        <th>Comments</th>
         <th><!-- Isolation --></th>
         <th></th> <!-- Edit -->
       </tr>
@@ -97,8 +95,8 @@
           {% if patient.is_open_bay %}
           <br />Open Bay
           {% endif %}
+          <br />{{ patient.bed_status }}
         </td>
-        <td> {{ patient.bed_status }}</td>
         {% with patient.patient.demographics as demographics %}
         <td>
           {{ demographics.hospital_number }}
@@ -150,22 +148,6 @@
         </td>
         <td>
           {{ sideroom_status.actions|default_if_none:""| linebreaks }}
-        </td>
-        <td>
-          <div class="max-360">
-            <span class="{% if not ipc_status.is_flagged %}text-muted{% endif %}">
-              {% if ipc_status.comments %}
-              {{ ipc_status.comments | linebreaks }}
-              {% endif %}
-            </span>
-
-            <span class="{% if ipc_status.covid_expired %}text-muted{% endif %}">
-              {% if ipc_status.covid_19_lab_numbers %}
-              <span lab-number-string raw_text="{{ ipc_status.covid_19_lab_numbers }}"></span>
-              {% endif %}
-            </span>
-
-          </div>
         </td>
         {% endwith %}
 
