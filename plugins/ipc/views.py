@@ -53,14 +53,11 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        alerts  = models.InfectionAlert.objects.filter(seen=False).order_by('-trigger_datetime')
-        context['alerts'] = alerts
-
-        monthly = collections.defaultdict(lambda: collections.defaultdict(int))
-
-        today = datetime.date.today()
-        start = datetime.date(today.year-2, today.month, 1)
-
+        # alerts  = models.InfectionAlert.objects.filter(seen=False).order_by('-trigger_datetime')
+        # context['alerts'] = alerts
+        # monthly = collections.defaultdict(lambda: collections.defaultdict(int))
+        # today = datetime.date.today()
+        # start = datetime.date(today.year-2, today.month, 1)
         # for alert in models.InfectionAlert.objects.filter(trigger_datetime__gte=start):
         #     key = datetime.date(alert.trigger_datetime.year, alert.trigger_datetime.month, 1)
         #     monthly[key][alert.category] += 1
@@ -74,20 +71,42 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
 
         # context['overview_data'] = [ticks, cdiffs, cpes, mrsas, tbs, vres]
 
-        context['rfh_patients'] = BedStatus.objects.filter(
-            hospital_site_code=RFH_HOSPITAL_SITE_CODE, bed_status='Occupied').count()
-        context['rfh_beds_available'] = BedStatus.objects.filter(
-            hospital_site_code=RFH_HOSPITAL_SITE_CODE, bed_status='Available').count()
-        context['rfh_siderooms'] = BedStatus.objects.filter(hospital_site_code=RFH_HOSPITAL_SITE_CODE,
-                                                            bed_status='Occupied').filter(
-                                                                Q(room__startswith='SR') | Q(bed__startswith='SR')).count()
 
-        context['barnet_patients'] = BedStatus.objects.filter(
-            hospital_site_code=BARNET_HOSPITAL_SITE_CODE, bed_status='Occupied').count()
+        # context['rfh_patients'] = BedStatus.objects.filter(
+        #     hospital_site_code=RFH_HOSPITAL_SITE_CODE, bed_status='Occupied').count()
+
+
+        # context['barnet_patients'] = BedStatus.objects.filter(
+        #     hospital_site_code=BARNET_HOSPITAL_SITE_CODE, bed_status='Occupied').count()
 
         # context['weekly_alerts'] = models.InfectionAlert.objects.filter(
         #     trigger_datetime__gte=today-datetime.timedelta(days=7)).count()
 
+        flag_labels = {v: k for k, v in models.IPCStatus.FLAGS.items()}
+
+        flagged = []
+        flags = [
+            'mrsa', 'c_difficile', 'vre', 'candida_auris',
+            'carb_resistance',
+            'multi_drug_resistant_organism', 'covid_19'
+        ]
+        sites = [('RFH', 'RAL01'), ('Barnet', 'RAL26')]
+
+        for name, site in sites:
+            counts = {}
+
+            for flag in flags:
+                kwargs = {
+                    f"patient__ipcstatus__{flag}": True,
+                    "hospital_site_code": site
+                }
+                counts[flag_labels[flag]] = BedStatus.objects.filter(
+                    **kwargs
+                ).count()
+
+            flagged.append((name, site, counts))
+
+        context['flagged'] = flagged
         return context
 
 

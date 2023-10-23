@@ -11,120 +11,124 @@
     <!--   <h2>{{ alerts| length }} New Infection Alerts</h2> -->
 
     <!--   <table class="table"> -->
-    <!--     <tr> -->
-    <!--       <th>Category</th> -->
-    <!--       <th>Triggered</th> -->
-    <!--       <th>Lab #</th> -->
-    <!--       <th>MRN</th> -->
-    <!--       <th>Name</th> -->
-    <!--       <th>DOB</th> -->
-    <!--       <th>Current Location</th> -->
-    <!--     </tr> -->
-    <!--     {% for alert in alerts %} -->
-    <!--     <tr class="{% if not alert.seen %} bg-danger {% endif %}"> -->
-    <!--       <td>{{ alert.category }}</td> -->
-    <!--       <td>{{ alert.trigger_datetime }}</td> -->
-    <!--       <td>{{ alert.lab_test.lab_number }}</td> -->
+      <!--     <tr> -->
+        <!--       <th>Category</th> -->
+        <!--       <th>Triggered</th> -->
+        <!--       <th>Lab #</th> -->
+        <!--       <th>MRN</th> -->
+        <!--       <th>Name</th> -->
+        <!--       <th>DOB</th> -->
+        <!--       <th>Current Location</th> -->
+        <!--     </tr> -->
+      <!--     {% for alert in alerts %} -->
+      <!--     <tr class="{% if not alert.seen %} bg-danger {% endif %}"> -->
+        <!--       <td>{{ alert.category }}</td> -->
+        <!--       <td>{{ alert.trigger_datetime }}</td> -->
+        <!--       <td>{{ alert.lab_test.lab_number }}</td> -->
 
-    <!--       {% with alert.episode.patient.demographics as demographics %} -->
-    <!--       <td> -->
-    <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
-    <!--           {{ demographics.hospital_number }} -->
-    <!--         </a> -->
-    <!--       </td> -->
-    <!--       <td> -->
-    <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
-    <!--           {{ demographics.name }} -->
-    <!--         </a> -->
-    <!--       </td> -->
-    <!--       <td> -->
-    <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
-    <!--           {{ demographics.date_of_birth }} -->
-    <!--         </a> -->
-    <!--       </td> -->
-    <!--       {% endwith %} -->
-    <!--       <td> -->
-    <!--         {% with alert.episode.patient.upstreamlocation.get as location %} -->
-    <!--         <a href="/#/ipc/ward/{{ location.ward | slugify }}/" class="orange-link"> -->
-    <!--           {{ location.ward }} -->
-    <!--         </a> -->
-    <!--         {{ location.room }} {{ location.bed }} -->
-    <!--         {% endwith %} -->
-    <!--       </td> -->
-    <!--     </tr> -->
-    <!--     {% endfor %} -->
-    <!--   </table> -->
+        <!--       {% with alert.episode.patient.demographics as demographics %} -->
+        <!--       <td> -->
+          <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
+            <!--           {{ demographics.hospital_number }} -->
+            <!--         </a> -->
+          <!--       </td> -->
+        <!--       <td> -->
+          <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
+            <!--           {{ demographics.name }} -->
+            <!--         </a> -->
+          <!--       </td> -->
+        <!--       <td> -->
+          <!--         <a class="orange-link" href="/#/patient/{{ demographics.patient_id }}/{{ alert.episode_id }}"> -->
+            <!--           {{ demographics.date_of_birth }} -->
+            <!--         </a> -->
+          <!--       </td> -->
+        <!--       {% endwith %} -->
+        <!--       <td> -->
+          <!--         {% with alert.episode.patient.upstreamlocation.get as location %} -->
+          <!--         <a href="/#/ipc/ward/{{ location.ward | slugify }}/" class="orange-link"> -->
+            <!--           {{ location.ward }} -->
+            <!--         </a> -->
+          <!--         {{ location.room }} {{ location.bed }} -->
+          <!--         {% endwith %} -->
+          <!--       </td> -->
+        <!--     </tr> -->
+      <!--     {% endfor %} -->
+      <!--   </table> -->
 
     <!-- {% endif %} -->
 
     <h2>Hospital Status</h2>
     <div class="row text-center">
+      {% for name, site_code, counts in flagged %}
       <div class="col-md-4">
-        <h2>RFH Patients</h2>
-        <h1>{{ rfh_patients }}</h1>
-        <p>Total current inpatients</p>
+        <h2>{{ name }}</h2>
+        <div class="row">
+          <div class="col-md-4 col-md-offset-4">
+            <table class="table table-bordered table-striped">
+              <tr>
+                <th colspan="2">
+                  Current Inpatients
+                </th>
+              </tr>
+              {% for flag, count in counts.items %}
+              <tr>
+                <td>
+                  {{ flag }}
+                </td>
+                <td>
+                  {{ count }}
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
         <p>
-          <a href="/#/ipc/bedboard/hospital/RAL01/">Wards</a>
+          <a href="/#/ipc/bedboard/hospital/{{ site_code }}/">Wards</a>
           |
-          <a href="/#/ipc/siderooms/RAL01/">Isolation</a>
+          <a href="/#/ipc/siderooms/{{ site_code }}/">Isolation</a>
         </p>
       </div>
-
-      <div class="col-md-4">
-        <h2>Barnet Patients</h2>
-        <h1>{{ barnet_patients }}</h1>
-        <p>Total current inpatients</p>
-        <p>
-          <a href="/#/ipc/bedboard/hospital/RAL26/">Wards</a>
-          |
-          <a href="/#/ipc/siderooms/RAL26/">Isolation</a>
-        </p>
-      </div>
-
-      <!-- <div class="col-md-4"> -->
-      <!--   <h2>Available beds</h2> -->
-      <!--   <h1>{{ rfh_beds_available }}</h1> -->
-      <!--   <p>Reported available beds</p> -->
-      <!-- </div> -->
+      {% endfor %}
 
 
     </div>
 
     <!-- <h2>12 Month Infections</h2> -->
     <!-- <div class="row"> -->
-    <!--   <div class="col-md-12"> -->
-    <!--     <div id="overview"></div> -->
-    <!--   </div> -->
-    <!-- </div> -->
+      <!--   <div class="col-md-12"> -->
+        <!--     <div id="overview"></div> -->
+        <!--   </div> -->
+      <!-- </div> -->
 
   </div> <!-- Panel body -->
 
 </div> <!-- Panel -->
 
 <!-- <script> -->
-<!--   c3.generate( -->
-<!--       { -->
-<!--           bindto: document.getElementById('overview'), -->
-<!--           data: { -->
-<!--               columns: {{ overview_data |safe }}, -->
-<!--               x: 'x', -->
-<!--               type: 'bar' -->
-<!--           }, -->
-<!--           axis: { -->
-<!--               x: { -->
-<!--                   type: 'timeseries', -->
-<!--                   tick: { format: '%b %Y', rotate: 45} -->
-<!--               } -->
-<!--           }, -->
-<!--           point: { -->
-<!--               show: false -->
-<!--           }, -->
-<!--           bar: { -->
-<!--               width: { -->
-<!--                   ratio: 0.66 -->
-<!--               } -->
-<!--           } -->
-<!--       } -->
-<!--   ) -->
-<!-- </script> -->
+  <!--   c3.generate( -->
+  <!--       { -->
+  <!--           bindto: document.getElementById('overview'), -->
+  <!--           data: { -->
+  <!--               columns: {{ overview_data |safe }}, -->
+  <!--               x: 'x', -->
+  <!--               type: 'bar' -->
+  <!--           }, -->
+  <!--           axis: { -->
+  <!--               x: { -->
+  <!--                   type: 'timeseries', -->
+  <!--                   tick: { format: '%b %Y', rotate: 45} -->
+  <!--               } -->
+  <!--           }, -->
+  <!--           point: { -->
+  <!--               show: false -->
+  <!--           }, -->
+  <!--           bar: { -->
+  <!--               width: { -->
+  <!--                   ratio: 0.66 -->
+  <!--               } -->
+  <!--           } -->
+  <!--       } -->
+  <!--   ) -->
+  <!-- </script> -->
 {% endblock %}
