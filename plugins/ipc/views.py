@@ -151,7 +151,8 @@ class WardDetailView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
 
-        locations = BedStatus.objects.filter(ward_name=k['ward_name']).order_by('bed')
+        locations = BedStatus.objects.filter(
+            ward_name=k['ward_name']).exclude(bed__startswith="Cap").order_by('bed')
 
         for location in locations:
             if location.room.startswith('SR'):
