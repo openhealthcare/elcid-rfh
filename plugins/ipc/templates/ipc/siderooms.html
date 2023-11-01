@@ -144,7 +144,7 @@
         </td>
 
         <td>
-          {{ sideroom_status.admission_organism|default_if_none:"" }}
+          {{ sideroom_status.problems|default_if_none:"" }}
         </td>
         <td>
           {{ sideroom_status.actions|default_if_none:""| linebreaks }}
