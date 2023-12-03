@@ -300,11 +300,21 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         for status in statuses:
             wards[status.ward_name].append(status)
 
-        context['wards'] = {
-            name[3:]: sorted(wards[name], key=sort_sideroom_beds) for name in
-            reversed(sorted(wards.keys(), key=sort_rfh_wards))
-            if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
-        }
+        if k['hospital_code'] == 'RAL26':
+            # This is the same but with ward order not reversed
+            context['wards'] = {
+                name[3:]: sorted(wards[name], key=sort_sideroom_beds) for name in
+                sorted(wards.keys(), key=sort_rfh_wards)
+                if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
+            }
+        else:
+            context['wards'] = {
+                name[3:]: sorted(wards[name], key=sort_sideroom_beds) for name in
+                reversed(sorted(wards.keys(), key=sort_rfh_wards))
+                if not name in constants.WARDS_TO_EXCLUDE_FROM_SIDEROOMS
+            }
+
+
         context['hospital_code'] = k['hospital_code']
         context['flags'] = list(models.IPCStatus.FLAGS.keys())
         return context
