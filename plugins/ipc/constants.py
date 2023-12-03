@@ -75,3 +75,8 @@ WARDS_TO_EXCLUDE_FROM_LIST = [
     'RF-MORT',
     'zzzBA-Maple',
 ]
+
+HOSPITAL_NAMES = {
+    'RAL01': 'ROYAL FREE HOSPITAL',
+    'RAL26': 'BARNET HOSPITAL'
+}

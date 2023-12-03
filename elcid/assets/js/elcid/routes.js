@@ -135,6 +135,17 @@ app.config(
                    param_template_route('/templates/ipc/isolation/', ['hospital_code', 'flag']))
              .when('/ipc/siderooms/:hospital_code/:room_code',
                    param_template_route('/templates/ipc/isolation/', ['hospital_code']))
+             .when('/ipc/siderooms2/:hospital_code/', {
+                 controller: 'SideroomCtrl',
+                 templateUrl: function(params){
+                     return '/templates/ipc/sideroom2.html/'+ params.hospital_code + '/?when=' + Date.now()
+                 },
+                 resolve: {
+                     siderooms: function(SideroomLoader){ return SideroomLoader(); },
+                     profile: function(UserProfile){ return UserProfile.load(); },
+                 }
+             })
+
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', ['alert_code']))
              .when('/ipc/portal/', {
                  controller: 'IPCPortalCtrl',

@@ -50,6 +50,11 @@ urlpatterns = [
         'ipc/portal/search/<mrn>/',
         views.IPCPortalSearchView.as_view(),
         name='ipc_portal_search'
-    )
+    ),
 
+    path(
+        'templates/ipc/siderooms2.html/<hospital_code>/',
+        views.Sideroom2View.as_view(),
+        name="siderooms2"
+    )
 ]

@@ -2,8 +2,10 @@
 Models for the elCID admissions plugin
 """
 import datetime
+
 from django.db import models
 from opal.models import Patient, PatientSubrecord
+
 from plugins.admissions import logger
 from plugins.admissions import constants
 
@@ -456,3 +458,14 @@ class BedStatus(models.Model):
             self.hospital_site_description, self.ward_name,
             self.room, self.bed
         ])
+
+    def get_admitted_as_dt(self):
+        """
+        We store admission_date_time as a char - this breaks Angular display.
+        Return either None or a datetime
+        """
+        if not self.admission_date_time:
+            return self.admission_date_time
+
+        return datetime.datetime.strptime(
+            self.admission_date_time, "%Y-%m-%d %H:%M:%S")

@@ -57,11 +57,18 @@ filters.filter('month', function(){
 filters.filter('plural', function(){
   return function(someWord, count, plural){
       if(count === 1){
-          return someWord;	
+          return someWord;
       }
       else if(plural){
           return plural;
       }
-      return someWord + "s";	
+      return someWord + "s";
   };
 });
+
+filters.filter('slugifyish', function(){
+    // Partial implementation of django's slugify filter
+    return function(data){
+        return data.toLowerCase().replaceAll(' ', '-')
+    }
+})

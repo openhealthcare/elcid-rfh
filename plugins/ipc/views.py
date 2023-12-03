@@ -310,6 +310,9 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class Sideroom2View(LoginRequiredMixin, TemplateView):
+    template_name = 'ipc/sideroom2.html'
+
 
 class AlertListView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/alert_list.html'
