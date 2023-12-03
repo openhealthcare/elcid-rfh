@@ -1,0 +1,188 @@
+{% extends 'ipc/base.html' %}
+{% load ipc %}
+{% load gifs %}
+{% block content %}
+<div class="panel panel-default" style="position:fixed; width:90%">
+  <div class="panel-heading">
+    <h1>
+      Isolation locations: [[ metadata.hospital_name ]]
+      <span ng-show="loading" class="header-loading">
+        {% loading_gif %}
+      </span>
+      {% if flag %}
+      patients flagged {{ flag }}
+      {% endif %}
+
+      <span class="pull-right" id="sideroom-gender-count">
+
+        <div uib-dropdown>
+          <a uib-dropdown-toggle class="pointer" id="ipc-flags-dropdown">
+            <div>
+              <i class="fa fa-flag"></i>
+              Flags
+              <i class="fa fa-angle-down"></i>
+            </div>
+          </a>
+          <ul class="uib-dropdown-menu slides" role="menu" aria-labelledby="ipc-flags-dropdown">
+            <li class="ipc-flags-dropdown-item">
+              <a href="/#/ipc/siderooms/{{hospital_code}}">
+                All Patients
+              </a>
+            </li>
+
+            <li class="ipc-flags-dropdown-item" ng-repeat="flag in metadata.flags">
+              <a href="/#/ipc/siderooms/[[ metadata.hospital_code ]]/flagged/[[flag]]">
+                [[ flag ]]
+              </a>
+            </li>
+
+          </ul>
+        </div>
+        <div class="btn-group pull-right left-offset-10">
+          <label class="btn btn-primary" ng-model="bed_status_filters" uib-btn-radio="1">All</label>
+          <label class="btn btn-primary" ng-model="bed_status_filters" uib-btn-radio="2">Open Bays</label>
+          <label class="btn btn-primary" ng-model="bed_status_filters" uib-btn-radio="3">Main Ward</label>
+        </div>
+        <p >
+          Male [[ metadata.male ]]
+          Female [[ metadata.female ]]
+          <br />
+          <a href="/#/ipc/siderooms/[[ metadata.hospital_code ]]" class="orange-link">Previous Version</a>
+        </p>
+
+      </span>
+
+    </h1>
+  </div>
+  <div class="row">
+    <div class="col-md-1" id="sideroom-ward-nav">
+      <span ng-repeat="ward in metadata.ward_names">
+        <a class="orange-link pointer" scroll-on-click target="#[[ ward|slugifyish ]]" offset="140">
+          [[ ward ]]
+        </a>
+        <br />
+      </span>
+    </div>
+    <div class="col-md-11 col-md-offset-1">
+    </div>
+  </div>
+</div> <!-- Panel -->
+
+
+<div class="row content-offset-75">
+  <div class="col-md-offset-1">
+
+
+    <table class="table table-striped" style="margin-left: 12px; width:95%;" ng-repeat="ward in wards">
+      <tr id="[[ ward.name|slugifyish ]]">
+        <th colspan="10">
+          <h2>[[ ward.name ]]</h2>
+        </th>
+      </tr>
+      <tr>
+        <th>Location</th>
+        <th>Patient</th>
+        <th>Admitted</th>
+        <th>Risk</th>
+        <th>IPC Flags</th>
+        <th>Problems</th>
+        <th>Actions</th>
+        <th><!-- Isolation --></th>
+        <th></th> <!-- Edit -->
+      </tr>
+      <tr ng-hide="is_hidden_by_filters(bed)"
+          ng-repeat="bed in ward.beds"
+          ng-class="{'highlighted-row': bed.is_open_bay, 'danger-row': bed.is_rogue}">
+        <td>
+          <a href="/#/ipc/bedboard/ward/[[ bed.ward_name ]]/" class="orange-link">
+            [[ bed.ward_name ]]
+          </a>
+          <br />
+          [[ bed.room ]]
+          [[ bed.bed ]]
+          <br />
+          [[ bed.bed_status ]]
+        </td>
+        <td>
+          [[ bed.mrn ]]
+          <br />
+          <span ng-show="profile.has_role('bed_manager')">
+            [[ bed.name ]]
+          </span>
+          <span ng-hide="profile.has_role('bed_manager')">
+            <a class="orange-link" href="[[ url_for_bed_patient(bed) ]]">
+              [[ bed.name ]]
+            </a>
+          </span>
+          <br />
+          [[ bed.dob | displayDate ]]
+          [[ bed.sex ]]
+        </td>
+        <td>
+          [[ bed.admitted | displayDateTime ]]
+        </td>
+        <td>
+          [[ bed.sideroom_status.risk_score ]]
+        </td>
+        <td>
+          <span ng-repeat="flag in bed.flags">
+            [[ flag ]]
+            <br />
+          </span>
+        </td>
+        <td>
+          [[ bed.sideroom_status.problems ]]
+        </td>
+        <td>
+          [[ bed.sideroom_status.actions ]]
+        </td>
+        <td>
+          <!-- ISOLATION HELPER TO BE ADDED HERE -->
+        </td>
+        <td ng-controller="EditSideroomHelper as editSideroomHelper">
+          <i class="fa fa-pencil edit pointer"
+             ng-show="bed.mrn"
+             ng-click="editSideroomHelper.edit_status(bed.patient_id, reload_beds)"></i>
+        </td>
+      </tr>
+
+      {% for name, ward in wards.items %}
+
+      {% for patient in ward %}
+      {% with patient.patient.sideroomstatus_set.get as sideroom_status %}
+      <tr>
+        <td ng-controller="IsolationHelper as isolationHelper">
+          {% if not permissions.bed_manager %}
+          <span ng-show="isolationHelper.init(
+                         '{{ patient.hospital_site_code }}',
+                         '{{ patient.ward_name }}',
+                         '{{ patient.room }}',
+                         '{{ patient.bed }}',
+                         {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
+                         {% if patient.isSideRoom %}1{% else %}0{% endif %}
+                         )">
+            <span ng-hide='isolationHelper.isSideRoom'>
+              <span ng-show='isolationHelper.isolated_bed_id'>
+                {% if not request.user.profile.readonly %}
+                <button ng-click='isolationHelper.unisolate(true)' class="btn btn-sm btn-primary">
+                  Remove
+                </button>
+                {% endif %}
+              </span>
+            </span>
+          </span>
+          {% endif %}
+        </td>
+
+      </tr>
+      {% endwith %}
+      {% endfor %}
+
+
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+
+{% endblock %}

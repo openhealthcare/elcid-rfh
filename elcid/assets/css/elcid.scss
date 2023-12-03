@@ -751,6 +751,15 @@ h1 small a{
 #sideroom-gender-count p{
     display: inline-block;
 }
+#sideroom-gender-count .btn-primary.active{
+    background-color: #0091C9;
+    border-color: #0091C9;
+}
+#sideroom-gender-count .btn-primary{
+    background-color: $faded;
+    color: $obsidian;
+    border-color: #0091C9;
+}
 
 table.table.table-striped tr.highlighted-row td{
     background: $blue-light;
