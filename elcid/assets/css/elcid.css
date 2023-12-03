@@ -680,14 +680,14 @@ table#sideroom-list-table tr th h2 {
 }
 
 #sideroom-gender-count .btn-primary.active {
-  background-color: #0091C9;
-  border-color: #0091C9;
+  background-color: #D36C08;
+  border-color: #864200;
 }
 
 #sideroom-gender-count .btn-primary {
   background-color: #d8dbdd;
   color: #343637;
-  border-color: #0091C9;
+  border-color: #864200;
 }
 
 table.table.table-striped tr.highlighted-row td {

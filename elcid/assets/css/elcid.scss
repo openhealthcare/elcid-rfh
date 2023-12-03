@@ -766,13 +766,13 @@ table#sideroom-list-table tr th h2{
     display: inline-block;
 }
 #sideroom-gender-count .btn-primary.active{
-    background-color: #0091C9;
-    border-color: #0091C9;
+    background-color: $secondary;
+    border-color: $secondary-background;
 }
 #sideroom-gender-count .btn-primary{
     background-color: $faded;
     color: $obsidian;
-    border-color: #0091C9;
+    border-color: $secondary-background;
 }
 
 table.table.table-striped tr.highlighted-row td{
