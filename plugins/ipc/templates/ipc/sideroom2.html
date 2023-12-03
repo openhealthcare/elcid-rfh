@@ -146,42 +146,7 @@
              ng-show="bed.mrn"
              ng-click="editSideroomHelper.edit_status(bed.patient_id, reload_beds)"></i>
         </td>
-      </tr>
 
-      {% for name, ward in wards.items %}
-
-      {% for patient in ward %}
-      {% with patient.patient.sideroomstatus_set.get as sideroom_status %}
-      <tr>
-        <td ng-controller="IsolationHelper as isolationHelper">
-          {% if not permissions.bed_manager %}
-          <span ng-show="isolationHelper.init(
-                         '{{ patient.hospital_site_code }}',
-                         '{{ patient.ward_name }}',
-                         '{{ patient.room }}',
-                         '{{ patient.bed }}',
-                         {% if patient.isolated_bed %}{{ patient.isolated_bed.id }}{% else %}null{% endif %},
-                         {% if patient.isSideRoom %}1{% else %}0{% endif %}
-                         )">
-            <span ng-hide='isolationHelper.isSideRoom'>
-              <span ng-show='isolationHelper.isolated_bed_id'>
-                {% if not request.user.profile.readonly %}
-                <button ng-click='isolationHelper.unisolate(true)' class="btn btn-sm btn-primary">
-                  Remove
-                </button>
-                {% endif %}
-              </span>
-            </span>
-          </span>
-          {% endif %}
-        </td>
-
-      </tr>
-      {% endwith %}
-      {% endfor %}
-
-
-      {% endfor %}
     </table>
   </div>
 </div>
