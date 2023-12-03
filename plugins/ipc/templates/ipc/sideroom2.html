@@ -73,13 +73,15 @@
   <div class="col-md-offset-1">
 
 
-    <table class="table table-striped" style="margin-left: 12px; width:95%;" ng-repeat="ward in wards">
+    <table class="table table-striped"
+           id="sideroom-list-table"
+           ng-repeat="ward in wards">
       <tr id="[[ ward.name|slugifyish ]]">
         <th colspan="10">
           <h2>[[ ward.name ]]</h2>
         </th>
       </tr>
-      <tr>
+      <tr class="headings">
         <th>Location</th>
         <th>Patient</th>
         <th>Admitted</th>

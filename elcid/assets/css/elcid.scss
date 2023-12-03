@@ -729,6 +729,20 @@ h1 small a{
     font-size: 14px;
 }
 
+table#sideroom-list-table{
+    margin-left: 12px;
+    width:95%;
+    font-weight: bold;
+    font-size: 14px;
+}
+table#sideroom-list-table tr.headings th{
+    font-size: 18px;
+    text-decoration: underline;
+}
+table#sideroom-list-table tr th h2{
+    text-decoration: none;
+}
+
 #sideroom-ward-nav {
     position: fixed;
     padding-top: 12px;

@@ -199,6 +199,8 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
                 sample_date = getattr(self, f"{attr}_date")
                 if sample_date:
                     sample_date = sample_date.strftime("%d %b %Y")
+                else:
+                    sample_date = "" # Don't show None in the UI
                 display = f"{sample_date} {label}"
                 flags.append(display)
         return flags
