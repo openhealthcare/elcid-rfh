@@ -41,7 +41,8 @@ MESSAGE_CODES = {
     'S14': 'Notification of appointment modification',
     'S15': 'Notification of new appointment cancellation',
     'S17': 'Notification of appointment deletion',
-    'S26': 'Notification of patient no-show for appointment'
+    'S26': 'Notification of patient no-show for appointment',
+    'A27': 'CANCEL PENDING ADMIT'
 }
 
 BUILDING_CODES = {
