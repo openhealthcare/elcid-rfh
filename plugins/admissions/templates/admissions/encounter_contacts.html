@@ -123,13 +123,17 @@
         {% endifchanged %}
         <tr>
           <td>
+            {% with transfer.patient.demographics_set.get as demographics %}
             <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link"
                ng-hide="profile.has_role('bed_manager')">
-              {% with transfer.patient.demographics_set.get as demographics %}
               {{ demographics.hospital_number }}
               {{ demographics.name }}
-              {% endwith %}
             </a>
+            <span ng-show="profile.has_role('bed_manager')">
+              {{ demographics.hospital_number }}
+              {{ demographics.name }}
+            </span>
+            {% endwith %}
           </td>
           <td>
             {{ transfer.transfer_start_datetime }}
