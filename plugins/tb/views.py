@@ -614,9 +614,9 @@ class MDTList(LoginRequiredMixin, TemplateView):
             "positive": True
         }
         if self.kwargs["site"] == self.BARNET:
-            filter_args["lab_number__contains"] = "K"
+            filter_args["lab_number__contains"] = "K" #27
         else:
-            filter_args["lab_number__contains"] = "L"
+            filter_args["lab_number__contains"] = "L" #37
         patient_ids = set()
         for tb_obs_model in self.ALL_OBS:
             patient_ids = patient_ids.union(tb_obs_model.objects.filter(

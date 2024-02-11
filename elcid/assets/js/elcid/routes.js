@@ -30,6 +30,7 @@ var param_template_route = function(base, param_list){
         },
         resolve: {
             referencedata: function(Referencedata) { return Referencedata; },
+            profile: function(UserProfile){ return UserProfile.load(); },
         },
     }
 }

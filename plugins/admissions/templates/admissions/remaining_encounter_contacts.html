@@ -10,14 +10,24 @@
             <h1>
               <i class="fa fa-hospital-o"></i>
               {{ patients|length }}
-              <a href="/#/admissions/encounter/{{ encounter_id }}/" class="orange-link">Encounter</a>
+              <a href="/#/admissions/encounter/{{ encounter_id }}/" class="orange-link"
+                 ng-hide="profile.has_role('bed_manager')">
+                Encounter
+              </a>
+              <span ng-show="profile.has_role('bed_manager')">
+                Encounter
+              </span>
               remaining inpatient contacts
             </h1>
             <h2>
-              <a href="/#/patient/{{ index_demographics.patient_id }}/location_history" class="orange-link">
+              <a href="/#/patient/{{ index_demographics.patient_id }}/location_history" class="orange-link"
+                 ng-hide="profile.has_role('bed_manager')">
                 {{ index_demographics.name }}
               </a>
-                {{ index_demographics.sex }}
+              <span ng-show="profile.has_role('bed_manager')">
+                {{ index_demographics.name }}
+              </span>
+              {{ index_demographics.sex }}
               {{ index_demographics.date_of_birth }}
 
               Encounter ID: {{ encounter_id }}
@@ -46,12 +56,18 @@
         {% for patient in patients %}
         <tr>
           <td>
-            <a href="/#/patient/{{ patient.id }}" class="orange-link">
-              {% with patient.demographics_set.get as demographics %}
+            {% with patient.demographics_set.get as demographics %}
+
+            <a href="/#/patient/{{ patient.id }}" class="orange-link"
+               ng-hide="profile.has_role('bed_manager')">
               {{ demographics.hospital_number }}
               {{ demographics.name }}
-              {% endwith %}
             </a>
+            <span ng-show="profile.has_role('bed_manager')">
+              {{ demographics.hospital_number }}
+              {{ demographics.name }}
+            </span>
+            {% endwith %}
           </td>
           <td>
             {% with patient.bedstatus.get as bed_status %}

@@ -122,6 +122,10 @@
         </td>
         <td>
           [[ bed.admitted | displayDateTime ]]
+          <br />
+          <a class="orange-link" href="/#/admissions/encounter/[[ bed.encounter_id ]]/contacts/" ng-show="bed.mrn">
+            Contacts
+          </a>
         </td>
         <td>
           [[ bed.sideroom_status.risk_score ]]

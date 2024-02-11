@@ -57,6 +57,7 @@ class SideroomAPI(LoginRequiredViewset):
                 'bed'           : bedstatus.bed,
                 'bed_status'    : bedstatus.bed_status,
                 'admitted'      : bedstatus.get_admitted_as_dt(),
+                'encounter_id'  : bedstatus.encounter_id,
                 'is_open_bay'   : getattr(bedstatus, 'is_open_bay', False),
                 'is_rogue'      : getattr(bedstatus, 'is_rogue', False),
                 'ipc_episode_id': ipc_episode_id

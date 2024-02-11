@@ -13,7 +13,12 @@
       <div class="col-md-12">
         <h1>
           <i class="fa fa-hospital-o"></i>
-          <a href="/#/admissions/location-history/{{ source.spell_number }}/" class="orange-link">Admission</a>
+          <span ng-hide="profile.has_role('bed_manager')">
+            <a href="/#/admissions/location-history/{{ source.spell_number }}/" class="orange-link">Admission</a>
+          </span>
+          <span ng-show="profile.has_role('bed_manager')">
+            Admission
+          </span>
           contacts
           <span class="pull-right">
             <small>
@@ -25,9 +30,14 @@
 
         </h1>
         <p>
-          <a href="/#/patient/{{ index_demographics.patient_id }}/location_history" class="orange-link">
+          <a href="/#/patient/{{ index_demographics.patient_id }}/location_history" class="orange-link"
+             ng-hide="profile.has_role('bed_manager')">
             {{ index_demographics.name }}
           </a>
+          <span ng-show="profile.has_role('bed_manager')">
+            {{ index_demographics.name }}
+          </span>
+
           {{ index_demographics.sex }}
           {{ index_demographics.date_of_birth }}
 
@@ -73,7 +83,8 @@
       <small>
         {{slice.spell_number  }}
         | Potential Contacts: {{ slice.contact_transfers|length }}
-        <a href="/#/admissions/slice-contacts/{{ slice.encounter_slice_id }}/" class="orange-link">
+        <a href="/#/admissions/slice-contacts/{{ slice.encounter_slice_id }}/" class="orange-link"
+           ng-hide="profile.has_role('bed_manager')">
           Slice detail
         </a>
       </small>
@@ -94,7 +105,8 @@
               {{ transfer.unit }}
               {{ transfer.room }}
               {{ transfer.bed }}
-              <a href="/#/admissions/location-history/{{ transfer.transfer_location_code }}">
+              <a href="/#/admissions/location-history/{{ transfer.transfer_location_code }}"
+                 ng-hide="profile.has_role('bed_manager')">
                 Bed history
               </a>
             </p>
@@ -111,7 +123,8 @@
         {% endifchanged %}
         <tr>
           <td>
-            <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link">
+            <a href="/#/patient/{{ transfer.patient_id }}" class="orange-link"
+               ng-hide="profile.has_role('bed_manager')">
               {% with transfer.patient.demographics_set.get as demographics %}
               {{ demographics.hospital_number }}
               {{ demographics.name }}
