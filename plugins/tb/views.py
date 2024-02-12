@@ -613,14 +613,23 @@ class MDTList(LoginRequiredMixin, TemplateView):
             "reported_datetime__gte": self.start_date,
             "positive": True
         }
+        exclude_args = {}
+
+        # RFH lab numbers are changng, and now may contain
+        # either a K/L or begin with a 'site code' - 27/37
         if self.kwargs["site"] == self.BARNET:
-            filter_args["lab_number__contains"] = "K" #27
+            exclude_args["lab_number__contains"] = "L"
+            exclude_args["lab_number__startswith"] = "27"
         else:
-            filter_args["lab_number__contains"] = "L" #37
+            exclude_args["lab_number__contains"] = "K"
+            exclude_args["lab_number__startswith"] = "37"
+
         patient_ids = set()
         for tb_obs_model in self.ALL_OBS:
             patient_ids = patient_ids.union(tb_obs_model.objects.filter(
                 **filter_args
+            ).exclude(
+                **exclude_args
             ).values_list('patient_id', flat=True))
         return Patient.objects.filter(
             id__in=patient_ids
