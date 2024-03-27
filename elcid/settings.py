@@ -192,6 +192,7 @@ INSTALLED_APPS = (
     'plugins.rnoh',
     'plugins.elcid_search',
     'plugins.obs',
+    'plugins.opat',
     'intrahospital_api',
     'elcid',
     'passwordreset',

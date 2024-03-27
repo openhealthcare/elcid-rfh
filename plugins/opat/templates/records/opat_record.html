@@ -1,0 +1,140 @@
+<span ng-show="item.accepted === true">
+   <b>Accepted
+      <span ng-show="item.accepted_date">
+         ([[ item.accepted_date|displayDate ]])
+      </span>
+      <span ng-show="item.decision_making_consultant">
+         by [[ item.decision_making_consultant ]]
+      </span>
+   </b>
+   <br />
+</span>
+<span ng-show="item.accepted === false">
+   <b>Rejected
+      <span ng-show="item.rejected_date">
+         ([[ item.rejected_date|displayDate ]])
+      </span>
+      <span ng-show="item.decision_making_consultant">
+         by [[ item.decision_making_consultant ]]
+      </span>
+   </b>
+   <br />
+</span>
+<div ng-show="item.rejection_reason" class="row">
+   <div class="col-md-5">
+      <b>
+         Reason
+      </b>
+   </div>
+   <div markdown="rejection_reason" class="col-md-7">
+   </div>
+</div>
+<div ng-show="item.indication" class="row">
+   <div class="col-md-5">
+      <b>
+         Indication
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.indication ]]
+   </div>
+</div>
+
+<div ng-show="item.admission_date" class="row">
+   <div class="col-md-5">
+      <b>
+         Admission
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.admission_date | displayDate ]]
+      <span ng-show="item.discharge_date">
+         - [[ item.discharge_date | displayDate ]]
+      </span>
+   </div>
+</div>
+<div ng-show="item.referral_source || item.referral_date" class="row">
+   <div class="col-md-5">
+      <b>
+         Referral
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.referral_date | displayDate ]]
+      [[ item.referral_source ]]
+   </div>
+</div>
+
+<div ng-show="item.opat_start_date" class="row">
+   <div class="col-md-5">
+      <b>
+         OPAT
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.opat_start_date | displayDate ]]
+      <span ng-show="item.opat_end_date">
+         - [[ item.opat_end_date | displayDate ]]
+
+      </span>
+   </div>
+</div>
+
+<div ng-show="item.administration" class="row">
+   <div class="col-md-5">
+      <b>
+         Administration
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.administration  ]]
+   </div>
+</div>
+
+<div ng-show="item.supply" class="row">
+   <div class="col-md-5">
+      <b>
+         Supply
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.supply  ]]
+   </div>
+</div>
+
+
+<div ng-show="item.outcome_early || item.outcome_early_date" class="row">
+   <div class="col-md-5">
+      <b>
+         Outcome early
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.outcome_early_date | displayDate ]]
+      [[ item.outcome_early  ]]
+   </div>
+</div>
+
+<div ng-show="item.outcome_one_year || item.outcome_one_year_date" class="row">
+   <div class="col-md-5">
+      <b>
+         Outcome one year
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.outcome_one_year_date | displayDate ]]
+      [[ item.outcome_one_year  ]]
+   </div>
+</div>
+
+<div ng-show="item.outcome_two_years || item.outcome_two_years_date" class="row">
+   <div class="col-md-5">
+      <b>
+         Outcome two years
+      </b>
+   </div>
+   <div class="col-md-7">
+      [[ item.outcome_two_years_date | displayDate ]]
+      [[ item.outcome_two_years  ]]
+   </div>
+</div>
