@@ -100,6 +100,7 @@ class AFBSmear(TBTest):
     TEST_NAME = 'AFB : CULTURE'
     TEST_CODE = 'AFB'
     OBSERVATION_NAME = 'AFB Smear'
+    # 24k150669 - it's auramine field now 27244378321  +/- 0
 
     @classmethod
     def get_positive_observations(cls):
