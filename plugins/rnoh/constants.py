@@ -17,8 +17,8 @@ GROUPED_WARD_NAMES = [
 ]
 
 INDIVIDUAL_WARD_NAMES = [
-    'New results',
-    'Pending ref lab',
+    'New-results',
+    'Pending-ref-lab',
     'Outstanding',
     'OPAT',
     'Clinic',
@@ -27,6 +27,7 @@ INDIVIDUAL_WARD_NAMES = [
     'MDT-LRU',
     'MDT-Spinal',
     'MDT-Upper-Limb',
+    'MDT-Knee'
 ]
 
 UNIT_NAMES = [

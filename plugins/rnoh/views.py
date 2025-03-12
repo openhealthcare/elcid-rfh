@@ -70,6 +70,7 @@ class RNOHWardListView(RNOHView):
 
 
         context['episodes'] = episodes
-
+        print(INDIVIDUAL_WARD_NAMES)
+        print(k['ward_name'])
         context['list_name'] = [n for n in INDIVIDUAL_WARD_NAMES if n.lower() == k['ward_name']][0]
         return context
