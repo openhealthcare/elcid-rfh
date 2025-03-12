@@ -75,9 +75,12 @@ def create_rfh_patient_from_hospital_number(
     if emodels.MergedMRN.objects.filter(mrn=hospital_number).exists():
         raise ValueError(f'MRN {hospital_number} has already been merged into another MRN')
 
-    active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
-        hospital_number
-    )
+    if settings.UPSTREAM_DEMOGRAPHICS_ON:
+        active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
+            hospital_number
+        )
+    else:
+        active_mrn, merged_mrn_dicts = hospital_number, []
 
     patient = Patient.objects.create()
     patient.demographics_set.update(

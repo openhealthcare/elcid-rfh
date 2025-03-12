@@ -459,6 +459,7 @@ WAREHOUSE_DB = dict(
 EXTRACT_ASYNC = False
 OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
 WRITEBACK_ON = True
+UPSTREAM_DEMOGRAPHICS_ON = True # Toggle to manually create all patients without looking for an upstream - dev only
 
 OPAL_DEFAULT_SEARCH_FIELDS = [
     "demographics__hospital_number",
