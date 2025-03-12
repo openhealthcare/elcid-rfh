@@ -5,7 +5,9 @@
     {% record_panel models.RNOHDemographics %}
     {% record_panel models.Location %}
     {% record_panel models.RNOHTeams %}
-    {% record_panel models.Allergies %}
+    {% record_panel models.Allergies title="Allergies and intolerances"%}
+    {% record_panel models.RNOHMicrobiology %}
+
   </div>
 
   <div class="col-md-6">
@@ -17,7 +19,6 @@
 </div>
 <div class="row">
   <div class="col-md-6">
-    {% record_panel models.RNOHMicrobiology %}
   </div>
 
   <div class="col-md-6">
