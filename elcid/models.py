@@ -477,19 +477,19 @@ class Line(PreviousMRN, EpisodeSubrecord):
     _sort = 'insertion_datetime'
     _icon = 'fa fa-bolt'
 
-    line_type = ForeignKeyOrFreeText(LineType)
-    site = ForeignKeyOrFreeText(LineSite)
-    insertion_datetime = models.DateTimeField(blank=True, null=True)
-    inserted_by = models.CharField(max_length=255, blank=True, null=True)
-    external_length = models.CharField(max_length=255, blank=True, null=True)
-    removal_datetime = models.DateTimeField(blank=True, null=True)
-    complications = ForeignKeyOrFreeText(LineComplication)
-    removal_reason = ForeignKeyOrFreeText(LineRemovalReason)
+    line_type            = ForeignKeyOrFreeText(LineType)
+    site                 = ForeignKeyOrFreeText(LineSite)
+    insertion_datetime   = models.DateTimeField(blank=True, null=True)
+    inserted_by          = models.CharField(max_length=255, blank=True, null=True)
+    external_length      = models.CharField(max_length=255, blank=True, null=True)
+    removal_datetime     = models.DateTimeField(blank=True, null=True)
+    complications        = ForeignKeyOrFreeText(LineComplication)
+    removal_reason       = ForeignKeyOrFreeText(LineRemovalReason)
     special_instructions = models.TextField()
-    button_hole = models.NullBooleanField()
-    tunnelled_or_temp = models.CharField(max_length=200, blank=True, null=True)
-    fistula = models.NullBooleanField(blank=True, null=True)
-    graft = models.NullBooleanField(blank=True, null=True)
+    button_hole          = models.NullBooleanField()
+    tunnelled_or_temp    = models.CharField(max_length=200, blank=True, null=True)
+    fistula              = models.NullBooleanField(blank=True, null=True)
+    graft                = models.NullBooleanField(blank=True, null=True)
 
 
 class BloodCultureSource(lookuplists.LookupList):

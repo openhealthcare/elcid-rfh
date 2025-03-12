@@ -314,7 +314,8 @@ class LymphNodeSwellingSite(PreviousMRN, models.EpisodeSubrecord):
 class Treatment(PreviousMRN, models.Treatment):
     _angular_service = 'TreatmentRecord'
     planned_end_date = fields.DateField(blank=True, null=True)
-    category = fields.CharField(blank=True, null=True, max_length=255)
+    category         = fields.CharField(blank=True, null=True, max_length=255)
+    notes            = fields.TextField(blank=True, null=True)
 
     TB = "tb"
     OPAT = 'opat'
