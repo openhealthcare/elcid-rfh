@@ -25,7 +25,13 @@
       </h3>
     </div>
     <ul class="list-group">
-      <li class="list-group-item" ng-repeat="item in parent.{{ name }}" ng-show="item.created_by_id || item.updated_by_id">
+      <li class="list-group-item" ng-repeat="item in parent.{{ name }}"
+          {% if angular_filter %}
+          ng-show="{{ angular_filter }}"
+          {% else %}
+          ng-show="item.created_by_id || item.updated_by_id"
+          {% endif %}
+          >
       <div class="row">
         {% if full_width %}
         <div class="col-md-12">

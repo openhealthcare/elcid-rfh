@@ -14,15 +14,9 @@
     {% record_panel models.PastMedicalHistory %}
     {% record_panel models.Line %}
     {% record_panel models.OPATEpisodes %}
-  </div>
-</div>
-<div class="row">
-  <div class="col-md-6">
-  </div>
-
-  <div class="col-md-6">
     {% record_panel models.Procedure %}
-    {% record_panel models.Treatment %}
+    {% record_panel models.Treatment angular_filter="!item.end_date" %}
+    {% record_panel models.Treatment title="Previous Treatment" angular_filter="item.end_date"%}
   </div>
 </div>
 <div class="row">
