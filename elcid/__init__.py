@@ -99,6 +99,16 @@ class Application(application.OpalApplication):
         if user.is_superuser:
             menu_items.append(
                 MenuItem(
+                    href='/pathway/#/add_rnoh/',
+                    display="RNOH Add",
+                    icon="fa fa-plus"
+                )
+            )
+
+
+        if user.is_superuser:
+            menu_items.append(
+                MenuItem(
                     href='/#/beta/',
                     display='Beta',
                     icon='fa fa-bath',

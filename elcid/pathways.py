@@ -8,7 +8,7 @@ from opal.core.pathway.pathways import (
     PagePathway,
     WizardPathway,
 )
-
+from opal.models import Patient
 
 from intrahospital_api import loader
 from intrahospital_api import constants
@@ -90,8 +90,6 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         If the patient already exists and has an infectious service
         episode, Update that episode
 
-        If the patient is recorded as being at RNOH, create an RNOH episode
-
         Else if the patient already exists, create a new episode.
 
         Else if the patient doesn't exist load in the patient.
@@ -110,4 +108,65 @@ class AddPatientPathway(SaveTaggingMixin, WizardPathway):
         )
         return super(AddPatientPathway, self).save(
             data, user=user, patient=patient, episode=episode
+        )
+
+
+class AddRNOHPatientPathwy(WizardPathway):
+    display_name = 'Add RNOH Patient'
+    slug         = 'add_rnoh'
+    finish_button_text = "Add Patient"
+    finish_button_icon = "fa fa-plus"
+
+    steps = [
+        Step(
+            template="pathway/add_rnoh_patient_form.html",
+            display_name='PatientDetails',
+            icon='fa fa-user',
+            step_controller='RNOHAddPatientCtrl'
+        ),
+    ]
+
+    def redirect_url(self, user=None, patient=None, episode=None):
+        if not episode:
+            episode = patient.episode_set.last()
+        return "/#/patient/{0}/{1}".format(patient.id, episode.id)
+
+    @transaction.atomic
+    def save(self, data, user, patient=None, episode=None):
+        """
+        Create a new RNOH Patient.
+
+        If there is an identifier, defer to logic in intrahospital_api.loader, else create them blank
+        and hope users fill in identifiers later.
+
+        """
+        demographics = data['demographics'][0]
+        nhs_number   = demographics.pop('nhs_number', None)
+        mrn          = demographics.pop('hospital_number', None)
+
+
+        if not any([nhs_number, mrn]):
+            if any([not(demographics['first_name']), not(demographics['surname'])]):
+                raise HttpResponseBadRequest('One of: External MRN, NHS Number, Name must be supplied')
+            else:
+                # Name only, we will add in the super call
+                patient = Patient.objects.create()
+                patient.episode_set.get_or_create(
+                    category_name=InfectionService.display_name
+                )
+
+        else:
+            patient, _ = loader.get_or_create_external_patient(
+                nhs_number, mrn, 'RAN', InfectionService
+            )
+
+        episode, _ = patient.episode_set.get_or_create(
+            category_name=RNOHEpisode.display_name
+        )
+
+        data['location'][0]['hospital'] = 'RNOH'
+        to_save = {'location': data['location'], 'demographics': [demographics]}
+
+        return super(AddRNOHPatientPathwy, self).save(
+            to_save, user=user, patient=patient, episode=episode
         )

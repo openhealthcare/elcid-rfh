@@ -50,7 +50,7 @@ def search_upstream_demographics(hospital_number):
 
 
 def create_rfh_patient_from_hospital_number(
-    hospital_number, episode_category, run_async=None
+    hospital_number, episode_category, run_async=None, try_upstream=True
 ):
     """
     Creates a patient programatically and sets up integration.
@@ -63,6 +63,8 @@ def create_rfh_patient_from_hospital_number(
     If a patient with this hospital number already exists raise ValueError
     If a hospital number prefixed with zero is passed in raise ValueError
     If the hospital number has already been merged into another raise ValueError
+
+    We will attempt to load data from upstream for this patient unless TRY_UPSTREAM is FALSE
     """
     if hospital_number.startswith('0'):
         raise ValueError(
@@ -75,12 +77,13 @@ def create_rfh_patient_from_hospital_number(
     if emodels.MergedMRN.objects.filter(mrn=hospital_number).exists():
         raise ValueError(f'MRN {hospital_number} has already been merged into another MRN')
 
-    if settings.UPSTREAM_DEMOGRAPHICS_ON:
-        active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
-            hospital_number
-        )
-    else:
-        active_mrn, merged_mrn_dicts = hospital_number, []
+    if try_upstream:
+        if settings.UPSTREAM_DEMOGRAPHICS_ON:
+            active_mrn, merged_mrn_dicts = update_demographics.get_active_mrn_and_merged_mrn_data(
+                hospital_number
+            )
+        else:
+            active_mrn, merged_mrn_dicts = hospital_number, []
 
     patient = Patient.objects.create()
     patient.demographics_set.update(
@@ -96,7 +99,8 @@ def create_rfh_patient_from_hospital_number(
             **merged_mrn_dict
         )
 
-    load_patient(patient, run_async=run_async)
+    if try_upstream:
+        load_patient(patient, run_async=run_async)
     return patient
 
 
@@ -200,7 +204,7 @@ def _load_patient(patient, patient_load):
 
 
 def get_or_create_patient(
-    mrn, episode_category, run_async=None
+    mrn, episode_category, run_async=None, try_upstream=True
 ):
     """
     Get or create a opal.Patient with an opal.Episode of the
@@ -214,6 +218,9 @@ def get_or_create_patient(
 
     If run_async is False the loaders that look for upstream data
     will be called synchronously.
+
+    If try_upstream is false, the loaders that look for upstream data
+    will not be called at all.
     """
     patient = Patient.objects.filter(
         demographics__hospital_number=mrn
@@ -232,7 +239,8 @@ def get_or_create_patient(
         patient = create_rfh_patient_from_hospital_number(
             mrn,
             episode_category,
-            run_async=run_async
+            run_async=run_async,
+            try_upstream=try_upstream
         )
     except update_demographics.CernerPatientNotFoundException:
         logger.info(
@@ -245,4 +253,42 @@ def get_or_create_patient(
         patient.episode_set.create(
             category_name=episode_category.display_name
         )
+    return patient, True
+
+def get_or_create_external_patient(nhs_number, external_identifier, external_prefix, episode_category):
+    """
+    Given an NHS_NUMBER and an EXTERNAL_IDENTIFIER, from an institution using MRN EXTERNAL_PREFIX ,
+    get or create an opal.models.Patient with an episode of EPISODE_CATEGORY.
+    """
+    if external_identifier.find(external_prefix) < 0:
+        external_identifier = external_prefix + external_identifier
+
+    patient = None
+
+    if nhs_number:
+        # Try for existing patients first.
+        patient = Patient.objects.filter(
+            demographics__nhs_number=nhs_number
+        ).first()
+
+    if not patient:
+        patient = Patient.objects.filter(
+            # TODO expanded, we will want to makle this dynamic
+            rnohdemographics__rnoh_hospital_number=external_identifier
+        ).first()
+
+    if patient:
+        patient.episode_set.get_or_create(
+            category_name=episode_category.display_name
+        )
+        return patient, False
+
+    patient = Patient.objects.create()
+    if nhs_number:
+        patient.demographics_set.update(nhs_number=nhs_number)
+    patient.rnohdemographics_set.update(rnoh_hospital_number=external_identifier)
+    patient.episode_set.get_or_create(
+        category_name=episode_category.display_name
+    )
+
     return patient, True

@@ -1,0 +1,19 @@
+{% load forms %}
+
+<!-- Alternative RNOH Flow -->
+<div class="row" >
+  <div class="col-md-12">
+    <form class="form-horizontal">
+      {% input "autofocus" field="Demographics.nhs_number" model="demographics.nhs_number" %}
+      {% input field="Demographics.hospital_number" model="demographics.hospital_number" label="RNOH MRN" %}
+      {% input  field="Demographics.first_name" model="demographics.first_name" %}
+      {% input field="Demographics.surname" model="demographics.surname" %}
+      {% date_of_birth_field model_name="demographics.date_of_birth" %}
+      {% select field="Demographics.sex" model="demographics.sex" %}
+      {% select field="Location.ward" lookuplist="metadata.rnoh_wards" %}
+      {% select field="Location.unit" lookuplist="metadata.rnoh_units" %}
+      {% input field="Location.consultant" lookuplist="rnohconsultants_list" %}
+
+    </form>
+  </div>
+</div>
