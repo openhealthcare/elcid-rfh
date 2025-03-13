@@ -1,26 +1,28 @@
-  {% for episode in episodes reversed %}
+{% for episode in episodes reversed %}
 
   {% with episode.patient.demographics as demographics %}
   <div class="panel-heading">
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-4">
         <a href="/#/patient/{{ episode.patient.id }}/{{ episode.id }}" class="orange-link">
           <strong>
             {{ demographics.name }}
+            {% if demographics.date_of_birth %}{{ demographics.date_of_birth }}{% endif %}
             {% if episode.patient.rnohdemographics_set.get.rnoh_hospital_number %}
               {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
             {% endif %}
           </strong>
-          {% if demographics.date_of_birth %}{{ demographics.date_of_birth }}{% endif %}
-          {% if demographics.sex %}{{ demographics.sex }} {% endif %}
-          {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %}
-          {% if demographics.age %}({{ demographics.age }}){% endif %}
+          <!-- {% if demographics.sex %}{{ demographics.sex }} {% endif %} -->
+          <!-- {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %} -->
+          <!-- {% if demographics.age %}({{ demographics.age }}){% endif %} -->
         </a>
       </div>
-      <div class="col-md-4">
-        {% with episode.location_set.get as location %}
-        {% if location.consultant %}<strong>Consultant:</strong> {{ location.consultant }}{% endif %}
-        {% if location.unit %}<strong>Unit:</strong> {{ location.unit }}{% endif %}
+
+      <div class="col-md-8">
+        {% with episode.diagnosis_set.all as diagnosis %}
+        {% for diag in diagnosis %}
+        {{ diag.condition }}
+        {% endfor %}
         {% endwith %}
       </div>
     </div>
@@ -29,12 +31,24 @@
 
   <div class="panel-body">
     <div class="row">
-      <div class="col-md-3">
+      <div class="col-md-4">
         {% with episode.location_set.get as location %}
-        <strong>Location:</strong> {{ location.ward }} {{ location.bed }}
+        <strong>Consultant:</strong> {{ location.consultant }}
         {% endwith %}
       </div>
-      <div class="col-md-3">
+      <div class="col-md-8">
+        <strong>Advice</strong><br />
+        {% for advice in episode.microbiologyinput_set.all reversed %}
+        <i>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</i><br />
+        {{ advice.clinical_discussion }}
+        <br />
+        {{ advice.plan }}
+        {% endfor %}
+      </div>
+
+    </div> <!-- row -->
+    <div class="row content-offset">
+      <div class="col-md-4">
         {% if episode.patient.allergies_set.all.count > 0 %}
         <strong>Allergies:</strong>
         {% for allergy in episode.patient.allergies_set.all %}
@@ -42,32 +56,6 @@
         {% endfor %}
         {% endif %}
       </div>
-      <div class="col-md-6">
-        {% if episode.rnohactions_set.all.count > 0 %}
-        <strong>Actions:</strong>
-        {% for action in episode.rnohactions_set.all %}
-        {{ action.date }} {{ action.action }}
-        {% endfor %}
-        {% endif %}
-      </div>
-
-    </div> <!-- row -->
-
-    <div class="row">
-      <div class="col-md-10">
-        {% for advice in episode.microbiologyinput_set.all reversed %}
-        <strong>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</strong><br />
-        {{ advice.clinical_discussion }}
-        <br />
-        {{ advice.plan }}
-
-        {% endfor %}
-      </div>
-    </div>
-
-    <hr />
-
-    <div class="row">
       <div class="col-md-4">
         {% if episode.rnohmicrobiology_set.all.count > 0 %}
         <strong>Microbiology:</strong>
@@ -93,17 +81,7 @@
         </p>
         {% endfor %}
         {% endif %}
-      </div>
 
-      <div class="col-md-4">
-        {% if episode.treatment_set.all.count > 0 %}
-        <strong>Treatment:</strong>
-        {% for treatment in episode.treatment_set.all reversed %}
-        <p>
-          {{ treatment.start_date }} {{ treatment.drug }} {{ treatment.dose }} {{ treatment.frequency }}
-        </p>
-        {% endfor %}
-        {% endif %}
       </div>
 
       <div class="col-md-4">
@@ -119,6 +97,39 @@
         </p>
         {% endfor %}
         {% endif %}
+
+        {% if episode.treatment_set.all.count > 0 %}
+        <strong>Treatment:</strong>
+        {% for treatment in episode.treatment_set.all reversed %}
+        {% if not treatment.end_date %}
+        <p>
+          {{ treatment.start_date }} {{ treatment.drug }} {{ treatment.dose }} {{ treatment.frequency }}
+        </p>
+
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col-md-10">
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+      <div class="col-md-4">
+      </div>
+
+      <div class="col-md-4">
+      </div>
+
+      <div class="col-md-4">
       </div>
 
     </div>

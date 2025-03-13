@@ -99,6 +99,7 @@ class ElcidTemplateView(TemplateView):
         return super(ElcidTemplateView, self).dispatch(*args, **kwargs)
 
     def get_template_names(self, *args, **kwargs):
+        print(['elcid/modals/'+self.name])
         return ['elcid/modals/'+self.name]
 
     def get_context_data(self, *args, **kwargs):

@@ -267,6 +267,7 @@ class Infection(PreviousMRN, EpisodeSubrecord):
 
 class Procedure(PreviousMRN, EpisodeSubrecord):
     _icon = 'fa fa-sitemap'
+    _sort = 'date'
 
     STAGE_CHOICES = enum(
         'Partial',
@@ -286,15 +287,54 @@ class Procedure(PreviousMRN, EpisodeSubrecord):
         'TKR',
         'TSR',
         'TER',
-        'TAR'
-
+        'TAR',
+        'Abdomen',
+        'Ankle',
+        'Arm',
+        'Back',
+        'Buttock',
+        'Calf',
+        'Clavicle',
+        'C-Spine',
+        'Ear',
+        'Elbow',
+        'Femur',
+        'Fibula',
+        'Hip',
+        'Humerus',
+        'Ilium Ischium',
+        'Ischial tuberosity',
+        'Knee',
+        'Leg',
+        'L-Spine',
+        'Nephrostomy',
+        'Pelvis',
+        'Pubis',
+        'Radius',
+        'Sacrum',
+        'Shoulder',
+        'Spine',
+        'Suprapubic',
+        'Tibia',
+        'Thigh',
+        'Throat',
+        'T-spine',
+        'Ulnar',
+        'Wrist'
     )
+
+
+    SIDE_CHOICES = enum(
+        'R', 'L',
+        'Anterior', 'Posterior'
+    )
+
 
     date      = models.DateField(blank=True, null=True)
     hospital  = ForeignKeyOrFreeText(omodels.Hospital)
     stage     = models.CharField(blank=True, null=True, max_length=100, choices=STAGE_CHOICES)
     operation = models.CharField(blank=True, null=True, max_length=100, choices=OPERATION_CHOICES)
-    side      = models.CharField(blank=True, null=True, max_length=100, choices=enum('R', 'L'))
+    side      = models.CharField(blank=True, null=True, max_length=100, choices=SIDE_CHOICES)
     site      = models.CharField(blank=True, null=True, max_length=100, choices=SITE_CHOICES)
     findings  = models.TextField(blank=True, null=True)
     details   = models.TextField(blank=True, null=True)

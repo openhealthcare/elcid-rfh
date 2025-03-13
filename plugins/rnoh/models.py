@@ -83,20 +83,28 @@ class RNOHMicrobiology(PreviousMRN, EpisodeSubrecord):
 
     _icon = "fa fa-crosshairs"
 
-    BLOOD_CULTURE = 'Blood Culture'
+    BLOOD_CULTURE   = 'Blood Culture'
     GENERIC_CULTURE = 'Culture'
+    VIRUS_SCREEN    = 'Respiratory Virus Screen'
+    PCR             = 'PCR'
 
     TEST_NAME_CHOICES = enum(
         BLOOD_CULTURE,
         'Covid-19',
         GENERIC_CULTURE,
         'MRSA Screen',
-        'CPE Screen'
+        'CPE Screen',
+        VIRUS_SCREEN,
+        'Candida Auris Screen',
+        'Serology',
+        PCR
     )
 
     CULTURE_TESTS = [
         BLOOD_CULTURE,
-        GENERIC_CULTURE
+        GENERIC_CULTURE,
+        VIRUS_SCREEN,
+        PCR
     ]
 
 
@@ -112,7 +120,44 @@ class RNOHMicrobiology(PreviousMRN, EpisodeSubrecord):
         'Sputum',
         'Stool',
         'CSF',
-        'NPS'
+        'NPS',
+        'Blood'
+    )
+
+    SITE_CHOICES = enum(
+        'Abdomen',
+        'Ankle',
+        'Arm',
+        'Back',
+        'Buttock',
+        'Calf',
+        'Clavicle',
+        'C-Spine',
+        'Ear',
+        'Elbow',
+        'Femur',
+        'Fibula',
+        'Hip',
+        'Humerus',
+        'Ilium Ischium',
+        'Ischial tuberosity',
+        'Knee',
+        'Leg',
+        'L-Spine',
+        'Nephrostomy',
+        'Pelvis',
+        'Pubis',
+        'Radius',
+        'Sacrum',
+        'Shoulder',
+        'Spine',
+        'Suprapubic',
+        'Tibia',
+        'Thigh',
+        'Throat',
+        'T-spine',
+        'Ulnar',
+        'Wrist'
     )
 
     BOTTLE_CHOICES = enum(
@@ -125,9 +170,20 @@ class RNOHMicrobiology(PreviousMRN, EpisodeSubrecord):
     CULTURE_CHOICES = enum(
         'Pend',
         'Flagging',
-        'NG 24',
-        'NG 48',
-        'NG'
+    )
+
+    RESULT_CHOICES = enum(
+        'NG',
+        'Positive',
+        'Negative',
+        'Equivocal',
+        'Detected',
+        'Not Detected'
+    )
+
+    SIDE_CHOICES = enum(
+        'R', 'L',
+        'Anterior', 'Posterior'
     )
 
     sample_date     = models.DateField(blank=True, null=True)
@@ -136,10 +192,11 @@ class RNOHMicrobiology(PreviousMRN, EpisodeSubrecord):
     number_positive = models.IntegerField(blank=True, null=True)
     number_samples  = models.IntegerField(blank=True, null=True)
     sample_type     = models.CharField(blank=True, null=True, max_length=200, choices=SAMPLE_TYPE_CHOICES)
-    side            = models.CharField(blank=True, null=True, max_length=100, choices=enum('R', 'L'))
-    site            = models.CharField(blank=True, null=True, max_length=255)
+    side            = models.CharField(blank=True, null=True, max_length=100, choices=SIDE_CHOICES)
+    site            = models.CharField(blank=True, null=True, max_length=255, choices=SITE_CHOICES)
     bottle          = models.CharField(blank=True, null=True, max_length=200, choices=BOTTLE_CHOICES)
-    result          = models.CharField(blank=True, null=True, max_length=200, choices=CULTURE_CHOICES)
+    status          = models.CharField(blank=True, null=True, max_length=200, choices=CULTURE_CHOICES)
+    result          = models.CharField(blank=True, null=True, max_length=200, choices=RESULT_CHOICES)
     day_positive    = models.IntegerField(blank=True, null=True)
     organism        = ForeignKeyOrFreeText(MicrobiologyOrganism)
     sensitivities   = models.ManyToManyField(

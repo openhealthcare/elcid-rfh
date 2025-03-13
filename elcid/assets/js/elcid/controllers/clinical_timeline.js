@@ -44,9 +44,12 @@ angular.module('opal.controllers').controller(
 
         this.getClinicalAdvice();
 
-        this.editItem = function(item){
+        this.editItem = function(item, template_url){
             var ctrl = "GeneralEditCtrl";
             var templateUrl = "/templates/modals/microbiology_input.html/"
+            if(template_url){
+                templateUrl = template_url
+            }
             var formItem = self.getClinicalAdviceFormObject(item);
 
             var modal_opts = {
