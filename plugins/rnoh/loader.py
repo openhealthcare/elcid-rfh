@@ -157,7 +157,7 @@ def load_SBAR():
             rnoh_sbar = cast_to_SBAR(sbar, patient)
             rnoh_sbar.save()
 
-            PatientRNOHSBARStatus.objects.get(
+            PatientRNOHSBARStatus.objects.filter(
                 patient=patient).update(
                     has_sbar=True
                 )
