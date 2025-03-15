@@ -149,15 +149,26 @@ def load_SBAR():
 
     RNOHSBAR.objects.all().delete()
 
+    fails = []
+    counter = 0
+
     with transaction.atomic():
 
         for sbar in sbars:
-            patient, _ = get_or_create_RNOH_patient(sbar)
+            counter += 1
+            try:
+                patient, _ = get_or_create_RNOH_patient(sbar)
 
-            rnoh_sbar = cast_to_SBAR(sbar, patient)
-            rnoh_sbar.save()
+                rnoh_sbar = cast_to_SBAR(sbar, patient)
+                rnoh_sbar.save()
 
-            PatientRNOHSBARStatus.objects.filter(
-                patient=patient).update(
-                    has_sbar=True
-                )
+                PatientRNOHSBARStatus.objects.filter(
+                    patient=patient).update(
+                        has_sbar=True
+                    )
+            except ValueError:
+                fails.append(sbar['rf1_number'])
+
+            print(counter)
+
+    print(fails)
