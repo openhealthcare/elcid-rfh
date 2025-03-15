@@ -4,7 +4,7 @@ Models for plugins.rnoh
 from django.db import models
 from opal.core.fields import enum, ForeignKeyOrFreeText
 from opal.core import lookuplists
-from opal.models import EpisodeSubrecord, PatientSubrecord, Antimicrobial
+from opal.models import Patient, EpisodeSubrecord, PatientSubrecord, Antimicrobial
 from elcid.models import MicrobiologyOrganism, PreviousMRN
 
 
@@ -221,3 +221,75 @@ class RNOHActions(PreviousMRN, EpisodeSubrecord):
 
     class Meta:
         verbose_name = 'Actions'
+
+
+class PatientRNOHSBARStatus(PatientSubrecord):
+    _is_singleton = True
+
+    has_sbar = models.BooleanField(default=False)
+
+
+class RNOHSBAR(models.Model):
+    """
+    This model mirrors the upstream Freenet RNOH database.
+
+    We store the data here broadly aligned with how this
+    historic database was presented, although we do concatenate records
+    where appropriate.
+
+    The upstream database used a system of identifier suffixes e.g.
+    MRN 1234, 1234a, 1234b, 1234c, 1234d
+
+    At import we treat all of the above as 1234 and link to a single
+    elCID patient.
+
+    We do not rely on denormalised demographic fields beyond
+    initial matching to a patient in elCID.
+    """
+    # The upstream data is matched on it's MRN to an elCID patient
+    patient = models.ForeignKey(
+        Patient, on_delete=models.CASCADE, related_name='rnoh_sbar')
+
+    # The upstream row ID
+    sql_id       = models.IntegerField(blank=True, null=True)
+    # This may be 1234 1234a 1234b etc
+    mrn          = models.CharField(blank=True, null=True, max_length=200)
+    surname      = models.CharField(blank=True, null=True, max_length=200)
+    forename     = models.CharField(blank=True, null=True, max_length=200)
+    dob          = models.CharField(blank=True, null=True, max_length=200)
+    ward         = models.CharField(blank=True, null=True, max_length=200)
+    consultant   = models.CharField(blank=True, null=True, max_length=200)
+    diagnosis    = models.TextField(blank=True, null=True)
+    instructions = models.CharField(blank=True, null=True, max_length=200)
+    t8           = models.TextField(blank=True, null=True)
+    extra1       = models.TextField(blank=True, null=True)
+    extra3       = models.TextField(blank=True, null=True)
+    extra4       = models.TextField(blank=True, null=True)
+    extra5       = models.TextField(blank=True, null=True)
+    extra7       = models.TextField(blank=True, null=True)
+
+    UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
+        'id'                   : 'sql_id',
+        'rf1_number'           : 'mrn',
+        'patient_surname'      : 'surname',
+        'patient_forename'     : 'forename',
+        'patient_dob'          : 'dob',
+        'ward_code'            : 'ward',
+        'consultant_name'      : 'consultant',
+        'diagnosis'            : 'diagnosis',
+        'clinical_instructions': 'instructions',
+        't8'                   : 't8',
+        'extra1'               : 'extra1',
+        'extra3'               : 'extra3',
+        'extra4'               : 'extra4',
+        'extra5'               : 'extra5',
+        'extra7'               : 'extra7',
+    }
+
+    FIELDS_TO_SERIALIZE = [
+
+    ]
+
+    def to_dict(self):
+        dicted = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+        return dicted
