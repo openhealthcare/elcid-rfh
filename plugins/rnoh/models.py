@@ -260,7 +260,7 @@ class RNOHSBAR(models.Model):
     ward         = models.CharField(blank=True, null=True, max_length=200)
     consultant   = models.CharField(blank=True, null=True, max_length=200)
     diagnosis    = models.TextField(blank=True, null=True)
-    instructions = models.CharField(blank=True, null=True, max_length=200)
+    instructions = models.TextField(blank=True, null=True)
     t8           = models.TextField(blank=True, null=True)
     extra1       = models.TextField(blank=True, null=True)
     extra3       = models.TextField(blank=True, null=True)
