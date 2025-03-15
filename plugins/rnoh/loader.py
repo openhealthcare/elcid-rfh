@@ -76,7 +76,7 @@ def get_or_create_RNOH_patient(data):
 
             return patient, created
         except Demographics.objects.DoesNotExist:
-            continue
+            pass
 
     if mrn:
 
@@ -84,7 +84,7 @@ def get_or_create_RNOH_patient(data):
             demographics = RNOHDemographics.objects.get(rnoh_hospital_number=mrn)
             return demographics.patient, created
         except RNOHDemographics.objects.DoesNotExist:
-            continue
+            pass
 
     first, last, dob = data['forename'], data['surname'], data['patient_dob']
 
@@ -98,7 +98,7 @@ def get_or_create_RNOH_patient(data):
                     demographics = Demographics.objects.get(surname=last, forename=first, dob=dob)
                     return demographics.patient, created
                 except Demographics.objects.DoesNotExist:
-                    continue
+                    pass
 
     # We can't find them, create them.
     patient = Patient.objects.create()
