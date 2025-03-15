@@ -115,7 +115,7 @@ def get_or_create_RNOH_patient(data):
     rnoh_demographics.rnoh_hospital_number = mrn
     rnoh_demographics.save()
 
-    return patient
+    return patient, created
 
 
 def cast_to_SBAR(data, patient):
