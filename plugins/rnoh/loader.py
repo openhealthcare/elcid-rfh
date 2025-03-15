@@ -125,11 +125,15 @@ def cast_to_SBAR(data, patient):
     """
     sbar = RNOHSBAR(patient=patient)
     for k, v in data.items():
-        if v: # Ignore for empty / nullvalues
-            setattr(
-                sbar,
-                RNOHSBAR.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v
-            )
+
+        # There is loads of noise here, ignore fields that are never filled
+        if k in RNOHSBAR.UPSTREAM_FIELDS_TO_MODEL_FIELDS:
+
+            if v: # Ignore for empty / nullvalues
+                setattr(
+                    sbar,
+                    RNOHSBAR.UPSTREAM_FIELDS_TO_MODEL_FIELDS[k], v
+                )
     return sbar
 
 
