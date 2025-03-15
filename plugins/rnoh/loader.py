@@ -86,7 +86,7 @@ def get_or_create_RNOH_patient(data):
         except RNOHDemographics.DoesNotExist:
             pass
 
-    first, last, dob = data['forename'], data['surname'], data['patient_dob']
+    first, last, dob = data['patient_forename'], data['patient_surname'], data['patient_dob']
 
     dob = datetime.datetime.strptime(dob, '%d/%m/%Y').date()
 
