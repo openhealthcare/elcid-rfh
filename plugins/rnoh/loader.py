@@ -142,7 +142,7 @@ def load_SBAR():
         Q_GET_ALL_HANDOVER
     )
 
-    RNOHSBAR.objects.all.delete()
+    RNOHSBAR.objects.all().delete()
 
     with transaction.atomic():
 
