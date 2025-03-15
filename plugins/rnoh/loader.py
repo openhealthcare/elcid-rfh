@@ -95,7 +95,8 @@ def get_or_create_RNOH_patient(data):
         if last:
             if dob:
                 try:
-                    demographics = Demographics.objects.get(surname=last, forename=first, dob=dob)
+                    demographics = Demographics.objects.get(
+                        surname=last, forename=first, date_of_birth=dob)
                     return demographics.patient, created
                 except Demographics.DoesNotExist:
                     pass
