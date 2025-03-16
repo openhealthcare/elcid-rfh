@@ -461,14 +461,14 @@ OPAL_SEARCH_BACKEND = "plugins.elcid_search.elcid_query.ElcidSearchQuery"
 WRITEBACK_ON = True
 UPSTREAM_DEMOGRAPHICS_ON = True # Toggle to manually create all patients without looking for an upstream - dev only
 
-OPAL_DEFAULT_SEARCH_FIELDS = [
-    "demographics__hospital_number",
-    "demographics__first_name",
-    "demographics__surname",
-    # Search the normal fields but also
-    # include mrns that have been merged
-    "mergedmrn__mrn"
-]
+# OPAL_DEFAULT_SEARCH_FIELDS = [
+#     "demographics__hospital_number",
+#     "demographics__first_name",
+#     "demographics__surname",
+#     # Search the normal fields but also
+#     # include mrns that have been merged
+#     "mergedmrn__mrn"
+# ]
 
 OPAL_DEFAULT_SEARCH_FIELDS = [
     "demographics__hospital_number",
@@ -478,7 +478,7 @@ OPAL_DEFAULT_SEARCH_FIELDS = [
     # include mrns that have been merged
     "mergedmrn__mrn",
     # Allow us to search for RAN MRNs
-    "rnohdemographics__rnoh_hospital_number"
+    "demographics__nhs_number"
 
 ]
 
