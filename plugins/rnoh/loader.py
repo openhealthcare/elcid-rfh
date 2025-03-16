@@ -56,6 +56,11 @@ def get_or_create_RNOH_patient(data):
     created = False
 
     mrn = data['rf1_number']
+    first, last, dob = data['patient_forename'], data['patient_surname'], data['patient_dob']
+
+    dob = datetime.datetime.strptime(dob, '%d/%m/%Y').date()
+
+
 
     if not mrn.startswith('RAN'):
         raise ValueError(f"{mrn} does not begin with RAN")
@@ -66,6 +71,11 @@ def get_or_create_RNOH_patient(data):
     if data['nhs_number']:
         try:
             demographics = Demographics.objects.get(nhs_number=data['nhs_number'])
+            demographics.first_name    = first
+            demographics.surname       = last
+            demographics.date_of_birth = dob
+            demographics.save()
+
             patient = demographics.patient
 
             # Ensure they have the appropriate RAN MRN
@@ -82,13 +92,14 @@ def get_or_create_RNOH_patient(data):
 
         try:
             demographics = RNOHDemographics.objects.get(rnoh_hospital_number=mrn)
+            demographics.first_name    = first
+            demographics.surname       = last
+            demographics.date_of_birth = dob
+            demographics.save()
+
             return demographics.patient, created
         except RNOHDemographics.DoesNotExist:
             pass
-
-    first, last, dob = data['patient_forename'], data['patient_surname'], data['patient_dob']
-
-    dob = datetime.datetime.strptime(dob, '%d/%m/%Y').date()
 
     # Only attempt a match if all three exist
     if first:
