@@ -15,7 +15,9 @@ from opal.models import Patient
 from elcid.models import Demographics
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
+from plugins.rnoh.episode_categories import RNOHEpisode
 from plugins.rnoh.models import PatientRNOHSBARStatus, RNOHSBAR, RNOHDemographics
+
 
 Q_GET_ALL_HANDOVER = """
 SELECT *
@@ -175,6 +177,7 @@ def load_SBAR():
             counter += 1
             try:
                 patient, _ = get_or_create_RNOH_patient(sbar)
+                episode, _ patient.episode_set.get_or_create(category_name=RNOHEpisode.display_name)
 
                 rnoh_sbar = cast_to_SBAR(sbar, patient)
                 rnoh_sbar.save()
