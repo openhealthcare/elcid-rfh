@@ -186,6 +186,6 @@ def load_SBAR():
             except ValueError:
                 fails.append(sbar['rf1_number'])
 
-            print(counter)
+            print(f"{counter} {sbar['rf1_number']}")
 
     print(fails)
