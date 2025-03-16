@@ -177,7 +177,7 @@ def load_SBAR():
             counter += 1
             try:
                 patient, _ = get_or_create_RNOH_patient(sbar)
-                episode, _ patient.episode_set.get_or_create(category_name=RNOHEpisode.display_name)
+                episode, _ = patient.episode_set.get_or_create(category_name=RNOHEpisode.display_name)
 
                 rnoh_sbar = cast_to_SBAR(sbar, patient)
                 rnoh_sbar.save()
