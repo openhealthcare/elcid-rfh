@@ -287,7 +287,16 @@ class RNOHSBAR(models.Model):
     }
 
     FIELDS_TO_SERIALIZE = [
-
+        'ward',
+        'consultant',
+        'diagnosis',
+        'instructions',
+        't8',
+        'extra1',
+        'extra3',
+        'extra4',
+        'extra5',
+        'extra7'
     ]
 
     def to_dict(self):
