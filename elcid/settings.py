@@ -477,6 +477,9 @@ OPAL_DEFAULT_SEARCH_FIELDS = [
     # Search the normal fields but also
     # include mrns that have been merged
     "mergedmrn__mrn"
+    # Allow us to search for RAN MRNs
+    "rnohdemographics__rnoh_hostpital_number"
+
 ]
 
 COVID_EXTRACT_LOCATION = os.path.join(PROJECT_PATH, '../prepared_downloads')

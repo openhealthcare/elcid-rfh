@@ -97,6 +97,12 @@ def get_or_create_RNOH_patient(data):
                 try:
                     demographics = Demographics.objects.get(
                         surname=last, first_name=first, date_of_birth=dob)
+
+                    rnoh_demographics = demographics.patient.rnohdemographics_set.get()
+
+                    rnoh_demographics.rnoh_hospital_number = mrn
+                    rnoh_demographics.save()
+
                     return demographics.patient, created
                 except Demographics.DoesNotExist:
                     pass

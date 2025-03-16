@@ -268,6 +268,9 @@ class RNOHSBAR(models.Model):
     extra5       = models.TextField(blank=True, null=True)
     extra7       = models.TextField(blank=True, null=True)
 
+    class Meta:
+        ordering = ['sql_id']
+
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
         'id'                   : 'sql_id',
         'rf1_number'           : 'mrn',
