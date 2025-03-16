@@ -477,8 +477,9 @@ OPAL_DEFAULT_SEARCH_FIELDS = [
     # Search the normal fields but also
     # include mrns that have been merged
     "mergedmrn__mrn",
+    "demographics__nhs_number",
     # Allow us to search for RAN MRNs
-    "demographics__nhs_number"
+    "rnohdemographics__rnoh_hospital_number"
 
 ]
 
