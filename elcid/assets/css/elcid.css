@@ -152,7 +152,7 @@ h5 {
 
 a.list-group-item:hover, a.list-group-item:focus {
   text-decoration: none;
-  background-color: #4d5051;
+  background-color: rgb(76.785046729, 79.738317757, 81.214953271);
   color: #FFF;
 }
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
@@ -337,7 +337,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 }
 
 .star i {
-  color: #0091c9;
+  color: rgb(0, 144.72, 201);
   font-size: 24px;
 }
 
@@ -348,8 +348,8 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .central-info-alert.alert.alert-info {
   text-align: left;
   font-size: 21px;
-  background-color: #f2fbff;
-  border-color: #006c96;
+  background-color: rgb(241.8, 251.3223880597, 255);
+  border-color: rgb(0, 108.2089552239, 150);
   border-width: 3px;
 }
 .central-info-alert.alert.alert-info .btn {
@@ -373,7 +373,7 @@ i.blood-culture-edit {
 }
 
 div.blood-culture-edit:hover {
-  background-color: #f4f8fc;
+  background-color: rgb(243.5344827586, 248.2413793103, 252.4655172414);
 }
 div.blood-culture-edit:hover i {
   display: inline-block;
@@ -382,7 +382,7 @@ div.blood-culture-edit:hover i {
 }
 
 div.add-isolate:hover {
-  background-color: #f4f8fc;
+  background-color: rgb(243.5344827586, 248.2413793103, 252.4655172414);
 }
 
 .left-offset-10 {
@@ -478,14 +478,14 @@ div.add-isolate:hover {
   padding-right: 0px;
 }
 
-.ward-name-list .row {
+.Ward-name-list .row {
   border-bottom: 1px solid #343637;
 }
-.ward-name-list a {
+.Ward-name-list a {
   padding: 12px 6px 12px 6px;
   display: block;
 }
-.ward-name-list a:hover {
+.Ward-name-list a:hover {
   background: #343637;
 }
 
@@ -522,7 +522,7 @@ div.add-isolate:hover {
 }
 
 .patientlist-list:hover::-webkit-scrollbar-thumb, .touchevents .patientlist-list::-webkit-scrollbar-thumb {
-  background-color: #2d5391;
+  background-color: rgb(45.4691358025, 83.0987654321, 145.0308641975);
 }
 
 .tb-clinic-list {
@@ -731,6 +731,37 @@ table.table.table-striped tr.danger-row td {
 
 .header-loading img {
   width: 30px;
+}
+
+@media print {
+  @page {
+    size: auto; /* auto is the initial value */
+    /* this affects the margin in the printer settings */
+    margin: 5mm 5mm 5mm 5mm;
+  }
+  .right-viewport {
+    width: 100%;
+    float: left;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+  .col-md-3 {
+    width: 30%;
+    float: left;
+  }
+  .col-md-4 {
+    width: 30%;
+    float: left;
+  }
+  .col-md-8 {
+    width: 65%;
+    float: left;
+  }
+  .rnoh-list {
+    zoom: 25%; /*or whatever percentage you need, play around with this number*/
+  }
 }
 
 /*# sourceMappingURL=elcid.css.map */

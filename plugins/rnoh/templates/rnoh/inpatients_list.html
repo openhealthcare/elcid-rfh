@@ -16,7 +16,7 @@
 
   {% for name, episodes in wards %}
     {% if episodes %}
-      <h3 class="col-md-offset-1">{{ name }}</h3>
+      <h3 class="col-md-offset-1" id="rnoh-ward">{{ name }}</h3>
       {% include "rnoh/_ward_list_panel.html" %}
     {% endif %}
   {% endfor %}

@@ -546,7 +546,7 @@ div.add-isolate:hover{
     padding-right: 0px;
 }
 
-.ward-name-list {
+.Ward-name-list {
     .row {
         border-bottom: 1px solid $obsidian;
     }
@@ -813,4 +813,41 @@ table.table.table-striped tr.danger-row td{
 }
 .header-loading img{
     width: 30px;
+}
+
+@media print {
+    @page
+    {
+        size: auto;   /* auto is the initial value */
+
+        /* this affects the margin in the printer settings */
+        margin: 5mm 5mm 5mm 5mm;
+    }
+    .right-viewport{
+        width: 100%;
+        float: left;
+        margin-left: 0px;
+        margin-right: 0px;
+        padding-left: 0px;
+        padding-right: 0px;
+
+    }
+    .col-md-3{
+        width: 30%;
+        float: left;
+    }
+
+    .col-md-4{
+        width: 30%;
+        float: left;
+    }
+    .col-md-8{
+        width: 65%;
+        float: left;
+    }
+
+
+    .rnoh-list{
+        zoom:25%; /*or whatever percentage you need, play around with this number*/
+    }
 }
