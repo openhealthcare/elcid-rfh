@@ -1,0 +1,4 @@
+{% extends 'panels/tb_medication.html' %}
+{% block title %}NTM Medication{% endblock %}
+{% block newclick %} ng-click="episode.recordEditor.newItem('treatment', '{% url 'ntm_medication_modal' %}')" {% endblock %}
+{% block editclick %}ng-click="episode.recordEditor.editItem('treatment', item, '{% url 'ntm_medication_modal' %}')"{% endblock %}
