@@ -2,3 +2,9 @@
 {% input field="OtherInvestigation.name" %}
 {% datepicker field="OtherInvestigation.date" %}
 {% textarea field="OtherInvestigation.details" rows=10 %}
+<div ng-show="episode.category_name == 'NTM BOO' " ng-controller="TBOtherInvestigationsHelper as ECGHelper">
+  <a class="btn btn-default content-offset-below-10"
+     ng-click="ECGHelper.addECG()">
+    ECG
+  </a>
+</div>

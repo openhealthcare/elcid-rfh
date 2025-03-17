@@ -321,7 +321,7 @@ class Treatment(PreviousMRN, models.Treatment):
 
 
 class TBHistory(PreviousMRN, models.PatientSubrecord):
-    """ Used if the person has clicked that they
+    """ Used if the personhas clicked that they
         have a personal history of TB in the
         initial assessment form
     """
@@ -627,6 +627,19 @@ def parse_date(some_val):
         except ValueError:
             pass
     return result
+
+
+class NTMHistory(PreviousMRN, models.EpisodeSubrecord):
+    """
+    Placeholder for a free text box to record narratie NTM history
+    """
+    _icon = 'fa fa-clock-o'
+    _is_singleton = True
+
+    class Meta:
+        verbose_name = "NTM History"
+
+    details = fields.TextField(blank=True, null=True)
 
 
 class AbstractTBObservation(fields.Model):

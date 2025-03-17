@@ -1,3 +1,6 @@
+"""
+Episode Categories for the TB service
+"""
 from opal.core import episodes
 
 
@@ -33,3 +36,12 @@ class TbEpisode(episodes.EpisodeCategory):
         UNDER_INVESTIGATION,
         DISCHARGED
     ]
+
+
+class NTMEpisode(episodes.EpisodeCategory):
+    """
+    An NTM Episode (Almost the same as TB, with minor adjustments.)
+    """
+
+    display_name = 'NTM'
+    detail_template = 'detail/ntm.html'

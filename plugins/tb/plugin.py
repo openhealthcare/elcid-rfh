@@ -29,6 +29,7 @@ class TbPlugin(plugins.OpalPlugin):
             'js/tb/controllers/add_episode_helper.js',
             'js/tb/controllers/tb_date_helper.js',
             'js/tb/controllers/tb_mdt_no_action.js',
+            'js/tb/controllers/tb_other_investigations_helper.js',
             # 'js/tb/services/larry.js',
         ],
         'opal.services': [
