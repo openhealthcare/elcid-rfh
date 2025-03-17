@@ -105,19 +105,28 @@ class Application(application.OpalApplication):
                 )
             )
 
-
-        if user.is_superuser:
-            menu_items.append(
-                MenuItem(
-                    href='/#/beta/',
-                    display='Beta',
-                    icon='fa fa-bath',
-                    activepattern='beta'
-                )
-            )
-
         from opal.models import UserProfile
         profile = UserProfile.objects.get(user=user)
+
+        rnoh_add = MenuItem(
+            href='/#/beta/',
+            display='Beta',
+            icon='fa fa-bath',
+            activepattern='beta'
+        )
+        rnoh = False
+
+        if 'RNOH' in profile.get_roles()['default']:
+            rnoh = True
+
+        if user.is_superuser:
+            rnoh = True
+
+        if rnoh:
+            menu_items.append(
+                rnoh_add
+            )
+
 
         explicit_log_out = MenuItem(
             href=reverse("logout"), icon="fa-sign-out", index=1000, display="Log Out"

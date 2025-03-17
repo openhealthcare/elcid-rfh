@@ -164,7 +164,11 @@ class AddRNOHPatientPathwy(WizardPathway):
             category_name=RNOHEpisode.display_name
         )
 
+        if not 'location' in data:
+            data['location'] = [{}]
+
         data['location'][0]['hospital'] = 'RNOH'
+
         to_save = {'location': data['location'], 'demographics': [demographics]}
 
         return super(AddRNOHPatientPathwy, self).save(
