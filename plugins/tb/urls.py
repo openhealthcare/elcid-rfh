@@ -45,6 +45,11 @@ urlpatterns = [
         name="tb_medication_modal"
     ),
     url(
+        r'^tb/ntm_medication/$',
+        views.NTMMedicationModal.as_view(),
+        name="ntm_medication_modal"
+    ),
+    url(
         r'^tb/other_medication/$',
         views.OtherMedicationModal.as_view(),
         name="other_medication_modal"

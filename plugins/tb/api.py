@@ -182,7 +182,7 @@ class TbTests(LoginRequiredViewset):
 
         return json_response(
             [{
-            'cultures': cultures_result[:5],
+            'cultures': cultures_result,
             'culture_count': len(cultures_result),
             'pcrs': pcr_result[:5],
             'pcr_count': len(pcr_result),

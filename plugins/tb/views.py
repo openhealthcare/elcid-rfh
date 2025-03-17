@@ -386,6 +386,10 @@ class TbMedicationModal(AbstractModalView):
     template_name = "modals/tb_medication.html"
     model = Treatment
 
+class NTMMedicationModal(AbstractModalView):
+    template_name = "modals/ntm_medication.html"
+    model = Treatment
+
 
 class OtherMedicationModal(AbstractModalView):
     template_name = "modals/other_medication.html"
