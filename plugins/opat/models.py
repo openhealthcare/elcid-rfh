@@ -53,6 +53,7 @@ class OPATRecord(EpisodeSubrecord):
     accepted_date          = models.DateField(blank=True, null=True)
     rejected_date          = models.DateField(blank=True, null=True)
     rejection_reason       = models.TextField(blank=True, null=True)
+    monitoring             = models.NullBooleanField(blank=True, null=True, default=False)
     decision_making_consultant = models.CharField(blank=True, null=True, max_length=256)
     indication             = ForeignKeyOrFreeText(OPATIndication)
     referral_date          = models.DateField(blank=True, null=True)
@@ -80,3 +81,18 @@ class OPATActions(EpisodeSubrecord):
 
     class Meta:
         verbose_name = 'Actions'
+
+
+class TherapeuticDrugMonitoring(EpisodeSubrecord):
+
+    _icon = 'fa fa-flask'
+
+    date    = models.DateField(blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
+
+
+class ClinicDates(EpisodeSubrecord):
+    _icon = 'fa fa-hospital-o'
+
+    date    = models.DateField(blank=True, null=True)
+    details = models.CharField(blank=True, null=True, max_length=200)

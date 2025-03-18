@@ -25,6 +25,7 @@
 {# we add the content offset below so the lowest datepicker will always open, otherwise it has issues with the bottom of the screen #}
 <div class="content-offset-below" ng-show="editing.opat_record.accepted === true">
   {% datepicker field="OPATRecord.accepted_date" user_options=True %}
+  {% checkbox field="OPATRecord.monitoring" %}
   {% select field="OPATRecord.indication" %}
   {% textarea field="OPATRecord.microbiology" %}
   {% datepicker field="OPATRecord.admission_date" %}

@@ -1,9 +1,9 @@
 {% load panels %}
 {% load forms %}
 <div class="col-md-6">
-
   {% include "panels/current_opat_referral.html" %}
   {% teams_panel %}
+  {% record_panel models.ClinicDates %}
   {% record_panel models.SymptomComplex %}
   {% record_panel models.PastMedicalHistory %}
   {% include "panels/non_opat_medication.html" %}
@@ -21,6 +21,7 @@
     </div>
   </div>
   {% include "panels/opat_medication.html" %}
+  {% record_panel models.TherapeuticDrugMonitoring %}
   {% record_panel models.Line %}
   {% include "panels/opat_panel.html" %}
 </div>
