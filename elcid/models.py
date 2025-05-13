@@ -277,7 +277,9 @@ class Procedure(PreviousMRN, EpisodeSubrecord):
     )
 
     OPERATION_CHOICES = enum(
-        'Prmary',
+        'Amputation',
+        'Debridement',
+        'Primary',
         'Revision',
         'Decompression',
         'Fixation'
