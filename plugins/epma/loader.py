@@ -109,8 +109,8 @@ def load_meds_for_patient(patient):
 
     order_details = []
     for row in order_detail_results:
-        order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
-        order_detail = EPMAMedOrderDetail(epmamedorder=order)
+        # order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
+        order_detail = EPMAMedOrderDetail(patient_id=patient.id)
         order_detail = cast_to_instance(order_detail, row)
         order_details.append(order_detail)
 
