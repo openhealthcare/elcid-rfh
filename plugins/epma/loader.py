@@ -89,23 +89,23 @@ def load_meds_for_patient(patient):
     order_detail_results = []
 
     for mrn in mrns:
-        result = api.execute_epma_query(Q_GET_MEDS_FOR_MRN, params={'mrn': mrn})
-        order_results.extend(result)
+        # result = api.execute_epma_query(Q_GET_MEDS_FOR_MRN, params={'mrn': mrn})
+        # order_results.extend(result)
 
         detail_result = api.execute_epma_query(Q_GET_DETAILS_FOR_MRN, params={'mrn': mrn})
         order_detail_results.extend(detail_result)
 
-    orders = []
+#    orders = []
 
-    for row in order_results:
-        order = EPMAMedOrder(patient_id=patient.id)
-        order = cast_to_instance(order, row)
-        orders.append(order)
+    # for row in order_results:
+    #     order = EPMAMedOrder(patient_id=patient.id)
+    #     order = cast_to_instance(order, row)
+    #     orders.append(order)
 
-    EPMAMedOrder.objects.bulk_create(orders)
+    # EPMAMedOrder.objects.bulk_create(orders)
 
-    if len(orders) > 0:
-        EPMAStatus.objects.filter(patient=patient).update(has_epma=True)
+    # if len(orders) > 0:
+    #     EPMAStatus.objects.filter(patient=patient).update(has_epma=True)
 
     order_details = []
     for row in order_detail_results:
