@@ -95,7 +95,7 @@ def load_meds_for_patient(patient):
         detail_result = api.execute_epma_query(Q_GET_DETAILS_FOR_MRN, params={'mrn': mrn})
         order_detail_results.extend(detail_result)
 
-   orders = []
+    orders = []
 
     for row in order_results:
         order = EPMAMedOrder(patient_id=patient.id)
