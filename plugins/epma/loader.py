@@ -85,7 +85,6 @@ def load_meds_for_patient(patient):
     )
     mrns = [mrn] + other_mrns
 
-    order_results = []
     order_detail_results = []
 
     for mrn in mrns:
@@ -97,7 +96,7 @@ def load_meds_for_patient(patient):
 
     orders = []
 
-    for row in order_results:
+    for row in order_detail_results:
         order = EPMAMedOrder(patient_id=patient.id)
         order = cast_to_instance(order, row)
         orders.append(order)
