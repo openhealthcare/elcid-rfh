@@ -97,7 +97,7 @@ def load_meds_for_patient(patient):
 
     orders = []
 
-    EPMAMedOrderDetail.objects.filter(patient=patient).delete()
+    EPMAMedOrder.objects.filter(patient=patient).delete()
 
     for row in order_results:
         order = EPMAMedOrder(patient_id=patient.id)
@@ -112,12 +112,15 @@ def load_meds_for_patient(patient):
     order_details = []
     for row in order_detail_results:
         order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
+
+        EPMAMedOrderDetail.objects.filter(epmamedorder=order).delete()
         order_detail = EPMAMedOrderDetail(epmamedorder=order)
         order_detail = cast_to_instance(order_detail, row)
         order_details.append(order_detail)
 
     EPMAMedOrderDetail.objects.bulk_create(order_details)
 
+    print(f"Loaded {len(orders)} orders for {mrn}")
     return
 
 
