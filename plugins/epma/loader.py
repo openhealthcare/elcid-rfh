@@ -111,7 +111,10 @@ def load_meds_for_patient(patient):
 
     order_details = []
     for row in order_detail_results:
-        order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
+        try:
+            order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
+        except EPMAMedOrder.DoesNotExist:
+            continue
 
         preexisting_details = EPMAMedOrderDetail.objects.filter(epmamedorder=order)
         if preexisting_details.count() > 0:
