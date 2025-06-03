@@ -8,7 +8,7 @@
           <div class="col-md-9">
             <h3>
               <i class="fa fa-calendar"></i>
-              Current Anti-Infectives
+              Anti-Infectives
             </h3>
           </div>
         </div>
@@ -16,7 +16,7 @@
       <!-- End Panel Header -->
 
       <ul class="list-group">
-        <li class="list-group-item " ng-repeat="med in epma">
+        <li class="list-group-item " ng-repeat="med in epma.anti_infectives">
           <h5>
             [[ med.o_start_dt_tm ]] - [[ med.o_stop_dt_tm ]]
             [[ med.o_order_mnemonic ]]<br />
@@ -44,7 +44,7 @@
       <!-- End Panel Header -->
 
       <ul class="list-group">
-        <li class="list-group-item " ng-repeat="med in epma">
+        <li class="list-group-item " ng-repeat="med in epma.all">
           <h5>
             [[ med.o_start_dt_tm ]] - [[ med.o_stop_dt_tm ]]
             [[ med.o_order_mnemonic ]]<br />
