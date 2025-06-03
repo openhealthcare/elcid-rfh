@@ -113,7 +113,10 @@ def load_meds_for_patient(patient):
     for row in order_detail_results:
         order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
 
-        EPMAMedOrderDetail.objects.filter(epmamedorder=order).delete()
+        preexisting_details = EPMAMedOrderDetail.objects.filter(epmamedorder=order)
+        if preexisting_details.count() > 0:
+            preexisting_details.delete()
+
         order_detail = EPMAMedOrderDetail(epmamedorder=order)
         order_detail = cast_to_instance(order_detail, row)
         order_details.append(order_detail)
