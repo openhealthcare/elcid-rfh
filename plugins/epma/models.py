@@ -54,35 +54,14 @@ class EPMAMedOrder(models.Model):
     load_dt_tm = models.DateTimeField(blank=True, null=True)
     o_start_dt_tm = models.DateTimeField(blank=True, null=True)
 
-    order_id = models.CharField(max_length=256, blank=True, null=True)
-    action_sequence = models.CharField(max_length=256, blank=True, null=True)
-    detail_sequence = models.CharField(max_length=256, blank=True, null=True)
-    oe_field_id = models.CharField(max_length=256, blank=True, null=True)
-    oe_field_meaning = models.CharField(max_length=256, blank=True, null=True)
-    oe_field_display_value = models.CharField(max_length=256, blank=True, null=True)
-    oe_field_dt_tm_value = models.DateTimeField(blank=True, null=True)
-    updt_dt_tm = models.DateTimeField(blank=True, null=True)
-    load_dt_tm = models.DateTimeField(blank=True, null=True)
-
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
-        "ORDER_ID":  "order_id",
-        "ACTION_SEQUENCE":  "action_sequence",
-        "DETAIL_SEQUENCE":  "detail_sequence",
-        "OE_FIELD_ID":  "oe_field_id",
-        "OE_FIELD_MEANING":  "oe_field_meaning",
-        "OE_FIELD_DISPLAY_VALUE":  "oe_field_display_value",
-        "OE_FIELD_DT_TM_VALUE":  "oe_field_dt_tm_value",
-        "UPDT_DT_TM":  "updt_dt_tm",
-        "LOAD_DT_TM":  "load_dt_tm",
         "LOCALPATIENTID": "localpatientid",
         "O_ENCNTR_ID":  "o_encntr_id",
         "O_ORDER_ID":  "o_order_id",
-
         "E_FINNUMBER":  "e_finnumber",
         "E_CREATE_DT_TM":  "e_create_dt_tm",
         "E_ENCNTR_TYPE_DESC":  "e_encntr_type_desc",
         "E_TREATMENTFUNCTION":  "e_treatmentfunction",
-
         "E_MAINSPECIALTY":  "e_mainspecialty",
         "E_LOC_FACILITY_DESC":  "e_loc_facility_desc",
         "E_BUILDING":  "e_building",
@@ -112,7 +91,6 @@ class EPMAMedOrder(models.Model):
         "ORD_CAT_SYN_CKI":  "ord_cat_syn_cki",
         "DOMAIN_NAME":  "domain_name",
         "LOAD_DT_TM":  "load_dt_tm",
-
     }
 
     FIELDS_TO_SERIALIZE = [
@@ -149,32 +127,47 @@ class EPMAMedOrder(models.Model):
         "o_updt_dt_tm",
         "o_synonym_id",
         "ord_cat_syn_cki",
-
-       "action_sequence",
-        "detail_sequence",
-        "oe_field_id",
-        "oe_field_meaning",
-        "oe_field_display_value",
-        "oe_field_dt_tm_value",
     ]
 
     def to_dict(self):
         data = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
-#        data['detail'] = [d.to_dict() for d in EPMAMedOrderDetail.objects.filter(epmamedorder=self)]
+        data['detail'] = [d.to_dict() for d in EPMAMedOrderDetail.objects.filter(epmamedorder=self)]
         return data
 
 
 
 class EPMAMedOrderDetail(models.Model):
     created_in_elcid = models.DateTimeField(auto_now_add=True)
-
+    order_id = models.CharField(max_length=256, blank=True, null=True)
+    epmamedorder = models.ForeignKey(EPMAMedOrder, on_delete=models.CASCADE)
+    action_sequence = models.CharField(max_length=256, blank=True, null=True)
+    detail_sequence = models.CharField(max_length=256, blank=True, null=True)
+    oe_field_id = models.CharField(max_length=256, blank=True, null=True)
+    oe_field_meaning = models.CharField(max_length=256, blank=True, null=True)
+    oe_field_display_value = models.CharField(max_length=256, blank=True, null=True)
+    oe_field_dt_tm_value = models.DateTimeField(blank=True, null=True)
+    updt_dt_tm = models.DateTimeField(blank=True, null=True)
+    load_dt_tm = models.DateTimeField(blank=True, null=True)
 
     UPSTREAM_FIELDS_TO_MODEL_FIELDS = {
-
+        "ORDER_ID":  "order_id",
+        "ACTION_SEQUENCE":  "action_sequence",
+        "DETAIL_SEQUENCE":  "detail_sequence",
+        "OE_FIELD_ID":  "oe_field_id",
+        "OE_FIELD_MEANING":  "oe_field_meaning",
+        "OE_FIELD_DISPLAY_VALUE":  "oe_field_display_value",
+        "OE_FIELD_DT_TM_VALUE":  "oe_field_dt_tm_value",
+        "UPDT_DT_TM":  "updt_dt_tm",
+        "LOAD_DT_TM":  "load_dt_tm",
     }
 
     FIELDS_TO_SERIALIZE = [
-
+        "action_sequence",
+        "detail_sequence",
+        "oe_field_id",
+        "oe_field_meaning",
+        "oe_field_display_value",
+        "oe_field_dt_tm_value",
     ]
 
     def to_dict(self):

@@ -85,37 +85,38 @@ def load_meds_for_patient(patient):
     )
     mrns = [mrn] + other_mrns
 
+    order_results = []
     order_detail_results = []
 
     for mrn in mrns:
-        # result = api.execute_epma_query(Q_GET_MEDS_FOR_MRN, params={'mrn': mrn})
-        # order_results.extend(result)
+        result = api.execute_epma_query(Q_GET_MEDS_FOR_MRN, params={'mrn': mrn})
+        order_results.extend(result)
 
         detail_result = api.execute_epma_query(Q_GET_DETAILS_FOR_MRN, params={'mrn': mrn})
         order_detail_results.extend(detail_result)
 
     orders = []
 
-    for row in order_detail_results:
+    EPMAMedOrderDetail.objects.filter(patient=patient).delete()
+
+    for row in order_results:
         order = EPMAMedOrder(patient_id=patient.id)
         order = cast_to_instance(order, row)
         orders.append(order)
 
-    EPMAMedOrder.objects.filter(patient=patient).delete()
     EPMAMedOrder.objects.bulk_create(orders)
 
-    print(f"For patient {mrn} found {len(orders)} meds")
     if len(orders) > 0:
         EPMAStatus.objects.filter(patient=patient).update(has_epma=True)
 
-    # order_details = []
-    # for row in order_detail_results:
-    #     # order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
-    #     order_detail = EPMAMedOrder(patient_id=patient.id)
-    #     order_detail = cast_to_instance(order_detail, row)
-    #     order_details.append(order_detail)
+    order_details = []
+    for row in order_detail_results:
+        order = EPMAMedOrder.objects.get(o_order_id=row['ORDER_ID'])
+        order_detail = EPMAMedOrderDetail(epmamedorder=order)
+        order_detail = cast_to_instance(order_detail, row)
+        order_details.append(order_detail)
 
-    # EPMAMedOrderDetail.objects.bulk_create(order_details)
+    EPMAMedOrderDetail.objects.bulk_create(order_details)
 
     return
 
