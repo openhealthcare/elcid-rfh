@@ -101,6 +101,7 @@ def load_meds_for_patient(patient):
         order = cast_to_instance(order, row)
         orders.append(order)
 
+    EPMAMedOrder.objects.filter(patient=patient).delete()
     EPMAMedOrder.objects.bulk_create(orders)
 
     print(f"For patient {mrn} found {len(orders)} meds")
