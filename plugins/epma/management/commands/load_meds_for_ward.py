@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('ward', nargs='+')
 
     def handle(self, *args, **options):
-        ward = options.get('ward')
+        ward = options.get('ward')[0]
         print(ward)
         patients = Patient.objects.filter(bedstatus__ward_name=ward)
         mrns = [p.demographics().hospital_number for p in patients]
