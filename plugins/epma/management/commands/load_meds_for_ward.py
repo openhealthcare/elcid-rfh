@@ -13,6 +13,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         ward = options.get('ward')
+        print(ward)
         patients = Patient.objects.filter(bedstatus__ward_name=ward)
         mrns = [p.demographics().hospital_number for p in patients]
 
