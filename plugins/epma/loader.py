@@ -104,8 +104,8 @@ def load_meds_for_patient(patient):
 
     EPMAMedOrder.objects.bulk_create(orders)
 
-    # if len(orders) > 0:
-    #     EPMAStatus.objects.filter(patient=patient).update(has_epma=True)
+    if len(orders) > 0:
+        EPMAStatus.objects.filter(patient=patient).update(has_epma=True)
 
     # order_details = []
     # for row in order_detail_results:
