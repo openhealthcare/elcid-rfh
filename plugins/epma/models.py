@@ -160,7 +160,7 @@ class EPMAMedOrder(models.Model):
 
     def to_dict(self):
         data = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
-        data['detail'] = [d.to_dict() for d in EPMAMedOrderDetail.objects.filter(epmamedorder=self)]
+#        data['detail'] = [d.to_dict() for d in EPMAMedOrderDetail.objects.filter(epmamedorder=self)]
         return data
 
 
