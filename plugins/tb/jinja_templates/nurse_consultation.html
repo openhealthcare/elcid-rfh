@@ -51,6 +51,11 @@ Index Case{{ index_case_list|pluralize | rjust }}
 {% if observations.height %}
 {{ "Height:"|ljust|rjust(14) }}{{ observations.height }} m
 {% endif %}
+{% if observations.weight %}
+{{ "Weight:"|ljust|rjust(14) }}{{ observations.weight }} m
+{% endif %}
+
+
 
 {% endif %}
 
