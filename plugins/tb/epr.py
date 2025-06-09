@@ -160,7 +160,8 @@ def render_advice(clinical_advice):
     follow_ups_consultaions = ["LTBI follow up", "TB follow up"]
     nurse_consultations = [
         "Nurse led clinic", "Nurse telephone consultation", "Contact screening",
-        "Nurse led TB clinic", "TB Nurse telephone consultation", "TB Contact screening"
+        "Nurse led TB clinic", "TB Nurse telephone consultation", "TB Contact screening",
+        "Incident Screening", "TB Incident Screening"
     ]
     rfi = clinical_advice.reason_for_interaction
     text = ""
