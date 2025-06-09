@@ -147,16 +147,20 @@ def get_default_consultation(clinical_advice):
     ))
     if len(primary_diagnoses) == 1:
         text += get_section(primary_diagnoses[0], "condition", title="Diagnosis")
-    for field in ["infection_control", "progress", "discussion", "plan"]:
+    for field in ["infection_control", "progress", "discussion", "plan", "examination_findings"]:
         text += get_section(clinical_advice, field)
     return "\n" + sign_template(text, clinical_advice)
 
 
 def render_advice(clinical_advice):
+    # Default: TB Migrant screening TB Incident Screening TB Social Care Team
+    # MDT Meeting Migrant screening Incident Screening Contact screening
+
     initial_consultations = ["LTBI initial assessment", "TB initial assessment"]
     follow_ups_consultaions = ["LTBI follow up", "TB follow up"]
     nurse_consultations = [
-        "Nurse led clinic", "Nurse telephone consultation", "Contact screening"
+        "Nurse led clinic", "Nurse telephone consultation", "Contact screening",
+        "Nurse led TB clinic", "TB Nurse telephone consultation", "TB Contact screening"
     ]
     rfi = clinical_advice.reason_for_interaction
     text = ""

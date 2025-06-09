@@ -89,10 +89,11 @@ No recorded travel
 {% else %}
 None recorded
 {% endif %}
+
 {% if index_case_list %}
 {% if index_case_list[0].details %}
-
 {% endif %}
+
 Index Case{{ index_case_list|pluralize | rjust }}
 {% for index_case in index_case_list %}
 {% if index_case.ltbr_number %}LTBI: {{ index_case.ltbr_number }}{% endif %}
@@ -104,8 +105,8 @@ Index Case{{ index_case_list|pluralize | rjust }}
 {{ index_case.details|ljust }}
 {% endif %}
 {% endfor %}
-
 {% endif %}
+
 {% if initial %}
 {{ "Symptoms:" | rjust }}
 {% if symptom_complex_list %}

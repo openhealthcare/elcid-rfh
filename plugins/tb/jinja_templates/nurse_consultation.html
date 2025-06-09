@@ -3,6 +3,25 @@ The patient was seen in the Nurse-led Treatment Support Clinic on {{ object.when
 {% if diagnosis and diagnosis.condition %}
 {{ "Diagnosis" | rjust }}{{ diagnosis.condition.strip() }}
 {% endif %}
+
+{% if index_case_list %}
+{% if index_case_list[0].details %}
+{% endif %}
+
+Index Case{{ index_case_list|pluralize | rjust }}
+{% for index_case in index_case_list %}
+{% if index_case.ltbr_number %}LTBI: {{ index_case.ltbr_number }}{% endif %}
+{% if index_case.hospital_number %} #{{ index_case.hospital_number }}{% endif %}
+{% if index_case.diagnosis_day or index_case.diagnosis_month or index_case.diagnosis_year %}
+ Diagnosed: {% if index_case.diagnosis_day %}{{ index_case.diagnosis_day }}/{% endif %}{% if index_case.diagnosis_month %}{{ index_case.diagnosis_month }}/{% endif %}{{ index_case.diagnosis_year }}
+{% endif %}
+{% if index_case.details %}
+{{ index_case.details|ljust }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
 {% if treatment_commenced %}
 {{ "Treatment Commenced" | rjust }}{{ treatment_commenced | date }}
 {% endif %}
