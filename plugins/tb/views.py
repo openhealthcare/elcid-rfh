@@ -357,6 +357,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         if adverse_reaction:
             ctx["adverse_reaction"] = adverse_reaction.details
         ctx["observations"] = cls.get_observations(patient_consultation)
+        ctx["index_case_list"] = patient.indexcase_set.all()
         return ctx
 
     def get_context_data(self, *args, **kwargs):
