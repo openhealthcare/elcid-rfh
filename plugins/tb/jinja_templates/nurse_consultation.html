@@ -54,12 +54,6 @@ Index Case{{ index_case_list|pluralize | rjust }}
 
 {% endif %}
 
-{% if object.examination_findings %}
-** Examination Findings **
-
-{{ object.examination_findings }}
-
-{% endif %}
 {% if object.discussion %}
 ** Discussion **
 
@@ -72,6 +66,15 @@ Index Case{{ index_case_list|pluralize | rjust }}
 {{ object.progress }}
 
 {% endif %}
+
+{% if object.examination_findings %}
+** Examination Findings **
+
+{{ object.examination_findings }}
+
+{% endif %}
+
+
 {% if object.plan %}
 ** Plan **
 
