@@ -328,6 +328,7 @@ class NurseLetter(LoginRequiredMixin, DetailView):
         create the letter that goes up to EPR
         """
         episode = patient_consultation.episode
+        patient = patient_consultation.episode.patient
         ctx = {"object": patient_consultation}
         ctx["patient"] = episode.patient
         ctx["bloods"] = cls.get_bloods(episode.patient, patient_consultation)
