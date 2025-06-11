@@ -33,6 +33,7 @@ _ALWAYS_SHOW_AS_TABULAR = [
     "RENAL PROFILE",
     "BONE PROFILE",
     "FULL BLOOD COUNT",
+    "FBC And Differential",
     "HAEMATINICS",
     "HBA1C",
     "THYROID FUNCTION TESTS",
@@ -274,8 +275,10 @@ class LabTestResultsView(LoginRequiredViewset):
 class InfectionServiceTestSummaryApi(LoginRequiredViewset):
     basename = 'infection_service_summary_api'
     RELEVANT_TESTS = OrderedDict((
-        ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
-        ("CLOTTING SCREEN", ["INR"],),
+#        ("FULL BLOOD COUNT", ["WBC", "Lymphocytes", "Neutrophils"],),
+        ("FBC And Differential", ["White cell count", "Lymphocytes", "Neutrophils"],),
+#        ("CLOTTING SCREEN", ["INR"],),
+        ("CLOTTING SCREEN", ["INR ratio"],),
         ("C-Reactive Protein", ["C-Reactive Protein"]),
         ("Liver Profile", ["Alanine Aminotransferase", "Aspartate Aminotransfera", "Alkaline Phosphatase"]),
         ("Procalcitonin", ["Procalcitonin"]),
