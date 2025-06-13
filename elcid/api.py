@@ -327,7 +327,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
         display_name = '{} {}'.format(
             self.ANTIFUNGAL_SHORT_NAMES[test_name],
-            test.site.replace('&', ' ').split(' ')[0]
+            test.site.replace('^', ' ').split(' ')[1]
         )
 
 
