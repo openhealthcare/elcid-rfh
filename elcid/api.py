@@ -286,9 +286,9 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
 
     ANTIFUNGAL_TESTS = OrderedDict((
         ("BETA D GLUCAN TEST", [
-            "Beta Glucan test:",
-            "Beta Glucan concentration",
-            "Beta Glucan conc. (pg/mL)",
+            "Beta D Glucan Result",
+            # "Beta Glucan concentration",
+            # "Beta Glucan conc. (pg/mL)",
         ]),
         ("GALACTOMANNAN AGN. ELISA", ["Galactomannan Agn. ELISA", "Galactomannan Agn. INDEX"])
     ))
@@ -366,7 +366,7 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
                 ).order_by('-datetime_ordered')
 
                 for test in tests:
-                    test_tuple = (test.test_name, test.site.replace('&', ' ').split(' ')[0])
+                    test_tuple = (test.test_name, test.site.replace('^', ' ').split(' ')[1])
 
                     if ticker_test_counts[test_tuple] < 3:
                         ticker_test_counts[test_tuple] += 1
