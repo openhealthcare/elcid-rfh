@@ -296,9 +296,9 @@ class InfectionServiceTestSummaryApi(LoginRequiredViewset):
     ANTIFUNGAL_SHORT_NAMES = {
         "BETA D GLUCAN TEST": "Beta D Glucan",
         "GALACTOMANNAN AGN. ELISA": "Galactomannan",
-        "Beta Glucan test:": "",
-        "Beta Glucan conc. (pg/mL)": "Concentration (pg/mL)",
-        "Beta Glucan concentration": "Concentration",
+        "Beta D Glucan Result:": "",
+#        "Beta Glucan conc. (pg/mL)": "Concentration (pg/mL)",
+#        "Beta Glucan concentration": "Concentration",
         "Galactomannan Agn. ELISA": "Agn. ELISA",
         "Galactomannan Agn. INDEX": "Agn. INDEX"
     }
