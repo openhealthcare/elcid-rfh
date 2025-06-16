@@ -26,7 +26,7 @@ class EPMAViewSet(LoginRequiredViewset):
 
         categories = set()
         for o in all_drugs:
-            categories.add(o['categories'])
+            categories.update(o['categories'])
 
         return json_response({
             'all': all_drugs,
