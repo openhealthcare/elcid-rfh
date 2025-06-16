@@ -29,8 +29,10 @@ directives.directive('patientApi', function($http, $window){
     return {
         restrict: 'A',
         link: function(scope, element, attrs){
-            var endpoint = attrs.endpoint;
-            var target   = attrs.target;
+            var endpoint  = attrs.endpoint;
+            var target    = attrs.target;
+            var filter_by = attrs.filter_by;
+
             if (attrs.patientId){
                 var patient_id = scope.$eval(attrs.patientId);
             }else{
@@ -41,9 +43,35 @@ directives.directive('patientApi', function($http, $window){
               var getParams = scope.$eval(attrs.getParams);
               url += '?' + $.param(getParams);
             }
+
+            if(filter_by){
+                scope.active_filter = 'All';
+                scope.filter_dict = {}
+
+                scope.toggle_filter = function(category){
+                    if(scope.filter_dict[category]){
+                        scope.filter_dict[category] = false;
+                    }else{
+                        scope.filter_dict[category] = true;
+                    }
+                };
+                Scope.filter_toggle_text = function(category){
+                    if(scope.filter_dict[category]){
+                        return "Yes"
+                    }else{
+                        return "No"
+                    }
+                }
+            }
+
             $http({cache: true, url: url, method: 'GET'}).then(
                 function(response){
                     scope[target] = response.data;
+                    if(filter_by){
+                        _.each(response.data[filter_by], function(filter_item){
+                            scope.filter_dict[filter_item] = true;
+                        })
+                    }
                 },
                 function(){
                     $window.alert('Error loading data from the server')

@@ -1,5 +1,5 @@
 <div ng-if="view === 'epma'">
-  <div class="col-md-12" patient-api target="epma" endpoint="epma">
+  <div class="col-md-12" patient-api target="epma" endpoint="epma" filter_by="categories">
 
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -15,6 +15,18 @@
       </div>
       <!-- End Panel Header -->
       <div class="panel-body">
+        <div class="row" ng-repeat="category in epma.categories">
+          <div class="col-md-2">
+            <button class="btn btn-secondary" ng-click="toggle_filter(category)">
+              [[ filter_toggle_text(category) ]]
+            </button>
+          </div>
+          <div class="col-md-10">
+            [[ category ]]
+          </div>
+
+        </Div>
+
           <p><i>[[epma.categories]]</i></p>
         </div>
     </div>
