@@ -131,6 +131,8 @@ class EPMAMedOrder(models.Model):
 
     def to_dict(self):
         data = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
+        data['categories'] = EPMATherapeuticClassLookup.objects.filter(
+            mcdx_drug_identifier=self.drug_identifier).first().category_list()
         data['detail'] = [d.to_dict() for d in EPMAMedOrderDetail.objects.filter(epmamedorder=self)]
         return data
 
@@ -198,3 +200,15 @@ class EPMATherapeuticClassLookup(models.Model):
         "MDC_UPDT_DT_TM":  "mdc_updt_dt_tm",
         "LOAD_DT_TM":  "load_dt_tm",
     }
+
+    def category_list(self):
+        """
+        Return non-blank category lists
+        """
+        return [
+            c for c in [self.multum_hierarchy_3,
+                        self.multum_hierarchy_2,
+                        self.multum_hierarchy_1,
+                        self.multum_hierarchy_1a]
+            if c
+        ]
