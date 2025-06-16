@@ -21,9 +21,15 @@ class EPMAViewSet(LoginRequiredViewset):
                 'mcdx_drug_identifier', flat=True
             )
 
+        all_drugs       = [o.to_dict() for o in orders]
         anti_infectives = [o.to_dict() for o in orders if o.drug_identifier in identifiers]
 
+        categories = set()
+        for o in all_drugs:
+            categories += o['categories']
+
         return json_response({
-            'all': [o.to_dict() for o in orders],
+            'all': all_drugs,
+            'categories': list(sorted(categories)),
             'anti_infectives': anti_infectives
         })
