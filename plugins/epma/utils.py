@@ -6,9 +6,11 @@ from django.db.models import Q
 from plugins.epma.models import EPMAMedOrder, EPMATherapeuticClassLookup
 
 
-def get_anti_infectives_for_patient(patient):
+def get_anti_infectives_for_patient(patient, statuses=None):
     """
     Given a PATIENT, return med orders that are in the category 'anti-infectives'
+
+    Given a list of STATUSES, filter the orders to only match these statuses.
     """
     identifiers = EPMATherapeuticClassLookup.objects.filter(
         Q(multum_hierarchy_1='anti-infectives') | Q(multum_hierarchy_2='anti-infectives')).values_list(
@@ -18,4 +20,7 @@ def get_anti_infectives_for_patient(patient):
         patient=patient,
         drug_identifier__in=identifiers
     ).order_by('-o_start_dt_tm')
+
+    if statuses:
+        orders = statuses.filter(o_status_desc__in=statuses)
     return orders
