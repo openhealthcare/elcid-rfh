@@ -4,6 +4,7 @@ APIs for EPMA data
 from django.shortcuts import get_object_or_404
 from opal.core.api import LoginRequiredViewset
 from opal.core.views import json_response
+from django.db.models import Q
 
 from opal.models import Patient
 
