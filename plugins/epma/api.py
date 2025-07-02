@@ -15,7 +15,7 @@ class EPMAViewSet(LoginRequiredViewset):
 
     def retrieve(self, request, pk):
         patient = get_object_or_404(Patient.objects.all(), pk=pk)
-        orders  = EPMAMedOrder.objects.filter(patient=patient).order_by('-o_start_dt_tm')
+        orders  = EPMAMedOrder.objects.filter(patient=patient).order_by('-o_start_dt_tm')-
 
         identifiers = EPMATherapeuticClassLookup.objects.filter(
             Q(multum_hierarchy_1='anti-infectives') | Q(multum_hierarchy_2='anti-infectives')).values_list(

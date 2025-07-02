@@ -1,6 +1,8 @@
 """
 Reusable Utilities for EPMA
 """
+from django.db.models import Q
+
 from plugins.epma.models import EPMAMedOrder, EPMATherapeuticClassLookup
 
 
