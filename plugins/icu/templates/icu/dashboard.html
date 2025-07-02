@@ -42,8 +42,9 @@
                   <th>Bed</th>
                   <th>Last Review</th>
                   <th>By</th>
-                  <th></th>
-                  <th></th>
+                  <th></th> <!-- note flag -->
+                  <th></th> <!-- note flag -->
+                  <th>Anti-infectives</th>
                 </tr>
                 {% for patient in ward.patients %}
                 <tr>
@@ -78,6 +79,16 @@
                     <i class="fa fa-sticky-note fa-lg" title="{{ patient.infection_note }}"></i>
                     {% endif %}
                   </td>
+
+                  <td>
+                    {% for order in anti_infectives %}
+                    <p>
+                      {{ order.o_start_dt_tm }} - {{ order.o_stop_dt_tm }}
+                      {{ order.o_order_mnemonic }} {{ order.o_status_desc }}
+                    </p>
+                    {% endfor %}
+                  </td>
+
                 </tr>
                 {% endfor %}
               </table>

@@ -4,6 +4,7 @@ APIs for EPMA data
 from django.shortcuts import get_object_or_404
 from opal.core.api import LoginRequiredViewset
 from opal.core.views import json_response
+from django.db.models import Q
 from opal.models import Patient
 
 from plugins.epma.models import EPMAMedOrder, EPMATherapeuticClassLookup
@@ -17,7 +18,7 @@ class EPMAViewSet(LoginRequiredViewset):
         orders  = EPMAMedOrder.objects.filter(patient=patient).order_by('-o_start_dt_tm')
 
         identifiers = EPMATherapeuticClassLookup.objects.filter(
-            multum_hierarchy_1='anti-infectives').values_list(
+            Q(multum_hierarchy_1='anti-infectives') | Q(multum_hierarchy_2='anti-infectives')).values_list(
                 'mcdx_drug_identifier', flat=True
             )
 

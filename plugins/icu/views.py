@@ -15,8 +15,10 @@ from elcid.episode_categories import InfectionService
 from elcid.models import MicrobiologyInput
 from plugins.admissions.models import BedStatus
 from plugins.covid.models import CovidPatient
+from plugins.epma.utils import get_anti_infectives_for_patient
 
 from plugins.icu import constants
+
 
 
 class ICUDashboardView(LoginRequiredMixin, TemplateView):
@@ -39,6 +41,12 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
             'patients'      : self.get_patient_info(ward_name, patients)
         }
         return info
+
+    def get_anti_infectives(patient):
+        """
+        Given a PATIENT, return med orders that are in the category 'anti-infectives'
+        """
+        return get_anti_infectives_for_patient(patient)
 
     def get_patient_info(self, ward, patients):
         info = []
@@ -67,6 +75,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
                 ).order_by('when').last(),
                 'bed' : bed,
                 'infection_note' : episode.infectionservicenote_set.get().text
+                'anti_infectives': self.get_anti_infectives(patient)
             }
             info.append(record)
 
