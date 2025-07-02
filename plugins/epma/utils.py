@@ -22,5 +22,5 @@ def get_anti_infectives_for_patient(patient, statuses=None):
     ).order_by('-o_start_dt_tm')
 
     if statuses:
-        orders = statuses.filter(o_status_desc__in=statuses)
+        orders = orders.filter(o_status_desc__in=statuses)
     return orders
