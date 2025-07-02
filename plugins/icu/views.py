@@ -42,7 +42,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         }
         return info
 
-    def get_anti_infectives(patient):
+    def get_anti_infectives(self, patient):
         """
         Given a PATIENT, return med orders that are in the category 'anti-infectives'
         """
