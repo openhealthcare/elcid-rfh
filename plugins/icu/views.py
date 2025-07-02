@@ -74,7 +74,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
                     reason_for_interaction_fk=icu_round_reason
                 ).order_by('when').last(),
                 'bed' : bed,
-                'infection_note' : episode.infectionservicenote_set.get().text
+                'infection_note' : episode.infectionservicenote_set.get().text,
                 'anti_infectives': self.get_anti_infectives(patient)
             }
             info.append(record)
