@@ -33,7 +33,7 @@
         <div uib-collapse="isCardCollapsed" class="panel-body">
           <div class="col-md-5">
 
-            <h4><strong>
+            <h4 ng-show="item.row.opat_record.length > 0"><strong>
                 {% icon models.OPATRecord.get_icon %} OPAT
             </strong></h4>
             <p ng-repeat="item in row.opat_record">
