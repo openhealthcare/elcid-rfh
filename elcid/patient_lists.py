@@ -11,9 +11,9 @@ from opal.core.patient_lists import TaggedPatientList, PatientList
 
 from elcid import models
 from elcid.episode_serialization import serialize
-from intrahospital_api.models import InitialPatientLoad
 from plugins.labtests.models import Observation
 from plugins.admissions.models import BedStatus
+from plugins.opat import models as opat_models
 
 
 PATIENT_LIST_SUBRECORDS = [
@@ -24,7 +24,7 @@ PATIENT_LIST_SUBRECORDS = [
     models.Location,
     models.ChronicAntifungal,
     omodels.Tagging,
-    InitialPatientLoad,
+    opat_models.OPATRecord,
 ]
 
 

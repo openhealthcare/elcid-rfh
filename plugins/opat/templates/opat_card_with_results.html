@@ -72,16 +72,6 @@
             </p>
 
 
-            <section ng-show="row.opat_medication.length">
-            <h4><strong>
-                {% icon models.OPATMedication.get_icon %} {{ models.OPATMedication.get_display_name }}
-            </strong></h4>
-            <p ng-repeat="item in row.opat_medication">
-              {% include models.OPATMedication.get_display_template %}
-            </p>
-
-            </section>
-
           </div>
           <div class="col-md-7 overflow-x-auto">
             <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
