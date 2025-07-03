@@ -37,8 +37,10 @@
                 {% icon models.OPATRecord.get_icon %} OPAT
             </strong></h4>
             <p ng-repeat="item in row.opat_record">
-              The item
+              [[ item.referral_source ]]
             </p>
+
+
           </div>
           <div class="col-md-7 overflow-x-auto">
             <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
