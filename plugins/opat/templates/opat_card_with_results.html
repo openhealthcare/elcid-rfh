@@ -37,41 +37,8 @@
                 {% icon models.OPATRecord.get_icon %} OPAT
             </strong></h4>
             <p ng-repeat="item in row.opat_record">
-              <div class="row">
-                <div class="col-md-7">
-                  <b>
-                    Referral Date
-                  </b>
-                </div>
-                <div class="col-md-5">
-                  [[ item.referral_date | displayDate ]]
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-7">
-                  <b>
-                    Referral Source
-                  </b>
-                </div>
-                <div class="col-md-5">
-                  [[ item.referral_source ]]
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-7">
-                  <b>
-                    Decision Making Consultant
-                  </b>
-                </div>
-                <div class="col-md-5">
-                  [[ item.decision_making_consultant ]]
-                </div>
-              </div>
-              <span ng-show="item.monitoring">(Monitoring)</span>
-
+              [[ item ]] THE ITEM
             </p>
-
-
           </div>
           <div class="col-md-7 overflow-x-auto">
             <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
