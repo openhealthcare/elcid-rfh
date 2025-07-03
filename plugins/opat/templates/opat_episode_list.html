@@ -1,0 +1,74 @@
+{% load forms %}
+<div class="left-menu">
+  <h3>
+    <a href="/#/list/">Patient Lists</a>
+  </h3>
+  <ul class="patientlist-list">
+    {% for list in lists|dictsort:'display_name' %}
+    {% if list.get_slug != list_slug %}
+    <li>
+      <a href="#/list/{{ list.get_slug }}">
+        {{ list.display_name }}
+      </a>
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+</div>
+
+<div class="content-offset right-viewport">
+{% block patient_list_body %}
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h2>
+        <i class="fa fa-user-md"></i>
+        {{ patient_list.display_name }}
+            <span class="pull-right">
+              <div class="btn-group pull-right left-offset-10">
+                <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
+                <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
+              </div>
+              {% if patient_list.display_name == 'Renal' %}
+              <a href="/letters/#{% url 'renal_handover' %}" target="_blank" class="btn btn-secondary pull-right">
+                Renal handover list
+              </a>
+              {% endif %}
+              {% if patient_list.display_name == 'Acute Antifungal' %}
+              <a href="{% url 'add_antifungal_patients' %}" class="btn btn-primary pull-right">
+                Bulk add patients
+              </a>
+              {% endif %}
+            </span>
+      </h2>
+    </div>
+    <div class="panel-body">
+      <div class="row screen-only">
+        <form class="form-inline">
+          <div class="col-md-12">
+            <div class="pull-left">
+            </div>
+          </div>
+        </form>
+      </div>
+      {% include 'opat_card_with_results.html' %}
+      <div class="empty-list" ng-hide="num_episodes > 0">
+        <p class="lead text-center">
+          There are no patients on this list.
+        </p>
+        {% if not patient_list.is_read_only and not request.user.profile.readonly %}
+        <p class="lead text-center">
+          <span class="screen-only">
+            Would you like to <a href="/pathway/#/add_patient">add one</a>?
+          </span>
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+{% endblock patient_list_body %}
+</div>   <!-- Col 11 -->
+
+
+<!--  <div class="container content-offset"> -->
+  <!-- </div> -->
