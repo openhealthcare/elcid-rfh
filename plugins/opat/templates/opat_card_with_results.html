@@ -37,7 +37,8 @@
                 {% icon models.OPATRecord.get_icon %} OPAT
             </strong></h4>
             <p ng-repeat="item in row.opat_record">
-              [[ item.referral_source ]]
+              Referral: [[item.referral_date]] [[ item.referral_source ]]
+              <br/>
             </p>
 
 
