@@ -7,7 +7,8 @@ class OPATCurrent(RfhPatientList, TaggedPatientList):
     display_name = 'OPAT Current'
     direct_add = True
     tag = 'opat_current'
-    template_name = 'episode_list.html'
+#    template_name = 'episode_list.html'
+    template_name = 'opat_episode_list.html'
     schema = []
 
 
@@ -24,12 +25,4 @@ class OPATPalliative(RfhPatientList, TaggedPatientList):
     direct_add = True
     tag = 'opat_palliative'
     template_name = 'episode_list.html'
-    schema = []
-
-
-class OPATMDT(RfhPatientList, TaggedPatientList):
-    display_name = 'Beta'
-    direct_add = True
-    tag = 'opat_current'
-    template_name = 'opat_episode_list.html'
     schema = []
