@@ -12,13 +12,6 @@
  <br />
 </span>
 
-<span ng-show="item.reactive || item.reactive_date">
-   Reactive [[ item.reactive_date | displayDate ]]
-   <span ng-show="item.reactive">(<i class="fa fa-check"></i>)</span>
-   <span lab-number-string text="item.reactive_lab_numbers"></span>
-<br />
-</span>
-
 <span ng-show="item.c_difficile || item.c_difficile_date">
    C Difficile [[ item.c_difficile_date | displayDate ]]
    <span ng-show="item.c_difficile">(<i class="fa fa-check"></i>)</span>
@@ -30,13 +23,6 @@
    VRE [[ item.vre_date | displayDate ]]
    <span ng-show="item.vre">(<i class="fa fa-check"></i>)</span>
    <span lab-number-string text="item.vre_lab_numbers"></span>
-<br />
-</span>
-
-<span ng-show="item.vre_neg || item.vre_neg_date">
-   VRE Neg [[ item.vre_neg_date | displayDate ]]
-   <span ng-show="item.vre_neg">(<i class="fa fa-check"></i>)</span>
-   <span lab-number-string text="item.vre_neg_lab_numbers"></span>
 <br />
 </span>
 
@@ -106,11 +92,17 @@
 <br />
 </span>
 
-
 <span ng-show="item.parovirus || item.parovirus_date">
    Parovirus [[ item.parovirus_date | displayDate ]]
    <span ng-show="item.parovirus">(<i class="fa fa-check"></i>)</span>
    <span lab-number-string text="item.parovirus_lab_numbers"></span>
+<br />
+</span>
+
+<span ng-show="item.norovirus || item.norovirus_date">
+   Parovirus [[ item.norovirus_date | displayDate ]]
+   <span ng-show="item.norovirus">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.norovirus_lab_numbers"></span>
 <br />
 </span>
 

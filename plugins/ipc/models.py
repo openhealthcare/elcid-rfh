@@ -65,10 +65,10 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     FLAGS = {
         'MRSA'                 : 'mrsa',
         'MRSA NEG'             : 'mrsa_neg',
-        'Reactive'             : 'reactive',
+#        'Reactive'             : 'reactive',
         'C Diff'               : 'c_difficile',
         'VRE'                  : 'vre',
-        'VRE neg'              : 'vre_neg',
+#        'VRE neg'              : 'vre_neg',
         'Carb Res'             : 'carb_resistance',
         'Carb Res contact'     : 'contact_of_carb_resistance',
         'Acinetobacter'        : 'acinetobacter',
@@ -80,6 +80,7 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
         'Covid 19'             : 'covid_19',
         'Covid 19 contact'     : 'contact_of_covid_19',
         'Parovirus'            : 'parovirus',
+        'Norovirus'            : 'norovirus',
         'Other'                : 'other'
     }
 
@@ -97,9 +98,9 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     )
     mrsa_neg_lab_numbers = models.TextField(blank=True, null=True)
 
-    reactive = models.BooleanField(default=False)
-    reactive_date = models.DateField(blank=True, null=True)
-    reactive_lab_numbers = models.TextField(blank=True, null=True)
+    # reactive = models.BooleanField(default=False)
+    # reactive_date = models.DateField(blank=True, null=True)
+    # reactive_lab_numbers = models.TextField(blank=True, null=True)
 
     c_difficile = models.BooleanField(default=False)
     c_difficile_date = models.DateField(blank=True, null=True)
@@ -109,13 +110,13 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     vre_date = models.DateField(blank=True, null=True, verbose_name='VRE Date')
     vre_lab_numbers = models.TextField(blank=True, null=True)
 
-    vre_neg = models.BooleanField(
-        default=False, verbose_name='VRE Neg'
-    )
-    vre_neg_date = models.DateField(
-        blank=True, null=True, verbose_name='VRE Neg Date'
-    )
-    vre_lab_numbers = models.TextField(blank=True, null=True)
+    # vre_neg = models.BooleanField(
+    #     default=False, verbose_name='VRE Neg'
+    # )
+    # vre_neg_date = models.DateField(
+    #     blank=True, null=True, verbose_name='VRE Neg Date'
+    # )
+    # vre_lab_numbers = models.TextField(blank=True, null=True)
 
     carb_resistance = models.BooleanField(default=False)
     carb_resistance_date = models.DateField(
@@ -168,6 +169,10 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
     parovirus = models.BooleanField(default=False)
     parovirus_date = models.DateField(blank=True, null=True)
     parovirus_lab_numbers = models.TextField(blank=True, null=True)
+
+    norovirus = models.BooleanField(default=False)
+    norovirus_date = models.DateField(blank=True, null=True)
+    norovirus_lab_numbers = models.TextField(blank=True, null=True)
 
     other = models.BooleanField(default=False)
     other_lab_numbers = models.CharField(blank=True, null=True, max_length=256)
