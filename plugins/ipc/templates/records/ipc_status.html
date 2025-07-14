@@ -106,10 +106,25 @@
 <br />
 </span>
 
-<span ng-show="item.other || item.other_date">
-    Other: [[ item.other ]] [[ item.other_date | displayDate ]] (<i class="fa fa-check"></i>)
-   <br />
+
+<span ng-show="item.parovirus || item.parovirus_date">
+   Parovirus [[ item.parovirus_date | displayDate ]]
+   <span ng-show="item.parovirus">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.parovirus_lab_numbers"></span>
+<br />
 </span>
+
+<span ng-show="item.other || item.other_date">
+   Other [[ item.other_date | displayDate ]]
+   <span ng-show="item.other">(<i class="fa fa-check"></i>)</span>
+   <span lab-number-string text="item.other_lab_numbers"></span>
+<br />
+</span>
+
+
+
+
+
 <span ng-show="item.comments">
   [[ item.comments ]]
 </span>

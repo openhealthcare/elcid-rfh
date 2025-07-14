@@ -88,7 +88,7 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
         flags = [
             'mrsa', 'c_difficile', 'vre', 'candida_auris',
             'carb_resistance',
-            'multi_drug_resistant_organism', 'covid_19'
+            'multi_drug_resistant_organism', 'covid_19', 'parovirus', 'other'
         ]
         sites = [('RFH', 'RAL01'), ('Barnet', 'RAL26'), ('Chase Farm', 'RALC7')]
 

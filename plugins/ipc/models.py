@@ -79,7 +79,8 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
         'MDR'                  : 'multi_drug_resistant_organism',
         'Covid 19'             : 'covid_19',
         'Covid 19 contact'     : 'contact_of_covid_19',
-
+        'Parovirus'            : 'parovirus',
+        'Other'                : 'other'
     }
 
     mrsa = models.BooleanField(
@@ -164,7 +165,12 @@ class IPCStatus(PreviousMRN, PatientSubrecord):
         blank=True, null=True, verbose_name='Contact of Covid-19 Date'
     )
 
-    other = models.CharField(blank=True, null=True, max_length=256)
+    parovirus = models.BooleanField(default=False)
+    parovirus_date = models.DateField(blank=True, null=True)
+    parovirus_lab_numbers = models.TextField(blank=True, null=True)
+
+    other = models.BooleanField(default=False)
+    other_lab_numbers = models.CharField(blank=True, null=True, max_length=256)
     other_date = models.DateField(blank=True, null=True)
 
     comments = models.TextField(blank=True, null=True)
