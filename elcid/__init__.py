@@ -96,15 +96,6 @@ class Application(application.OpalApplication):
         if standard_add_patient_menu_item.for_user(user):
             menu_items.append(standard_add_patient_menu_item)
 
-        if user.is_superuser:
-            menu_items.append(
-                MenuItem(
-                    href='/pathway/#/add_rnoh/',
-                    display="RNOH Add",
-                    icon="fa fa-plus"
-                )
-            )
-
         from opal.models import UserProfile
         profile = UserProfile.objects.get(user=user)
 
