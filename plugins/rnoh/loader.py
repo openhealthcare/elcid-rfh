@@ -190,6 +190,9 @@ def load_SBAR():
                     )
             except ValueError:
                 fails.append(sbar['rf1_number'])
+            except:
+                print(f"Uncaught Exception: {sbar['rf1_number']}")
+                continue
 
             print(f"{counter} {sbar['rf1_number']}")
 
