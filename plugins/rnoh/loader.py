@@ -10,6 +10,7 @@ documentation for the team.
 import datetime
 
 from django.db import transaction
+from django.db.models.functions import Length
 from opal.models import Patient
 
 from elcid.models import Demographics
@@ -59,6 +60,7 @@ def get_or_create_RNOH_patient(data):
     created = False
 
     mrn = data['rf1_number']
+
     first, last, dob = data['patient_forename'], data['patient_surname'], data['patient_dob']
 
     dob = datetime.datetime.strptime(dob, '%d/%m/%Y').date()
@@ -70,10 +72,14 @@ def get_or_create_RNOH_patient(data):
 
     mrn = get_RAN_MRN(mrn)
 
-
+    # Not always present, but a legit cross-institution identifier, start with this to
+    # match with existing elCID patients.
     if data['nhs_number']:
         try:
             demographics = Demographics.objects.get(nhs_number=data['nhs_number'])
+            # Write our RNOH upstream demographics.
+            # If RFH subsequently insisists on alternate details, this gets
+            # set by the PAS integration
             demographics.first_name    = first
             demographics.surname       = last
             demographics.date_of_birth = dob
@@ -91,8 +97,10 @@ def get_or_create_RNOH_patient(data):
         except Demographics.DoesNotExist:
             pass
 
-    if mrn:
 
+    if mrn:
+        # Check to see if this patient has already been added to our system,
+        # either manually or via this script running previously.
         try:
             demographics = RNOHDemographics.objects.get(rnoh_hospital_number=mrn)
             demographics.first_name    = first
@@ -104,6 +112,8 @@ def get_or_create_RNOH_patient(data):
         except RNOHDemographics.DoesNotExist:
             pass
 
+
+    # Try to match on first, last, DOB.
     # Only attempt a match if all three exist
     if first:
         if last:
@@ -121,7 +131,7 @@ def get_or_create_RNOH_patient(data):
                 except Demographics.DoesNotExist:
                     pass
 
-    # We can't find them, create them.
+    # We can't find the patient, create them.
     patient = Patient.objects.create()
     demographics = patient.demographics_set.get()
 
@@ -182,12 +192,32 @@ def load_SBAR():
                 episode, _ = patient.episode_set.get_or_create(category_name=InfectionService.display_name)
 
                 rnoh_sbar = cast_to_SBAR(sbar, patient)
-                rnoh_sbar.save()
+
+                # We flatten the MRN, but the upstream data uses semantic append to
+                # overcome character limitations of text fields in their database.
+                # We will require one entry per rf1 number, linked by the base.
+                #
+                # e.g. MRN 1234 1234A and 1234B should be linked under
+                # 1234 on our system, with one RNOHSBAR entry per upstream "MRN"
+                #
+                sbar_number = sbar['rf1_number']
+                existing = RNOHSBAR.objects.filter(patient=patient, mrn=sbar_number).first()
+
+                # The results we get are unfiltered, so check to see if the one we're processing is the
+                # longest. If so delete the existing and save it, if not, remove it
+
+                if existing:
+                    if len(rnoh_sbar.diagnosis) > len(existing.diagnosis)
+                    longest.delete()
+                    rnoh_sbar.save()
+                else:
+                    continue
 
                 PatientRNOHSBARStatus.objects.filter(
                     patient=patient).update(
                         has_sbar=True
                     )
+
             except ValueError:
                 fails.append(sbar['rf1_number'])
             except:
