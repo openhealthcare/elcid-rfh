@@ -207,11 +207,13 @@ def load_SBAR():
                 # longest. If so delete the existing and save it, if not, remove it
 
                 if existing:
-                    if len(rnoh_sbar.diagnosis) > len(existing.diagnosis)
-                    longest.delete()
-                    rnoh_sbar.save()
+                    if len(rnoh_sbar.diagnosis) > len(existing.diagnosis):
+                        longest.delete()
+                        rnoh_sbar.save()
+                    else:
+                        continue
                 else:
-                    continue
+                    rnoh_sbar.save()
 
                 PatientRNOHSBARStatus.objects.filter(
                     patient=patient).update(
