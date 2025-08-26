@@ -41,6 +41,21 @@
         {% endfor %}
         {% endwith %}
 
+        <br />
+
+        {% if episode.procedure_set.all.count > 0 %}
+        <strong>Procedures:</strong>
+        {% for procedure in episode.procedure_set.all %}
+        <p>
+          {{ procedure.date }}
+          {% if procedure.operation %} {{ procedure.operation }} {% endif %}
+          {% if procedure.side %} {{ procedure.side }} {% endif %}
+          {% if procedure.site %} {{ procedure.site }} {% endif %}
+          {% if procedure.details %} {{ procedure.details }} {% endif %}
+        </p>
+        {% endfor %}
+        {% endif %}
+
 
       </div>
       <div class="col-md-8">
@@ -96,18 +111,6 @@
       </div>
 
       <div class="col-md-4">
-        {% if episode.procedure_set.all.count > 0 %}
-        <strong>Procedures:</strong>
-        {% for procedure in episode.procedure_set.all %}
-        <p>
-          {{ procedure.date }}
-          {% if procedure.operation %} {{ procedure.operation }} {% endif %}
-          {% if procedure.side %} {{ procedure.side }} {% endif %}
-          {% if procedure.site %} {{ procedure.site }} {% endif %}
-          {% if procedure.details %} {{ procedure.details }} {% endif %}
-        </p>
-        {% endfor %}
-        {% endif %}
 
         {% if episode.patient.allergies_set.all.count > 0 %}
         <strong>Allergies:</strong>
