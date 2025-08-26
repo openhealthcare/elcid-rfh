@@ -103,12 +103,9 @@
         {% if episode.treatment_set.all.count > 0 %}
         <strong>Treatment:</strong>
         {% for treatment in episode.treatment_set.all reversed %}
-        {% if not treatment.end_date %}
         <p>
           {{ treatment.start_date }} {{ treatment.drug }} {{ treatment.dose }} {{ treatment.frequency }}
         </p>
-
-        {% endif %}
         {% endfor %}
         {% endif %}
 
