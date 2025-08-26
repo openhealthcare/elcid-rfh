@@ -299,7 +299,8 @@ class RNOHSBAR(models.Model):
         'extra3',
         'extra4',
         'extra5',
-        'extra7'
+        'extra7',
+        'mrn',
     ]
 
     def to_dict(self):
