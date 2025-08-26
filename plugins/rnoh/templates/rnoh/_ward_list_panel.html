@@ -52,7 +52,7 @@
     <div class="row content-offset">
       <div class="col-md-4">
         {% if episode.pastmedicalhistory_set.all.count > 0 %}
-        <strong>PHM:</strong><br />
+        <strong>PMH:</strong><br />
         {% for pmh in episode.pastmedicalhistory_set.all %}
         {{ pmh.condition }} {{ pmh.year }} {{ pmh.details }}<br />
         {% endfor %}
