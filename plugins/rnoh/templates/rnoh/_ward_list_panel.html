@@ -51,12 +51,14 @@
     </div> <!-- row -->
     <div class="row content-offset">
       <div class="col-md-4">
-        {% if episode.patient.allergies_set.all.count > 0 %}
-        <strong>Allergies:</strong>
-        {% for allergy in episode.patient.allergies_set.all %}
-        {{ allergy.drug }}<br />
+        {% if episode.pastmedicalhistory_set.all.count > 0 %}
+        <strong>PHM:</strong><br />
+        {% for pmh in episode.pastmedicalhistory_set.all %}
+        {{ pmh.condition }} {{ pmh.year }} {{ pmh.details }}<br />
         {% endfor %}
         {% endif %}
+
+
       </div>
       <div class="col-md-4">
         {% if episode.rnohmicrobiology_set.all.count > 0 %}
@@ -99,6 +101,14 @@
         </p>
         {% endfor %}
         {% endif %}
+
+        {% if episode.patient.allergies_set.all.count > 0 %}
+        <strong>Allergies:</strong>
+        {% for allergy in episode.patient.allergies_set.all %}
+        {{ allergy.drug }}<br />
+        {% endfor %}
+        {% endif %}
+
 
         {% if episode.treatment_set.all.count > 0 %}
         <strong>Treatment:</strong>
