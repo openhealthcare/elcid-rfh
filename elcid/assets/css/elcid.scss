@@ -845,9 +845,12 @@ table.table.table-striped tr.danger-row td{
         width: 65%;
         float: left;
     }
-
+    .col-md-12 {
+        width: 100%;
+        float: left;
+    }
 
     .rnoh-list{
-        zoom:25%; /*or whatever percentage you need, play around with this number*/
+        zoom: 35%; /*or whatever percentage you need, play around with this number*/
     }
 }
