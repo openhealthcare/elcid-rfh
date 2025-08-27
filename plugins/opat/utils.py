@@ -47,6 +47,17 @@ RELEVANT_OBS_NAMES = {
     ]
 }
 
+def valid_observation_value(value):
+    """
+    Predicate function to determine if this value should be skipped
+    """
+    if value.startswith('Regret'):
+        return False
+    if value.startswith('Sample'):
+        return False
+    return True
+
+
 def get_opat_summmary_information(patient):
     """
     Given an OPAL patient, return an OPAT test summary for them.
@@ -72,10 +83,10 @@ def get_opat_summmary_information(patient):
             obs_name = obs.observation_name
             if obs_name in RELEVANT_OBS_NAMES[test.test_name]:
 
-                as_date = obs.observation_datetime.date().strftime("%d/%mi")
+                as_date = obs.observation_datetime.date().strftime("%d/%m")
 
                 # Sometimes we get complaints from the lab
-                if obs.observation_value.startswith('Regret') == False:
+                if valid_observation_value(obs.observation_value)
 
                     result[obs_name][as_date] = obs.observation_value
                     dates.add(as_date)
