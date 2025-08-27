@@ -47,7 +47,7 @@ RELEVANT_OBS_NAMES = {
     ]
 }
 
-def get_opat_summmary_information(patent):
+def get_opat_summmary_information(patient):
     """
     Given an OPAL patient, return an OPAT test summary for them.
     """
