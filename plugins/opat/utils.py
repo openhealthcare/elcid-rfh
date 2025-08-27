@@ -89,10 +89,13 @@ def get_opat_summmary_information(patient):
                 if valid_observation_value(obs.observation_value):
 
                     result[obs_name][as_date] = obs.observation_value
-                    dates.add(as_date)
+                    dates.add(obs.observation_datetime.date())
+
+
+    dates = [d.strftime("%d/%m") for d in sorted(list(dates))]
 
     return {
-        'dates': sorted(list(dates)),
+        'dates': dates,
         'names': observation_names,
         'results': result
     }
