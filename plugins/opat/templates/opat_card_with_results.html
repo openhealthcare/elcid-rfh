@@ -57,11 +57,13 @@
 
           </div>
           <div class="col-md-6 overflow-x-auto">
-            <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
             <section patient-api
                      target="data"
                      endpoint="opat_test_summary"
-                     patient_id="row.demographics[0].patient_id">
+                     patient_id="row.demographics[0].patient_id"
+                     ng-show="data.dates.length > 0"
+                     >
+              <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
 
               <table>
                 <thead>
