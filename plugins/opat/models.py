@@ -34,11 +34,10 @@ class OPATRecord(EpisodeSubrecord):
         'Death OPAT related',
         'Death unrelated to OPAT',
         'Failed',
-        'Improved',
-        'IPAT (completed as in-patient)',
+        'IPAT',
         'Stopped early for other clinical reasons',
         'Transferred to other hospital',
-        'Moved to Lifelong / Palliative list',
+        'Moved to Palliative list',
     )
 
     COMPLICATIONS_CHOICES = enum(
@@ -71,9 +70,10 @@ class OPATRecord(EpisodeSubrecord):
     opat_end_date          = models.DateField(blank=True, null=True)
     administration         = models.CharField(blank=True, null=True, max_length=200, choices=ADMINISTRATION_CHOICES)
     supply                 = models.CharField(blank=True, null=True, max_length=200, choices=SUPPLY_CHOICES)
+    treatment_outcome      = models.CharField(blank=True, null=True, max_length=200, choices=TREATMENT_OUTCOME_CHOICES)
+
     # TO be removed
     outcome_one_year       = models.CharField(blank=True, null=True, max_length=200, choices=OUTCOME_CHOICES)
-    treatment_outcome      = models.CharField(blank=True, null=True, max_length=200, choices=TREATMENT_OUTCOME_CHOICES)
     # to be removed
     outcome_one_year_date  = models.DateField(blank=True, null=True)
     complications          = models.CharField(blank=True, null=True, max_length=200, choices=COMPLICATIONS_CHOICES)

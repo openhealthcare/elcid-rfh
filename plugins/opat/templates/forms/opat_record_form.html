@@ -28,7 +28,6 @@
   {% checkbox field="OPATRecord.monitoring" %}
   {% select field="OPATRecord.indication" %}
   {% textarea field="OPATRecord.microbiology" %}
-  <!-- {% datepicker field="OPATRecord.admission_date" %} -->
   {% datepicker field="OPATRecord.discharge_date" %}
   {% datepicker field="OPATRecord.opat_start_date" %}
   {% datepicker field="OPATRecord.opat_end_date" %}
@@ -36,8 +35,6 @@
   {% select field="OPATRecord.supply" %}
   {% select field="OPATRecord.complications" %}
   <section ng-show="editing.opat_record.opat_end_date">
-    <!-- {% datepicker field="OPATRecord.outcome_one_year_date" %} -->
-    <!-- {% select field="OPATRecord.outcome_one_year" %} -->
     {% select field="OPATRecord.treatment_outcome" %}
   </section>
 </div>

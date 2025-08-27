@@ -1,0 +1,78 @@
+{% load humanize %}
+{% load tb_stats %}
+<div class="left-menu">
+  <h3>
+    <a href="/#/opat/activity/{{current_year}}">OPAT </a>
+  </h3>
+  <!-- <ul> -->
+  <!--   <li> -->
+  <!--     <a href="/#/ICU/">Wards</a> -->
+  <!--   </li> -->
+  <!--   <li> -->
+  <!--     {% now "Y" as current_year %} -->
+  <!--     <a href="/#/ICU/activity/{{current_year}}/">Service Activity</a> -->
+  <!--   </li> -->
+  <!-- </ul> -->
+</div>
+
+
+<div class="content-offset right-viewport">
+  <div class="panel panel-default tb-stats">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-4">
+          <h1>OPAT summary {{ year }}</h1>
+        </div>
+        <div class="col-md-8">
+          <a href="/#/opat/patients/{{year}}/" class="orange-link pull-right">
+            All patients
+          </a>
+        </div>
+      </div>
+    </div> <!-- heading -->
+
+    <div class="panel-body">
+
+      <div class="row headline">
+
+        <div class="col-md-4">
+          <h1>{{ bed_days_saved | intcomma }}</h1>
+          <h3>Bed Days Saved</h3>
+        </div>
+
+        <div class="col-md-4 ">
+          <h1>{{ patient_count | intcomma }}</h1>
+          <h3>Patients accepted</h3>
+        </div>
+
+        <div class="col-md-4 ">
+          <h1>{{ rejection_count | intcomma }}</h1>
+          <h3>Patients rejected</h3>
+        </div>
+
+
+      </div>
+
+      <div class="row">
+        <div class="col-md-12" >
+        {% three_col_table_with_percent 'Indications' indications %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12" >
+        {% three_col_table_with_percent 'Administration' administration %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12" >
+        {% three_col_table_with_percent 'Outcomes' outcomes %}
+        </div>
+      </div>
+
+
+
+    </div> <!-- panel body -->
+  </div>   <!-- panel -->
+</div>     <!-- viewport -->

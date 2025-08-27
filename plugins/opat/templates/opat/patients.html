@@ -1,0 +1,44 @@
+{% load humanize %}
+{% load tb_stats %}
+<div class="left-menu">
+  <h3>
+    <a href="/#/opat/activity/{{current_year}}">OPAT </a>
+  </h3>
+  <!-- <ul> -->
+  <!--   <li> -->
+  <!--     <a href="/#/ICU/">Wards</a> -->
+  <!--   </li> -->
+  <!--   <li> -->
+  <!--     {% now "Y" as current_year %} -->
+  <!--     <a href="/#/ICU/activity/{{current_year}}/">Service Activity</a> -->
+  <!--   </li> -->
+  <!-- </ul> -->
+</div>
+
+
+<div class="content-offset right-viewport">
+  <div class="panel panel-default tb-stats">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-4">
+          <h1>OPAT Patients {{ year }}</h1>
+        </div>
+      </div>
+    </div> <!-- heading -->
+
+    <div class="panel-body">
+      {% for row in rows %}
+      <div class="row">
+        <div class="col-md-4">
+          <a href="/#/patient/{{row.demographics.patient_id}}/{{row.episode.id}}" class="orange-link">
+            {{ row.demographics.hospital_number }} {{ row.demographics.name }} {{ row.demographics.date_of_birth }}
+          </a>
+        </div>
+        <div class="col-md-4">{{ row.opat.accepted_date}}</div>
+        <div class="col-md-4"></div>
+      </div>
+      {% endfor %}
+
+    </div> <!-- panel body -->
+  </div>   <!-- panel -->
+</div>     <!-- viewport -->
