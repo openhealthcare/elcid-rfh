@@ -86,7 +86,7 @@ def get_opat_summmary_information(patient):
                 as_date = obs.observation_datetime.date().strftime("%d/%m")
 
                 # Sometimes we get complaints from the lab
-                if valid_observation_value(obs.observation_value)
+                if valid_observation_value(obs.observation_value):
 
                     result[obs_name][as_date] = obs.observation_value
                     dates.add(as_date)
