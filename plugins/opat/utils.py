@@ -69,7 +69,7 @@ def get_opat_summmary_information(patient):
             obs_name = obs.observation_name
             if obs_name in RELEVANT_OBS_NAMES[test.test_name]:
 
-                as_date = obs.obswervation_datetime.date()
+                as_date = obs.observation_datetime.date()
 
                 result[obs_name][as_date] = obs.observation_value
                 dates.add(as_date)
