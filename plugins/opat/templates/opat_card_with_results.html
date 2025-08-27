@@ -99,7 +99,7 @@
             <section ng-repeat="item in row.microbiology_input" ng-show="item.reason_for_interaction=='OPAT MDT'">
               <span ng-show="item.initials && item.initials.trim().length">
                 <p>
-                  [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
+                  [[ item.when | momentDateFormat:'DD MMM' ]]
                       <b></b> [[item.initials]]
                       <span ng-show="item.discussed_with">(discussed with [[ item.discussed_with ]])</span>
                     </p>
