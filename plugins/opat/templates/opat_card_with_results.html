@@ -58,6 +58,31 @@
           </div>
           <div class="col-md-6 overflow-x-auto">
             <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
+            <section patient-api
+                     target="data"
+                     endpoint="opat_test_summary"
+                     patient_id="row.demographics[0].patient_id">
+
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th ng-repeat="date in data.dates track by $index">
+                      [[ date | displayDate ]]
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="name in data.names">
+                    <td>[[ name ]]</td>
+                    <td ng-repeat="date in data.dates track by $index">
+                      [[ data[name][date] ]]
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
             {% include "partials/lab_test_sparklines.html" with target="row" %}
           </div>
 

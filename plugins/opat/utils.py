@@ -52,9 +52,12 @@ def get_opat_summmary_information(patient):
     Given an OPAL patient, return an OPAT test summary for them.
     """
     result = {}
+    observation_names = []
+
     for rows in RELEVANT_OBS_NAMES.values():
         for name in rows:
             result[name] = {}
+            observation_names.append(name)
 
     dates = set()
 
@@ -71,7 +74,14 @@ def get_opat_summmary_information(patient):
 
                 as_date = obs.observation_datetime.date()
 
-                result[obs_name][as_date] = obs.observation_value
-                dates.add(as_date)
+                # Sometimes we get complaints from the lab
+                if obs.observation_datetime.startswith('Regret') == False:
 
-    return result
+                    result[obs_name][as_date] = obs.observation_value
+                    dates.add(as_date)
+
+    return {
+        'dates': sorted(list(dates)),
+        'names': observation_names,
+        'results': result
+    }
