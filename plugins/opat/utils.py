@@ -3,15 +3,15 @@ Utilities for the OPAT Plugin
 """
 import datetime
 
-Amikacin,
+# Amikacin,
 
-Gentamicin
-GENTAMICIN LEVEL
+# Gentamicin
+# GENTAMICIN LEVEL
 
-Teicoplannin Level
-TEICOPLANIN LEVEL
+# Teicoplannin Level
+# TEICOPLANIN LEVEL
 
-VANCOMYCIN LEVEL / Vancomycin
+# VANCOMYCIN LEVEL / Vancomycin
 
 RELEVANT_TEST_NAMES = [
     'FBC And Differential',
