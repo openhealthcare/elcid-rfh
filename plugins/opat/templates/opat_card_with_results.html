@@ -40,22 +40,22 @@
               <br/>
             </p>
 
-            <h4>Chronic Infection and key issues</h4>
+            <h4><strong>Chronic Infection and key issues</strong></h4>
             <p> [[ row.opat_record[0].indication ]] </p>
 
-            <h4>Relevant Background</h4>
+            <h4><strong>Relevant Background</strong></h4>
             <p> [[ row.relevant_opat_background[0].details ]] </p>
 
-            <h4>Microbiology</h4>
+            <h4><strong>Microbiology</strong></h4>
             <p>[[ row.opat_record[0].microbiology ]]</p>
 
-            <h4>Radiology</h4>
+            <h4><strong>Radiology</strong></h4>
             <p ng-repeat="item in row.imaging">[[ item.imaging_type ]] [[ item.details ]]</p>
 
-            <h4>Antibiotic allergies</h4>
+            <h4><strong>Antibiotic allergies</strong></h4>
             <p ng-repeat="item in row.allergies">[[ item.drug ]]</p>
 
-            <h4>Current / Previous antimicrobials</h4>
+            <h4><strong>Current / Previous antimicrobials</strong></h4>
             <p ng-repeat="item in row.treatment">
               {% include models.Treatment.get_detail_template %}
             </p>
