@@ -60,6 +60,32 @@
               {% include models.Treatment.get_detail_template %}
             </p>
 
+            <h4><strong>MDT</strong></h4>
+            <section ng-repeat="item in row.microbiology_input" ng-show="item.reason_for_interaction=='OPAT MDT'">
+              <span ng-show="item.initials && item.initials.trim().length">
+                <p>
+                  [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
+                      <b></b> [[item.initials]]
+                      <span ng-show="item.discussed_with">(discussed with [[ item.discussed_with ]])</span>
+                    </p>
+                  </span>
+
+                  <span ng-show="item.clinical_discussion">
+                    <b>Clinical Discussion: </b>
+                    <div class="whitespacey">[[ item.clinical_discussion ]]</div>
+                  </span>
+                  <span ng-show="item.infection_control">
+                    <b>Infection control: </b><div markdown="infection_control"></div>
+                  </span>
+                  <span ng-show="item.agreed_plan">
+                    <b>Agreed Plan: </b><div markdown="agreed_plan"></div>
+                  </span>
+
+
+            </section>
+
+
+
           </div>
 
           <div class="col-md-6 overflow-x-auto">
@@ -95,29 +121,6 @@
 
 
           <div class="col-md-12">
-            <h4><strong>MDT</strong></h4>
-            <section ng-repeat="item in row.microbiology_input" ng-show="item.reason_for_interaction=='OPAT MDT'">
-              <span ng-show="item.initials && item.initials.trim().length">
-                <p>
-                  [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
-                      <b></b> [[item.initials]]
-                      <span ng-show="item.discussed_with">(discussed with [[ item.discussed_with ]])</span>
-                    </p>
-                  </span>
-
-                  <span ng-show="item.clinical_discussion">
-                    <b>Clinical Discussion: </b>
-                    <div class="whitespacey">[[ item.clinical_discussion ]]</div>
-                  </span>
-                  <span ng-show="item.infection_control">
-                    <b>Infection control: </b><div markdown="infection_control"></div>
-                  </span>
-                  <span ng-show="item.agreed_plan">
-                    <b>Agreed Plan: </b><div markdown="agreed_plan"></div>
-                  </span>
-
-
-            </section>
 
           </div>
 
