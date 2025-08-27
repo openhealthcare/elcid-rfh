@@ -17,29 +17,26 @@ from plugins.opat import models as opat_models
 from plugins.tb import models as tb_models
 
 
-PATIENT_LIST_SUBRECORDS = [
-    models.PrimaryDiagnosis,
-    models.Demographics,
-    models.Antimicrobial,
-    models.Diagnosis,
-    models.Location,
-    models.ChronicAntifungal,
-    omodels.Tagging,
-    opat_models.OPATRecord,
-    opat_models.RelevantOpatBackground,
-    models.Imaging,
-    tb_models.Allergies,
-    tb_models.Treatment,
-]
-
-
 class RfhPatientList(AbstractBase):
     comparator_service = "EpisodeAddedComparator"
     order = 50
 
+
+    PATIENT_LIST_SUBRECORDS = [
+        models.PrimaryDiagnosis,
+        models.Demographics,
+        models.Antimicrobial,
+        models.Diagnosis,
+        models.Location,
+        models.ChronicAntifungal,
+        omodels.Tagging,
+    ]
+
+
+
     def to_dict(self, user):
         qs = super(RfhPatientList, self).get_queryset()
-        episodes = serialize(qs, user, subrecords=PATIENT_LIST_SUBRECORDS)
+        episodes = serialize(qs, user, subrecords=self.PATIENT_LIST_SUBRECORDS)
         for episode in episodes:
             statuses = BedStatus.objects.filter(patient_id=episode['demographics'][0]['patient_id'])
             episode['bed_statuses'] = [s.to_dict() for s in statuses]

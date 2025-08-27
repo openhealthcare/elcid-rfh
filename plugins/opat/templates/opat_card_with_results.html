@@ -61,6 +61,7 @@
             </p>
 
           </div>
+
           <div class="col-md-6 overflow-x-auto">
             <section patient-api
                      target="data"
@@ -88,6 +89,16 @@
                   </tr>
                 </tbody>
               </table>
+            </section>
+
+          </div>
+
+
+          <div class="col-md-12">
+            <h4><strong>MDT</strong></h4>
+            <section ng-repeat="item in row.microbiology_input" ng-show="item.reason_for_interaction=='OPAT MDT'">
+              {% include models.MicrobiologyInput.get_detail_template %}
+
             </section>
 
           </div>
