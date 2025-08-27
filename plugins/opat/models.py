@@ -31,7 +31,14 @@ class OPATRecord(EpisodeSubrecord):
     TREATMENT_OUTCOME_CHOICES = enum(
         'Cured',
         'Improved',
-        'Moved to palliative'
+        'Death OPAT related',
+        'Death unrelated to OPAT',
+        'Failed',
+        'Improved',
+        'IPAT (completed as in-patient)',
+        'Stopped early for other clinical reasons',
+        'Transferred to other hospital',
+        'Moved to Lifelong / Palliative list',
     )
 
     COMPLICATIONS_CHOICES = enum(
@@ -64,8 +71,10 @@ class OPATRecord(EpisodeSubrecord):
     opat_end_date          = models.DateField(blank=True, null=True)
     administration         = models.CharField(blank=True, null=True, max_length=200, choices=ADMINISTRATION_CHOICES)
     supply                 = models.CharField(blank=True, null=True, max_length=200, choices=SUPPLY_CHOICES)
+    # TO be removed
     outcome_one_year       = models.CharField(blank=True, null=True, max_length=200, choices=OUTCOME_CHOICES)
     treatment_outcome      = models.CharField(blank=True, null=True, max_length=200, choices=TREATMENT_OUTCOME_CHOICES)
+    # to be removed
     outcome_one_year_date  = models.DateField(blank=True, null=True)
     complications          = models.CharField(blank=True, null=True, max_length=200, choices=COMPLICATIONS_CHOICES)
     microbiology           = models.TextField(blank=True, null=True, verbose_name="Significant Microbiology Results")
@@ -96,3 +105,14 @@ class ClinicDates(EpisodeSubrecord):
 
     date    = models.DateField(blank=True, null=True)
     details = models.CharField(blank=True, null=True, max_length=200)
+
+
+class RelevantOpatBackground(EpisodeSubrecord):
+    _icon = 'fa fa-history'
+
+    _is_singleton = True
+
+    details = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Relevant Background"

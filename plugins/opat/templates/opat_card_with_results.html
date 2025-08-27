@@ -31,23 +31,37 @@
           </div>
         </div>
         <div uib-collapse="isCardCollapsed" class="panel-body">
-          <div class="col-md-5">
 
-            <h4 ng-show="row.opat_record.length > 0"><strong>
-                {% icon models.OPATRecord.get_icon %} OPAT
-            </strong></h4>
+
+          <div class="col-md-6">
+
             <p ng-repeat="item in row.opat_record">
               Referral: [[item.referral_date | displayDate ]] [[ item.referral_source ]]
               <br/>
             </p>
 
+            <h4>Chronic Infection and key issues</h4>
+            <p> [[ row.opat_record[0].indication ]] </p>
+
+            <h4>Relevant Background</h4>
+            <p> [[ row.relevant_opat_background[0].details ]] </p>
+
+            <h4>Microbiology</h4>
+            <p>[[ row.opat_record[0].microbiology ]]</p>
+
+            <h4>Radiology</h4>
+            <p ng-repeat="item in row.imaging">[[ item.imaging_type ]] [[ item.details ]]</p>
+
+            <h4>Antibiotic allergies</h4>
+            <p ng-repeat="item in row.allergies">[[ item.drug ]]</p>
 
           </div>
-          <div class="col-md-7 overflow-x-auto">
+          <div class="col-md-6 overflow-x-auto">
             <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
             {% include "partials/lab_test_sparklines.html" with target="row" %}
           </div>
-        </div>
+
+        </div> <!-- body -->
       </a>
 
       <div class="panel-footer" uib-collapse="isCardCollapsed">

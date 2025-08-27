@@ -14,6 +14,7 @@ from elcid.episode_serialization import serialize
 from plugins.labtests.models import Observation
 from plugins.admissions.models import BedStatus
 from plugins.opat import models as opat_models
+from plugins.tb import models as tb_models
 
 
 PATIENT_LIST_SUBRECORDS = [
@@ -25,6 +26,9 @@ PATIENT_LIST_SUBRECORDS = [
     models.ChronicAntifungal,
     omodels.Tagging,
     opat_models.OPATRecord,
+    opat_models.RelevantOpatBackground,
+    models.Imaging,
+    tb_models.Allergies,
 ]
 
 
