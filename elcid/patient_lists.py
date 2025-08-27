@@ -29,6 +29,7 @@ PATIENT_LIST_SUBRECORDS = [
     opat_models.RelevantOpatBackground,
     models.Imaging,
     tb_models.Allergies,
+    tb_models.Treatment,
 ]
 
 

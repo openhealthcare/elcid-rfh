@@ -45,6 +45,15 @@ class OPATRecord(EpisodeSubrecord):
         'Liver impairment',
         'Renal impairment',
         'Other'
+        'Vascular access (infection)',
+        'Vascular access (thrombus)',
+        'Vascular access (other)',
+        'Drug reaction (allergy)',
+        'Drug reaction (renal impairment)',
+        'Drug reaction (hepatic)',
+        'Drug reaction (other)',
+        'C difficile diarrhoea',
+        'Issue with compliance'
     )
 
     ADMINISTRATION_CHOICES = enum(

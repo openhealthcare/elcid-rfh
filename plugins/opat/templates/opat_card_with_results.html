@@ -55,6 +55,11 @@
             <h4>Antibiotic allergies</h4>
             <p ng-repeat="item in row.allergies">[[ item.drug ]]</p>
 
+            <h4>Current / Previous antimicrobials</h4>
+            <p ng-repeat="item in row.treatment">
+              {% include models.Treatment.get_detail_template %}
+            </p>
+
           </div>
           <div class="col-md-6 overflow-x-auto">
             <section patient-api
