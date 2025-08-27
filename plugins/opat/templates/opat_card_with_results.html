@@ -76,7 +76,7 @@
                   <tr ng-repeat="name in data.names">
                     <td>[[ name ]]</td>
                     <td ng-repeat="date in data.dates track by $index">
-                      [[ data[name][date] ]]
+                      [[ data.results[name][date] ]]
                     </td>
                   </tr>
                 </tbody>
