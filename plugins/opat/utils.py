@@ -75,7 +75,7 @@ def get_opat_summmary_information(patient):
                 as_date = obs.observation_datetime.date()
 
                 # Sometimes we get complaints from the lab
-                if obs.observation_datetime.startswith('Regret') == False:
+                if obs.observation_value.startswith('Regret') == False:
 
                     result[obs_name][as_date] = obs.observation_value
                     dates.add(as_date)
