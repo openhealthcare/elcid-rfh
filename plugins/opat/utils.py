@@ -28,10 +28,10 @@ RELEVANT_OBS_NAMES = {
 
     ],
     'UE (RFH)': [
-        'Sodium mmol/L',
-        'Potassium mmol/L',
-        'Urea mmol/L',
-        'Creatinine umol/L'
+        'Sodium',
+        'Potassium',
+        'Urea',
+        'Creatinine'
     ],
     'Liver Profile': [
         'Total Bilirubin',
@@ -43,7 +43,7 @@ RELEVANT_OBS_NAMES = {
         'C-Reactive Protein'
     ],
     'Teicoplanin Level' : [
-        'Teicoplanin Level Result mg/L'
+        'Teicoplanin Level Result'
     ]
 }
 
@@ -72,7 +72,7 @@ def get_opat_summmary_information(patient):
             obs_name = obs.observation_name
             if obs_name in RELEVANT_OBS_NAMES[test.test_name]:
 
-                as_date = obs.observation_datetime.date().strftime("%d/%m/%Y")
+                as_date = obs.observation_datetime.date().strftime("%d/%mi")
 
                 # Sometimes we get complaints from the lab
                 if obs.observation_value.startswith('Regret') == False:
