@@ -29,8 +29,11 @@
   {% select field="OPATRecord.indication" %}
   {% textarea field="OPATRecord.microbiology" %}
   {% datepicker field="OPATRecord.discharge_date" %}
-  {% datepicker field="OPATRecord.opat_start_date" %}
-  {% datepicker field="OPATRecord.opat_end_date" %}
+  <!-- {% datepicker field="OPATRecord.opat_start_date" %} -->
+  <p class="col-md-offset-3 text-muted">
+    &nbsp; This date will be used to calculate Bed Days Saved
+  </p>
+  {% datepicker field="OPATRecord.opat_end_date"  %}
   {% select field="OPATRecord.administration" %}
   {% select field="OPATRecord.supply" %}
   {% select field="OPATRecord.complications" %}

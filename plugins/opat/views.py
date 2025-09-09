@@ -1,6 +1,7 @@
 """
 Views for the OPAT plugin
 """
+import collections
 import datetime
 
 from django.views.generic import TemplateView
@@ -27,52 +28,70 @@ class OPATActivityView(LoginRequiredMixin, TemplateView):
     def end_date(self):
         return datetime.date(int(self.kwargs["year"]) + 1, 1, 1)
 
-    def get_indications(self):
+    def get_opat_records(self):
         """
-        Return a dict of indication totals
+        Return a queryset of OPATRecord instances within the dates for this period
         """
-        return {
-            'Osteomyelitis': 12,
-            'Septic arthritis': 3,
-            'Endocarditis': 8,
-            'Mastoiditis': 5
-        }
+        return OPATRecord.objects.filter(accepted_date__gte=self.start_date,
+                                         accepted_date__lt=self.end_date)
 
-    def get_administration(self):
+    def get_rejections(self):
         """
-        Return a dict of administration totals
+        Return a queryset of OPATRecord instances rejected within this period.
         """
-        return {
-            'OPAT': 19,
-            'Self': 12,
-            'Family': 3
-        }
+        return OPATRecord.objects.filter(rejected_date__gte=self.start_date,
+                                         rejected_date__lt=self.end_date)
 
-    def get_outcomes(self):
+    def get_indications(self, records):
         """
-        Return a dict of outcome totals
+        Given an iterable of records, return a dict of indication totals
         """
-        return {
-            'Cured': 2,
-            'Improved': 8,
-            'Death OPAT related': 1,
-            'Death unrelated to OPAT': 1 ,
-            'Failed': 3,
-            'IPAT (completed as in-patient)':3,
-        }
+        indications = collections.defaultdict(int)
+        for record in records:
+            indication = record.indication
+            if indication in ['', None]:
+                indication = 'Left Blank'
+            indications[indication] += 1
+        return indications
+
+    def get_administration(self, records):
+        """
+        Given an iterable of records, return a dict of administration totals
+        """
+        administrations = collections.defaultdict(int)
+        for record in records:
+            administration = record.administration
+            if administration in ['', None]:
+                administration = 'Left Blank'
+            administrations[administration] += 1
+        return administrations
+
+    def get_outcomes(self, records):
+        """
+        Given an iterable of records, return a dict of outcome totals
+        """
+        treatment_outcomes = collections.defaultdict(int)
+        for record in records:
+            treatment_outcome = record.treatment_outcome
+            if treatment_outcome in ['', None]:
+                treatment_outcome = 'Left Blank'
+            treatment_outcomes[treatment_outcome] += 1
+        return treatment_outcomes
 
 
     def get_context_data(self, *a, **kw):
         context = super(OPATActivityView, self).get_context_data(*a, **kw)
 
+        records = self.get_opat_records()
+        rejections = self.get_rejections()
 
         context['year'] = self.kwargs['year']
-        context['patient_count'] = 38
-        context['rejection_count'] = 4
+        context['patient_count'] = records.count()
+        context['rejection_count'] = rejections.count()
         context['bed_days_saved'] = 430
-        context['indications'] = self.get_indications()
-        context['administration'] = self.get_administration()
-        context['outcomes'] = self.get_outcomes()
+        context['indications'] = self.get_indications(records)
+        context['administration'] = self.get_administration(records)
+        context['outcomes'] = self.get_outcomes(records)
 
 
 

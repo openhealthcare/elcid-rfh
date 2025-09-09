@@ -74,9 +74,10 @@ class OPATRecord(EpisodeSubrecord):
     referral_date          = models.DateField(blank=True, null=True)
     referral_source        = models.CharField(blank=True, null=True, max_length=256)
     admission_date         = models.DateField(blank=True, null=True, verbose_name="Hospital Admission Date")
-    discharge_date         = models.DateField(blank=True, null=True, verbose_name="Hospital Discharge Date")
+    discharge_date         = models.DateField(blank=True, null=True, verbose_name="Hospital Discharge Date",
+                                              help_text='This date will be used to calculate Bed Days Saved')
     opat_start_date        = models.DateField(blank=True, null=True)
-    opat_end_date          = models.DateField(blank=True, null=True)
+    opat_end_date          = models.DateField(blank=True, null=True, verbose_name="OPAT End Date")
     administration         = models.CharField(blank=True, null=True, max_length=200, choices=ADMINISTRATION_CHOICES)
     supply                 = models.CharField(blank=True, null=True, max_length=200, choices=SUPPLY_CHOICES)
     treatment_outcome      = models.CharField(blank=True, null=True, max_length=200, choices=TREATMENT_OUTCOME_CHOICES)
