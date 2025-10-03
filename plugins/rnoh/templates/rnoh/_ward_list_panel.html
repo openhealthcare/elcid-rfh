@@ -138,30 +138,30 @@
     </div>
 
 
-    <div class="row">
+    <div class="row" style="white-space: pre-line">
       {% for sbar in episode.patient.rnoh_sbar.all %}
       <div class="col-md-2">
-        <p>{{ sbar.ward }}</p>
-        <p>{{ sbar.consultant }}</p>
-        <p>{{ sbar.extra1 }}</p>
-        <p>{{ sbar.mrn }}</p>
+        <p>{% if  sbar.ward %}{{ sbar.ward }}{% endif %}</p>
+        <p>{% if  sbar.consultant %}{{ sbar.consultant }}{% endif %}</p>
+        <p>{% if  sbar.extra1 %}{{ sbar.extra1 }}{% endif %}</p>
+        <p>{% if  sbar.mrn %}{{ sbar.mrn }}{% endif %}</p>
       </div>
       <div class="col-md-10">
-        <p>{{ sbar.diagnosis }}</p>
+        <p>{% if  sbar.diagnosis %}{{ sbar.diagnosis }}{% endif %}</p>
         <div class-"row">
           <div class="col-md-6">
-            <p>{{ sbar.extra3 }}</p>
+            <p>{% if  sbar.extra3 %}{{ sbar.extra3 }}{% endif %}</p>
           </div>
           <div class="col-md-6">
-            <p>{{ sbar.extra4 }}</p>
+            <p>{% if  sbar.extra4 %}{{ sbar.extra4 }}{% endif %}</p>
           </div>
           <div class="col-md-6">
-            <p>{{ sbar.t8 }}</p>
+            <p>{% if  sbar.t8 %}{{ sbar.t8 }}{% endif %}</p>
           </div>
           <div class="col-md-6">
-            <p>{{ sbar.instructions }}</p>
-            <p>{{ sbar.extra5 }}</p>
-            <p>{{ sbar.extra7 }}</p>
+            <p>{% if  sbar.instructions %}{{ sbar.instructions }}{% endif %}</p>
+            <p>{% if  sbar.extra5 %}{{ sbar.extra5 }}{% endif %}</p>
+            <p>{% if  sbar.extra7 %}{{ sbar.extra7 }}{% endif %}</p>
           </div>
         </div>
 
