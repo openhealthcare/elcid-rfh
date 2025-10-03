@@ -764,7 +764,7 @@ table.table.table-striped tr.danger-row td {
     float: left;
   }
   .rnoh-list {
-    zoom: 45%; /*or whatever percentage you need, play around with this number*/
+    zoom: 70%; /*or whatever percentage you need, play around with this number*/
   }
 }
 
