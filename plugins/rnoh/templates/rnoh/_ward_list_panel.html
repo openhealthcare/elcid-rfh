@@ -139,7 +139,7 @@
 
 
     <div class="row">
-      {% for sbar in episode.sbars in object %}
+      {% for sbar in episode.patient.rnohsbar_set.all %}
       <div class="col-md-2">
         <p>{{ sbar.ward }}</p>
         <p>{{ sbar.consultant }}</p>
