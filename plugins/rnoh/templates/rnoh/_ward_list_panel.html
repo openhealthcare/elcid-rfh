@@ -4,6 +4,7 @@
   <div class="panel-heading">
     <div class="row">
       <div class="col-md-4">
+        <section class="pid">
         {% with episode.location_set.get as location %}
         {% if location.ward %}{{ location.ward }}{% endif %} {% if location.bed %}{{ location.bed }}{% endif %}
         {% endwith %}
