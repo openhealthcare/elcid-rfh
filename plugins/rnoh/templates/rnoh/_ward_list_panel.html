@@ -138,7 +138,7 @@
     </div>
 
 
-    <div class="row" style="white-space: pre-line">
+    <div class="row" >
       {% if episode.patient.rnoh_sbar.count %}
       <p><b>Legacy SBAR Data</b></p>
       {% endif %}
@@ -150,7 +150,7 @@
         <p>{% if  sbar.mrn %}{{ sbar.mrn }}{% endif %}</p>
       </div>
       <div class="col-md-10">
-        <p>{% if  sbar.diagnosis %}{{ sbar.diagnosis }}{% endif %}</p>
+        <p class="whitespacey">{% if  sbar.diagnosis %}{{ sbar.diagnosis }}{% endif %}</p>
         <div class-"row">
           <div class="col-md-6">
             <p>{% if  sbar.extra3 %}{{ sbar.extra3 }}{% endif %}</p>
