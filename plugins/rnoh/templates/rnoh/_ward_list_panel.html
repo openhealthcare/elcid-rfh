@@ -37,14 +37,11 @@
       <div class="col-md-12">
         <strong>Advice</strong><br />
         {% for advice in episode.microbiologyinput_set.all reversed %}
-        {% if forloop.counter < 4 %}
         <i>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</i><br />
         {{ advice.clinical_discussion }}
         <br />
         {{ advice.plan }}
-        {% endif %}
         {% endfor %}
-
       </div>
     </div> <!-- Row -->
 

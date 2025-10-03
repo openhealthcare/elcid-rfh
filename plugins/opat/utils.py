@@ -47,6 +47,8 @@ RELEVANT_OBS_NAMES = {
     ]
 }
 
+#voriconazole, itraconazole, posaconazole creatinine kinease
+
 def valid_observation_value(value):
     """
     Predicate function to determine if this value should be skipped
