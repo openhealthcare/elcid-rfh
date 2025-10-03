@@ -37,7 +37,7 @@
       <div class="col-md-12">
         <strong>Advice</strong><br />
         {% for advice in episode.microbiologyinput_set.all reversed %}
-        <i>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</i><br />
+        <i>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</i>
         {{ advice.clinical_discussion }}
         <br />
         {{ advice.plan }}
