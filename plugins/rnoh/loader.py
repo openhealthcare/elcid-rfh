@@ -209,7 +209,7 @@ def load_SBAR():
 
                 if existing:
                     if len(rnoh_sbar.diagnosis) > len(existing.diagnosis):
-                        longest.delete()
+                        existing.delete()
                         rnoh_sbar.save()
                     else:
                         continue
@@ -246,6 +246,7 @@ def load_SBAR():
                 fails.append(sbar['rf1_number'])
             except:
                 print(f"Uncaught Exception: {sbar['rf1_number']}")
+                raise
                 continue
 
             print(f"{counter} {sbar['rf1_number']}")
