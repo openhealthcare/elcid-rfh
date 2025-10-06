@@ -31,6 +31,15 @@ AND
 specialty = 'RNOH'
 """
 
+VIRTUAL_WARD_MAPPING = {
+    'New results': 'New-results',
+    'Pending ref lab results': 'Pending-ref-lab',
+    'OPAT': 'OPAT',
+    'Complex OPAT': 'Complex-OPAT',
+    'Jobs to action': 'Misc',
+    'MDT-Upper limb': 'MDT-Upper-Limb',
+}
+
 def get_RAN_MRN(mrn):
     """
     Strip the RAN Suffix if it exists
@@ -225,9 +234,11 @@ def load_SBAR():
                 if sbar['discharged'] == 'n':
                     ward, bed = sbar['ward_code'], sbar['bedno']
 
-                    if ward.replace(' ', '-') in INDIVIDUAL_WARD_NAMES:
+
+
+                    if ward in VIRTUAL_WARD_MAPPING:
                         teams = episode.rnohteams_set.get()
-                        setattr(teams, ward.replace(' ', '_').lower(), True)
+                        setattr(teams, VIRTUAL_WARD_MAPPING[ward], True)
                         teams.save()
                         continue
 
@@ -246,7 +257,6 @@ def load_SBAR():
                 fails.append(sbar['rf1_number'])
             except:
                 print(f"Uncaught Exception: {sbar['rf1_number']}")
-                raise
                 continue
 
             print(f"{counter} {sbar['rf1_number']}")
