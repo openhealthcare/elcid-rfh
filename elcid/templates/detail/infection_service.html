@@ -4,7 +4,6 @@
   {% include "panels/location.html" %}
   {% record_panel models.Allergies %}
   {% teams_panel %}
-  {% if permissions.view_lab_test_trends %}
     <div class="panel panel-default">
       <div class="panel-heading"><h3>
         {% icon 'fa fa-crosshairs' %} Results
@@ -13,7 +12,6 @@
         {% include "partials/lab_test_sparklines.html" with target="patient" %}
       </div>
     </div>
-  {% endif %}
 
 
   {% record_panel models.PrimaryDiagnosis %}
