@@ -17,6 +17,7 @@ from elcid.models import Demographics
 from elcid.episode_categories import InfectionService
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 
+from plugins.rnoh.constants import GROUPED_WARD_NAMES, INDIVIDUAL_WARD_NAMES
 from plugins.rnoh.episode_categories import RNOHEpisode
 from plugins.rnoh.models import PatientRNOHSBARStatus, RNOHSBAR, RNOHDemographics
 
@@ -219,6 +220,27 @@ def load_SBAR():
                     patient=patient).update(
                         has_sbar=True
                     )
+
+                # We load the current list onto our current Elcid Patient Lists
+                if sbar['discharged'] == 'n':
+                    ward, bed = sbar['ward_code'], sbar['bedno']
+
+                    if ward.replace(' ', '-') in INDIVIDUAL_WARD_NAMES:
+                        teams = episode.rnohteams_set.get()
+                        setattr(teams, ward.replace(' ', '_').lower(), True)
+                        teams.save()
+                        continue
+
+                    if ward in GROUPED_WARD_NAMES:
+                        location = episode.location_set.get()
+                        location.hospital = 'RNOH'
+                        location.ward = ward
+                        location.bed = bed
+                        location.save()
+                        continue
+
+                    print(f"Can't find {ward}")
+
 
             except ValueError:
                 fails.append(sbar['rf1_number'])
