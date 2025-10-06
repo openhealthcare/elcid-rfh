@@ -2,7 +2,8 @@
 
   {% with episode.patient.demographics as demographics %}
   <div class="panel-heading">
-    <div class="row">
+
+    <div class="row screen-only">
       <div class="col-md-4">
         <section class="pid">
         {% with episode.location_set.get as location %}
@@ -30,6 +31,37 @@
 
       </div>
     </div>
+
+    <div class="row print-only">
+      <div class="col-md-10">
+        <section class="pid">
+        {% with episode.location_set.get as location %}
+        {% if location.ward %}{{ location.ward }}{% endif %} {% if location.bed %}{{ location.bed }}{% endif %}
+        {% endwith %}
+
+        <a href="/#/patient/{{ episode.patient.id }}/{{ episode.id }}" class="orange-link">
+          <strong>
+            {{ demographics.name }}
+            {% if demographics.date_of_birth %}{{ demographics.date_of_birth }}{% endif %}
+            {% if episode.patient.rnohdemographics_set.get.rnoh_hospital_number %}
+              {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
+            {% endif %}
+          </strong>
+          <!-- {% if demographics.sex %}{{ demographics.sex }} {% endif %} -->
+          <!-- {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %} -->
+          <!-- {% if demographics.age %}({{ demographics.age }}){% endif %} -->
+        </a>
+      </div>
+
+      <div class="col-md-2">
+        {% with episode.location_set.get as location %}
+        <strong>Consultant:</strong> {{ location.consultant }}
+        {% endwith %}
+
+      </div>
+    </div>
+
+
   </div> <!-- Heading -->
   {% endwith%}
 
