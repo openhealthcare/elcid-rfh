@@ -32,12 +32,12 @@ specialty = 'RNOH'
 """
 
 VIRTUAL_WARD_MAPPING = {
-    'New results': 'New-results',
-    'Pending ref lab results': 'Pending-ref-lab',
-    'OPAT': 'OPAT',
-    'Complex OPAT': 'Complex-OPAT',
-    'Jobs to action': 'Misc',
-    'MDT-Upper limb': 'MDT-Upper-Limb',
+    'New results': 'new_results',
+    'Pending ref lab results': 'pending_ref_lab',
+    'OPAT': 'opat',
+    'Complex OPAT': '',
+    'Jobs to action': 'misc',
+    'MDT-Upper limb': 'mdt_upper_limb',
 }
 
 def get_RAN_MRN(mrn):

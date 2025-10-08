@@ -35,6 +35,7 @@ class RNOHTeams(PreviousMRN, PatientSubrecord):
     mdt_upper_limb  = models.NullBooleanField(blank=True, null=True, verbose_name="MDT-Upper-Limb")
     mdt_knee        = models.NullBooleanField(blank=True, null=True, verbose_name="MDT-Knee")
     opat            = models.NullBooleanField(blank=True, null=True, verbose_name="OPAT")
+    complex_opat    = models.NullBooleanField(blank=True, null=True, verbose_name="Complex-OPAT")
     misc            = models.NullBooleanField(blank=True, null=True, verbose_name="Misc")
     clinic          = models.NullBooleanField(blank=True, null=True)
 
