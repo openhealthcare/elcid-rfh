@@ -56,7 +56,7 @@ class RNOHInpatientsView(RNOHView):
 
         wards = [(ward_name, grouped_episodes[ward_name]) for ward_name in GROUPED_WARD_NAMES]
 
-        context['total_episodes'] = episodes.count()
+        context['total_episodes'] = locations.count()
         context['wards']          = wards
         context['list_name']      = 'RNOH Inpatients'
         return context
