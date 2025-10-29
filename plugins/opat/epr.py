@@ -6,6 +6,8 @@ def add_section(text, title, section):
     """
     Given a note section, add it to TEXT
     """
+    if section is None:
+        section = ""
     return text + "\n\n" + title + "\n\n" + section
 
 def render_opat_advice(advice):
