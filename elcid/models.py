@@ -442,6 +442,7 @@ class MicrobiologyInput(PreviousMRN, EpisodeSubrecord):
     ICN_WARD_REVIEW_REASON_FOR_INTERACTION = "IPC Note"
     ANTIFUNGAL_STEWARDSHIP_ROUND = "Antifungal stewardship ward round"
     OPAT_MDT = "OPAT MDT"
+    OPAT = "OPAT"
 
     when = models.DateTimeField(null=True, blank=True)
     initials = models.CharField(max_length=255, blank=True)
