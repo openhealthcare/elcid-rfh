@@ -9,6 +9,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from plugins.tb.models import Treatment
 from plugins.tb.views import AbstractModalView
+
+from plugins.opat import bed_days
 from plugins.opat.models import OPATRecord
 
 
@@ -88,7 +90,7 @@ class OPATActivityView(LoginRequiredMixin, TemplateView):
         context['year'] = self.kwargs['year']
         context['patient_count'] = records.count()
         context['rejection_count'] = rejections.count()
-        context['bed_days_saved'] = 430
+        context['bed_days_saved'] = bed_days.sum_bds(records)
         context['indications'] = self.get_indications(records)
         context['administration'] = self.get_administration(records)
         context['outcomes'] = self.get_outcomes(records)
