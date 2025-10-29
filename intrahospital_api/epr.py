@@ -29,6 +29,7 @@ from django.db import transaction
 from intrahospital_api.apis.prod_api import ProdApi as ProdAPI
 from intrahospital_api import logger
 from elcid import models as elcid_models
+from plugins.opat.epr import render_opat_advice
 from plugins.tb import models as tb_models
 from plugins.tb.epr import render_advice as render_tb_advice
 
@@ -134,15 +135,27 @@ def write_clinical_advice(advice):
 
         if rfi == advice.ICN_WARD_REVIEW_REASON_FOR_INTERACTION:
             note_data["note_type"] = "Infection Control Consult Note"
+            note_data["note"] = get_note_text(
+                advice,
+                "clinical_discussion",
+                "infection_control",
+                "agreed_plan",
+                "initials"
+            )
+
+        elif rfi == advice.OPAT_MDT:
+            note_data["note_type"] = "OPAT MDT Note"
+            note_data["note"] = render_opat_advice(advice)
+
         else:
             note_data["note_type"] = 'Microbiology/Virology Consult Note'
-        note_data["note"] = get_note_text(
-            advice,
-            "clinical_discussion",
-            "infection_control",
-            "agreed_plan",
-            "initials"
-        )
+            note_data["note"] = get_note_text(
+                advice,
+                "clinical_discussion",
+                "infection_control",
+                "agreed_plan",
+                "initials"
+            )
 
     elif isinstance(advice, tb_models.PatientConsultation):
         note_data['note_subject'] = f'{advice.reason_for_interaction}'.strip()
