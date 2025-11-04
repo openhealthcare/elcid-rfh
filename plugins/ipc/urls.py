@@ -47,6 +47,11 @@ urlpatterns = [
         name='ipc_alert_list'
     ),
     path(
+        'templates/ipc/alert/<alert_code>/<year>/<month>/',
+        views.AlertMonthDashboardView.as_view(),
+        name='ipc_alert_month_dashboard'
+    ),
+    path(
         'ipc/portal/search/<mrn>/',
         views.IPCPortalSearchView.as_view(),
         name='ipc_portal_search'

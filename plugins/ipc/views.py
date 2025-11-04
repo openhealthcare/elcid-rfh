@@ -348,6 +348,35 @@ class AlertListView(LoginRequiredMixin, TemplateView):
         return context
 
 
+class AlertMonthDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'ipc/alert_month_dashboard.html'
+
+    def get_context_data(self, *a, **kw):
+        context = super().get_context_data(*a, **kw)
+        return context
+
+        alert_code, year, month = kw.get('alert_code'), kw.get('year'), kw.get('month')
+
+        start_date = datetime.date(year, month, 1)
+
+        end_date = (start_date + datetime.timedelta(months=1)) - datetime.timedelta(days=1)
+
+        status_query = dict(alert_code=True)
+        flagged = models.IPCStatus.objects(**status_query)
+
+        flagged_patient_ids = [f.patient_id for f in flagged]
+
+        transfers = TransferHistory.objects.filter(
+            patient_id__in=flagged_patient_ids,
+            transfer_start_datetime__gte=start_date,
+            transfer_end_datetime__lte=end_date
+        )
+
+        # room startswith SR or bed startswith sr
+
+        return context
+
+
 class IPCPortalSearchView(LoginRequiredMixin, View):
 
     def get(self, *args, **kwargs):

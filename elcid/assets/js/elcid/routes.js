@@ -155,6 +155,9 @@ app.config(
                  controller: 'IPCPortalCtrl',
                  templateUrl: "/templates/ipc/portal.html"
              })
+             .when('/ipc/alert/:alert_code/:year/:month/',
+                   param_template_route('/templates/ipc/alert/',['alert_code', 'year', 'month'])
+             )
              .when('/rnoh/inpatients/',             static_template_route('/templates/rnoh/inpatients.html'))
              .when('/rnoh/numbers/',                static_template_route('/templates/rnoh/numbers.html'))
              .when('/rnoh/ward/:ward_name/',        param_template_route('/templates/rnoh/ward_list/', ['ward_name']))
