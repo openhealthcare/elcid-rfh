@@ -144,7 +144,7 @@ def write_clinical_advice(advice):
             )
 
         elif rfi in [advice.OPAT_MDT, advice.OPAT]:
-            note_data["note_type"] = rfi
+            note_data["note_type"] = 'Microbiology/Virology Consult Note'
             note_data["note"] = render_opat_advice(advice)
 
         else:
