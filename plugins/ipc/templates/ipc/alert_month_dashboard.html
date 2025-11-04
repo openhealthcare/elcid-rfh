@@ -1,0 +1,77 @@
+{% extends 'ipc/base.html' %}
+{% block content %}
+
+<div class="panel panel-default tb-stats">
+  <div class="panel-heading">
+    <div class="row">
+      <div class="col-md-7">
+        <h1>RFH MRSA Summary September 2025</h1>
+        <p class="content-offset-below-10">
+          Patients flagged with MRSA with RFH admissions in September 2025
+        </p>
+      </div>
+    </div> <!-- row -->
+  </div> <!-- panel heading -->
+  <div class="panel-body">
+    <div class="row headline">
+      <div class="col-md-4 text-center">
+        <h1>25</h1>
+        <h3>Patients admitted</h3>
+        <p class="text-muted" style="padding-left:60px; padding-right:60px;">
+          Patients with the IPC alert flag MRSA admitted in September 2025
+        </p>
+        <h2>15</h2>
+        <h4>September 2024
+      </div> <!-- Col 4 -->
+
+      <div class="col-md-4 text-center">
+        <h1>72</h1>
+        <h3>Sideroom days </h3>
+        <p class="text-muted" style="padding-left:50px; padding-right:50px;">
+          Total time these patients spent in siderooms during <br/>September 2025 was 72 x 24 hours
+        </p>
+        <h2>42</h2>
+        <h4>September 2024
+      </div> <!-- Col 4 -->
+
+      <div class="col-md-4 text-center">
+        <h1>28</h1>
+        <h3>Ward days </h3>
+        <p class="text-muted" style="padding-left:50px; padding-right:50px;">
+          Total time these patients spent in main ward beds during September 2025 was 28 x 24 hours
+        </p>
+        <h2>18</h2>
+        <h4>September 2024
+      </div> <!-- Col 4 -->
+
+
+    </div> <!-- row headline -->
+
+    <h2 class="text-center content-offset">Ward breakdown</h2>
+    <div class="row content-offset">
+      <div class="col-md-2">
+        9 North
+      </div>
+      <div class="col-md-2">
+        48 Sideroom Days
+      </div>
+      <div class="col-md-2">
+        12 Main ward days
+      </div>
+    </div> <!-- row -->
+    <div class="row">
+      <div class="col-md-2">
+        11 West
+      </div>
+      <div class="col-md-2">
+        12 Sideroom Days
+      </div>
+      <div class="col-md-2">
+        4 Main ward days
+      </div>
+    </div> <!-- row -->
+
+  </div> <!-- panel body -->
+</div> <!-- Panel -->
+
+{% endblock content %}

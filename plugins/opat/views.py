@@ -80,6 +80,24 @@ class OPATActivityView(LoginRequiredMixin, TemplateView):
             treatment_outcomes[treatment_outcome] += 1
         return treatment_outcomes
 
+    def get_rejection_reasons(self, records):
+        """
+        Given an iterable of records, return a dict of rejection reason totals
+        """
+        rejection_reasons = collections.defaultdict(int)
+        for record in records:
+            if record.accepted:
+                continue
+            if record.accepted == None:
+                continue
+
+            reason = record.rejection_reason
+            if reason in ['', None]:
+                reason = 'Left Blank'
+
+            rejection_reasons[reason] += 1
+
+        return rejection_reasons
 
     def get_context_data(self, *a, **kw):
         context = super(OPATActivityView, self).get_context_data(*a, **kw)
@@ -94,10 +112,11 @@ class OPATActivityView(LoginRequiredMixin, TemplateView):
         context['indications'] = self.get_indications(records)
         context['administration'] = self.get_administration(records)
         context['outcomes'] = self.get_outcomes(records)
-
-
+        context['rejections'] = self.get_rejection_reasons(rejections)
 
         return context
+
+
 
 
 class OPATPatientsView(LoginRequiredMixin, TemplateView):
@@ -118,6 +137,14 @@ class OPATPatientsView(LoginRequiredMixin, TemplateView):
 
         records = OPATRecord.objects.filter(accepted_date__gte=self.start_date,
                                              accepted_date__lt=self.end_date).order_by('accepted_date')
-        rows = [{'opat': r, 'episode': r.episode, 'demographics': r.episode.patient.demographics()} for r in records]
+        rows = [
+            {
+                'opat': r,
+                'episode': r.episode,
+                'demographics': r.episode.patient.demographics(),
+                'bds': bed_days.bds_for_record(r)
+            }
+            for r in records
+        ]
         context['rows'] = rows
         return context

@@ -3,6 +3,40 @@
 <div class="col-md-6">
   {% include "panels/opat_panel.html" %}
 
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4><strong>{% icon 'fa fa-crosshairs' %} Results</strong></h4>
+    </div>
+    <div class="panel-body">
+      <section patient-api
+               target="data"
+               endpoint="opat_test_summary"
+               patient_id="episode.demographics[0].patient_id"
+               ng-show="data.dates.length > 0"
+               >
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th ng-repeat="date in data.dates track by $index">
+                [[ date | momentDateFormat:'DD MMM' ]]
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="name in data.names">
+              <td>[[ name ]]</td>
+              <td ng-repeat="date in data.dates track by $index">
+                [[ data.results[name][date] ]]
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </div>
+
   {% teams_panel %}
 
   {% record_panel models.RelevantOpatBackground %}

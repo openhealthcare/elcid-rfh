@@ -30,13 +30,14 @@
     <div class="panel-body">
       {% for row in rows %}
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <a href="/#/patient/{{row.demographics.patient_id}}/{{row.episode.id}}" class="orange-link">
             {{ row.demographics.hospital_number }} {{ row.demographics.name }} {{ row.demographics.date_of_birth }}
           </a>
         </div>
-        <div class="col-md-4">{{ row.opat.accepted_date}}</div>
-        <div class="col-md-4"></div>
+        <div class="col-md-2">{{ row.opat.accepted_date}}</div>
+        <div class="col-md-2">{{ row.opat.treatment_outcome }}</div>
+        <div class="col-md-2">{{ row.bds}} BDS </div>
       </div>
       {% endfor %}
 
