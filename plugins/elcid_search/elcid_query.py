@@ -1,8 +1,12 @@
+"""
+Bespoke search query and rendering of search results for Elcid
+"""
 from opal.core.search.queries import DatabaseQuery
 from opal.models import Patient
-from elcid.models import Demographics
 from opal.core.search.queries import DatabaseQuery, PatientSummary
-from elcid import models
+
+from elcid.models import Demographics
+from elcid import models, utils
 
 
 class ElcidPatientSummary(PatientSummary):
@@ -18,6 +22,7 @@ class ElcidPatientSummary(PatientSummary):
             '-id'
         )
         result["previous_mrns"] = list(previous_merges.values_list('mrn', flat=True))
+        result['external_mrns'] = utils.get_external_mrns_for_patient_id(self.patient_id)
         return result
 
 class ElcidSearchQuery(DatabaseQuery):

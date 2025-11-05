@@ -3,15 +3,17 @@ Utils for the elCID project
 """
 import errno
 from functools import wraps
-from elcid import models
 import logging
 import os
 import re
 import sys
 from time import time
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
+
+from elcid import models
 
 logger = logging.getLogger('elcid.utils')
 
@@ -146,3 +148,22 @@ def send_email(subject, body, html_message=None):
         html_message=html_message
     )
     logger.info(f"Sent email: {subject}")
+
+
+def get_external_mrns_for_patient_id(patient_id):
+    """
+    Given a PATIENT_ID, return a list of external mrns for this patient
+
+    Scope imports is a defensive move to prevent weird loading clashes.
+    REFACTOR: Expose this elsewhere
+    """
+    from plugins.rnoh.models import RNOHDemographics
+
+    mrns = []
+
+    demographics = RNOHDemographics.objects.get(patient_id=patient_id)
+
+    if demographics.rnoh_hospital_number:
+        mrns.append(demographics.rnoh_hospital_number)
+
+    return mrns
