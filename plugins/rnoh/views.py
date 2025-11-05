@@ -37,23 +37,6 @@ class RNOHInpatientsView(RNOHView):
         for location in locations:
             grouped_episodes[location.ward].append(location.episode)
 
-
-        # episodes = Episode.objects.filter(
-        #     category_name=RNOHEpisode.display_name
-        # ).filter(
-        #     location__hospital_fk=rnoh_id
-        # ).exclude(
-        #     location__ward_ft__isnull=True
-        # ).exclude(
-        #     location__ward_ft=''
-        # ).exclude(
-        #     location__ward_ft__in=INDIVIDUAL_WARD_NAMES
-        # ).order_by('-location__ward_ft', '-location__bed')
-
-        # grouped_episodes = defaultdict(list)
-        # for e in episodes:
-        #     grouped_episodes[e.location_set.get().ward].append(e)
-
         wards = [(ward_name, grouped_episodes[ward_name]) for ward_name in GROUPED_WARD_NAMES]
 
         context['total_episodes'] = locations.count()
@@ -68,21 +51,21 @@ class RNOHWardListView(RNOHView):
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
-        rnoh_id = Hospital.objects.get(name='RNOH').pk
+#        rnoh_id = Hospital.objects.get(name='RNOH').pk
 
         episodes = Episode.objects.filter(
             category_name=RNOHEpisode.display_name
         )
 
         kwargs={
-            'location__hospital_fk':rnoh_id,
+#            'location__hospital_fk':rnoh_id,
             "patient__rnohteams__"+k['ward_name'].lower().replace('-', '_').replace(' ', '_'): True
         }
         episodes = episodes.filter(**kwargs)
 
+        episodes = episodes.order_by('patient__demographics__surname')
+
 
         context['episodes'] = episodes
-        print(INDIVIDUAL_WARD_NAMES)
-        print(k['ward_name'])
         context['list_name'] = [n for n in INDIVIDUAL_WARD_NAMES if n.lower() == k['ward_name']][0]
         return context
