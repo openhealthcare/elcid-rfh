@@ -136,7 +136,8 @@
           {% if micro.organism %} {{ micro.organism }} {% endif %}
 
           {% if micro.notes %} {{ micro.notes }} {% endif %}
-
+          {% if micro.sensitivities.count %}<br/>S: {% for s in micro.sensitivities.all %} {{ s }} {% endfor %} {% endif %}
+          {% if micro.resistances.count %}<br/>R: {% for r in micro.resistances.all %} {{ r }} {% endfor %} {% endif %}
         </p>
         {% endfor %}
         {% endif %}
