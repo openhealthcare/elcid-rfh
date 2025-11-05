@@ -26,7 +26,7 @@ INDIVIDUAL_WARD_NAMES = [
     'Complex-OPAT',
     'Clinic',
     'Misc',
-    'MDT-Hip',
+    'MDT-JRU',
     'MDT-LRU',
     'MDT-Spinal',
     'MDT-Upper-Limb',
