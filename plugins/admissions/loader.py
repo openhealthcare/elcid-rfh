@@ -324,6 +324,23 @@ def load_bed_status():
     with transaction.atomic():
         BedStatus.objects.all().delete()
         for bed_data in status:
+
+            # Cerner has 'Virtual wards'. We don't care about them.
+            """
+            In more detail:
+
+            Virtual hospital is a new service that we (& a lot of other trusts) have started running.
+            You can think of it as long term remote patient monitoring, where nurses check in with
+            patients on a daily basis over the phone.  Some of these patients will end up being
+            admitted for either this or other reasons (e.g. through A&E), and due to how this type
+            of encounter is built on EPR they don’t have to be discharged from it for this to happen.
+            The encounter type is a hybrid of inpatient and outpatient, it has inpatient style locations
+            (a.k.a. beds that the patients are “admitted” onto) however is scheduled like an outpatient
+            to allow it to run concurrent with other admitted activity.
+            """
+            if bed_data.get('Facility') == 'Virtual Hospital-RFL':
+                continue
+
             # A bed can not have a patient, this is ok.
             patient = mrn_to_patient.get(bed_data["Local_Patient_Identifier"])
             bed_status = BedStatus(patient=patient)
