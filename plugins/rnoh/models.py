@@ -146,6 +146,7 @@ class RNOHMicrobiology(PreviousMRN, EpisodeSubrecord):
         'Leg',
         'L-Spine',
         'Nephrostomy',
+        'No Site',
         'Pelvis',
         'Pubis',
         'Radius',

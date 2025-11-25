@@ -72,13 +72,11 @@
         {% for advice in episode.microbiologyinput_set.all reversed %}
         <i>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</i> -
         {{ advice.clinical_discussion }}
-        <br />
         {{ advice.agreed_plan }}
+        <br />
         {% endfor %}
       </div>
     </div> <!-- Row -->
-
-
 
     <div class="row content-offset">
       <div class="col-md-4">
@@ -120,7 +118,8 @@
         <strong>Microbiology:</strong>
         {% for micro in episode.rnohmicrobiology_set.all reversed %}
         <p>
-          {{ micro.sample_date }}
+          {{ micro.sample_date }} {{ micro.sample_type }}
+
           {% if micro.test_name %} {{ micro.test_name }} {% endif %}
           {% if micro.number_positive %}
 
@@ -129,6 +128,7 @@
           {{ micro.number_samples }}{% endif %}
 
           {% if micro.side %} {{ micro.side }} {% endif %}
+
           {% if micro.site %} {{ micro.site }} {% endif %}
 
           {% if micro.result %}{{ micro.result }}{% endif %}
