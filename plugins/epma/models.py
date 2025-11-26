@@ -151,11 +151,11 @@ class EPMAMedOrder(models.Model):
         unit = EPMAMedOrderDetail.objects.filter(epmamedorder=self, oe_field_meaning='STRENGTHDOSEUNIT')
 
         dose_elements = []
-        if dose:
-            dose_elements.append(dose.oe_display_value)
+        if dose.exists():
+            dose_elements.append(dose.first.oe_display_value)
 
-            if unit:
-                dose_elements.append(unit.oe_display_value)
+            if unit.exists():
+                dose_elements.append(unit.first.oe_display_value)
 
             return ' '.join(dose_elements)
 
