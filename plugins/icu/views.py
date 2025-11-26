@@ -31,7 +31,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
         patients = Patient.objects.filter(bedstatus__ward_name=ward_name)
 
         flagged_patients = len(
-            [p for p in patients if p.ipcstatus_set.get.is_flagged()]
+            [p for p in patients if p.ipcstatus_set.get().is_flagged()]
         )
         # covid_patients = CovidPatient.objects.filter(
         #     patient__in=patients
@@ -78,7 +78,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
                 ).order_by('when').last(),
                 'bed' : bed,
                 'infection_note' : episode.infectionservicenote_set.get().text,
-                'ipc_flags'      : patient.ipcstatus_set.get.get_flags(),
+                'ipc_flags'      : patient.ipcstatus_set.get().get_flags(),
                 'anti_infectives': self.get_anti_infectives(patient)
             }
             info.append(record)
