@@ -31,7 +31,7 @@
               <h2 id="{{ ward.name | slugify }}">
                 {{ ward.name}}
                 <small>
-                  {{ ward.patient_count }} ({{ ward.covid_patients }} Covid +ve)
+                  {{ ward.patient_count }} ({{ ward.flagged_patients }} Flagged)
                 </small>
               </h2>
               <table class="table table-striped">
@@ -44,6 +44,7 @@
                   <th>By</th>
                   <th></th> <!-- note flag -->
                   <th></th> <!-- note flag -->
+                  <th>Flags</th>
                   <th>Anti-infectives</th>
                 </tr>
                 {% for patient in ward.patients %}
@@ -79,7 +80,9 @@
                     <i class="fa fa-sticky-note fa-lg" title="{{ patient.infection_note }}"></i>
                     {% endif %}
                   </td>
-
+                  <td>
+                    {{ patient.ipc_flags }}
+                  </td>
                   <td>
                     {% for order in patient.anti_infectives %}
                     <p>
