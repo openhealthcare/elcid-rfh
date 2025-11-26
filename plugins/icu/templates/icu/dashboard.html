@@ -11,6 +11,10 @@
       </a>
     </li>
     {% endfor %}
+    <li>
+      {% now "Y" as current_year %}
+      <a href="/#/ICU/activity/{{current_year}}/">Service Activity</a>
+    </li>
 
   </ul>
 </div>
