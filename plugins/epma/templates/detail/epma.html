@@ -1,35 +1,35 @@
 <div ng-if="view === 'epma'">
   <div class="col-md-12" patient-api target="epma" endpoint="epma" filter_by="categories">
 
-    <div class="panel panel-default">
-      <div class="panel-heading">
+    <!-- <div class="panel panel-default"> -->
+    <!--   <div class="panel-heading"> -->
 
-        <div class="row">
-          <div class="col-md-9">
-            <h3>
-              <i class="fa fa-calendar"></i>
-              Categories
-            </h3>
-          </div>
-        </div>
-      </div>
-      <!-- End Panel Header -->
-      <div class="panel-body">
-        <div class="row" ng-repeat="category in epma.categories">
-          <div class="col-md-2">
-            <button class="btn btn-secondary" ng-click="toggle_filter(category)">
-              [[ filter_toggle_text(category) ]]
-            </button>
-          </div>
-          <div class="col-md-10">
-            [[ category ]]
-          </div>
+    <!--     <div class="row"> -->
+    <!--       <div class="col-md-9"> -->
+    <!--         <h3> -->
+    <!--           <i class="fa fa-calendar"></i> -->
+    <!--           Categories -->
+    <!--         </h3> -->
+    <!--       </div> -->
+    <!--     </div> -->
+    <!--   </div> -->
+    <!--   <\!-- End Panel Header -\-> -->
+    <!--   <div class="panel-body"> -->
+    <!--     <div class="row" ng-repeat="category in epma.categories"> -->
+    <!--       <div class="col-md-2"> -->
+    <!--         <button class="btn btn-secondary" ng-click="toggle_filter(category)"> -->
+    <!--           [[ filter_toggle_text(category) ]] -->
+    <!--         </button> -->
+    <!--       </div> -->
+    <!--       <div class="col-md-10"> -->
+    <!--         [[ category ]] -->
+    <!--       </div> -->
 
-        </Div>
+    <!--     </Div> -->
 
-          <p><i>[[epma.categories]]</i></p>
-        </div>
-    </div>
+    <!--       <p><i>[[epma.categories]]</i></p> -->
+    <!--     </div> -->
+    <!-- </div> -->
 
 
     <div class="panel panel-default">
