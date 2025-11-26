@@ -152,10 +152,10 @@ class EPMAMedOrder(models.Model):
 
         dose_elements = []
         if dose.exists():
-            dose_elements.append(dose.first.oe_display_value)
+            dose_elements.append(dose.first().oe_display_value)
 
             if unit.exists():
-                dose_elements.append(unit.first.oe_display_value)
+                dose_elements.append(unit.first().oe_display_value)
 
             return ' '.join(dose_elements)
 
