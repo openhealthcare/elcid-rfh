@@ -78,7 +78,7 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
                 ).order_by('when').last(),
                 'bed' : bed,
                 'infection_note' : episode.infectionservicenote_set.get().text,
-                'ipc_flags'      : patient.ipcstatus_set.get().get_flags(),
+                'ipc_flags'      : ' '.join(patient.ipcstatus_set.get().get_flags()),
                 'anti_infectives': self.get_anti_infectives(patient)
             }
             info.append(record)
