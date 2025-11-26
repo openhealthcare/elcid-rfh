@@ -48,8 +48,10 @@
                   <th>By</th>
                   <th></th> <!-- note flag -->
                   <th></th> <!-- note flag -->
-                  <th>Flags</th>
+                  <th>IPC Flags</th>
+                  {% if request.user.is_superuser %}
                   <th>Anti-infectives</th>
+                  {% endif %}
                 </tr>
                 {% for patient in ward.patients %}
                 <tr>
@@ -87,6 +89,7 @@
                   <td>
                     {{ patient.ipc_flags }}
                   </td>
+                  {% if request.user.is_superuser %}
                   <td>
                     {% for order in patient.anti_infectives %}
                     <p>
@@ -95,7 +98,7 @@
                     </p>
                     {% endfor %}
                   </td>
-
+                  {% endif %}
                 </tr>
                 {% endfor %}
               </table>
