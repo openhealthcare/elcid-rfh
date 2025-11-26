@@ -84,7 +84,7 @@
                     {% for order in patient.anti_infectives %}
                     <p>
                       {{ order.o_start_dt_tm }} {% if order.o_stop_dt_tm %}- {{ order.o_stop_dt_tm }}{% endif %}
-                      {{ order.o_order_mnemonic }}
+                      {{ order.o_order_mnemonic }} {{ order.get_dose }}
                     </p>
                     {% endfor %}
                   </td>

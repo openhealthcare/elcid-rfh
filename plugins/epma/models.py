@@ -140,7 +140,26 @@ class EPMAMedOrder(models.Model):
             data['categories'] = lookup.category_list()
 
         data['detail'] = [d.to_dict() for d in EPMAMedOrderDetail.objects.filter(epmamedorder=self)]
+
         return data
+
+    def get_dose(self):
+        """
+        Look up dose information from Med order detail
+        """
+        dose = EPMAMedOrderDetail.objects.filter(epmamedorder=self, oe_field_meaning='STRENGTHDOSE')
+        unit = EPMAMedOrderDetail.objects.filter(epmamedorder=self, oe_field_meaning='STRENGTHDOSEUNIT')
+
+        dose_elements = []
+        if dose:
+            dose_elements.append(dose.oe_display_value)
+
+            if unit:
+                dose_elements.append(unit.oe_display_value)
+
+            return ' '.join(dose_elements)
+
+        return ''
 
 
 
