@@ -344,6 +344,7 @@ class Procedure(PreviousMRN, EpisodeSubrecord):
 
     class Meta:
         verbose_name = "Operation / Procedures"
+        ordering = ('date',)
 
 
 class PrimaryDiagnosisCondition(lookuplists.LookupList): pass

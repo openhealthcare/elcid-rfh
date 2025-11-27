@@ -274,7 +274,7 @@ def get_or_create_external_patient(nhs_number, external_identifier, external_pre
     if not patient:
         patient = Patient.objects.filter(
             # TODO expanded, we will want to makle this dynamic
-            rnohdemographics__rnoh_hospital_number=external_identifier
+            rnohdemographics__epic_hospital_number=external_identifier
         ).first()
 
     if patient:
@@ -286,7 +286,7 @@ def get_or_create_external_patient(nhs_number, external_identifier, external_pre
     patient = Patient.objects.create()
     if nhs_number:
         patient.demographics_set.update(nhs_number=nhs_number)
-    patient.rnohdemographics_set.update(rnoh_hospital_number=external_identifier)
+    patient.rnohdemographics_set.update(epic_hospital_number=external_identifier)
     patient.episode_set.get_or_create(
         category_name=episode_category.display_name
     )

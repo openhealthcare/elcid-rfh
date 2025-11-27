@@ -16,6 +16,9 @@ class RNOHDemographics(PreviousMRN, PatientSubrecord):
     _is_singleton = True
     _icon         = 'fa fa-user'
 
+    # The primary MRN in use at the trust
+    epic_hospital_number = models.CharField(blank=True, null=True, max_length=255)
+    # The legacy MRN from pre 'EPR'
     rnoh_hospital_number = models.CharField(blank=True, null=True, max_length=255)
 
     class Meta:
@@ -211,6 +214,7 @@ class RNOHMicrobiology(PreviousMRN, EpisodeSubrecord):
 
     class Meta:
         verbose_name = 'Microbiology'
+        ordering = ('sample_date',)
 
 
 class RNOHActions(PreviousMRN, EpisodeSubrecord):

@@ -479,7 +479,8 @@ OPAL_DEFAULT_SEARCH_FIELDS = [
     "mergedmrn__mrn",
     "demographics__nhs_number",
     # Allow us to search for RAN MRNs
-    "rnohdemographics__rnoh_hospital_number"
+    "rnohdemographics__rnoh_hospital_number",
+    "rnohdemographics__epic_hospital_number"
 
 ]
 

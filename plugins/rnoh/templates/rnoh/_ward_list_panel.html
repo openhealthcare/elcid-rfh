@@ -17,6 +17,8 @@
             {% if episode.patient.rnohdemographics_set.get.rnoh_hospital_number %}
               {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
             {% endif %}
+            {{ episode.patient.rnohdemographics_set.get.epic_hospital_number }}
+
           </strong>
           <!-- {% if demographics.sex %}{{ demographics.sex }} {% endif %} -->
           <!-- {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %} -->
@@ -46,6 +48,7 @@
             {% if episode.patient.rnohdemographics_set.get.rnoh_hospital_number %}
               {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
             {% endif %}
+
           </strong>
           <!-- {% if demographics.sex %}{{ demographics.sex }} {% endif %} -->
           <!-- {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %} -->
@@ -116,7 +119,7 @@
       <div class="col-md-4">
         {% if episode.rnohmicrobiology_set.all.count > 0 %}
         <strong>Microbiology:</strong>
-        {% for micro in episode.rnohmicrobiology_set.all reversed %}
+        {% for micro in episode.rnohmicrobiology_set.all  %}
         <p>
           {{ micro.sample_date }} {{ micro.sample_type }}
 
