@@ -776,5 +776,27 @@ table.table.table-striped tr.danger-row td {
     content: "";
   }
 }
+.study-nav {
+  background: #cbc9c8;
+  padding: 4px 4px 4px 20px;
+}
+
+.study-nav .row .col-md-2 {
+  background: white;
+  text-align: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  box-shadow: 2px 2px 5px lightblue;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.study-nav .row .col-md-2.active {
+  background: #f76c51;
+}
+
+.study-nav .row .col-md-2.active a.orange-link {
+  color: #FFF;
+}
 
 /*# sourceMappingURL=elcid.css.map */

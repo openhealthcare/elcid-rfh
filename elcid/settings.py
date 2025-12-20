@@ -194,6 +194,7 @@ INSTALLED_APPS = (
     'plugins.obs',
     'plugins.opat',
     'plugins.epma',
+    'plugins.research',
     'intrahospital_api',
     'elcid',
     'passwordreset',

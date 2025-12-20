@@ -1,0 +1,26 @@
+{% extends 'research/base.html' %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>
+      Research Studies: {{ study.name }}
+
+      <a class="btn btn-secondary pull-right" ng-click="open_modal('DeleteStudyCtrl', '/templates/research/modals/delete_study.html', {study_id: {{study.id}} })">
+        Delete
+      </a>
+
+    </h1>
+  </div> <!-- Heading -->
+  <section class="study-nav">
+    <div class="row">
+      <div class="col-md-2 {% block active_overview %}{% endblock %}">
+        <a class="orange-link bl" href="/#/research/study/{{ study.id }}/">Overview</a>
+      </div>
+      <div class="col-md-2 {% block active_add %}{% endblock %}">
+        <a class="orange-link bl" href="/#/research/study/{{study.id }}/add_participants/">Add Participants</a>
+      </div>
+    </div>
+  </section>
+  {% block study_body %}{% endblock %}
+</div>  <!-- Panel -->
+{% endblock %}

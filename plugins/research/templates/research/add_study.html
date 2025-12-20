@@ -1,0 +1,35 @@
+{% extends 'research/base.html' %}
+{% load forms %}
+
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>Add New Study</h1>
+  </div> <!-- Heading -->
+
+  <div class="panel-body" ng-controller="AddStudyCtrl">
+      <p>
+        <form class="form form-horizontal content-offset">
+          <div class="row">
+            <div class="col-md-4 col-md-push-2">
+              <input type="text"
+                     autocomplete="off"
+                     ng-model="name"
+                     class="form-control"
+                     placeholder="Study Name"
+                     />
+              <br />
+              <a class="btn btn-primary" ng-click="create_study()">
+                Create
+              </a>
+
+            </div>
+
+          </div>
+        </form>
+      </p>
+
+
+  </div> <!-- Panel Body -->
+</div>  <!-- Panel -->
+{% endblock %}

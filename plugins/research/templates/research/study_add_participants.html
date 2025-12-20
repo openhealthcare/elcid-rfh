@@ -1,0 +1,35 @@
+{% extends 'research/_study_detail_base.html' %}
+{% block active_add %}active{% endblock %}
+{% block study_body %}
+
+<div class="panel-body">
+  <h2>
+    Add Participants
+  </h2>
+
+  <div class="row">
+    <div class="col-md-8">
+      <p>
+        <form class="form form-horizontal ">
+              <textarea
+                     ng-model="mrns"
+                class="form-control"
+                rows=10
+                     />
+        </form>
+      </p>
+    </div> <!-- col md-8 -->
+
+    <div class="col-md-4">
+      <p class="text-muted">
+        Add comma separated MRNs of patients to add to this study.
+      </p>
+      <a class="btn btn-primary" ng-click="search_mrns()">
+        Search
+      </a>
+    </div>
+
+  </div> <!-- row -->
+
+</div> <!-- Panel Body -->
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'research/base.html' %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>Research Studies: Royal Free Hospital</h1>
+  </div> <!-- Heading -->
+
+  <div class="panel-body">
+
+    <h2>
+      {{ study_count }} Studies
+    </h2>
+    <p>
+      <a href="/#/research/study/list/" class="orange-link">
+        See all
+      </a>
+    </p>
+
+    <h2>
+      {{ participant_count }} Participants
+    </h2>
+
+  </div> <!-- Panel Body -->
+</div>  <!-- Panel -->
+{% endblock %}

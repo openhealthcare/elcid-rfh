@@ -1,0 +1,21 @@
+{% extends 'research/base.html' %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>All Research Studies: Royal Free Hospital</h1>
+  </div> <!-- Heading -->
+
+  <div class="panel-body">
+
+    <ul>
+    {% for study in studies %}
+    <li>
+      <a href="{{ study.get_absolute_url }}" class="orange-link">
+        {{ study.name }}
+      </a>
+    {% endfor %}
+    </ul>
+
+  </div> <!-- Panel Body -->
+</div>  <!-- Panel -->
+{% endblock %}
