@@ -42,7 +42,7 @@ class Command(BaseCommand):
         )
         rows = [PathologyRow(r) for r in result]
 
-        labs_by_mrn = collections(defaultdict(list))
+        labs_by_mrn = collections.defaultdict(list)
         for row in rows:
             labs_by_mrn[row.get_hospital_number()].append(row)
 
