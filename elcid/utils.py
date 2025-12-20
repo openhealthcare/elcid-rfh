@@ -134,6 +134,18 @@ def find_patients_from_mrns(mrns):
     return result
 
 
+def find_patient_from_mrn(mrn):
+    """
+    The sigle patient spelling of find_patients_from_mrns
+
+    Will return None if not found
+    """
+    patients = find_patients_from_mrns([mrn])
+    if patients:
+        return patients[0]
+    return
+
+
 def send_email(subject, body, html_message=None):
     """
     Sends an email to the admins prefixing the subject with

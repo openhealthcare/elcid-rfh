@@ -3,10 +3,12 @@ A management command that is run by a cron job
 """
 import datetime
 import time
+
 from django.db import transaction
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from opal.models import Patient
+
 from elcid import utils
 from intrahospital_api.loader import api
 from intrahospital_api import update_lab_tests
