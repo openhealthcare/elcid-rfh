@@ -19,9 +19,9 @@ from intrahospital_api.management.commands.batch_load2 import update_patient
 LABS_FOR_DAY_QUERY = """
 SELECT * FROM tQuest.Pathology_Result_view
 WHERE
-date_inserted >= {start}
+date_inserted >= @start
 AND
-date_inserted < {end}
+date_inserted < @end
 ORDER BY Patient_Number, date_inserted DESC;
 """
 
