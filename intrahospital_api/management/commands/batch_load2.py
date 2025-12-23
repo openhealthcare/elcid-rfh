@@ -55,7 +55,7 @@ class Command(BaseCommand):
         t1 = time.time()
         obs_count = 0
 
-        since = datetime.datetime.now() - datetime.timedelta(hours=48)
+        since = datetime.datetime.now() - datetime.timedelta(hours=24)
 
         tquery1 = time.time()
 
