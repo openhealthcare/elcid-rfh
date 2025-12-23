@@ -63,6 +63,6 @@ class Command(BaseCommand):
                 )
 
         for item in data:
-            update_patient(data['patient'], data['lab_tests'])
+            update_patient(item['patient'], item['lab_tests'])
 
         return
