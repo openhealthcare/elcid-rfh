@@ -138,11 +138,13 @@ def find_patient_from_mrn(mrn):
     """
     The sigle patient spelling of find_patients_from_mrns
 
+    Will return a patient instance if found
+
     Will return None if not found
     """
     patients = find_patients_from_mrns([mrn])
     if patients:
-        return patients[0]
+        return list(patients.values())[0]
     return
 
 
