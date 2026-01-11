@@ -11,7 +11,9 @@ from plugins.tb.constants import TB_ROLE
 
 class TBService(ClinicalService):
 
-    role_name = TB_ROLE
+    @classmethod
+    def visible_to(klass, user):
+        return True # The excluded roles are hardcoded in ElcidPostLoginCtrl
 
     @classmethod
     def as_menuitem(klass):

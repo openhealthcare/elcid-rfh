@@ -41,12 +41,17 @@ def patient_to_dict(patient, user):
     # The entire point of this is to order the episode switcher this
     # way without having to rewrite either patient_detail.js or patient.js
     category_orders = {
-        'Infection Service': '30',
-        'ICU Handover'     : '20',
-        'TB'               : '10',
-        'COVID-19'         : '15',
-        'IPC'              : '25',
-        'RNOH'             : '30'
+        'Infection Service': '40',
+        'IPC'              : '35',
+        'OPAT'             : '30',
+        'TB'               : '25',
+        'NTM'              : '20',
+        'RNOH'             : '15',
+        'COVID-19'         : '10',
+
+
+#        'ICU Handover'     : '20', TODO: Check if this is still used
+
     }
     for s in serialised_episodes:
         if s['category_name'] in category_orders:

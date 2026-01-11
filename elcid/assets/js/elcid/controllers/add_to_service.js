@@ -5,13 +5,13 @@ angular.module('opal.controllers').controller(
         $scope.patient        = patient;
         $scope.detail_refresh = refresh;
 
-        var ADDABLE = ['TB', 'NTM', 'COVID-19', 'RNOH', 'OPAT']
+        var ADDABLE = ['TB', 'NTM', 'COVID-19', 'RNOH', 'OPAT', 'IPC']
 
         var current_categories = _.pluck(patient.episodes, "category_name")
 
-        if( profile.has_role('ipc_user') ){ // CONSTANT FROM plugins.ipc.constants
-            ADDABLE.push('IPC');
-        }
+        // if( profile.has_role('ipc_user') ){ // CONSTANT FROM plugins.ipc.constants
+        //     ADDABLE.push('IPC');
+        // }
 
         $scope.currently_addable = _.reject(
             ADDABLE, function(x){ return current_categories.indexOf(x) != -1 });

@@ -10,7 +10,9 @@ from plugins.icu.constants import ICU_ROLE
 
 class ICUService(ClinicalService):
 
-    role_name = ICU_ROLE
+    @classmethod
+    def visible_to(klass, user):
+        return True # The excluded roles are hardcoded in ElcidPostLoginCtrl
 
     @classmethod
     def as_menuitem(klass):

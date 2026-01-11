@@ -10,7 +10,9 @@ from plugins.ipc.constants import IPC_ROLE
 
 class IPCService(ClinicalService):
 
-    role_name = IPC_ROLE
+    @classmethod
+    def visible_to(klass, user):
+        return True # The excluded roles are hardcoded in ElcidPostLoginCtrl
 
     @classmethod
     def as_menuitem(klass):
