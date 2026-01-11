@@ -18,11 +18,5 @@ class LocationHistoryView(detail.PatientDetailView):
 
     @classmethod
     def visible_to(klass, user):
-        if user.is_superuser:
-            return True
-        ipc_user = user.profile.roles.filter(
-            name=ipc_constants.IPC_ROLE
-        ).exists()
-        if ipc_user:
-            return True
-        return False
+        # The excluded roles are hardcoded in ElcidPostLoginCtrl
+        return True
