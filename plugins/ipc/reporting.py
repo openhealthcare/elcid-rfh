@@ -49,8 +49,8 @@ def save_flag_counts():
     """
     flagged = get_flag_counts()
     for name, site_code, counts in flagged:
-        for flag, count in flagged:
+        for flag, site, count in flagged:
 
             FlagCount(
-                date=datetime.date.today(), site=site, flag=name, count=count
+                date=datetime.date.today(), site=name, flag=flag, count=count
             ).save()
