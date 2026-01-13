@@ -38,7 +38,7 @@ def get_flag_counts():
                 **kwargs
             ).count()
 
-        flagged.append((name, site, couxx§nts))
+        flagged.append((name, site, counts))
 
     return flagged
 
