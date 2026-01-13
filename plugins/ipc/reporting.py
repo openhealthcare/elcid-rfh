@@ -38,7 +38,7 @@ def get_flag_counts():
                 **kwargs
             ).count()
 
-        flagged.append((name, site, counts))
+        flagged.append((name, site, couxx§nts))
 
     return flagged
 
@@ -49,7 +49,7 @@ def save_flag_counts():
     """
     flagged = get_flag_counts()
     for name, site_code, counts in flagged:
-        for flag, site, count in flagged:
+        for flag, count in counts.items()
 
             FlagCount(
                 date=datetime.date.today(), site=name, flag=flag, count=count
