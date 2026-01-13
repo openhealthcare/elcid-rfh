@@ -15,7 +15,7 @@ from elcid.utils import natural_keys, find_patients_from_mrns
 from plugins.admissions.constants import RFH_HOSPITAL_SITE_CODE, BARNET_HOSPITAL_SITE_CODE
 from plugins.admissions.models import BedStatus, IsolatedBed, TransferHistory
 
-from plugins.ipc import lab, models, constants
+from plugins.ipc import lab, models, reporting, constants
 
 
 def sort_rfh_wards(text):
@@ -82,31 +82,7 @@ class IPCHomeView(LoginRequiredMixin, TemplateView):
         # context['weekly_alerts'] = models.InfectionAlert.objects.filter(
         #     trigger_datetime__gte=today-datetime.timedelta(days=7)).count()
 
-        flag_labels = {v: k for k, v in models.IPCStatus.FLAGS.items()}
-
-        flagged = []
-        flags = [
-            'mrsa', 'c_difficile', 'vre', 'candida_auris',
-            'carb_resistance',
-            'multi_drug_resistant_organism', 'covid_19', 'parovirus', 'other'
-        ]
-        sites = [('RFH', 'RAL01'), ('Barnet', 'RAL26'), ('Chase Farm', 'RALC7')]
-
-        for name, site in sites:
-            counts = {}
-
-            for flag in flags:
-                kwargs = {
-                    f"patient__ipcstatus__{flag}": True,
-                    "hospital_site_code": site
-                }
-                counts[flag_labels[flag]] = BedStatus.objects.filter(
-                    **kwargs
-                ).count()
-
-            flagged.append((name, site, counts))
-
-        context['flagged'] = flagged
+        context['flagged'] = reporting.get_flag_counts()
         return context
 
 

@@ -235,3 +235,14 @@ class SideroomStatus(PreviousMRN, PatientSubrecord):
     problems = models.TextField(blank=True, null=True)
     # notes on current tasks and actions that may be required
     actions = models.TextField(blank=True, null=True)
+
+
+class FlagCount(models.Model):
+    """
+    Provides daily counts of Infection Control Flags for
+    reporting purposes
+    """
+    date  = models.DateField()
+    site  = models.CharField(max_length=200)
+    flag  = models.CharField(max_length=200)
+    count = models.IntegerField()

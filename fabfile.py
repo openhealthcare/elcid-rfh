@@ -744,6 +744,29 @@ def write_cron_calculte_amt_dashboard(new_env):
     ))
 
 
+def write_cron_snapshot_ipc_flags(new_env):
+    """
+    Creates a cron job that snapshots ipc flgs for later reporting
+    """
+    print("Writing cron {}_calculate_snapshot_ipc_flags".format(PROJECT_NAME))
+    template = jinja_env.get_template(
+        'etc/conf_templates/cron_ipc_reports.jinja2'
+    )
+    fabfile = os.path.abspath(__file__).rstrip("c")  # pycs won't cut it
+    output = template.render(
+        fabric_file=fabfile,
+        virtualenv=new_env.virtual_env_path,
+        unix_user=UNIX_USER,
+        project_dir=new_env.project_directory
+    )
+    cron_file = "/etc/cron.d/{0}_ipc_reports".format(
+        PROJECT_NAME
+    )
+    local("echo '{0}' | sudo tee {1}".format(
+        output, cron_file
+    ))
+
+
 def send_error_email(error, some_env):
     print("Sending error email")
     run_management_command(
@@ -1112,6 +1135,8 @@ def deploy_prod(old_branch, old_database_name=None):
 
     write_cron_load_amt_handover(new_env)
     write_cron_calculte_amt_dashboard(new_env)
+
+    write_cron_snapshot_ipc_flags(new_env)
 
     write_cron_backup(new_env)
     new_status = run_management_command("status_report", new_env)
