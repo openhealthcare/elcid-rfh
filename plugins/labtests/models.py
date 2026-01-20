@@ -164,6 +164,7 @@ class AbstractObserveration(models.Model):
 
 
 class Observation(AbstractObserveration):
+    id = models.BigAutoField(primary_key=True) #
     test = models.ForeignKey(LabTest, on_delete=models.CASCADE)
 
     def to_float(self, some_val):

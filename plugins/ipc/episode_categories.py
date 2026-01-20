@@ -12,10 +12,4 @@ class IPCEpisode(episodes.EpisodeCategory):
 
     @classmethod
     def episode_visible_to(klass, episode, user):
-        from opal.models import UserProfile  # Avoid circular import
-
-        profile, _ = UserProfile.objects.get_or_create(user=user)
-        if profile.roles.filter(name=IPC_ROLE).exists():
-            return True
-
-        return False
+        return True

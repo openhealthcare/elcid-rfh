@@ -12,6 +12,5 @@ class Result(detail.PatientDetailView):
 
     @classmethod
     def visible_to(klass, user):
-        return user.profile.roles.filter(
-            name=constants.VIEW_LAB_TESTS_IN_DETAIL
-        ).exists()
+        # The excluded roles are hardcoded in ElcidPostLoginCtrl
+        return True
