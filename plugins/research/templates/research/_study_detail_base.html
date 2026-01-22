@@ -19,6 +19,11 @@
       <div class="col-md-2 {% block active_add %}{% endblock %}">
         <a class="orange-link bl" href="/#/research/study/{{study.id }}/add_participants/">Add Participants</a>
       </div>
+
+      <div class="col-md-2 {% block active_participant_list %}{% endblock %}">
+        <a class="orange-link bl" href="/#/research/study/{{study.id }}/participant_list/">List Participants</a>
+      </div>
+
     </div>
   </section>
   {% block study_body %}{% endblock %}

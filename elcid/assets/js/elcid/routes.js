@@ -207,4 +207,6 @@ app.config(
              .when('/research/study/:study_id/', param_template_route('/templates/research/study_detail.html'))
              .when('/research/study/:study_id/add_participants/',
                    param_template_route('/templates/research/study_add_participants.html/'))
+             .when('/research/study/:study_id/participant_list/',
+                   param_template_route('/templates/research/study_participant_list.html/'))
      }]);

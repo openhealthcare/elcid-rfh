@@ -1,0 +1,32 @@
+{% extends 'research/_study_detail_base.html' %}
+{% block active_participant_list %}active{% endblock %}
+{% block study_body %}
+
+<div class="panel-body">
+  <h2>
+    Participant Count: {{ participant_count }}
+  </h2>
+
+  <table class="table table-striped">
+    <tr>
+      <th>Name</th>
+      <th>DOB</th>
+      <th>MRN</th>
+      <th>Study ID</th>
+    </tr>
+    {% for participant in study.get_participants %}
+    <tr>
+      <td>{{ participant.patient.demographics.name }}</td>
+      <td>{{ participant.patient.demographics.date_of_birth }} </td>
+      <td>
+        <a href="/#/patient/{{ participant.patient.id }}" class="orange-link">
+          {{ participant.patient.demographics.hospital_number }}
+        </a>
+      </td>
+      <td>{{ participant.get_participant_number }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+</div> <!-- Panel Body -->
+{% endblock %}

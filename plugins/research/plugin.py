@@ -15,10 +15,12 @@ class ResearchPlugin(plugins.OpalPlugin):
         'opal.controllers': [
             'js/controllers/add_study.js',
             'js/controllers/delete_study.js',
-
+            'js/controllers/add_study_participant.js',
         ]
     }
 
     apis = [
-        (api.StudyViewSet.basename, api.StudyViewSet)
+        (api.StudyViewSet.basename, api.StudyViewSet),
+        (api.StudySearchMRNsViewSet.basename, api.StudySearchMRNsViewSet),
+        (api.StudyAddParticipantsViewSet.basename, api.StudyAddParticipantsViewSet),
     ]

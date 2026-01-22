@@ -2,7 +2,7 @@
 {% block active_add %}active{% endblock %}
 {% block study_body %}
 
-<div class="panel-body">
+<div class="panel-body" ng-controller="AddStudyParticipantCtrl">
   <h2>
     Add Participants
   </h2>
@@ -30,6 +30,52 @@
     </div>
 
   </div> <!-- row -->
+
+  <section ng-show="missing.length">
+    <h2>Missing Patients</h2>
+    <div class="row">
+      <div class="col-md-8">
+        <p ng-repeat="mrn in missing">
+          [[ mrn ]]
+        </p>
+      </div>
+
+      <div class="col-md-4">
+        <p class="text-muted">
+          Unable to find a matching patient for these MRNs
+        </p>
+      </div>
+
+
+    </div> <!-- row -->
+  </section>
+
+  <section ng-show="patients.length">
+    <h2>Found Patients</h2>
+    <div class="row">
+      <div class="col-md-8">
+        <p ng-repeat="patient in patients">
+          <a href="/#/patient/[[ patient.id ]]/" class="orange-link">
+            [[ patient.demographics[0].first_name]]
+            [[ patient.demographics[0].surname]]
+            [[ patient.demographics[0].hospital_number ]]
+          </a>
+          [[ patient.demographics[0].date_of_birth | displayDate ]]
+        </p>
+      </div>
+
+      <div class="col-md-4">
+        <p class="text-muted">
+          Add these patients to the study
+        </p>
+        <a class="btn btn-primary" ng-click="add_patients()">
+          Add Patients
+        </a>
+      </div>
+
+
+    </div> <!-- row -->
+  </section>
 
 </div> <!-- Panel Body -->
 {% endblock %}

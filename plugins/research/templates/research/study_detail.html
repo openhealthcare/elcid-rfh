@@ -1,4 +1,7 @@
 {% extends 'research/_study_detail_base.html' %}
+
+{% load tb_stats %}
+
 {% block active_overview %}active{% endblock %}
 {% block study_body %}
 
@@ -6,6 +9,65 @@
   <h2>
     Participant Count: {{ participant_count }}
   </h2>
+
+  <div class="row" ng-hide="{{ participant_count }} < 1" >
+    <div class="col-md-4">
+      {% three_col_table_with_percent 'Sex Breakdown' sexes %}
+    </div>
+    <div class="col-md-8">
+      <h3>Age Breakdown</h3>
+      <div id="age_breakdown"></div>
+    </div>
+      <script>
+        c3.generate({
+          bindto: '#age_breakdown',
+          data: {
+            columns: {{ age_groups.vals | safe }},
+            type: 'bar',
+            types: {'count': 'bar'},
+            // axes: {
+            //   'duration': 'y2'
+            // },
+          },
+          legend: {
+              show: false
+          },
+          axis: {
+            x: {
+              type: 'category',
+              categories: {{ age_groups.x_axis | safe }},
+              // tick: {
+              //   culling: 26,
+              //   rotate: 75,
+              //   multiline: false
+              // },
+            },
+            y: {
+              label: {
+                text: 'Count of patients',
+                position: 'outer-middle'
+              }
+            },
+          }
+        });
+      </script>
+
+  </div> <!-- row -->
+
+
+  <div class="row" ng-hide="{{ participant_count }} < 1">
+    <div class="col-md-6">
+      <h2>Export Data</h2>
+
+      <p class="text-muted">
+        Export study data. This will strip PID and use only the sudy ID as an identifier per patient.
+      </p>
+      <a href="/research/study/{{ study.id }}/download-data/" class="btn btn-secondary">
+        Download
+      </a>
+    </div> <!-- col -->
+  </div>   <!-- row -->
+
 
 </div> <!-- Panel Body -->
 {% endblock %}
