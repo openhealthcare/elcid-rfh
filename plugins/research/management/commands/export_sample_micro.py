@@ -2,6 +2,8 @@
 Given a ward name, export Micro results as a csv
 """
 from django.core.management.base import BaseCommand
+from opal.models import Patient
+
 from elcid.utils import find_patients_from_mrns
 from plugins.research.export import write_micro_csv
 
