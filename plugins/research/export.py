@@ -6,6 +6,7 @@ import csv
 from plugins.labtests.constants import WITHPATH_DEPATMENT_MAPPING as WINPATH_DEPARTMENT_MAPPING
 from plugins.labtests.models import LabTest
 
+MICRO_ID = {v: k for k, v in my_map.items()}['Microbiology']
 
 def write_micro_csv(patients, file_handle):
     """
@@ -22,7 +23,7 @@ def write_micro_csv(patients, file_handle):
     for patient in patients:
         print(f"Patient {patient.id}")
         labs = LabTest.objects.filter(
-            patient=patient, department_int=WINPATH_DEPARTMENT_MAPPING['Microbiology']
+            patient=patient, department_int=MICRO_ID
         ).prefetch_related('observation_set')
 
         for lab in labs:
