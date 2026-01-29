@@ -23,7 +23,7 @@ def write_micro_csv(patients, file_handle):
     for patient in patients:
         print(f"Patient {patient.id}")
         labs = LabTest.objects.filter(
-            patient=patient, department_int=MICRO_ID
+            patient=patient#, department_int=MICRO_ID
         ).prefetch_related('observation_set')
 
         for lab in labs:
