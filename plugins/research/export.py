@@ -3,7 +3,7 @@ Data exports for the research plugin
 """
 import csv
 
-from plugins.labtests.constants import WINPATH_DEPARTMENT_MAPPING
+from plugins.labtests.constants import WITHPATH_DEPATMENT_MAPPING as WINPATH_DEPARTMENT_MAPPING
 from plugins.labtests.models import LabTest
 
 
