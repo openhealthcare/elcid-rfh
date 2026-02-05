@@ -174,7 +174,8 @@ class NoteListView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *a, **k):
         context = super().get_context_data(*a, **k)
-        fks = models.MicrobiologyInput.objects.values('reason_for_interaction_fk').distinct()
+        fks = models.MicrobiologyInput.objects.values_list(
+            'reason_for_interaction_fk', flat=True).distinct()
 
         reasons = []
 
@@ -183,7 +184,7 @@ class NoteListView(LoginRequiredMixin, TemplateView):
                 continue
 
             reason = omodels.Clinical_advice_reason_for_interaction.objects.get(
-                id=reason_fk['reason_for_interaction_fk']
+                id=reason_fk
             )
 
             reasons.append(
