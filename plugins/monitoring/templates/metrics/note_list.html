@@ -22,7 +22,7 @@
         {% for line in reasons %}
         <p>
           <a href="/#/metrics/note/{% now 'Y' %}/{{ line.reason.id }}/">
-            {{ line.reason.name }} ({{line.count}})
+            {{ line.reason.name }} ({{line.count|intcomma}})
           </a>
         </p>
         {% endfor %}
