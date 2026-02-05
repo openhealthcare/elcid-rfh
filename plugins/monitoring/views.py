@@ -227,8 +227,13 @@ class AdviceActivityView(LoginRequiredMixin, TemplateView):
                 when__gte=datetime.date(start_year, 1, 1)
             ).count()
 
+            if start_year == current_year:
+                result.append((start_year, end_year,))
+                continue
+
             if count > 0:
                 result.append((start_year, end_year,))
+                continue
 
         result.reverse()
         return result
