@@ -113,9 +113,13 @@ def three_col_table_with_percent(title, results):
     total = sum(results.values())
     tables = [{}, {}, {}]
     for idx, k in enumerate(results.keys()):
+        try:
+            percent = round(results[k]/total * 100)
+        except ZeroDivisionError:
+            percent = 0
         tables[idx % 3][k] = {
             "val": results[k],
-            "percent": round(results[k]/total * 100)
+            "percent": percent
         }
     ctx = {
         "title": title,
