@@ -18,7 +18,7 @@
               <div class="col-md-12 text-right">
                 <div class="btn-group">
                   {% for start_year, end_year in view.menu_years %}
-                  <a href="/#/ICU/activity/{{ start_year }}/" class='btn {% if start_year == view.kwargs.year|add:"0" %}btn-secondary{% else %}btn-default{% endif %}'>
+                  <a href="/#/metrics/note/{{ start_year }}/{{view.kwargs.reason}}/" class='btn {% if start_year == view.kwargs.year|add:"0" %}btn-secondary{% else %}btn-default{% endif %}'>
                     <h4>
                       {{ start_year }}
                     </h4>
