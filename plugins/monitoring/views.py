@@ -179,6 +179,8 @@ class NoteListView(LoginRequiredMixin, TemplateView):
         reasons = []
 
         for reason_fk in fks:
+            if reason_fk is None:
+                continue
 
             reason = omodels.Clinical_advice_reason_for_interaction.objects.get(
                 id=reason_fk['reason_for_interaction_fk']
