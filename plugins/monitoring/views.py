@@ -154,14 +154,12 @@ class MetricsHomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(*a, **k)
 
         context['patient_count'] = omodels.Patient.objects.count()
-        context['episode_count'] = omodels.Episode.objects.count()
 
         note_count = models.MicrobiologyInput.objects.count()
         note_count += tbmodels.PatientConsultation.objects.count()
 
         context['note_count']  = note_count
 
-        # context['test_count']        = labmodels.LabTest.objects.count()
         obs_count = Fact.objects.filter(label='Total Observations').order_by('-when')[:1][0].value_int
         context['observation_count'] = obs_count
         context['movement_count']    = admission_models.TransferHistory.objects.count()
