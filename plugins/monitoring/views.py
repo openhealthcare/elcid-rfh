@@ -160,7 +160,10 @@ class MetricsHomeView(LoginRequiredMixin, TemplateView):
 
         context['note_count']  = note_count
 
-        obs_count = Fact.objects.filter(label='Total Observations').order_by('-when')[:1][0].value_int
+        try:
+            obs_count = Fact.objects.filter(label='Total Observations').order_by('-when')[:1][0].value_int
+        except IndexError: # Dev server likely
+            obs_count = 0
         context['observation_count'] = obs_count
         context['movement_count']    = admission_models.TransferHistory.objects.count()
         return context
@@ -173,7 +176,25 @@ class NoteListView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(*a, **k)
         fks = models.MicrobiologyInput.objects.values('reason_for_interaction_fk').distinct()
 
-        context['reasons'] = omodels.Clinical_advice_reason_for_interaction.objects.filter(id__in=fks)
+        reasons = []
+
+        for reason_fk in fks:
+
+            reason = omodels.Clinical_advice_reason_for_interaction.objects.get(
+                id=reason_fk['reason_for_interaction_fk']
+            )
+
+            reasons.append(
+                {
+                    'reason': reason,
+                    'count' : models.MicrobiologyInput.objects.filter(
+                        reason_for_interaction_fk=reason.id,
+                        when__gte=datetime.datetime.now()-datetime.timedelta(days=365)
+                    ).count()
+                }
+            )
+
+        context['reasons'] = reasons
 
         return context
 
