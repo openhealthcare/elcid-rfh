@@ -296,6 +296,9 @@ class AdviceActivityView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *a, **kw):
         context = super(AdviceActivityView, self).get_context_data(*a, **kw)
         reason = self.kwargs['reason']
+
+        context['reason_label'] = omodels.Clinical_advice_reason_for_interaction.objects.get(id=reason).name
+
         notes = models.MicrobiologyInput.objects.filter(
             reason_for_interaction_fk_id=reason,
             when__gte=self.start_date,

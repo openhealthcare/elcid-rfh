@@ -10,7 +10,7 @@
     <div class="panel-heading">
       <div class="row">
         <div class="col-md-4">
-          <h1>ICU summary {{ year }} </h1>
+          <h1>{{ reason_label_}} summary {{ year }} </h1>
         </div>
         <div class="col-md-8">
           <div class="view-switcher">
@@ -35,7 +35,7 @@
     <div class="panel-body">
 
       <div class="row headline">
-        <h1> ICU Round </h1>
+        <h1> {{ reason_label }} </h1>
         <div class="col-md-4 col-md-offset-2">
           <h1>{{ patient_count | intcomma }}</h1>
           <h3>Patients</h3>
