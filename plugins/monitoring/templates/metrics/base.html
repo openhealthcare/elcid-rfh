@@ -1,0 +1,30 @@
+
+<div class="left-menu">
+    <h3>
+      <a href="/#/metrics/">Metrics</a>
+    </h3>
+    <ul>
+
+      <li>
+        <h4>
+          Dashboards
+        </h4>
+      </li>
+      <li>
+        <a href="/#/ICU/activity/{% now 'Y' %}/">ICU</a>
+      </li>
+      <li>
+        <a href="/#/tb/clinic-activity/{% now "Y" %}/">TB Clinic</a>
+      </li>
+      <li>
+        <a href="/#/opat/activity/{% now "Y" %}/">OPAT</a>
+      </li>
+      <li>
+        <a href="/#/metrics/note-list/">Advice</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="content-offset right-viewport">
+    {% block content %}{% endblock %}
+  </div>   <!-- Col 11 -->

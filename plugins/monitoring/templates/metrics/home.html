@@ -1,0 +1,46 @@
+{% extends 'metrics/base.html' %}
+{% load humanize %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>Metrics: Royal Free Group</h1>
+  </div> <!-- Heading -->
+
+  <div class="panel-body">
+    <h2>Elcid System All Time</h2>
+
+    <div class="row headline">
+      <div class="col-md-4">
+        <h1>{{ patient_count | intcomma }}</h1>
+        <h3>Patients</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>{{ episode_count | intcomma }}</h1>
+        <h3>Episodes</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>{{ note_count | intcomma }}</h1>
+        <h3>Clinical Advice Entries</h3>
+      </div>
+    </div>
+
+    <h2>Integration</h2>
+
+    <div class="row headline">
+      <div class="col-md-4">
+        <h1>{{ test_count | intcomma }}</h1>
+        <h3>Lab Tests</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>{{ observation_count | intcomma }}</h1>
+        <h3>Test Lines</h3>
+      </div>
+      <div class="col-md-4">
+        <h1>{{ movement_count | intcomma }}</h1>
+        <h3>Location Movements</h3>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

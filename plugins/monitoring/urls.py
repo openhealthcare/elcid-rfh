@@ -2,6 +2,7 @@
 Urls for the monitoring plugin
 """
 from django.conf.urls import url
+from django.urls import path
 
 from plugins.monitoring import views
 
@@ -35,5 +36,20 @@ urlpatterns = [
         'templates/monitoring/admission_load_stats.html',
         views.AdmissionLoadStats.as_view(),
         name='admission_load_stats'
+    ),
+    path(
+        'templates/metrics/home.html/',
+        views.MetricsHomeView.as_view(),
+        name='metrics_home'
+    ),
+    path(
+        'templates/metrics/note_list.html/',
+        views.NoteListView.as_view(),
+        name='note_activity'
+    ),
+    path(
+        'templates/metrics/advice-activity/<year>/<reason>/',
+        views.AdviceActivityView.as_view(),
+        name='note_activity'
     ),
 ]

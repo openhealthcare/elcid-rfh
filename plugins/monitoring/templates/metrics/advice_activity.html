@@ -1,0 +1,100 @@
+{% extends 'metrics/base.html' %}
+
+{% load humanize %}
+{% load tb_stats %}
+{% url 'note_activity' year=view.kwargs.year reason=view.kwargs.reason as icu_activity_url %}
+
+{% block content %}
+
+  <div class="panel panel-default tb-stats">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-4">
+          <h1>ICU summary {{ year }} </h1>
+        </div>
+        <div class="col-md-8">
+          <div class="view-switcher">
+            <div class="row content-offset-below-10">
+              <div class="col-md-12 text-right">
+                <div class="btn-group">
+                  {% for start_year, end_year in view.menu_years %}
+                  <a href="/#/ICU/activity/{{ start_year }}/" class='btn {% if start_year == view.kwargs.year|add:"0" %}btn-secondary{% else %}btn-default{% endif %}'>
+                    <h4>
+                      {{ start_year }}
+                    </h4>
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- heading -->
+
+    <div class="panel-body">
+
+      <div class="row headline">
+        <h1> ICU Round </h1>
+        <div class="col-md-4 col-md-offset-2">
+          <h1>{{ patient_count | intcomma }}</h1>
+          <h3>Patients</h3>
+        </div>
+        <div class="col-md-4">
+          <h1>{{ note_count | intcomma }}</h1>
+          <h3>Clinical Advice Entries</h3>
+        </div>
+      </div>
+
+      <div class="row content-offset">
+      <div class="col-md-12">
+        <h1>ICU Round Notes</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="content-offset-20" id="icu_review"></div>
+      <script>
+        c3.generate({
+          bindto: '#icu_review',
+          data: {
+            columns: {{ weekly_notes.vals | safe }},
+            type: 'line',
+            types: {'count': 'bar'},
+            axes: {
+              'duration': 'y2'
+            },
+          },
+          legend: {
+              show: false
+          },
+          axis: {
+            x: {
+              type: 'category',
+              categories: {{ weekly_notes.x_axis | safe }},
+              tick: {
+                culling: 26,
+                rotate: 75,
+                multiline: false
+              },
+            },
+            y: {
+              label: {
+                text: 'Count of notes',
+                position: 'outer-middle'
+              }
+            },
+          }
+        });
+      </script>
+    </div>
+
+      <div class="row">
+        <div class="col-md-12" >
+        {% three_col_table_with_percent 'Notes by Initials' notes_by_user %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

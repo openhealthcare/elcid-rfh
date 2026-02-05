@@ -1,0 +1,35 @@
+{% extends 'metrics/base.html' %}
+
+{% load humanize %}
+{% load tb_stats %}
+{% url 'note_activity' year=view.kwargs.year reason=view.kwargs.reason as icu_activity_url %}
+
+{% block content %}
+
+  <div class="panel panel-default tb-stats">
+    <div class="panel-heading">
+      <div class="row">
+        <div class="col-md-4">
+          <h1>Clinical Advice </h1>
+        </div>
+      </div>
+    </div> <!-- heading -->
+
+    <div class="panel-body">
+
+      <div class="row">
+        <div class="col-md-4 col-md-offset-2">
+        {% for reason in reasons %}
+        <p>
+          <a href="/#/metrics/note/{% now 'Y' %}/{{ reason.id }}/">
+          {{ reason.name }}
+        </p>
+        {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}
