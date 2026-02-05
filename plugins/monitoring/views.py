@@ -161,8 +161,8 @@ class MetricsHomeView(LoginRequiredMixin, TemplateView):
 
         context['note_count']  = note_count
 
-        context['test_count']        = labmodels.LabTest.objects.count()
-        context['observation_count'] = labmodels.Observation.objects.count()
+        # context['test_count']        = labmodels.LabTest.objects.count()
+        # context['observation_count'] = labmodels.Observation.objects.count()
         context['movement_count']    = admission_models.TransferHistory.objects.count()
         return context
 
