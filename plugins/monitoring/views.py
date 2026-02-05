@@ -197,7 +197,7 @@ class NoteListView(LoginRequiredMixin, TemplateView):
                 }
             )
 
-        context['reasons'] = reasons
+        context['reasons'] = sorted(reasons, key=lambda x: x['count'])
 
         return context
 
