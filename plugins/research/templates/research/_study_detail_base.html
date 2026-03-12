@@ -3,10 +3,17 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h1>
-      Research Studies: {{ study.name }}
+      Research Studies: {{ study.name }} {% if study.is_closed %} (CLOSED){% endif %}
 
-      <a class="btn btn-secondary pull-right" ng-click="open_modal('DeleteStudyCtrl', '/templates/research/modals/delete_study.html', {study_id: {{study.id}} })">
+      <a class="btn btn-secondary pull-right content-offset-left-10" ng-click="open_modal('DeleteStudyCtrl', '/templates/research/modals/delete_study.html', {study_id: {{study.id}} })">
+        <i class="fa fa-trash"></i>
         Delete
+      </a>
+
+      <a class="btn btn-secondary pull-right {% if study.is_closed %}disabled{% endif %}"
+         ng-click="open_modal('CloseStudyCtrl', '/templates/research/modals/close_study.html', {study_id: {{study.id}} })">
+        <i class="fa fa-stop"></i>
+        Close
       </a>
 
     </h1>
@@ -17,7 +24,13 @@
         <a class="orange-link bl" href="/#/research/study/{{ study.id }}/">Overview</a>
       </div>
       <div class="col-md-2 {% block active_add %}{% endblock %}">
-        <a class="orange-link bl" href="/#/research/study/{{study.id }}/add_participants/">Add Participants</a>
+        {% if study.is_closed %}
+        Study Closed
+        {% else %}
+        <a class="orange-link bl" href="/#/research/study/{{study.id }}/add_participants/">
+          Add Participants
+        </a>
+        {% endif %}
       </div>
 
       <div class="col-md-2 {% block active_participant_list %}{% endblock %}">

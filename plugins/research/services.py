@@ -10,6 +10,7 @@ class ResearchService(ClinicalService):
 
     @classmethod
     def visible_to(klass, user):
+        return False
         print('hai')
         if user.is_superuser:
             return True

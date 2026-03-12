@@ -12,7 +12,10 @@
       <th>Name</th>
       <th>DOB</th>
       <th>MRN</th>
-      <th>Study ID</th>
+      <th>Elcid ID</th>
+      <th>Study Participant ID</th>
+      <th>Added</th>
+      <th>Actions</th>
     </tr>
     {% for participant in study.get_participants %}
     <tr>
@@ -23,7 +26,15 @@
           {{ participant.patient.demographics.hospital_number }}
         </a>
       </td>
+      <td>{{ participant.patient.id }}</td>
       <td>{{ participant.get_participant_number }}</td>
+      <td>{{ participant.added }}</td>
+      <td>
+        <a class="btn btn-secondary btn-sm"
+           ng-click="open_modal('RemoveStudyParticipantCtrl', '/templates/research/modals/remove_participant.html', {study_id: {{ study.id }}, participant_name: '{{ participant.patient.demographics.name }}', patient_id: {{ participant.patient.id }} })">
+          Remove
+        </a>
+      </td>
     </tr>
     {% endfor %}
   </table>

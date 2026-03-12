@@ -15,7 +15,9 @@ class ResearchPlugin(plugins.OpalPlugin):
         'opal.controllers': [
             'js/controllers/add_study.js',
             'js/controllers/delete_study.js',
+            'js/controllers/close_study.js',
             'js/controllers/add_study_participant.js',
+            'js/controllers/remove_participant.js',
         ]
     }
 
@@ -23,4 +25,5 @@ class ResearchPlugin(plugins.OpalPlugin):
         (api.StudyViewSet.basename, api.StudyViewSet),
         (api.StudySearchMRNsViewSet.basename, api.StudySearchMRNsViewSet),
         (api.StudyAddParticipantsViewSet.basename, api.StudyAddParticipantsViewSet),
+        (api.StudyCloseViewSet.basename, api.StudyCloseViewSet),
     ]

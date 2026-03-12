@@ -2,6 +2,7 @@
 Model definition for Elcid research plugin
 """
 from django.db import models
+from opal.core.fields import enum
 from opal.models import Patient
 
 
@@ -9,15 +10,24 @@ class Study(models.Model):
     """
     Defines a research study.
     """
+    STATES = enum('OPEN', 'CLOSED')
+
     created  = models.DateTimeField(auto_now_add=True)
     name     = models.TextField(blank=True, null=True)
     archived = models.BooleanField(default=False)
+    state    = models.TextField(choices=STATES, default='OPEN')
 
     def get_absolute_url(self):
         """
         Return the URL for this study
         """
         return f"/#/research/study/{self.id}/"
+
+    def is_open(self):
+        return self.state == 'OPEN'
+
+    def is_closed(self):
+        return self.state == 'CLOSED'
 
     def add_participants(self, patients):
         """
@@ -33,12 +43,19 @@ class Study(models.Model):
         """
         return [p for p in StudyParticipant.objects.filter(study=self)]
 
+    def close_study(self):
+        """
+        Change the state of this study to CLOSED
+        """
+        self.state = 'CLOSED'
+        self.save()
+
 
 class StudyParticipant(models.Model):
     """
     Designates a patient as being part of a study
     """
-#    TODO: Auto add now added timestamp
+    added = models.DateTimeField(auto_now_add=True)
     study = models.ForeignKey(
         Study, on_delete=models.CASCADE, related_name='study_participant')
     patient = models.ForeignKey(

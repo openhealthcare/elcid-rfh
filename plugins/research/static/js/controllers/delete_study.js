@@ -7,7 +7,7 @@ angular.module('opal.controllers').controller('DeleteStudyCtrl', function(
 
     $scope.name = null;
 
-    $scope.delete_study = function(){
+    $scope.remove_participant = function(){
         ngProgressLite.set(0);
         ngProgressLite.start();
 

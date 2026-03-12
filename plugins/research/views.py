@@ -9,8 +9,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.http import HttpResponse
 
-
 from plugins.research import models
+from plugins.research.studies import get_study_class
 
 
 class ResearchHomeView(LoginRequiredMixin, TemplateView):
@@ -52,7 +52,23 @@ class StudyDetailView(LoginRequiredMixin, TemplateView):
     """
     Detail view for a single study
     """
-    template_name = 'research/study_detail.html'
+
+    _template_name = 'research/study_detail.html'
+
+    @property
+    def template_name(self, *args, **kwargs):
+        return self.get_template_name()
+
+    def get_template_name(self, *args, **kwargs):
+        """
+        Check to see if it is overriden
+        """
+        print('called')
+        study = models.Study.objects.get(id=self.request.GET['study_id'])
+        customisables = get_study_class(study.name)
+        if customisables.template_name:
+            return customisables.template_name
+        return self._template_name
 
     def get_sex_breakdown(self, patients):
         """
@@ -125,6 +141,7 @@ class StudyDetailView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(*args, **kwargs)
 
         study        = models.Study.objects.get(id=self.request.GET['study_id'])
+
         participants = study.get_participants()
         patients     = [p.patient for p in participants]
 
@@ -187,15 +204,8 @@ class StudyDownloadView(LoginRequiredMixin, View):
         """
         study = models.Study.objects.get(id=kwargs['study_id'])
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f"attachment; filename={study.name}.csv"
+        customisables = get_study_class(study.name)
 
-        writer = csv.writer(response)
-        writer.writerow(['StudyID', 'Sex', 'DOB'])
-
-        for participant in study.get_participants():
-
-            demographics = participant.patient.demographics()
-            writer.writerow([participant.get_participant_number(), demographics.sex, demographics.date_of_birth])
+        response = customisables.download(study)
 
         return response

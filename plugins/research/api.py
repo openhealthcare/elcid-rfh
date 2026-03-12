@@ -81,3 +81,18 @@ class StudyAddParticipantsViewSet(LoginRequiredViewset):
         return json_response({
             'url' : study.get_absolute_url()
         })
+
+
+class StudyCloseViewSet(LoginRequiredViewset):
+     basename = 'researchstudy-close'
+
+     def create(self, request):
+         """
+
+         """
+         study = Study.objects.get(id=request.data['study_id'])
+         if request.data['state'] == 'CLOSED':
+             study.close_study()
+             return json_response(
+                 {'status': 'CLOSED'}
+             )
