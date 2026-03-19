@@ -1,0 +1,20 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block icon_name %}fa fa-bin{% endblock %}
+{% block title %}Close this study{% endblock %}
+{% block modal_body %}
+<div class="row">
+  <div class="col-md-8 col-md-offset-2" >
+    <p class="lead content-offset">
+      <span class="bold">Do you want to close this study permanently?</span>
+    </p>
+    <div class="row text-center">
+      <button class="btn btn-primary btn-save text-center" ng-click="delete_study()">
+        <i class="fa fa-stop"></i> Close
+      </button>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+{% block modal_save %}{% endblock %}

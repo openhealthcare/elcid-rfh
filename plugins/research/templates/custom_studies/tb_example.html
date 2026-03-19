@@ -1,0 +1,19 @@
+{% extends 'research/study_detail.html' %}
+
+{% block study_body %}
+<div class="row">
+  <div class="col-md-4 col-md-offset-2">
+    <p class="text-muted content-offset">
+      This is an example study. If you have accidentally named your study 'TB Example Study',
+      bad luck, please choose a different name - this one probably won't behave exactly
+      as you expect.<br />
+      If you have deliberately named your study
+      such, please note that this detail page is customisable.
+    </p>
+  </div>
+</div>
+
+
+{{ block.super }}
+
+{% endblock %}
