@@ -285,7 +285,7 @@ class OrganismPatientlist(AbstractBase):
     organism_list = True
 
     def four_months_ago(self):
-        return timezone.now() - datetime.timedelta(120)
+        return timezone.now() - datetime.timedelta(60)
 
     def get_observations(self):
         return Observation.objects.filter(
