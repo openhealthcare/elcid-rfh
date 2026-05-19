@@ -1,0 +1,33 @@
+{% load panels %}
+{% load forms %}
+<section class="container">
+
+  <section ng-repeat="study in patient.research_studies">
+    <div class="row">
+      <div class="col-md-8">
+        <h2>
+          <a href="/#/research/study/[[study.id]]/" class="orange-link">
+            [[ study.name ]]
+          </a>
+        </h2>
+      </div>
+      <div class="col-md-4">
+        <h3>
+        <a class="btn btn-secondary btn-sm"
+           ng-click="open_modal('NewResearchNoteCtrl', '/templates/research/modals/new_research_note.html', {study_id:study.id, episode_id: episode.id})"
+             >
+          Add Note
+        </a>
+        </h3>
+      </div>
+    </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      {% include "inline_forms/research_timeline.html" %}
+      </div>
+  </div>
+
+  </section>
+
+</section>

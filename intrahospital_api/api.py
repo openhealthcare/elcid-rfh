@@ -9,6 +9,7 @@ from elcid import models as emodels
 from elcid.episode_serialization import serialize
 from elcid.utils import timing
 from intrahospital_api import get_api
+from plugins.research.studies import serialise_studies_for_patient
 
 @timing
 def timed_is_antifungal(episode_ids):
@@ -47,6 +48,7 @@ def patient_to_dict(patient, user):
         'TB'               : '25',
         'NTM'              : '20',
         'RNOH'             : '15',
+        'Research'         : '13',
         'COVID-19'         : '10',
 
 
@@ -77,6 +79,7 @@ def patient_to_dict(patient, user):
     d["episodes"] = episode_id_to_episode
 
     d["is_antifungal"] = timed_is_antifungal(episode_ids)
+    d["research_studies"] = serialise_studies_for_patient(patient)
 
     return d
 

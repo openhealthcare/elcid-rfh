@@ -1,0 +1,65 @@
+<div ng-show="true || clinicalTimeline.clinicalAdvice.length" class="panel panel-default hidden-print">
+  <div class="panel-body">
+    <div class="patient-timeline-container">
+      <div class="row">
+        <div class="col-md-3 patient-timeline">
+          <div class="patient-timeline-now">
+            <div class="patient-timeline-now-text bg-secondary">
+              Now
+            </div>
+          </div>
+        </div>
+      </div>
+      <svg class="speech-bubble-timeline-container">
+        <line classx="speech-bubble-timeline hidden-sm hidden-xs" x1="13%" y1="0" x2="13%" y2="500%" />
+        <line class="speech-bubble-timeline hidden-md hidden-lg" x1="50%" y1="0" x2="50%" y2="500%" />
+      </svg>
+      <div
+        ng-repeat="item in episode.research_note"
+        ng-show="item.study_id == study.id"
+        class="row content-offset-20"
+        >
+
+        <div class="col-md-3 patient-timeline">
+          <div class="patient-timeline-speech-bubble">
+            <i class="fa fa-comments patient-timeline-speech-bubble-icon"></i>
+          </div>
+          <div ng-show="item.when">
+            <div class="patient-timeline-date">
+              [[ item.when | momentDateFormat:'DD MMM YYYY' ]]
+            </div>
+          </div>
+        </div>
+        <div class="col-md-9">
+          <div class="patient-timeline-discussion">
+            <div class="row">
+              <div class="col-sm-10 timeline-data-[[ $index ]]">
+                <span ng-show="item.initials && item.initials.trim().length">
+                  <p>
+                    <b>By: </b> [[item.initials]]
+                  </p>
+                </span>
+
+                <span ng-show="item.note">
+                  <div class="whitespacey">[[ item.note ]]</div>
+                </span>
+                <br />
+                {% include 'partials/_item_created_updated_by.html' %}
+              </div>
+              <div class="col-sm-2">
+                {% if not request.user.profile.readonly %}
+                <div class="row" ng-hide="item.sent_upstream">
+                  <div class="col-md-12">
+                    <i class="fa fa-pencil edit pull-right pointer"
+                       ng-click="episode.recordEditor.editItem('research_note', item)"></i>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

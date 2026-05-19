@@ -3,7 +3,7 @@ Model definition for Elcid research plugin
 """
 from django.db import models
 from opal.core.fields import enum
-from opal.models import Patient
+from opal.models import Patient, EpisodeSubrecord
 
 
 class Study(models.Model):
@@ -35,13 +35,20 @@ class Study(models.Model):
         """
         for patient in patients:
             StudyParticipant.objects.get_or_create(study=self, patient=patient)
+            episode = patient.episode_set.get_or_create(category_name='Research')
         return
 
     def get_participants(self):
         """
         Return an iterable of participants in this study
         """
-        return [p for p in StudyParticipant.objects.filter(study=self)]
+        return [p for p in StudyParticipant.objects.filter(study=self, removed=False)]
+
+    def get_removed_participants(self):
+        """
+        Return an iterable of removed participants in this study
+        """
+        return [p for p in StudyParticipant.objects.filter(study=self, removed=True)]
 
     def close_study(self):
         """
@@ -55,11 +62,14 @@ class StudyParticipant(models.Model):
     """
     Designates a patient as being part of a study
     """
-    added = models.DateTimeField(auto_now_add=True)
-    study = models.ForeignKey(
+    added             = models.DateTimeField(auto_now_add=True)
+    study             = models.ForeignKey(
         Study, on_delete=models.CASCADE, related_name='study_participant')
-    patient = models.ForeignKey(
+    patient           = models.ForeignKey(
         Patient, on_delete=models.CASCADE, related_name='study_participant')
+    removed           = models.BooleanField(default=False)
+    removal_reason    = models.TextField(blank=True, null=True)
+    removal_timestamp = models.DateTimeField(blank=True, null=True)
 
     def get_participant_number(self):
         """
@@ -69,3 +79,27 @@ class StudyParticipant(models.Model):
         # Not actually the patient ID so we can avoid leaking Elcid number
         patient_id = 900 + self.id
         return f"{study_id}{patient_id}"
+
+    def get_research_detail_view_url(self):
+        """
+        Return the URL for the detail view for this patient - the research
+        episode if it exists, the patient if not.
+        """
+        print('HERE')
+        episode = self.patient.episode_set.filter(category_name="Research")
+        print(episode)
+        url_base = f"/#/patient/{self.patient.id}"
+
+        if episode:
+            return url_base + f"/{episode[0].id}"
+
+        return url_base
+
+
+class ResearchNote(EpisodeSubrecord):
+    """
+    Internal admin notes for a patient on a specific study
+    """
+    study = models.ForeignKey(Study, on_delete=models.CASCADE, related_name='study_note')
+    when  = models.DateTimeField(blank=True, null=True)
+    note  = models.TextField(blank=True, null=True)

@@ -22,7 +22,7 @@
       <td>{{ participant.patient.demographics.name }}</td>
       <td>{{ participant.patient.demographics.date_of_birth }} </td>
       <td>
-        <a href="/#/patient/{{ participant.patient.id }}" class="orange-link">
+        <a href="{{ participant.get_research_detail_view_url }}" class="orange-link">
           {{ participant.patient.demographics.hospital_number }}
         </a>
       </td>
@@ -30,7 +30,7 @@
       <td>{{ participant.get_participant_number }}</td>
       <td>{{ participant.added }}</td>
       <td>
-        <a class="btn btn-secondary btn-sm"
+        <a class="btn btn-secondary btn-sm {% if study.is_closed %}disabled{% endif %}"
            ng-click="open_modal('RemoveStudyParticipantCtrl', '/templates/research/modals/remove_participant.html', {study_id: {{ study.id }}, participant_name: '{{ participant.patient.demographics.name }}', patient_id: {{ participant.patient.id }} })">
           Remove
         </a>
@@ -38,6 +38,42 @@
     </tr>
     {% endfor %}
   </table>
+
+  <h2>
+    Non-Participants:
+  </h2>
+
+  <table class="table table-striped">
+    <tr>
+      <th>Name</th>
+      <th>DOB</th>
+      <th>MRN</th>
+      <th>Elcid ID</th>
+      <th>Study Participant ID</th>
+      <th>Added</th>
+      <th>Removed</th>
+    </tr>
+    {% for participant in study.get_removed_participants %}
+    <tr>
+      <td>{{ participant.patient.demographics.name }}</td>
+      <td>{{ participant.patient.demographics.date_of_birth }} </td>
+      <td>
+        <a href="{{ participant.get_research_detail_view_url }}" class="orange-link">
+          {{ participant.patient.demographics.hospital_number }}
+        </a>
+      </td>
+      <td>{{ participant.patient.id }}</td>
+      <td>{{ participant.get_participant_number }}</td>
+      <td>{{ participant.added }}</td>
+      <td>
+        {{ participant.removal_timestamp }}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+
+
 
 </div> <!-- Panel Body -->
 {% endblock %}

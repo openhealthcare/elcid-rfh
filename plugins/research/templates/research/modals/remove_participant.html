@@ -7,6 +7,22 @@
     <p class="lead content-offset">
       <span class="bold">Do you want to remove [[ participant_name ]] from this study permanently?</span>
     </p>
+
+    <div class="row">
+      <div class="col-md-8">
+        <p>
+          <form class="form form-horizontal ">
+            <textarea
+              ng-model="reason"
+              class="form-control"
+              rows=4
+              />
+          </form>
+        </p>
+      </div> <!-- col md-8 -->
+    </div>
+
+
     <div class="row text-center">
       <button class="btn btn-primary btn-save text-center" ng-click="remove_participant()()">
         <i class="fa fa-stop"></i> Remove

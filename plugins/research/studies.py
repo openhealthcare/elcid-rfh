@@ -12,12 +12,29 @@ import tempfile
 
 from django.http import HttpResponse
 
+from plugins.research import models
+
 
 ExportFile = collections.namedtuple(
     'ExportFile',
     ('data', 'headers', 'filename')
 )
 
+def serialise_studies_for_patient(patient):
+    """
+    Given a PATIENT, return a serialised version of their studies
+    for use in Angular land
+    """
+    studies = []
+    for participation in models.StudyParticipant.objects.filter(patient=patient):
+        study = participation.study
+
+        studies.append({
+            'name': study.name,
+            'id'  : study.id
+        })
+
+    return studies
 
 def create_zipfile_from_dicts(*args):
     """

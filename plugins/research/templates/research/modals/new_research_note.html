@@ -1,0 +1,16 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block icon_name %}fa fa-plus{% endblock %}
+{% block title %}New Research Note{% endblock %}
+{% block modal_body %}
+<div class="row">
+  <div class="col-md-8">
+    {% include 'forms/research_note_form.html' %}
+  </div>
+</div>
+
+{% endblock %}
+{% block modal_save %}
+    <button class="btn btn-primary btn-save" ng-click="save('save')">
+      <i class="fa fa-save"></i> Save
+    </button>
+{% endblock %}

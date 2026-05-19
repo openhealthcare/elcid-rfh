@@ -11,7 +11,7 @@
     {% for study in studies %}
     <li>
       <a href="{{ study.get_absolute_url }}" class="orange-link">
-        {{ study.name }}
+        {{ study.name }} ({{ study.state }})
       </a>
     {% endfor %}
     </ul>
