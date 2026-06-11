@@ -207,6 +207,7 @@ class TransferHistory(models.Model):
 
     Here we replicate the upstream view closely.
     """
+    id = models.BigAutoField(primary_key=True) #
     # This is the timestamp we create this model in elcid
     created_in_elcid                = models.DateTimeField(auto_now_add=True)
     patient                         = models.ForeignKey(
