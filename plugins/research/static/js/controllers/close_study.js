@@ -15,7 +15,7 @@ angular.module('opal.controllers').controller('CloseStudyCtrl', function(
             function(response){
                 $modalInstance.close('Closed');
                 ngProgressLite.done();
-                $window.reload()
+                $window.location.reload()
             },
             function(){
                 ngProgressLite.done();

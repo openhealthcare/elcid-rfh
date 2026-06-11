@@ -22,7 +22,7 @@ angular.module('opal.controllers').controller('RemoveStudyParticipantCtrl', func
             function(response){
                 $modalInstance.close('Closed');
                 ngProgressLite.done();
-                $window.reload()
+                $window.location.reload()
 
             },
             function(){
