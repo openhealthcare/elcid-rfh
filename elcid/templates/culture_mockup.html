@@ -1,6 +1,6 @@
 <div class="left-menu">
   <h3>
-    <a href="/#/beta/cultures/">+ve Cultures</a>
+    <a href="/#/beta/cultures/">Positive Cultures</a>
   </h3>
   <ul>
   </ul>
@@ -9,7 +9,7 @@
 <div class="content-offset right-viewport">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h1>+ve Cultures: Royal Free Hospital</h1>
+      <h1>Positive Cultures: Royal Free Hospital</h1>
     </div> <!-- Heading -->
 
 
@@ -19,10 +19,10 @@
         <div class="col-md-2 active">
           <a class="orange-link bl" href="/#/beta/cultures/">RFH</a>
         </div>
-        <div class="col-md-2 active">
+        <div class="col-md-2 ">
           <a class="orange-link bl" href="/#/beta/cultures/">Barnet</a>
         </div>
-        <div class="col-md-2 active">
+        <div class="col-md-2 ">
           <a class="orange-link bl" href="/#/beta/cultures/">Chase Farm</a>
         </div>
 
@@ -33,7 +33,7 @@
     <div class="panel-body">
 
       <h2>
-        {{ tests|length }} Cultures
+         Cultures
       </h2>
 
 
@@ -46,29 +46,85 @@
             <th>Patient</th>
             <th>Isolates</th>
           </tr>
-          {% for test in tests %}
           <tr>
             <td>
-              <a href="/#/lab-test/{{test.lab_number}}" class="orange-link">
-                {{ test.lab_number }}
+              <a href="" class="orange-link">
+                37-555-7236838
               </a>
             </td>
             <td>
-              {{ test.datetime_ordered }}
+              12 Jul 2026 13:11
             </td>
             <td>
-              {{ test.test_name }}
+              BLOOD CULTURE (BC)
             </td>
             <td>
-              <a href="{{ patient.get_absolute_url }}" class="orange-link">
-                {{ patient.get_demographics.name }}
+              <a href="" class="orange-link">
+                Jane Doe 5557892
               </a>
             </td>
             <td>
-              Observation
+              <p>
+                1) After less than 24 hours Klebsiella Pneumoniae isolated from both bottles
+              </p>
+              <p>
+                2) After less than 24 hours Escherichia coli isolated from the aerobic bottle
+              </p>
             </td>
           </tr>
-          {% endfor %}
+
+          <tr>
+            <td>
+              <a href="" class="orange-link">
+                37-555-7839938
+              </a>
+            </td>
+            <td>
+              12 Jul 2026 17:11
+            </td>
+            <td>
+              BLOOD CULTURE (BC)
+            </td>
+            <td>
+              <a href="" class="orange-link">
+                Simon Shaw 5552836
+              </a>
+            </td>
+            <td>
+              <p>
+                2) After less than 24 hours Escherichia coli isolated from the anaerobic bottle
+              </p>
+              <p>
+                2) After less than 24 hours Escherichia coli isolated from the anaerobic bottle
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <a href="" class="orange-link">
+                37-555-2538262
+              </a>
+            </td>
+            <td>
+              13 Jul 2026 09:11
+            </td>
+            <td>
+              BLOOD CULTURE (BC)
+            </td>
+            <td>
+              <a href="" class="orange-link">
+                Tanya Towel 55562637
+              </a>
+            </td>
+            <td>
+              <p>
+                Klebsiella Pneumoniae isolated from both bottles. ESBL producer. Most penicillins will not be effective.
+                For advice please contact the microbiologist.
+              </p>
+            </td>
+          </tr>
+
+
         </table>
       </div>
 
