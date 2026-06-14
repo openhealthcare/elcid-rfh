@@ -7,7 +7,8 @@ import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
-from django.http import HttpResponse
+from django.utils.functional import cached_property
+from django.http import HttpResponse, HttpResponseNotFound
 
 from plugins.research import models
 from plugins.research.studies import get_study_class
@@ -26,9 +27,29 @@ class ResearchHomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(*args, **kwargs)
 
         context['study_count']       = models.Study.objects.filter(archived=False).count()
-        context['participant_count'] = models.StudyParticipant.objects.filter(study__archived=False).count()
+        context['participant_count'] = models.StudyParticipant.objects.filter(
+            study__archived=False).count()
 
         return context
+
+
+class AbstractStudyDetailTemplateView(LoginRequiredMixin, TemplateView):
+    """
+    Parent class to prevent users without permissions URL guessing
+    access to studies.
+    """
+    @cached_property
+    def study(self):
+        """
+        Return the study our GET args point to.
+        """
+        return models.Study.objects.get(id=self.request.GET['study_id'])
+
+    def get(self, *args, **kwargs):
+        if self.study.visible_to_user(self.request.user):
+            return super().get(*args, **kwargs)
+        return HttpResponseNotFound()
+
 
 
 class StudyListView(LoginRequiredMixin, TemplateView):
@@ -43,12 +64,17 @@ class StudyListView(LoginRequiredMixin, TemplateView):
         """
         context = super().get_context_data(*args, **kwargs)
 
-        context['studies'] = models.Study.objects.filter(archived=False)
+        studies = [
+            s for s in models.Study.objects.filter(archived=False)
+            if s.visible_to_user(self.request.user)
+        ]
+
+        context['studies'] = studies
 
         return context
 
 
-class StudyDetailView(LoginRequiredMixin, TemplateView):
+class StudyDetailView(AbstractStudyDetailTemplateView):
     """
     Detail view for a single study
     """
@@ -133,14 +159,13 @@ class StudyDetailView(LoginRequiredMixin, TemplateView):
             )
         }
 
-
     def get_context_data(self, *args, **kwargs):
         """
         Prepare data for the study detail page
         """
         context = super().get_context_data(*args, **kwargs)
 
-        study        = models.Study.objects.get(id=self.request.GET['study_id'])
+        study        = self.study
 
         participants = study.get_participants()
         patients     = [p.patient for p in participants]
@@ -154,7 +179,7 @@ class StudyDetailView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class StudyAddParticipantsView(LoginRequiredMixin, TemplateView):
+class StudyAddParticipantsView(AbstractStudyDetailTemplateView):
     """
     Detail view to add participants
     """
@@ -166,7 +191,7 @@ class StudyAddParticipantsView(LoginRequiredMixin, TemplateView):
         """
         context = super().get_context_data(*args, **kwargs)
 
-        study = models.Study.objects.get(id=self.request.GET['study_id'])
+        study = self.study
 
         context['study'] = study
         context['participant_count'] = models.StudyParticipant.objects.filter(study=study).count()
@@ -174,7 +199,7 @@ class StudyAddParticipantsView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class StudyParticipantListView(LoginRequiredMixin, TemplateView):
+class StudyParticipantListView(AbstractStudyDetailTemplateView):
     """
     Detail view for study participants
     """
@@ -186,7 +211,7 @@ class StudyParticipantListView(LoginRequiredMixin, TemplateView):
         """
         context = super().get_context_data(*args, **kwargs)
 
-        study = models.Study.objects.get(id=self.request.GET['study_id'])
+        study = self.study
 
         context['study'] = study
         context['participant_count'] = models.StudyParticipant.objects.filter(study=study).count()
@@ -203,6 +228,9 @@ class StudyDownloadView(LoginRequiredMixin, View):
         Build and return a study CSV
         """
         study = models.Study.objects.get(id=kwargs['study_id'])
+
+        if not study.visible_to_user(self.request.user):
+            return HttpResponseNotFound()
 
         customisables = get_study_class(study.name)
 

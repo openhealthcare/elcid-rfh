@@ -5,14 +5,16 @@ from opal.core import menus
 
 from elcid.services import ClinicalService
 
+from plugins.research.models import Study
+
 
 class ResearchService(ClinicalService):
 
     @classmethod
     def visible_to(klass, user):
-        return False
-        print('hai')
         if user.is_superuser:
+            return True
+        if Study.objects.filter(users=user).count() > 0:
             return True
         return False
 

@@ -3,7 +3,7 @@ Model definition for Elcid research plugin
 """
 from django.db import models
 from opal.core.fields import enum
-from opal.models import Patient, EpisodeSubrecord
+from opal.models import Patient, EpisodeSubrecord, User
 
 
 class Study(models.Model):
@@ -16,6 +16,13 @@ class Study(models.Model):
     name     = models.TextField(blank=True, null=True)
     archived = models.BooleanField(default=False)
     state    = models.TextField(choices=STATES, default='OPEN')
+    users    = models.ManyToManyField(User, blank=True)
+
+    class Meta:
+        verbose_name_plural = "studies"
+
+    def __str__(self):
+        return f"Study: {self.name}"
 
     def get_absolute_url(self):
         """
@@ -28,6 +35,17 @@ class Study(models.Model):
 
     def is_closed(self):
         return self.state == 'CLOSED'
+
+    def visible_to_user(self, user):
+        """
+        Predicate function to determine if this study is visible
+        to USER
+        """
+        if user.is_superuser:
+            return True
+        if self in user.study_set.all():
+            return True
+        return False
 
     def add_participants(self, patients):
         """

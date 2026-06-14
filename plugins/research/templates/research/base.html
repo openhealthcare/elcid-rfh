@@ -8,11 +8,18 @@
         All Studies
       </a>
     </li>
+    {% if request.user.is_superuser %}
     <li>
       <a href="/#/research/study/create/">
         New Study
       </a>
     </li>
+    <li>
+      <a href="/admin/research/study/">
+        Study User Admin
+      </a>
+    </li>
+    {% endif %}
   </ul>
 </div>
 
