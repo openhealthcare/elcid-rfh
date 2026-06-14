@@ -2,8 +2,8 @@
 {% load forms %}
 <section class="container">
 
-  <section ng-repeat="study in patient.research_studies">
-    <div class="row">
+  <section ng-repeat="study in patient.research_studies" ng-show="study.user_ids.indexOf(profile.user_id) != -1 || {% if request.user.is_superuser %}true{%else%}false{%endif%}">
+    <div class="row" >
       <div class="col-md-8">
         <h2>
           <a href="/#/research/study/[[study.id]]/" class="orange-link">

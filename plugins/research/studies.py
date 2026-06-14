@@ -30,8 +30,9 @@ def serialise_studies_for_patient(patient):
         study = participation.study
 
         studies.append({
-            'name': study.name,
-            'id'  : study.id
+            'name'    : study.name,
+            'id'      : study.id,
+            'user_ids': [u.id for u in study.users.all()]
         })
 
     return studies
