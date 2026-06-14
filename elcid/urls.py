@@ -33,7 +33,7 @@ urlpatterns = [
         views.ElcidDashboardView.as_view(),
         name='elcid_dashboard'
         ),
-    url('templates/positive_culture_mockup.html/',
+    url(r'^templates/postitive_culture_mockup.html/$',
         views.CultureMockupView.as_view(),
         name='positive_culture_mockup')
 ]
