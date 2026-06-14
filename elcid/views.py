@@ -282,3 +282,25 @@ class ElcidDashboardView(LoginRequiredMixin, TemplateView):
         context['tests'] = labmodels.LabTest.objects.all().count()
 
         return context
+
+
+class CultureMockupView(LoginRequiredMixin, TemplateView):
+    template_name = 'elcid/culture_mockup.html'
+
+    def get_context_data(self, *a, **k):
+        from plugins.labtests import models as labmodels
+
+        context = super(CultureMockupView, self).get_context_data(*a, **k)
+
+        # Specific IDs of lab numbers attached to test patietns with +ve cultures
+        lab_numbers = [
+            '37242489383',
+            '27250487178',
+            '37254760806'
+        ]
+
+        labs = [labmodels.LabTest.objects.get(id=labno) for labno in lab_numbers]
+
+        context['tests'] = labs
+
+        return context

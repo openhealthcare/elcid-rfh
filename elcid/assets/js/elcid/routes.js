@@ -202,7 +202,7 @@ app.config(
              .when('/beta/labtests/', static_template_route('/templates/labtests/test_search.html'))
              .when('/beta/labtests/:test_name/',
                    param_template_route('/templates/labtests/', ['test_name']))
-
+             .when('/beta/positive-cultures/', static_template_route('/templates/postitive_culture_mockup.html/'))
 
              .when('/opat/activity/:year/', param_template_route('opat/activity/', ['year']))
              .when('/opat/patients/:year/', param_template_route('opat/patients/', ['year']))
