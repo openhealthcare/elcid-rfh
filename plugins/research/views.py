@@ -213,8 +213,12 @@ class StudyParticipantListView(AbstractStudyDetailTemplateView):
 
         study = self.study
 
+        removed = study.get_removed_participants()
+
         context['study'] = study
         context['participant_count'] = models.StudyParticipant.objects.filter(study=study).count()
+        context['nonparticipants']     = removed
+        context['has_nonparticipants'] = len(removed) > 0
 
         return context
 

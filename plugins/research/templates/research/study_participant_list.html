@@ -39,6 +39,7 @@
     {% endfor %}
   </table>
 
+  {% if has_nonparticipants %}
   <h2>
     Non-Participants:
   </h2>
@@ -53,7 +54,7 @@
       <th>Added</th>
       <th>Removed</th>
     </tr>
-    {% for participant in study.get_removed_participants %}
+    {% for participant in nonparticipants %}
     <tr>
       <td>{{ participant.patient.demographics.name }}</td>
       <td>{{ participant.patient.demographics.date_of_birth }} </td>
@@ -71,6 +72,8 @@
     </tr>
     {% endfor %}
   </table>
+
+  {% endif %}
 
 
 
