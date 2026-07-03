@@ -113,11 +113,14 @@ angular.module('opal.controllers').controller(
 	    "",
             "The patient has been tested Positive for SARS CoV-2 the virus causing COVID 19 disease",
             "The sample was taken on ______ · Please inform the patient of results and document conversation in the notes.",
-            "Please place the patient in respiratory isolation as per Infection Prevention and Control Guidance. https://freenet2.royalfree.nhs.uk/documents/preview/110933/IPC-update-November-2022",
+            "Please place the patient in respiratory isolation as per Infection Prevention and Control Guidance.",
+            "https://freenet.royalfree.nhs.uk/download_file/5eb47fce-2b53-4b88-b113-8cd2e0f6d5cd/5709",
+            "https://freenet.royalfree.nhs.uk/download_file/d13b9cd7-bb5f-4039-844f-d211205c7890/5709",
             "Use appropriate PPE, FFP3 mask and Decontaminate hands as per above trust IPC guidance.",
-            "Patient contacts: o non-vulnerable groups no longer need to be swabbed unless they develop new symptoms and bay can be opened once Index patient is isolated.",
-            "Vulnerable groups should be isolated and swabbed on alternate days for 7 days from the time index (positive) patient has been isolated. Otherwise, close the bay and continue swabbing the vulnerable contacts only.",
-            "Upon discharge the room is to be terminally cleaned and (with VHP fogged only for long stay patient -discuss with IPC team).",
+            "Patient contacts: Monitor patient contacts for 5 days, asymptomatic swabbing is not required, unless they develop new symptoms, please inform IPCT.",
+            "Bay can be opened once Index patient is isolated and bedspace is terminally cleaned and the curtains changed.",
+            "If a second case is detected in a multi-occupancy bay, the bay is temporarily closed to all admissions pending review by the IPC team.",
+            "Upon discharge the room is to be terminally cleaned.",
             "Contact Infection Prevention & Control Team for further advice."
 	].join("\n")
 
