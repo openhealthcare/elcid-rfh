@@ -300,6 +300,10 @@ class Sideroom2View(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/sideroom2.html'
 
 
+class SideroomSummaryView(LoginRequiredMixin, TemplateView):
+    template_name = 'ipc/sideroom_summary.html'
+
+
 class AlertListView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/alert_list.html'
 

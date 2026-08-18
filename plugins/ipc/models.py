@@ -225,6 +225,36 @@ class SideroomStatus(PreviousMRN, PatientSubrecord):
     RISKS = enum(
         '15', '20', '25', '30', '35', '40', '45', '50'
     )
+    OCCUPANCY = enum(
+        'Candida',
+        'C diff',
+        'CPO',
+        'Diarrhoea (a/w result; a/w sample)',
+        'Diarrhoea (with +ve micro result excluding C diff)',
+        'ESBL',
+        'MDR',
+        'MRSA',
+        'TB',
+        'VRE',
+        'Other (Micro)',
+        'Adenovirus',
+        'Covid',
+        'Enterovirus',
+        'HMPV',
+        'Influenza',
+        'Mpox',
+        'Norovirus/Rotavirus/Sapovirus',
+        'Parainfluenza',
+        'Parechovirus',
+        'Rhino' ,
+        'RSV',
+        'Seasonal Corona',
+        'Other (Viro)',
+        '1:1 behavioral issues',
+        'EOL / palliative',
+        'Transplant',
+        'Clean',
+    )
 
     # A current risk score for this patient to enable prioritisation
     # in a resource-constrained environment
@@ -235,6 +265,11 @@ class SideroomStatus(PreviousMRN, PatientSubrecord):
     problems = models.TextField(blank=True, null=True)
     # notes on current tasks and actions that may be required
     actions = models.TextField(blank=True, null=True)
+    # Used to generate summary stats for bed management
+    occupancy_reason = models.CharField(
+        max_length=225, blank=True, null=True, choices=OCCUPANCY,
+        verbose_name="Reason for occupancy"
+    )
 
 
 class FlagCount(models.Model):

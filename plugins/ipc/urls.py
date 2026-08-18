@@ -61,5 +61,10 @@ urlpatterns = [
         'templates/ipc/siderooms2.html/<hospital_code>/',
         views.Sideroom2View.as_view(),
         name="siderooms2"
+    ),
+    path(
+        'templates/ipc/daily_sideroom_summary/<hospital_code>/',
+        views.SideroomSummaryView.as_view(),
+        name="sideroom_summary"
     )
 ]

@@ -155,7 +155,8 @@ app.config(
                      profile: function(UserProfile){ return UserProfile.load(); },
                  }
              })
-
+             .when('/ipc/sideroom-summary/:hospital_code',
+                 param_template_route('/templates/ipc/daily_sideroom_summary/', ['hospital_code']))
              .when('/ipc/alert/:alert_code/',       param_template_route('/templates/ipc/alert/', ['alert_code']))
              .when('/ipc/portal/', {
                  controller: 'IPCPortalCtrl',

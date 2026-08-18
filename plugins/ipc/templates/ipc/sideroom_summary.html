@@ -1,0 +1,484 @@
+{% extends 'ipc/base.html' %}
+{% block content %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h1>
+      Current sideroom summary: ROYAL FREE HOSPITAL
+    </h1>
+      <span>{% now "SHORT_DATETIME_FORMAT" %}</span>
+
+  </div> <!-- heading -->
+  <div class="panel-body ">
+
+    <div class="row content-offset">
+
+      <div class="col-md-4 col-md-offset-1">
+        <h3>
+          Ward type
+        </h3>
+
+        <table class="table table-striped content-offset">
+          <tr>
+            <th></th>
+            <th>
+              <b>Total</b>
+            </th>
+          <tr>
+            <td>
+              Ward (NHS)
+            </td>
+            <td>
+              116
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Ward (PPU)
+            </td>
+            <td>
+              31
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Pediatrics /SCABU/ Maternity
+            </td>
+            <td>
+              17
+            </td>
+          </tr>
+          <tr>
+            <td>
+              ICU/EPIC
+            </td>
+            <td>
+              19
+            </td>
+          </tr>
+          <tr >
+            <td>
+              <span style="padding-top:20px; display: block"><b>Total</b></span>
+            </td>
+            <td>
+              <span style="padding-top:20px; display: block"><b>183</b></span>
+            </td>
+          </tr>
+        </table>
+      </div> <!-- col -->
+
+      <div class="col-md-4 col-md-offset-2">
+        <h3>Reason for occupancy</h3>
+
+        <table class="table table-striped content-offset">
+          <tr>
+            <th></th>
+            <th>
+              <b>Total</b>
+            </th>
+          <tr>
+            <td>
+              IPC reason
+            </td>
+            <td>
+              65
+            </td>
+          </tr>
+          <tr>
+            <td>
+              1:1 behavioural issues
+            </td>
+            <td>
+              6
+            </td>
+          </tr>
+          <tr>
+            <td>
+              EOL / Palliative
+            </td>
+            <td>
+              2
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Transplant
+            </td>
+            <td>
+              2
+            </td>
+          </tr>
+          <tr >
+            <td>
+              <span style="padding-top:20px; display: block"><b>Total</b></span>
+            </td>
+            <td>
+              <span style="padding-top:20px; display: block"><b>75</b></span>
+            </td>
+          </tr>
+        </table>
+
+      </div> <!-- col -->
+
+
+    </div>   <!-- row -->
+
+    <div class="row content-offset">
+      <div class="col-md-11 col-md-offset-1">
+        <h2>Microbiology</h2>
+        <hr class="col-md-4" />
+
+      </div>
+      <div class="col-md-10 col-md-offset-1 content-offset">
+        <table class="table table-striped">
+          <tr>
+            <th>Organism</th>
+            <th>Male</th>
+            <th>Female</th>
+            <th>Sideroom</th>
+            <th>Open Bay</th>
+            <th>Total</th>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                C diff
+              </b>
+            </td>
+            <td>
+              11</br><br/>
+              <a class="orange-link" href="">11W SR02</a><br/>
+              <a class="orange-link" href="">11W SR 19</a></br/>
+              <a class="orange-link" href="">11S SR 13<br/></a>
+              <a class="orange-link" href="">11E SR 16<br/></a>
+              <a class="orange-link" href="">10S Bed 19<br/></a>
+              <a class="orange-link" href="">10E SR 05<br/></a>
+              <a class="orange-link" href="">9W SR 19<br/></a>
+              <a class="orange-link" href="">8E SR 03<br/></a>
+              <a class="orange-link" href="">8E SR 17<br/></a>
+              <a class="orange-link" href="">7N SR 09<br/></a>
+              <a class="orange-link" href="">7E SR 27<br/></a>
+            </td>
+            <td>
+              4 </br><br/>
+              <a class="orange-link" href="">11W SR 04<br/></a>
+              <a class="orange-link" href="">10E SR 03<br/></a>
+              <a class="orange-link" href="">9N SR 20<br/></a>
+              <a class="orange-link" href="">8E SR 01<br/></a>
+            </td>
+            <td>14</td>
+            <td>1</td>
+            <td>15</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                CPO
+              </b>
+            </td>
+            <td>
+              6 </br><br/>
+              <a class="orange-link" href="">10E SR 02<br/></a>
+              <a class="orange-link" href="">9N SR 19<br/></a>
+              <a class="orange-link" href="">8E SR 16<br/></a>
+              <a class="orange-link" href="">7W SR 20<br/></a>
+              <a class="orange-link" href="">6S SR 13<br/></a>
+              <a class="orange-link" href="">6S SR 14<br/></a>
+            </td>
+            <td>
+              3 </br><br/>
+              <a class="orange-link" href="">10S SR 11<br /></a>
+              <a class="orange-link" href="">8W SR 19<br/></a>
+              <a class="orange-link" href="">8N SR10<br/></a>
+            </td>
+            <td>9</td>
+            <td>0</td>
+            <td>9</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                MRSA
+              </b>
+            </td>
+            <td>
+              7 </br><br/>
+              <a class="orange-link" href="">11W SR 22 <br/></a>
+              <a class="orange-link" href="">10W SR 19<br/></a>
+              <a class="orange-link" href="">10S Bed 20<br/></a>
+              <a class="orange-link" href="">8W SR 10<br/></a>
+              <a class="orange-link" href="">8N Bed 07<br/></a>
+              <a class="orange-link" href="">7N SR 20<br/></a>
+              <a class="orange-link" href="">7E SR 22<br/></a>
+            </td>
+            <td>
+              3 </br><br/>
+              <a class="orange-link" href="">9N Bed 07<br/></a>
+              <a class="orange-link" href="">8W Bed 13<br/></a>
+              <a class="orange-link" href="">8E SR 02<br/></a>
+            </td>
+            <td>6</td>
+            <td>4</td>
+            <td>10</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                Other (Micro)
+              </b>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">11E SR 06</a>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">8N SR 09</a>
+            </td>
+            <td>1</td>
+            <td>1</td>
+            <td>2</td>
+          </tr>
+
+          <tr>
+            <td>
+              <span style="padding-top:20px; display: block">
+                <b>
+                  Total
+                </b>
+              </span>
+            </td>
+            <td></td>
+            <td></td>
+            <td>   <span style="padding-top:20px; display: block"><b>30</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>6</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>36</b></span></td>
+          </tr>
+
+
+        </table>
+      </div>
+    </div>
+
+
+
+    <div class="row content-offset">
+      <div class="col-md-11 col-md-offset-1">
+        <h2>Virology</h2>
+        <hr class="col-md-4" />
+
+      </div>
+      <div class="col-md-10 col-md-offset-1 content-offset">
+        <table class="table table-striped">
+          <tr>
+            <th>Organism</th>
+            <th>Male</th>
+            <th>Female</th>
+            <th>Sideroom</th>
+            <th>Open Bay</th>
+            <th>Total</th>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                Covid
+              </b>
+            </td>
+            <td>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">11S SR 02<br/></a>
+            </td>
+            <td>1</td>
+            <td>0</td>
+            <td>1</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                Norovirus/Rotavirus/Sapovirus
+              </b>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">10E SR04<br/></a>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">10N SR20<br/></a>
+            </td>
+            <td>2</td>
+            <td>0</td>
+            <td>2</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                Rhino
+              </b>
+            </td>
+            <td>
+              5 </br><br/>
+              <a class="orange-link" href="">11W SR 03 <br/></a>
+              <a class="orange-link" href="">10N SR 10<br/></a>
+              <a class="orange-link" href="">10N SR 19<br/></a>
+              <a class="orange-link" href="">10S SR 12<br/></a>
+              <a class="orange-link" href="">8N SR 19<br/></a>
+            </td>
+            <td>
+              2 </br><br/>
+              <a class="orange-link" href="">10W SR 10<br/></a>
+              <a class="orange-link" href="">9W Bed 22<br/></a>
+            </td>
+            <td>6</td>
+            <td>1</td>
+            <td>7</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                Other (Viro)
+              </b>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">7E SR 24</a>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">10S SR 09</a>
+            </td>
+            <td>1</td>
+            <td>1</td>
+            <td>2</td>
+          </tr>
+
+          <tr>
+            <td>
+              <span style="padding-top:20px; display: block">
+                <b>
+                  Total
+                </b>
+              </span>
+            </td>
+            <td></td>
+            <td></td>
+            <td>   <span style="padding-top:20px; display: block"><b>10</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>2</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>12</b></span></td>
+          </tr>
+
+
+        </table>
+      </div> <!-- Col -->
+    </div> <!-- Row -->
+
+
+    <div class="row content-offset">
+      <div class="col-md-11 col-md-offset-1">
+        <h2>Non IPC Isoloation</h2>
+        <hr class="col-md-4" />
+
+      </div>
+      <div class="col-md-10 col-md-offset-1 content-offset">
+        <table class="table table-striped">
+          <tr>
+            <th>Reason</th>
+            <th>Male</th>
+            <th>Female</th>
+            <th>Sideroom</th>
+            <th>Open Bay</th>
+            <th>Total</th>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                1:1 behavioural issues
+              </b>
+            </td>
+
+            <td>
+              5 </br><br/>
+              <a class="orange-link" href="">10N SR 09<br/></a>
+              <a class="orange-link" href="">8E SR 04<br/></a>
+              <a class="orange-link" href="">8E SR 05<br/></a>
+              <a class="orange-link" href="">7W SR 10<br/></a>
+              <a class="orange-link" href="">7E SR 23<br/></a>
+            </td>
+            <td>
+              1 </br><br/>
+              <a class="orange-link" href="">11S SR 12<br/></a>
+            </td>
+            <td>6</td>
+            <td>0</td>
+            <td>6</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                EOL / palliative
+              </b>
+            </td>
+            <td>
+            </td>
+            <td>
+              2 </br><br/>
+              <a class="orange-link" href="">11E SR15<br/></a>
+              <a class="orange-link" href="">AAU SR02<br/></a>
+            </td>
+            <td>2</td>
+            <td>0</td>
+            <td>2</td>
+          </tr>
+
+          <tr>
+            <td>
+              <b>
+                Transplant
+              </b>
+            </td>
+            <td>
+              2 </br><br/>
+              <a class="orange-link" href="">10E SR 06<br/></a>
+              <a class="orange-link" href="">10E SR 16<br/></a>
+            </td>
+            <td>
+            </td>
+            <td>2</td>
+            <td>0</td>
+            <td>2</td>
+          </tr>
+
+          <tr>
+            <td>
+              <span style="padding-top:20px; display: block">
+                <b>
+                  Total
+                </b>
+              </span>
+            </td>
+            <td></td>
+            <td></td>
+            <td>   <span style="padding-top:20px; display: block"><b>10</b></span></td>
+            <td></td>
+            <td>   <span style="padding-top:20px; display: block"><b>10</b></span></td>
+          </tr>
+
+        </table>
+      </div> <!-- Col -->
+    </div> <!-- Row -->
+
+
+  </div>
+</div>
+{% endblock %}
