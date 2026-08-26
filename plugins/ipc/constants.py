@@ -116,6 +116,7 @@ HOSPITAL_NAMES = {
 
 WARD_CATEGORIES = {
     'RF-11 WEST' : 'Ward (NHS)',
+    'RF-11 SOUTH' : 'Ward (NHS)',
     'RF-11 EAST' : 'Ward (NHS)',
     'RF-10 WEST' : 'Ward (NHS)',
     'RF-10 SOUTH A' : 'Ward (NHS)',
