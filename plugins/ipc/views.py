@@ -379,7 +379,7 @@ class SideroomSummaryView(SideRoomView):
         for reason in models.SideroomStatus.VIRO_RESP_REASONS:
             bucket_lookup[reason] = viro_resp_patients
         for reason in models.SideroomStatus.NON_IPC_REASONS:
-            bucket_lookup[reason] = non_ipc_reasons
+            bucket_lookup[reason] = non_ipc_patients
 
         for ward_name, beds in wards.items():
             for bed in beds:
