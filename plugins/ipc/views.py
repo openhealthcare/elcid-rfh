@@ -402,7 +402,12 @@ class SideroomSummaryView(SideRoomView):
 
         micro_patients.default_factory = None
 
+        context['micro_sideroom_total'] = sum(b.sideroom for b in micro_patients.values())
+        context['micro_open_total']     = sum(b.open_bay for b in micro_patients.values())
+        context['micro_total'] = context['micro_sideroom_total'] + context['micro_open_total']
+
         context['micro_patients'] = micro_patients
+
         return context
 
 class AlertListView(LoginRequiredMixin, TemplateView):
