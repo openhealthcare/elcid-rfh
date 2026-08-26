@@ -312,13 +312,13 @@
             <td>
               {{ details.male_count }}<br /><br />
               {% for link, display in details.male_patient_details %}
-              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              <a class="orange-link" href="{{ link }}">{{ display }}</a><br/>
               {% endfor %}
             </td>
             <td>
               {{ details.female_count }}<br /><br />
               {% for link, display in details.female_patient_details %}
-              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              <a class="orange-link" href="{{ link }}">{{ display }}</a><br/>
               {% endfor %}
             </td>
             <td>{{ details.sideroom }}</td>
