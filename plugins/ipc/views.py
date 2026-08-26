@@ -246,7 +246,10 @@ class SideRoomView(LoginRequiredMixin, TemplateView):
         ).exclude(ward_name='RF-Test').order_by('ward_name', 'bed')
 
         # Do this here in case we filter everything out later
-        context['hospital_name'] = statuses[0].hospital_site_description
+        try:
+            context['hospital_name'] = statuses[0].hospital_site_description
+        except IndexError: # Either a dev server or an empty table most likely
+            context['hospital_name'] = ''
 
         for status in statuses:
             if not any([status.room.startswith('SR'), status.bed.startswith('SR')]):
@@ -334,7 +337,7 @@ class SideroomSummaryView(SideRoomView):
                 bed to our bucket.
                 """
                 patient = bed.patient
-                self.patient_link = '/#/patient/'+ patient_id
+                patient_link = '/#/patient/'+ patient_id
 
                 self.patients.append(patient)
 
@@ -398,6 +401,7 @@ class SideroomSummaryView(SideRoomView):
                 bucket[sideroom_status.occupancy_reason].add(bed, status)
 
 
+        micro_patients.default_factory = None
 
         context['micro_patients'] = micro_patients
         return context
