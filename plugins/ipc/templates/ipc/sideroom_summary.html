@@ -80,39 +80,25 @@
               IPC reason
             </td>
             <td>
-              65
+              {{ total_ipc_reasons }}
             </td>
           </tr>
+          {% for reason, detail in non_ipc_patients %}
           <tr>
             <td>
-              1:1 behavioural issues
+              {{ reason }
             </td>
             <td>
-              6
+              {{ detail.total }}
             </td>
           </tr>
-          <tr>
-            <td>
-              EOL / Palliative
-            </td>
-            <td>
-              2
-            </td>
-          </tr>
-          <tr>
-            <td>
-              Transplant
-            </td>
-            <td>
-              2
-            </td>
-          </tr>
+          {% endfor %}
           <tr >
             <td>
               <span style="padding-top:20px; display: block"><b>Total</b></span>
             </td>
             <td>
-              <span style="padding-top:20px; display: block"><b>75</b></span>
+              <span style="padding-top:20px; display: block"><b>{{ total_patients }}</b></span>
             </td>
           </tr>
         </table>
