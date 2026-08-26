@@ -23,44 +23,23 @@
             <th>
               <b>Total</b>
             </th>
+            {% for label, count in ward_group_categories.items %}
           <tr>
             <td>
-              Ward (NHS)
+              {{ label }}
             </td>
             <td>
-              116
+              {{ count }}
             </td>
           </tr>
-          <tr>
-            <td>
-              Ward (PPU)
-            </td>
-            <td>
-              31
-            </td>
-          </tr>
-          <tr>
-            <td>
-              Pediatrics /SCABU/ Maternity
-            </td>
-            <td>
-              17
-            </td>
-          </tr>
-          <tr>
-            <td>
-              ICU/EPIC
-            </td>
-            <td>
-              19
-            </td>
-          </tr>
+
+            {% endfor %}
           <tr >
             <td>
               <span style="padding-top:20px; display: block"><b>Total</b></span>
             </td>
             <td>
-              <span style="padding-top:20px; display: block"><b>183</b></span>
+              <span style="padding-top:20px; display: block"><b>{{ ward_group_total }}</b></span>
             </td>
           </tr>
         </table>

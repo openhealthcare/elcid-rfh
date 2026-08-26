@@ -384,6 +384,9 @@ class SideroomSummaryView(SideRoomView):
         for reason in models.SideroomStatus.NON_IPC_REASONS:
             bucket_lookup[reason] = non_ipc_patients
 
+        # Sideroom totals grouped by ward type
+        ward_group_totals = collections.defaultdict(int)
+
         for ward_name, beds in wards.items():
             for bed in beds:
 
@@ -391,6 +394,7 @@ class SideroomSummaryView(SideRoomView):
                 if not bed.patient:
                     continue
 
+                ward_group_totals[constants.WARD_CATEGORIES[bed.ward_name]] += 1
                 sideroom_status = bed.patient.sideroomstatus_set.get()
                 # Unrecorded so skip it
                 if not sideroom_status.occupancy_reason:
@@ -436,6 +440,10 @@ class SideroomSummaryView(SideRoomView):
         context['total_ipc_reasons'] = context['micro_total'] + context['viro_resp_total'] + context['viro_total']
 
         context['total_patients'] = context['total_ipc_reasons'] + context['non_ipc_total']
+
+        ward_group_totals.default_factory = None
+        context['ward_group_categories'] = ward_group_totals
+        context['ward_group_total'] = sum(ward_group_totals.values())
 
         return context
 

@@ -113,3 +113,35 @@ HOSPITAL_NAMES = {
     'RAL26': 'BARNET HOSPITAL',
     'RALC7': 'CHASE FARM HOSPITAL',
 }
+
+WARD_CATEGORIES = {
+    'RF-11 WEST' : 'Ward (NHS)',
+    'RF-11 EAST' : 'Ward (NHS)',
+    'RF-10 WEST' : 'Ward (NHS)',
+    'RF-10 SOUTH A' : 'Ward (NHS)',
+    'RF-10 NORTH' : 'Ward (NHS)',
+    'RF-10 EAST' : 'Ward (NHS)',
+    'RF-9 WEST' : 'Ward (NHS)',
+    'RF-9 NORTH' : 'Ward (NHS)',
+    'RF-8 WEST' : 'Ward (NHS)',
+    'RF-8 NORTH' : 'Ward (NHS)',
+    'RF-8 EAST' : 'Ward (NHS)',
+    'RF-7 WEST' : 'Ward (NHS)',
+    'RF-7 NORTH' : 'Ward (NHS)',
+    'RF-7 EAST' : 'Ward (NHS)',
+    'RF-7 SOUTH' : 'Ward (NHS)',
+    'RF-6 SOUTH' : 'Ward (NHS)',
+    'RF-AAU' : 'Ward (NHS)',
+
+    'RF-12 SOUTH': 'Ward (PPU)',
+    'RF-12 WEST': 'Ward (PPU)',
+
+    'RF-6 NORTH' : 'Pediatrics / SCABU/ Maternity',
+    'RF-6 WEST B' : 'Pediatrics / SCABU/ Maternity',
+    'RF-5 SOUTH' : 'Pediatrics / SCABU/ Maternity',
+
+    'RF-ICU 4 WEST': 'ICU / EPIC',
+    'RF-ICU 4 SOUTH': 'ICU / EPIC',
+    'RF-ICU 4 EAST': 'ICU / EPIC',
+    'RF-EPIC': 'ICU / EPIC'
+}
