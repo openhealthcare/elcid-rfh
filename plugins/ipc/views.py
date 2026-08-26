@@ -383,9 +383,16 @@ class SideroomSummaryView(SideRoomView):
 
         for ward_name, beds in wards.items():
             for bed in beds:
+
+                # Empty
+                if not bed.patient:
+                    continue
+
                 sideroom_status = bed.patient.sideroomstatus_set.get()
+                # Unrecorded so skip it
                 if not sideroom_status.occupancy_reason:
                     continue
+
                 bucket = bucket_lookup[sideroom_status.occupancy_reason]
 
                 bucket[sideroom_status.occupancy_reason].add(bed, status)
