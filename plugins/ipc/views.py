@@ -359,7 +359,7 @@ class SideroomSummaryView(SideRoomView):
                         )
                     )
 
-                if status.getatr('is_open_bay', False):
+                if status.getattr('is_open_bay', False):
                     self.open_bay += 1
 
                 if any([status.room.startswith('SR'), status.bed.startswith('SR')]):
