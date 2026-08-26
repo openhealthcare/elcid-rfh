@@ -426,7 +426,7 @@ class SideroomSummaryView(SideRoomView):
         viro_resp_patients.default_factory = None
         context['viro_resp_total'] = sum(b.sideroom for b in viro_resp_patients.values())
         context['viro_resp_open_total']     = sum(b.open_bay for b in viro_resp_patients.values())
-        context['viro_resp_total'] = context['viro_resp_total'] + context['viro_resp_total']
+        context['viro_resp_total'] = context['viro_resp_total'] + context['viro_resp_open_total']
 
         context['viro_resp_patients'] = viro_resp_patients
 
@@ -434,7 +434,7 @@ class SideroomSummaryView(SideRoomView):
         viro_patients.default_factory = None
         context['viro_total'] = sum(b.sideroom for b in viro_patients.values())
         context['viro_open_total']     = sum(b.open_bay for b in viro_patients.values())
-        context['viro_total'] = context['viro_total'] + context['viro_total']
+        context['viro_total'] = context['viro_total'] + context['viro_open_total']
 
         context['viro_patients'] = viro_patients
 
@@ -442,7 +442,7 @@ class SideroomSummaryView(SideRoomView):
         non_ipc_patients.default_factory = None
         context['non_ipc_total'] = sum(b.sideroom for b in non_ipc_patients.values())
         context['non_ipc_open_total']     = sum(b.open_bay for b in non_ipc_patients.values())
-        context['non_ipc_total'] = context['non_ipc_total'] + context['non_ipc_total']
+        context['non_ipc_total'] = context['non_ipc_total'] + context['non_ipc_open_total']
 
         context['non_ipc_patients'] = non_ipc_patients
 
