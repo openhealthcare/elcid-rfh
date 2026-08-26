@@ -83,7 +83,7 @@
               {{ total_ipc_reasons }}
             </td>
           </tr>
-          {% for reason, detail in non_ipc_patients %}
+          {% for reason, detail in non_ipc_patients.items %}
           <tr>
             <td>
               {{ reason }
