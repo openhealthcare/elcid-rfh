@@ -394,7 +394,11 @@ class SideroomSummaryView(SideRoomView):
                 if not bed.patient:
                     continue
 
-                ward_group_totals[constants.WARD_CATEGORIES[bed.ward_name]] += 1
+                ignore = [
+                    'RF-5 EAST A'
+                ]
+                if bed.ward_name not in ignore:
+                    ward_group_totals[constants.WARD_CATEGORIES[bed.ward_name]] += 1
                 sideroom_status = bed.patient.sideroomstatus_set.get()
                 # Unrecorded so skip it
                 if not sideroom_status.occupancy_reason:
@@ -446,6 +450,7 @@ class SideroomSummaryView(SideRoomView):
         context['ward_group_total'] = sum(ward_group_totals.values())
 
         return context
+
 
 class AlertListView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/alert_list.html'
