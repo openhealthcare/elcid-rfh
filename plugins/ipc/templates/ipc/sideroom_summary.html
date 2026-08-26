@@ -189,6 +189,72 @@
 
     <div class="row content-offset">
       <div class="col-md-11 col-md-offset-1">
+        <h2>High Risk Respiratory Virology</h2>
+        <hr class="col-md-4" />
+
+      </div>
+      <div class="col-md-10 col-md-offset-1 content-offset">
+        <table class="table table-striped">
+          <tr>
+            <th>Organism</th>
+            <th>Male</th>
+            <th>Female</th>
+            <th>Sideroom</th>
+            <th>Open Bay</th>
+            <th>Total</th>
+          </tr>
+
+
+          {% for reason, details in viro_resp_patients.items %}
+          <tr>
+            <td>
+              <b>
+                {{ reason }}
+              </b>
+            </td>
+            <td>
+              {{ details.male_count }}<br /><br />
+              {% for link, display in details.male_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              {% endfor %}
+            </td>
+            <td>
+              {{ details.female_count }}<br /><br />
+              {% for link, display in details.female_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              {% endfor %}
+            </td>
+            <td>{{ details.sideroom }}</td>
+            <td>{{ details.open_bay }}</td>
+            <td>{{ details.total }}</td>
+          </tr>
+          {% endfor %}
+
+          <tr>
+            <td>
+              <span style="padding-top:20px; display: block">
+                <b>
+                  Total
+                </b>
+              </span>
+            </td>
+            <td></td>
+            <td></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ viro_resp_sideroom_total }}</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ viro_resp_open_total }}</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ viro_resp_total }}</b></span></td>
+          </tr>
+
+
+        </table>
+      </div>
+    </div>
+
+
+
+
+    <div class="row content-offset">
+      <div class="col-md-11 col-md-offset-1">
         <h2>Virology</h2>
         <hr class="col-md-4" />
 
@@ -204,84 +270,31 @@
             <th>Total</th>
           </tr>
 
-          <tr>
-            <td>
-              <b>
-                Covid
-              </b>
-            </td>
-            <td>
-            </td>
-            <td>
-              1 </br><br/>
-              <a class="orange-link" href="">11S SR 02<br/></a>
-            </td>
-            <td>1</td>
-            <td>0</td>
-            <td>1</td>
-          </tr>
 
+          {% for reason, details in viro_patients.items %}
           <tr>
             <td>
               <b>
-                Norovirus/Rotavirus/Sapovirus
+                {{ reason }}
               </b>
             </td>
             <td>
-              1 </br><br/>
-              <a class="orange-link" href="">10E SR04<br/></a>
+              {{ details.male_count }}<br /><br />
+              {% for link, display in details.male_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              {% endfor %}
             </td>
             <td>
-              1 </br><br/>
-              <a class="orange-link" href="">10N SR20<br/></a>
+              {{ details.female_count }}<br /><br />
+              {% for link, display in details.female_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              {% endfor %}
             </td>
-            <td>2</td>
-            <td>0</td>
-            <td>2</td>
+            <td>{{ details.sideroom }}</td>
+            <td>{{ details.open_bay }}</td>
+            <td>{{ details.total }}</td>
           </tr>
-
-          <tr>
-            <td>
-              <b>
-                Rhino
-              </b>
-            </td>
-            <td>
-              5 </br><br/>
-              <a class="orange-link" href="">11W SR 03 <br/></a>
-              <a class="orange-link" href="">10N SR 10<br/></a>
-              <a class="orange-link" href="">10N SR 19<br/></a>
-              <a class="orange-link" href="">10S SR 12<br/></a>
-              <a class="orange-link" href="">8N SR 19<br/></a>
-            </td>
-            <td>
-              2 </br><br/>
-              <a class="orange-link" href="">10W SR 10<br/></a>
-              <a class="orange-link" href="">9W Bed 22<br/></a>
-            </td>
-            <td>6</td>
-            <td>1</td>
-            <td>7</td>
-          </tr>
-
-          <tr>
-            <td>
-              <b>
-                Other (Viro)
-              </b>
-            </td>
-            <td>
-              1 </br><br/>
-              <a class="orange-link" href="">7E SR 24</a>
-            </td>
-            <td>
-              1 </br><br/>
-              <a class="orange-link" href="">10S SR 09</a>
-            </td>
-            <td>1</td>
-            <td>1</td>
-            <td>2</td>
-          </tr>
+          {% endfor %}
 
           <tr>
             <td>
@@ -293,27 +306,29 @@
             </td>
             <td></td>
             <td></td>
-            <td>   <span style="padding-top:20px; display: block"><b>10</b></span></td>
-            <td>   <span style="padding-top:20px; display: block"><b>2</b></span></td>
-            <td>   <span style="padding-top:20px; display: block"><b>12</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ viro_sideroom_total }}</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ viro_open_total }}</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ viro_total }}</b></span></td>
           </tr>
 
 
         </table>
-      </div> <!-- Col -->
-    </div> <!-- Row -->
+      </div>
+    </div>
+
+
 
 
     <div class="row content-offset">
       <div class="col-md-11 col-md-offset-1">
-        <h2>Non IPC Isoloation</h2>
+        <h2>Non_IPC Reasons</h2>
         <hr class="col-md-4" />
 
       </div>
       <div class="col-md-10 col-md-offset-1 content-offset">
         <table class="table table-striped">
           <tr>
-            <th>Reason</th>
+            <th>Organism</th>
             <th>Male</th>
             <th>Female</th>
             <th>Sideroom</th>
@@ -321,65 +336,31 @@
             <th>Total</th>
           </tr>
 
+
+          {% for reason, details in non_ipc_patients.items %}
           <tr>
             <td>
               <b>
-                1:1 behavioural issues
-              </b>
-            </td>
-
-            <td>
-              5 </br><br/>
-              <a class="orange-link" href="">10N SR 09<br/></a>
-              <a class="orange-link" href="">8E SR 04<br/></a>
-              <a class="orange-link" href="">8E SR 05<br/></a>
-              <a class="orange-link" href="">7W SR 10<br/></a>
-              <a class="orange-link" href="">7E SR 23<br/></a>
-            </td>
-            <td>
-              1 </br><br/>
-              <a class="orange-link" href="">11S SR 12<br/></a>
-            </td>
-            <td>6</td>
-            <td>0</td>
-            <td>6</td>
-          </tr>
-
-          <tr>
-            <td>
-              <b>
-                EOL / palliative
+                {{ reason }}
               </b>
             </td>
             <td>
+              {{ details.male_count }}<br /><br />
+              {% for link, display in details.male_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              {% endfor %}
             </td>
             <td>
-              2 </br><br/>
-              <a class="orange-link" href="">11E SR15<br/></a>
-              <a class="orange-link" href="">AAU SR02<br/></a>
+              {{ details.female_count }}<br /><br />
+              {% for link, display in details.female_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ link }}">{{ display }}</a><br/>
+              {% endfor %}
             </td>
-            <td>2</td>
-            <td>0</td>
-            <td>2</td>
+            <td>{{ details.sideroom }}</td>
+            <td>{{ details.open_bay }}</td>
+            <td>{{ details.total }}</td>
           </tr>
-
-          <tr>
-            <td>
-              <b>
-                Transplant
-              </b>
-            </td>
-            <td>
-              2 </br><br/>
-              <a class="orange-link" href="">10E SR 06<br/></a>
-              <a class="orange-link" href="">10E SR 16<br/></a>
-            </td>
-            <td>
-            </td>
-            <td>2</td>
-            <td>0</td>
-            <td>2</td>
-          </tr>
+          {% endfor %}
 
           <tr>
             <td>
@@ -391,14 +372,18 @@
             </td>
             <td></td>
             <td></td>
-            <td>   <span style="padding-top:20px; display: block"><b>10</b></span></td>
-            <td></td>
-            <td>   <span style="padding-top:20px; display: block"><b>10</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ non_ipc_sideroom_total }}</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ non_ipc_open_total }}</b></span></td>
+            <td>   <span style="padding-top:20px; display: block"><b>{{ non_ipc_total }}</b></span></td>
           </tr>
 
+
         </table>
-      </div> <!-- Col -->
-    </div> <!-- Row -->
+      </div>
+    </div>
+
+
+
 
 
   </div>
