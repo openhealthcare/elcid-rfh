@@ -347,7 +347,7 @@ class SideroomSummaryView(SideRoomView):
                     self.male_patient_details.append(
                         (
                             patient_link,
-                            f"{bed.to_location_str()} {status.occupancy_details}"
+                            f"{bed.ward_name} {bed.room} {bed.bed} {status.occupancy_details}"
                         )
                     )
                 if demographics.sex == 'Female':
