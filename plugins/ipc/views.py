@@ -362,7 +362,7 @@ class SideroomSummaryView(SideRoomView):
                 if getattr(status, 'is_open_bay', False):
                     self.open_bay += 1
 
-                if any([status.room.startswith('SR'), status.bed.startswith('SR')]):
+                if any([bed.room.startswith('SR'), bed.bed.startswith('SR')]):
                     self.sideroom += 1
 
 
