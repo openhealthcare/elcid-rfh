@@ -398,7 +398,7 @@ class SideroomSummaryView(SideRoomView):
 
                 bucket = bucket_lookup[sideroom_status.occupancy_reason]
 
-                bucket[sideroom_status.occupancy_reason].add(bed, status)
+                bucket[sideroom_status.occupancy_reason].add(bed, sideroom_status)
 
 
         micro_patients.default_factory = None
