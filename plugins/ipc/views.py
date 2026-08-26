@@ -300,9 +300,13 @@ class Sideroom2View(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/sideroom2.html'
 
 
-class SideroomSummaryView(LoginRequiredMixin, TemplateView):
+class SideroomSummaryView(SideRoomView):
     template_name = 'ipc/sideroom_summary.html'
 
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+
+        return context
 
 class AlertListView(LoginRequiredMixin, TemplateView):
     template_name = 'ipc/alert_list.html'

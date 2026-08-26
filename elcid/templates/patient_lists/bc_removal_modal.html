@@ -1,0 +1,113 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block icon_name %}fa fa-bin{% endblock %}
+{% block title %}Remove [[ name ]] {% endblock %}
+{% block modal_body %}
+
+<div class="row" ng-hide="state!=states.INITIAL">
+  <div class="col-md-8 col-md-offset-2" >
+    <p class="lead content-offset">
+      <span class="bold">Validating Blood Culture data for [[ name ]] please wait...</span>
+    </p>
+  </div>
+</div>
+
+
+<div class="row" ng-hide="state!=states.CONFIRM">
+  <div class="col-md-8 col-md-offset-2" ng-hide="hide-actions">
+    <p class="lead content-offset">
+      <span class="bold">Do you want to remove [[ name ]] from the list ?</span>
+    </p>
+    <div class="row text-center">
+      <button class="btn btn-primary btn-save text-center" ng-click="remove()">
+        <i class="fa fa-sign-out"></i> Remove
+      </button>
+    </div>
+  </div>
+  <div class="col-md-8 col-md-offset-2" ng-show="hide-actions">
+    <p class="lead content-offset">
+      <span>No validation issues with blood culture data for this patient</span>
+    </p>
+  </div>
+</div>
+
+
+<div class="row" ng-hide="state!=states.INVALID">
+  <div class="col-md-8 col-md-offset-2" >
+    <p class="lead content-offset">
+      <span class="bold">Not enough clinical data entered to remove [[ name ]]</span>
+    </p>
+    <p class="lead content-offset" ng-repeat="error in errors">[[error]]</p>
+    <p ng-hide="hide_actions">
+      <a href="" ng-click="go_to_patient()" class="btn btn-secondary">
+        <i class="fa fa-pencil"></i>
+        Edit Patient
+      </a>
+    </p>
+    <section class="content-offset" ng-hide="hide_actions">
+      <button class="btn btn-cancel text-center" ng-click="override()">
+        <i class="fa fa-sign-out"></i>
+        Remove Anyway
+      </button>
+    </section>
+  </div>
+</div>
+
+
+<div class="row" ng-hide="state!=states.OVERRIDE">
+  <div class="col-md-8 col-md-offset-2" >
+    <p class="lead content-offset">
+      Do you want to remove [[ name ]] from the list
+      <span class="bold">
+        without entering complete clinical data?
+      </span>
+    </p>
+
+    <p>
+      <a href="" ng-click="go_to_patient()" class="btn btn-secondary">
+        <i class="fa fa-pencil"></i>
+        Edit Patient
+      </a>
+    </p>
+
+
+    <div class="row">
+      <div class="col-md-8">
+        <p>
+          <form class="form form-horizontal ">
+            <textarea
+              ng-model="override_reason"
+              class="form-control"
+              rows=4
+              />
+          </form>
+        </p>
+      </div> <!-- col md-8 -->
+      <div class="col-md-8">
+        <p>
+          Please record the reason for removing the patient from the list without
+          entering complete clinical data - for instance because they were added
+          in error.
+        <p>
+        <p>
+          This reason is recorded alongside the user removing the patient.
+        </p>
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col-md-8">
+        <button class="btn btn-primary btn-save text-center" ng-click="remove_anyway()">
+          <i class="fa fa-sign-out"></i> Remove anyway
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+{% block modal_save %}{% endblock %}

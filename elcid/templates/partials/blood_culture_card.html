@@ -1,0 +1,17 @@
+{% extends 'partials/card_with_results.html' %}
+{% load forms %}
+
+
+{% block remove_button %}
+
+{% if not request.user.profile.readonly %}
+</a>
+<button class="btn btn-primary"
+        ng-click="open_modal('BCRemovalValidationCtrl', 'templates/patient_lists/bc_removal_modal.html', {episode: row, remove_callback:removeFromList, hide_actions:false})"
+        >
+  {% icon 'fa-sign-out' %} Remove
+</button>
+      <a class="panel-link" href="[[ '/#/patient/' + row.demographics[0].patient_id + '/' + row.id ]]">
+{% endif %}
+
+{% endblock %}

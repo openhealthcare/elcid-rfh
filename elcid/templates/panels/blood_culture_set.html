@@ -5,7 +5,8 @@
       {% if models.BloodCultureSet.get_icon %}
         <i class="{{ models.BloodCultureSet.get_icon }}"></i>
       {% endif %}
-      {{ models.BloodCultureSet.get_display_name }}
+        {{ models.BloodCultureSet.get_display_name }}
+
       {% if not request.user.profile.readonly %}
         <i
            class="fa fa-plus-circle edit pull-right pointer"
@@ -47,5 +48,11 @@
       {% endif %}
     </li>
   </ul>
+  <div class="panel-footer">
+            <button class="btn btn-cancel" ng-click="open_modal('BCRemovalValidationCtrl', 'templates/patient_lists/bc_removal_modal.html', {episode: episode, remove_callback:null, hide_actions:true})">
+          Validate
+        </button>
+
+  </div>
 </div>
 {% endwith %}

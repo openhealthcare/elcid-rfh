@@ -224,7 +224,7 @@ class Bacteraemia(RfhPatientList, TaggedPatientList):
     display_name = 'Bacteraemia'
     direct_add = True
     tag = "bacteraemia"
-    template_name = 'episode_list.html'
+    template_name = 'patient_lists/bacteraemia_list.html'
     schema = []
     order = -10
 

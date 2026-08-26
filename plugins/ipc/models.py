@@ -270,6 +270,8 @@ class SideroomStatus(PreviousMRN, PatientSubrecord):
         max_length=225, blank=True, null=True, choices=OCCUPANCY,
         verbose_name="Reason for occupancy"
     )
+    # Further details to record complex infections
+    occupancy_details = models.TextField(blank=True, null=True)
 
 
 class FlagCount(models.Model):

@@ -64,6 +64,7 @@ class Application(application.OpalApplication):
         'js/elcid/controllers/elcid_post_login_controller.js',
 
         'js/elcid/services/blood_culture_isolate.js',
+        'js/elcid/controllers/blood_culture_removal_validation.js',
         'js/elcid/services/clinical_advice.js',
         'js/elcid/services/blood_culture_loader.js',
         'js/elcid/services/lab_test_results.js',

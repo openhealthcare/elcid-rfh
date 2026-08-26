@@ -22,7 +22,7 @@
     <div class="panel-heading">
       <h2>
         <i class="fa fa-user-md"></i>
-        {{ patient_list.display_name }}
+        {{ patient_list.display_name }} {% block heading_extra %}{% endblock %}
             <span class="pull-right">
               <div class="btn-group pull-right left-offset-10">
                 <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
@@ -59,7 +59,9 @@
           </div>
         </form>
       </div>
+      {% block episode_card %}
       {% include 'partials/card_with_results.html' %}
+      {% endblock %}
       <div class="empty-list" ng-hide="num_episodes > 0">
         <p class="lead text-center">
           There are no patients on this list.

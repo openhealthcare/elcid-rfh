@@ -21,6 +21,7 @@ from plugins.labtests import models as lab_test_models
 from plugins.labtests import constants as lab_constants
 
 from elcid import models as emodels
+from elcid import blood_cultures
 from plugins.tb import models as tb_models
 
 
@@ -639,6 +640,22 @@ class BloodCultureIsolateApi(SubrecordViewSet):
         return super().destroy(request, item.id)
 
 
+class BloodCultureValidationViewSet(LoginRequiredViewset):
+    basename = 'blood_culture_validation'
+
+    @patient_from_pk
+    def retrieve(self, request, patient):
+
+        valid, errors = blood_cultures.validate(patient)
+
+        return json_response(
+            {
+                'valid':  valid,
+                'errors': errors
+            }
+        )
+
+
 class AddToServiceViewSet(LoginRequiredViewset):
     basename = 'add_to_service'
 
@@ -672,12 +689,14 @@ class SendPatientConsultationUpstream(AbstractSendUpstreamViewSet):
     model = tb_models.PatientConsultation
 
 
+
 elcid_router = OPALRouter()
 elcid_router.register(
     UpstreamBloodCultureApi.basename, UpstreamBloodCultureApi
 )
 elcid_router.register(DemographicsSearch.basename, DemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.basename, BloodCultureIsolateApi)
+elcid_router.register(BloodCultureValidationViewSet.basename, BloodCultureValidationViewSet)
 
 lab_test_router = OPALRouter()
 lab_test_router.register(
