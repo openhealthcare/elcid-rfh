@@ -433,10 +433,7 @@ class SideroomSummaryView(SideRoomView):
 
         context['non_ipc_patients'] = non_ipc_patients
 
-        context['total_ipc_reasons'] = sum(
-            context['micro_total'],
-            context['viro_resp_total'],
-            context['viro_total']
+        context['total_ipc_reasons'] = context['micro_total'] + context['viro_resp_total'] + context['viro_total']
         )
         context['total_patients'] = context['total_ipc_reasons'] + context['non_ipc_total']
 
