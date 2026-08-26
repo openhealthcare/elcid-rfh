@@ -353,6 +353,7 @@ class SideroomSummaryView(SideRoomView):
                     )
                 if demographics.sex == 'Female':
                     self.female_count += 1
+                    occupancy_details = getattr(status, 'occupancy_details', '')
                     self.female_patient_details.append(
                         (
                             patient_link,
