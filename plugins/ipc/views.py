@@ -337,7 +337,7 @@ class SideroomSummaryView(SideRoomView):
                 bed to our bucket.
                 """
                 patient = bed.patient
-                patient_link = '/#/patient/'+ patient.id
+                patient_link = f"/#/patient/{patient.id}"
 
                 self.patients.append(patient)
 
