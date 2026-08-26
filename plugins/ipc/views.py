@@ -403,6 +403,7 @@ class SideroomSummaryView(SideRoomView):
                     'RF-MORT',
                     'RF-12 NORTH DIA',
                     'RF-5 NORTH B',
+                    'RF-Main Thea Ward',
                 ]
                 if bed.ward_name not in ignore:
                     ward_group_totals[constants.WARD_CATEGORIES[bed.ward_name]] += 1
