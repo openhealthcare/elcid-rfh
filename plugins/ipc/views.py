@@ -311,7 +311,7 @@ class SideroomSummaryView(SideRoomView):
 
         wards = context['wards']
 
-        class SideroomBucket(class):
+        class SideroomBucket(object):
             """
             Class to store bucket stats when grouped later
             """
@@ -343,7 +343,7 @@ class SideroomSummaryView(SideRoomView):
                     self.male_count += 1
                     self.male_patient_details.append(
                         (
-                            patient_link
+                            patient_link,
                             f"{bed.to_location_str()} {status.occupancy_details}"
                         )
                     )
