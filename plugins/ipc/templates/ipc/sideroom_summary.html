@@ -139,6 +139,31 @@
             <th>Total</th>
           </tr>
 
+          {% for reason, details in micro_patients.items %}
+          <tr>
+            <td>
+              <b>
+                {{ reason }}
+              </b>
+            </td>
+            <td>
+              {{ details.male_count }}<br /><br />
+              {% for status in details.male_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ status[0] }}">{{ status[1] }}</a><br/>
+              {% endfor %}
+            </td>
+            <td>
+              {{ details.female_count }}<br /><br />
+              {% for status in details.female_patient_details %}
+              <a class="orange-link" href="/#/patient/{{ status[0] }}">{{ status[1] }}</a><br/>
+              {% endfor %}
+            </td>
+            <td>{{ details.sideroom }}</td>
+            <td>{{ details.open_bay }}</td>
+            <td>{{ details.total }}</td>
+          </tr>
+          {% endfor %}
+
           <tr>
             <td>
               <b>

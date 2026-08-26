@@ -256,6 +256,46 @@ class SideroomStatus(PreviousMRN, PatientSubrecord):
         'Clean',
     )
 
+    MICRO_REASONS = [
+        'Candida',
+        'C diff',
+        'CPO',
+        'Diarrhoea (a/w result; a/w sample)',
+        'Diarrhoea (with +ve micro result excluding C diff)',
+        'ESBL',
+        'MDR',
+        'MRSA',
+        'TB',
+        'VRE',
+        'Other (Micro)',
+    ]
+
+    VIRO_RESP_REASONS = [
+        'Covid',
+        'Influenza',
+        'Norovirus/Rotavirus/Sapovirus',
+        'Mpox',
+        'RSV'
+    ]
+
+    VIRO_REASONS = [
+        'Adenovirus',
+        'Enterovirus',
+        'HMPV',
+        'Parainfluenza',
+        'Parechovirus',
+        'Rhino' ,
+        'Seasonal Corona',
+        'Other (Viro)'
+    ]
+
+    NON_IPC_REASONS = [
+        '1:1 behavioral issues',
+        'EOL / palliative',
+        'Transplant',
+        'Clean'
+    ]
+
     # A current risk score for this patient to enable prioritisation
     # in a resource-constrained environment
     risk_score = models.CharField(

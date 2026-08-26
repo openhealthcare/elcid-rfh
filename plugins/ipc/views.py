@@ -304,8 +304,95 @@ class SideroomSummaryView(SideRoomView):
     template_name = 'ipc/sideroom_summary.html'
 
     def get_context_data(self, *a, **k):
+        """
+        Create reporting groupings for sideroom occupancy
+        """
         context = super().get_context_data(*a, **k)
 
+        wards = context['wards']
+
+        class SideroomBucket(class):
+            """
+            Class to store bucket stats when grouped later
+            """
+            def __init__(self):
+                self.patients = []
+                self.male_patient_details = []
+                self.female_patient_details = []
+                self.male_count = 0
+                self.female_count = 0
+                self.sideroom = 0
+                self.open_bay = 0
+
+            @property
+            def total(self):
+                return self.sideroom + self.open_bay
+
+            def add(self, bed, status):
+                """
+                Given a BedStatus and related SideroomStatus, add that
+                bed to our bucket.
+                """
+                patient = bed.patient
+                self.patient_link = '/#/patient/'+ patient_id
+
+                self.patients.append(patient)
+
+                demographics = patient.demographics()
+                if demographics.sex == 'Male':
+                    self.male_count += 1
+                    self.male_patient_details.append(
+                        (
+                            patient_link
+                            f"{bed.to_location_str()} {status.occupancy_details}"
+                        )
+                    )
+                if demographics.sex == 'Female':
+                    self.female_count += 1
+                    self.female_patient_details.append(
+                        (
+                            patient_link,
+                            f"{bed.to_location_str()} {status.occupancy_details}",
+                        )
+                    )
+
+
+                if status.is_open_bay:
+                    self.open_bay += 1
+
+                if any([status.room.startswith('SR'), status.bed.startswith('SR')]):
+                    self.sideroom += 1
+
+
+        # Patients grouped by occupancy reason
+        micro_patients = collections.defaultdict(SideroomBucket)
+        viro_resp_patients = collections.defaultdict(SideroomBucket)
+        viro_patients = collections.defaultdict(SideroomBucket)
+        non_ipc_patients = collections.defaultdict(SideroomBucket)
+
+        # Destinations for each potential value of SideroomStatus.occupancy_reason
+        bucket_lookup = {}
+        for reason in models.SideroomStatus.MICRO_REASONS:
+            bucket_lookup[reason] = micro_patients
+        for reason in models.SideroomStatus.VIRO_REASONS:
+            bucket_lookup[reason] = viro_patients
+        for reason in models.SideroomStatus.VIRO_RESP_REASONS:
+            bucket_lookup[reason] = viro_resp_patients
+        for reason in models.SideroomStatus.NON_IPC_REASONS:
+            bucket_lookup[reason] = non_ipc_reasons
+
+        for ward_name, beds in wards.items():
+            for bed in beds:
+                sideroom_status = bed.patient.sideroomstatus_set.get()
+                if not sideroom_status.occupancy_reason:
+                    continue
+                bucket = bucket_lookup[sideroom_status.occupancy_reason]
+
+                bucket[sideroom_status.occupancy_reason].add(bed, status)
+
+
+
+        context['micro_patients'] = micro_patients
         return context
 
 class AlertListView(LoginRequiredMixin, TemplateView):
