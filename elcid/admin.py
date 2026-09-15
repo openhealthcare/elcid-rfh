@@ -62,6 +62,7 @@ class BloodCultureMetadataAdmin(VersionAdmin):
         'date_removed',
         'removed_by',
         'validation_overridden',
+        'override_justification'
     ]
 
     list_filter = [
