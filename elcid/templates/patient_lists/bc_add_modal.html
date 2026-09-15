@@ -1,0 +1,56 @@
+{% extends 'base_templates/modal_base.html' %}
+{% block icon_name %}fa fa-plus{% endblock %}
+{% block title %}Add to list {% endblock %}
+{% block modal_body %}
+<div class="row" ng-hide="state!=states.INITIAL">
+  <div class="col-md-8 col-md-offset-2" >
+    <form class="form form-horizontal content-offset">
+      <div class="row">
+        <div class="col-md-12">
+          <input type="text"
+                 autocomplete="off"
+                 ng-model="mrn"
+                 class="form-control"
+                 placeholder="Patient MRN"
+                 />
+          <br />
+          <a class="btn btn-primary" ng-click="search()">
+            Check details
+          </a>
+
+        </div>
+
+      </div>
+    </form>
+    <p class="lead content-offset">
+      <span class="">Please enter the MRN of the patient to add.</span>
+    </p>
+  </div>
+</div>
+
+
+<div class="row" ng-hide="state!=states.INVALID">
+  <div class="col-md-8 col-md-offset-2" >
+    <p class="lead content-offset">
+      MRN: <span class="bold">[[ mrn ]]</span><br /><br />
+      <span >[[ errors ]]</span>
+    </p>
+  </div>
+</div>
+
+
+<div class="row" ng-hide="state!=states.CONFIRM">
+  <div class="col-md-8 col-md-offset-2" >
+    <p class="lead content-offset">
+      MRN: <span class="bold">[[ mrn ]]</span><br /><br />
+      Patient found: Add to list ?
+    </p>
+    <a class="btn btn-primary" ng-click="add()">
+      <i class="fa fa-plus"></i>
+      Add
+    </a>
+  </div>
+</div>
+
+
+{% endblock %}

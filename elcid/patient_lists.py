@@ -3,10 +3,12 @@ Patient lists for the elCID application
 """
 import datetime
 from collections import defaultdict
+import time
 
 from django.utils import timezone
 from opal import models as omodels
 from opal.utils import AbstractBase
+from opal.core.serialization import serialize_date
 from opal.core.patient_lists import TaggedPatientList, PatientList
 
 from elcid import models
@@ -222,11 +224,49 @@ class Sepsis(RfhPatientList, TaggedPatientList):
 
 class Bacteraemia(RfhPatientList, TaggedPatientList):
     display_name = 'Bacteraemia'
-    direct_add = True
+    direct_add = False
     tag = "bacteraemia"
     template_name = 'patient_lists/bacteraemia_list.html'
     schema = []
     order = -10
+    comparator_service = 'MostRecentPositiveComparator'
+
+    def to_dict(self, user):
+        """
+        This list has more complex ordering than normal.
+        """
+        from elcid import blood_cultures
+
+        qs = super(Bacteraemia, self).get_queryset()
+
+        def culture_comparator(date, episode_id):
+            if date is None:
+                return episode_id
+            else:
+                positive_dt = datetime.datetime(date.year, date.month, date.day, 1,1,1)
+                timestamp = time.mktime(positive_dt.timetuple())
+                return timestamp
+
+        episodes = serialize(qs, user, subrecords=self.PATIENT_LIST_SUBRECORDS)
+        for episode in episodes:
+            statuses = BedStatus.objects.filter(patient_id=episode['demographics'][0]['patient_id'])
+            episode['bed_statuses'] = [s.to_dict() for s in statuses]
+
+            most_recent = blood_cultures.most_recent_positive(episode)
+
+            if most_recent is not None:
+                episode['most_recent_positive'] = serialize_date(most_recent)
+            else:
+                episode['most_recent_positive'] = most_recent
+
+            episode['most_recent_comparator'] = culture_comparator(most_recent, episode['id'])
+
+
+
+#        sorted_episodes = sorted(episodes, key=lambda episode: episode.get('most_recent_comparator'), reverse=True)
+        return episodes
+
+
 
 
 class PCP(RfhPatientList, TaggedPatientList):

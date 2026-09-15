@@ -1,6 +1,6 @@
 {% extends 'partials/card_with_results.html' %}
 {% load forms %}
-
+{% block extra_header_details %}Most Recent +ve: [[ row.most_recent_positive ]] {% endblock %}
 
 {% block remove_button %}
 

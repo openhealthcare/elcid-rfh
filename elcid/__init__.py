@@ -65,12 +65,15 @@ class Application(application.OpalApplication):
 
         'js/elcid/services/blood_culture_isolate.js',
         'js/elcid/controllers/blood_culture_removal_validation.js',
+        'js/elcid/controllers/add_to_bactaeremia.js',
+
         'js/elcid/services/clinical_advice.js',
         'js/elcid/services/blood_culture_loader.js',
         'js/elcid/services/lab_test_results.js',
         'js/elcid/services/lab_test_summary_loader.js',
         'js/elcid/services/lab_test_json_dump.js',
         'js/elcid/services/episode_added_comparator.js',
+        'js/elcid/services/most_recent_positive_comparator.js',
     ]
 
     styles = [

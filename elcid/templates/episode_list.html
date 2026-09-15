@@ -23,8 +23,10 @@
       <h2>
         <i class="fa fa-user-md"></i>
         {{ patient_list.display_name }} {% block heading_extra %}{% endblock %}
-            <span class="pull-right">
-              <div class="btn-group pull-right left-offset-10">
+        <span class="pull-right">
+          {% block heading_button_extra %}{% endblock %}
+
+          <div class="btn-group pull-right left-offset-10">
                 <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="undefined">{% icon 'fa-list-alt' %}</label>
                 <label class="btn btn-primary" ng-model="isCardCollapsed" uib-btn-radio="true">{% icon 'fa-align-justify' %}</label>
               </div>
@@ -66,6 +68,7 @@
         <p class="lead text-center">
           There are no patients on this list.
         </p>
+        {% block empty_list %}
         {% if not patient_list.is_read_only and not request.user.profile.readonly %}
         <p class="lead text-center">
           <span class="screen-only">
@@ -73,6 +76,7 @@
           </span>
         </p>
         {% endif %}
+        {% endblock %}
       </div>
     </div>
   </div>

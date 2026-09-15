@@ -739,6 +739,18 @@ class BloodCultureIsolate(
         return camelcase_to_underscore(cls._meta.object_name)
 
 
+class BloodCultureListMetadata(models.Model):
+    active                 = models.BooleanField(default=True)
+    episode                = models.ForeignKey(omodels.Episode, on_delete=models.CASCADE)
+    date_added             = models.DateTimeField(auto_now=True)
+    added_by               = models.ForeignKey(omodels.User, on_delete=models.CASCADE, related_name='adder')
+    date_removed           = models.DateTimeField(blank=True, null=True)
+    removed_by             = models.ForeignKey(
+        omodels.User, blank=True, null=True, on_delete=models.CASCADE, related_name='remover')
+    validation_overridden  = models.NullBooleanField()
+    override_justification = models.TextField(blank=True, null=True)
+
+
 class ChronicAntifungal(models.Model):
     DISPENSARY_REPORT = "Dispensary report"
     REASON_TO_INTERACTION = "Reason for interaction"

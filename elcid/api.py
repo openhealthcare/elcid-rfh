@@ -1,6 +1,7 @@
 """
 API endpoints for the elCID application
 """
+import datetime
 from collections import defaultdict, OrderedDict
 
 from django.conf import settings
@@ -12,9 +13,11 @@ from opal.core.api import (
 )
 from opal.core.views import json_response
 from opal.core import serialization
-from opal.models import Tagging
+from opal.models import Tagging, Episode
 
-from elcid import patient_lists
+from elcid import patient_lists, utils
+from elcid.episode_categories import InfectionService
+from elcid.patient_lists import Bacteraemia
 from intrahospital_api import loader, epr
 from plugins.covid import lab as covid_lab
 from plugins.labtests import models as lab_test_models
@@ -655,6 +658,94 @@ class BloodCultureValidationViewSet(LoginRequiredViewset):
             }
         )
 
+class BloodCultureCheckListViabilityViewSet(LoginRequiredViewset):
+    basename = 'blood_culture_list_viability'
+
+    def list(self, request):
+        mrn = request.query_params['mrn']
+
+        patient = utils.find_patient_from_mrn(mrn)
+        # Bail early if that's not a real patient
+        if patient is None:
+            valid = False
+            errors = 'No patient with this MRN could be found in the system. Please either \
+            correct the MRN or first add the patient.'
+
+        else:
+            # We have a patient, you can't add them if they're already here.
+            episode = patient.episode_set.get(category_name=InfectionService.display_name)
+            tag_names = episode.get_tag_names(request.user)
+
+            if Bacteraemia.tag in tag_names:
+                valid = False
+                errors = f"This patient ({patient.demographics().name}) is already on the \
+                list."
+            else:
+                #valid, errors = blood_cultures.list_validity(patient)
+                valid, errors = True, True
+
+        return json_response(
+            {
+                'valid':  valid,
+                'errors': errors
+            }
+        )
+
+    def create(self, request):
+        valid = True
+        errors = None
+
+        mrn = request.data['mrn']
+        patient = utils.find_patient_from_mrn(mrn)
+        episode = patient.episode_set.get(category_name=InfectionService.display_name)
+        tag_names = episode.get_tag_names(request.user)
+        tag_names.append(Bacteraemia.tag)
+        episode.set_tag_names(tag_names, request.user)
+
+        metadata = emodels.BloodCultureListMetadata(episode=episode, added_by=request.user)
+        metadata.save()
+
+        return json_response(
+            {
+                'valid':  valid,
+                'errors': errors
+            }
+        )
+
+class BloodCultureListRemovalViewSet(LoginRequiredViewset):
+    basename = 'blood_culture_list_remove'
+
+    def create(self, request):
+        valid, errors = True, None
+
+        episode_id = request.data['episode_id']
+        episode = Episode.objects.get(pk=episode_id)
+
+        tags = episode.get_tag_names(request.user)
+        tags.remove(Bacteraemia.tag)
+        episode.set_tag_names(tags, request.user)
+
+        override_justification = request.data.get('override_justification', None)
+
+        metadata, _ = emodels.BloodCultureListMetadata.objects.get_or_create(
+            episode=episode,
+            active=True
+        )
+        metadata.active                 = False
+        metadata.date_removed           = datetime.datetime.now()
+        metadata.removed_by             = request.user
+        metadata.override_justification = override_justification
+        if override_justification:
+            metadata.validation_overridden = True
+        metadata.save()
+
+        return json_response(
+            {
+                'valid':  valid,
+                'errors': errors
+            }
+        )
+
 
 class AddToServiceViewSet(LoginRequiredViewset):
     basename = 'add_to_service'
@@ -697,6 +788,8 @@ elcid_router.register(
 elcid_router.register(DemographicsSearch.basename, DemographicsSearch)
 elcid_router.register(BloodCultureIsolateApi.basename, BloodCultureIsolateApi)
 elcid_router.register(BloodCultureValidationViewSet.basename, BloodCultureValidationViewSet)
+elcid_router.register(BloodCultureCheckListViabilityViewSet.basename, BloodCultureCheckListViabilityViewSet)
+elcid_router.register(BloodCultureListRemovalViewSet.basename, BloodCultureListRemovalViewSet)
 
 lab_test_router = OPALRouter()
 lab_test_router.register(

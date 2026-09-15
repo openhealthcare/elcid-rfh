@@ -1,8 +1,18 @@
 {% extends 'episode_list.html' %}
+{% load forms %}
 
 
 {% block heading_extra %}(Data Validation Edition){% endblock %}
 
+{% block heading_button_extra %}
+
+<a class="btn btn-primary"
+   ng-click="open_modal('BCAddToListCtrl', 'templates/patient_lists/bc_add_modal.html')">
+  {% icon 'fa-plus' %} Add to list
+</a>
+{% endblock %}
+
 {% block episode_card %}
 {% include 'partials/blood_culture_card.html' %}
 {% endblock %}
+{% block empty_list %}{% endblock %}

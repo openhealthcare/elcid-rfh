@@ -9,7 +9,7 @@ from opal import admin as opal_admin
 from django.contrib.auth import forms as user_forms
 from django.contrib.auth.models import User
 
-from elcid.models import BloodCultureIsolate
+from elcid.models import BloodCultureIsolate, BloodCultureListMetadata
 
 
 admin.site.unregister(User)
@@ -51,7 +51,30 @@ class ElcidUserAdmin(opal_admin.UserProfileAdmin):
     form = ElcidUserAdminChangeForm
     add_form = ElcidUserAdminCreationForm
 
+
+class BloodCultureMetadataAdmin(VersionAdmin):
+    list_display = [
+        'episode',
+        'patient',
+        'active',
+        'date_added',
+        'added_by',
+        'date_removed',
+        'removed_by',
+        'validation_overridden',
+    ]
+
+    list_filter = [
+        'active',
+        'validation_overridden'
+    ]
+
+    def patient(self, obj):
+        return obj.episode.patient.demographics().name
+
 admin.site.register(User, ElcidUserAdmin)
 
 
 admin.site.register(BloodCultureIsolate, VersionAdmin)
+
+admin.site.register(BloodCultureListMetadata, BloodCultureMetadataAdmin)

@@ -43,6 +43,18 @@ angular.module('opal.controllers').controller(
             $scope.state = $scope.states.OVERRIDE;
         }
 
+        $scope.remove_anyway = function(){
+            $http.post(
+                '/elcid/v0.1/blood_culture_list_remove/',
+                {override_justification: $scope.override_reason, episode_id: episode_id}
+            ).then(
+                function(result){
+                    $modalInstance.close('removed');
+                    $window.location.reload();
+                }
+            )
+        }
+
         $scope.go_to_patient = function(){
             $modalInstance.close('cancel');
             $window.location = patient_link;
