@@ -18,6 +18,7 @@
 
 {% if not permissions.ipc_portal_only %}
 {% if not permissions.bed_manager %}
+{% if not permissions.academic %}
 <div ng-show="$location.path().indexOf('/search')">
   <div ng-controller="SearchCtrl">
     <form class="navbar-form navbar-right" ng-submit="search()" role="search">
@@ -43,5 +44,6 @@
     </form>
   </div>
 </div>
+{% endif %}
 {% endif %}
 {% endif %}

@@ -212,6 +212,8 @@ app.config(
              .when('/research/study/list/', static_template_route('/templates/research/study_list.html/'))
              .when('/research/study/create/', static_template_route('/templates/research/add_study.html'))
              .when('/research/study/:study_id/', param_template_route('/templates/research/study_detail.html'))
+             .when('/research/study-patient-detail/:study_id/:participant_id/',
+                   param_template_route('/templates/research/study_patient_detail.html'))
              .when('/research/study/:study_id/add_participants/',
                    param_template_route('/templates/research/study_add_participants.html/'))
              .when('/research/study/:study_id/participant_list/',

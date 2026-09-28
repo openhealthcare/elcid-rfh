@@ -9,6 +9,11 @@ angular.module('opal.controllers').controller(
             $location.path('/ipc/')
             return
         }
+        if(_.contains(profile.active_roles(), 'academic')){
+            $location.path('/research/')
+            return
+        }
+
         return
     }
 );

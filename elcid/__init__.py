@@ -133,6 +133,9 @@ class Application(application.OpalApplication):
         if ipc_constants.BED_MANAGER_ROLE in profile.get_roles()['default']:
             return [explicit_log_out]
 
+        if 'academic' in profile.get_roles()['default']:
+            return [explicit_log_out]
+
         menu_items.append(ServicesMenuItem(user=user))
 
 

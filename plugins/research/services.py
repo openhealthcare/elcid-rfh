@@ -14,6 +14,12 @@ class ResearchService(ClinicalService):
     def visible_to(klass, user):
         if user.is_superuser:
             return True
+
+        profile = user.profile
+        roles = profile.get_roles()
+        if 'academic' in roles['default']:
+            return True
+
         if Study.objects.filter(users=user).count() > 0:
             return True
         return False

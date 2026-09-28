@@ -18,7 +18,8 @@ class ResearchPlugin(plugins.OpalPlugin):
             'js/controllers/close_study.js',
             'js/controllers/add_study_participant.js',
             'js/controllers/remove_participant.js',
-            'js/controllers/new_research_note.js'
+            'js/controllers/new_research_note.js',
+            'js/controllers/edit_research_note.js',
         ]
     }
 

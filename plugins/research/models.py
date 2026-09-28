@@ -103,14 +103,19 @@ class StudyParticipant(models.Model):
         Return the URL for the detail view for this patient - the research
         episode if it exists, the patient if not.
         """
-        print('HERE')
         episode = self.patient.episode_set.filter(category_name="Research")
-        print(episode)
         url_base = f"/#/patient/{self.patient.id}"
 
         if episode:
             return url_base + f"/{episode[0].id}"
 
+        return url_base
+
+    def get_research_patient_detail_view_url(self):
+        """
+        Return the URL for the Zero PID detail view for this patient
+        """
+        url_base = f"/#/research/study-patient-detail/{self.study_id}/{self.id}/"
         return url_base
 
 

@@ -9,16 +9,19 @@
 
   <table class="table table-striped">
     <tr>
+      {% if not user_is_academic %}
       <th>Name</th>
       <th>DOB</th>
       <th>MRN</th>
       <th>Elcid ID</th>
+      {% endif %}
       <th>Study Participant ID</th>
       <th>Added</th>
       <th>Actions</th>
     </tr>
     {% for participant in study.get_participants %}
     <tr>
+      {% if not user_is_academic %}
       <td>{{ participant.patient.demographics.name }}</td>
       <td>{{ participant.patient.demographics.date_of_birth }} </td>
       <td>
@@ -27,7 +30,12 @@
         </a>
       </td>
       <td>{{ participant.patient.id }}</td>
-      <td>{{ participant.get_participant_number }}</td>
+      {% endif %}
+      <td>
+        <a href="{{ participant.get_research_patient_detail_view_url }}" class="orange-link">
+          {{ participant.get_participant_number }}
+        </a>
+      </td>
       <td>{{ participant.added }}</td>
       <td>
         <a class="btn btn-secondary btn-sm {% if study.is_closed %}disabled{% endif %}"
@@ -46,16 +54,19 @@
 
   <table class="table table-striped">
     <tr>
+      {% if not user_is_academic %}
       <th>Name</th>
       <th>DOB</th>
       <th>MRN</th>
       <th>Elcid ID</th>
+      {% endif %}
       <th>Study Participant ID</th>
       <th>Added</th>
       <th>Removed</th>
     </tr>
     {% for participant in nonparticipants %}
     <tr>
+      {% if not user_is_academic %}
       <td>{{ participant.patient.demographics.name }}</td>
       <td>{{ participant.patient.demographics.date_of_birth }} </td>
       <td>
@@ -64,7 +75,12 @@
         </a>
       </td>
       <td>{{ participant.patient.id }}</td>
-      <td>{{ participant.get_participant_number }}</td>
+      {% endif %}
+      <td>
+        <a href="{{ participant.get_research_patient_detail_view_url }}" class="orange-link">
+          {{ participant.get_participant_number }}
+        </a>
+      </td>
       <td>{{ participant.added }}</td>
       <td>
         {{ participant.removal_timestamp }}

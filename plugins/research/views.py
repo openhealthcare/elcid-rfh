@@ -9,9 +9,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.utils.functional import cached_property
 from django.http import HttpResponse, HttpResponseNotFound
+from opal.models import Patient
 
 from plugins.research import models
 from plugins.research.studies import get_study_class
+from plugins.research.episode_categories import ResearchEpisode
 
 
 class ResearchHomeView(LoginRequiredMixin, TemplateView):
@@ -89,7 +91,6 @@ class StudyDetailView(AbstractStudyDetailTemplateView):
         """
         Check to see if it is overriden
         """
-        print('called')
         study = models.Study.objects.get(id=self.request.GET['study_id'])
         customisables = get_study_class(study.name)
         if customisables.template_name:
@@ -179,6 +180,39 @@ class StudyDetailView(AbstractStudyDetailTemplateView):
         return context
 
 
+class StudyPatientDetailView(AbstractStudyDetailTemplateView):
+    """
+    Detail view for a single study
+    """
+
+    template_name = 'research/study_patient_detail.html'
+
+    @cached_property
+    def participant(self):
+        """
+        Return the participant our GET args point to.
+        """
+        return models.StudyParticipant.objects.get(id=self.request.GET['participant_id'])
+
+    def get_context_data(self, *args, **kwargs):
+        """
+        Prepare data for the study detail page
+        """
+        context = super().get_context_data(*args, **kwargs)
+
+        patient = self.participant.patient
+        episode, _ = patient.episode_set.get_or_create(category_name=ResearchEpisode.display_name)
+
+        context['study'] = self.study
+        context['participant'] = self.participant
+        context['episode'] = episode
+
+        context ['notes'] = models.ResearchNote.objects.filter(study=self.study, episode=episode)
+
+        return context
+
+
+
 class StudyAddParticipantsView(AbstractStudyDetailTemplateView):
     """
     Detail view to add participants
@@ -200,7 +234,7 @@ class StudyAddParticipantsView(AbstractStudyDetailTemplateView):
 
 
 class StudyParticipantListView(AbstractStudyDetailTemplateView):
-    """
+    """api
     Detail view for study participants
     """
     template_name = "research/study_participant_list.html"
@@ -210,6 +244,7 @@ class StudyParticipantListView(AbstractStudyDetailTemplateView):
         Fetch study context
         """
         context = super().get_context_data(*args, **kwargs)
+        context['user_is_academic'] = 'academic' in self.request.user.profile.get_roles()['default']
 
         study = self.study
 

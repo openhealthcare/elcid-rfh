@@ -155,3 +155,20 @@ class ResearchNoteViewSet(LoginRequiredViewset):
         return json_response(
             {'status': 'SAVED'}
         )
+
+    def update(self, request, pk=None):
+        """
+        This is a custom subrecordAPI form and API to edit notes
+        without leaking patient data in the main app URLs
+        """
+        note = ResearchNote.objects.get(pk=pk)
+        user_id = request.user.id
+
+        note.note = request.data['note']
+        updated_by = user_id
+        updated = datetime.datetime.now()
+        note.save()
+
+        return json_response(
+            {'status': 'SAVED'}
+        )

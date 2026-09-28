@@ -23,6 +23,11 @@ urlpatterns = [
         name='research_study_detail'
     ),
     path(
+        'templates/research/study_patient_detail.html',
+        views.StudyPatientDetailView.as_view(),
+        name='research_study_patient_detail'
+    ),
+    path(
         'templates/research/study_add_participants.html/',
         views.StudyAddParticipantsView.as_view(),
         name='research_study_list'
