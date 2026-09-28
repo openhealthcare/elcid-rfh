@@ -88,20 +88,36 @@ class ICUDashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *a, **k):
         context = super(ICUDashboardView, self).get_context_data(*a, **k)
+        hospital_name = 'Royal Free Hospital'
+        is_rfh = True
+        is_barnet = False
+        wards_to_iterate = constants.WARD_NAMES
+
+        if self.request.GET.get('site') == 'Barnet':
+            hospital_name = 'Barnet Hospital'
+            is_rfh = False
+            is_barnet = True
+            wards_to_iterate = constants.BARNET_WARD_NAMES
+
         wards = []
-        for ward_name in constants.WARD_NAMES:
+        for ward_name in wards_to_iterate:
             ward_info = self.get_ward_info(ward_name)
             if ward_info["patient_count"]:
                 wards.append(ward_info)
 
         context['wards'] = wards
         context['icu_patients'] = 0
+        context['hospital_name'] = hospital_name
+        context['is_rfh'] = is_rfh
+        context['is_barnet'] = is_barnet
+
         if wards:
             context['icu_patients'] = sum(
                 [ward_info["patient_count"] for ward_info in wards]
             )
         context['today'] = datetime.date.today()
         return context
+
 
 
 class ICUActivityView(LoginRequiredMixin, TemplateView):

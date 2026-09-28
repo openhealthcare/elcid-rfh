@@ -22,7 +22,30 @@
 <div class="content-offset right-viewport">
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h1>ICU at the Royal Free Hospital ({{ icu_patients }} patients)</h1>
+      <div class="row">
+        <div class="col-md-9">
+          <h1>ICU at {{ hospital_name }} ({{ icu_patients }} patients)</h1>
+        </div>
+
+      <div class="col-md-3 text-right content-offset-25">
+        <div class="btn-group" role="group">
+          <a
+            href="/#/ICU/?site=RFH"
+            class="btn btn-primary {% if is_rfh %}active{% endif %}"
+          >
+            RFH
+          </a>
+          <a
+            href="/#/ICU/?site=Barnet"
+            class="btn btn-primary {% if is_barnet %}active{% endif %}"
+          >
+            Barnet
+          </a>
+        </div>
+      </div>
+
+
+      </div>
     </div> <!-- heading -->
     <div class="panel-body">
 
