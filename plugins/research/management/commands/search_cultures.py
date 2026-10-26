@@ -14,4 +14,4 @@ class Command(BaseCommand):
         )
         for observation in obs:
             if 'Escherichia coli' in observation.observation_value:
-                print(f"{observation.test.lab_number} {observation.test.patient.demographics().hospital_number} {observation.test.dateime_ordered} {observation.observation_value}")
+                print(f"{observation.test.lab_number} {observation.test.patient.demographics().hospital_number} {observation.test.datetime_ordered} {observation.observation_value}")
