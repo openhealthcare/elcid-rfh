@@ -17,5 +17,6 @@ class Command(BaseCommand):
                 value = observation.observation_value
                 if '~Antibiogram~' in value:
                     value = value.split('~Antibiogram~')[0]
-                print(f"{observation.test.lab_number} {observation.test.patient.demographics().hospital_number} {observation.test.datetime_ordered} {observation.observation_value}")
+
+                print(f"{observation.test.lab_number} {observation.test.patient.demographics().hospital_number} {observation.test.datetime_ordered} {value}")
                 print('-')
