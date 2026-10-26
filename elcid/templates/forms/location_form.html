@@ -17,7 +17,7 @@
 </section>
 
 <section ng-show="editing.location.hospital == 'RNOH'">
-{% input field="Location.unit" lookuplist="['Foot and Ankle', 'LRU', 'JRU', 'Other', 'Paediatric Surgery', 'PNI', 'Sarcoma', 'SCIC', 'Spinal Surgery']"%}
+{% input field="Location.unit" lookuplist="['Foot and Ankle', 'LRU', 'JRU', 'Other', 'Paediatric Surgery', 'PNI', 'Sarcoma', 'SCIC', 'Spinal rehab', 'Spinal Surgery', 'Upper limb', 'Urology']"%}
 </section>
 <section ng-hide="editing.location.hospital == 'RNOH'">
 {% input field="Location.unit" %}

@@ -1,3 +1,4 @@
+{% load elcid_panels %}
 {% for episode in episodes reversed %}
 
   {% with episode.patient.demographics as demographics %}
@@ -14,9 +15,6 @@
           <strong>
             {{ demographics.name }}
             {% if demographics.date_of_birth %}{{ demographics.date_of_birth }}{% endif %}
-            {% if episode.patient.rnohdemographics_set.get.rnoh_hospital_number %}
-              {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
-            {% endif %}
             {{ episode.patient.rnohdemographics_set.get.epic_hospital_number }}
 
           </strong>
@@ -45,10 +43,7 @@
           <strong>
             {{ demographics.name }}
             {% if demographics.date_of_birth %}{{ demographics.date_of_birth }}{% endif %}
-            {% if episode.patient.rnohdemographics_set.get.rnoh_hospital_number %}
-              {{ episode.patient.rnohdemographics_set.get.rnoh_hospital_number }}
-            {% endif %}
-
+            {{ episode.patient.rnohdemographics_set.get.epic_hospital_number }}
           </strong>
           <!-- {% if demographics.sex %}{{ demographics.sex }} {% endif %} -->
           <!-- {% if demographics.nhs_number %} {{ demographics.nhs_number }} {% endif %} -->
@@ -72,8 +67,8 @@
     <div class="row">
       <div class="col-md-12">
         <strong>Advice</strong><br />
-        {% for advice in episode.microbiologyinput_set.all reversed %}
-        <i>{{ advice.when }} {{ advice.initials }} {{ advice.reason_for_interaction }}</i> -
+        {% for advice in episode.category.get_advice %}
+        <i>{{ advice.when | date:"d M Y" }} {{ advice.initials|nbspjust:"6" }} {{ advice.reason_for_interaction }}</i> -
         {{ advice.clinical_discussion }}
         {{ advice.agreed_plan }}
         <br />
@@ -150,9 +145,11 @@
       <div class="col-md-4">
 
         {% if episode.patient.allergies_set.all.count > 0 %}
-        <strong>Allergies:</strong>
+        <p>
+        <strong>Allergies:</strong><br />
         {% for allergy in episode.patient.allergies_set.all %}
         {{ allergy.drug }}<br />
+        </p>
         {% endfor %}
         {% endif %}
 
@@ -162,11 +159,23 @@
         {% for treatment in episode.treatment_set.all|dictsort:"start_date" %}
         <p>
           {{ treatment.start_date }} {% if treatment.end_date %} - {{ treatment.end_date }} {% endif %}
+          {% if treatment.planned_end_date %}
+          Planned: {{ treatment.planned_end_date }}
+          {% endif %}
           {{ treatment.drug }} {{ treatment.dose }} {{ treatment.frequency }}
         </p>
         {% endfor %}
         {% endif %}
 
+        {% if episode.rnohupcomingclinics_set.all.count > 0 %}
+        <strong>Upcoming Clinics:</strong>
+        {% for clinic in episode.rnohupcomingclinics_set.all|dictsort:"date" %}
+        <p>
+          {{ clinic.date }}
+          {{ clinic.description }}
+        </p>
+        {% endfor %}
+        {% endif %}
 
       </div>
     </div>

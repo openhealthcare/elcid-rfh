@@ -17,9 +17,11 @@ class RNOHDemographics(PreviousMRN, PatientSubrecord):
     _icon         = 'fa fa-user'
 
     # The primary MRN in use at the trust
-    epic_hospital_number = models.CharField(blank=True, null=True, max_length=255)
+    epic_hospital_number = models.CharField(blank=True, null=True, max_length=255,
+                                            verbose_name="RNOH EPIC MRN")
     # The legacy MRN from pre 'EPR'
-    rnoh_hospital_number = models.CharField(blank=True, null=True, max_length=255)
+    rnoh_hospital_number = models.CharField(blank=True, null=True, max_length=255,
+                                            verbose_name="Historic MRN")
 
     class Meta:
         verbose_name = 'RNOH Demographics'
@@ -41,6 +43,8 @@ class RNOHTeams(PreviousMRN, PatientSubrecord):
     complex_opat    = models.NullBooleanField(blank=True, null=True, verbose_name="Complex-OPAT")
     misc            = models.NullBooleanField(blank=True, null=True, verbose_name="Misc")
     clinic          = models.NullBooleanField(blank=True, null=True)
+    bacteriophage   = models.NullBooleanField(blank=True, null=True)
+    ams             = models.NullBooleanField(blank=True, null=True, verbose_name='AMS')
 
     class Meta:
         verbose_name = "RNOH Teams"
@@ -229,6 +233,16 @@ class RNOHActions(PreviousMRN, EpisodeSubrecord):
         verbose_name = 'Actions'
 
 
+class RNOHUpcomingClinics(PreviousMRN, EpisodeSubrecord):
+    _icon = 'fa fa-hospital-o'
+
+    date        = models.DateField(blank=True, null=True)
+    description = models.CharField(blank=True, null=True, max_length=255)
+
+    class Meta:
+        verbose_name = 'Upcoming Clinics'
+
+
 class PatientRNOHSBARStatus(PatientSubrecord):
     _is_singleton = True
 
@@ -312,3 +326,9 @@ class RNOHSBAR(models.Model):
     def to_dict(self):
         dicted = {k: getattr(self, k) for k in self.FIELDS_TO_SERIALIZE}
         return dicted
+
+
+class RNOHUsefulNumbers(models.Model):
+    left   = models.TextField(blank=True, null=True)
+    middle = models.TextField(blank=True, null=True)
+    right  = models.TextField(blank=True, null=True)

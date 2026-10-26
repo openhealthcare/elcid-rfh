@@ -8,6 +8,7 @@ from opal.models import Hospital
 
 from elcid.models import Location
 
+from plugins.rnoh import models
 from plugins.rnoh.constants import INDIVIDUAL_WARD_NAMES, GROUPED_WARD_NAMES
 from plugins.rnoh.episode_categories import RNOHEpisode
 
@@ -18,6 +19,11 @@ class RNOHView(TemplateView):
 
 class UsefulNumbersView(RNOHView):
     template_name = 'rnoh/numbers.html'
+
+    def get_context_data(self, *a, **k):
+        context = super().get_context_data(*a, **k)
+        context['numbers'] = models.RNOHUsefulNumbers.objects.first()
+        return context
 
 
 class RNOHInpatientsView(RNOHView):

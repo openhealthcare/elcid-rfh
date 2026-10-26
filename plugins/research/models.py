@@ -126,3 +126,19 @@ class ResearchNote(EpisodeSubrecord):
     study = models.ForeignKey(Study, on_delete=models.CASCADE, related_name='study_note')
     when  = models.DateTimeField(blank=True, null=True)
     note  = models.TextField(blank=True, null=True)
+
+
+class ResearchTriggerTest(models.Model):
+    """
+    A Research Trigger test is an incoming result that is to be used as a
+    trigger for some action pertaining to a specific study.
+    """
+    # Generic labs fields denormalized for display
+    patient              = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    lab_number           = models.CharField(max_length=256, blank=True, default="")
+    observation_datetime = models.DateTimeField(blank=True, null=True)
+    reported_datetime    = models.DateTimeField(blank=True, null=True)
+    value                = models.TextField(blank=True, null=True)
+    organism             = models.CharField(blank=True, null=True, max_length=255)
+    # Study specific fields
+    sample_prepared      = None

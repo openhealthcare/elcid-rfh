@@ -3,6 +3,7 @@ Constants for the RNOH plugin
 """
 GROUPED_WARD_NAMES = [
     'SCIC',
+    'DSU',
 #    'PNW',
     'TCU',
     'SAPU',
@@ -13,6 +14,7 @@ GROUPED_WARD_NAMES = [
     'DOG',
     'LIRI',
     'COXON',
+    'TCI',
     'RFH',
     'Other hospital',
     'Outpatient'
@@ -24,13 +26,15 @@ INDIVIDUAL_WARD_NAMES = [
     'Outstanding',
     'OPAT',
     'Complex-OPAT',
+    'AMS',
     'Clinic',
     'Misc',
     'MDT-JRU',
     'MDT-LRU',
     'MDT-Spinal',
     'MDT-Upper-Limb',
-    'MDT-Knee'
+    'MDT-Knee',
+    'Bacteriophage',
 ]
 
 UNIT_NAMES = [

@@ -17,6 +17,7 @@
       {% record_panel models.Procedure %}
       {% record_panel models.Treatment angular_filter="!item.end_date" %}
       {% record_panel models.Treatment title="Previous Treatment" angular_filter="item.end_date"%}
+      {% record_panel models.RNOHUpcomingClinics %}
     </div>
   </div>
   <div class="row">

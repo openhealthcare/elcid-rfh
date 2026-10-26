@@ -72,7 +72,7 @@ def stream_result():
                 while True:
                     result = cur.fetchmany()
                     if result:
-                        print('.')
+                        print(f"{upstream_row['ENCNTR_SLICE_ID']}")
                         for upstream_row in result:
                             row_mrn = upstream_row["LOCAL_PATIENT_IDENTIFIER"]
                             if row_mrn not in mrn_to_patient_id:
