@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
         obs = Observation.objects.filter(
             test__test_name='BLOOD CULTURE',
-            observation_name='Blood Isolate(s)'
+            observation_name='Blood Isolate(s)',
             test__datetime_ordered__gte=start
         )
         for observation in obs:
