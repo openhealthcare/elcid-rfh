@@ -13,4 +13,5 @@ class Command(BaseCommand):
             test__datetime_ordered__gte=start
         )
         for observation in obs:
-            print(observation.observation_value)
+            if 'Escherichia coli' in observation.observation_value:
+                print(f"{observation.test.lab_number} {observation.test.patient.demographics().hospital_number} {observation.test.datime_ordered} {observation.observation_value}")
