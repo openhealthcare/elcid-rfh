@@ -1,6 +1,6 @@
 import datetime
 
-from plugins.labtests.models import Observationx
+from plugins.labtests.models import Observation
 from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
