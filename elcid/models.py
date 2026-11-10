@@ -743,7 +743,8 @@ class BloodCultureListMetadata(models.Model):
     active                 = models.BooleanField(default=True)
     episode                = models.ForeignKey(omodels.Episode, on_delete=models.CASCADE, blank=True, null=True)
     date_added             = models.DateTimeField(auto_now=True, blank=True, null=True)
-    added_by               = models.ForeignKey(omodels.User, on_delete=models.CASCADE, related_name='adder')
+    added_by               = models.ForeignKey(omodels.User, on_delete=models.CASCADE, related_name='adder',
+                                               blank=True, null=True)
     date_removed           = models.DateTimeField(blank=True, null=True)
     removed_by             = models.ForeignKey(
         omodels.User, blank=True, null=True, on_delete=models.CASCADE, related_name='remover')
