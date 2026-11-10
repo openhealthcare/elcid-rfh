@@ -1,6 +1,8 @@
 """
 Utility module for blood cultures
 """
+import datetime
+
 from opal.models import Episode
 
 def most_recent_positive(episode_dict):
@@ -162,6 +164,19 @@ def date_positive_after_date_ordered(culture, isolate):
         return True, None
     return False, msg
 
+def is_too_old(culture):
+    """
+    Boolean to determine whether this culture is no longer considered
+    recent. This prevents data validation being run from previous occasions
+    on which this patient was on the list.
+
+    We don't configure a message, as this is merely a prompt to skip
+    further validation.
+    """
+    DAYS = 30
+    today = datetime.date.today()
+    days_ago = today - datetime.timedelta(days=DAYS)
+    return culture.date_ordered < days_ago
 
 def validate(patient):
     """
@@ -180,7 +195,6 @@ def validate(patient):
         Please add at least one to remove them from the list.']
         return (False, errors)
 
-    # TODO: restrict query to only relevant cultures, not old ones
     for culture in patient.bloodcultureset_set.all():
 
         valid, msg = has_labno(culture)
@@ -194,6 +208,11 @@ def validate(patient):
             errors.append(msg)
 
         else:
+
+            # If the culture is out of window, ignore it.
+            if is_too_old(culture):
+                continue
+
             # We only check these for
             # cultures with lab numbers entered
             valid, msg = has_source(culture)

@@ -13,7 +13,7 @@
 
 
 <div class="row" ng-hide="state!=states.CONFIRM">
-  <div class="col-md-8 col-md-offset-2" ng-hide="hide-actions">
+  <div class="col-md-8 col-md-offset-2" ng-hide="hide_actions">
     <p class="lead content-offset">
       <span class="bold">Do you want to remove [[ name ]] from the list ?</span>
     </p>
@@ -23,7 +23,7 @@
       </button>
     </div>
   </div>
-  <div class="col-md-8 col-md-offset-2" ng-show="hide-actions">
+  <div class="col-md-8 col-md-offset-2" ng-show="hide_actions">
     <p class="lead content-offset">
       <span>No validation issues with blood culture data for this patient</span>
     </p>
@@ -96,7 +96,7 @@
 
 
     <div class="row">
-      <div class="col-md-8">
+      <div class="col-md-8" ng-hide="hide_actions">
         <button class="btn btn-primary btn-save text-center" ng-click="remove_anyway()">
           <i class="fa fa-sign-out"></i> Remove anyway
         </button>
