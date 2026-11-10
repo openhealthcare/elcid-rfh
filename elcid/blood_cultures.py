@@ -160,7 +160,7 @@ def date_positive_after_date_ordered(culture, isolate):
     if not culture.date_ordered:
         return True, None
 
-    if isolate.date_positive > culture.date_ordered:
+    if isolate.date_positive >= culture.date_ordered:
         return True, None
     return False, msg
 
