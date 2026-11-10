@@ -21,7 +21,15 @@ angular.module('opal.controllers').controller(
         }
 
         $scope.remove = function(){
-            // TODO IMPLEMENT
+            $http.post(
+                '/elcid/v0.1/blood_culture_list_remove/',
+                {episode_id: episode_id}
+            ).then(
+                function(result){
+                    $modalInstance.close('removed');
+                    $window.location.reload();
+                }
+            )
         }
 
         $scope.state = $scope.states.INITIAL;
