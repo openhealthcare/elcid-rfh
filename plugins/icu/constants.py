@@ -5,4 +5,4 @@ ICU_ROLE = "icu"
 
 WARD_NAMES = ["RF-ICU 4 WEST", "RF-ICU 4 SOUTH", "RF-ICU 4 EAST", "RF-EPIC"]
 
-BARNET_WARD_NAMES = ["BA-CC North", "BA-CC South", "BA-CCU"]
+BARNET_WARD_NAMES = ["BA-CC North", "BA-CC South"]#, "BA-CCU"]
