@@ -17,28 +17,44 @@
   </div>
   <ul class="list-group">
     <li ng-repeat="item in patient.{{ name }} | orderBy:'-date_ordered'" class="list-group-item">
-      <div {% if not request.user.profile.readonly %}ng-click="patient.recordEditor.editItem('{{ name }}', item)"{% endif %} class="row pointer blood-culture-edit">
-        <div   class="col-md-9">
-          {% include models.BloodCultureSet.get_detail_template %}
-        </div>
-        <div class="col-md-3">
+
+        <div
           {% if not request.user.profile.readonly %}
-          <span>
-            <i class="fa fa-pencil blood-culture-edit pull-right pointer"></i>
-          </span>
+          ng-click="patient.recordEditor.editItem('{{ name }}', item)"
           {% endif %}
-        </div>
-      </div>
-      <div {% if not request.user.profile.readonly %}ng-click="bloodCulturePanelCtrl.open(item, isolate)"{% endif %} class="row pointer blood-culture-edit" ng-repeat="isolate in item.isolates | orderBy: ['aerobic_or_anaerobic', 'date_positive']" >
-        <div class="col-xs-10">
-          {% include "partials/blood_culture_isolate.html" %}
-        </div>
-        <div class="col-xs-2">
+          class="row pointer blood-culture-edit">
+          <div   class="col-md-9">
+            {% include models.BloodCultureSet.get_detail_template %}
+          </div>
+          <div class="col-md-3">
             {% if not request.user.profile.readonly %}
-            <i class="fa fa-pencil pull-right"></i>
+            <span>
+              <i class="fa fa-pencil pull-right pointer"></i>
+            </span>
             {% endif %}
+          </div>
         </div>
-      </div>
+
+        <div class="row">
+          <div class="col-md-12" ng-hide="item.isolates.length < 1">
+            <b>Isolates:</b>
+          </div>
+        </div>
+
+        <div {% if not request.user.profile.readonly %}ng-click="bloodCulturePanelCtrl.open(item, isolate)"{% endif %}
+             class="pointer blood-culture-edit blood-culture-isolate row"
+             ng-repeat="isolate in item.isolates | orderBy: ['aerobic_or_anaerobic', 'date_positive']" >
+
+          <div class="col-xs-10">
+            {% include "partials/blood_culture_isolate.html" %}
+          </div>
+          <div class="col-xs-2">
+            {% if not request.user.profile.readonly %}
+            <i class="fa fa-pencil blood-culture-edit pull-right"></i>
+            {% endif %}
+          </div>
+        </div>
+
       {% if not request.user.profile.readonly %}
       <div class="content-offset-10 pointer add-isolate" ng-click="bloodCulturePanelCtrl.open(item)" >
         <i class="fa fa-plus-circle">
@@ -46,8 +62,12 @@
         Add isolate
       </div>
       {% endif %}
+
     </li>
+
   </ul>
+
+
   <div class="panel-footer">
             <button class="btn btn-cancel" ng-click="open_modal('BCRemovalValidationCtrl', 'templates/patient_lists/bc_removal_modal.html', {episode: episode, remove_callback:null, hide_actions:true})">
           Validate

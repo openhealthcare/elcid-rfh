@@ -367,9 +367,16 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
   color: #333;
 }
 
-.no-touchevents div.blood-culture-edit i,
-i.blood-culture-edit {
-  display: none;
+.no-touchevents div.blood-culture-edit i {
+  font-size: 24px;
+}
+
+.blood-culture-isolate {
+  border-bottom: 1px solid #cbc9c8;
+}
+
+div.blood-culture-edit i {
+  color: #d8dbdd;
 }
 
 div.blood-culture-edit:hover {
@@ -377,8 +384,7 @@ div.blood-culture-edit:hover {
 }
 div.blood-culture-edit:hover i {
   display: inline-block;
-  font-size: 28px;
-  padding-top: 5px;
+  color: #343637;
 }
 
 div.add-isolate:hover {
