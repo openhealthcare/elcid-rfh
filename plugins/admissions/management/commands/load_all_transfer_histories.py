@@ -87,11 +87,12 @@ def stream_result():
                                 )
                                 if field:
                                     row[field] = v
-                                    if isinstance(
-                                        TransferHistory._meta.get_field(field),
-                                        models.DateTimeField,
-                                    ):
-                                        row[field] = to_datetime(v)
+                                    if(v):
+                                        if isinstance(
+                                                TransferHistory._meta.get_field(field),
+                                                models.DateTimeField,
+                                        ):
+                                            row[field] = to_datetime(v)
                                 row["patient_id"] = patient_id
                                 row["created_in_elcid"] = timezone.now()
                             writer.writerow(row)
